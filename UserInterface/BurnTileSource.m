@@ -1,0 +1,98 @@
+//
+//  BurnTileSource.m
+//  iBurn
+//
+//  Created by Anna Hentzel on 8/1/10.
+//  Copyright 2010 __MyCompanyName__. All rights reserved.
+//
+
+#import "BurnTileSource.h"
+#import "util.h"
+
+@implementation BurnTileSource
+
+@synthesize uniqueTilecacheKey, shortName, longDescription, attribution;
+@synthesize sourceMinZoom, tileURL, tileDirectory;
+@synthesize bounds, demoCoord;
+
+//{40.775, -119.220037}
+
+-(id) init {
+  if (![super init])
+		return nil;
+  bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 40.816, .longitude = -119.176}, 
+    .southwest = {.latitude = 40.756, .longitude = -119.236}});
+  /*bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 46.816, .longitude = -92.0}, 
+    .southwest = {.latitude = 46.700, .longitude = -92.156}});*/
+  
+  sourceMinZoom = 8;
+  self.uniqueTilecacheKey = @"iBurn";
+  self.shortName = @"iBurn";
+  self.longDescription = @"Tiles description";
+  self.minZoom = 10;
+  self.maxZoom = 17;
+  self.tileURL = @"http://earthdev.burningman.com/osm_tiles_2010/ZPARAM/XPARAM/YPARAM.png";
+  
+  NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString *documentsDirectory = [paths objectAtIndex:0];
+  self.tileDirectory = [[NSString stringWithFormat:@"%@/%@/%@/",
+                    documentsDirectory, @"tiles", uniqueTilecacheKey] retain];
+  return self;
+}
+
+- (NSString*)getTileURLForX:(int)x forY:(int)y forZ:(int)z {
+
+  NSString * result = [tileURL stringByReplacingOccurrencesOfString:@"XPARAM" 
+                                                         withString:[N(x) stringValue]];
+  result = [result stringByReplacingOccurrencesOfString:@"YPARAM" 
+                                             withString:[N(y) stringValue]];
+  result = [result stringByReplacingOccurrencesOfString:@"ZPARAM" 
+                                             withString:[N(z) stringValue]];
+  NSLog(result);
+  return result;
+}
+
+
+
+-(NSString*) tileURL:(RMTile)tile {
+  return [self getTileURLForX:tile.x forY:tile.y forZ:tile.zoom];
+}
+
+-(NSString *) tileFile: (RMTile) tile {
+  NSString* tilePath = [NSString stringWithFormat:@"%@/%d/%d/%d",
+                        tileDirectory, tile.zoom, tile.x, tile.y];
+}
+
+
+-(NSString *)shortAttribution {
+	return attribution;
+}
+-(NSString *)longAttribution {
+	return attribution;
+}
+
+- (void) removeAllCachedImages {}
+- (void) didReceiveMemoryWarning {}
+
+
+- (RMSphericalTrapezium) latitudeLongitudeBoundingBox {
+  return bounds;
+  /*CLLocationCoordinate2D northeast = {19.9888, -71.7682};
+   CLLocationCoordinate2D southwest = {18.0284, -74.4406};
+   RMSphericalTrapezium boundingBox =  {northeast, southwest};
+   return boundingBox;*/
+  
+}  
+
+
+
+- (void) dealloc {
+  [uniqueTilecacheKey release];
+  [shortName release];
+  [longDescription release];
+  [attribution release];
+  [tileURL release];
+  [super dealloc];
+}  
+
+@end
