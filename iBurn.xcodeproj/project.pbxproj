@@ -1068,7 +1068,14 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iBurn" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
 			projectReferences = (
@@ -1311,7 +1318,7 @@
 				PRODUCT_NAME = iBurn;
 				PROVISIONING_PROFILE = "D16EC0BA-B9A0-422A-AC37-906C05BC6E80";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "D16EC0BA-B9A0-422A-AC37-906C05BC6E80";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -1338,7 +1345,7 @@
 				PRODUCT_NAME = iBurn;
 				PROVISIONING_PROFILE = "B3453536-64E7-4021-BE55-B2BC316E6F03";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "B3453536-64E7-4021-BE55-B2BC316E6F03";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -1386,7 +1393,7 @@
 				PRODUCT_NAME = iBurn;
 				PROVISIONING_PROFILE = "B3453536-64E7-4021-BE55-B2BC316E6F03";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "B3453536-64E7-4021-BE55-B2BC316E6F03";
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Beta;
