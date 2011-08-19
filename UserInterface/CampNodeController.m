@@ -15,7 +15,8 @@
 
 - (NSString *)getUrl {
  	NSString *theString;
-	theString = @"http://earth.burningman.com/api/0.1/2010/camp/";	
+	theString = @"http://playaevents.burningman.com/api/0.2/2011/camp/";
+	// theString = @"http://earth.burningman.com/api/0.1/2010/camp/";	
 	return theString;
 }
 

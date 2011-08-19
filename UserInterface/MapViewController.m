@@ -147,6 +147,8 @@
 
 
 
+
+
 - (MapViewController *)initWithTitle: (NSString *) aTitle {
 	self = [super init];
   lastFetchedZoom = 0.0;
