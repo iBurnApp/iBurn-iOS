@@ -33,7 +33,8 @@
                    lowerRight:(CLLocationCoordinate2D)lowerRight;
 - (void) createAndUpdate:(NSArray*)knownObjects 
              withObjects:(NSArray*)objects 
-            forClassName:(NSString*)className;
+            forClassName:(NSString*)className 
+								fromFile:(BOOL)fromFile;
   
 @property (nonatomic, retain) NSArray *nodes;
 @property (nonatomic, assign) id<NodeFetchDelegate> delegate;

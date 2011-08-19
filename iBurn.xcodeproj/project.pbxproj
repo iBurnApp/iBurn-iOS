@@ -135,6 +135,8 @@
 		57F472750F22C49900827FAC /* TweetTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472570F22C49900827FAC /* TweetTableViewController.m */; };
 		57F472760F22C49900827FAC /* CampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472590F22C49900827FAC /* CampTableViewController.m */; };
 		57F472770F22C49900827FAC /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4725B0F22C49900827FAC /* MapViewController.m */; };
+		A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15D8613FF1691004DCF90 /* allart_public.json */; };
+		A0F15EA013FF21BA004DCF90 /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15E9F13FF21BA004DCF90 /* camps.json */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -420,6 +422,8 @@
 		57F4725C0F22C49900827FAC /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
 		57F4725D0F22C49900827FAC /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A0F15D8613FF1691004DCF90 /* allart_public.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = allart_public.json; sourceTree = "<group>"; };
+		A0F15E9F13FF21BA004DCF90 /* camps.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = camps.json; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -535,6 +539,8 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				A0F15E9F13FF21BA004DCF90 /* camps.json */,
+				A0F15D8613FF1691004DCF90 /* allart_public.json */,
 				57A016350F4965E2004F53D0 /* images */,
 				EADDB89311D5CBF10067BBE4 /* lib */,
 				080E96DDFE201D6D7F000001 /* Classes */,
@@ -1169,6 +1175,8 @@
 				EA0F02AC121C07EB00EF6702 /* art-reverse.png in Resources */,
 				EA0F02AD121C07EB00EF6702 /* camps-reversed.png in Resources */,
 				EA0F02AE121C07EB00EF6702 /* events-reversed.png in Resources */,
+				A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */,
+				A0F15EA013FF21BA004DCF90 /* camps.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

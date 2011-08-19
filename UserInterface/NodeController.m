@@ -24,7 +24,12 @@
 - (NSArray*) getNamesFromDicts:(NSArray*)dicts {
   NSMutableArray *names = [[[NSMutableArray alloc] init] autorelease];
   for (NSDictionary *dict in dicts) {
-    [names addObject:[dict objectForKey:@"name"]];
+		if ([dict objectForKey:@"name"]) {
+      [names addObject:[dict objectForKey:@"name"]];
+		}
+		if ([dict objectForKey:@"title"]) {
+			[names addObject:[dict objectForKey:@"title"]];
+		}
   }
   return names;
 }  
@@ -108,13 +113,16 @@
 
 - (void) createAndUpdate:(NSArray*)knownObjects 
              withObjects:(NSArray*)objects 
-            forClassName:(NSString*)className {
+            forClassName:(NSString*)className 
+								fromFile:(BOOL)fromFile {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t bgMoc];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
+		NSLog(@"The title is %@", [dict objectForKey:@"title"]);
     for (id c in knownObjects) {
-      if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]) {
+      if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
+					|| [[[c name]lowercaseString] isEqual:[[self nullOrObject:[dict objectForKey:@"title"]]lowercaseString]]) {
         matchedCamp = c;
         break;
       }
@@ -123,7 +131,11 @@
       matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
                                                   inManagedObjectContext:moc];      
     }
-    [self updateObject:matchedCamp withDict:[dict retain]];
+		if (fromFile) {
+      [self updateObjectFromFile:matchedCamp withDict:[dict retain]];
+		} else {
+      [self updateObject:matchedCamp withDict:[dict retain]];
+		}
     [dict release];
   }
   [self saveObjects:knownObjects];

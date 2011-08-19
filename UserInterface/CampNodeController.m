@@ -10,14 +10,39 @@
 #import "ThemeCamp.h"
 #import "iBurnAppDelegate.h"
 #import "util.h"
+#import "CJSONDeserializer.h"
 
 @implementation CampNodeController
+
+- (void) importDataFromFile {
+	NSString *path = [[NSBundle mainBundle] pathForResource:@"camps" ofType:@"json"];
+	NSData *fileData = [NSData dataWithContentsOfFile:path];
+	NSArray *campArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
+	NSLog(@"The camp array is %@", campArray);
+  CLLocationCoordinate2D dummy = {0,0};
+  NSArray *knownCamps = [self getObjectsForType:@"ThemeCamp" 
+																				 names:[self getNamesFromDicts:campArray] 
+																		 upperLeft:dummy 
+																		lowerRight:dummy];
+  [self createAndUpdate:knownCamps
+            withObjects:campArray 
+           forClassName:@"ThemeCamp"
+							 fromFile:YES];
+}
+
 
 - (NSString *)getUrl {
  	NSString *theString;
 	theString = @"http://playaevents.burningman.com/api/0.2/2011/camp/";
 	// theString = @"http://earth.burningman.com/api/0.1/2010/camp/";	
 	return theString;
+}
+
+
+- (void) updateObjectFromFile:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
+  camp.name = [self nullStringOrString:[dict objectForKey:@"Name"]];
+	camp.latitude = [dict objectForKey:@"Latitude"];
+	camp.longitude = [dict objectForKey:@"Longitude"];
 }
 
 
@@ -46,7 +71,9 @@
                                      lowerRight:dummy];
   [self createAndUpdate:knownCamps
             withObjects:camps 
-           forClassName:@"ThemeCamp"];
+           forClassName:@"ThemeCamp"
+							fromFile:NO];
+	[self importDataFromFile];
 }
 
 
