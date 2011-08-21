@@ -65,15 +65,18 @@ class Honorarium(object):
         b.inct(2)
 
         ret["description"], ret["contact"], ret["url"] = '','',''
-        while not b.has(["Contact", "URL", "top"]):
+        while b.t is not None and b.has(["Contact", "URL", "top"]) is None:
             ret["description"] += b.t
-            b.inct(2)
+            data = b.inct(2)
 
-        while True:
+        while b.t is not None:
             t = b.has(["Contact", "URL"])
-            if not t:
+            if t is None:
                 break
             ret[t.lower()] = b.incc()
+            if b.t is not None:
+                b.incc()
+
 
         for key, value in ret.iteritems():
             ret[key] = _clean_string(value)
