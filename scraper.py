@@ -142,13 +142,13 @@ class Camp(object):
 
 if __name__ == "__main__":
 
+    if len(sys.argv) < 2 or sys.argv[1] not in ["camps", "honorarium"]:
+        print "Usage: scraper.py <camps|honorarium>"
+        sys.exit(0)
     if sys.argv[1] == "camps":
         Class = Camp
     elif sys.argv[1] == "honorarium":
         Class = Honorarium
-    else:
-        print "Usage: scraper.py <camp|honorarium>"
-        sys.exit(0)
 
     h = Class()
     data = h.get_data()
