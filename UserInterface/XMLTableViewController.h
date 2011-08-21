@@ -14,6 +14,8 @@
 	NSMutableArray *objects;
   UISearchBar *searchBar;
   NSIndexPath *touchedIndexPath;
+	UISegmentedControl *sortControl;
+
 }
 
 - (id) initWithSearchPlaceholder:(NSString*)searchPlaceholder;

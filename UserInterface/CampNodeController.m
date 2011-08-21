@@ -14,8 +14,8 @@
 
 @implementation CampNodeController
 
-- (void) importDataFromFile {
-	NSString *path = [[NSBundle mainBundle] pathForResource:@"camps" ofType:@"json"];
+- (void) importDataFromFile:(NSString*)filename {
+	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *campArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
 	NSLog(@"The camp array is %@", campArray);
@@ -39,15 +39,24 @@
 }
 
 
-
 - (void) updateObjectFromFile:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
-  
-  camp.name = [self nullStringOrString:[dict objectForKey:@"Name"]];
-                           
+  if ([dict objectForKey:@"Name"]) {
+    camp.name = [self nullStringOrString:[dict objectForKey:@"Name"]];
+	}
+  if ([dict objectForKey:@"name"]) {
+    camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
+	}
+	
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
   NSLog(@"name %@ simple name %@", camp.name, camp.simpleName);
 	camp.latitude = [dict objectForKey:@"Latitude"];
 	camp.longitude = [dict objectForKey:@"Longitude"];
+
+	camp.desc = [dict objectForKey:@"description"];
+	camp.url = [dict objectForKey:@"url"];
+	camp.contactEmail = [dict objectForKey:@"contact"];
+	camp.location = [dict objectForKey:@"hometown"];
+
 }
 
 
@@ -78,7 +87,8 @@
             withObjects:camps 
            forClassName:@"ThemeCamp"
 							fromFile:NO];
-	[self importDataFromFile];
+	[self importDataFromFile:@"camps"];
+	[self importDataFromFile:@"camps-info"];
 }
 
 

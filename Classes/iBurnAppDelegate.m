@@ -28,6 +28,7 @@
 #import "ArtNodeController.h"
 #import "EventNodeController.h"
 #import "RotatingTabBarController.h"
+#import "SortableTable.h"
 
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>

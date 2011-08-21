@@ -13,8 +13,8 @@
 
 @implementation ArtNodeController
 
-- (void) importDataFromFile {
-	NSString *path = [[NSBundle mainBundle] pathForResource:@"allart_public" ofType:@"json"];
+- (void) importDataFromFile:(NSString*)filename {
+	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *artArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
 	NSLog(@"The art array is %@", artArray);
@@ -42,6 +42,26 @@
   camp.name = [self nullStringOrString:[dict objectForKey:@"title"]];
 	camp.latitude = [dict objectForKey:@"lat"];
 	camp.longitude = [dict objectForKey:@"lon"];
+
+	camp.desc = [dict objectForKey:@"description"];
+	camp.url = [dict objectForKey:@"url"];
+	camp.contactEmail = [dict objectForKey:@"contact"];
+	NSString *artists = @"by ";
+	int x = 0;
+	for (NSString *name in [dict objectForKey:@"artists"]) {
+		artists = [artists stringByAppendingString:name];
+		if (x != [[dict objectForKey:@"artists"]count]-1) {
+			artists = [artists stringByAppendingString:@", "];
+	  }
+		x++;
+	}
+	if(![artists isEqualToString:@"by "]) {
+		camp.artist = [self nullStringOrString:artists];
+	}
+	
+	//camp.location = [dict objectForKey:@"artist_location"];
+	// image_url
+	
 }
 
 
@@ -78,7 +98,8 @@
             withObjects:arts 
            forClassName:@"ArtInstall"
 							 fromFile:NO];
-	[self importDataFromFile];
+	[self importDataFromFile:@"allart_public"];
+	[self importDataFromFile:@"art-info"];
 }
 
 

@@ -139,6 +139,9 @@
 		57F472770F22C49900827FAC /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4725B0F22C49900827FAC /* MapViewController.m */; };
 		A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15D8613FF1691004DCF90 /* allart_public.json */; };
 		A0F15EA013FF21BA004DCF90 /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15E9F13FF21BA004DCF90 /* camps.json */; };
+		A0F15F681401A436004DCF90 /* camps-info.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15F671401A436004DCF90 /* camps-info.json */; };
+		A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F15FB51401BCBB004DCF90 /* SortableTable.m */; };
+		A0F15FC01401BE5D004DCF90 /* art-info.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15FBF1401BE5D004DCF90 /* art-info.json */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -429,6 +432,10 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0F15D8613FF1691004DCF90 /* allart_public.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = allart_public.json; sourceTree = "<group>"; };
 		A0F15E9F13FF21BA004DCF90 /* camps.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = camps.json; sourceTree = "<group>"; };
+		A0F15F671401A436004DCF90 /* camps-info.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "camps-info.json"; sourceTree = "<group>"; };
+		A0F15FB41401BCBB004DCF90 /* SortableTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SortableTable.h; sourceTree = "<group>"; };
+		A0F15FB51401BCBB004DCF90 /* SortableTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SortableTable.m; sourceTree = "<group>"; };
+		A0F15FBF1401BE5D004DCF90 /* art-info.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "art-info.json"; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -544,6 +551,8 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				A0F15FBF1401BE5D004DCF90 /* art-info.json */,
+				A0F15F671401A436004DCF90 /* camps-info.json */,
 				5044A8AC14009B5000E3CF6E /* tiles.json */,
 				A0F15E9F13FF21BA004DCF90 /* camps.json */,
 				A0F15D8613FF1691004DCF90 /* allart_public.json */,
@@ -836,6 +845,8 @@
 		57F472530F22C49900827FAC /* UserInterface */ = {
 			isa = PBXGroup;
 			children = (
+				A0F15FB41401BCBB004DCF90 /* SortableTable.h */,
+				A0F15FB51401BCBB004DCF90 /* SortableTable.m */,
 				EA0FFF2B121BCB9300EF6702 /* RotatingTabBarController.m */,
 				EA0FFF2C121BCB9300EF6702 /* RotatingTabBarController.h */,
 				EA37A28B121B95C10091E9C3 /* PageViewer.h */,
@@ -1195,6 +1206,8 @@
 				A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */,
 				A0F15EA013FF21BA004DCF90 /* camps.json in Resources */,
 				5044A8AD14009B5000E3CF6E /* tiles.json in Resources */,
+				A0F15F681401A436004DCF90 /* camps-info.json in Resources */,
+				A0F15FC01401BE5D004DCF90 /* art-info.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1307,6 +1320,7 @@
 				EA0FFF2D121BCB9300EF6702 /* RotatingTabBarController.m in Sources */,
 				EA0F00EE121BE75400EF6702 /* EventDayTable.m in Sources */,
 				50C7DC8C14007F74006E8259 /* JSONKit.m in Sources */,
+				A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

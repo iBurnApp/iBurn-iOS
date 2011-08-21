@@ -25,6 +25,17 @@
 // pass nil for searchPlaceholder if there is no UISearchView for the viewController
 - (id) initWithSearchPlaceholder:(NSString*)searchPlaceholder {
 	if (self = [super init]) {
+		
+		sortControl = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Name", @"Distance", @"Favorites",nil]];
+		CGRect fr = sortControl.frame;
+		fr.size.width = self.view.frame.size.width;
+		sortControl.frame = fr;
+		sortControl.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+		sortControl.segmentedControlStyle = UISegmentedControlStyleBar;
+		sortControl.selectedSegmentIndex = 0;
+		self.tableView.tableHeaderView = sortControl;
+		
+		
     if (NO && searchPlaceholder) {
       searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0,0,320,44)];
       searchBar.delegate = self;
@@ -101,6 +112,7 @@
 
 - (void)dealloc {
   [touchedIndexPath release];
+	[sortControl release];
   [super dealloc];
 }
 

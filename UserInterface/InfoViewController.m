@@ -65,10 +65,11 @@
 	if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Description"] 
 			&& section != 0) { 
 			CGSize constraintSize;
-			constraintSize.width = self.view.frame.size.width-PADDING*2;
+			constraintSize.width = self.view.frame.size.width-PADDING*5;
 			constraintSize.height = MAXFLOAT;
 			CGSize theSize = [[object desc] sizeWithFont:[UIFont systemFontOfSize:17.0f] constrainedToSize:constraintSize lineBreakMode:UILineBreakModeWordWrap];
-			return theSize.height+PADDING*2;
+			return theSize.height+PADDING*4;
+		
   }
   return 44.0f;
 }
@@ -91,15 +92,15 @@
       descriptionLabel = [[[UILabel alloc] initWithFrame:CGRectZero]autorelease];
 			descriptionLabel.backgroundColor = [UIColor clearColor];
       CGSize constraintSize;
-			constraintSize.width = self.view.frame.size.width-PADDING*2;
+			constraintSize.width = self.view.frame.size.width-PADDING*5;
 			constraintSize.height = MAXFLOAT;
 			CGSize theSize = [[cellTexts objectAtIndex:section] sizeWithFont:[UIFont systemFontOfSize:17.0f] 
 																										 constrainedToSize:constraintSize 
 																												 lineBreakMode:UILineBreakModeWordWrap];
       descriptionLabel.frame = CGRectMake(PADDING, 
                                           PADDING, 
-                                          self.view.frame.size.width-PADDING*2, 
-                                          theSize.height);
+                                          self.view.frame.size.width-PADDING*5, 
+                                          theSize.height+PADDING*2);
       [cell.contentView addSubview:descriptionLabel];
       descriptionLabel.numberOfLines = 0;
       //descriptionLabel.adjustsFontSizeToFitWidth = true;
