@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BurnTileSource.h"
 
 @class ASINetworkQueue;
 @class ASIHTTPRequest;
@@ -25,14 +26,14 @@
   NSString * tileDirectory;
   NSMutableArray* tileKeys;
   NSString* mapType;
-  RMTileSource* tileSource;
+  BurnTileSource* tileSource;
   
   Boolean refreshTiles;
 }  
 
 @property (nonatomic, retain) ASINetworkQueue *networkQueue;
 @property (nonatomic, assign) float lastProgress;
-@property (nonatomic, retain) RMTileSource *tileSource;
+@property (nonatomic, retain) BurnTileSource *tileSource;
 @property (nonatomic, assign) Boolean refreshTiles;
 
 - (id)initWithTileSource:(RMTileSource*)_tileSource progressView:(UIProgressView*) progressView;

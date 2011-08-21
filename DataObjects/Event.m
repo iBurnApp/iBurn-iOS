@@ -26,5 +26,6 @@
 @dynamic name;
 @dynamic zoom;
 @dynamic Favorite;
+@dynamic day;
 
 @end
