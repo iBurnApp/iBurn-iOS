@@ -23,5 +23,24 @@
 @dynamic name;
 @dynamic contactEmail;
 @dynamic Favorite;
+@dynamic simpleName;
 
+
+
++ (NSCharacterSet*) getNonAlphaNumericCharacterSet {
+  static NSCharacterSet* cs;
+  if (!cs) {
+    cs = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+    cs = [cs retain];
+  }
+  return cs;
+}
+
+
++ (NSString*) createSimpleName:(NSString*) name {
+  NSString* simpleName = [[name componentsSeparatedByCharactersInSet:[ThemeCamp getNonAlphaNumericCharacterSet]] componentsJoinedByString:@""];
+  
+  return [simpleName lowercaseString];
+
+}
 @end

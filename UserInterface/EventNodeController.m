@@ -27,7 +27,6 @@
 
 - (id) init {
   self = [super init];
-  eventDateHash = [[NSMutableDictionary alloc]init];
   return self;
 }
 
@@ -52,7 +51,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [gpxDateFormatter setLocale:enUSPOSIXLocale];
 	  [gpxDateFormatter setDateFormat:@"yyyy-MM-dd' 'HH:mm:ss"];
-    [gpxDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
+    [gpxDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
   }
   NSDate* date = [gpxDateFormatter dateFromString:dateString];
   //NSLog(@"%@", date);
@@ -69,7 +68,7 @@
   NSString *dow = [dateFormatter stringFromDate:event.startTime];
   if (dow && ![eventDateHash objectForKey:dow]) {
     [eventDateHash setValue:[[[NSMutableArray alloc]init]autorelease] forKey:dow];
-    NSLog(@"Making new array %@",dow);
+    //NSLog(@"Making new array %@",dow);
   }
   if (dow) [[eventDateHash objectForKey:dow]addObject:event];  
 }
@@ -139,7 +138,7 @@
             forClassName:(NSString*)className {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t bgMoc];
-  [self.eventDateHash removeAllObjects];
+  //[self.eventDateHash removeAllObjects];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
     for (id c in knownObjects) {
@@ -159,7 +158,9 @@
 
 
 - (void) loadDBEvents {
-  [self.eventDateHash removeAllObjects];
+  if (self.eventDateHash) return;
+  eventDateHash = [[NSMutableDictionary alloc]init];
+
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Event"

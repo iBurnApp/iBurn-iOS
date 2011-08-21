@@ -20,6 +20,8 @@
   RMSphericalTrapezium bounds;
   CLLocationCoordinate2D demoCoord;
   NSString* tileDirectory;
+  
+  BOOL reverseY;
 }
 
 @property (nonatomic, retain) NSString *uniqueTilecacheKey;
@@ -31,6 +33,7 @@
 @property (nonatomic, assign) CLLocationCoordinate2D demoCoord;
 @property (nonatomic, assign) RMSphericalTrapezium bounds;
 @property (nonatomic, assign) float sourceMinZoom;
+@property (nonatomic, assign) BOOL reverseY;
 
 
 - (NSString*)getTileURLForX:(int)x forY:(int)y forZ:(int)z;

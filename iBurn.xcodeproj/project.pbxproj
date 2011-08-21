@@ -14,6 +14,7 @@
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
 		4E99497212063C6A00F410EF /* iBurn.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4E99497112063C6A00F410EF /* iBurn.xcdatamodel */; };
+		5044A8AD14009B5000E3CF6E /* tiles.json in Resources */ = {isa = PBXBuildFile; fileRef = 5044A8AC14009B5000E3CF6E /* tiles.json */; };
 		50B8EDCB121BB1EF0093E402 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC6121BB1EF0093E402 /* Event.m */; };
 		50B8EDCC121BB1EF0093E402 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC8121BB1EF0093E402 /* ArtInstall.m */; };
 		50B8EDCD121BB1EF0093E402 /* ThemeCamp.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDCA121BB1EF0093E402 /* ThemeCamp.m */; };
@@ -40,6 +41,7 @@
 		50BF511C12062DA800555D13 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511B12062DA800555D13 /* SystemConfiguration.framework */; };
 		50BF511F12062DB100555D13 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511E12062DB100555D13 /* CFNetwork.framework */; };
 		50BF5149120637E000555D13 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50BF5148120637E000555D13 /* MainWindow-iPad.xib */; };
+		50C7DC8C14007F74006E8259 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C7DC8B14007F74006E8259 /* JSONKit.m */; };
 		57101DD00F283EC500812A41 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57101DCF0F283EC500812A41 /* Security.framework */; };
 		5733584C0F2B80F200712246 /* NSMutableURLRequest+Parameters.m in Sources */ = {isa = PBXBuildFile; fileRef = 573358240F2B80F200712246 /* NSMutableURLRequest+Parameters.m */; };
 		5733584D0F2B80F200712246 /* NSString+URLEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 573358260F2B80F200712246 /* NSString+URLEncoding.m */; };
@@ -216,6 +218,7 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* iBurn_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iBurn_Prefix.pch; sourceTree = "<group>"; };
 		4E99497112063C6A00F410EF /* iBurn.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; name = iBurn.xcdatamodel; path = ../iBurn.xcdatamodel; sourceTree = "<group>"; };
+		5044A8AC14009B5000E3CF6E /* tiles.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tiles.json; sourceTree = "<group>"; };
 		50B8EDC5121BB1EF0093E402 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = ../DataObjects/Event.h; sourceTree = "<group>"; };
 		50B8EDC6121BB1EF0093E402 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Event.m; sourceTree = "<group>"; };
 		50B8EDC7121BB1EF0093E402 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
@@ -268,6 +271,8 @@
 		50BF511B12062DA800555D13 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		50BF511E12062DB100555D13 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		50BF5148120637E000555D13 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = "MainWindow-iPad.xib"; sourceTree = "<group>"; };
+		50C7DC8A14007F74006E8259 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
+		50C7DC8B14007F74006E8259 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
 		57101DCF0F283EC500812A41 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		573358230F2B80F200712246 /* NSMutableURLRequest+Parameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableURLRequest+Parameters.h"; sourceTree = "<group>"; };
 		573358240F2B80F200712246 /* NSMutableURLRequest+Parameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableURLRequest+Parameters.m"; sourceTree = "<group>"; };
@@ -539,6 +544,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				5044A8AC14009B5000E3CF6E /* tiles.json */,
 				A0F15E9F13FF21BA004DCF90 /* camps.json */,
 				A0F15D8613FF1691004DCF90 /* allart_public.json */,
 				57A016350F4965E2004F53D0 /* images */,
@@ -641,6 +647,16 @@
 			);
 			name = Reachability;
 			path = lib/Reachability;
+			sourceTree = "<group>";
+		};
+		50C7DC8914007F74006E8259 /* JSONKit */ = {
+			isa = PBXGroup;
+			children = (
+				50C7DC8A14007F74006E8259 /* JSONKit.h */,
+				50C7DC8B14007F74006E8259 /* JSONKit.m */,
+			);
+			name = JSONKit;
+			path = lib/JSONKit;
 			sourceTree = "<group>";
 		};
 		573358210F2B80F200712246 /* OAuthConsumer */ = {
@@ -906,6 +922,7 @@
 		EADDB89311D5CBF10067BBE4 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				50C7DC8914007F74006E8259 /* JSONKit */,
 				EA02BFC412065DE4000D058B /* CJSON */,
 				50BF50D512062BB400555D13 /* Reachability */,
 				50BF50A212062B1600555D13 /* ASI */,
@@ -1177,6 +1194,7 @@
 				EA0F02AE121C07EB00EF6702 /* events-reversed.png in Resources */,
 				A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */,
 				A0F15EA013FF21BA004DCF90 /* camps.json in Resources */,
+				5044A8AD14009B5000E3CF6E /* tiles.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1288,6 +1306,7 @@
 				50B8EDCD121BB1EF0093E402 /* ThemeCamp.m in Sources */,
 				EA0FFF2D121BCB9300EF6702 /* RotatingTabBarController.m in Sources */,
 				EA0F00EE121BE75400EF6702 /* EventDayTable.m in Sources */,
+				50C7DC8C14007F74006E8259 /* JSONKit.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

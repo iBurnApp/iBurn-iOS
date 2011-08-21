@@ -13,7 +13,7 @@
 
 @synthesize uniqueTilecacheKey, shortName, longDescription, attribution;
 @synthesize sourceMinZoom, tileURL, tileDirectory;
-@synthesize bounds, demoCoord;
+@synthesize bounds, demoCoord, reverseY;
 
 //{40.775, -119.220037}
 
@@ -28,9 +28,10 @@
   sourceMinZoom = 8;
   self.uniqueTilecacheKey = @"iBurn";
   self.shortName = @"iBurn";
+  self.reverseY = YES;
   self.longDescription = @"Tiles description";
   self.minZoom = 10;
-  self.maxZoom = 17;
+  self.maxZoom = 18;
   //self.tileURL = @"http://earthdev.burningman.com/osm_tiles_2010/ZPARAM/XPARAM/YPARAM.png";
   self.tileURL = @"http://iburn.s3.amazonaws.com/ZPARAM/XPARAM/YPARAM.png";\
 
@@ -58,14 +59,15 @@
 -(NSString*) tileURL:(RMTile)tile {
 	int y = tile.y;
   int x = tile.x;
-     int maxY = 1 << tile.zoom;
-    maxY = maxY - y - 1;
+  
+  int maxY = 1 << tile.zoom;
+  maxY = maxY - y - 1;
  	
   return [self getTileURLForX:tile.x forY:maxY forZ:tile.zoom];
 }
 
 -(NSString *) tileFile: (RMTile) tile {
-  NSString* tilePath = [NSString stringWithFormat:@"%@/%d/%d/%d",
+  NSString* tilePath = [NSString stringWithFormat:@"%@%d/%d/%d",
                         tileDirectory, tile.zoom, tile.x, tile.y];
 }
 

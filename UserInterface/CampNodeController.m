@@ -39,8 +39,13 @@
 }
 
 
+
 - (void) updateObjectFromFile:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
+  
   camp.name = [self nullStringOrString:[dict objectForKey:@"Name"]];
+                           
+  camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
+  NSLog(@"name %@ simple name %@", camp.name, camp.simpleName);
 	camp.latitude = [dict objectForKey:@"Latitude"];
 	camp.longitude = [dict objectForKey:@"Longitude"];
 }
@@ -75,6 +80,40 @@
 							fromFile:NO];
 	[self importDataFromFile];
 }
+
+
+- (void) createAndUpdate:(NSArray*)knownObjects 
+             withObjects:(NSArray*)objects 
+            forClassName:(NSString*)className 
+								fromFile:(BOOL)fromFile {
+ 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSManagedObjectContext *moc = [t bgMoc];
+  for (NSDictionary *dict in objects) {
+    id matchedCamp = nil;
+    NSString* name = [self nullOrObject:[dict objectForKey:@"title"]];
+    NSString * simpleName = [ThemeCamp createSimpleName:name];
+		NSLog(@"The title is %@", [dict objectForKey:@"title"]);
+    for (ThemeCamp * c in knownObjects) {
+      if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
+					|| [c.simpleName isEqual:simpleName]) {
+        matchedCamp = c;
+        break;
+      }
+    }
+    if (!matchedCamp) {
+      NSLog(@"unmatch camp name %@ %@", name, simpleName);
+      matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
+                                                  inManagedObjectContext:moc];      
+    }
+		if (fromFile) {
+      [self updateObjectFromFile:matchedCamp withDict:[dict retain]];
+		} else {
+      [self updateObject:matchedCamp withDict:[dict retain]];
+		}
+    [dict release];
+  }
+  [self saveObjects:knownObjects];
+}  
 
 
 @end

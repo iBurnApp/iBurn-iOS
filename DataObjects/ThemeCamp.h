@@ -23,7 +23,7 @@
 @property (nonatomic, retain) NSNumber * bm_id;
 @property (nonatomic, retain) NSNumber * year;
 @property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSString * contactEmail;
+@property (nonatomic, retain) NSString * contactEmail, * simpleName;
 @property (nonatomic, retain) Favorite * Favorite;
 
 @end
