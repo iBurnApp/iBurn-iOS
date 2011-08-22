@@ -45,6 +45,15 @@
 	}
   return self;
 }
+
+- (void) loadView {
+  [super loadView];
+	
+	[sortControl release];
+	sortControl = nil;
+
+}
+
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
   return [dayArray count];
 }
