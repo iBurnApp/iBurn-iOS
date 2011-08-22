@@ -188,7 +188,7 @@
 
 - (void) dismissProgessIndicator {	
   [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-  MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
+  MapViewController *mapViewController = (MapViewController*)[[[tabBarController.viewControllers objectAtIndex:0]viewControllers]objectAtIndex:0];
  	[mapViewController.progressView setAlpha:0];
 }
 

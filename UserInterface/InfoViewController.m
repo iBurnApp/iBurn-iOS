@@ -24,7 +24,8 @@
   return self;
 }
 
--(void)loadView {
+
+- (void)loadView {
 	[super loadView];
 	CGRect tableFrame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
 	tableView = [[UITableView alloc] initWithFrame:tableFrame style:UITableViewStyleGrouped];
@@ -39,6 +40,7 @@
                                              action:@selector(addToFavorites:)] autorelease];
 	
 }
+
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	return YES;

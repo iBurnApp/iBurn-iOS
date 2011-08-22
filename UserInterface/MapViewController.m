@@ -70,12 +70,10 @@
 - (void) loadCamps {
   for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
   
-  	NSString *imageName;
-    imageName = @"camps.png";
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
 		coord.longitude = [camp.longitude floatValue];
-    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"camps.png"]] autorelease];
+    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]] autorelease];
     [newMarker changeLabelUsingText:[camp name] 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
@@ -85,6 +83,7 @@
     newMarker.data = @"ThemeCamp";
     newMarker.waypointID = camp.simpleName;
     newMarker.zoom = 16;
+		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
 
 	}
@@ -106,6 +105,7 @@
     newMarker.data = @"ArtInstall";
     newMarker.waypointID = [camp name];
     newMarker.zoom = 16;
+		newMarker.anchorPoint = CGPointMake(.3,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
     
 	}
@@ -157,6 +157,7 @@
 
 
 - (void) tapOnMarker: (RMMarker*) marker onMap: (RMMapView*) map {
+	if (![marker.data isKindOfClass:[NSString class]]) return;
   if ([marker.data isEqualToString:@"ThemeCamp"]) {
     ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
     self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
@@ -218,11 +219,11 @@
   UIBarButtonItem *item = [[[UIBarButtonItem alloc]initWithCustomView:buttonView]autorelease];
   [self.navigationItem setTitle:@"Black Rock City"];
 	self.navigationItem.rightBarButtonItem = item;
-	self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
+	/*self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
 											   initWithImage:[UIImage imageNamed:@"map-download-icon.png"]
 											   style:UIBarButtonItemStylePlain
 											   target:self
-											   action:@selector(redownloadMaps:)] autorelease];
+											   action:@selector(redownloadMaps:)] autorelease];*/
   
  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
   
