@@ -50,7 +50,7 @@
                                              withString:[N(y) stringValue]];
   result = [result stringByReplacingOccurrencesOfString:@"ZPARAM" 
                                              withString:[N(z) stringValue]];
-  NSLog(result);
+  //NSLog(result);
   return result;
 }
 

@@ -14,16 +14,26 @@
 
 @implementation CampNodeController
 
+
+- (NSArray*) getAllThemeCamps {  
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
+  [fetchRequest setEntity:entity];
+ 
+  NSError *error;
+  NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
+  
+	return objects;
+}
 - (void) importDataFromFile:(NSString*)filename {
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *campArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
-	NSLog(@"The camp array is %@", campArray);
+	//NSLog(@"The camp array is %@", campArray);
   CLLocationCoordinate2D dummy = {0,0};
-  NSArray *knownCamps = [self getObjectsForType:@"ThemeCamp" 
-																				 names:[self getNamesFromDicts:campArray] 
-																		 upperLeft:dummy 
-																		lowerRight:dummy];
+  NSArray *knownCamps = [self getAllThemeCamps];
+  
   [self createAndUpdate:knownCamps
             withObjects:campArray 
            forClassName:@"ThemeCamp"
@@ -66,6 +76,8 @@
   camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
   camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
   camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
+  camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
+
   NSDictionary *locPoint = [self getLocationDictionary:dict];
   if (locPoint) {
     NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
@@ -79,10 +91,7 @@
 - (void) getNodesFromJson:(NSObject*) jsonNodes {
   NSMutableArray* camps = [NSMutableArray arrayWithArray:(NSArray*)jsonNodes];
   CLLocationCoordinate2D dummy = {0,0};
-  NSArray *knownCamps = [self getObjectsForType:@"ThemeCamp" 
-                                          names:[self getNamesFromDicts:camps] 
-                                      upperLeft:dummy 
-                                     lowerRight:dummy];
+  NSArray *knownCamps = [self getAllThemeCamps];
   [self createAndUpdate:knownCamps
             withObjects:camps 
            forClassName:@"ThemeCamp"
@@ -101,8 +110,15 @@
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
     NSString* name = [self nullOrObject:[dict objectForKey:@"title"]];
+    if (fromFile) {
+      name = [self nullOrObject:[dict objectForKey:@"name"]];
+      if (!name) {
+        name = [self nullOrObject:[dict objectForKey:@"Name"]];
+      }
+    }
+
     NSString * simpleName = [ThemeCamp createSimpleName:name];
-		NSLog(@"The title is %@", [dict objectForKey:@"title"]);
+		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
     for (ThemeCamp * c in knownObjects) {
       if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
 					|| [c.simpleName isEqual:simpleName]) {

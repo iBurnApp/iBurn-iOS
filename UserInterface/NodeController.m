@@ -119,7 +119,7 @@
   NSManagedObjectContext *moc = [t bgMoc];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
-		NSLog(@"The title is %@", [dict objectForKey:@"title"]);
+		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
     for (id c in knownObjects) {
       if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
 					|| [[[c name]lowercaseString] isEqual:[[self nullOrObject:[dict objectForKey:@"title"]]lowercaseString]]) {
