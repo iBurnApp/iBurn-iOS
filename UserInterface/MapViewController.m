@@ -69,9 +69,11 @@
 
 - (void) loadCamps {
   for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
-  
+   
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
+    
+    if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
     GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]] autorelease];
     [newMarker changeLabelUsingText:[camp name] 
