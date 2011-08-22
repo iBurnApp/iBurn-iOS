@@ -51,12 +51,14 @@
 
 
 - (void) updateObjectFromFile:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
-  if ([dict objectForKey:@"Name"]) {
-    camp.name = [self nullStringOrString:[dict objectForKey:@"Name"]];
-	}
+  
   if ([dict objectForKey:@"name"]) {
     camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
-	}
+	} else {
+    if ([dict objectForKey:@"Name"]) {
+      camp.name = [self nullStringOrString:[dict objectForKey:@"Name"]];
+    }
+  }
 	
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
 	camp.latitude = [dict objectForKey:@"Latitude"];
@@ -126,11 +128,20 @@
 					|| [c.simpleName isEqual:simpleName]) {
         matchedCamp = c;
         break;
+      } else if (simpleName && [c.simpleName hasPrefix:simpleName]) {
+       // NSLog(@"USING PREFIX name %@ name %@", name, [c name]);
+
+        matchedCamp = c;
+        break;
       }
     }
     if (!matchedCamp) {
-      matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
-                                                  inManagedObjectContext:moc];      
+      if (fromFile) {
+        NSLog(@"%@", name);
+      } else {
+        matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
+                                                    inManagedObjectContext:moc];  
+      }
     }
 		if (fromFile) {
       [self updateObjectFromFile:matchedCamp withDict:[dict retain]];

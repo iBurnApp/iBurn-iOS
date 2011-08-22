@@ -26,7 +26,7 @@
 
 
 - (void) sortByName { 
-  [self sortByNameForEntity:@"ThemeCamp"];
+  [self sortBySimpleNameForEntity:@"ThemeCamp"];
 }
 
 
