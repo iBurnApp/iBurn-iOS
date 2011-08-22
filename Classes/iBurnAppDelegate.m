@@ -248,6 +248,19 @@
 }
 
 
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+  [self checkEmbargo];
+  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+    [[MyCLController sharedInstance].locationManager startUpdatingLocation];
+  }
+}
+
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+    [[MyCLController sharedInstance].locationManager stopUpdatingLocation];
+  }
+}
 
 - (void) checkAndCreateDatabase {
   NSString* defaultDBName =  @"iBurn.sqlite";
@@ -347,7 +360,13 @@
   return NO;
 }
 
-
+- (NSString*) getStoredPassword {
+  if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
+    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile]];
+    return password;
+  }
+  return nil;
+}
 - (void)requestDone:(ASIHTTPRequest *)request {
   NSString *response = [request responseString];
   [self checkPassword:response];

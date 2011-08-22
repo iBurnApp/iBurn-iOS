@@ -340,6 +340,7 @@
 }
 
 - (void) viewDidAppear:(BOOL)animated {
+  
   [super viewDidAppear:animated];
   if (tap) {
    [self home:nil];
