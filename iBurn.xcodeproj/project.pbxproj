@@ -143,6 +143,9 @@
 		A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F15FB51401BCBB004DCF90 /* SortableTable.m */; };
 		A0F15FC01401BE5D004DCF90 /* art-info.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15FBF1401BE5D004DCF90 /* art-info.json */; };
 		A0F160E81401F5FC004DCF90 /* UnlockViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F160E71401F5FC004DCF90 /* UnlockViewController.m */; };
+		A0F161531402043A004DCF90 /* CreditsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F161521402043A004DCF90 /* CreditsViewController.m */; };
+		A0F1617114020860004DCF90 /* gaia-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F1617014020860004DCF90 /* gaia-icon.png */; };
+		A0F16173140208B0004DCF90 /* earthnc-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16172140208B0004DCF90 /* earthnc-icon.png */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -439,6 +442,10 @@
 		A0F15FBF1401BE5D004DCF90 /* art-info.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "art-info.json"; sourceTree = "<group>"; };
 		A0F160E61401F5FC004DCF90 /* UnlockViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnlockViewController.h; sourceTree = "<group>"; };
 		A0F160E71401F5FC004DCF90 /* UnlockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnlockViewController.m; sourceTree = "<group>"; };
+		A0F161511402043A004DCF90 /* CreditsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreditsViewController.h; sourceTree = "<group>"; };
+		A0F161521402043A004DCF90 /* CreditsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CreditsViewController.m; sourceTree = "<group>"; };
+		A0F1617014020860004DCF90 /* gaia-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gaia-icon.png"; sourceTree = "<group>"; };
+		A0F16172140208B0004DCF90 /* earthnc-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "earthnc-icon.png"; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -745,6 +752,8 @@
 		57A016350F4965E2004F53D0 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				A0F16172140208B0004DCF90 /* earthnc-icon.png */,
+				A0F1617014020860004DCF90 /* gaia-icon.png */,
 				EA0F02A9121C07EB00EF6702 /* art-reverse.png */,
 				EA0F02AA121C07EB00EF6702 /* camps-reversed.png */,
 				EA0F02AB121C07EB00EF6702 /* events-reversed.png */,
@@ -880,6 +889,8 @@
 				EADDBBBD11D612640067BBE4 /* More */,
 				A0F160E61401F5FC004DCF90 /* UnlockViewController.h */,
 				A0F160E71401F5FC004DCF90 /* UnlockViewController.m */,
+				A0F161511402043A004DCF90 /* CreditsViewController.h */,
+				A0F161521402043A004DCF90 /* CreditsViewController.m */,
 			);
 			name = UserInterface;
 			path = ../UserInterface;
@@ -1213,6 +1224,8 @@
 				5044A8AD14009B5000E3CF6E /* tiles.json in Resources */,
 				A0F15F681401A436004DCF90 /* camps-info.json in Resources */,
 				A0F15FC01401BE5D004DCF90 /* art-info.json in Resources */,
+				A0F1617114020860004DCF90 /* gaia-icon.png in Resources */,
+				A0F16173140208B0004DCF90 /* earthnc-icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1327,6 +1340,7 @@
 				50C7DC8C14007F74006E8259 /* JSONKit.m in Sources */,
 				A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */,
 				A0F160E81401F5FC004DCF90 /* UnlockViewController.m in Sources */,
+				A0F161531402043A004DCF90 /* CreditsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

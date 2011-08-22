@@ -28,7 +28,7 @@
 #import "ArtNodeController.h"
 #import "EventNodeController.h"
 #import "RotatingTabBarController.h"
-#import "SortableTable.h"
+#import "UnlockViewController.h"
 
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>
@@ -60,7 +60,7 @@
                       [ArtTableViewController class],
                       [CampTableViewController class],
                       [EventTableViewController class],
-                      //[CarsTableViewController class],
+                      [UnlockViewController class],
                       //[PeopleTableViewController class],
                       //[TweetTableViewController class],
                       //[MessageTableViewController class],
@@ -69,7 +69,7 @@
                       //[NewsViewController class],
                       //[SyncViewController class],
                       nil];
-  NSArray *titles = [NSArray arrayWithObjects:@"Map",@"",@"",@"",nil];
+  NSArray *titles = [NSArray arrayWithObjects:@"Map",@"",@"",@"",@"",nil];
   //,@"",@"",@"",@"",@"",@"",@"",@"",
   int i = 0;
   id viewController;
