@@ -7,6 +7,7 @@
 //
 
 #import "ThemeCamp.h"
+#import "iBurnAppDelegate.h"
 
 #import "Favorite.h"
 
@@ -42,6 +43,25 @@
   NSString* simpleName = [[name componentsSeparatedByCharactersInSet:[ThemeCamp getNonAlphaNumericCharacterSet]] componentsJoinedByString:@""];
   
   return [simpleName lowercaseString];
+
+}
+
++ (ThemeCamp*) campForSimpleName:(NSString*) sName {
+  
+  
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
+  [fetchRequest setEntity:entity];
+  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simpleName = %@", sName];
+  [fetchRequest setPredicate:predicate];	
+  NSError *error;
+  NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error]retain];
+  	
+  if ([objects count] > 0) {
+    return [objects objectAtIndex:0];
+  }
+  return nil;
 
 }
 @end
