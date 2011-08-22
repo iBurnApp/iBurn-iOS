@@ -11,6 +11,7 @@
 #import "Favorite.h"
 
 @implementation ThemeCamp 
+@synthesize distanceAway;
 
 @dynamic zoom;
 @dynamic longitude;

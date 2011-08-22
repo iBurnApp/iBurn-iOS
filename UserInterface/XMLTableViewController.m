@@ -9,8 +9,79 @@
 #import "XMLTableViewController.h"
 #import "ThemeCamp.h"
 #import "iBurnAppDelegate.h"
+#import "MyCLController.h"
 
 @implementation XMLTableViewController
+
+- (void) sortByDistance { 
+	if (!objects) {
+		[self sortByName];
+	}
+	for (id object in objects) {
+		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
+		[object setDistanceAway:[loc distanceFromLocation:[MyCLController sharedInstance].locationManager.location]*0.000621371192];		
+	}
+	NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
+																																	ascending:YES] autorelease];
+	NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
+	NSArray * newObjects = [objects sortedArrayUsingDescriptors:sortDescriptors];
+	[objects release];
+	objects = [newObjects retain];
+}
+
+
+- (void) sortByNameForEntity:(NSString*)entityName { 
+	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName
+																											 inManagedObjectContext:moc];
+	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	[request setEntity:entityDescription];
+	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
+	[sort release];
+	NSError *error;
+	objects = [(NSMutableArray*)[moc executeFetchRequest:request error:&error]retain];
+	if(objects == nil) {
+		NSLog(@"Fetch failed with error: %@", error);
+	}	
+}
+
+
+- (void) sortByFavorites { 
+	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
+																											 inManagedObjectContext:moc];
+	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	[request setEntity:entityDescription];
+	NSError *error;
+	NSArray *favs = [moc executeFetchRequest:request error:&error];
+	if(favs == nil) {
+		NSLog(@"Fetch failed with error: %@", error);
+	}
+	[objects release];
+  objects = [[NSMutableArray alloc]init];
+	[self makeObjectsForFavs:favs];
+}
+
+
+
+
+- (void) sortTable:(id)sender {
+	switch ([sender selectedSegmentIndex]) {
+    case 0:  // name
+			[self sortByName];
+      break;
+    case 1:  // distance
+			[self sortByDistance];
+      break;
+    default: // favorites
+			[self sortByFavorites];
+      break;
+  }  
+  [self.tableView reloadData];
+}
 
 
 - (void) showOnMapForIndexPath {
@@ -32,7 +103,8 @@
 		sortControl.frame = fr;
 		sortControl.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 		sortControl.segmentedControlStyle = UISegmentedControlStyleBar;
-		sortControl.selectedSegmentIndex = 0;
+		[sortControl addTarget:self action:@selector(sortTable:) forControlEvents:UIControlEventValueChanged];
+
 		self.tableView.tableHeaderView = sortControl;
 		
 		
@@ -55,21 +127,7 @@
 }
 
 - (void) loadObjectsForEntity:(NSString *)entityName {
-  NSLog(@"loading %@", entityName);
-	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
-	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName 
-																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
-	[request setEntity:entityDescription];
-	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
-	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
-	[sort release];
-	NSError *error;
-	objects = [(NSMutableArray*)[moc executeFetchRequest:request error:&error]retain];
-	if(objects == nil) {
-		NSLog(@"Fetch failed with error: %@", error);
-	}
+	sortControl.selectedSegmentIndex = 0;
 }
 
 

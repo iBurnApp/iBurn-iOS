@@ -16,6 +16,20 @@
 
 //@synthesize mapDelegate;
 
+- (void) makeObjectsForFavs:(NSArray*)favs {
+	for (Favorite *f in favs) {
+		if ([f ThemeCamp]) {
+			[objects addObject:[f ThemeCamp]];
+		}
+	}
+}
+
+
+- (void) sortByName { 
+  [self sortByNameForEntity:@"ThemeCamp"];
+}
+
+
 - (void) requestDone {
   [super loadObjectsForEntity:@"ThemeCamp"];
   [self.tableView reloadData];
@@ -33,9 +47,6 @@
 		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0];
 		self.title = @"Camps";
 		[self.navigationItem setTitle:@"Theme Camps"];
-		/*if([objects count] == 0) {
-			[self loadCamps];
-		}*/
 	}
   return self;
 }

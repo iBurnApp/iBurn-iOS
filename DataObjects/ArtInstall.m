@@ -11,6 +11,7 @@
 #import "Favorite.h"
 
 @implementation ArtInstall 
+@synthesize distanceAway;
 
 @dynamic circularStreet;
 @dynamic zoom;

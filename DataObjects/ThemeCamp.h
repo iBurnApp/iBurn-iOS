@@ -12,8 +12,11 @@
 
 @interface ThemeCamp :  NSManagedObject  
 {
+	
+	float distanceAway;
 }
 
+@property (nonatomic, assign) float distanceAway;
 @property (nonatomic, retain) NSNumber * zoom;
 @property (nonatomic, retain) NSNumber * longitude;
 @property (nonatomic, retain) NSString * url;

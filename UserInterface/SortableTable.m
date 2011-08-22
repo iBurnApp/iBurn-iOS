@@ -37,9 +37,6 @@
 
 - (void) requestDone { }
 
-- (void) sortByDistance { }
-- (void) sortByName { }
-
 
 - (void) switchTables:(int)index {
 }

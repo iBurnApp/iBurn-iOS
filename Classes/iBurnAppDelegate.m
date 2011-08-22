@@ -64,12 +64,12 @@
                       //[PeopleTableViewController class],
                       //[TweetTableViewController class],
                       //[MessageTableViewController class],
-                      [FavoritesTableViewController class],
+                      //[FavoritesTableViewController class],
                       //[SettingsTableViewController class],
                       //[NewsViewController class],
                       //[SyncViewController class],
                       nil];
-  NSArray *titles = [NSArray arrayWithObjects:@"Map",@"",@"",@"",@"",nil];
+  NSArray *titles = [NSArray arrayWithObjects:@"Map",@"",@"",@"",nil];
   //,@"",@"",@"",@"",@"",@"",@"",@"",
   int i = 0;
   id viewController;

@@ -12,8 +12,10 @@
 
 @interface ArtInstall :  NSManagedObject  
 {
+	float distanceAway;
 }
 
+@property (nonatomic, assign) float distanceAway;
 @property (nonatomic, retain) NSString * timeAddress;
 
 @property (nonatomic, retain) NSNumber * circularStreet;

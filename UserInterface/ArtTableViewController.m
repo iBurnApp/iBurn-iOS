@@ -12,10 +12,23 @@
 #import "DetailTableCell.h"
 #import "iBurnAppDelegate.h"
 #import "RMMapView.h"
+#import "Favorite.h"
 
 @implementation ArtTableViewController
 
-//@synthesize mapDelegate;
+- (void) sortByName { 
+  [self sortByNameForEntity:@"ArtInstall"];
+}
+
+
+- (void) makeObjectsForFavs:(NSArray*)favs {
+	for (Favorite *f in favs) {
+		if ([f ArtInstall]) {
+			[objects addObject:[f ArtInstall]];
+		}
+	}
+}
+
 
 - (void) requestDone {
   [super loadObjectsForEntity:@"ArtInstall"];
@@ -61,25 +74,6 @@
 	[[self navigationController] pushViewController:artInfoView animated:YES];
 }
 
-/*- (void)loadArt {
-	art = [[NSMutableArray alloc] init];
-	NSArray *artArray = [[ArtInstall class] allObjects];
-	for(ArtInstall *ai in artArray) {
-		item = [[NSMutableDictionary alloc] init];
-		[item setValue:[NSNumber numberWithInt:ai.pk] forKey:@"primaryKey"];
-		[item setObject:ai.name forKey:@"name"];
-		if(ai.artist != NULL) {
-			NSString* artistString = [NSString stringWithFormat:@"by %@", ai.artist];
-			[item setObject:artistString forKey:@"artist"];
-		} else {
-			[item setObject:@"" forKey:@"artist"];
-		}
-		if(ai.latitude != NULL) {
-			[item setObject:ai.latitude forKey:@"latitude"];
-			[item setObject:ai.longitude forKey:@"longitude"];
-		}		
-		[art addObject:[item copy]];
-}*/
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	static NSString *MyIdentifier = @"MyIdentifier";
