@@ -90,8 +90,11 @@
 	passwordField.returnKeyType = UIReturnKeyDone;
   passwordField.autocapitalizationType = UITextAutocapitalizationTypeNone;
 	passwordField.delegate = self;
-	passwordField.secureTextEntry = YES;
-  passwordField.autocorrectionType = UITextAutocorrectionTypeNo;
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	if (![t embargoed]) {
+		passwordField.text = [t passwordText];
+	}
+	passwordField.autocorrectionType = UITextAutocorrectionTypeNo;
 	[self.view addSubview:passwordField];
 
 }

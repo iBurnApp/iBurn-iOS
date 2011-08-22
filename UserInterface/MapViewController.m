@@ -123,7 +123,7 @@
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
     GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]] autorelease];
-    [newMarker changeLabelUsingText:[camp name] 
+    [newMarker changeLabelUsingText:nil 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
                     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
@@ -132,6 +132,7 @@
     newMarker.data = @"Event";
     newMarker.waypointID = camp.name;
     newMarker.zoom = 17;
+		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
     
 	}
