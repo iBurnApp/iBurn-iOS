@@ -64,7 +64,7 @@
 	[marker setAffineTransform:rotationTransform];
 	[marker setProjectedLocation:[[contents projection]latLongToPoint:point]];
 	[marker setPosition:[[contents mercatorToScreenProjection] projectXYPoint:[[contents projection] latLongToPoint:point]]];
-	[[contents overlay] addSublayer:marker];
+	//[[contents overlay] addSublayer:marker];
 }
 
 /// \bug see http://code.google.com/p/route-me/issues/detail?id=75

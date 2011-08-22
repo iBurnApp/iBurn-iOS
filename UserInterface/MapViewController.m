@@ -55,62 +55,56 @@
 	[mapView.contents.markerManager showMarkersOnScreen];	
 }  
 
+- (NSArray*) getAllThemeCamps {  
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
+  [fetchRequest setEntity:entity];
+  
+  NSError *error;
+  NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
+  
+  return objects;
+}
 
 - (void) loadCamps {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  CGPoint tl = CGPointMake(-600, -900);
-  CGPoint br = CGPointMake(1200, 1800);
-	CLLocationCoordinate2D topLeft = [self.mapView.contents pixelToLatLong:tl];
-	CLLocationCoordinate2D bottomRight = [self.mapView.contents pixelToLatLong:br];
-  NSArray* camps;
-	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  camps = [[[[t campNodeController]getCampsForUpperLeft:topLeft lowerRight:bottomRight]retain]retain];
-  for (ThemeCamp* camp in camps) {
-    //NSLog(@"%@", camp.name);
+  [mapView.contents.markerManager setShowLabels:YES];
+  for (ThemeCamp* camp in [self getAllThemeCamps]) {
+  
   	NSString *imageName;
     imageName = @"camps.png";
-		//CLLocationCoordinate2D coord;
-		//coord.latitude = camp.latitude;
-		//coord.longitude = camp.longitude;
-		//[self.mapView addMarkerWithLabelAndData:place.name 
-    //                               andImage:[Constants getImage:imageName] 
-    //                             atLocation:coord
-    //                                   node:place];
+		CLLocationCoordinate2D coord;
+		coord.latitude = [camp.latitude floatValue];
+		coord.longitude = [camp.longitude floatValue];
+    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"camps.png"]] autorelease];
+    [newMarker changeLabelUsingText:[camp name] 
+                               font:[UIFont boldSystemFontOfSize:12.0] 
+                    foregroundColor:[UIColor blueColor] 
+                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+    newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
+                                       newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+    newMarker.data = @"ThemeCamp";
+    newMarker.waypointID = camp.simpleName;
+    newMarker.zoom = 16;
+    [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
+
 	}
-  [camps release];
-	[pool release];
 }
 
+ 
 
 
-- (void) fetchQuadrantAfterDelay {
-  if (--_needFetchQuadrant >= 1) return;
-  lastFetchedCenter = [self.mapView.contents mapCenter];
-	lastFetchedZoom = self.mapView.contents.zoom;
-  //float zoom = mapView.contents.zoom + 1;
-  //[[MAP_APP_DELEGATE mapNC] getNodes:self.lastCenter zoom:zoom];
-}	
-
-
-- (void) fetchQuadrant {
-  _needFetchQuadrant++;
-  [self performSelector:@selector(fetchQuadrantAfterDelay) withObject:nil afterDelay:0.2];
-}
-
-
-- (void) showMarkersAfterDelay {
-  if (--_markersNeedDisplay >= 1) return;
+- (void) showMarkersOnScreen {
   [(GaiaMarkerManager*)self.mapView.contents.markerManager showMarkersOnScreen];
 }
 
 
-- (void) showMarkersOnScreen {
-  _markersNeedDisplay++;
-  [self performSelector:@selector(showMarkersAfterDelay) withObject:nil afterDelay:0.2];  
-}
-
-
 - (void) tapOnMarker: (RMMarker*) marker onMap: (RMMapView*) map {
+  if ([marker.data isEqualToString:@"ThemeCamp"]) {
+    ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
+    self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
+
+  }
   if ([marker.data isKindOfClass:[ThemeCamp class]]) {
     self.detailView = [[CampInfoViewController alloc] initWithCamp:(ThemeCamp*)marker.data];
   } else if ([marker.data isKindOfClass:[ArtInstall class]]) {  
@@ -122,25 +116,8 @@
 }
 
 
-- (void) afterMapZoom: (RMMapView*) map byFactor: (float) zoomFactor near:(CGPoint) center {
-  [self showMarkersOnScreen];
-	if (abs(self.mapView.contents.zoom-lastFetchedZoom) >= 2) {
-		[self fetchQuadrant];
-	} else if (abs(self.mapView.contents.zoom-lastFetchedZoom) >= 1 &&
-						 abs(self.mapView.contents.zoom-lastFetchedZoom) < 2 ) {
-    [self showMarkersOnScreen];
-  }	
-}	
-
-
 - (void) afterMapTouch: (RMMapView*) map{
-  if (abs(self.mapView.contents.zoom - lastFetchedZoom) > 1) return;
-	CGPoint center = CGPointMake(mapView.frame.size.width/2, mapView.frame.size.height/2);
-	CGPoint prevCenter = [self.mapView.contents latLongToPixel:lastFetchedCenter];
-	if (abs(prevCenter.x - center.x) >= 800
-      || abs(prevCenter.y - center.y) >=  1200) {
-		[self fetchQuadrant];
-	} else {
+    if ([RMMapContents performExpensiveOperations]) {
     [self showMarkersOnScreen];
   }
 }
@@ -151,6 +128,7 @@
 
 - (MapViewController *)initWithTitle: (NSString *) aTitle {
 	self = [super init];
+ 
   lastFetchedZoom = 0.0;
   _needFetchQuadrant = 0;
   _markersNeedDisplay = 0;
@@ -185,6 +163,8 @@
 											   style:UIBarButtonItemStylePlain
 											   target:self
 											   action:@selector(redownloadMaps:)] autorelease];
+  
+ [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
 
   return self;
 }
@@ -257,12 +237,13 @@
   [mapView.contents setTileSource:cts];
   [mapView setBackgroundColor:[UIColor blackColor]];
   self.view = mapView;
-  [self fetchQuadrant];
   self.progressView = [[[UIProgressView alloc] 
                         initWithProgressViewStyle:UIProgressViewStyleBar]autorelease];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
+  [self loadCamps];
+
 }
 
 

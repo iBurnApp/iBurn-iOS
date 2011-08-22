@@ -11,7 +11,7 @@
 #import "RMMapContents.h"
 #import "RMLayerCollection.h"
 
-#define MAX_LABELS_TO_SHOW ([[UIScreen mainScreen] applicationFrame].size.height * [[UIScreen mainScreen] applicationFrame].size.width)/15360
+#define MAX_LABELS_TO_SHOW ([[UIScreen mainScreen] applicationFrame].size.height * [[UIScreen mainScreen] applicationFrame].size.width)/30360
 
 
 @implementation GaiaMarkerManager
@@ -89,7 +89,8 @@
 	CGPoint markerCoord = [self screenCoordinatesForMarker:marker];	
 	CGRect rect;
 	rect = [[contents mercatorToScreenProjection] screenBounds];
-	return CGRectContainsPoint(rect, markerCoord) && marker.zoom <= contents.zoom;
+  
+	return CGRectContainsPoint(rect, markerCoord) && (float)marker.zoom <= (float) contents.zoom;
 }
 
 

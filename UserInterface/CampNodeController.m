@@ -26,6 +26,7 @@
   
 	return objects;
 }
+
 - (void) importDataFromFile:(NSString*)filename {
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
