@@ -102,11 +102,9 @@
 - (void) saveObjects:(NSArray*)objects {
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t bgMoc];
-  [objects retain];
+  NSManagedObjectContext *moc = [t managedObjectContext];
   NSError *error;
   if (![moc save:&error]) {}
-  [objects release];
   [pool release];
 }
 
@@ -116,7 +114,7 @@
             forClassName:(NSString*)className 
 								fromFile:(BOOL)fromFile {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t bgMoc];
+  NSManagedObjectContext *moc = [t managedObjectContext];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
 		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
@@ -199,7 +197,7 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 
-  NSManagedObjectContext* moc = [t bgMoc];
+  NSManagedObjectContext* moc = [t managedObjectContext];
   
 	NSError *error;
 	NSData *jsonData = [[request responseString] dataUsingEncoding:NSUTF32BigEndianStringEncoding];	
@@ -220,7 +218,8 @@
 
 - (void)requestDone:(ASIHTTPRequest *)request {
   //NSLog(@"response is %@", [request responseString]); 
-  [NSThread detachNewThreadSelector:@selector(processJSONThreaded:) toTarget:self withObject:request];
+  [self processJSONThreaded:request];
+  //[NSThread detachNewThreadSelector:@selector(processJSONThreaded:) toTarget:self withObject:request];
 }
 
 

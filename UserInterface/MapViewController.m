@@ -55,10 +55,10 @@
 	[mapView.contents.markerManager showMarkersOnScreen];	
 }  
 
-- (NSArray*) getAllThemeCamps {  
+- (NSArray*) getAllObjects:(NSString*) objType {  
   NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
+  NSEntityDescription *entity = [NSEntityDescription entityForName:objType inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
   
   NSError *error;
@@ -68,8 +68,7 @@
 }
 
 - (void) loadCamps {
-  [mapView.contents.markerManager setShowLabels:YES];
-  for (ThemeCamp* camp in [self getAllThemeCamps]) {
+  for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
   
   	NSString *imageName;
     imageName = @"camps.png";
@@ -91,6 +90,62 @@
 	}
 }
 
+- (void) loadArt {
+  for (ArtInstall* camp in [self getAllObjects:@"ArtInstall"]) {
+    
+		CLLocationCoordinate2D coord;
+		coord.latitude = [camp.latitude floatValue];
+		coord.longitude = [camp.longitude floatValue];
+    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]] autorelease];
+    [newMarker changeLabelUsingText:[camp name] 
+                               font:[UIFont boldSystemFontOfSize:12.0] 
+                    foregroundColor:[UIColor blueColor] 
+                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+    newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
+                                       newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+    newMarker.data = @"ArtInstall";
+    newMarker.waypointID = [camp name];
+    newMarker.zoom = 16;
+    [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
+    
+	}
+}
+
+
+- (void) loadEvents {
+  //TODO change to today
+  for (ThemeCamp* camp in [Event eventsForDay:@"02"]) {
+    
+  	NSString *imageName;
+    imageName = @"camps.png";
+		CLLocationCoordinate2D coord;
+		coord.latitude = [camp.latitude floatValue];
+		coord.longitude = [camp.longitude floatValue];
+    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"camps.png"]] autorelease];
+    [newMarker changeLabelUsingText:[camp name] 
+                               font:[UIFont boldSystemFontOfSize:12.0] 
+                    foregroundColor:[UIColor blueColor] 
+                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+    newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
+                                       newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+    newMarker.data = @"Event";
+    newMarker.waypointID = camp.name;
+    newMarker.zoom = 16;
+    [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
+    
+	}
+}
+
+- (void) loadMarkers {
+  [mapView.contents.markerManager removeMarkers];
+  [mapView.contents.markerManager setShowLabels:YES];
+
+  [self loadEvents];
+  [self loadArt];
+  [self loadCamps];
+}
+
+
  
 
 
@@ -105,14 +160,17 @@
     self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
 
   }
-  if ([marker.data isKindOfClass:[ThemeCamp class]]) {
-    self.detailView = [[CampInfoViewController alloc] initWithCamp:(ThemeCamp*)marker.data];
-  } else if ([marker.data isKindOfClass:[ArtInstall class]]) {  
-    self.detailView = [[ArtInfoViewController alloc] initWithArt:(ArtInstall*)marker.data];
-  } else if ([marker.data isKindOfClass:[Event class]]) {  
-    self.detailView = [[EventInfoViewController alloc] initWithEvent:(Event*)marker.data];
+  if ([marker.data isEqualToString:@"ArtInstall"]) {
+    ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
+    self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
+    
   }
-	[self.navigationController pushViewController:detailView animated:YES];	
+  if ([marker.data isEqualToString:@"Event"]) {
+    Event * event = [Event eventForName:[marker waypointID]];
+    self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
+    
+  }
+  [self.navigationController pushViewController:detailView animated:YES];	
 }
 
 
@@ -242,7 +300,7 @@
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
-  [self loadCamps];
+  [self loadMarkers];
 
 }
 

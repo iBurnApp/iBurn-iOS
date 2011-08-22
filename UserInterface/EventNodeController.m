@@ -10,6 +10,7 @@
 #import "Event.h"
 #import "iBurnAppDelegate.h"
 #import "util.h"
+#import "ThemeCamp.h"
 
 @implementation EventNodeController
 @synthesize eventDateHash;
@@ -59,6 +60,7 @@
 }	
 
 
+
 - (void) addEventToHash:(Event*)event {
   static NSDateFormatter *dateFormatter = nil;
   if (dateFormatter == nil) {
@@ -92,6 +94,8 @@
     NSDictionary* times =  (NSDictionary*)[occurrenceSet objectAtIndex:0];
     NSDate *startTime = [self getDateFromString:[times objectForKey:@"start_time"]];
     event.startTime = startTime;
+    event.day = [Event getDay:event.startTime];
+
     event.endTime = [self getDateFromString:[times objectForKey:@"end_time"]];
     [self addEventToHash:event];
   }
@@ -99,6 +103,11 @@
   NSDictionary* hostDict =  (NSDictionary*)[self nullOrObject:[dict objectForKey:@"hosted_by_camp"]];
   if (!hostDict) return;
   event.campHost = [hostDict objectForKey:@"name"];
+  NSString* campSimpleName = [ThemeCamp createSimpleName:event.campHost];
+  ThemeCamp* camp = [ThemeCamp campForSimpleName:campSimpleName];
+  NSLog(@"camp match %@ %@", [camp name], camp.latitude);
+  event.latitude = camp.latitude;
+  event.longitude = camp.longitude;
   event.camp_id = N([[hostDict objectForKey:@"id"] intValue]);
 }
 
@@ -137,7 +146,7 @@
              withObjects:(NSArray*)objects 
             forClassName:(NSString*)className {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t bgMoc];
+  NSManagedObjectContext *moc = [t managedObjectContext];
   //[self.eventDateHash removeAllObjects];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;

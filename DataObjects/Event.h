@@ -30,7 +30,10 @@
 
 @property (nonatomic, retain) NSNumber * longitude;
 @property (nonatomic, retain) NSNumber * latitude;
-@property (nonatomic, retain) NSNumber * day;
+@property (nonatomic, retain) NSString * day;
+
++ (NSArray*) eventsForDay:(NSString*) day;
+
 @end
 
 
