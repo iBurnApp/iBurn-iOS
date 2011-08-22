@@ -92,7 +92,7 @@
 	passwordField.delegate = self;
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	if (![t embargoed]) {
-		passwordField.text = [t passwordText];
+		passwordField.text = [t getStoredPassword];
 	}
 	passwordField.autocorrectionType = UITextAutocorrectionTypeNo;
 	[self.view addSubview:passwordField];
