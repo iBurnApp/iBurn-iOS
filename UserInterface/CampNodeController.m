@@ -146,11 +146,10 @@
       }
     }
 		if (fromFile) {
-      [self updateObjectFromFile:matchedCamp withDict:[dict retain]];
+      [self updateObjectFromFile:matchedCamp withDict:dict];
 		} else {
-      [self updateObject:matchedCamp withDict:[dict retain]];
+      [self updateObject:matchedCamp withDict:dict];
 		}
-    [dict release];
   }
   [self saveObjects:knownObjects];
 }  

@@ -84,7 +84,7 @@
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"ThemeCamp";
     newMarker.waypointID = camp.simpleName;
-    newMarker.zoom = 17;
+    newMarker.zoom = 19;
 		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
 
@@ -118,12 +118,11 @@
   //TODO change to today
   for (ThemeCamp* camp in [Event eventsForDay:@"02"]) {
     
-  	NSString *imageName;
-    imageName = @"camps.png";
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
+    if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
-    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"camps.png"]] autorelease];
+    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]] autorelease];
     [newMarker changeLabelUsingText:[camp name] 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
