@@ -22,15 +22,15 @@
 		return nil;
   bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 40.802822, .longitude = -119.172673}, 
     .southwest = {.latitude = 40.759210, .longitude = -119.23454}});
-  /*bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 46.816, .longitude = -92.0}, 
-    .southwest = {.latitude = 46.700, .longitude = -92.156}});*/
+  //bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 46.816, .longitude = -92.0}, 
+  //  .southwest = {.latitude = 35.700, .longitude = -125.156}});
    
   sourceMinZoom = 8;
   self.uniqueTilecacheKey = @"iBurn";
   self.shortName = @"iBurn";
   self.reverseY = YES;
   self.longDescription = @"Tiles description";
-  self.minZoom = 10;
+  self.minZoom = 5;
   self.maxZoom = 18;
   //self.tileURL = @"http://earthdev.burningman.com/osm_tiles_2010/ZPARAM/XPARAM/YPARAM.png";
   self.tileURL = @"http://iburn.s3.amazonaws.com/ZPARAM/XPARAM/YPARAM.png";\
@@ -43,7 +43,9 @@
 }
 
 - (NSString*)getTileURLForX:(int)x forY:(int)y forZ:(int)z {
-
+  //return [NSString 
+  //        stringWithFormat:@"http://tile.openstreetmap.org/%d/%d/%d.png", z, x, y];
+  
   NSString * result = [tileURL stringByReplacingOccurrencesOfString:@"XPARAM" 
                                                          withString:[N(x) stringValue]];
   result = [result stringByReplacingOccurrencesOfString:@"YPARAM" 
@@ -61,8 +63,8 @@
   int x = tile.x;
   
   int maxY = 1 << tile.zoom;
-  maxY = maxY - y - 1;
-  return [self getTileURLForX:tile.x forY:maxY forZ:tile.zoom];
+  y = maxY - y - 1;
+  return [self getTileURLForX:tile.x forY:y forZ:tile.zoom];
 }
 
 -(NSString *) tileFile: (RMTile) tile {
@@ -71,7 +73,7 @@
 
   NSString *bundlePath = [[[NSBundle mainBundle] resourcePath]
                                    stringByAppendingPathComponent:path];
-  NSLog(bundlePath);
+  //NSLog(bundlePath);
   
   return bundlePath;
   

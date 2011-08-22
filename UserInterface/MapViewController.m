@@ -84,7 +84,11 @@
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"ThemeCamp";
     newMarker.waypointID = camp.simpleName;
+    
     newMarker.zoom = 19;
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES && [[UIScreen mainScreen] scale] == 2.00) {
+      newMarker.zoom = 18;
+    }
 		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
 
@@ -181,8 +185,12 @@
 
 
 - (void) afterMapTouch: (RMMapView*) map{
-    if ([RMMapContents performExpensiveOperations]) {
+  if ([RMMapContents performExpensiveOperations]) {
     [self showMarkersOnScreen];
+  }
+  
+  if (isCurrentlyUpdating) {
+    [self startLocation:nil];
   }
 }
 
@@ -286,6 +294,10 @@
     isCurrentlyUpdating = NO;
     locationButton.tintColor = [UIColor darkGrayColor];
   } else {
+    if (currentLocationMarker) {
+      CLLocationCoordinate2D coord = [[[[MyCLController sharedInstance] locationManager] location] coordinate];
+      [self.mapView.contents moveToLatLong:coord];
+    }
     isCurrentlyUpdating = YES;
     locationButton.tintColor = [UIColor redColor];      
   }
