@@ -272,7 +272,7 @@
 #pragma mark Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	if (events == nil) {
+	if (events == nil || [events count] == 0) {
 		return;
 	} 
 	int eventIndex = [indexPath indexAtPosition: [indexPath length] - 1];
