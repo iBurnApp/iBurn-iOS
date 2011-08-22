@@ -31,6 +31,7 @@
 #import "SortableTable.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "UnlockViewController.h"
+#import "ASIHTTPRequest.h"
 
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>
@@ -169,7 +170,7 @@
   [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) 
                                                name: kReachabilityChangedNotification object:reachability];
   //[self initializeOAuthConsumer];
-  [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:5];
+  [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:2];
 }
 
 /*- (void) requestDone {
@@ -306,15 +307,31 @@
   
 }
 
+#define CORRECT_HASH  @"BDA9FC0AA157041DAE976FAA3BD63E46"
+
 - (BOOL) checkPassword:(NSString*) password {
   //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah
-  if ([password isEqualToString:@"tenuki"]) {
+  NSLog(@"mdf password %@", [iBurnAppDelegate md5:password]);
+  NSString* hash = [iBurnAppDelegate md5:password];
+  if ([hash isEqualToString:CORRECT_HASH]) {
     [password writeToFile:[self passwordFile] atomically:YES];
     [self liftEmbargo];
     return YES;
   }
   return NO;
 }
+
+
+- (void)requestDone:(ASIHTTPRequest *)request {
+  NSString *response = [request responseString];
+  [self checkPassword:response];
+}
+
+
+- (void)requestWentWrong:(ASIHTTPRequest *)request {
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkEmbargo) name:kReachabilityChangedNotification object:reachability];
+}
+
 
 - (void) checkEmbargo {
   NSLog(@"%@", [self passwordFile]);
@@ -325,17 +342,21 @@
     return;
   }
   
+  [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
+  
   if ([self canConnectToInternet]) {
     NSURL *url = [NSURL URLWithString:@"http://www.gaiagps.com/iburn/embargo"];
     ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
-    [request startSynchronous];
-    NSError *error = [request error];
-    if (!error) {
-      NSString *response = [request responseString];
-      [self checkPassword:response];
-    }
+    [request setDidFinishSelector:@selector(requestDone:)];
+		[request setDidFailSelector:@selector(requestWentWrong:)];
+    [request setDelegate:self];
+    [request startAsynchronous];
+     
+  } else {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkEmbargo) name:kReachabilityChangedNotification object:reachability];  
   }
 }
+
 
 
 #pragma mark -
