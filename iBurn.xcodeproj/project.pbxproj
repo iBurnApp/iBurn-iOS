@@ -181,8 +181,6 @@
 		EA0F02AC121C07EB00EF6702 /* art-reverse.png in Resources */ = {isa = PBXBuildFile; fileRef = EA0F02A9121C07EB00EF6702 /* art-reverse.png */; };
 		EA0F02AD121C07EB00EF6702 /* camps-reversed.png in Resources */ = {isa = PBXBuildFile; fileRef = EA0F02AA121C07EB00EF6702 /* camps-reversed.png */; };
 		EA0F02AE121C07EB00EF6702 /* events-reversed.png in Resources */ = {isa = PBXBuildFile; fileRef = EA0F02AB121C07EB00EF6702 /* events-reversed.png */; };
-		EA0FFF16121BC92F00EF6702 /* ipadImage-Landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = EA0FFF13121BC92F00EF6702 /* ipadImage-Landscape.png */; };
-		EA0FFF17121BC92F00EF6702 /* ipadImage-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = EA0FFF14121BC92F00EF6702 /* ipadImage-Portrait.png */; };
 		EA0FFF2D121BCB9300EF6702 /* RotatingTabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = EA0FFF2B121BCB9300EF6702 /* RotatingTabBarController.m */; };
 		EA0FFF53121BD0F100EF6702 /* map-download-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EA0FFF52121BD0F100EF6702 /* map-download-icon.png */; };
 		EA379F26121B68D90091E9C3 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = EA379F20121B68D90091E9C3 /* User.m */; };
@@ -506,8 +504,6 @@
 		EA0F02A9121C07EB00EF6702 /* art-reverse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "art-reverse.png"; sourceTree = "<group>"; };
 		EA0F02AA121C07EB00EF6702 /* camps-reversed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camps-reversed.png"; sourceTree = "<group>"; };
 		EA0F02AB121C07EB00EF6702 /* events-reversed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "events-reversed.png"; sourceTree = "<group>"; };
-		EA0FFF13121BC92F00EF6702 /* ipadImage-Landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ipadImage-Landscape.png"; sourceTree = "<group>"; };
-		EA0FFF14121BC92F00EF6702 /* ipadImage-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ipadImage-Portrait.png"; sourceTree = "<group>"; };
 		EA0FFF2B121BCB9300EF6702 /* RotatingTabBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RotatingTabBarController.m; path = ../Classes/RotatingTabBarController.m; sourceTree = "<group>"; };
 		EA0FFF2C121BCB9300EF6702 /* RotatingTabBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RotatingTabBarController.h; path = ../Classes/RotatingTabBarController.h; sourceTree = "<group>"; };
 		EA0FFF52121BD0F100EF6702 /* map-download-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "map-download-icon.png"; sourceTree = "<group>"; };
@@ -793,8 +789,6 @@
 				EA0F02AA121C07EB00EF6702 /* camps-reversed.png */,
 				EA0F02AB121C07EB00EF6702 /* events-reversed.png */,
 				EA0FFF52121BD0F100EF6702 /* map-download-icon.png */,
-				EA0FFF13121BC92F00EF6702 /* ipadImage-Landscape.png */,
-				EA0FFF14121BC92F00EF6702 /* ipadImage-Portrait.png */,
 				EA37A445121BC0170091E9C3 /* locate-icon@2x.png */,
 				EA37A446121BC0170091E9C3 /* locate-icon.png */,
 				EA37A3AE121BAD8F0091E9C3 /* red-pin-down@2x.png */,
@@ -1244,8 +1238,6 @@
 				EA37A3B1121BAD8F0091E9C3 /* red-pin-down.png in Resources */,
 				EA37A447121BC0170091E9C3 /* locate-icon@2x.png in Resources */,
 				EA37A448121BC0170091E9C3 /* locate-icon.png in Resources */,
-				EA0FFF16121BC92F00EF6702 /* ipadImage-Landscape.png in Resources */,
-				EA0FFF17121BC92F00EF6702 /* ipadImage-Portrait.png in Resources */,
 				EA0FFF53121BD0F100EF6702 /* map-download-icon.png in Resources */,
 				EA0F02AC121C07EB00EF6702 /* art-reverse.png in Resources */,
 				EA0F02AD121C07EB00EF6702 /* camps-reversed.png in Resources */,
