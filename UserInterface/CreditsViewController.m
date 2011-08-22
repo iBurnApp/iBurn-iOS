@@ -7,8 +7,19 @@
 
 #import "CreditsViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import "PageViewer.h"
 
 @implementation CreditsViewController
+
+
+- (void)mailComposeController:(MFMailComposeViewController*)controller  
+          didFinishWithResult:(MFMailComposeResult)result 
+                        error:(NSError*)error {
+  if (result == MFMailComposeResultSent) {
+  	
+  }
+  [self dismissModalViewControllerAnimated:YES];
+}
 
 
 - (void) addTextRowWithTitle:(NSString*)titleText 
@@ -69,7 +80,7 @@
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView {
 	[super loadView];
-		
+	didLoad = NO;
 	[self addImageRowWithTitle:@"App Dev" 
 												bodyText:@"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS."
 									 imageName:@"gaia-icon.png"
@@ -96,17 +107,36 @@
 
 	UIWebView *wv = [[[UIWebView alloc]initWithFrame:CGRectMake(0, 280, 
 																															self.view.frame.size.width, 120)]autorelease];
-	
-	[self.view addSubview:wv];
 		
 	NSString *html = @"<ul><li><b><a href=mailto:iburn@gaiagps.com>Email the devs.</a></b> " 
 	"<li><b><a href=http://github.com/trailbehind/iBurn-2011>Source code (after gates open).</a></b>"  
-	"<li><b><a href=http://www.burningmap.org>View the map online.</a></b></ul>";  
+	"<li><b><a href=http://www.burningmap.org>View the map on the web.</a></b></ul>";  
 	[wv loadHTMLString:html baseURL:nil]; 
+	[self.view addSubview:wv];
 
+	wv.delegate = self;
 	
 
 }
+
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+	if (!didLoad) {
+		didLoad = YES;
+		return YES;
+	}
+	
+	if ([[[request URL]absoluteString]hasPrefix:@"mailto"]) {
+		MFMailComposeViewController* controller = [[[MFMailComposeViewController alloc] init]autorelease];
+		controller.mailComposeDelegate = self;
+		[controller setSubject:@"iBurn 2011 Feedback"];
+		[self presentModalViewController:controller animated:YES];
+		return NO;		
+	}
+	PageViewer *p = [[[PageViewer alloc]initForString:[[request URL]absoluteString]]autorelease];
+	[self.navigationController pushViewController:p animated:YES];
+	return NO;
+}
+
 
 /*
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
