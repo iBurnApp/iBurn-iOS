@@ -28,6 +28,8 @@
 #import "ArtNodeController.h"
 #import "EventNodeController.h"
 #import "RotatingTabBarController.h"
+#import "SortableTable.h"
+#import <CommonCrypto/CommonDigest.h>
 #import "UnlockViewController.h"
 
 //#import <JSON/JSON.h>
@@ -35,7 +37,7 @@
 
 @implementation iBurnAppDelegate
 
-@synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController;
+@synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController, embargoed;
 
 
 - (NSString*) documentsDirectory {
@@ -109,7 +111,7 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
   [self initControllers];
-	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.0];
+	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
 }
 
 
@@ -159,7 +161,7 @@
 - (void)postLaunch {
 	if (!launchDefault) return;
   //reachability = [[Reachability reachabilityWithHostName:@"earthdev.burningman.com"] retain];
-  reachability = [[Reachability reachabilityWithHostName:@"playaevents.burningman.com"] retain];
+  reachability = [[Reachability reachabilityWithHostName:@"www.gaiagps.com"] retain];
   
 	[reachability startNotifier];
   [self canConnectToInternet];
@@ -167,6 +169,7 @@
   [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) 
                                                name: kReachabilityChangedNotification object:reachability];
   //[self initializeOAuthConsumer];
+  [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:5];
 }
 
 /*- (void) requestDone {
@@ -209,21 +212,6 @@
 	}
 	return managedObjectContext_;
 }
-
-- (NSManagedObjectContext *)bgMoc {
-	
-	if (bgMoc_ != nil) {
-		return bgMoc_;
-	}
-	
-	NSPersistentStoreCoordinator *coordinator = [self createPersistentStoreCoordinator];
-	if (coordinator != nil) {
-		bgMoc_ = [[NSManagedObjectContext alloc] init];
-		[bgMoc_ setPersistentStoreCoordinator:coordinator];
-	}
-	return bgMoc_;
-}
-
 
 
 /**
@@ -293,6 +281,61 @@
 	return psc;
 }
 
+#pragma mark - enforce embargo
+
++ (NSString *) md5:(NSString *)str {
+  const char *cStr = [str UTF8String];
+  unsigned char result[16];
+  CC_MD5( cStr, strlen(cStr), result );
+  return [NSString stringWithFormat:
+          @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+          result[0], result[1], result[2], result[3], 
+          result[4], result[5], result[6], result[7],
+          result[8], result[9], result[10], result[11],
+          result[12], result[13], result[14], result[15]
+          ]; 
+}
+
+- (void) liftEmbargo {
+  self.embargoed = NO;
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"LIFT_EMBARGO" object:nil];
+}
+
+- (NSString*) passwordFile {
+  return [NSString stringWithFormat:@"%@/password", [self applicationDocumentsDirectory]];
+  
+}
+
+- (BOOL) checkPassword:(NSString*) password {
+  //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah
+  if ([password isEqualToString:@"tenuki"]) {
+    [password writeToFile:[self passwordFile] atomically:YES];
+    [self liftEmbargo];
+    return YES;
+  }
+  return NO;
+}
+
+- (void) checkEmbargo {
+  NSLog(@"%@", [self passwordFile]);
+
+  if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
+    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile]];
+    [self checkPassword:password];
+    return;
+  }
+  
+  if ([self canConnectToInternet]) {
+    NSURL *url = [NSURL URLWithString:@"http://www.gaiagps.com/iburn/embargo"];
+    ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
+    [request startSynchronous];
+    NSError *error = [request error];
+    if (!error) {
+      NSString *response = [request responseString];
+      [self checkPassword:response];
+    }
+  }
+}
 
 
 #pragma mark -

@@ -17,7 +17,6 @@
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *artArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
-	NSLog(@"The art array is %@", artArray);
   CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownArts = [self getObjectsForType:@"ArtInstall" 
 																				 names:[self getNamesFromDicts:artArray] 
