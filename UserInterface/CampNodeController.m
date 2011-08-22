@@ -63,10 +63,12 @@
 	camp.latitude = [dict objectForKey:@"Latitude"];
 	camp.longitude = [dict objectForKey:@"Longitude"];
 
-	camp.desc = [dict objectForKey:@"description"];
-	camp.url = [dict objectForKey:@"url"];
-	camp.contactEmail = [dict objectForKey:@"contact"];
-	camp.location = [dict objectForKey:@"hometown"];
+  if ([dict objectForKey:@"description"]) {
+    camp.desc = [dict objectForKey:@"description"];
+    camp.url = [dict objectForKey:@"url"];
+    camp.contactEmail = [dict objectForKey:@"contact"];
+    camp.location = [dict objectForKey:@"hometown"];
+  }
 
 }
 
@@ -107,7 +109,7 @@
             forClassName:(NSString*)className 
 								fromFile:(BOOL)fromFile {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t bgMoc];
+  NSManagedObjectContext *moc = [t managedObjectContext];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
     NSString* name = [self nullOrObject:[dict objectForKey:@"title"]];

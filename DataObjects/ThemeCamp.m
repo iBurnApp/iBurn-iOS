@@ -56,7 +56,7 @@
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simpleName = %@", sName];
   [fetchRequest setPredicate:predicate];	
   NSError *error;
-  NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error]retain];
+  NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
   	
   if ([objects count] > 0) {
     return [objects objectAtIndex:0];
