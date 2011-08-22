@@ -105,10 +105,10 @@
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
-  [self checkOrCreateDatabase];
-  [campNodeController getNodes];
-  [artNodeController getNodes];
-  [eventNodeController getNodes];
+  //[self checkOrCreateDatabase];
+  //[campNodeController getNodes];
+  //[artNodeController getNodes];
+  //[eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {

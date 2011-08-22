@@ -15,6 +15,8 @@
 		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
 		4E99497212063C6A00F410EF /* iBurn.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4E99497112063C6A00F410EF /* iBurn.xcdatamodel */; };
 		5044A8AD14009B5000E3CF6E /* tiles.json in Resources */ = {isa = PBXBuildFile; fileRef = 5044A8AC14009B5000E3CF6E /* tiles.json */; };
+		507380CB140257F400B127EE /* iBurn.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 507380CA140257F400B127EE /* iBurn.sqlite */; };
+		507380CF1402597200B127EE /* tiles in Resources */ = {isa = PBXBuildFile; fileRef = 507380CE1402597200B127EE /* tiles */; };
 		50B8EDCB121BB1EF0093E402 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC6121BB1EF0093E402 /* Event.m */; };
 		50B8EDCC121BB1EF0093E402 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC8121BB1EF0093E402 /* ArtInstall.m */; };
 		50B8EDCD121BB1EF0093E402 /* ThemeCamp.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDCA121BB1EF0093E402 /* ThemeCamp.m */; };
@@ -236,6 +238,8 @@
 		32CA4F630368D1EE00C91783 /* iBurn_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iBurn_Prefix.pch; sourceTree = "<group>"; };
 		4E99497112063C6A00F410EF /* iBurn.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = iBurn.xcdatamodel; sourceTree = "<group>"; };
 		5044A8AC14009B5000E3CF6E /* tiles.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tiles.json; sourceTree = "<group>"; };
+		507380CA140257F400B127EE /* iBurn.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = iBurn.sqlite; sourceTree = "<group>"; };
+		507380CE1402597200B127EE /* tiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tiles; sourceTree = "<group>"; };
 		50B8EDC5121BB1EF0093E402 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = ../DataObjects/Event.h; sourceTree = "<group>"; };
 		50B8EDC6121BB1EF0093E402 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Event.m; sourceTree = "<group>"; };
 		50B8EDC7121BB1EF0093E402 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
@@ -583,6 +587,8 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				507380CE1402597200B127EE /* tiles */,
+				507380CA140257F400B127EE /* iBurn.sqlite */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
 				A0F15FBF1401BE5D004DCF90 /* art-info.json */,
 				A0F15F671401A436004DCF90 /* camps-info.json */,
@@ -1267,6 +1273,8 @@
 				A0F1681F140C59C2004DCF90 /* lock-icon.png in Resources */,
 				A0F16863140C5EB5004DCF90 /* green-pin-down.png in Resources */,
 				A0F16864140C5EB5004DCF90 /* green-pin-down@2x.png in Resources */,
+				507380CB140257F400B127EE /* iBurn.sqlite in Resources */,
+				507380CF1402597200B127EE /* tiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

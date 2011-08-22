@@ -62,11 +62,19 @@
   
   int maxY = 1 << tile.zoom;
   maxY = maxY - y - 1;
- 	
   return [self getTileURLForX:tile.x forY:maxY forZ:tile.zoom];
 }
 
 -(NSString *) tileFile: (RMTile) tile {
+  NSString* path = [NSString stringWithFormat:@"%@/%d/%d/%d",
+                    @"tiles", tile.zoom, tile.x, tile.y];
+
+  NSString *bundlePath = [[[NSBundle mainBundle] resourcePath]
+                                   stringByAppendingPathComponent:path];
+  NSLog(bundlePath);
+  
+  return bundlePath;
+  
   NSString* tilePath = [NSString stringWithFormat:@"%@%d/%d/%d",
                         tileDirectory, tile.zoom, tile.x, tile.y];
 }
