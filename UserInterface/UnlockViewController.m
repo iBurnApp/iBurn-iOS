@@ -39,7 +39,7 @@
 
 - (id)init {
 	if(self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0];
+		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"lock-icon.png"] tag:0];
 		self.title = @"Unlock";
 		[self.navigationItem setTitle:@"Unlock"];
 	}
@@ -76,7 +76,7 @@
 	
 	UIWebView *infoLabel = [[[UIWebView alloc]initWithFrame:fr]autorelease];
 	infoLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	[infoLabel loadHTMLString:@"The art and camp locations are embargoed until gates open.<BR><BR>At that time, you can access the location data either by being able to connect to our server (it will just work), or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a>." baseURL:nil];
+	[infoLabel loadHTMLString:@"The art and camp locations are embargoed until gates open, and even then, the data is incomplete.<BR><BR>At that time, you can access the location data either by being able to connect to our server (it will just work), or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a>." baseURL:nil];
 	infoLabel.delegate = self;
 	[self.view addSubview:infoLabel];
 	

@@ -86,7 +86,7 @@
       viewController = [[[vcClass alloc]initWithTitle:title]autorelease];
     }
     UINavigationController *nav = [[[UINavigationController alloc]initWithRootViewController:viewController]autorelease];  
-    nav.navigationBar.tintColor = [UIColor blackColor];
+    nav.navigationBar.barStyle = UIBarStyleBlack;
     [controllers addObject:nav];
     i++;
   }

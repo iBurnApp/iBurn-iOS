@@ -117,6 +117,9 @@
 		CGRect fr = sortControl.frame;
 		fr.size.width = self.view.frame.size.width;
 		sortControl.frame = fr;
+		
+		sortControl.tintColor = [UIColor colorWithRed:35/255.0f green:97/255.0f blue:222/255.0f alpha:1];
+		sortControl.backgroundColor = [UIColor blackColor];
 		sortControl.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 		sortControl.segmentedControlStyle = UISegmentedControlStyleBar;
 		[sortControl addTarget:self action:@selector(sortTable:) forControlEvents:UIControlEventValueChanged];
