@@ -228,7 +228,7 @@
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D3623240D0F684500981E51 /* iBurnAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iBurnAppDelegate.h; path = ../Classes/iBurnAppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* iBurnAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iBurnAppDelegate.m; path = ../Classes/iBurnAppDelegate.m; sourceTree = "<group>"; };
-		1D6058910D05DD3D006BFB54 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D6058910D05DD3D006BFB54 /* iBurn Test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iBurn Test.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		28AD733E0D9D9553002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
@@ -444,6 +444,7 @@
 		57F4725B0F22C49900827FAC /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapViewController.m; sourceTree = "<group>"; };
 		57F4725C0F22C49900827FAC /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
 		57F4725D0F22C49900827FAC /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
+		8422DC7214030566007AEE42 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0F15D8613FF1691004DCF90 /* allart_public.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = allart_public.json; sourceTree = "<group>"; };
 		A0F15E9F13FF21BA004DCF90 /* camps.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = camps.json; sourceTree = "<group>"; };
@@ -575,7 +576,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1D6058910D05DD3D006BFB54 /* iBurn.app */,
+				1D6058910D05DD3D006BFB54 /* iBurn Test.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -615,6 +616,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8422DC7214030566007AEE42 /* Test.plist */,
 				50BF5148120637E000555D13 /* MainWindow-iPad.xib */,
 				574911D21027609D0021DD5C /* Entitlements.plist */,
 				8D1107310486CEB800E47090 /* Info.plist */,
@@ -1141,7 +1143,7 @@
 			);
 			name = "iBurn 2010";
 			productName = iBurn;
-			productReference = 1D6058910D05DD3D006BFB54 /* iBurn.app */;
+			productReference = 1D6058910D05DD3D006BFB54 /* iBurn Test.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1478,8 +1480,8 @@
 				ADDITIONAL_SDKS = "";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: andrew johnstone";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: andrew johnstone";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1490,12 +1492,12 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = iBurn_Prefix.pch;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/route-me/MapView/**";
-				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_FILE = Test.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = iBurn;
-				PROVISIONING_PROFILE = "B3453536-64E7-4021-BE55-B2BC316E6F03";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "B3453536-64E7-4021-BE55-B2BC316E6F03";
+				PRODUCT_NAME = "iBurn Test";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
