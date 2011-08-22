@@ -10,47 +10,194 @@
 #import "iBurnAppDelegate.h"
 #import "EventNodeController.h"
 #import "EventInfoViewController.h"
+#import "NSDate-Utilities.h"
+#import "Favorite.h"
 
 @implementation EventDayTable
 @synthesize events;
 
-#pragma mark -
-#pragma mark Initialization
+
++ (NSDate*) dateFromDay:(int)day month:(int)month {
+	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+  [gregorian setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];
+	NSDateComponents *components = [gregorian components:NSYearCalendarUnit | NSMonthCalendarUnit |  NSDayCalendarUnit fromDate:[NSDate date]];
+	[components setDay:day];
+	[components setMonth:month];
+	NSDate * date = [gregorian dateFromComponents:components];
+	[gregorian release];
+	return date;
+}
+
+
++ (NSDate*) dateFromDay:(int)day month:(int)month hour:(int)hour minutes:(int)minutes {
+	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+  [gregorian setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];
+	NSDateComponents *components = [gregorian components:NSYearCalendarUnit | NSMonthCalendarUnit |  NSDayCalendarUnit fromDate:[NSDate date]];
+	[components setHour:hour];
+	[components setHour:minutes];
+	[components setHour:9];
+	[components setDay:day];
+	[components setMonth:month];
+	NSDate * date = [gregorian dateFromComponents:components];
+	[gregorian release];
+	return date;
+}
+
+
+- (void) scrollIfToday {
+	NSDate *now = [NSDate date];
+	int scrollCount = 0;
+	for (Event *e in events) {
+		if ([[e startTime] isLaterThanDate:now]) {
+			break;
+		}		
+		scrollCount++;
+	}	
+	if (scrollCount > 0) {
+		[[self tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:MAX(0,scrollCount-6) inSection:0] 
+														atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+	}
+	
+	
+}	
 
 
 - (NSArray*) getEventsForTitle:(NSString*) ttl {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   EventNodeController *nc = (EventNodeController*)[t eventNodeController];
-  if ([ttl isEqualToString:@"August 30"])
-    return [[nc eventDateHash]objectForKey:@"30"];
-  if ([ttl isEqualToString:@"August 31"])
-    return [[nc eventDateHash]objectForKey:@"31"];
-  if ([ttl isEqualToString:@"September 1"])
-    return [[nc eventDateHash]objectForKey:@"01"];
-  if ([ttl isEqualToString:@"September 2"])
-    return [[nc eventDateHash]objectForKey:@"02"];
-  if ([ttl isEqualToString:@"September 3"])
-    return [[nc eventDateHash]objectForKey:@"03"];
-  if ([ttl isEqualToString:@"September 4"])
-    return [[nc eventDateHash]objectForKey:@"04"];
-  if ([ttl isEqualToString:@"September 5"])
-    return [[nc eventDateHash]objectForKey:@"05"];
-  if ([ttl isEqualToString:@"September 6"])
-    return [[nc eventDateHash]objectForKey:@"06"];
-  if ([ttl isEqualToString:@"September 7"])
-    return [[nc eventDateHash]objectForKey:@"07"];
+	return [[nc eventDateHash]objectForKey:[self dayString:ttl]];
 }
 
 
-- (void) requestDone {
+
+- (void) sortByCurrent { 
   self.events = [self getEventsForTitle:self.title];
+  [self.tableView reloadData];
+	self.navigationItem.rightBarButtonItem.enabled = YES;
+}
+
+
+- (NSString*) dayString:(NSString*)ttl {
+	NSString *dayString;
+	if ([ttl isEqualToString:@"August 29"])
+		dayString = @"29";
+	if ([ttl isEqualToString:@"August 30"])
+		dayString = @"30";
+	if ([ttl isEqualToString:@"August 31"])
+		dayString = @"31";
+	if ([ttl isEqualToString:@"September 1"])
+		dayString = @"01";
+	if ([ttl isEqualToString:@"September 2"])
+		dayString = @"02";
+	if ([ttl isEqualToString:@"September 3"])
+		dayString = @"03";
+	if ([ttl isEqualToString:@"September 4"])
+		dayString = @"04";
+	if ([ttl isEqualToString:@"September 5"])
+		dayString = @"05";
+	return dayString;
+}	
+
+- (void) sortByFavorites { 
+	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
+																											 inManagedObjectContext:moc];
+	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	[request setEntity:entityDescription];
+	NSError *error;
+	NSArray *favs = [moc executeFetchRequest:request error:&error];
+	if(favs == nil) {
+		NSLog(@"Fetch failed with error: %@", error);
+	}
+	[objects release];
+  objects = [[NSMutableArray alloc]init];
+	for (Favorite *f in favs) {
+		if ([f Event]) {
+			if ([[self dayString:self.title] isEqualToString:[Event getDay:[[f Event]startTime]]]) {
+	  		[objects addObject:[f Event]];
+			}
+		}
+	}
+	
+  NSSortDescriptor *lastDescriptor =
+  [[[NSSortDescriptor alloc] initWithKey:@"startTime"
+                               ascending:YES
+                                selector:@selector(compare:)] autorelease];
+  NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
+  NSArray *sortedArray = [objects sortedArrayUsingDescriptors:descriptors];
+  self.events = sortedArray;
+  [self.tableView reloadData];
+	self.navigationItem.rightBarButtonItem.enabled = YES;
+}
+
+
+
+- (void) sortByName { 
+  self.events = [self getEventsForTitle:self.title];
+	NSSortDescriptor *lastDescriptor =
+  [[[NSSortDescriptor alloc] initWithKey:@"name"
+                               ascending:YES
+                                selector:@selector(compare:)] autorelease];
+  NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
+  NSArray *sortedArray = [self.events sortedArrayUsingDescriptors:descriptors];
+  self.events = sortedArray;
+	
+  [self.tableView reloadData];
+	self.navigationItem.rightBarButtonItem.enabled = NO;
+}
+
+
+
+- (void) sortTable:(id)sender {
+	switch ([sender selectedSegmentIndex]) {
+    case 0:  // name
+			[self sortByCurrent];
+      break;
+    case 1:  // distance
+			[self sortByFavorites];
+      break;
+    default: // favorites
+			[self sortByName];
+      break;
+  }  
   [self.tableView reloadData];
 }
 
 
+#pragma mark -
+#pragma mark Initialization
+
+
+
+
+- (void) requestDone { }
+
+
 - (void) viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  [self requestDone];
+  sortControl.selectedSegmentIndex = 0;
+	
+}
+
+
+- (void) loadView {
+	[super loadView];
+	[sortControl release];
+	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Favorites", @"Name",nil]]retain];
+	CGRect fr = sortControl.frame;
+	fr.size.width = self.view.frame.size.width;
+	sortControl.frame = fr;
+	sortControl.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+	sortControl.segmentedControlStyle = UISegmentedControlStyleBar;
+	[sortControl addTarget:self action:@selector(sortTable:) forControlEvents:UIControlEventValueChanged];
+	
+	self.tableView.tableHeaderView = sortControl;
+	
+	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Showing Now" 
+																																						style:UIBarButtonItemStyleDone 
+																																					 target:self 
+																																					 action:@selector(scrollIfToday)]autorelease];
 }
 
 
@@ -61,39 +208,6 @@
 }
 
 
-#pragma mark -
-#pragma mark View lifecycle
-
-/*
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-}
-*/
-
-/*
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-}
-*/
-/*
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-}
-*/
-/*
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-}
-*/
-/*
-- (void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-}
-*/
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
   return YES;
 }
@@ -103,8 +217,8 @@
 #pragma mark Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    // Return the number of sections.
-    return 1;
+	// Return the number of sections.
+	return 1;
 }
 
 
@@ -119,6 +233,11 @@
 
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	if ([events count] == 0) {
+		UITableViewCell *cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"] autorelease];
+		cell.textLabel.text = @"Mark some favorites.";
+		return cell;
+	}
   if(events == nil) {
 		UITableViewCell *cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"] autorelease];
 		cell.textLabel.text = @"Loading, please be patient.";
@@ -164,23 +283,25 @@
 #pragma mark Memory management
 
 - (void)didReceiveMemoryWarning {
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    
-    // Relinquish ownership any cached data, images, etc that aren't in use.
+	// Releases the view if it doesn't have a superview.
+	[super didReceiveMemoryWarning];
+	
+	// Relinquish ownership any cached data, images, etc that aren't in use.
 }
 
 - (void)viewDidUnload {
-    // Relinquish ownership of anything that can be recreated in viewDidLoad or on demand.
-    // For example: self.myOutlet = nil;
+	// Relinquish ownership of anything that can be recreated in viewDidLoad or on demand.
+	// For example: self.myOutlet = nil;
 }
 
 
 - (void)dealloc {
   [events release];
-    [super dealloc];
+	[sortControl release];
+	[super dealloc];
 }
 
 
 @end
+
 

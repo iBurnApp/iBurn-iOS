@@ -8,8 +8,34 @@
 
 #import "UnlockViewController.h"
 #import "CreditsViewController.h"
+#import "PageViewer.h"
+#import "iBurnAppDelegate.h"
 
 @implementation UnlockViewController
+
+
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	if ([t checkPassword:textField.text]) {
+		UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Success" 
+																								 message:@"The data is now unlocked." 
+																								delegate:self 
+																			 cancelButtonTitle:@"OK" 
+																			 otherButtonTitles:nil]autorelease];
+		[av show];
+		[textField resignFirstResponder];
+	} else {
+		UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Fail" 
+																								 message:@"That password is incorrect." 
+																								delegate:self 
+																			 cancelButtonTitle:@"OK" 
+																			 otherButtonTitles:nil]autorelease];
+		[av show];
+	}
+	return NO;
+}
+
 
 - (id)init {
 	if(self = [super init]) {
@@ -18,6 +44,17 @@
 		[self.navigationItem setTitle:@"Unlock"];
 	}
   return self;
+}
+
+
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+	if (!didLoad) {
+		didLoad = YES;
+		return YES;
+	}
+	PageViewer *p = [[[PageViewer alloc]initForString:[[request URL]absoluteString]]autorelease];
+	[self.navigationController pushViewController:p animated:YES];
+	return NO;
 }
 
 
@@ -30,6 +67,7 @@
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView {
 	[super loadView];
+	didLoad = NO;
 	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Credits" 
 																																						style:UIBarButtonItemStyleDone
 																																					 target:self 
@@ -39,7 +77,7 @@
 	UIWebView *infoLabel = [[[UIWebView alloc]initWithFrame:fr]autorelease];
 	infoLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	[infoLabel loadHTMLString:@"The art and camp locations are embargoed until gates open.<BR><BR>At that time, you can access the location data either by being able to connect to our server (it will just work), or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a>." baseURL:nil];
-	infoLabel.scalesPageToFit = NO;
+	infoLabel.delegate = self;
 	[self.view addSubview:infoLabel];
 	
 	fr = CGRectMake(60, 15, 200, 24);

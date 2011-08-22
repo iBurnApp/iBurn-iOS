@@ -11,6 +11,7 @@
 #import "EventInfoViewController.h"
 #import "EventDayTable.h"
 #import "iBurnAppDelegate.h"
+#import "FavoritesTableViewController.h"
 
 @implementation EventTableViewController
 @synthesize eventDayTable;
@@ -33,25 +34,33 @@
 		self.title = @"Events";
 		[self.navigationItem setTitle:@"Events"];
     dayArray = [[NSArray arrayWithObjects:
-                @"August 30", 
+								 @"August 29", 
+								 @"August 30", 
                 @"August 31", 
                 @"September 1", 
                 @"September 2", 
                 @"September 3", 
                 @"September 4", 
-                @"September 5", 
-                @"September 6", 
-                @"September 7",nil]retain]; 
+                @"September 5",nil]retain]; 
 	}
   return self;
 }
 
+
+- (void) showFavorites {
+	FavoritesTableViewController *f = [[[FavoritesTableViewController alloc]init]autorelease];
+	[self.navigationController pushViewController:f animated:YES];
+}
+
 - (void) loadView {
   [super loadView];
+	/*self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Favorites" 
+																																						style:UIBarButtonItemStyleDone 
+																																					 target:self action:@selector(showFavorites)]autorelease];
 	
-	[sortControl release];
+	*/
+	 [sortControl release];
 	sortControl = nil;
-
 }
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {

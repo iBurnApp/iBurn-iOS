@@ -67,10 +67,10 @@
 	if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Description"] 
 			&& section != 0) { 
 			CGSize constraintSize;
-			constraintSize.width = self.view.frame.size.width-PADDING*5;
+			constraintSize.width = tableView.frame.size.width-PADDING*4;
 			constraintSize.height = MAXFLOAT;
 			CGSize theSize = [[object desc] sizeWithFont:[UIFont systemFontOfSize:17.0f] constrainedToSize:constraintSize lineBreakMode:UILineBreakModeWordWrap];
-			return theSize.height+PADDING*4;
+			return theSize.height+PADDING*8;
 		
   }
   return 44.0f;
@@ -93,15 +93,16 @@
     if(!descriptionLabel) {
       descriptionLabel = [[[UILabel alloc] initWithFrame:CGRectZero]autorelease];
 			descriptionLabel.backgroundColor = [UIColor clearColor];
+			descriptionLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
       CGSize constraintSize;
-			constraintSize.width = self.view.frame.size.width-PADDING*5;
-			constraintSize.height = MAXFLOAT;
+			constraintSize.width = cell.contentView.frame.size.width-PADDING*2;
+			constraintSize.height = cell.contentView.frame.size.height;
 			CGSize theSize = [[cellTexts objectAtIndex:section] sizeWithFont:[UIFont systemFontOfSize:17.0f] 
 																										 constrainedToSize:constraintSize 
 																												 lineBreakMode:UILineBreakModeWordWrap];
       descriptionLabel.frame = CGRectMake(PADDING, 
-                                          PADDING, 
-                                          self.view.frame.size.width-PADDING*5, 
+                                          0, 
+                                          cell.contentView.frame.size.width-PADDING*2, 
                                           theSize.height+PADDING*2);
       [cell.contentView addSubview:descriptionLabel];
       descriptionLabel.numberOfLines = 0;
@@ -124,9 +125,9 @@
 
 
 - (void)tableView:(UITableView *)tb didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   UITableViewCell *cell = [tb cellForRowAtIndexPath:indexPath];
   if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"URL"]) {
-    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     if (![t canConnectToInternet]) {
       UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"This page will only display if you have previously cached it." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
       [as show];
@@ -136,7 +137,7 @@
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Contact Email"]) {
     NSString *mailString = [NSString stringWithFormat:@"mailto:?to=%@",[cell.textLabel.text stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]];
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:mailString]];
-  } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"]) {
+  } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"] && ![t embargoed]) {
     [self showOnMap];
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Camp"]) {
     [self showCamp];    

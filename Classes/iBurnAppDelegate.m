@@ -57,6 +57,8 @@
 
 
 - (void) initControllers {
+	self.embargoed = YES;
+
   NSMutableArray *controllers = [[[NSMutableArray alloc] init]autorelease];
   NSArray *classes = [NSArray arrayWithObjects:
                       [MapViewController class], 

@@ -9,8 +9,10 @@
 #import <UIKit/UIKit.h>
 
 
-@interface UnlockViewController : UIViewController {
+@interface UnlockViewController : UIViewController <UIWebViewDelegate> {
 
+	BOOL didLoad;
+	
 }
 
 @end
