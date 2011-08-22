@@ -14,9 +14,7 @@
 @implementation XMLTableViewController
 
 - (void) sortByDistance { 
-	if (!objects || [objects count] == 0) {
-		[self sortByName];
-	}
+	[self sortByName];
 	for (id object in objects) {
 		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
 		[object setDistanceAway:[loc distanceFromLocation:[MyCLController sharedInstance].locationManager.location]*0.000621371192];		
