@@ -137,6 +137,8 @@
 }
 
 - (void) loadMarkers {
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if (t.embargoed) return;
   [mapView.contents.markerManager removeMarkers];
   [mapView.contents.markerManager setShowLabels:YES];
 
@@ -223,6 +225,8 @@
 											   action:@selector(redownloadMaps:)] autorelease];
   
  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
+  
+ [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadMarkers) name:@"LIFT_EMBARGO" object:nil];
 
   return self;
 }
@@ -381,6 +385,7 @@
 }
 
 - (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 	[mapView release];
   [detailView release];
   [progressView release];

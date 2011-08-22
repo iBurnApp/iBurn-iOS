@@ -31,6 +31,7 @@
   NSManagedObjectContext *bgMoc_;
 	NSManagedObjectModel *managedObjectModel_;
 	NSPersistentStoreCoordinator *persistentStoreCoordinator_;
+  BOOL embargoed;
 }
 
 @property BOOL launchDefault;
@@ -43,6 +44,7 @@
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain) UITabBarController *tabBarController;
+@property (nonatomic, assign) BOOL embargoed;
 
 - (NSString *)applicationDocumentsDirectory;
 - (BOOL) canConnectToInternet;

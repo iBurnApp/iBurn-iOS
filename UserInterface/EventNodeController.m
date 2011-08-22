@@ -86,7 +86,7 @@
     NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
     event.latitude = [coordArray objectAtIndex:1];
     event.longitude = [coordArray objectAtIndex:0];
-    NSLog(@"%1.5f, %1.5f", [event.latitude floatValue], [event.longitude floatValue]);
+    //NSLog(@"%1.5f, %1.5f", [event.latitude floatValue], [event.longitude floatValue]);
   }
   event.desc = [self nullStringOrString:[dict objectForKey:@"print_description"]];
   NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
@@ -105,7 +105,7 @@
   event.campHost = [hostDict objectForKey:@"name"];
   NSString* campSimpleName = [ThemeCamp createSimpleName:event.campHost];
   ThemeCamp* camp = [ThemeCamp campForSimpleName:campSimpleName];
-  NSLog(@"camp match %@ %@", [camp name], camp.latitude);
+  //NSLog(@"camp match %@ %@", [camp name], camp.latitude);
   event.latitude = camp.latitude;
   event.longitude = camp.longitude;
   event.camp_id = N([[hostDict objectForKey:@"id"] intValue]);

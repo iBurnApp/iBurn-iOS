@@ -59,7 +59,6 @@
 	}
 	
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
-  NSLog(@"name %@ simple name %@", camp.name, camp.simpleName);
 	camp.latitude = [dict objectForKey:@"Latitude"];
 	camp.longitude = [dict objectForKey:@"Longitude"];
 
@@ -130,7 +129,6 @@
       }
     }
     if (!matchedCamp) {
-      NSLog(@"unmatch camp name %@ %@", name, simpleName);
       matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
                                                   inManagedObjectContext:moc];      
     }
