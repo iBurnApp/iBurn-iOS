@@ -80,6 +80,7 @@
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView {
 	[super loadView];
+	self.title = @"Credits";
 	didLoad = NO;
 }
 
@@ -122,7 +123,26 @@
 
 
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath { }
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	switch (indexPath.row) {
+		case 0:
+			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/gaia-gps-offline-topo-maps/id329127297?mt=8"]];			
+			break;
+		case 1:
+			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/marine-charts/id386584429?mt=8"]];
+			break;
+		default:
+			break;
+	}
+}
+
+
+- (NSIndexPath*)tableView:(UITableView *)tb willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+  if (indexPath.row == 0 || indexPath.row == 1) {
+    return indexPath;
+  }
+  return nil;
+}
 
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -137,12 +157,14 @@
 			cell.detailTextLabel.text = @"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.";
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.imageView .image = [UIImage imageNamed:@"gaia-icon.png"];
+			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
 		case 1:
 			cell.textLabel.text = @"Cartography";
 			cell.detailTextLabel.text = @"Virgil Zetterlind. Check out his boating app, Marine Charts.";
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.imageView .image = [UIImage imageNamed:@"earthnc-icon.png"];
+			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
 		case 2:
 			cell.textLabel.text = @"Funding";

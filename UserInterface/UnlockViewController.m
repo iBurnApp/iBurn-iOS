@@ -8,6 +8,7 @@
 
 #import "UnlockViewController.h"
 #import "CreditsViewController.h"
+#import "PageViewer.h"
 
 @implementation UnlockViewController
 
@@ -21,6 +22,17 @@
 }
 
 
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+	if (!didLoad) {
+		didLoad = YES;
+		return YES;
+	}
+	PageViewer *p = [[[PageViewer alloc]initForString:[[request URL]absoluteString]]autorelease];
+	[self.navigationController pushViewController:p animated:YES];
+	return NO;
+}
+
+
 - (void) showCredits {
 	CreditsViewController *c = [[[CreditsViewController alloc]init]autorelease];
 	[self.navigationController pushViewController:c animated:YES];
@@ -30,6 +42,7 @@
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView {
 	[super loadView];
+	didLoad = NO;
 	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Credits" 
 																																						style:UIBarButtonItemStyleDone
 																																					 target:self 
@@ -39,7 +52,7 @@
 	UIWebView *infoLabel = [[[UIWebView alloc]initWithFrame:fr]autorelease];
 	infoLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	[infoLabel loadHTMLString:@"The art and camp locations are embargoed until gates open.<BR><BR>At that time, you can access the location data either by being able to connect to our server (it will just work), or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a>." baseURL:nil];
-	infoLabel.scalesPageToFit = NO;
+	infoLabel.delegate = self;
 	[self.view addSubview:infoLabel];
 	
 	fr = CGRectMake(60, 15, 200, 24);
