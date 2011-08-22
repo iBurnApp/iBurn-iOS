@@ -67,6 +67,14 @@
 	[request setEntity:entityDescription];
 	NSError *error;
 	objects = [[NSMutableArray arrayWithArray:[moc executeFetchRequest:request error:&error]]retain];
+	NSMutableArray *newObjects = [NSMutableArray array];
+	for (id object in objects) {
+		if ([object Event]) {
+			[newObjects addObject:object];
+		}
+	}
+	[objects release];
+	objects = [newObjects retain];
 	if(objects == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}
