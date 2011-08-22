@@ -26,7 +26,7 @@
 										 bodyText:(NSString*)bodyText 
 											 toView:(UIView*)bgView 
 													row:(int)row {
-	int rowHeight = 42;
+	int rowHeight = 47;
 	int offset = 135;
 	CGRect fr = CGRectMake(10, row*rowHeight+5+offset, self.view.frame.size.width-40, 24);
 	UILabel *titleLabel = [[[UILabel alloc]initWithFrame:fr]autorelease];
@@ -81,43 +81,101 @@
 - (void)loadView {
 	[super loadView];
 	didLoad = NO;
-	[self addImageRowWithTitle:@"App Dev" 
-												bodyText:@"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS."
-									 imageName:@"gaia-icon.png"
-											toView:self.view
-												 row:0];
-	[self addImageRowWithTitle:@"Map" 
-												bodyText:@"Virgil Zetterlind. Check out his boating app, Marine Charts."
-									 imageName:@"earthnc-icon.png"
-											toView:self.view
-												 row:1];
-	[self addTextRowWithTitle:@"Funding" 
-									 bodyText:@"Andrew Johnstone and TrailBehind, Inc."
-											toView:self.view
-												 row:0];
-	[self addTextRowWithTitle:@"Artwork" 
-									 bodyText:@"Kim Rullo and Andrew Johnstone"
-										 toView:self.view
-												row:1];
-	[self addTextRowWithTitle:@"Data Dev" 
-									 bodyText:@"Josh Braegger, Jeff Johnson, Tom Longson, Mikel Maron"
-										 toView:self.view
-												row:2];
-	
-
-	UIWebView *wv = [[[UIWebView alloc]initWithFrame:CGRectMake(0, 280, 
-																															self.view.frame.size.width, 120)]autorelease];
-		
-	NSString *html = @"<ul><li><b><a href=mailto:iburn@gaiagps.com>Email the devs.</a></b> " 
-	"<li><b><a href=http://github.com/trailbehind/iBurn-2011>Source code (after gates open).</a></b>"  
-	"<li><b><a href=http://www.burningmap.org>View the map on the web.</a></b></ul>";  
-	[wv loadHTMLString:html baseURL:nil]; 
-	[self.view addSubview:wv];
-
-	wv.delegate = self;
-	
-
 }
+
+
+#pragma mark Table view methods
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath {
+	switch (indexPath.row) {
+		case 0:
+			return 67;
+			break;
+		case 1:
+			return 67;
+			break;
+		case 2:
+			return 45;
+			break;
+		case 3:
+			return 45;
+			break;
+		case 4:
+			return 67;
+			break;
+		default:
+			return 120;
+			break;
+	}
+	
+}
+
+
+- (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView {
+  return 1;
+}
+
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	return 6;
+}
+
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath { }
+
+
+- (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	static NSString *MyIdentifier = @"MyIdentifier";
+	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
+	if (cell == nil) {
+		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
+	}
+	switch (indexPath.row) {
+		case 0:
+			cell.textLabel.text = @"App Dev";
+			cell.detailTextLabel.text = @"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.";
+			cell.detailTextLabel.numberOfLines = 0;
+			cell.imageView .image = [UIImage imageNamed:@"gaia-icon.png"];
+			break;
+		case 1:
+			cell.textLabel.text = @"Cartography";
+			cell.detailTextLabel.text = @"Virgil Zetterlind. Check out his boating app, Marine Charts.";
+			cell.detailTextLabel.numberOfLines = 0;
+			cell.imageView .image = [UIImage imageNamed:@"earthnc-icon.png"];
+			break;
+		case 2:
+			cell.textLabel.text = @"Funding";
+			cell.detailTextLabel.text = @"Andrew Johnstone and TrailBehind, Inc.";
+			break;
+		case 3:
+			cell.textLabel.text = @"Artwork";
+			cell.detailTextLabel.text = @"Kim Rullo and Andrew Johnstone";
+			break;
+		case 4:
+			cell.textLabel.text = @"Data Dev";
+			cell.detailTextLabel.numberOfLines = 0;
+			cell.detailTextLabel.text = @"Josh Braegger, Jeff Johnson, Tom Longson, Mikel Maron";
+			break;
+		default:
+			;
+			UIWebView *wv = [[[UIWebView alloc]initWithFrame:CGRectMake(0, 0, 
+																																	self.view.frame.size.width, 120)]autorelease];
+			
+			NSString *html = @"<ul><li><b><a href=mailto:iburn@gaiagps.com>Email the devs.</a></b> " 
+			"<li><b><a href=http://github.com/trailbehind/iBurn-2011>Source code (after gates open).</a></b>"  
+			"<li><b><a href=http://www.burningmap.org>View the map on the web.</a></b></ul>";  
+			[wv loadHTMLString:html baseURL:nil]; 
+			[cell.contentView addSubview:wv];
+			
+			wv.delegate = self;
+			
+			break;
+	}
+	return cell;		
+}
+	
+
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
 	if (!didLoad) {

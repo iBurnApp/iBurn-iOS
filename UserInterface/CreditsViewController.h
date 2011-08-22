@@ -6,7 +6,7 @@
 
 #import <MessageUI/MessageUI.h>
 
-@interface CreditsViewController : UIViewController <UIWebViewDelegate, MFMailComposeViewControllerDelegate> {
+@interface CreditsViewController : UITableViewController <UIWebViewDelegate, MFMailComposeViewControllerDelegate> {
   BOOL didLoad;
 }
 
