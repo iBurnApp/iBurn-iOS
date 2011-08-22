@@ -14,7 +14,7 @@
 @implementation XMLTableViewController
 
 - (void) sortByDistance { 
-	if (!objects) {
+	if (!objects || [objects count] == 0) {
 		[self sortByName];
 	}
 	for (id object in objects) {

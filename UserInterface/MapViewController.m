@@ -180,12 +180,7 @@
   UIBarButtonItem *item = [[[UIBarButtonItem alloc]initWithCustomView:buttonView]autorelease];
   [self.navigationItem setTitle:@"Black Rock City"];
 	self.navigationItem.rightBarButtonItem = item;
-	self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
-											   initWithImage:[UIImage imageNamed:@"map-download-icon.png"]
-											   style:UIBarButtonItemStylePlain
-											   target:self
-											   action:@selector(redownloadMaps:)] autorelease];
-
+	
   return self;
 }
 
