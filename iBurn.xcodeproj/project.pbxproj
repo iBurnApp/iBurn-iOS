@@ -17,6 +17,7 @@
 		5044A8AD14009B5000E3CF6E /* tiles.json in Resources */ = {isa = PBXBuildFile; fileRef = 5044A8AC14009B5000E3CF6E /* tiles.json */; };
 		507380CB140257F400B127EE /* iBurn.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 507380CA140257F400B127EE /* iBurn.sqlite */; };
 		507380CF1402597200B127EE /* tiles in Resources */ = {isa = PBXBuildFile; fileRef = 507380CE1402597200B127EE /* tiles */; };
+		507380E21403036600B127EE /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 507380E11403036600B127EE /* routeme.plist */; };
 		50B8EDCB121BB1EF0093E402 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC6121BB1EF0093E402 /* Event.m */; };
 		50B8EDCC121BB1EF0093E402 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC8121BB1EF0093E402 /* ArtInstall.m */; };
 		50B8EDCD121BB1EF0093E402 /* ThemeCamp.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDCA121BB1EF0093E402 /* ThemeCamp.m */; };
@@ -240,6 +241,7 @@
 		5044A8AC14009B5000E3CF6E /* tiles.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tiles.json; sourceTree = "<group>"; };
 		507380CA140257F400B127EE /* iBurn.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = iBurn.sqlite; sourceTree = "<group>"; };
 		507380CE1402597200B127EE /* tiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tiles; sourceTree = "<group>"; };
+		507380E11403036600B127EE /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		50B8EDC5121BB1EF0093E402 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = ../DataObjects/Event.h; sourceTree = "<group>"; };
 		50B8EDC6121BB1EF0093E402 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Event.m; sourceTree = "<group>"; };
 		50B8EDC7121BB1EF0093E402 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
@@ -621,7 +623,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				8422DC7214030566007AEE42 /* Test.plist */,
+				507380E11403036600B127EE /* routeme.plist */,
 				50BF5148120637E000555D13 /* MainWindow-iPad.xib */,
 				574911D21027609D0021DD5C /* Entitlements.plist */,
 				8D1107310486CEB800E47090 /* Info.plist */,
@@ -1278,6 +1280,7 @@
 				507380CB140257F400B127EE /* iBurn.sqlite in Resources */,
 				507380CF1402597200B127EE /* tiles in Resources */,
 				844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */,
+				507380E21403036600B127EE /* routeme.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1490,8 +1493,8 @@
 				ADDITIONAL_SDKS = "";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: andrew johnstone";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: andrew johnstone";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1502,12 +1505,12 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = iBurn_Prefix.pch;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/route-me/MapView/**";
-				INFOPLIST_FILE = Test.plist;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "iBurn Test";
-				PROVISIONING_PROFILE = "";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PRODUCT_NAME = iBurn;
+				PROVISIONING_PROFILE = "B3453536-64E7-4021-BE55-B2BC316E6F03";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "B3453536-64E7-4021-BE55-B2BC316E6F03";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

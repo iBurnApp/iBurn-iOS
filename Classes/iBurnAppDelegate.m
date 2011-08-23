@@ -267,7 +267,7 @@
   
 
   NSFileManager *fileManager = [NSFileManager defaultManager];
-  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn.sqlite"];
+  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011.sqlite"];
   BOOL success = [fileManager fileExistsAtPath:dbPath];
   
   // If the database already exists then return without doing anything
@@ -286,7 +286,7 @@
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
 	[self checkAndCreateDatabase];
-	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn.sqlite"]];
+	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011.sqlite"]];
 	
 	NSError *error = nil;
 	NSPersistentStoreCoordinator* psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
@@ -346,7 +346,7 @@
   
 }
 
-#define CORRECT_HASH  @"BDA9FC0AA157041DAE976FAA3BD63E46"
+#define CORRECT_HASH  @"38EBE77897EC9D73675BC8182DA7F75D"
 
 - (BOOL) checkPassword:(NSString*) password {
   //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah

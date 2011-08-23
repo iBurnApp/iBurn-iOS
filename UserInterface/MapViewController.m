@@ -84,7 +84,11 @@
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"ThemeCamp";
     newMarker.waypointID = camp.simpleName;
+    
     newMarker.zoom = 19;
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES && [[UIScreen mainScreen] scale] == 2.00) {
+      newMarker.zoom = 18;
+    }
 		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
 
@@ -116,7 +120,7 @@
 
 - (void) loadEvents {
   //TODO change to today
-  for (ThemeCamp* camp in [Event eventsForDay:@"03"]) {
+  for (ThemeCamp* camp in [Event getTodaysEvents]) {
     
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
@@ -181,8 +185,12 @@
 
 
 - (void) afterMapTouch: (RMMapView*) map{
-    if ([RMMapContents performExpensiveOperations]) {
+  if ([RMMapContents performExpensiveOperations]) {
     [self showMarkersOnScreen];
+  }
+  
+  if (isCurrentlyUpdating) {
+    [self startLocation:nil];
   }
 }
 
@@ -286,6 +294,10 @@
     isCurrentlyUpdating = NO;
     locationButton.tintColor = [UIColor darkGrayColor];
   } else {
+    if (currentLocationMarker) {
+      CLLocationCoordinate2D coord = [[[[MyCLController sharedInstance] locationManager] location] coordinate];
+      [self.mapView.contents moveToLatLong:coord];
+    }
     isCurrentlyUpdating = YES;
     locationButton.tintColor = [UIColor redColor];      
   }
@@ -296,8 +308,12 @@
   
   RMSphericalTrapezium bounds = [mapView.contents.tileSource latitudeLongitudeBoundingBox];
   [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
-  [mapView.contents zoomByFactor:1.55 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+  [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+  
+  
   CLLocationCoordinate2D center = {bounds.southwest.latitude/2+bounds.northeast.latitude/2,bounds.southwest.longitude/2+bounds.northeast.longitude/2};
+  
+  center = (CLLocationCoordinate2D) {40.782920000000004, -119.20903000000001};
   [mapView.contents moveToLatLong:center];
 }	
 
