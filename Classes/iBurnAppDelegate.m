@@ -346,7 +346,7 @@
   
 }
 
-#define CORRECT_HASH  @"BDA9FC0AA157041DAE976FAA3BD63E46"
+#define CORRECT_HASH  @"38EBE77897EC9D73675BC8182DA7F75D"
 
 - (BOOL) checkPassword:(NSString*) password {
   //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah
