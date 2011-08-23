@@ -120,7 +120,7 @@
 
 - (void) loadEvents {
   //TODO change to today
-  for (ThemeCamp* camp in [Event eventsForDay:@"03"]) {
+  for (ThemeCamp* camp in [Event getTodaysEvents]) {
     
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
@@ -308,8 +308,12 @@
   
   RMSphericalTrapezium bounds = [mapView.contents.tileSource latitudeLongitudeBoundingBox];
   [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
-  [mapView.contents zoomByFactor:1.55 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+  [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+  
+  
   CLLocationCoordinate2D center = {bounds.southwest.latitude/2+bounds.northeast.latitude/2,bounds.southwest.longitude/2+bounds.northeast.longitude/2};
+  
+  center = (CLLocationCoordinate2D) {40.782920000000004, -119.20903000000001};
   [mapView.contents moveToLatLong:center];
 }	
 
