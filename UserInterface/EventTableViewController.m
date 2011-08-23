@@ -61,6 +61,8 @@
 	*/
 	 [sortControl release];
 	sortControl = nil;
+  self.tableView.tableHeaderView = nil;
+
 }
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {

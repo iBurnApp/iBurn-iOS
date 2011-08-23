@@ -176,7 +176,6 @@
 
 - (void) viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  sortControl.selectedSegmentIndex = 0;
 	
 }
 
@@ -200,6 +199,8 @@
 																																						style:UIBarButtonItemStyleDone 
 																																					 target:self 
 																																					 action:@selector(scrollIfToday)]autorelease];
+  sortControl.selectedSegmentIndex = 0;
+
 }
 
 

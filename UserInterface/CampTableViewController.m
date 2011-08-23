@@ -38,7 +38,9 @@
 
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
-  [super loadObjectsForEntity:@"ThemeCamp"];
+  if (!objects) {
+    [super loadObjectsForEntity:@"ThemeCamp"];
+  }
 }
 
 

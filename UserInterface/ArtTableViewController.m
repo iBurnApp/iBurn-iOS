@@ -38,7 +38,9 @@
 
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
-  [super loadObjectsForEntity:@"ArtInstall"];
+  if (!objects) {
+    [super loadObjectsForEntity:@"ArtInstall"];
+  }
 }
 
 
@@ -71,7 +73,7 @@
   
   ArtInstall *art;
   if (objectDict) {
-    art = [[objectDict objectAtIndex: indexPath.section]objectAtIndex:indexPath.row ];
+    art = [[objectDict objectAtIndex: indexPath.section]objectAtIndex:indexPath.row];
 	} else {
     int artIndex = [indexPath indexAtPosition: [indexPath length] - 1];
     art = [objects objectAtIndex: artIndex];
