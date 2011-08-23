@@ -12,16 +12,6 @@
 @implementation CreditsViewController
 
 
-- (void)mailComposeController:(MFMailComposeViewController*)controller  
-          didFinishWithResult:(MFMailComposeResult)result 
-                        error:(NSError*)error {
-  if (result == MFMailComposeResultSent) {
-  	
-  }
-  [self dismissModalViewControllerAnimated:YES];
-}
-
-
 - (void) addTextRowWithTitle:(NSString*)titleText 
 										 bodyText:(NSString*)bodyText 
 											 toView:(UIView*)bgView 
@@ -81,7 +71,6 @@
 - (void)loadView {
 	[super loadView];
 	self.title = @"Credits";
-	didLoad = NO;
 }
 
 
@@ -90,22 +79,25 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath {
 	switch (indexPath.row) {
 		case 0:
-			return 67;
+			return 80;
 			break;
 		case 1:
 			return 67;
 			break;
 		case 2:
-			return 45;
+			return 67;
 			break;
 		case 3:
 			return 45;
 			break;
 		case 4:
+			return 45;
+			break;
+		case 5:
 			return 67;
 			break;
 		default:
-			return 120;
+			return 0;
 			break;
 	}
 	
@@ -125,10 +117,10 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	switch (indexPath.row) {
-		case 0:
+		case 1:
 			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/gaia-gps-offline-topo-maps/id329127297?mt=8"]];			
 			break;
-		case 1:
+		case 2:
 			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/marine-charts/id386584429?mt=8"]];
 			break;
 		default:
@@ -138,7 +130,7 @@
 
 
 - (NSIndexPath*)tableView:(UITableView *)tb willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-  if (indexPath.row == 0 || indexPath.row == 1) {
+  if (indexPath.row == 1 || indexPath.row == 2) {
     return indexPath;
   }
   return nil;
@@ -152,87 +144,46 @@
 		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
 	}
 	switch (indexPath.row) {
-		case 0:
+		case 1:
 			cell.textLabel.text = @"App Dev";
 			cell.detailTextLabel.text = @"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.";
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.imageView .image = [UIImage imageNamed:@"gaia-icon.png"];
 			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
-		case 1:
+		case 2:
 			cell.textLabel.text = @"Cartography";
 			cell.detailTextLabel.text = @"Virgil Zetterlind. Check out his boating app, Marine Charts.";
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.imageView .image = [UIImage imageNamed:@"earthnc-icon.png"];
 			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
-		case 2:
+		case 0:
+			cell.textLabel.text = @"R.I.P. Rod Garrett";
+			cell.detailTextLabel.text = @"BRC City Planner, Designer of the Man, Liberator of Map Data.";
+			cell.detailTextLabel.numberOfLines = 0;
+			cell.imageView .image = [UIImage imageNamed:@"rod_garrett.jpg"];
+			//cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+			break;
+		case 3:
 			cell.textLabel.text = @"Funding";
 			cell.detailTextLabel.text = @"Andrew Johnstone and TrailBehind, Inc.";
 			break;
-		case 3:
+		case 4:
 			cell.textLabel.text = @"Artwork";
 			cell.detailTextLabel.text = @"Kim Rullo and Andrew Johnstone";
 			break;
-		case 4:
+		case 5:
 			cell.textLabel.text = @"Data Dev";
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.detailTextLabel.text = @"Josh Braegger, Jeff Johnson, Tom Longson, Mikel Maron";
 			break;
 		default:
-			;
-			UIWebView *wv = [[[UIWebView alloc]initWithFrame:CGRectMake(0, 0, 
-																																	self.view.frame.size.width, 120)]autorelease];
-			
-			NSString *html = @"<ul><li><b><a href=mailto:iburn@gaiagps.com>Email the devs.</a></b> " 
-			"<li><b><a href=http://github.com/trailbehind/iBurn-2011>Source code (after gates open).</a></b>"  
-			"<li><b><a href=http://www.burningmap.org>View the map on the web.</a></b></ul>";  
-			[wv loadHTMLString:html baseURL:nil]; 
-			[cell.contentView addSubview:wv];
-			
-			wv.delegate = self;
-			
 			break;
 	}
 	return cell;		
 }
 	
-
-
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
-	if (!didLoad) {
-		didLoad = YES;
-		return YES;
-	}
-	
-	if ([[[request URL]absoluteString]hasPrefix:@"mailto"]) {
-		MFMailComposeViewController* controller = [[[MFMailComposeViewController alloc] init]autorelease];
-		controller.mailComposeDelegate = self;
-		[controller setSubject:@"iBurn 2011 Feedback"];
-		[controller setToRecipients:[NSArray arrayWithObject:@"iburn@gaiagps.com"]];
-		[self presentModalViewController:controller animated:YES];
-		return NO;		
-	}
-	PageViewer *p = [[[PageViewer alloc]initForString:[[request URL]absoluteString]]autorelease];
-	[self.navigationController pushViewController:p animated:YES];
-	return NO;
-}
-
-
-/*
-// Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
-- (void)viewDidLoad {
-    [super viewDidLoad];
-}
-*/
-
-/*
-// Override to allow orientations other than the default portrait orientation.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations.
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
-}
-*/
 
 - (void)didReceiveMemoryWarning {
     // Releases the view if it doesn't have a superview.

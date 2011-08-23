@@ -10,6 +10,7 @@
 #import "CreditsViewController.h"
 #import "PageViewer.h"
 #import "iBurnAppDelegate.h"
+#import "ContactInfoScreen.h"
 
 @implementation UnlockViewController
 
@@ -64,10 +65,22 @@
 	
 }
 
+
+- (void) showAbout {
+	ContactInfoScreen *c = [[[ContactInfoScreen alloc]init]autorelease];
+	[self.navigationController pushViewController:c animated:YES];
+	
+}
+
+
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView {
 	[super loadView];
 	didLoad = NO;
+	self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"About" 
+																																						style:UIBarButtonItemStyleDone
+																																					 target:self 
+																																					 action:@selector(showAbout)]autorelease];	
 	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Credits" 
 																																						style:UIBarButtonItemStyleDone
 																																					 target:self 

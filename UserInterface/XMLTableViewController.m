@@ -13,6 +13,13 @@
 
 @implementation XMLTableViewController
 
+- (void) loadView {
+  [super loadView];
+  self.tableView.tableHeaderView = sortControl;
+
+  
+}
+
 - (void) sortByDistance { 
 	[self sortByName];
 	[objectDict release];
@@ -160,8 +167,7 @@
 		sortControl.segmentedControlStyle = UISegmentedControlStyleBar;
 		[sortControl addTarget:self action:@selector(sortTable:) forControlEvents:UIControlEventValueChanged];
 
-		self.tableView.tableHeaderView = sortControl;
-		
+				
 		
     if (NO && searchPlaceholder) {
       searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0,0,320,44)];
