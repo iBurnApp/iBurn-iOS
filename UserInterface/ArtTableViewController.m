@@ -68,8 +68,14 @@
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	int artIndex = [indexPath indexAtPosition: [indexPath length] - 1];
-	ArtInstall *art = [objects objectAtIndex: artIndex];
+  
+  ArtInstall *art;
+  if (objectDict) {
+    art = [[objectDict objectAtIndex: indexPath.section]objectAtIndex:indexPath.row ];
+	} else {
+    int artIndex = [indexPath indexAtPosition: [indexPath length] - 1];
+    art = [objects objectAtIndex: artIndex];
+	}
 	ArtInfoViewController *artInfoView = [[[ArtInfoViewController alloc] initWithArt:art]autorelease];
 	[[self navigationController] pushViewController:artInfoView animated:YES];
 }

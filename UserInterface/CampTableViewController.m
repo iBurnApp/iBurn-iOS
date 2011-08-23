@@ -53,8 +53,13 @@
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	int campIndex = [indexPath indexAtPosition: [indexPath length] - 1];
-	ThemeCamp *camp = [objects objectAtIndex: campIndex];
+  ThemeCamp *camp;
+  if (objectDict) {
+    camp = [[objectDict objectAtIndex: indexPath.section]objectAtIndex:indexPath.row];
+	} else {
+    int campIndex = [indexPath indexAtPosition: [indexPath length] - 1];
+    camp = [objects objectAtIndex: campIndex];
+	}
 	CampInfoViewController *campInfoView = [[[CampInfoViewController alloc] initWithCamp:camp]autorelease];
 	[[self navigationController] pushViewController:campInfoView animated:YES];
 }
