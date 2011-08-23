@@ -8,6 +8,7 @@
 #import "CreditsViewController.h"
 #import <QuartzCore/QuartzCore.h>
 #import "PageViewer.h"
+#import "iBurnAppDelegate.h"
 
 @implementation CreditsViewController
 
@@ -116,6 +117,14 @@
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+ 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  
+  if (![t canConnectToInternet]) {
+    UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+    [as show];
+    return;
+  }
+  
 	switch (indexPath.row) {
 		case 1:
 			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/gaia-gps-offline-topo-maps/id329127297?mt=8"]];			
