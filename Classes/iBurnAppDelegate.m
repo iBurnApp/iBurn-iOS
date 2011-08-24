@@ -106,9 +106,9 @@
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   //[self checkOrCreateDatabase];
-  //[campNodeController getNodes];
-  //[artNodeController getNodes];
-  //[eventNodeController getNodes];
+  [campNodeController getNodes];
+  [artNodeController getNodes];
+  [eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -285,7 +285,7 @@
 
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
-	[self checkAndCreateDatabase];
+	//[self checkAndCreateDatabase];
 	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011.sqlite"]];
 	
 	NSError *error = nil;

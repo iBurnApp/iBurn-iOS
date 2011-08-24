@@ -27,7 +27,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"MMM dd, hh:mm a"];
-    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
   }  
   return [formatter stringFromDate:date];
 }

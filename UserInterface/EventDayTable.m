@@ -261,7 +261,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"hh:mm a"];
-    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
   }  
   cell.detailTextLabel.text = [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]];
 	

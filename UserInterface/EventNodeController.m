@@ -76,7 +76,7 @@
 }
 
 
-- (void) updateObject:(Event*)event withDict:(NSDictionary*)dict {
+- (void) updateObject:(Event*)event withDict:(NSDictionary*)dict occurenceIndex:(int)idx {
   NSObject *bmid = [self nullOrObject:[dict objectForKey:@"id"]];
   if (bmid) event.bm_id = N([bmid intValue]);
 
@@ -91,7 +91,7 @@
   event.desc = [self nullStringOrString:[dict objectForKey:@"print_description"]];
   NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
   if (occurrenceSet && [occurrenceSet count] > 0) {
-    NSDictionary* times =  (NSDictionary*)[occurrenceSet objectAtIndex:0];
+    NSDictionary* times =  (NSDictionary*)[occurrenceSet objectAtIndex:idx];
     NSDate *startTime = [self getDateFromString:[times objectForKey:@"start_time"]];
     event.startTime = startTime;
     event.day = [Event getDay:event.startTime];
@@ -114,6 +114,7 @@
 
 - (void) getNodesFromJson:(NSObject*) jsonNodes {
   //NSLog(@"%@", jsonNodes);
+  NSLog(@"parsing events");
   NSMutableArray* arts = [NSMutableArray arrayWithArray:(NSArray*)jsonNodes];
   NSSortDescriptor *lastDescriptor =
   [[[NSSortDescriptor alloc] initWithKey:@"start_time"
@@ -158,9 +159,20 @@
     }
     if (!matchedCamp) {
       matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
-                                                  inManagedObjectContext:moc];      
-    }    
-    [self updateObject:matchedCamp withDict:dict];
+                                                  inManagedObjectContext:moc]; 
+      [self updateObject:matchedCamp withDict:dict occurenceIndex:0];
+      NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
+      if (occurrenceSet && [occurrenceSet count] > 0) {
+        for (int i = 1; i < [occurrenceSet count]; i++) {
+          matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
+                                                      inManagedObjectContext:moc]; 
+          [self updateObject:matchedCamp withDict:dict occurenceIndex:i];
+        }
+      }
+           
+    } else { 
+      [self updateObject:matchedCamp withDict:dict];
+    }
   }
   [self saveObjects:knownObjects];
 }  

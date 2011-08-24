@@ -95,8 +95,9 @@
 
 
 - (void) getNodesFromJson:(NSObject*) jsonNodes {
+  NSLog(@"parsing camps");
   NSMutableArray* camps = [NSMutableArray arrayWithArray:(NSArray*)jsonNodes];
-  CLLocationCoordinate2D dummy = {0,0};
+
   NSArray *knownCamps = [self getAllThemeCamps];
   [self createAndUpdate:knownCamps
             withObjects:camps 
