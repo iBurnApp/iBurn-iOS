@@ -94,7 +94,7 @@ class Camp(object):
     ROOT_URL = "http://www.burningman.com"
 
     def get_index(self):
-        return list("ABCDEFGHIJKLMNOPQRSTUVXYZ#")
+        return list("ABCDEFGHIJKLMNOPQRSTUVWXYZ#")
 
     def _parse_camps(self, camp):
         b = Pointer(camp.getnext().getchildren()[0])

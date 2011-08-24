@@ -89,13 +89,13 @@
 			return 67;
 			break;
 		case 3:
-			return 45;
+			return 43;
 			break;
 		case 4:
-			return 45;
+			return 43;
 			break;
 		case 5:
-			return 67;
+			return 55;
 			break;
 		default:
 			return 0;
@@ -111,7 +111,7 @@
 
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return 6;
+	return 7;
 }
 
 
@@ -132,6 +132,9 @@
 		case 2:
 			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/marine-charts/id386584429?mt=8"]];
 			break;
+		case 6:
+			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://www.burnermap.com"]];
+			break;
 		default:
 			break;
 	}
@@ -139,7 +142,7 @@
 
 
 - (NSIndexPath*)tableView:(UITableView *)tb willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-  if (indexPath.row == 1 || indexPath.row == 2) {
+  if (indexPath.row == 1 || indexPath.row == 2 || indexPath.row == 3) {
     return indexPath;
   }
   return nil;
@@ -153,6 +156,13 @@
 		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
 	}
 	switch (indexPath.row) {
+		case 0:
+			cell.textLabel.text = @"R.I.P. Rod Garrett";
+			cell.detailTextLabel.text = @"BRC City Planner, Designer of the Man, Liberator of Map Data.";
+			cell.detailTextLabel.numberOfLines = 0;
+			cell.imageView .image = [UIImage imageNamed:@"rod_garrett.jpg"];
+			//cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+			break;
 		case 1:
 			cell.textLabel.text = @"App Dev";
 			cell.detailTextLabel.text = @"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.";
@@ -167,14 +177,7 @@
 			cell.imageView .image = [UIImage imageNamed:@"earthnc-icon.png"];
 			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
-		case 0:
-			cell.textLabel.text = @"R.I.P. Rod Garrett";
-			cell.detailTextLabel.text = @"BRC City Planner, Designer of the Man, Liberator of Map Data.";
-			cell.detailTextLabel.numberOfLines = 0;
-			cell.imageView .image = [UIImage imageNamed:@"rod_garrett.jpg"];
-			//cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-			break;
-		case 3:
+    case 3:
 			cell.textLabel.text = @"Funding";
 			cell.detailTextLabel.text = @"Andrew Johnstone and TrailBehind, Inc.";
 			break;

@@ -38,7 +38,7 @@
 
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return 3;
+	return 4;
 }
 
 
@@ -78,6 +78,12 @@
       PageViewer *p2 = [[[PageViewer alloc]initForString:urlString2]autorelease];
       [self.navigationController pushViewController:p2 animated:YES];
 			break;
+    case 3:
+      ;
+      NSString *urlString3 = @"http://www.burnermap.com";
+      PageViewer *p3 = [[[PageViewer alloc]initForString:urlString3]autorelease];
+      [self.navigationController pushViewController:p3 animated:YES];
+			break;
 		default:
 			break;
 	}
@@ -111,6 +117,14 @@
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
+    case 3:
+			cell.textLabel.text = @"BurnerMap.com";
+			cell.detailTextLabel.text = @"Also check out BurnerMap, and find your pals on the playa.";
+			cell.detailTextLabel.numberOfLines = 0;
+			cell.imageView .image = [UIImage imageNamed:@"BurnerMapLogoSquarish.png"];
+			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+			break;
+      
 		default:
 			break;
 	}

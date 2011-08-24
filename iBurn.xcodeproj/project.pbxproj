@@ -142,6 +142,7 @@
 		8448741D14034FBD00DBD3A3 /* ContactInfoScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */; };
 		84487492140358E200DBD3A3 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84487491140358E200DBD3A3 /* routeme.plist */; };
 		84E95D3C14037F5000BE4427 /* Test.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84E95D3B14037F5000BE4427 /* Test.plist */; };
+		84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */ = {isa = PBXBuildFile; fileRef = 84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */; };
 		A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15D8613FF1691004DCF90 /* allart_public.json */; };
 		A0F15EA013FF21BA004DCF90 /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15E9F13FF21BA004DCF90 /* camps.json */; };
 		A0F15F681401A436004DCF90 /* camps-info.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15F671401A436004DCF90 /* camps-info.json */; };
@@ -453,6 +454,7 @@
 		8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContactInfoScreen.m; sourceTree = "<group>"; };
 		84487491140358E200DBD3A3 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		84E95D3B14037F5000BE4427 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
+		84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BurnerMapLogoSquarish.png; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0F15D8613FF1691004DCF90 /* allart_public.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = allart_public.json; sourceTree = "<group>"; };
 		A0F15E9F13FF21BA004DCF90 /* camps.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = camps.json; sourceTree = "<group>"; };
@@ -788,6 +790,7 @@
 		57A016350F4965E2004F53D0 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */,
 				844873EC14034C4300DBD3A3 /* rod_garrett.jpg */,
 				A0F16861140C5EB5004DCF90 /* green-pin-down.png */,
 				A0F16862140C5EB5004DCF90 /* green-pin-down@2x.png */,
@@ -1284,6 +1287,7 @@
 				844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */,
 				84487492140358E200DBD3A3 /* routeme.plist in Resources */,
 				84E95D3C14037F5000BE4427 /* Test.plist in Resources */,
+				84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
