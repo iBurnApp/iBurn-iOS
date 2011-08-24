@@ -53,6 +53,16 @@
 		didLoad = YES;
 		return YES;
 	}
+  
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  
+  if (![t canConnectToInternet]) {
+    UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+    [as show];
+    return NO;
+  }
+  
+  
 	PageViewer *p = [[[PageViewer alloc]initForString:[[request URL]absoluteString]]autorelease];
 	[self.navigationController pushViewController:p animated:YES];
 	return NO;

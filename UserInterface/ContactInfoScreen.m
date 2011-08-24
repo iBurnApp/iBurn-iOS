@@ -8,6 +8,7 @@
 
 #import "ContactInfoScreen.h"
 #import "PageViewer.h"
+#import "iBurnAppDelegate.h"
 
 @implementation ContactInfoScreen
 
@@ -48,6 +49,14 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
   
+ 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+
+  if (![t canConnectToInternet] && indexPath.row > 0) {
+    UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+    [as show];
+    return;
+  }
+
   switch (indexPath.row) {
 		case 0:
       ;
@@ -98,7 +107,7 @@
 			break;
 		case 2:
 			cell.textLabel.text = @"View the map online";
-			cell.detailTextLabel.text = @"The map is also available on the web at www.burningmap.org.";
+			cell.detailTextLabel.text = @"The map will also available on the web after gates open, at www.burningmap.org.";
 			cell.detailTextLabel.numberOfLines = 0;
 			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 			break;
