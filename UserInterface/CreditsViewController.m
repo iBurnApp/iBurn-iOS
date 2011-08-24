@@ -95,7 +95,7 @@
 			return 43;
 			break;
 		case 5:
-			return 55;
+			return 67;
 			break;
 		default:
 			return 0;
