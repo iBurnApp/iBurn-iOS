@@ -31,6 +31,7 @@
 	tableView = [[UITableView alloc] initWithFrame:tableFrame style:UITableViewStyleGrouped];
 	tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	tableView.delegate = self;
+  tableView.sectionFooterHeight = 0;
 	tableView.dataSource = self;
 	[self.view addSubview:tableView];
 	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
