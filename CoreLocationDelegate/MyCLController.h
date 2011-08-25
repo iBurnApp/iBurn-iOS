@@ -10,6 +10,7 @@
 @interface MyCLController : NSObject <CLLocationManagerDelegate> {
 	CLLocationManager *locationManager;
 	id delegate;
+  double iOSVersion;
   CLLocationCoordinate2D lastReading;
 }
 
@@ -24,6 +25,8 @@
 
 - (void)locationManager:(CLLocationManager *)manager
 	   didFailWithError:(NSError *)error;
+
+- (double) currentDistanceToLocation:(CLLocation*)location;
 
 + (MyCLController *)sharedInstance;
 

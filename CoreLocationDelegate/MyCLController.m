@@ -11,6 +11,8 @@ static MyCLController *sharedCLDelegate = nil;
 		self.locationManager = [[[CLLocationManager alloc] init] autorelease];
     self.locationManager.location;
 		self.locationManager.delegate = self; 
+    iOSVersion = [[UIDevice currentDevice].systemVersion doubleValue];
+
 	}
   //[self startTimer];
 	return self;
@@ -88,6 +90,21 @@ int fakeTime;
   [self locationManager:locationManager didUpdateToLocation:location fromLocation:nil];
   [pool release];
 }	
+
+
+- (double) getDistanceFrom:(CLLocation*)lastLocation toLocation:(CLLocation*)loc1 {
+  if (iOSVersion < 3.2) {
+    return [lastLocation getDistanceFrom:loc1];
+  } else {
+    return [lastLocation distanceFromLocation: loc1];
+  }
+}  
+
+
+- (double) currentDistanceToLocation:(CLLocation*)location {
+  return [self getDistanceFrom:location toLocation:locationManager.location];
+}
+
 
 -(void) updateTime {
   if (FAKE_POINTS) [self postFakePoint:0];

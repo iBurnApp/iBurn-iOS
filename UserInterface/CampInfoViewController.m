@@ -33,7 +33,8 @@
     if ([camp.latitude floatValue] > 1 
         && [camp.longitude floatValue] < -1) {
       CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[camp.latitude floatValue] longitude:[camp.longitude floatValue]]autorelease];
-      float distanceAway = [loc distanceFromLocation:[MyCLController sharedInstance].locationManager.location]*0.000621371192;
+      
+      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
       if (distanceAway > 0) {
         [tempTexts addObject:[camp.name stringByAppendingFormat:@" (%1.1f miles)",distanceAway]];
       } else {

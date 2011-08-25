@@ -32,7 +32,7 @@
     if ([art.latitude floatValue] > 1 
         && [art.longitude floatValue] < -1) {
       CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[art.latitude floatValue] longitude:[art.longitude floatValue]]autorelease];
-      float distanceAway = [loc distanceFromLocation:[MyCLController sharedInstance].locationManager.location]*0.000621371192;
+      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
       if (distanceAway > 0) {
         [tempTexts addObject:[art.name stringByAppendingFormat:@" (%1.1f miles)",distanceAway]];
       } else {

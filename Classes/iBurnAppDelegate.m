@@ -106,9 +106,9 @@
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   //[self checkOrCreateDatabase];
-  [campNodeController getNodes];
-  [artNodeController getNodes];
-  [eventNodeController getNodes];
+  //[campNodeController getNodes];
+  //[artNodeController getNodes];
+  //[eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -267,7 +267,7 @@
   
 
   NSFileManager *fileManager = [NSFileManager defaultManager];
-  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011.sqlite"];
+  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"];
   BOOL success = [fileManager fileExistsAtPath:dbPath];
   
   // If the database already exists then return without doing anything
@@ -285,8 +285,8 @@
 
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
-	//[self checkAndCreateDatabase];
-	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011.sqlite"]];
+	[self checkAndCreateDatabase];
+	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"]];
 	
 	NSError *error = nil;
 	NSPersistentStoreCoordinator* psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];

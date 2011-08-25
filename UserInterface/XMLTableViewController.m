@@ -26,7 +26,8 @@
 	objectDict = nil;
 	for (id object in objects) {
 		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
-		[object setDistanceAway:[loc distanceFromLocation:[MyCLController sharedInstance].locationManager.location]*0.000621371192];		
+
+		[object setDistanceAway:[[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192];		
 	}
 	NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
 																																	ascending:YES] autorelease];
