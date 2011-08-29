@@ -69,9 +69,11 @@
 
 - (void) loadCamps {
   for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
-  
+   
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
+    
+    if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
     GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]] autorelease];
     [newMarker changeLabelUsingText:[camp name] 
@@ -82,7 +84,7 @@
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"ThemeCamp";
     newMarker.waypointID = camp.simpleName;
-    newMarker.zoom = 16;
+    newMarker.zoom = 17;
 		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
 
@@ -142,9 +144,10 @@
   [mapView.contents.markerManager removeMarkers];
   [mapView.contents.markerManager setShowLabels:YES];
 
-  [self loadEvents];
   [self loadArt];
   [self loadCamps];
+  [self loadEvents];
+
 }
 
 

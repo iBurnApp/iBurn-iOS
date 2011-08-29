@@ -30,7 +30,7 @@
 - (void) importDataFromFile:(NSString*)filename {
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
-	NSArray *campArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
+	NSArray *campArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
 	//NSLog(@"The camp array is %@", campArray);
   CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownCamps = [self getAllThemeCamps];
@@ -60,9 +60,11 @@
     }
   }
 	
-  camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
-	camp.latitude = [dict objectForKey:@"Latitude"];
-	camp.longitude = [dict objectForKey:@"Longitude"];
+  camp.simpleName = [ThemeCamp createSimpleName:camp.name];    
+  if ([dict objectForKey:@"Latitude"]) {
+    camp.latitude = [dict objectForKey:@"Latitude"];
+    camp.longitude = [dict objectForKey:@"Longitude"];
+  }
 
   if ([dict objectForKey:@"description"]) {
     camp.desc = [dict objectForKey:@"description"];
