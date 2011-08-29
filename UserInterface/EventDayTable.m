@@ -185,6 +185,8 @@
 	[super loadView];
 	[sortControl release];
 	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Favorites", @"Name",nil]]retain];
+	sortControl.tintColor = [UIColor colorWithRed:35/255.0f green:97/255.0f blue:222/255.0f alpha:1];
+	sortControl.backgroundColor = [UIColor blackColor];
 	CGRect fr = sortControl.frame;
 	fr.size.width = self.view.frame.size.width;
 	sortControl.frame = fr;
@@ -194,7 +196,7 @@
 	
 	self.tableView.tableHeaderView = sortControl;
 	
-	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Showing Now" 
+	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Now" 
 																																						style:UIBarButtonItemStyleDone 
 																																					 target:self 
 																																					 action:@selector(scrollIfToday)]autorelease];

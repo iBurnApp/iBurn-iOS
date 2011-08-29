@@ -199,7 +199,7 @@
   UISegmentedControl *downloadButton = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]]autorelease];
   downloadButton.frame = CGRectMake(0,0,35,35);
   downloadButton.momentary = YES;
-  downloadButton.tintColor = [UIColor blackColor];
+  downloadButton.tintColor = [UIColor darkGrayColor];
   downloadButton.segmentedControlStyle = UISegmentedControlStyleBar;
   [downloadButton addTarget:self
                      action:@selector(home:)
@@ -207,18 +207,26 @@
   
   locationButton = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"locate-icon.png"]]]autorelease];
   locationButton.frame = CGRectMake(45,0,35,35);
-  locationButton.tintColor = [UIColor blackColor];
+  locationButton.tintColor = [UIColor darkGrayColor];
   locationButton.momentary = YES;
   locationButton.segmentedControlStyle = UISegmentedControlStyleBar;
   [locationButton addTarget:self
                      action:@selector(startLocation:)
            forControlEvents:UIControlEventValueChanged];
-  UIView *buttonView = [[[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)]autorelease];
+ 
+	
+	UIView *buttonView = [[[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)]autorelease];
   [buttonView addSubview: locationButton];
-  [buttonView addSubview: downloadButton];
   UIBarButtonItem *item = [[[UIBarButtonItem alloc]initWithCustomView:buttonView]autorelease];
   [self.navigationItem setTitle:@"Black Rock City"];
 	self.navigationItem.rightBarButtonItem = item;
+
+	UIView *buttonView2 = [[[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)]autorelease];
+  [buttonView2 addSubview: downloadButton];
+  UIBarButtonItem *item2 = [[[UIBarButtonItem alloc]initWithCustomView:buttonView2]autorelease];
+	self.navigationItem.leftBarButtonItem = item2;
+	
+	
 	/*self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
 											   initWithImage:[UIImage imageNamed:@"map-download-icon.png"]
 											   style:UIBarButtonItemStylePlain
@@ -273,7 +281,7 @@
   }
 	if(isCurrentlyUpdating) {
     isCurrentlyUpdating = NO;
-    locationButton.tintColor = self.navigationController.navigationBar.tintColor;
+    locationButton.tintColor = [UIColor darkGrayColor];
   } else {
     isCurrentlyUpdating = YES;
     locationButton.tintColor = [UIColor redColor];      

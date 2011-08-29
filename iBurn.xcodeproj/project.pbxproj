@@ -160,6 +160,7 @@
 		A0F1672E140C5335004DCF90 /* iPadImage-Landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16723140C5335004DCF90 /* iPadImage-Landscape.png */; };
 		A0F1672F140C5335004DCF90 /* iPadImage-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16724140C5335004DCF90 /* iPadImage-Portrait.png */; };
 		A0F16730140C5335004DCF90 /* iTunesArtwork in Resources */ = {isa = PBXBuildFile; fileRef = A0F16725140C5335004DCF90 /* iTunesArtwork */; };
+		A0F1681F140C59C2004DCF90 /* lock-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F1681E140C59C2004DCF90 /* lock-icon.png */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -468,6 +469,7 @@
 		A0F16723140C5335004DCF90 /* iPadImage-Landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPadImage-Landscape.png"; sourceTree = "<group>"; };
 		A0F16724140C5335004DCF90 /* iPadImage-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPadImage-Portrait.png"; sourceTree = "<group>"; };
 		A0F16725140C5335004DCF90 /* iTunesArtwork */ = {isa = PBXFileReference; lastKnownFileType = file; path = iTunesArtwork; sourceTree = "<group>"; };
+		A0F1681E140C59C2004DCF90 /* lock-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock-icon.png"; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -769,6 +771,7 @@
 		57A016350F4965E2004F53D0 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				A0F1681E140C59C2004DCF90 /* lock-icon.png */,
 				A0F1671A140C5335004DCF90 /* app-images */,
 				A0F16245140213E7004DCF90 /* blue-pin-down.png */,
 				A0F16246140213E7004DCF90 /* blue-pin-down@2x.png */,
@@ -1255,6 +1258,7 @@
 				A0F1672E140C5335004DCF90 /* iPadImage-Landscape.png in Resources */,
 				A0F1672F140C5335004DCF90 /* iPadImage-Portrait.png in Resources */,
 				A0F16730140C5335004DCF90 /* iTunesArtwork in Resources */,
+				A0F1681F140C59C2004DCF90 /* lock-icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
