@@ -93,15 +93,16 @@
     if(!descriptionLabel) {
       descriptionLabel = [[[UILabel alloc] initWithFrame:CGRectZero]autorelease];
 			descriptionLabel.backgroundColor = [UIColor clearColor];
+			descriptionLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
       CGSize constraintSize;
-			constraintSize.width = self.view.frame.size.width-PADDING*5;
+			constraintSize.width = cell.contentView.frame.size.width;
 			constraintSize.height = MAXFLOAT;
 			CGSize theSize = [[cellTexts objectAtIndex:section] sizeWithFont:[UIFont systemFontOfSize:17.0f] 
 																										 constrainedToSize:constraintSize 
 																												 lineBreakMode:UILineBreakModeWordWrap];
-      descriptionLabel.frame = CGRectMake(PADDING, 
+      descriptionLabel.frame = CGRectMake(0, 
                                           PADDING, 
-                                          self.view.frame.size.width-PADDING*5, 
+                                          cell.contentView.frame.size.width, 
                                           theSize.height+PADDING*2);
       [cell.contentView addSubview:descriptionLabel];
       descriptionLabel.numberOfLines = 0;

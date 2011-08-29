@@ -9,16 +9,15 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
-	<string>iburn-57.png</string>
+	<string>iBurn-57.png</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.bmadhoc.iburn2010</string>
 	<key>CFBundleIconFiles</key>
 	<array>
-		<string>iburn-57.png</string>
-		<string>iburn-57@2x.png</string>
-		<string>iburn-72.png</string>
-		<string>iburn-small.png</string>
-		<string>iburn-50.png</string>
+		<string>iBurn-57.png</string>
+		<string>iBurn-57@2x.png</string>
+		<string>iBurn-72.png</string>
+		<string>iBurn-small.png</string>
 	</array>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
