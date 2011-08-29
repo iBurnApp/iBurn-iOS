@@ -56,8 +56,13 @@
   if ([camp.latitude floatValue] > 1 
       && [camp.longitude floatValue] < -1) {
     [tempTitles addObject:@"Coordinates"];
-    NSString *locString = [NSString stringWithFormat:@"%1.5f, %1.5f",[camp.latitude floatValue], [camp.longitude floatValue]];
-    [tempTexts addObject:locString];
+		iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+		if ([t embargoed]) {
+			[tempTexts addObject:@"Location data is embargoed until gates open."];
+		} else {
+			NSString *locString = [NSString stringWithFormat:@"%1.5f, %1.5f",[camp.latitude floatValue], [camp.longitude floatValue]];
+			[tempTexts addObject:locString];
+		}
   }
   if (camp.desc && ![camp.desc isEqualToString:@""] ) {
     [tempTitles addObject:@"Description"];

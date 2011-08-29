@@ -9,8 +9,33 @@
 #import "UnlockViewController.h"
 #import "CreditsViewController.h"
 #import "PageViewer.h"
+#import "iBurnAppDelegate.h"
 
 @implementation UnlockViewController
+
+
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	if ([t checkPassword:textField.text]) {
+		UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Success" 
+																								 message:@"The data is now unlocked." 
+																								delegate:self 
+																			 cancelButtonTitle:@"OK" 
+																			 otherButtonTitles:nil]autorelease];
+		[av show];
+		[textField resignFirstResponder];
+	} else {
+		UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Fail" 
+																								 message:@"That password is incorrect." 
+																								delegate:self 
+																			 cancelButtonTitle:@"OK" 
+																			 otherButtonTitles:nil]autorelease];
+		[av show];
+	}
+	return NO;
+}
+
 
 - (id)init {
 	if(self = [super init]) {

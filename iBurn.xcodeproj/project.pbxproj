@@ -149,6 +149,7 @@
 		A0F16247140213E7004DCF90 /* blue-pin-down.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16245140213E7004DCF90 /* blue-pin-down.png */; };
 		A0F16248140213E7004DCF90 /* blue-pin-down@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16246140213E7004DCF90 /* blue-pin-down@2x.png */; };
 		A0F162EF1402194F004DCF90 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0F162EE1402194F004DCF90 /* MessageUI.framework */; };
+		A0F164B014022FDE004DCF90 /* NSDate-Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F164AF14022FDE004DCF90 /* NSDate-Utilities.m */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -452,6 +453,8 @@
 		A0F16245140213E7004DCF90 /* blue-pin-down.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-pin-down.png"; sourceTree = "<group>"; };
 		A0F16246140213E7004DCF90 /* blue-pin-down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-pin-down@2x.png"; sourceTree = "<group>"; };
 		A0F162EE1402194F004DCF90 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		A0F164AE14022FDE004DCF90 /* NSDate-Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate-Utilities.h"; sourceTree = "<group>"; };
+		A0F164AF14022FDE004DCF90 /* NSDate-Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate-Utilities.m"; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -959,6 +962,8 @@
 		EADDB89311D5CBF10067BBE4 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				A0F164AE14022FDE004DCF90 /* NSDate-Utilities.h */,
+				A0F164AF14022FDE004DCF90 /* NSDate-Utilities.m */,
 				50C7DC8914007F74006E8259 /* JSONKit */,
 				EA02BFC412065DE4000D058B /* CJSON */,
 				50BF50D512062BB400555D13 /* Reachability */,
@@ -1353,6 +1358,7 @@
 				A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */,
 				A0F160E81401F5FC004DCF90 /* UnlockViewController.m in Sources */,
 				A0F161531402043A004DCF90 /* CreditsViewController.m in Sources */,
+				A0F164B014022FDE004DCF90 /* NSDate-Utilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

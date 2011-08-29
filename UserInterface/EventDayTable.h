@@ -12,6 +12,7 @@
 @interface EventDayTable : XMLTableViewController {
 
   NSArray *events;
+	int eventIndex;
   
 }
 

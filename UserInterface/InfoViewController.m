@@ -124,9 +124,9 @@
 
 
 - (void)tableView:(UITableView *)tb didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   UITableViewCell *cell = [tb cellForRowAtIndexPath:indexPath];
   if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"URL"]) {
-    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     if (![t canConnectToInternet]) {
       UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"This page will only display if you have previously cached it." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
       [as show];
@@ -136,7 +136,7 @@
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Contact Email"]) {
     NSString *mailString = [NSString stringWithFormat:@"mailto:?to=%@",[cell.textLabel.text stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]];
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:mailString]];
-  } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"]) {
+  } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"] && ![t embargoed]) {
     [self showOnMap];
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Camp"]) {
     [self showCamp];    

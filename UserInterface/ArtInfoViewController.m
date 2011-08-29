@@ -56,9 +56,14 @@
   }
   if ([art.latitude floatValue] > 1 
       && [art.longitude floatValue] < -1) {
+		iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     [tempTitles addObject:@"Coordinates"];
-    NSString *locString = [NSString stringWithFormat:@"%1.5f, %1.5f",[art.latitude floatValue], [art.longitude floatValue]];
-    [tempTexts addObject:locString];
+		if ([t embargoed]) {
+			[tempTexts addObject:@"Location data is embargoed until gates open."];
+		} else {
+			NSString *locString = [NSString stringWithFormat:@"%1.5f, %1.5f",[art.latitude floatValue], [art.longitude floatValue]];
+			[tempTexts addObject:locString];
+		}
   }
   if (art.desc && ![art.desc isEqualToString:@""] ) {
     [tempTitles addObject:@"Description"];

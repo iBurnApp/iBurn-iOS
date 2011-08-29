@@ -28,6 +28,7 @@
 @dynamic Favorite;
 @dynamic day;
 
+
 + (NSString*) getDay:(NSDate*) date {
   static NSDateFormatter *dateFormatter = nil;
   if (dateFormatter == nil) {
