@@ -97,7 +97,7 @@
   //[self testOAuthAccessProtected];
   [window addSubview:tabBarController.view];
   [window makeKeyAndVisible];
-  [self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
+  //[self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
   
   self.artNodeController = [[[ArtNodeController alloc]init]autorelease];
   self.artNodeController.delegate = (ArtTableViewController*)[[tabBarController.viewControllers objectAtIndex:1]visibleViewController];
@@ -247,8 +247,32 @@
   return persistentStoreCoordinator_;
 }
 
+
+
+- (void) checkAndCreateDatabase {
+  NSString* defaultDBName =  @"iBurn.sqlite";
+  
+
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn.sqlite"];
+  BOOL success = [fileManager fileExistsAtPath:dbPath];
+  
+  // If the database already exists then return without doing anything
+  if(success) return;
+  
+  // Get the path to the database in the application package
+  NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath]
+                                   stringByAppendingPathComponent:defaultDBName];
+  
+  // Copy the database from the package to the users filesystem  
+  [fileManager copyItemAtPath:databasePathFromApp toPath:dbPath
+                        error:nil];
+}
+
+
+
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
-	
+	[self checkAndCreateDatabase];
 	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn.sqlite"]];
 	
 	NSError *error = nil;

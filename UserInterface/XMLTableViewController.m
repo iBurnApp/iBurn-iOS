@@ -28,6 +28,24 @@
 }
 
 
+- (void) sortBySimpleNameForEntity:(NSString*)entityName { 
+	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName
+																											 inManagedObjectContext:moc];
+	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	[request setEntity:entityDescription];
+	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"simpleName" ascending:YES];
+	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
+	[sort release];
+	NSError *error;
+	objects = [(NSMutableArray*)[moc executeFetchRequest:request error:&error]retain];
+	if(objects == nil) {
+		NSLog(@"Fetch failed with error: %@", error);
+	}	
+}
+
+
 - (void) sortByNameForEntity:(NSString*)entityName { 
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
