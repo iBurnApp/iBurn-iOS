@@ -209,6 +209,7 @@
 		MFMailComposeViewController* controller = [[[MFMailComposeViewController alloc] init]autorelease];
 		controller.mailComposeDelegate = self;
 		[controller setSubject:@"iBurn 2011 Feedback"];
+		[controller setToRecipients:[NSArray arrayWithObject:@"iburn@gaiagps.com"]];
 		[self presentModalViewController:controller animated:YES];
 		return NO;		
 	}
