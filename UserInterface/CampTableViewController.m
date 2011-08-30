@@ -67,7 +67,11 @@
 		cell = [[[DetailTableCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
- 	cell.textLabel.text = [[objects objectAtIndex: storyIndex]name];
+	if (objectDict) {
+		cell.textLabel.text = [[[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row]name];
+	} else {
+		cell.textLabel.text = [[objects objectAtIndex: storyIndex]name];
+	}
 	return cell;	
 }
 

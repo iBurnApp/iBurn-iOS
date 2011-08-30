@@ -15,6 +15,8 @@
 
 - (void) sortByDistance { 
 	[self sortByName];
+	[objectDict release];
+	objectDict = nil;
 	for (id object in objects) {
 		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
 		[object setDistanceAway:[loc distanceFromLocation:[MyCLController sharedInstance].locationManager.location]*0.000621371192];		
@@ -43,6 +45,8 @@
 	if(objects == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}	
+	[self objectDictItUp];
+
 }
 
 
@@ -61,10 +65,42 @@
 	if(objects == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}	
+	[self objectDictItUp];
+}
+
+- (void) objectDictItUp {
+	[objectDict release];
+	objectDict = [[NSMutableArray alloc]init];
+	[sections release];
+	sections = [[NSMutableArray alloc]init];
+	NSString *lastLetter = nil;
+	int index = -1;
+	
+	NSMutableDictionary *tempDict = [NSMutableDictionary dictionary];
+	for (id object in objects) {
+		NSString *letter = [[[object name]substringToIndex:1]lowercaseString];
+		if (![tempDict objectForKey:letter]) {
+			[tempDict setValue:[NSMutableArray arrayWithObject:object] forKey:letter];
+			NSLog(@"New letter: %@", letter);
+		} else {
+  		[[tempDict objectForKey:letter] addObject:object];
+			if(![sections containsObject:letter]) {
+				[sections addObject:letter];
+			}
+			index++;
+		}
+		lastLetter = letter;
+	}
+	for (NSString *key in sections) {
+		[objectDict addObject:[tempDict objectForKey:key]];
+	}
 }
 
 
 - (void) sortByFavorites { 
+	[objectDict release];
+	objectDict = nil;
+
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
@@ -164,11 +200,14 @@
 #pragma mark Table view methods
 
 - (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView {
+	NSLog(@"The count is %d", [objectDict count]);
+	if (objectDict) return [objectDict count];
   return 1;
 }
 
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	if (objectDict) return [[objectDict objectAtIndex:section]count];
 	return [objects count];
 }
 
@@ -219,6 +258,27 @@
   touchedIndexPath = nil;
 }
 
+
+- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView {
+	if (!objectDict) return nil;
+	return sections;
+}
+
+
+- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString
+																																						 *)title 
+							 atIndex:(NSInteger)index {
+	return index;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+	// this table has multiple sections. One for each unique character that an element begins with
+	// [A,B,C,D,E,F,G,H,I,K,L,M,N,O,P,R,S,T,U,V,X,Y,Z]
+	// return the letter that represents the requested section
+	// this is actually a delegate method, but we forward the request to the datasource in the view controller
+	if (!objectDict) return nil;
+	return [sections objectAtIndex:section];
+}
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
   [self tableView:tableView didSelectRowAtIndexPath:indexPath];

@@ -12,9 +12,11 @@
 @interface XMLTableViewController : UITableViewController <UISearchBarDelegate, UIActionSheetDelegate> {
 	CGSize cellSize;
 	NSMutableArray *objects;
+	NSMutableArray *objectDict;
   UISearchBar *searchBar;
   NSIndexPath *touchedIndexPath;
 	UISegmentedControl *sortControl;
+	NSMutableArray *sections;
 
 }
 
