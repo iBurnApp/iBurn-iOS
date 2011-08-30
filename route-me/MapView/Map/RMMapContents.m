@@ -737,7 +737,7 @@
 	
 	RMCachedTileSource *newCachedTileSource = [RMCachedTileSource cachedTileSourceWithSource:newTileSource];	
 	minZoom = newCachedTileSource.minZoom;
-	maxZoom = newCachedTileSource.maxZoom + 1;
+	maxZoom = newCachedTileSource.maxZoom + 2;
 	[self setZoom:[self zoom]]; // setZoom clamps zoom level to min/max limits
 
 	[tileSource autorelease];
