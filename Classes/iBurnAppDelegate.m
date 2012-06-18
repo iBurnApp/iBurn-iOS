@@ -38,7 +38,7 @@
 
 @implementation iBurnAppDelegate
 
-@synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController, embargoed;
+@synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController, embargoed, bgMoc;
 
 
 - (NSString*) documentsDirectory {
@@ -52,7 +52,9 @@
 	[testRequest setEntity:[NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[self managedObjectContext]]];
 	NSError *error;
 	NSInteger dbCount = [[self managedObjectContext] countForFetchRequest:testRequest error:&error];
-  //NSLog(@"DBCount: %i", dbCount);
+  if (error) {
+    NSLog(@"DB Error: %@ %@, DBCount: %i", [error localizedDescription], [error userInfo], dbCount);
+  }
 }
 
 

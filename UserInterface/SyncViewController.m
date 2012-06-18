@@ -57,7 +57,7 @@
   switchView = [[UISwitch alloc] initWithFrame: CGRectMake(4.0f, 16.0f, 100.0f, 28.0f)];
   cell = [tableView dequeueReusableCellWithIdentifier:[texts objectAtIndex:indexPath.row]];
   if(!cell) {
-    cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:[texts objectAtIndex:indexPath.row]] autorelease];
+    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[texts objectAtIndex:indexPath.row]] autorelease];
     [switchView addTarget:self action:@selector(switchEm:) forControlEvents:UIControlEventValueChanged];
   }
   cell.selectionStyle = UITableViewCellSelectionStyleGray;

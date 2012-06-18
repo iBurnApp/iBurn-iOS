@@ -39,7 +39,6 @@
 		50BF50D112062B1600555D13 /* ASIS3ServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50C312062B1600555D13 /* ASIS3ServiceRequest.m */; };
 		50BF50D812062BB400555D13 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50D712062BB400555D13 /* Reachability.m */; };
 		50BF510B12062D4F00555D13 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF510A12062D4F00555D13 /* MobileCoreServices.framework */; };
-		50BF510E12062D6300555D13 /* libz.1.2.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF510D12062D6300555D13 /* libz.1.2.3.dylib */; };
 		50BF511C12062DA800555D13 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511B12062DA800555D13 /* SystemConfiguration.framework */; };
 		50BF511F12062DB100555D13 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511E12062DB100555D13 /* CFNetwork.framework */; };
 		50BF5149120637E000555D13 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50BF5148120637E000555D13 /* MainWindow-iPad.xib */; };
@@ -170,6 +169,7 @@
 		A0F1681F140C59C2004DCF90 /* lock-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F1681E140C59C2004DCF90 /* lock-icon.png */; };
 		A0F16863140C5EB5004DCF90 /* green-pin-down.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16861140C5EB5004DCF90 /* green-pin-down.png */; };
 		A0F16864140C5EB5004DCF90 /* green-pin-down@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16862140C5EB5004DCF90 /* green-pin-down@2x.png */; };
+		D9E1E460158FBBAA00319EDD /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9E1E45F158FBBAA00319EDD /* libz.dylib */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -291,7 +291,6 @@
 		50BF50D612062BB400555D13 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		50BF50D712062BB400555D13 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		50BF510A12062D4F00555D13 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		50BF510D12062D6300555D13 /* libz.1.2.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.3.dylib; path = usr/lib/libz.1.2.3.dylib; sourceTree = SDKROOT; };
 		50BF511B12062DA800555D13 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		50BF511E12062DB100555D13 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		50BF5148120637E000555D13 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = "MainWindow-iPad.xib"; sourceTree = "<group>"; };
@@ -487,6 +486,7 @@
 		A0F1681E140C59C2004DCF90 /* lock-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock-icon.png"; sourceTree = "<group>"; };
 		A0F16861140C5EB5004DCF90 /* green-pin-down.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "green-pin-down.png"; sourceTree = "<group>"; };
 		A0F16862140C5EB5004DCF90 /* green-pin-down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "green-pin-down@2x.png"; sourceTree = "<group>"; };
+		D9E1E45F158FBBAA00319EDD /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -550,6 +550,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9E1E460158FBBAA00319EDD /* libz.dylib in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
@@ -559,7 +560,6 @@
 				57101DD00F283EC500812A41 /* Security.framework in Frameworks */,
 				EADDBBFA11D613180067BBE4 /* libMapView.a in Frameworks */,
 				50BF510B12062D4F00555D13 /* MobileCoreServices.framework in Frameworks */,
-				50BF510E12062D6300555D13 /* libz.1.2.3.dylib in Frameworks */,
 				50BF511C12062DA800555D13 /* SystemConfiguration.framework in Frameworks */,
 				50BF511F12062DB100555D13 /* CFNetwork.framework in Frameworks */,
 				EA02BEFB12065668000D058B /* CoreData.framework in Frameworks */,
@@ -648,7 +648,7 @@
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				288765FC0DF74451002DB57D /* CoreGraphics.framework */,
 				50BF510A12062D4F00555D13 /* MobileCoreServices.framework */,
-				50BF510D12062D6300555D13 /* libz.1.2.3.dylib */,
+				D9E1E45F158FBBAA00319EDD /* libz.dylib */,
 				50BF511B12062DA800555D13 /* SystemConfiguration.framework */,
 				50BF511E12062DB100555D13 /* CFNetwork.framework */,
 				EA02BEFA12065668000D058B /* CoreData.framework */,

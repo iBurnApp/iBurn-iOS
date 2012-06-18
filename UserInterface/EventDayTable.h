@@ -7,9 +7,9 @@
 //
 
 #import "XMLTableViewController.h"
+#import "NodeController.h"
 
-
-@interface EventDayTable : XMLTableViewController {
+@interface EventDayTable : XMLTableViewController <NodeFetchDelegate> {
 
   NSArray *events;
 	int eventIndex;
