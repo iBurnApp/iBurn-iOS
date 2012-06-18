@@ -12,6 +12,7 @@
 #import "EventInfoViewController.h"
 #import "NSDate-Utilities.h"
 #import "Favorite.h"
+#import "Event.h"
 
 @implementation EventDayTable
 @synthesize events;

@@ -62,7 +62,7 @@
 	point.latitude = [camp.latitude floatValue]; //Center of 2009 City
   point.longitude = [camp.longitude floatValue];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  RMMapView* mapView = [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] view]; 
+  RMMapView* mapView = (RMMapView*)[[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] view]; 
   [mapView moveToLatLong:point];                
   [[mapView contents] setZoom:16.0];
   [[t tabBarController]setSelectedIndex:0];
@@ -87,7 +87,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
 	if (objectDict) {

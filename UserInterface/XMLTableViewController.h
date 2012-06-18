@@ -22,5 +22,7 @@
 
 - (id) initWithSearchPlaceholder:(NSString*)searchPlaceholder;
 - (void) loadObjectsForEntity:(NSString *)entityName;
+- (void) sortByNameForEntity:(NSString*)entityName;
+- (void) sortBySimpleNameForEntity:(NSString*)entityName;
 
 @end

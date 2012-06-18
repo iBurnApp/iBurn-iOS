@@ -16,6 +16,8 @@
 
 @property (nonatomic, retain) Event *event;
 
+- (id)initWithEvent:(Event*)evt;
+
 @end
 
 

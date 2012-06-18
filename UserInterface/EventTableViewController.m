@@ -12,6 +12,7 @@
 #import "EventDayTable.h"
 #import "iBurnAppDelegate.h"
 #import "FavoritesTableViewController.h"
+#import "EventNodeController.h"
 
 @implementation EventTableViewController
 @synthesize eventDayTable;
@@ -24,7 +25,8 @@
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  [[t eventNodeController]loadDBEvents];
+  EventNodeController *eventNode = (EventNodeController*)[t eventNodeController];
+  [eventNode loadDBEvents];
 }
 
 
@@ -80,7 +82,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
   }
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
 	cell.textLabel.text = [dayArray objectAtIndex: storyIndex];

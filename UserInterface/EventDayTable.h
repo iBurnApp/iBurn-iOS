@@ -10,13 +10,12 @@
 #import "NodeController.h"
 
 @interface EventDayTable : XMLTableViewController <NodeFetchDelegate> {
-
-  NSArray *events;
-	int eventIndex;
-  
+  NSArray *events;  
 }
 
 
 @property(nonatomic,retain) NSArray *events;
+
+- (id)initWithTitle:(NSString*)ttl;
 
 @end

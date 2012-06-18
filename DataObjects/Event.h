@@ -33,6 +33,7 @@
 @property (nonatomic, retain) NSString * day;
 
 + (NSArray*) eventsForDay:(NSString*) day;
++ (NSString*) getDay:(NSDate*) date;
 
 @end
 

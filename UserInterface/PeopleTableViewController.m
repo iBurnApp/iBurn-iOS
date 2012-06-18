@@ -9,6 +9,7 @@
 #import "PeopleTableViewController.h"
 #import "User.h"
 #import "PeopleInfoViewController.h"
+#import "NSObject-SQLitePersistence.h"
 
 @implementation PeopleTableViewController
 

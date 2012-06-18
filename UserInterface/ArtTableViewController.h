@@ -14,8 +14,5 @@
 @interface ArtTableViewController : XMLTableViewController <NodeFetchDelegate> {
 //@property (nonatomic, retain, readwrite) id<CellMapLinkDelegate> mapDelegate;
 }
-  
--(void)zoomMapToLocation:(double)latitude: (double) longitude;
-
 
 @end
