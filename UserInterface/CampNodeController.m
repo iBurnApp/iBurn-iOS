@@ -32,7 +32,7 @@
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *campArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
 	//NSLog(@"The camp array is %@", campArray);
-  CLLocationCoordinate2D dummy = {0,0};
+  //CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownCamps = [self getAllThemeCamps];
   
   [self createAndUpdate:knownCamps
@@ -77,7 +77,7 @@
 
 
 - (void) updateObject:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
-  camp.bm_id = N([[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
   camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
   camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
   camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
@@ -116,11 +116,11 @@
   NSManagedObjectContext *moc = [t managedObjectContext];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
-    NSString* name = [self nullOrObject:[dict objectForKey:@"title"]];
+    NSString* name = (NSString*)[self nullOrObject:[dict objectForKey:@"title"]];
     if (fromFile) {
-      name = [self nullOrObject:[dict objectForKey:@"name"]];
+      name = (NSString*)[self nullOrObject:[dict objectForKey:@"name"]];
       if (!name) {
-        name = [self nullOrObject:[dict objectForKey:@"Name"]];
+        name = (NSString*)[self nullOrObject:[dict objectForKey:@"Name"]];
       }
     }
 

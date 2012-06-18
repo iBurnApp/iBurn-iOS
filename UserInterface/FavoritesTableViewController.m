@@ -129,20 +129,20 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
     //[cell setBlackness];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
   Favorite *favorite = [objects objectAtIndex: storyIndex];
   if (favorite.ThemeCamp) {    
     cell.textLabel.text = [favorite.ThemeCamp name];
-    cell.image = [UIImage imageNamed:@"camps-reversed.png"];
+    cell.imageView.image = [UIImage imageNamed:@"camps-reversed.png"];
   } else if (favorite.ArtInstall) {
     cell.textLabel.text = [favorite.ArtInstall name];
-    cell.image = [UIImage imageNamed:@"art-reverse.png"];
+    cell.imageView.image = [UIImage imageNamed:@"art-reverse.png"];
   } else if (favorite.Event) {
     cell.textLabel.text = [favorite.Event name];
-    cell.image = [UIImage imageNamed:@"events-reversed.png"];
+    cell.imageView.image = [UIImage imageNamed:@"events-reversed.png"];
     //cell.accessoryType = UITableViewCellAccessoryNone;
   }  
 	return cell;	

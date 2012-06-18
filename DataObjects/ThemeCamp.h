@@ -30,6 +30,7 @@
 @property (nonatomic, retain) Favorite * Favorite;
 
 + (ThemeCamp*) campForSimpleName:(NSString*) sName;
++ (NSString*) createSimpleName:(NSString*) name;
 
 @end
 

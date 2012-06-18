@@ -35,6 +35,9 @@
              withObjects:(NSArray*)objects 
             forClassName:(NSString*)className 
 								fromFile:(BOOL)fromFile;
+- (NSObject*) nullOrObject:(NSObject*)str;
+- (NSDictionary*) getLocationDictionary:(NSDictionary*) dict;
+- (void) saveObjects:(NSArray*)objects;
   
 @property (nonatomic, retain) NSArray *nodes;
 @property (nonatomic, assign) id<NodeFetchDelegate> delegate;
