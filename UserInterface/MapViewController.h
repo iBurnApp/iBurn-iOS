@@ -34,6 +34,7 @@
 
 
 - (void) loadCamps;
+- (void) showMapForObject:(id)obj;
 
 
 @end

@@ -11,6 +11,7 @@
 #import "CampInfoViewController.h"
 #import "iBurnAppDelegate.h"
 #import "RMMapView.h"
+#import "Favorite.h"
 
 @implementation CampTableViewController
 
@@ -71,7 +72,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
 	if (objectDict) {

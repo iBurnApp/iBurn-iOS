@@ -34,6 +34,8 @@
 
 + (NSArray*) eventsForDay:(NSString*) day;
 + (NSString*) getDay:(NSDate*) date;
++ (NSArray*) getTodaysEvents;
++ (Event*) eventForName:(NSString*) sName;
 
 @end
 

@@ -11,6 +11,7 @@
 #import "Favorite.h"
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
+#import "MapViewController.h"
 
 @implementation CampInfoViewController
 
@@ -21,7 +22,8 @@
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
   [[[[t tabBarController]viewControllers]objectAtIndex:0] popToRootViewControllerAnimated:YES];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:camp];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:camp];
 }
 
 

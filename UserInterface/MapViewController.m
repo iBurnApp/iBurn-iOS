@@ -26,6 +26,7 @@
 #import "Event.h"
 #import "EventInfoViewController.h"
 #import "GaiaMarker.h"
+#import "GaiaMarkerManager.h"
 
 @implementation MapViewController
 @synthesize mapView, detailView, progressView;
@@ -52,7 +53,9 @@
 	[mapView.contents.markerManager addMarker:newMarker AtLatLong:point];	
   [mapView moveToLatLong:point];                
   [[mapView contents] setZoom:16.0];
-	[mapView.contents.markerManager showMarkersOnScreen];	
+  
+  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
+	[gaiaMarkerManager showMarkersOnScreen];	
 }  
 
 - (NSArray*) getAllObjects:(NSString*) objType {  
@@ -145,8 +148,9 @@
 - (void) loadMarkers {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   if (t.embargoed) return;
-  [mapView.contents.markerManager removeMarkers];
-  [mapView.contents.markerManager setShowLabels:YES];
+  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
+  [gaiaMarkerManager removeMarkers];
+  [gaiaMarkerManager setShowLabels:YES];
 
   [self loadArt];
   [self loadCamps];
@@ -165,17 +169,18 @@
 
 - (void) tapOnMarker: (RMMarker*) marker onMap: (RMMapView*) map {
 	if (![marker.data isKindOfClass:[NSString class]]) return;
-  if ([marker.data isEqualToString:@"ThemeCamp"]) {
+  NSString *markerString = (NSString*)marker.data;
+  if ([markerString isEqualToString:@"ThemeCamp"]) {
     ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
     self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
 
   }
-  if ([marker.data isEqualToString:@"ArtInstall"]) {
+  if ([markerString isEqualToString:@"ArtInstall"]) {
     ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
     self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
     
   }
-  if ([marker.data isEqualToString:@"Event"]) {
+  if ([markerString isEqualToString:@"Event"]) {
     Event * event = [Event eventForName:[marker waypointID]];
     self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
     

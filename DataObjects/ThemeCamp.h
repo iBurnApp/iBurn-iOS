@@ -29,6 +29,8 @@
 @property (nonatomic, retain) NSString * contactEmail, * simpleName;
 @property (nonatomic, retain) Favorite * Favorite;
 
++ (ThemeCamp*) campForSimpleName:(NSString*) sName;
+
 @end
 
 

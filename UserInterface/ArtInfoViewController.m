@@ -12,6 +12,7 @@
 #import "ArtTableViewController.h"
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
+#import "MapViewController.h"
 
 @implementation ArtInfoViewController
 
@@ -20,7 +21,8 @@
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
   [[[[t tabBarController]viewControllers]objectAtIndex:0] popToRootViewControllerAnimated:YES];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:art];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:art];
 }
 
 

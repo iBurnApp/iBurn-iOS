@@ -17,6 +17,7 @@
 #import "iBurnAppDelegate.h"
 #import "DetailTableCell.h"
 #import "RMMapView.h"
+#import "MapViewController.h"
 
 @implementation FavoritesTableViewController
 
@@ -54,7 +55,8 @@
   }  
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:obj];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:obj];
 }
 
 

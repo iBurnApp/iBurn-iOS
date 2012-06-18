@@ -144,7 +144,7 @@
   }
   
   MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
-  MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:bts progressView:mapViewController.progressView];
+  MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView];
   [self setViewForDownloading];
   dl.refreshTiles = refreshTiles;
   [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
@@ -355,7 +355,7 @@
   NSLog(@"mdf password %@", [iBurnAppDelegate md5:password]);
   NSString* hash = [iBurnAppDelegate md5:password];
   if ([hash isEqualToString:CORRECT_HASH]) {
-    [password writeToFile:[self passwordFile] atomically:YES];
+    [password writeToFile:[self passwordFile] atomically:YES encoding:NSUTF8StringEncoding error:nil];
     [self liftEmbargo];
     return YES;
   }
@@ -364,7 +364,7 @@
 
 - (NSString*) getStoredPassword {
   if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
-    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile]];
+    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile] encoding:NSUTF8StringEncoding error:nil];
     return password;
   }
   return nil;
@@ -384,7 +384,7 @@
   NSLog(@"%@", [self passwordFile]);
 
   if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
-    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile]];
+    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile] encoding:NSUTF8StringEncoding error:nil];
     [self checkPassword:password];
     return;
   }
