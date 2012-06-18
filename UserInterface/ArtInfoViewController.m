@@ -106,7 +106,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ArtInstall = %@", art];
   [fetchRequest setPredicate:predicate];	

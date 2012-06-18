@@ -46,7 +46,8 @@
 
 - (id)init {
 	if (self = [super initWithSearchPlaceholder:@"search art installations"]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Art";
 		[self.navigationItem setTitle:@"Art Installations"];
 	}

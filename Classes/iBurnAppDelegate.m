@@ -48,7 +48,7 @@
 
 - (void) checkOrCreateDatabase {
 	//See if the CoreData database is populated.  If not populate it from the API.
-	NSFetchRequest *testRequest = [[NSFetchRequest alloc] init];
+	NSFetchRequest *testRequest = [[[NSFetchRequest alloc] init] autorelease];
 	[testRequest setEntity:[NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[self managedObjectContext]]];
 	NSError *error;
 	NSInteger dbCount = [[self managedObjectContext] countForFetchRequest:testRequest error:&error];
@@ -144,7 +144,7 @@
   }
   
   MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
-  MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView];
+  MapDownloader* dl = [[[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView] autorelease];
   [self setViewForDownloading];
   dl.refreshTiles = refreshTiles;
   [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
@@ -291,7 +291,7 @@
 	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"]];
 	
 	NSError *error = nil;
-	NSPersistentStoreCoordinator* psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+	NSPersistentStoreCoordinator* psc = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]] autorelease];
 	if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
 		/*
 		 Replace this implementation with code to handle the error appropriately.

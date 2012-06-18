@@ -4,7 +4,7 @@
 // This is a singleton class, see below
 static MyCLController *sharedCLDelegate = nil;
 @implementation MyCLController
-@synthesize delegate, locationManager, lastReading;
+@synthesize delegate, locationManager, lastReading, timer;
 
 - (id) init {
 	if (self = [super init]) {
@@ -43,6 +43,8 @@ static MyCLController *sharedCLDelegate = nil;
 - (void)dealloc {
   delegate = nil;
   self.locationManager = nil;
+  [self.timer invalidate];
+  self.timer = nil;
   [super dealloc];
 }
 
@@ -56,11 +58,11 @@ int fakeTime;
   lastReading = (CLLocationCoordinate2D){40.78, -119.21};
   //lastReading = (CLLocationCoordinate2D){40.766, -119.12};
   fakeTime = 0;
-  NSTimer* timer = [[NSTimer scheduledTimerWithTimeInterval:(1)
+  self.timer = [NSTimer scheduledTimerWithTimeInterval:(1)
                                             target:self
                                           selector:@selector(updateTime)
                                           userInfo:nil
-                                           repeats:YES]retain];
+                                           repeats:YES];
   [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
 }  
 

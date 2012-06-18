@@ -21,7 +21,8 @@
 
 - (id)init {
 	if(self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"people.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"people.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"People";
 	}
   return self;
@@ -44,7 +45,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	int userIndex = [indexPath indexAtPosition: [indexPath length] - 1];
 	int userPk = [[[objects objectAtIndex: userIndex] objectForKey:@"primaryKey"] intValue];
-	PeopleInfoViewController *PeopleInfoView = [[PeopleInfoViewController alloc] initWithPk:userPk];
+	PeopleInfoViewController *PeopleInfoView = [[[PeopleInfoViewController alloc] initWithPk:userPk] autorelease];
 	[[self navigationController] pushViewController:PeopleInfoView animated:YES];
 }
 

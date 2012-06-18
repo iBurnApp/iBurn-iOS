@@ -172,17 +172,17 @@
   NSString *markerString = (NSString*)marker.data;
   if ([markerString isEqualToString:@"ThemeCamp"]) {
     ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
-    self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
+    self.detailView = [[[CampInfoViewController alloc] initWithCamp:camp] autorelease];
 
   }
   if ([markerString isEqualToString:@"ArtInstall"]) {
     ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
-    self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
+    self.detailView = [[[ArtInfoViewController alloc] initWithArt:art] autorelease];
     
   }
   if ([markerString isEqualToString:@"Event"]) {
     Event * event = [Event eventForName:[marker waypointID]];
-    self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
+    self.detailView = [[[EventInfoViewController alloc] initWithEvent:event] autorelease];
     
   }
   [self.navigationController pushViewController:detailView animated:YES];	
@@ -210,7 +210,8 @@
   _needFetchQuadrant = 0;
   _markersNeedDisplay = 0;
 	self.title = aTitle;
-	[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0];
+  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0] autorelease];
+  self.tabBarItem = tabBarItem;
 	
   UISegmentedControl *downloadButton = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]]autorelease];
   downloadButton.frame = CGRectMake(0,0,35,35);
@@ -315,10 +316,8 @@
   [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
   [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
   
+  CLLocationCoordinate2D center = CLLocationCoordinate2DMake(40.782920000000004, -119.20903000000001);
   
-  CLLocationCoordinate2D center = {bounds.southwest.latitude/2+bounds.northeast.latitude/2,bounds.southwest.longitude/2+bounds.northeast.longitude/2};
-  
-  center = (CLLocationCoordinate2D) {40.782920000000004, -119.20903000000001};
   [mapView.contents moveToLatLong:center];
 }	
 
@@ -326,7 +325,7 @@
 - (void)loadView {
   [super loadView];
   [self setMapView:[[[BurnMapView alloc]initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)]autorelease]];
-  BurnTileSource* bts = [[BurnTileSource alloc] init];
+  BurnTileSource* bts = [[[BurnTileSource alloc] init] autorelease];
   NSLog(@"bts zooms %f %f", [bts minZoom], [bts maxZoom]);
   RMCachedTileSource* cts = [RMCachedTileSource cachedTileSourceWithSource:bts];
   [mapView.contents setTileSource:cts];

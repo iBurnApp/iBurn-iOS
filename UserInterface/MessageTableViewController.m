@@ -15,7 +15,8 @@
 - (id) init {
 	if (self = [super initWithSearchPlaceholder:nil]) {
 		self.title = @"Messages";
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"inbox.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"inbox.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		//self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
     //                                           initWithTitle:@"Write"
      //                                          style:UIBarButtonItemStylePlain

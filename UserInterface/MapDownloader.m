@@ -64,7 +64,7 @@
 
 
 - (void) downloadTile:(RMTile)tile fromURL:(NSString*)url toPath:(NSString*)path {
-  ASIHTTPRequest *request = [[ASIHTTPRequest alloc]initWithURL:[NSURL URLWithString:url]];
+  ASIHTTPRequest *request = [[[ASIHTTPRequest alloc]initWithURL:[NSURL URLWithString:url]] autorelease];
   [request setNumberOfTimesToRetryOnTimeout:3];
   [request setQueue:self.networkQueue];
   [request setUserInfo:[[[NSDictionary alloc] initWithObjectsAndKeys:path, @"path",
@@ -73,7 +73,6 @@
   [self createDirectoryIfNeeded:path];
   [request setDownloadDestinationPath:path];
   [[self networkQueue] addOperation:request];
-  
 }
 
 
@@ -111,7 +110,7 @@
   NSString* responseTxt = [[[NSString alloc] initWithContentsOfFile:path
                                                            encoding:NSUTF8StringEncoding 
                                                               error:nil] autorelease];
-  NSDictionary * dict = [[responseTxt objectFromJSONString] retain];
+  NSDictionary * dict = [responseTxt objectFromJSONString];
   int batchCount = 0;
   totalRequests = [dict count];
   downloadSectionComplete = NO;

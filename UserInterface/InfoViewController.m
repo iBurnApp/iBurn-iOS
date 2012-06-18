@@ -20,7 +20,8 @@
 - (id)initWithTitle:(NSString*)title {
   self = [super init];
   self.title = title;
-	[self.tabBarItem initWithTitle:self.title image:NULL tag:0];
+  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:nil tag:0] autorelease];
+  self.tabBarItem = tabBarItem;
   return self;
 }
 

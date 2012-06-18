@@ -32,7 +32,8 @@
 
 - (id)init {
 	if (self = [super initWithSearchPlaceholder:@""]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Events";
 		[self.navigationItem setTitle:@"Events"];
     dayArray = [[NSArray arrayWithObjects:

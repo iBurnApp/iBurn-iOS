@@ -61,27 +61,27 @@
                         names:(NSArray*)names
                     upperLeft:(CLLocationCoordinate2D)upperLeft 
                    lowerRight:(CLLocationCoordinate2D)lowerRight {  
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];  
-  //NSMutableArray *predicates = [self getPredicateArrayForUpperLeft:(CLLocationCoordinate2D)upperLeft 
-//                                                        lowerRight://(CLLocationCoordinate2D)lowerRight];  
-  //NSPredicate *finalPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSEntityDescription *entity = [NSEntityDescription entityForName:type inManagedObjectContext:[t managedObjectContext]];
-  [fetchRequest setEntity:entity];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", names];
-  [fetchRequest setPredicate:predicate];	
-  NSError *error;
-  NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error]retain];
-  [fetchRequest release];
-  fetchRequest = nil;
-  /*for (KnownPlace *kp in knownPlaces) {    
-   Place *place = [[[Place alloc]initWithKnownPlace:kp] autorelease];
-   [self tagPlaceWithDistanceAway:place];
-   [places addObject:place];
-   }*/
-  [pool release];
-	return objects;
+  @autoreleasepool {
+    //NSMutableArray *predicates = [self getPredicateArrayForUpperLeft:(CLLocationCoordinate2D)upperLeft 
+    //                                                        lowerRight://(CLLocationCoordinate2D)lowerRight];  
+    //NSPredicate *finalPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:type inManagedObjectContext:[t managedObjectContext]];
+    [fetchRequest setEntity:entity];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", names];
+    [fetchRequest setPredicate:predicate];	
+    NSError *error;
+    NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
+    [fetchRequest release];
+    fetchRequest = nil;
+    /*for (KnownPlace *kp in knownPlaces) {    
+     Place *place = [[[Place alloc]initWithKnownPlace:kp] autorelease];
+     [self tagPlaceWithDistanceAway:place];
+     [places addObject:place];
+     }*/
+    return objects;
+  }
 }
 
 

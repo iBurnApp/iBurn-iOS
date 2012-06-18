@@ -79,7 +79,7 @@
 
 
 - (NSString*) dayString:(NSString*)ttl {
-	NSString *dayString;
+	NSString *dayString = nil;
 	if ([ttl isEqualToString:@"August 29"])
 		dayString = @"29";
 	if ([ttl isEqualToString:@"August 30"])

@@ -47,7 +47,8 @@
 
 - (id)init {
 	if(self = [super initWithSearchPlaceholder:@"search theme camps"]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Camps";
 		[self.navigationItem setTitle:@"Theme Camps"];
 	}

@@ -30,7 +30,7 @@
 - (void) importDataFromFile:(NSString*)filename {
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
-	NSArray *artArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
+	NSArray *artArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
   //CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownArts = [self getAllArt];
   
