@@ -50,8 +50,8 @@
 }
 
 
-- (void) updateObjectFromFile:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
-  
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
+  ThemeCamp *camp = (ThemeCamp*)object;
   if ([dict objectForKey:@"name"]) {
     camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
 	} else {

@@ -16,16 +16,6 @@
 @synthesize eventDateHash;
 
 
-- (void) sortHashByDate {
-
-  for (id key in eventDateHash) {
-    NSArray *events = [eventDateHash objectForKey:key];
-  }  
-
-
-}
-
-
 - (id) init {
   self = [super init];
   return self;
@@ -78,7 +68,7 @@
 
 - (void) updateObject:(Event*)event withDict:(NSDictionary*)dict occurenceIndex:(int)idx {
   NSObject *bmid = [self nullOrObject:[dict objectForKey:@"id"]];
-  if (bmid) event.bm_id = N([bmid intValue]);
+  if (bmid) event.bm_id = N([(NSString*)bmid intValue]);
 
   event.name = [self nullStringOrString:[dict objectForKey:@"title"]];
   NSDictionary *locPoint = [self getLocationDictionary:dict];
@@ -89,7 +79,7 @@
     //NSLog(@"%1.5f, %1.5f", [event.latitude floatValue], [event.longitude floatValue]);
   }
   event.desc = [self nullStringOrString:[dict objectForKey:@"print_description"]];
-  NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
+  NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
   if (occurrenceSet && [occurrenceSet count] > 0) {
     NSDictionary* times =  (NSDictionary*)[occurrenceSet objectAtIndex:idx];
     NSDate *startTime = [self getDateFromString:[times objectForKey:@"start_time"]];
@@ -161,7 +151,7 @@
       matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
                                                   inManagedObjectContext:moc]; 
       [self updateObject:matchedCamp withDict:dict occurenceIndex:0];
-      NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
+      NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
       if (occurrenceSet && [occurrenceSet count] > 0) {
         for (int i = 1; i < [occurrenceSet count]; i++) {
           matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
@@ -205,7 +195,6 @@
     for (Event* event in sortedArray) {
       [self addEventToHash:event];
     }
-    //[self sortHashByDate];
   }
 }
 

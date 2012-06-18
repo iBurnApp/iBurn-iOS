@@ -23,4 +23,7 @@
                         texts:(NSArray*)texts;
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath object:(id)object;
 
+- (void) showOnMap;
+- (void) showCamp;
+
 @end

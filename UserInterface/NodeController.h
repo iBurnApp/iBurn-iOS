@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
+#import "BurnDataObject.h"
 @class ASIHTTPRequest;
 
 @protocol NodeFetchDelegate<NSObject>
@@ -38,6 +39,8 @@
 - (NSObject*) nullOrObject:(NSObject*)str;
 - (NSDictionary*) getLocationDictionary:(NSDictionary*) dict;
 - (void) saveObjects:(NSArray*)objects;
+- (void) updateObject:(id)object withDict:(NSDictionary*)dict;
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict;
   
 @property (nonatomic, retain) NSArray *nodes;
 @property (nonatomic, assign) id<NodeFetchDelegate> delegate;

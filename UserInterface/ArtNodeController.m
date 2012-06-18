@@ -31,7 +31,7 @@
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *artArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
-  CLLocationCoordinate2D dummy = {0,0};
+  //CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownArts = [self getAllArt];
   
   [self createAndUpdate:knownArts
@@ -49,7 +49,8 @@
 }
 
 
-- (void) updateObjectFromFile:(ArtInstall*)camp withDict:(NSDictionary*)dict {
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
+  ArtInstall *camp = (ArtInstall*)object;
   if (!camp.name) {
     camp.name = [self nullStringOrString:[dict objectForKey:@"title"]];
   }
@@ -92,11 +93,11 @@
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
 
-    NSString* name = [self nullOrObject:[dict objectForKey:@"name"]];
+    NSString* name = (NSString*)[self nullOrObject:[dict objectForKey:@"name"]];
     if (!name) {
-      name = [self nullOrObject:[dict objectForKey:@"title"]];
+      name = (NSString*)[self nullOrObject:[dict objectForKey:@"title"]];
       if (!name) {
-        name = [self nullOrObject:[dict objectForKey:@"Name"]];
+        name = (NSString*)[self nullOrObject:[dict objectForKey:@"Name"]];
       }
     }
     NSString* simpleName = [ThemeCamp createSimpleName:name];
@@ -135,7 +136,7 @@
 
 
 - (void) updateObject:(ArtInstall*)camp withDict:(NSDictionary*)dict {
-  camp.bm_id = N([[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
 
   camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
   camp.artist = [self nullStringOrString:[dict objectForKey:@"artist"]];
@@ -145,7 +146,7 @@
 
   NSDictionary *locPoint = [self getLocationDictionary:dict];
   if (locPoint) {
-    NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
+    //NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
     //camp.latitude = [coordArray objectAtIndex:1];
     //camp.longitude = [coordArray objectAtIndex:0];
     NSLog(@"%1.5f, %1.5f", [camp.latitude floatValue], [camp.longitude floatValue]);

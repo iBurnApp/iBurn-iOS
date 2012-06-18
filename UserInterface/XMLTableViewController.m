@@ -10,8 +10,10 @@
 #import "ThemeCamp.h"
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
+#import "MapViewController.h"
 
 @implementation XMLTableViewController
+@synthesize objects, objectDict;
 
 - (void) loadView {
   [super loadView];
@@ -22,8 +24,7 @@
 
 - (void) sortByDistance { 
 	[self sortByName];
-	[objectDict release];
-	objectDict = nil;
+	self.objectDict = nil;
 	for (id object in objects) {
 		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
 
@@ -33,8 +34,7 @@
 																																	ascending:YES] autorelease];
 	NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
 	NSArray * newObjects = [objects sortedArrayUsingDescriptors:sortDescriptors];
-	[objects release];
-	objects = [newObjects retain];
+	self.objects = [NSMutableArray arrayWithArray:newObjects];
 }
 
 
@@ -149,7 +149,8 @@
 	id obj = [objects objectAtIndex: index];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:obj];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:obj];
 }
 
 
@@ -249,6 +250,8 @@
   [self showOnMapForIndexPath];
 }
 
+- (void) sortByName {}
+- (void) makeObjectsForFavs:(NSArray*)favs {}
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)index {
   switch (index) {

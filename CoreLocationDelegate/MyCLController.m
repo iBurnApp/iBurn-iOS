@@ -9,7 +9,6 @@ static MyCLController *sharedCLDelegate = nil;
 - (id) init {
 	if (self = [super init]) {
 		self.locationManager = [[[CLLocationManager alloc] init] autorelease];
-    self.locationManager.location;
 		self.locationManager.delegate = self; 
     iOSVersion = [[UIDevice currentDevice].systemVersion doubleValue];
 

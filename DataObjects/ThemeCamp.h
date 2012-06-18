@@ -7,12 +7,12 @@
 //
 
 #import <CoreData/CoreData.h>
+#import "BurnDataObject.h"
 
 @class Favorite;
 
-@interface ThemeCamp :  NSManagedObject  
+@interface ThemeCamp :  NSManagedObject <BurnDataObject>
 {
-	
 	float distanceAway;
 }
 

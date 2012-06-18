@@ -7,10 +7,11 @@
 //
 
 #import <CoreData/CoreData.h>
+#import "BurnDataObject.h"
 
 @class Favorite;
 
-@interface Event :  NSManagedObject  
+@interface Event :  NSManagedObject <BurnDataObject>
 {
 }
 

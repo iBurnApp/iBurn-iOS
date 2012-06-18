@@ -9,6 +9,7 @@
 #import "SortableTable.h"
 
 @implementation SortableTable
+@synthesize sortControl;
 
 - (id)init {
 	if (self = [super init]) {

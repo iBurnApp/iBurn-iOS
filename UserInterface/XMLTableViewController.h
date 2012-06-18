@@ -17,12 +17,18 @@
   NSIndexPath *touchedIndexPath;
 	UISegmentedControl *sortControl;
 	NSMutableArray *sections;
-
 }
+
+@property (nonatomic, retain) NSMutableArray *objects;
+@property (nonatomic, retain) NSMutableArray *objectDict;
+
 
 - (id) initWithSearchPlaceholder:(NSString*)searchPlaceholder;
 - (void) loadObjectsForEntity:(NSString *)entityName;
 - (void) sortByNameForEntity:(NSString*)entityName;
 - (void) sortBySimpleNameForEntity:(NSString*)entityName;
+
+- (void) sortByName;
+- (void) makeObjectsForFavs:(NSArray*)favs;
 
 @end

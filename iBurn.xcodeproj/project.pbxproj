@@ -243,7 +243,7 @@
 		5044A8AC14009B5000E3CF6E /* tiles.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tiles.json; sourceTree = "<group>"; };
 		507380CA140257F400B127EE /* iBurn.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = iBurn.sqlite; sourceTree = "<group>"; };
 		507380CE1402597200B127EE /* tiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tiles; sourceTree = "<group>"; };
-		50B8EDC5121BB1EF0093E402 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = ../DataObjects/Event.h; sourceTree = "<group>"; };
+		50B8EDC5121BB1EF0093E402 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
 		50B8EDC6121BB1EF0093E402 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Event.m; sourceTree = "<group>"; };
 		50B8EDC7121BB1EF0093E402 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
 		50B8EDC8121BB1EF0093E402 /* ArtInstall.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtInstall.m; sourceTree = "<group>"; };
@@ -487,6 +487,7 @@
 		A0F16861140C5EB5004DCF90 /* green-pin-down.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "green-pin-down.png"; sourceTree = "<group>"; };
 		A0F16862140C5EB5004DCF90 /* green-pin-down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "green-pin-down@2x.png"; sourceTree = "<group>"; };
 		D9E1E45F158FBBAA00319EDD /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		D9E1E463158FD1A200319EDD /* BurnDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnDataObject.h; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -942,7 +943,9 @@
 		57F4725E0F22C49900827FAC /* DataObjects */ = {
 			isa = PBXGroup;
 			children = (
+				D9E1E463158FD1A200319EDD /* BurnDataObject.h */,
 				57BFE2EB0FC94E4F0049C315 /* MessageTableViewController.m */,
+				50B8EDC5121BB1EF0093E402 /* Event.h */,
 				50B8EDC6121BB1EF0093E402 /* Event.m */,
 				50B8EDC7121BB1EF0093E402 /* ArtInstall.h */,
 				50B8EDC8121BB1EF0093E402 /* ArtInstall.m */,
@@ -1078,7 +1081,6 @@
 		EADDBBBD11D612640067BBE4 /* More */ = {
 			isa = PBXGroup;
 			children = (
-				50B8EDC5121BB1EF0093E402 /* Event.h */,
 				EADDBBBB11D6120D0067BBE4 /* People */,
 				57BFE2EB0FC94E4F0049C315 /* MessageTableViewController.m */,
 				57BFE2EC0FC94E4F0049C315 /* MessageTableViewController.h */,
