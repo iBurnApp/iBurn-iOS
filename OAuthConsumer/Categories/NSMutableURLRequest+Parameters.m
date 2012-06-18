@@ -47,7 +47,7 @@ static NSString *Boundary = @"-----------------------------------0xCoCoaouTHeBou
     if (encodedParameters == nil || [encodedParameters isEqualToString:@""]) {
         return nil;
     }
-    NSLog(@"raw parameters %@", encodedParameters);
+//    NSLog(@"raw parameters %@", encodedParameters);
     NSArray *encodedParameterPairs = [encodedParameters componentsSeparatedByString:@"&"];
     NSMutableArray *requestParameters = [NSMutableArray arrayWithCapacity:[encodedParameterPairs count]];
     
@@ -56,6 +56,7 @@ static NSString *Boundary = @"-----------------------------------0xCoCoaouTHeBou
         OARequestParameter *parameter = [[OARequestParameter alloc] initWithName:[[encodedPairElements objectAtIndex:0] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
                                                                            value:[[encodedPairElements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
         [requestParameters addObject:parameter];
+		[parameter release];
     }
     
     return requestParameters;
@@ -103,7 +104,7 @@ static NSString *Boundary = @"-----------------------------------0xCoCoaouTHeBou
 	[bodyData appendData:[filePrefix dataUsingEncoding:NSUTF8StringEncoding]];
 	[bodyData appendData:data];
 	
-	[bodyData appendData:[[[@"--" stringByAppendingString:Boundary] stringByAppendingString:@"--"] dataUsingEncoding:NSUTF8StringEncoding]];
+	[bodyData appendData:[[[@"\r\n--" stringByAppendingString:Boundary] stringByAppendingString:@"--"] dataUsingEncoding:NSUTF8StringEncoding]];
 	[self setValue:[NSString stringWithFormat:@"%d", [bodyData length]] forHTTPHeaderField:@"Content-Length"];
 	[self setHTTPBody:bodyData];
 	[bodyData release];
