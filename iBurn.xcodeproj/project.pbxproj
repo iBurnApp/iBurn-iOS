@@ -33,7 +33,6 @@
 		50BF50CB12062B1600555D13 /* ASIS3Bucket.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50B712062B1600555D13 /* ASIS3Bucket.m */; };
 		50BF50CC12062B1600555D13 /* ASIS3BucketObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50B912062B1600555D13 /* ASIS3BucketObject.m */; };
 		50BF50CD12062B1600555D13 /* ASIS3BucketRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50BB12062B1600555D13 /* ASIS3BucketRequest.m */; };
-		50BF50CE12062B1600555D13 /* ASIS3ListRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50BD12062B1600555D13 /* ASIS3ListRequest.m */; };
 		50BF50CF12062B1600555D13 /* ASIS3ObjectRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50BF12062B1600555D13 /* ASIS3ObjectRequest.m */; };
 		50BF50D012062B1600555D13 /* ASIS3Request.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50C112062B1600555D13 /* ASIS3Request.m */; };
 		50BF50D112062B1600555D13 /* ASIS3ServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF50C312062B1600555D13 /* ASIS3ServiceRequest.m */; };
@@ -282,8 +281,6 @@
 		50BF50B912062B1600555D13 /* ASIS3BucketObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ASIS3BucketObject.m; sourceTree = "<group>"; };
 		50BF50BA12062B1600555D13 /* ASIS3BucketRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASIS3BucketRequest.h; sourceTree = "<group>"; };
 		50BF50BB12062B1600555D13 /* ASIS3BucketRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ASIS3BucketRequest.m; sourceTree = "<group>"; };
-		50BF50BC12062B1600555D13 /* ASIS3ListRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASIS3ListRequest.h; sourceTree = "<group>"; };
-		50BF50BD12062B1600555D13 /* ASIS3ListRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ASIS3ListRequest.m; sourceTree = "<group>"; };
 		50BF50BE12062B1600555D13 /* ASIS3ObjectRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASIS3ObjectRequest.h; sourceTree = "<group>"; };
 		50BF50BF12062B1600555D13 /* ASIS3ObjectRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ASIS3ObjectRequest.m; sourceTree = "<group>"; };
 		50BF50C012062B1600555D13 /* ASIS3Request.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASIS3Request.h; sourceTree = "<group>"; };
@@ -695,8 +692,6 @@
 				50BF50B912062B1600555D13 /* ASIS3BucketObject.m */,
 				50BF50BA12062B1600555D13 /* ASIS3BucketRequest.h */,
 				50BF50BB12062B1600555D13 /* ASIS3BucketRequest.m */,
-				50BF50BC12062B1600555D13 /* ASIS3ListRequest.h */,
-				50BF50BD12062B1600555D13 /* ASIS3ListRequest.m */,
 				50BF50BE12062B1600555D13 /* ASIS3ObjectRequest.h */,
 				50BF50BF12062B1600555D13 /* ASIS3ObjectRequest.m */,
 				50BF50C012062B1600555D13 /* ASIS3Request.h */,
@@ -1378,7 +1373,6 @@
 				50BF50CB12062B1600555D13 /* ASIS3Bucket.m in Sources */,
 				50BF50CC12062B1600555D13 /* ASIS3BucketObject.m in Sources */,
 				50BF50CD12062B1600555D13 /* ASIS3BucketRequest.m in Sources */,
-				50BF50CE12062B1600555D13 /* ASIS3ListRequest.m in Sources */,
 				50BF50CF12062B1600555D13 /* ASIS3ObjectRequest.m in Sources */,
 				50BF50D012062B1600555D13 /* ASIS3Request.m in Sources */,
 				50BF50D112062B1600555D13 /* ASIS3ServiceRequest.m in Sources */,
