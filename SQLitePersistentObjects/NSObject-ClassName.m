@@ -1,5 +1,3 @@
-//
-//  NSMutableData-SQLitePersistence.m
 // ----------------------------------------------------------------------
 // Part of the SQLite Persistent Objects for Cocoa and Cocoa Touch
 //
@@ -18,12 +16,19 @@
 // included Readme.txt file
 // ----------------------------------------------------------------------
 
-#import "NSMutableData-SQLitePersistence.h"
+#if (TARGET_OS_IPHONE)
+#import "NSObject-ClassName.h"
+#import <objc/runtime.h>
 
-
-@implementation NSMutableData(SQLitePersistence)
-- (id)initWithSQLBlobRepresentation:(NSData *)data
+@implementation NSObject(ClassName)
+- (NSString *)className
 {
-	return [self initWithData:data];
+	return [NSString stringWithUTF8String:class_getName([self class])];
 }
++ (NSString *)className
+{
+	return [NSString stringWithUTF8String:class_getName(self)];
+}
+
 @end
+#endif

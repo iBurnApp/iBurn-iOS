@@ -26,7 +26,6 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 #pragma mark Private Method Declarations
 @interface SQLiteInstanceManager (private)
 - (NSString *)databaseFilepath;
-- (void)executeUpdateSQL:(NSString *) updateSQL;
 @end
 
 @implementation SQLiteInstanceManager
@@ -77,16 +76,11 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 }
 #pragma mark -
 #pragma mark Public Instance Methods
-- (void)setDatabase:(sqlite3 *)theDatabase
-{
-	database = theDatabase;
-}
-
 -(sqlite3 *)database
 {
 	static BOOL first = YES;
 	
-	if (database == NULL)
+	if (first || database == NULL)
 	{
 		first = NO;
 		if (!sqlite3_open([[self databaseFilepath] UTF8String], &database) == SQLITE_OK) 
@@ -103,10 +97,27 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 			// Turn on full auto-vacuuming to keep the size of the database down
 			// This setting can be changed per database using the setAutoVacuum instance method
 			[self executeUpdateSQL:@"PRAGMA auto_vacuum=1"];
+            
+            // Set cache size to zero. This will prevent performance slowdowns as the
+            // database gets larger
+            [self executeUpdateSQL:@"PRAGMA CACHE_SIZE=0"];
 			
 		}
 	}
 	return database;
+}
+- (BOOL)tableExists:(NSString *)tableName
+{
+	BOOL ret = NO;
+	// pragma table_info(i_c_project);
+	NSString *query = [NSString stringWithFormat:@"pragma table_info(%@);", tableName];
+	sqlite3_stmt *stmt;
+	if (sqlite3_prepare_v2( database,  [query UTF8String], -1, &stmt, nil) == SQLITE_OK) {
+		if (sqlite3_step(stmt) == SQLITE_ROW)
+			ret = YES;
+		sqlite3_finalize(stmt);
+	}
+	return ret;
 }
 - (void)setAutoVacuum:(SQLITE3AutoVacuum)mode
 {
@@ -120,16 +131,14 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 }
 - (void)setLockingMode:(SQLITE3LockingMode)mode
 {
-	NSString *updateSQL = [NSString stringWithFormat:@"PRAGMA cache_size=%d", mode];
+	NSString *updateSQL = [NSString stringWithFormat:@"PRAGMA locking_mode=%d", mode];
 	[self executeUpdateSQL:updateSQL];
 }
 - (void)deleteDatabase
 {
 	NSString* path = [self databaseFilepath];
 	NSFileManager* fm = [NSFileManager defaultManager];
-	[fm removeFileAtPath:path handler:nil];
-	
-	static BOOL first = YES;
+	[fm removeItemAtPath:path error:NULL];
 	database = NULL;
 	[SQLitePersistentObject clearCache];
 }
@@ -137,14 +146,6 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 {
 	[self executeUpdateSQL:@"VACUUM"];
 }
-#pragma mark -
-- (void)dealloc
-{
-	[databaseFilepath release];
-	[super dealloc];
-}
-#pragma mark -
-#pragma mark Private Methods
 - (void)executeUpdateSQL:(NSString *) updateSQL
 {
 	char *errorMsg;
@@ -154,6 +155,15 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 		sqlite3_free(errorMsg);
 	}
 }
+#pragma mark -
+- (void)dealloc
+{
+	[databaseFilepath release];
+	[super dealloc];
+}
+#pragma mark -
+#pragma mark Private Methods
+
 - (NSString *)databaseFilepath
 {
 	if (databaseFilepath == nil)
@@ -169,7 +179,7 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 		}
 #if (TARGET_OS_COCOTRON)
 		NSString *saveDirectory = @"./"; // TODO: default path is undefined on coctron
-#elif (TARGET_OS_MAC && ! (TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR))
+#elif (TARGET_OS_MAC && ! TARGET_OS_IPHONE)
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
 		NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
 		NSString *saveDirectory = [basePath stringByAppendingPathComponent:appName];
@@ -185,7 +195,6 @@ static SQLiteInstanceManager *sharedSQLiteManager = nil;
 		if (![[NSFileManager defaultManager] fileExistsAtPath:saveDirectory]) 
 			[[NSFileManager defaultManager] createDirectoryAtPath:saveDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
-	NSLog(@"%@", databaseFilepath);
 	return databaseFilepath;
 }
 @end
