@@ -32,14 +32,11 @@
 
 -(id)initWithTile: (RMTile) _tile FromFile: (NSString*) file
 {
-	if (![super initWithTile:_tile])
-		return nil;
-
-	UIImage *image = [[UIImage alloc] initWithContentsOfFile:file];
-
-        [self updateImageUsingImage:image];
-
-        [image release];
+	if (self = [super initWithTile:_tile]) {
+    UIImage *image = [[UIImage alloc] initWithContentsOfFile:file];
+    [self updateImageUsingImage:image];
+    [image release];
+  }
 
 	return self;
 }

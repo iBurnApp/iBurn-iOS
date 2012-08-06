@@ -32,21 +32,21 @@
 
 -(id)initWithCapacity: (NSUInteger) _capacity
 {
-	if (![super init])
-		return nil;
+	if (self = [super init]) {
 
-	RMLog(@"initializing memory cache %@ with capacity %d", self, _capacity);
-	
-	cache = [[NSMutableDictionary alloc] initWithCapacity:_capacity];
-	
-	if (_capacity < 1)
-		_capacity = 1;
-	capacity = _capacity;
-	
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(imageLoadingCancelled:)
-												 name:RMMapImageLoadingCancelledNotification
-											   object:nil];
+    RMLog(@"initializing memory cache %@ with capacity %d", self, _capacity);
+    
+    cache = [[NSMutableDictionary alloc] initWithCapacity:_capacity];
+    
+    if (_capacity < 1)
+      _capacity = 1;
+    capacity = _capacity;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                         selector:@selector(imageLoadingCancelled:)
+                           name:RMMapImageLoadingCancelledNotification
+                           object:nil];
+  }
 	
 	return self;
 }

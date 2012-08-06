@@ -43,20 +43,19 @@ NS_INLINE RMLatLong RMPixelPointAsLatLong(RMProjectedPoint xypoint) {
 
 - (id) initWithString: (NSString*)params InBounds: (RMProjectedRect) projBounds
 {
-	if (![super init])
-		return nil;
-	
-	internalProjection = pj_init_plus([params UTF8String]);
-	if (internalProjection == NULL)
-	{
-		RMLog(@"Unhandled error creating projection. String is %@", params);
-		[self release];
-		return nil;
-	}
-	
-	planetBounds = projBounds;
-
-	projectionWrapsHorizontally = YES;
+	if (self = [super init]) {
+    internalProjection = pj_init_plus([params UTF8String]);
+    if (internalProjection == NULL)
+    {
+      RMLog(@"Unhandled error creating projection. String is %@", params);
+      [self release];
+      return nil;
+    }
+    
+    planetBounds = projBounds;
+    
+    projectionWrapsHorizontally = YES;
+  }
 	
 	return self;
 }

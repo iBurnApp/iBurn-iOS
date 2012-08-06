@@ -34,12 +34,12 @@
 // Designated initialiser
 - (id) initWithContent: (RMMapContents *)_contents
 {
-	if (![super init])
-		return nil;
+	if (self = [super init]) {
 
-	content = _contents;
-	
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mapImageLoaded:) name:RMMapImageLoadedNotification object:nil];
+    content = _contents;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mapImageLoaded:) name:RMMapImageLoadedNotification object:nil];
+  }
 	
 	return self;
 }

@@ -44,27 +44,26 @@
 /// \bug default values for lineWidth, lineColor, fillColor are hardcoded
 - (id) initWithContents: (RMMapContents*)aContents
 {
-	if (![super init])
-		return nil;
-	
-	contents = aContents;
-
-	path = CGPathCreateMutable();
-	
-	lineWidth = kDefaultLineWidth;
-	drawingMode = kCGPathFillStroke;
-	lineCap = kCGLineCapButt;
-	lineJoin = kCGLineJoinMiter;
-	lineColor = [UIColor blackColor];
-	fillColor = [UIColor redColor];
-	
-	//self.masksToBounds = NO;
-	self.masksToBounds = YES;
-	
-	scaleLineWidth = NO;
-	enableDragging = YES;
-	enableRotation = YES;
-	isFirstPoint = YES;
+	if (self = [super init]) {
+    contents = aContents;
+    
+    path = CGPathCreateMutable();
+    
+    lineWidth = kDefaultLineWidth;
+    drawingMode = kCGPathFillStroke;
+    lineCap = kCGLineCapButt;
+    lineJoin = kCGLineJoinMiter;
+    lineColor = [UIColor blackColor];
+    fillColor = [UIColor redColor];
+    
+    //self.masksToBounds = NO;
+    self.masksToBounds = YES;
+    
+    scaleLineWidth = NO;
+    enableDragging = YES;
+    enableRotation = YES;
+    isFirstPoint = YES;
+  }
 	
 	return self;
 }

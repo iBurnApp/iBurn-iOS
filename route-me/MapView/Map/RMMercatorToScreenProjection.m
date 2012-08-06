@@ -32,11 +32,11 @@
 
 - (id) initFromProjection: (RMProjection*) aProjection ToScreenBounds: (CGRect)aScreenBounds;
 {
-	if (![super init])
-		return nil;
-	screenBounds = aScreenBounds;
-	projection = [aProjection retain];
-	metersPerPixel = 1;
+	if (self = [super init]) {
+    screenBounds = aScreenBounds;
+    projection = [aProjection retain];
+    metersPerPixel = 1;
+  }
 	return self;
 }
 

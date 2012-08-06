@@ -33,13 +33,13 @@
 
 - (id)initForContents: (RMMapContents *)_contents
 {
-	if (![super init])
-		return nil;
+	if (self = [super init]) {
+    sublayers = [[NSMutableArray alloc] init];
+    mapContents = _contents;
+    self.masksToBounds = YES;
+    rotationTransform = CGAffineTransformIdentity;
+  }
 
-	sublayers = [[NSMutableArray alloc] init];
-	mapContents = _contents;
-	self.masksToBounds = YES;
-	rotationTransform = CGAffineTransformIdentity;
 	return self;
 }
 
