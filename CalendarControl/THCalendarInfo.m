@@ -34,7 +34,7 @@ static SDCalendarHourFormat MyDefaultHourFormat;
 
 - (id) init
 {
-    [super init];
+  if (self = [super init]) {
     _absoluteTime = CFAbsoluteTimeGetCurrent();
     _calendar     = CFCalendarCopyCurrent();
     _timeZone	  = CFCalendarCopyTimeZone( _calendar );
@@ -42,6 +42,8 @@ static SDCalendarHourFormat MyDefaultHourFormat;
     _monthNames	  = nil;
     
     [self setupEnglishNames];
+  }
+
 	return self;
 }
 
