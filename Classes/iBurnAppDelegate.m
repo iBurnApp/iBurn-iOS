@@ -177,10 +177,10 @@
   [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:2];
 }
 
-/*- (void) requestDone {
+- (void) requestDone {
  //[[[tabBarController.viewControllers objectAtIndex:0]visibleViewController] showMarkersOnScreen];  
- [(CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController]reloadTable];
- }*/
+ //[(CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController]reloadTable];
+}
 
 
 - (void) setViewForDownloading {

@@ -26,26 +26,26 @@
 
 - (id)initWithURL:(NSURL *)url {
 	
-	if (![super init])
-		return nil;
+	if (self = [super init]) {
 
-	mpfRequest = [[NSMutableURLRequest requestWithURL:url] retain];
-	mpfFormFields = [[NSMutableDictionary dictionaryWithCapacity:1] retain];
-	
-	// Set boundry string
-	// TODO: Create a dynamics boundry string
-	mpfBoundry = @"MiniMallowsBoundary"; // [NSString stringWithString:@"MiniMallowsBoundry"];
-	
-	// Adding header information
-	[mpfRequest setHTTPMethod:@"POST"];
-	NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", mpfBoundry];
-	[mpfRequest addValue:contentType forHTTPHeaderField: @"Content-Type"];
-	
-	// !!!: Alter the line below if you need a specific accept type
-	//[mpfRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-	
-	// Set Body infomation
-	mpfBody = [[NSMutableData data] retain];
+    mpfRequest = [[NSMutableURLRequest requestWithURL:url] retain];
+    mpfFormFields = [[NSMutableDictionary dictionaryWithCapacity:1] retain];
+    
+    // Set boundry string
+    // TODO: Create a dynamics boundry string
+    mpfBoundry = @"MiniMallowsBoundary"; // [NSString stringWithString:@"MiniMallowsBoundry"];
+    
+    // Adding header information
+    [mpfRequest setHTTPMethod:@"POST"];
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", mpfBoundry];
+    [mpfRequest addValue:contentType forHTTPHeaderField: @"Content-Type"];
+    
+    // !!!: Alter the line below if you need a specific accept type
+    //[mpfRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+    
+    // Set Body infomation
+    mpfBody = [[NSMutableData data] retain];
+  }
 	
 	return self;
 }
@@ -85,7 +85,7 @@
 	
 	// Add the File
 	[mpfBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\n", mpfFieldNameForFile, [mpfFileName lastPathComponent]] dataUsingEncoding:NSUTF8StringEncoding]];
-	[mpfBody appendData:[[NSString stringWithString:@"Content-Type: application/octet-stream\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+	[mpfBody appendData:[@"Content-Type: application/octet-stream\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
 	[mpfBody appendData:[NSData dataWithContentsOfFile:mpfFileName]];
 	
 	// End Multipart Form

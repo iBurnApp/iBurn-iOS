@@ -167,7 +167,7 @@
 }
 
 
-- (void) tapOnMarker: (RMMarker*) marker onMap: (RMMapView*) map {
+- (void) tapOnMarker: (GaiaMarker*) marker onMap: (RMMapView*) map {
 	if (![marker.data isKindOfClass:[NSString class]]) return;
   NSString *markerString = (NSString*)marker.data;
   if ([markerString isEqualToString:@"ThemeCamp"]) {

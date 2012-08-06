@@ -45,7 +45,7 @@
 
 - (void) showOnMapForIndexPath {
   Favorite *favorite = [objects objectAtIndex: touchedIndexPath.row];
-  id obj;
+  id obj = nil;
   if (favorite.ThemeCamp) {    
     obj = favorite.ThemeCamp;
   } else if (favorite.ArtInstall) {
@@ -99,7 +99,7 @@
 
 - (id)init {
 	if( self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"favorites.png"] tag:0];
+		self.tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"favorites.png"] tag:0] autorelease];
 		self.title = @"Favorites";
 	}
     return self;

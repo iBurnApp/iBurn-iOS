@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -136,7 +136,6 @@
 		844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 844873EC14034C4300DBD3A3 /* rod_garrett.jpg */; };
 		8448741D14034FBD00DBD3A3 /* ContactInfoScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */; };
 		84487492140358E200DBD3A3 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84487491140358E200DBD3A3 /* routeme.plist */; };
-		84E95D3C14037F5000BE4427 /* Test.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84E95D3B14037F5000BE4427 /* Test.plist */; };
 		84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */ = {isa = PBXBuildFile; fileRef = 84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */; };
 		A0F15D8713FF1691004DCF90 /* allart_public.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15D8613FF1691004DCF90 /* allart_public.json */; };
 		A0F15EA013FF21BA004DCF90 /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = A0F15E9F13FF21BA004DCF90 /* camps.json */; };
@@ -1173,8 +1172,11 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iBurn" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -1293,7 +1295,6 @@
 				507380CF1402597200B127EE /* tiles in Resources */,
 				844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */,
 				84487492140358E200DBD3A3 /* routeme.plist in Resources */,
-				84E95D3C14037F5000BE4427 /* Test.plist in Resources */,
 				84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1501,10 +1502,9 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "/usr/src/route-me/MapView/**";
 				ONLY_ACTIVE_ARCH = YES;
-				PREBINDING = NO;
 				PROVISIONING_PROFILE = "B2810F0E-415A-485D-A0AD-0161814A92C2";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "B2810F0E-415A-485D-A0AD-0161814A92C2";
-				SDKROOT = iphoneos3.0;
+				SDKROOT = iphoneos;
 			};
 			name = Beta;
 		};
@@ -1552,8 +1552,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "/usr/src/route-me/MapView/**";
 				ONLY_ACTIVE_ARCH = YES;
-				PREBINDING = NO;
-				SDKROOT = iphoneos3.0;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -1567,8 +1566,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				PREBINDING = NO;
-				SDKROOT = iphoneos3.0;
+				SDKROOT = iphoneos;
 			};
 			name = Release;
 		};
