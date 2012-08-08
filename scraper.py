@@ -147,8 +147,6 @@ class Camp(object):
 
 if __name__ == "__main__":
 
-    sys.argv.append("camps")
-
     if len(sys.argv) < 2 or sys.argv[1] not in ["camps", "honorarium"]:
         print "Usage: scraper.py <camps|honorarium>"
         sys.exit(0)
