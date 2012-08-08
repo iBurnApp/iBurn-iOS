@@ -3,36 +3,12 @@
 # Scrapes data from the burningman website, and serializes it into json
 
 import lxml.html
+import lxml.html.soupparser
 import urllib
 import sys
 import re
 import urllib2
 import json
-
-class Pointer(object):
-
-    def __init__(self, pointer):
-        self.p = pointer
-
-    @property
-    def t(self):
-        return self.p.tail
-
-    def has(self, strings):
-        for string in strings:
-            if self.t.find(string) >= 0:
-                return string
-        return None
-
-    def inct(self, num=1):
-        for i in range(num):
-            self.p = self.p.getnext()
-        return self.p.tail
-
-    def incc(self, num=1):
-        for i in range(num):
-            self.p = self.p.getnext()
-        return self.p.text_content()
 
 def _clean_string(str):
     if str:
@@ -46,37 +22,58 @@ def _clean_string(str):
             str = str.split(", ")
     return str
 
+def _parse_xml(xml):
+    parsed_data = []
+    for p in xml.iterchildren():
+        data = p.text
+        if data is None:
+            data = lxml.html.tostring(p)
+        data = re.sub(r"^<br>", "", data)\
+            .replace("<p>", "\n")\
+            .replace("<div style=\"clear:both\"></div>", "")
+        parsed_data.append(data)
+    return parsed_data
+
+def _request(url, element):
+    opener = urllib2.build_opener()
+    req = urllib2.Request(url)
+    f = opener.open(req)
+    data = json.loads(f.read()[1:-1])
+    root = lxml.html.soupparser.fromstring(data[element])
+    return root   
 
 class Honorarium(object):
 
-    URL = "http://www.burningman.com/installations/11_art_honor.html"
-    ROOT_URL = "http://www.burningman.com"
+    # http://www.burningman.com/installations/art_honor.html
+    PROXY_URL = "http://blog.burningman.com/ctrl/art/?job=getData&yy=2012&artType=H"
 
     def _parse_artist(self, artist):
         ret = {}
-        b = Pointer(artist.getnext())
 
-        ret["image_url"] = self.ROOT_URL + artist.xpath("//img")[0].get("src")
-        ret["title"] = b.p.text_content()
-        ret["artists"] = b.inct()
-        ret["artist_location"] = b.inct()
-        if not ret["artist_location"]:
-            b.inct()
-        b.inct(2)
+        parsed_data = _parse_xml(artist)[2:]
 
-        ret["description"], ret["contact"], ret["url"] = '','',''
-        while b.t is not None and b.has(["Contact", "URL", "top"]) is None:
-            ret["description"] += b.t
-            data = b.inct(2)
+        ret["image_url"] = artist.xpath("//img")[0].get("src")
+        ret["title"] = parsed_data[0]
+        ret["artists"] = parsed_data[1].replace("by ", "")
+        ret["artist_location"] = parsed_data[2]
 
-        while b.t is not None:
-            t = b.has(["Contact", "URL"])
-            if t is None:
-                break
-            ret[t.lower()] = b.incc()
-            if b.t is not None:
-                b.incc()
+        if "addthis" not in parsed_data[5]:
+            ret["description"] = parsed_data[5]
+        else:
+            ret["description"] = ""
 
+        i = 0
+        while i < len(parsed_data):
+            content = parsed_data[i]
+            if content.find("URL:") == 0:
+                i += 1
+                ret["url"] = parsed_data[i]
+            elif content.find("Contact:") == 0:
+                i += 1
+                ret["contact"] = parsed_data[i]
+            elif "<div" not in content and "addthis" not in content and "</p>" not in content and "script" not in content:
+                ret["description"] += " " + content
+            i += 1
 
         for key, value in ret.iteritems():
             ret[key] = _clean_string(value)
@@ -84,9 +81,10 @@ class Honorarium(object):
         return ret
 
     def get_data(self):
-        root = lxml.html.parse(self.URL).getroot()
-        artists = root.xpath('//span[@class="imageright"]')
+        root = _request(self.PROXY_URL, "artData")
+        artists = root.xpath('//div[@class="artlisting"]')
         return [self._parse_artist(i) for i in artists]
+
 
 class Camp(object):
 
@@ -97,53 +95,59 @@ class Camp(object):
         return list("ABCDEFGHIJKLMNOPQRSTUVWXYZ#")
 
     def _parse_camps(self, camp):
-        b = Pointer(camp.getnext().getchildren()[0])
+        c = camp.getnext()
+        parsed_data = []
+
+        if c is None:
+            return
+
+        parsed_data = _parse_xml(c)
+        
         ret = {}
-        ret["name"] = b.p.text_content()
-        b.inct()
-
-        ret["description"] = ""
-        while b.t is not None and b.has(["Hometown", "Contact", "Url"]) is None:
-            ret["description"] += b.t
-            data = b.inct()
-
-        if b.has(["Hometown"]) is not None:
-            ret["hometown"] = b.t[10:]
-            b.inct()
-
-        ret["contact"], ret["url"] = '', ''
-        while b.t is not None:
-            t = b.has(["Contact", "URL"])
-            if t is None:
-                break
-            ret[t.lower()] = b.incc()
-
-            if b.t is not None:
-                b.incc()
+        i = 0
+        parsing_desc = False
+        while i < len(parsed_data):
+            content = parsed_data[i]
+            if i == 0:
+                ret["name"] = content
+                parsing_desc = True
+            elif content.find("Hometown:") == 0:
+                parsing_desc = False
+                ret["hometown"] = content[10:]
+            elif content.find("URL:") == 0:
+                parsing_desc = False
+                i += 1
+                ret["url"] = parsed_data[i]
+            elif content.find("http://") == 0:
+                parsing_desc = False
+                ret["url"] = content
+            elif content.find("Contact:") == 0:
+                parsing_desc = False
+                i += 1
+                ret["contact"] = parsed_data[i]
+            elif parsing_desc:
+                if "description" not in ret:
+                    ret["description"] = ""
+                ret["description"] += content
+            else:
+                print "ERROR: %s %s" % (i, content)
+            i += 1
 
         for key, value in ret.iteritems():
             ret[key] = _clean_string(value)
-
         return ret
 
     def get_data(self):
-        opener = urllib2.build_opener()
-
         results = []
         for index in self.get_index():
-            url = self.PROXY_URL+"?job=getData&yy=2011&ci=%s" % index
-            req = urllib2.Request(url)
-            f = opener.open(req)
-            data = json.loads(f.read()[1:-1])[u"campData"]
-            data = data.replace("<br>", "<br/>")
-
-            root = lxml.html.fromstring(data)
-            camps = root.xpath('//div/div')
-            
+            root = _request(self.PROXY_URL+"?job=getData&yy=2012&ci=%s" % index, "campData")
+            camps = root.xpath('//div')
             results.extend([self._parse_camps(i) for i in camps])
         return results
 
 if __name__ == "__main__":
+
+    sys.argv.append("camps")
 
     if len(sys.argv) < 2 or sys.argv[1] not in ["camps", "honorarium"]:
         print "Usage: scraper.py <camps|honorarium>"
