@@ -73,14 +73,19 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
+  ThemeCamp *camp = nil;
+  
 	if (objectDict) {
-		cell.textLabel.text = [[[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row]name];
+    camp = [[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row];
 	} else {
-		cell.textLabel.text = [[objects objectAtIndex: storyIndex]name];
+    camp = [objects objectAtIndex: storyIndex];
 	}
+  cell.textLabel.text = camp.name;
+  cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", camp.distanceAway];
+  
 	return cell;	
 }
 

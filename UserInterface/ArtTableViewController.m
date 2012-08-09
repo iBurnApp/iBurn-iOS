@@ -88,14 +88,19 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
+  ArtInstall *art = nil;
+  
 	if (objectDict) {
-		cell.textLabel.text = [[[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row]name];
+    art = [[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row];
 	} else {
-		cell.textLabel.text = [[objects objectAtIndex: storyIndex]name];
+    art = [objects objectAtIndex: storyIndex];
 	}
+  cell.textLabel.text = art.name;
+  cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", art.distanceAway];
+  
 	return cell;	
 }
 
