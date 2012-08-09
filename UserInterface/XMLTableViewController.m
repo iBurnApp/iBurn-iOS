@@ -143,6 +143,14 @@
   [self.tableView reloadData];
 }
 
+- (void) viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  if (sortControl.selectedSegmentIndex == -1) {
+    sortControl.selectedSegmentIndex = 0;
+  }
+  [self sortTable:sortControl];
+}
+
 
 - (void) showOnMapForIndexPath {
 	int index = [touchedIndexPath indexAtPosition: [touchedIndexPath length] - 1];
