@@ -25,11 +25,6 @@
 - (void) sortByDistance { 
 	[self sortByName];
 	self.objectDict = nil;
-	for (id object in objects) {
-		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
-
-		[object setDistanceAway:[[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192];		
-	}
 	NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
 																																	ascending:YES] autorelease];
 	NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
@@ -129,6 +124,7 @@
 
 
 - (void) sortTable:(id)sender {
+  [self updateDistanceAway];
 	switch ([sender selectedSegmentIndex]) {
     case 0:  // name
 			[self sortByName];
@@ -139,7 +135,7 @@
     default: // favorites
 			[self sortByFavorites];
       break;
-  }  
+  }
   [self.tableView reloadData];
 }
 
@@ -147,8 +143,18 @@
   [super viewWillAppear:animated];
   if (sortControl.selectedSegmentIndex == -1) {
     sortControl.selectedSegmentIndex = 0;
+    // sortByName must be called to populate the objects
+    [self sortByName];
   }
   [self sortTable:sortControl];
+}
+
+- (void) updateDistanceAway {
+  for (id object in objects) {
+		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
+    
+		[object setDistanceAway:[[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192];
+	}
 }
 
 
