@@ -84,7 +84,12 @@
     camp = [objects objectAtIndex: storyIndex];
 	}
   cell.textLabel.text = camp.name;
-  cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", camp.distanceAway];
+  float distanceAway = camp.distanceAway;
+  if (distanceAway >= 0 && distanceAway < 50) {
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", camp.distanceAway];
+  } else {
+    cell.detailTextLabel.text = @"Unknown Location";
+  }
   
 	return cell;	
 }

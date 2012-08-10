@@ -99,7 +99,13 @@
     art = [objects objectAtIndex: storyIndex];
 	}
   cell.textLabel.text = art.name;
-  cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", art.distanceAway];
+  float distanceAway = art.distanceAway;
+  if (distanceAway >= 0 && distanceAway < 50) {
+      cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", art.distanceAway];
+  } else {
+      cell.detailTextLabel.text = @"Unknown Location";
+  }
+
   
 	return cell;	
 }
