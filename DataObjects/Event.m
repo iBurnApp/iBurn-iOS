@@ -10,7 +10,10 @@
 
 #import "Favorite.h"
 #import "iBurnAppDelegate.h"
+#import "MyCLController.h"
+
 @implementation Event 
+@synthesize camp;
 
 @dynamic longitude;
 @dynamic url;
@@ -28,6 +31,10 @@
 @dynamic Favorite;
 @dynamic day;
 
+- (void) dealloc {
+  self.camp = nil;
+  [super dealloc];
+}
 
 + (NSString*) getDay:(NSDate*) date {
   static NSDateFormatter *dateFormatter = nil;
@@ -76,6 +83,40 @@
   }
   return nil;
   
+}
+
+- (ThemeCamp*) camp {
+  if (camp) {
+    return camp;
+  }
+  iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"ThemeCamp"
+																											 inManagedObjectContext:moc];
+	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	[request setEntity:entityDescription];
+  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"bm_id = %@", self.camp_id];
+  [request setPredicate:predicate];
+	NSError *error;
+	NSArray *objects = [moc executeFetchRequest:request error:&error];
+	if(objects && [objects count] > 0) {
+    self.camp = [objects objectAtIndex:0];
+	}
+  return camp;
+}
+
+- (float) distanceAway {
+  ThemeCamp *themeCamp = [self camp];
+  if (!themeCamp) {
+    return 100;
+  }
+  float lat = [[themeCamp latitude] floatValue];
+  float lon = [[themeCamp longitude] floatValue];
+  if (lat == 0 || lon == 0) {
+    return 100;
+  }
+  CLLocation *loc = [[[CLLocation alloc]initWithLatitude:lat  longitude:lon]autorelease];
+  return [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
 }
 
 @end

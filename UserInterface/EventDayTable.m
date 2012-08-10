@@ -148,17 +148,34 @@
 	self.navigationItem.rightBarButtonItem.enabled = NO;
 }
 
+- (void) sortByDistance {
+  self.events = [self getEventsForTitle:self.title];
+	NSSortDescriptor *lastDescriptor =
+  [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
+                               ascending:YES
+                                selector:@selector(compare:)] autorelease];
+  NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
+  NSArray *sortedArray = [self.events sortedArrayUsingDescriptors:descriptors];
+  self.events = sortedArray;
+	
+  [self.tableView reloadData];
+	self.navigationItem.rightBarButtonItem.enabled = NO;
+}
+
 
 
 - (void) sortTable:(id)sender {
 	switch ([sender selectedSegmentIndex]) {
-    case 0:  // name
+    case 0:  // time
 			[self sortByCurrent];
       break;
     case 1:  // distance
+      [self sortByDistance];
+      break;
+    case 2:  // favorites
 			[self sortByFavorites];
       break;
-    default: // favorites
+    default: // name
 			[self sortByName];
       break;
   }  
@@ -184,7 +201,7 @@
 - (void) loadView {
 	[super loadView];
 	[sortControl release];
-	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Favorites", @"Name",nil]]retain];
+	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Distance", @"Favorites", @"Name",nil]]retain];
 	sortControl.tintColor = [UIColor colorWithRed:35/255.0f green:97/255.0f blue:222/255.0f alpha:1];
 	sortControl.backgroundColor = [UIColor blackColor];
 	CGRect fr = sortControl.frame;
@@ -253,8 +270,9 @@
     cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
   }
   //cell.accessoryType = UITableViewCellAccessoryNone;
-	
-	cell.textLabel.text = [[events objectAtIndex:indexPath.row]name];  
+	Event *event = [events objectAtIndex:indexPath.row];
+  
+	cell.textLabel.text = [event name];  
   static NSDateFormatter *formatter = nil;
   if (!formatter) {
     formatter = [[NSDateFormatter alloc] init];
@@ -263,8 +281,14 @@
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"hh:mm a"];
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
-  }  
-  cell.detailTextLabel.text = [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]];
+  }
+  float distanceAway = [event distanceAway];
+  if (distanceAway >= 0 && distanceAway < 50) {
+      cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %1.2f miles",[formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], [event distanceAway]];
+  } else {
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - Unknown Location", [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]]];
+  }
+  
 	
   return cell;
 }
