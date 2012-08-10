@@ -115,8 +115,10 @@
   if (lat == 0 || lon == 0) {
     return 100;
   }
+  
   CLLocation *loc = [[[CLLocation alloc]initWithLatitude:lat  longitude:lon]autorelease];
-  return [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
+  float distanceInMiles = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
+  return roundf(10 * distanceInMiles) / 10;
 }
 
 @end

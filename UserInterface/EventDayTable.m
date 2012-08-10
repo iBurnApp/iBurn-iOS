@@ -150,11 +150,15 @@
 
 - (void) sortByDistance {
   self.events = [self getEventsForTitle:self.title];
-	NSSortDescriptor *lastDescriptor =
+	NSSortDescriptor *distanceDescriptor =
   [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
                                ascending:YES
                                 selector:@selector(compare:)] autorelease];
-  NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
+  NSSortDescriptor *timeDescriptor =
+  [[[NSSortDescriptor alloc] initWithKey:@"startTime"
+                               ascending:YES
+                                selector:@selector(compare:)] autorelease];
+  NSArray *descriptors = [NSArray arrayWithObjects:distanceDescriptor, timeDescriptor, nil];
   NSArray *sortedArray = [self.events sortedArrayUsingDescriptors:descriptors];
   self.events = sortedArray;
 	
@@ -284,7 +288,7 @@
   }
   float distanceAway = [event distanceAway];
   if (distanceAway >= 0 && distanceAway < 50) {
-      cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %1.2f miles",[formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], [event distanceAway]];
+      cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %1.1f miles",[formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], [event distanceAway]];
   } else {
     cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - Unknown Location", [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]]];
   }
