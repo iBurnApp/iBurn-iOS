@@ -72,7 +72,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", names];
     [fetchRequest setPredicate:predicate];	
     NSError *error;
-    NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
+    NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error] retain];
     [fetchRequest release];
     fetchRequest = nil;
     /*for (KnownPlace *kp in knownPlaces) {    

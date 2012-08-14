@@ -141,10 +141,14 @@
   //[self.eventDateHash removeAllObjects];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
-    for (id c in knownObjects) {
-      if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]) {
-        matchedCamp = c;
-        break;
+    if (knownObjects && [knownObjects isKindOfClass:[NSArray class]]) {
+      for (id c in knownObjects) {
+        if ([c respondsToSelector:@selector(bm_id)]) {
+          if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]) {
+            matchedCamp = c;
+            break;
+          }
+        }
       }
     }
     if (!matchedCamp) {

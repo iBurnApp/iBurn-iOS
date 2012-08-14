@@ -66,20 +66,26 @@
     camp.contactEmail = [dict objectForKey:@"contact"];
     NSString *artists = @"by ";
     int x = 0;
-    for (NSString *name in [dict objectForKey:@"artists"]) {
-      artists = [artists stringByAppendingString:name];
-      if (x != [[dict objectForKey:@"artists"]count]-1) {
-        artists = [artists stringByAppendingString:@", "];
+    id artistsObject = [dict objectForKey:@"artists"];
+    if ([artistsObject isKindOfClass:[NSArray class]]) {
+      for (NSString *name in artistsObject) {
+        artists = [artists stringByAppendingString:name];
+        if (x != [[dict objectForKey:@"artists"]count]-1) {
+          artists = [artists stringByAppendingString:@", "];
+        }
+        x++;
       }
-      x++;
+    } else if ([artistsObject isKindOfClass:[NSString class]]) {
+      artists = [artists stringByAppendingString:artistsObject];
     }
+
     if(![artists isEqualToString:@"by "]) {
       camp.artist = [self nullStringOrString:artists];
     }
   }
 	
 	
-	//camp.location = [dict objectForKey:@"artist_location"];
+	// camp.location = [dict objectForKey:@"artist_location"];
 	// image_url
 	
 }
@@ -168,8 +174,7 @@
             withObjects:arts 
            forClassName:@"ArtInstall"
 							 fromFile:NO];
-	[self importDataFromFile:@"allart_public"];
-	[self importDataFromFile:@"art-info"];
+	[self importDataFromFile:@"art-2012"];
 }
 
 

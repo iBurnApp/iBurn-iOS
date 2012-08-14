@@ -106,7 +106,7 @@
 -(void) startMapDownload {
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-  NSString * path = [[NSBundle mainBundle] pathForResource:@"tiles" ofType:@"json"];
+  NSString * path = [[NSBundle mainBundle] pathForResource:@"tiles-2012" ofType:@"json"];
   NSString* responseTxt = [[[NSString alloc] initWithContentsOfFile:path
                                                            encoding:NSUTF8StringEncoding 
                                                               error:nil] autorelease];

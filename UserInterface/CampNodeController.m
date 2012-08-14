@@ -103,8 +103,7 @@
             withObjects:camps 
            forClassName:@"ThemeCamp"
 							fromFile:NO];
-	[self importDataFromFile:@"camps"];
-	[self importDataFromFile:@"camps-info"];
+	[self importDataFromFile:@"camps-2012"];
 }
 
 
@@ -115,6 +114,9 @@
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   for (NSDictionary *dict in objects) {
+    if (!dict || [dict isEqual:[NSNull null]]) {
+      continue;
+    }
     id matchedCamp = nil;
     NSString* name = (NSString*)[self nullOrObject:[dict objectForKey:@"title"]];
     if (fromFile) {

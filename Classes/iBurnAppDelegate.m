@@ -50,7 +50,7 @@
 	//See if the CoreData database is populated.  If not populate it from the API.
 	NSFetchRequest *testRequest = [[[NSFetchRequest alloc] init] autorelease];
 	[testRequest setEntity:[NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[self managedObjectContext]]];
-	NSError *error;
+	NSError *error = nil;
 	NSInteger dbCount = [[self managedObjectContext] countForFetchRequest:testRequest error:&error];
   if (error) {
     NSLog(@"DB Error: %@ %@, DBCount: %i", [error localizedDescription], [error userInfo], dbCount);
@@ -107,10 +107,10 @@
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
-  //[self checkOrCreateDatabase];
-  //[campNodeController getNodes];
-  //[artNodeController getNodes];
-  //[eventNodeController getNodes];
+  [self checkOrCreateDatabase];
+  [campNodeController getNodes];
+  [artNodeController getNodes];
+  [eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
