@@ -108,6 +108,8 @@
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   [self checkOrCreateDatabase];
+  
+  // TODO comment out these methods once loaded into final db
   [campNodeController getNodes];
   [artNodeController getNodes];
   [eventNodeController getNodes];

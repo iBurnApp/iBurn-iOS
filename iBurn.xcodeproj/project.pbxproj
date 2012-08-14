@@ -161,6 +161,7 @@
 		D917F56515D9C002009F87DE /* camps-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D917F56415D9C002009F87DE /* camps-2012.json */; };
 		D91AF29215D9CA580021167E /* tiles-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D91AF29115D9CA580021167E /* tiles-2012.json */; };
 		D91AF29415D9CA8A0021167E /* art-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D91AF29315D9CA8A0021167E /* art-2012.json */; };
+		D91AF29615D9DAA90021167E /* camp-locations-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D91AF29515D9DAA90021167E /* camp-locations-2012.json */; };
 		D9E1E460158FBBAA00319EDD /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9E1E45F158FBBAA00319EDD /* libz.dylib */; };
 		D9E1E479158FD79E00319EDD /* ASIDataCompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E1E476158FD78F00319EDD /* ASIDataCompressor.m */; };
 		D9E1E47A158FD7A100319EDD /* ASIDataDecompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E1E478158FD78F00319EDD /* ASIDataDecompressor.m */; };
@@ -472,6 +473,7 @@
 		D917F56415D9C002009F87DE /* camps-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "camps-2012.json"; sourceTree = "<group>"; };
 		D91AF29115D9CA580021167E /* tiles-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "tiles-2012.json"; sourceTree = "<group>"; };
 		D91AF29315D9CA8A0021167E /* art-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "art-2012.json"; sourceTree = "<group>"; };
+		D91AF29515D9DAA90021167E /* camp-locations-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "camp-locations-2012.json"; sourceTree = "<group>"; };
 		D9E1E45F158FBBAA00319EDD /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		D9E1E463158FD1A200319EDD /* BurnDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnDataObject.h; sourceTree = "<group>"; };
 		D9E1E475158FD78F00319EDD /* ASIDataCompressor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ASIDataCompressor.h; sourceTree = "<group>"; };
@@ -593,6 +595,7 @@
 			children = (
 				507380CE1402597200B127EE /* tiles */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
+				D91AF29515D9DAA90021167E /* camp-locations-2012.json */,
 				D91AF29315D9CA8A0021167E /* art-2012.json */,
 				D917F56415D9C002009F87DE /* camps-2012.json */,
 				D91AF29115D9CA580021167E /* tiles-2012.json */,
@@ -1284,6 +1287,7 @@
 				D917F56515D9C002009F87DE /* camps-2012.json in Resources */,
 				D91AF29215D9CA580021167E /* tiles-2012.json in Resources */,
 				D91AF29415D9CA8A0021167E /* art-2012.json in Resources */,
+				D91AF29615D9DAA90021167E /* camp-locations-2012.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,6 +11,7 @@
 #import "iBurnAppDelegate.h"
 #import "util.h"
 #import "CJSONDeserializer.h"
+#import "JSONKit.h"
 
 @implementation CampNodeController
 
@@ -104,6 +105,32 @@
            forClassName:@"ThemeCamp"
 							fromFile:NO];
 	[self importDataFromFile:@"camps-2012"];
+  [self importLocationDataFromFile:@"camp-locations-2012" knownCamps:knownCamps];
+}
+
+- (void) importLocationDataFromFile:(NSString*)fileName knownCamps:(NSArray*)knownCamps {
+  JSONDecoder *decoder = [JSONDecoder decoder];
+  NSString *path = [[NSBundle mainBundle] pathForResource:fileName ofType:@"json"];
+  NSData *locationData = [NSData dataWithContentsOfFile:path];
+  NSError *error = nil;
+  NSArray *campLocations = [decoder objectWithData:locationData error:&error];
+  
+  NSMutableDictionary *campLocDict = [NSMutableDictionary dictionaryWithCapacity:[campLocations count]];
+  for (NSDictionary *dictionary in campLocations) {
+    NSString *key = [ThemeCamp createSimpleName:[dictionary objectForKey:@"name"]];
+    [campLocDict setObject:dictionary forKey:key];
+  }
+  for (ThemeCamp * c in knownCamps) {
+    NSDictionary *locDict = [campLocDict objectForKey:c.simpleName];
+    if (locDict) {
+      NSNumberFormatter * f = [[[NSNumberFormatter alloc] init] autorelease];
+      [f setNumberStyle:NSNumberFormatterDecimalStyle];
+      c.latitude =  [f numberFromString:[locDict objectForKey:@"latitude"]];
+      c.longitude = [f numberFromString:[locDict objectForKey:@"longitude"]];
+    }
+  }
+
+  [self saveObjects:knownCamps];
 }
 
 
