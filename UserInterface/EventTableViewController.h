@@ -8,8 +8,10 @@
 #import "XMLTableViewController.h"
 #import "NodeController.h"
 #import <UIKit/UIKit.h>
+#import "EventDayTable.h"
 
-@class EventDayTable;
+
+
 @interface EventTableViewController : XMLTableViewController <NodeFetchDelegate> {
 
   EventDayTable *eventDayTable;

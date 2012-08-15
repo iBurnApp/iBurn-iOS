@@ -1,0 +1,4575 @@
+[
+    {
+        "distance": 2300,
+        "time_address": "02:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1363,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "1000-watt-smile",
+        "name": "1000 Watt Smile"
+    },
+    {
+        "distance": 5280,
+        "time_address": "12:21:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1187,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "12-21-turquoise-portal",
+        "name": "12:21 Turquoise Portal"
+    },
+    {
+        "distance": 3200,
+        "time_address": "11:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1255,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "a-couple-tunnel",
+        "name": "A Couple Tunnel"
+    },
+    {
+        "distance": 5100,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1423,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "alien-nativity",
+        "name": "Alien Nativity"
+    },
+    {
+        "distance": 1200,
+        "time_address": "01:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1301,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "almost",
+        "name": "almost"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1359,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "altar-of-eternity",
+        "name": "Altar of Eternity"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1331,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "altar-of-eternity",
+        "name": "Altar of Eternity"
+    },
+    {
+        "distance": 2300,
+        "time_address": "04:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1403,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "anatomical-pun-2-0",
+        "name": "Anatomical Pun 2.0"
+    },
+    {
+        "distance": 1300,
+        "time_address": "08:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1186,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "anubis",
+        "name": "Anubis"
+    },
+    {
+        "distance": 900,
+        "time_address": "05:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1291,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "arboria-sacramento-core",
+        "name": "Arboria (Sacramento CORE)"
+    },
+    {
+        "distance": 1700,
+        "time_address": "02:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1222,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "arc-harps",
+        "name": "Arc Harps"
+    },
+    {
+        "distance": 2200,
+        "time_address": "05:40:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1202,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "arrowhead",
+        "name": "Arrowhead"
+    },
+    {
+        "distance": 2000,
+        "time_address": "05:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1155,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "artemis-moon",
+        "name": "Artemis Moon"
+    },
+    {
+        "distance": 4500,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1237,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "ascension",
+        "name": "Ascension"
+    },
+    {
+        "distance": null,
+        "time_address": "02:23:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1397,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "ascocoarp",
+        "name": "Ascocoarp"
+    },
+    {
+        "distance": 4100,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1411,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "aspire",
+        "name": "aspire"
+    },
+    {
+        "distance": 3800,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1324,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "at-the-violet-hour-in-the-goldhorn-shadow",
+        "name": "At the Violet Hour, In the Goldhorn Shadow"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1171,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "audiooracle",
+        "name": "AudioOracle"
+    },
+    {
+        "distance": 600,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1268,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "baby-bon-temps-brulee-new-orleans-core",
+        "name": "Baby Bon Temps Brûlée (New Orleans CORE)"
+    },
+    {
+        "distance": null,
+        "time_address": "09:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1205,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "ball-of-light",
+        "name": "Ball of Light"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1217,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "balloon-chain",
+        "name": "Balloon Chain"
+    },
+    {
+        "distance": 1600,
+        "time_address": "07:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1238,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bapteme-de-feu",
+        "name": "Bapteme De Feu"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1376,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "barterdog",
+        "name": "BarterDog"
+    },
+    {
+        "distance": null,
+        "time_address": "10:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1344,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bathroom-beacons-first-words",
+        "name": "Bathroom Beacons: First Words"
+    },
+    {
+        "distance": 2700,
+        "time_address": "12:40:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1384,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bathroom-beacons-hollywood-bathroom",
+        "name": "Bathroom Beacons -- Hollywood Bathroom"
+    },
+    {
+        "distance": null,
+        "time_address": "02:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1345,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bathroom-beacons-the-thrones-of-brc",
+        "name": "Bathroom Beacons - The Thrones of BRC"
+    },
+    {
+        "distance": 1100,
+        "time_address": "02:35:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1392,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bathroom-beacons-the-toilet-bowl",
+        "name": "Bathroom Beacons: The Toilet Bowl"
+    },
+    {
+        "distance": 1200,
+        "time_address": "09:08:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1349,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bathroom-beacons-welcome-to-fabulous",
+        "name": "Bathroom Beacons: Welcome to Fabulous"
+    },
+    {
+        "distance": 2300,
+        "time_address": "10:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1342,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "beat-frequency-muffin",
+        "name": "Beat Frequency Muffin"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1336,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "before-i-die",
+        "name": "Before I Die"
+    },
+    {
+        "distance": 1700,
+        "time_address": "12:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1236,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bicycle-arpeggio",
+        "name": "Bicycle Arpeggio"
+    },
+    {
+        "distance": 1500,
+        "time_address": "11:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1316,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "big-squeeze",
+        "name": "Big Squeeze"
+    },
+    {
+        "distance": 2200,
+        "time_address": "05:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1377,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "big-y-smalls-sit-and-spin",
+        "name": "Big y Smalls: Sit and Spin!"
+    },
+    {
+        "distance": 1800,
+        "time_address": "11:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1395,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "black-rock-city-cemetary",
+        "name": "Black Rock City Cemetary"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1213,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "black-rock-observatory",
+        "name": "Black Rock Observatory"
+    },
+    {
+        "distance": 2300,
+        "time_address": "04:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1347,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "blind-dates-with-chocolate",
+        "name": "Blind Dates with Chocolate"
+    },
+    {
+        "distance": 2200,
+        "time_address": "10:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1367,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "blow-your-heart-out",
+        "name": "Blow Your Heart Out"
+    },
+    {
+        "distance": 600,
+        "time_address": "04:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1278,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "blukis-lithuania-core",
+        "name": "Blukis (Lithuania CORE)"
+    },
+    {
+        "distance": 600,
+        "time_address": "07:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1265,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "boston-cod-piece-boston-core",
+        "name": "Boston Cod Piece (Boston CORE)"
+    },
+    {
+        "distance": 1500,
+        "time_address": "04:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1253,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "bottlecap-gazebo",
+        "name": "Bottlecap Gazebo"
+    },
+    {
+        "distance": 2400,
+        "time_address": "11:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1201,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "brc-dpr-ticket-prescreening-office",
+        "name": "BRC DPR Ticket Prescreening Office"
+    },
+    {
+        "distance": 1800,
+        "time_address": "04:20:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1289,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "breaking-wave",
+        "name": "Breaking Wave"
+    },
+    {
+        "distance": 2100,
+        "time_address": "10:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1338,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "breast-stop",
+        "name": "Breast Stop"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1197,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "burner-s-portrait-book",
+        "name": "Burner's Portrait Book"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1216,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "burning-man-2012",
+        "name": "Burning Man 2012"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1413,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "burning-pollock",
+        "name": "Burning Pollock"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1419,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "burn-it",
+        "name": "Burn It"
+    },
+    {
+        "distance": 3300,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1362,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "burn-time-clock",
+        "name": "Burn Time Clock"
+    },
+    {
+        "distance": 1800,
+        "time_address": "11:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1252,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "burn-wall-street",
+        "name": "Burn Wall Street"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1335,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "california-teenager-inside-the-mind-of",
+        "name": "California Teenager (Inside the mind of)"
+    },
+    {
+        "distance": 600,
+        "time_address": "09:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1293,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "cargo-train-great-lakes-core",
+        "name": "Cargo Train (Great Lakes CORE)"
+    },
+    {
+        "distance": 1100,
+        "time_address": "06:20:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1292,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "caroushell-san-diego-core",
+        "name": "CarouShell (San Diego CORE)"
+    },
+    {
+        "distance": 2300,
+        "time_address": "07:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1299,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "chaotick",
+        "name": "Chaotick"
+    },
+    {
+        "distance": 2300,
+        "time_address": "04:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1241,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "char-wash",
+        "name": "Char Wash"
+    },
+    {
+        "distance": 3700,
+        "time_address": "01:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1328,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "chimes",
+        "name": "Chimes"
+    },
+    {
+        "distance": 600,
+        "time_address": "06:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1272,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "chords-of-wood-orange-county-core",
+        "name": "Chords of Wood (Orange County CORE)"
+    },
+    {
+        "distance": 3500,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1405,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "circumvolute",
+        "name": "Circumvolute"
+    },
+    {
+        "distance": 2300,
+        "time_address": "06:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1228,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "city-of-lights",
+        "name": "City of Lights"
+    },
+    {
+        "distance": 600,
+        "time_address": "01:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1270,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "colorado-core-dragon-lotus",
+        "name": "Colorado CORE Dragon Lotus"
+    },
+    {
+        "distance": 3500,
+        "time_address": "11:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1341,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "come-playa-scrabble",
+        "name": "Come Playa Scrabble"
+    },
+    {
+        "distance": 1200,
+        "time_address": "04:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1198,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "compound-i",
+        "name": "Compound I"
+    },
+    {
+        "distance": 2700,
+        "time_address": "11:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1396,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "cosmic-carousel",
+        "name": "Cosmic Carousel"
+    },
+    {
+        "distance": 600,
+        "time_address": "02:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1314,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "cowfed-houston-core",
+        "name": "CowFed (Houston CORE)"
+    },
+    {
+        "distance": 3000,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1348,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "crystalline-centrum",
+        "name": "Crystalline Centrum"
+    },
+    {
+        "distance": 2000,
+        "time_address": "07:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1233,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "cubatron-core",
+        "name": "Cubatron Core"
+    },
+    {
+        "distance": 4200,
+        "time_address": "11:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1181,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "deep-playa-escape-vessel",
+        "name": "Deep Playa Escape Vessel"
+    },
+    {
+        "distance": 3700,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1357,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "deep-playa-shrine-13",
+        "name": "Deep Playa Shrine #13"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1176,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "department-of-playa-rumors",
+        "name": "Department of Playa Rumors"
+    },
+    {
+        "distance": 1600,
+        "time_address": "09:10:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1358,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "desert-spring",
+        "name": "Desert Spring"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1208,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "disco-shower-bar",
+        "name": "Disco Shower Bar"
+    },
+    {
+        "distance": 1900,
+        "time_address": "02:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1231,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "divine-feminine",
+        "name": "Divine Feminine"
+    },
+    {
+        "distance": 1900,
+        "time_address": "08:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1315,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "donde-jugaran-los-ninos-2012",
+        "name": "Donde Jugaran Los Niños? 2012"
+    },
+    {
+        "distance": 1500,
+        "time_address": "04:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1175,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "don-t-let-the-dogs-out",
+        "name": "Don't let the dogs out"
+    },
+    {
+        "distance": 2300,
+        "time_address": "07:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1287,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "dragon-smelter",
+        "name": "Dragon Smelter"
+    },
+    {
+        "distance": 1300,
+        "time_address": "11:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1382,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "dreamcatchers-dream",
+        "name": "Dreamcatchers dream"
+    },
+    {
+        "distance": 1500,
+        "time_address": "02:50:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1312,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "ego-project",
+        "name": "EGO Project"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1257,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "electric-butterflies-land-sharks",
+        "name": "Electric Butterflies/ Land Sharks"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1364,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "electric-lazy-lounge",
+        "name": "Electric Lazy Lounge"
+    },
+    {
+        "distance": 1300,
+        "time_address": "07:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1224,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "ellipse",
+        "name": "Ellipse"
+    },
+    {
+        "distance": 5800,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1229,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "emerald-kitty-2-0",
+        "name": "Emerald Kitty 2.0"
+    },
+    {
+        "distance": 1500,
+        "time_address": "04:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1329,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "enough-a-reflection-on-human-fertility",
+        "name": "ENOUGH: A Reflection on Human Fertility"
+    },
+    {
+        "distance": 2600,
+        "time_address": "10:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1400,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "exfoliate",
+        "name": "Exfoliate"
+    },
+    {
+        "distance": 1700,
+        "time_address": "05:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1211,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fairtility-2012-part-2-of-the-trilogy-f-tility-2012",
+        "name": "Fairtility 2012 (Part 2 of the Trilogy \"F*)*(*tility 2012\")"
+    },
+    {
+        "distance": 1600,
+        "time_address": "05:08:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1212,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "feartility-2012-part-1-of-the-trilogy-f-tility-2012",
+        "name": "Feartility 2012 (Part 1 of the Trilogy \"F*)*(*tility 2012\")"
+    },
+    {
+        "distance": 2300,
+        "time_address": "09:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1393,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fenrir",
+        "name": "Fenrir"
+    },
+    {
+        "distance": 600,
+        "time_address": "08:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1284,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fertilitree-east-bay-core",
+        "name": "Fertilitree (East Bay CORE)"
+    },
+    {
+        "distance": 1700,
+        "time_address": "05:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1210,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fertility-2012-part-3-of-the-trilogy-f-tility-2012",
+        "name": "Fertility 2012 (Part 3 of the Trilogy \"F*)*(*tility 2012\")"
+    },
+    {
+        "distance": 3200,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1346,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fertility-labyrinth",
+        "name": "Fertility Labyrinth"
+    },
+    {
+        "distance": 1800,
+        "time_address": "10:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1406,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "field-of-rebar",
+        "name": "Field of Rebar"
+    },
+    {
+        "distance": 1800,
+        "time_address": "07:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1240,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fisherman",
+        "name": "fisherman"
+    },
+    {
+        "distance": 1100,
+        "time_address": "03:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1402,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "flip",
+        "name": "FLIP"
+    },
+    {
+        "distance": 2300,
+        "time_address": "04:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1368,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fly-your-freak-flag-high",
+        "name": "Fly Your Freak Flag High"
+    },
+    {
+        "distance": 1900,
+        "time_address": "05:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1422,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "foreplay",
+        "name": "Foreplay"
+    },
+    {
+        "distance": null,
+        "time_address": "03:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1417,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fortress-of-fertitlity",
+        "name": "fortress of fertitlity"
+    },
+    {
+        "distance": 2200,
+        "time_address": "02:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1308,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fortune-cat",
+        "name": "Fortune Cat"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1232,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "front-porch",
+        "name": "Front Porch"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1180,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fulcrum",
+        "name": "Fulcrum"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1303,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "fusion-fire",
+        "name": "Fusion Fire"
+    },
+    {
+        "distance": 2200,
+        "time_address": "08:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1322,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "futili-s-tea-party",
+        "name": "Futili's Tea Party"
+    },
+    {
+        "distance": 3600,
+        "time_address": "11:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1318,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "garden-of-missed-connections",
+        "name": "Garden of Missed Connections"
+    },
+    {
+        "distance": 600,
+        "time_address": "03:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1286,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "gateway-reno-core",
+        "name": "Gateway (Reno CORE)"
+    },
+    {
+        "distance": 2000,
+        "time_address": "06:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1383,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "gignomai",
+        "name": "gignomai"
+    },
+    {
+        "distance": 1800,
+        "time_address": "07:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1394,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "gku-lol",
+        "name": "GKU LOL"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1173,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "glammantis",
+        "name": "GlamMantis"
+    },
+    {
+        "distance": 2300,
+        "time_address": "08:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1200,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "goddess-circle",
+        "name": "Goddess Circle"
+    },
+    {
+        "distance": 600,
+        "time_address": "01:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1276,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "grow-fourth-portland-core",
+        "name": "Grow Fourth (Portland CORE)"
+    },
+    {
+        "distance": 600,
+        "time_address": "02:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1273,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "growing-pains-midwest-core",
+        "name": "Growing Pains (Midwest CORE)"
+    },
+    {
+        "distance": 1400,
+        "time_address": "05:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1185,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "hall-of-selves",
+        "name": "Hall of Selves"
+    },
+    {
+        "distance": 1000,
+        "time_address": "06:35:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1280,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "happy-as-a-clam-maine-core",
+        "name": "Happy as a Clam (Maine CORE)"
+    },
+    {
+        "distance": 2200,
+        "time_address": "06:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1248,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "harmonic-fire-pendula",
+        "name": "Harmonic Fire Pendula"
+    },
+    {
+        "distance": 600,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1267,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "hatchery-dallas-core",
+        "name": "Hatchery (Dallas CORE)"
+    },
+    {
+        "distance": 1500,
+        "time_address": "07:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1378,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "heart-field",
+        "name": "Heart Field"
+    },
+    {
+        "distance": 2000,
+        "time_address": "02:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1370,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "heartfullness",
+        "name": "Heartfullness"
+    },
+    {
+        "distance": 2000,
+        "time_address": "08:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1288,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "heart-of-the-city-2012",
+        "name": "Heart of the City 2012"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1343,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "hearts-on-fire",
+        "name": "Hearts On Fire"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1408,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "hoarse",
+        "name": "Hoarse"
+    },
+    {
+        "distance": 2800,
+        "time_address": "10:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1410,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "h-o-w-houses-of-worship",
+        "name": "H.O.W. - Houses of Worship"
+    },
+    {
+        "distance": 1800,
+        "time_address": "08:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1407,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "illumaswing",
+        "name": "IllumaSwing"
+    },
+    {
+        "distance": 2400,
+        "time_address": "10:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1184,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "inter-course-come-as-often-as-you-can",
+        "name": "Inter Course, Come As Often As You Can"
+    },
+    {
+        "distance": 2200,
+        "time_address": "08:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1360,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "interfractagalactic-scrotumtotempoles",
+        "name": "Interfractagalactic Scrotumtotempoles"
+    },
+    {
+        "distance": 2300,
+        "time_address": "05:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1165,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "issues-on-the-table",
+        "name": "Issues on the Table"
+    },
+    {
+        "distance": 2200,
+        "time_address": "07:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1420,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "ivory-tower",
+        "name": "Ivory Tower"
+    },
+    {
+        "distance": 1700,
+        "time_address": "07:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1188,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "joyism-tree",
+        "name": "Joyism Tree"
+    },
+    {
+        "distance": 1100,
+        "time_address": "05:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1282,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "jozi-south-africa-core",
+        "name": "Jozi (South Africa CORE)"
+    },
+    {
+        "distance": 3400,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1418,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "karma-police",
+        "name": "Karma Police"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1361,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "kerosene-writing-for-a-burning-world",
+        "name": "KEROSENE: writing for a burning world"
+    },
+    {
+        "distance": 600,
+        "time_address": "11:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1319,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "kokopelli-rising-new-mexico-core",
+        "name": "Kokopelli Rising (New Mexico CORE)"
+    },
+    {
+        "distance": 1600,
+        "time_address": "02:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1326,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "labour",
+        "name": "labour"
+    },
+    {
+        "distance": 1600,
+        "time_address": "06:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1230,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "labyrinth-of-a-colorful-cloud",
+        "name": "Labyrinth of a Colorful Cloud"
+    },
+    {
+        "distance": 1100,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1416,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "la-virgen-de-la-playa",
+        "name": "La Virgen de la Playa"
+    },
+    {
+        "distance": 600,
+        "time_address": "05:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1325,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "le-portage-montreal-core",
+        "name": "Le Portage (Montreal CORE)"
+    },
+    {
+        "distance": 1900,
+        "time_address": "03:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1204,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "let-s-go-fly-a-bike",
+        "name": "Let's Go Fly a Bike"
+    },
+    {
+        "distance": 1500,
+        "time_address": "02:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1158,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "life-cube-v2",
+        "name": "Life Cube V2"
+    },
+    {
+        "distance": 1000,
+        "time_address": "06:10:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1298,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "life-tree-vancouver-core-project-2012",
+        "name": "Life Tree - Vancouver CORE Project 2012"
+    },
+    {
+        "distance": 2300,
+        "time_address": "05:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1353,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "lilium-gigantum",
+        "name": "Lilium Gigantum"
+    },
+    {
+        "distance": 3500,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1209,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "love-cubes",
+        "name": "LOVE Cubes"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1172,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "lucy-softball-diamond-lucy-fields",
+        "name": "Lucy Softball Diamond/Lucy Fields"
+    },
+    {
+        "distance": 2400,
+        "time_address": "07:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1281,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "luminous-passage-2-0",
+        "name": "Luminous Passage 2.0"
+    },
+    {
+        "distance": 2000,
+        "time_address": "06:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1283,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "lune-tide",
+        "name": "LUNE/TIDE"
+    },
+    {
+        "distance": 2300,
+        "time_address": "09:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1415,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "magic-square",
+        "name": "Magic Square"
+    },
+    {
+        "distance": 0,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1313,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "man-base-pistil",
+        "name": "Man Base Pistil"
+    },
+    {
+        "distance": 1200,
+        "time_address": "07:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1354,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mani-temple",
+        "name": "Mani Temple"
+    },
+    {
+        "distance": 4500,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1167,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mantis-garden",
+        "name": "Mantis Garden"
+    },
+    {
+        "distance": 2100,
+        "time_address": "02:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1310,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mating-shadows",
+        "name": "Mating Shadows"
+    },
+    {
+        "distance": 1900,
+        "time_address": "06:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1199,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mayan-tricycle",
+        "name": "Mayan Tricycle"
+    },
+    {
+        "distance": 1900,
+        "time_address": "08:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1332,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mendel-s-garden",
+        "name": "Mendel's Garden"
+    },
+    {
+        "distance": 2200,
+        "time_address": "08:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1223,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "metamorph",
+        "name": "MetaMorph"
+    },
+    {
+        "distance": 4100,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1374,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mind-field-playafried-brains",
+        "name": "Mind Field / Playafried Brains"
+    },
+    {
+        "distance": 600,
+        "time_address": "10:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1334,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "missed-conceptions-tallgrass-core",
+        "name": "Missed Conceptions (Tallgrass CORE)"
+    },
+    {
+        "distance": 3100,
+        "time_address": "11:08:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1355,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "momafire",
+        "name": "momafire"
+    },
+    {
+        "distance": 1600,
+        "time_address": "02:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1311,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "mooving-sculptures",
+        "name": "\"Mooving Sculptures\""
+    },
+    {
+        "distance": 1100,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1386,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "murder-migration",
+        "name": "murder migration"
+    },
+    {
+        "distance": 1600,
+        "time_address": "09:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1260,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "murmuration",
+        "name": "Murmuration"
+    },
+    {
+        "distance": 600,
+        "time_address": "04:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1307,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "naglfar-sweden-denmark-core",
+        "name": "Naglfar (Sweden/Denmark CORE)"
+    },
+    {
+        "distance": 600,
+        "time_address": "03:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1277,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "national-treasure-dc-metro-core",
+        "name": "National Treasure (DC Metro CORE)"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1246,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "neverwas-haul",
+        "name": "Neverwas Haul"
+    },
+    {
+        "distance": 1400,
+        "time_address": "06:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1249,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "nowclock",
+        "name": "NowClock"
+    },
+    {
+        "distance": 600,
+        "time_address": "09:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1279,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "nowhere-bell-tower-uk-core",
+        "name": "Nowhere Bell Tower (UK CORE)"
+    },
+    {
+        "distance": 2100,
+        "time_address": "09:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1192,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "nozomi",
+        "name": "Nozomi"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1159,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "oneness-am-a-maze",
+        "name": "Oneness Am-a-maze"
+    },
+    {
+        "distance": 600,
+        "time_address": "06:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1271,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "opalessence-idaho-core",
+        "name": "opalEssence (Idaho CORE)"
+    },
+    {
+        "distance": 3000,
+        "time_address": "01:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1215,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "open-mind-studio",
+        "name": "Open Mind Studio"
+    },
+    {
+        "distance": null,
+        "time_address": "02:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1296,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "otic-oasis-2-0",
+        "name": "Otic Oasis 2.0"
+    },
+    {
+        "distance": 1500,
+        "time_address": "03:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1254,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "out-of-the-one-comes-the-cleu",
+        "name": "Out of the One, comes the Cleu"
+    },
+    {
+        "distance": 5900,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1327,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "overlook",
+        "name": "Overlook"
+    },
+    {
+        "distance": 1400,
+        "time_address": "02:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1421,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "panoptoconotopia",
+        "name": "Panoptoconotopia"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1221,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "peacecranespace",
+        "name": "PeaceCraneSpace"
+    },
+    {
+        "distance": 1900,
+        "time_address": "02:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1179,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "peace-wall",
+        "name": "Peace Wall"
+    },
+    {
+        "distance": null,
+        "time_address": "09:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1178,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pee-funnel-dispenser",
+        "name": "Pee Funnel Dispenser"
+    },
+    {
+        "distance": 3200,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1365,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pendulum-light-waves",
+        "name": "Pendulum Light Waves"
+    },
+    {
+        "distance": 1300,
+        "time_address": "02:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1220,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "perception-in-the-absence-of-reality",
+        "name": "Perception in the Absence of Reality"
+    },
+    {
+        "distance": null,
+        "time_address": "07:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1157,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "phoenix-by-kindergarten-kamp",
+        "name": "Phoenix by Kindergarten Kamp"
+    },
+    {
+        "distance": 2350,
+        "time_address": "04:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1203,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pier-2",
+        "name": "Pier 2"
+    },
+    {
+        "distance": 2000,
+        "time_address": "12:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1247,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pins",
+        "name": "Pins"
+    },
+    {
+        "distance": 2100,
+        "time_address": "05:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1169,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "plastic-planet-ii",
+        "name": "Plastic Planet II"
+    },
+    {
+        "distance": 2300,
+        "time_address": "02:52:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1372,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "praying-with-fire-redux",
+        "name": "\"Praying with Fire\" redux"
+    },
+    {
+        "distance": 3900,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1388,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "preying-man-tis",
+        "name": "Preying Man-tis"
+    },
+    {
+        "distance": 1100,
+        "time_address": "06:10:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1259,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "psychophilia-victoria-bc-core",
+        "name": "PsychoPhilia (Victoria, BC CORE)"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1350,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "punjabi-dating-game",
+        "name": "Punjabi Dating Game"
+    },
+    {
+        "distance": 2300,
+        "time_address": "01:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1389,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pure-love-star-cube",
+        "name": "pure love star cube"
+    },
+    {
+        "distance": 1400,
+        "time_address": "10:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1309,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pyropodium",
+        "name": "PyroPodium"
+    },
+    {
+        "distance": 3900,
+        "time_address": "01:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1380,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "pyxis",
+        "name": "Pyxis"
+    },
+    {
+        "distance": 3300,
+        "time_address": "11:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1352,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "reclining-sofa-with-enhanced-view",
+        "name": "Reclining Sofa With Enhanced View"
+    },
+    {
+        "distance": 1500,
+        "time_address": "05:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1295,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "release",
+        "name": "Release"
+    },
+    {
+        "distance": 0,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1160,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "release-the-man",
+        "name": "Release the Man"
+    },
+    {
+        "distance": 2200,
+        "time_address": "02:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1170,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "remembering-capn-jim",
+        "name": "Remembering Cap’n Jim"
+    },
+    {
+        "distance": 2200,
+        "time_address": "03:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1290,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "reno-star-thistle",
+        "name": "Reno Star Thistle"
+    },
+    {
+        "distance": 600,
+        "time_address": "08:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1321,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "rise-of-the-planet-of-the-moose-toronto-core",
+        "name": "Rise of the Planet of the Moose (Toronto CORE)"
+    },
+    {
+        "distance": 1700,
+        "time_address": "05:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1218,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "road-trip",
+        "name": "Road Trip"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1242,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "robot-dance-party",
+        "name": "Robot Dance Party!"
+    },
+    {
+        "distance": 600,
+        "time_address": "05:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1304,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "roeblingagon-ny-core",
+        "name": "Roeblingagon -- NY CORE"
+    },
+    {
+        "distance": 4100,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1196,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "rotating-foliage-of-our-existence",
+        "name": "Rotating Foliage of Our Existence"
+    },
+    {
+        "distance": 1100,
+        "time_address": "11:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1371,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "royal-pair-in-the-playa",
+        "name": "Royal Pair in the Playa"
+    },
+    {
+        "distance": 1000,
+        "time_address": "05:20:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1263,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "saskatchewan-core-bison-field",
+        "name": "Saskatchewan CORE, Bison Field"
+    },
+    {
+        "distance": 2300,
+        "time_address": "05:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1414,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "say-something-nice",
+        "name": "Say Something Nice"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1195,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sculpting-the-wind-tower-of-air-light",
+        "name": "Sculpting the Wind; Tower of Air & Light"
+    },
+    {
+        "distance": 600,
+        "time_address": "11:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1274,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "secret-of-the-bees-utah-core",
+        "name": "Secret of the Bees (Utah CORE)"
+    },
+    {
+        "distance": 900,
+        "time_address": "05:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1285,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "seraphim-la-core",
+        "name": " Seraphim (LA CORE)"
+    },
+    {
+        "distance": 2600,
+        "time_address": "11:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1351,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "serendipity-outpost",
+        "name": "Serendipity Outpost"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1245,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "serpent-twins",
+        "name": "Serpent Twins"
+    },
+    {
+        "distance": 1900,
+        "time_address": "02:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1401,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "shadow-disco",
+        "name": "Shadow Disco"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1156,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sherwood-lorax-redux",
+        "name": "sherwood (lorax redux)"
+    },
+    {
+        "distance": 1100,
+        "time_address": "11:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1244,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "singularity-transmissions",
+        "name": "Singularity Transmissions"
+    },
+    {
+        "distance": 2200,
+        "time_address": "01:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1234,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "solar-bramble",
+        "name": "solar bramble"
+    },
+    {
+        "distance": 3900,
+        "time_address": "11:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1387,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "solar-power",
+        "name": "SOLAR POWER"
+    },
+    {
+        "distance": 2100,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1168,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sound-frond",
+        "name": "Sound Frond"
+    },
+    {
+        "distance": 1600,
+        "time_address": "03:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1162,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "soundpuddle",
+        "name": "SoundPuddle"
+    },
+    {
+        "distance": 1000,
+        "time_address": "05:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1266,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "south-bay-core-valley-of-heart-s-delight",
+        "name": "South Bay CORE - Valley of Heart's Delight"
+    },
+    {
+        "distance": 1400,
+        "time_address": "10:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1182,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "space-chapel",
+        "name": "Space Chapel"
+    },
+    {
+        "distance": 2400,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1390,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "squarehenge",
+        "name": "Squarehenge"
+    },
+    {
+        "distance": 1700,
+        "time_address": "06:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1219,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "square-seed-of-thought",
+        "name": "Square Seed of Thought"
+    },
+    {
+        "distance": 2700,
+        "time_address": "11:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1391,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "stargate",
+        "name": "Stargate"
+    },
+    {
+        "distance": 2400,
+        "time_address": "12:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1398,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "starlight",
+        "name": "Starlight"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1235,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "starport-2-012",
+        "name": "Starport 2.012"
+    },
+    {
+        "distance": 1500,
+        "time_address": "09:22:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1320,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "star-seed",
+        "name": "Star Seed"
+    },
+    {
+        "distance": 900,
+        "time_address": "06:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1294,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "stella-octangula-mid-atlantic-philadelphia-core",
+        "name": "Stella Octangula (Mid-Atlantic/Philadelphia CORE)"
+    },
+    {
+        "distance": 1800,
+        "time_address": "06:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1373,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "stoned",
+        "name": "Stoned"
+    },
+    {
+        "distance": 1800,
+        "time_address": "03:55:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1297,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sub-sonarium",
+        "name": "Sub-Sonarium"
+    },
+    {
+        "distance": 2200,
+        "time_address": "06:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1330,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sun-bugs",
+        "name": "Sun Bugs"
+    },
+    {
+        "distance": 2400,
+        "time_address": "06:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1333,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sun-flower-power-tha-photosynthesizer",
+        "name": "Sun Flower Power: Tha Photosynthesizer"
+    },
+    {
+        "distance": 1900,
+        "time_address": "01:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1190,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sunflowers",
+        "name": "Sunflowers"
+    },
+    {
+        "distance": 5500,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1404,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "sunrise-speakeasy",
+        "name": "Sunrise Speakeasy"
+    },
+    {
+        "distance": 2100,
+        "time_address": "07:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1227,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "super-street-fire",
+        "name": "Super Street Fire"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1375,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "supertask-1-study",
+        "name": "Supertask #1 (study)"
+    },
+    {
+        "distance": 1600,
+        "time_address": "10:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1340,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "syncytium-maze",
+        "name": "Syncytium Maze"
+    },
+    {
+        "distance": 2400,
+        "time_address": "10:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1379,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "temple-of-1001-testicles-2-0",
+        "name": "temple of 1001 testicles 2.0"
+    },
+    {
+        "distance": 2400,
+        "time_address": "12:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1250,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "temple-of-juno",
+        "name": "Temple of Juno"
+    },
+    {
+        "distance": 2100,
+        "time_address": "05:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1356,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "temple-of-mujo",
+        "name": "Temple of Mujo"
+    },
+    {
+        "distance": 2400,
+        "time_address": "10:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1256,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "temple-of-one-thousand-and-one-testicles",
+        "name": "Temple of One Thousand and One Testicles"
+    },
+    {
+        "distance": 2300,
+        "time_address": "01:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1412,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "temple-of-salt",
+        "name": "Temple of Salt"
+    },
+    {
+        "distance": 600,
+        "time_address": "10:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1323,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "tendrillar-woods-seattle-core",
+        "name": "Tendrillar Woods (Seattle CORE)"
+    },
+    {
+        "distance": 1700,
+        "time_address": "02:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1262,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "tesseract",
+        "name": "TESSERACT"
+    },
+    {
+        "distance": 1900,
+        "time_address": "09:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1191,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "testosterone-powered",
+        "name": "Testosterone Powered"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1214,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "the-blitterbike",
+        "name": "The BlitterBike"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1161,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "the-g-train-project",
+        "name": "The G-Train Project"
+    },
+    {
+        "distance": 1200,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1189,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "theophony",
+        "name": "Theophony"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1206,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "the-playa-free-box",
+        "name": "The Playa FREE BOX"
+    },
+    {
+        "distance": 1700,
+        "time_address": "07:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1306,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "third-space",
+        "name": "Third Space"
+    },
+    {
+        "distance": 1700,
+        "time_address": "05:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1251,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "through-the-gorilla-glass",
+        "name": "Through the Gorilla Glass"
+    },
+    {
+        "distance": 1900,
+        "time_address": "04:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1385,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "tikal-2012",
+        "name": "Tikal 2012"
+    },
+    {
+        "distance": 1700,
+        "time_address": "04:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1300,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "timing-is-everything-24-7-timestar",
+        "name": "Timing is Everything / 24-7 Timestar"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1207,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "to-be-determined",
+        "name": "To be determined!"
+    },
+    {
+        "distance": 1800,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1305,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "torii-light",
+        "name": "Torii Light"
+    },
+    {
+        "distance": 1400,
+        "time_address": "03:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1225,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "transcendental-cube",
+        "name": "Transcendental Cube"
+    },
+    {
+        "distance": 2100,
+        "time_address": "06:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1261,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "transformoney-tree",
+        "name": "Transformoney Tree"
+    },
+    {
+        "distance": 3000,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1409,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "traveller",
+        "name": "traveller"
+    },
+    {
+        "distance": 1450,
+        "time_address": "12:50:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1258,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "tree-of-transmutation",
+        "name": "Tree of Transmutation"
+    },
+    {
+        "distance": 2200,
+        "time_address": "09:38:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1193,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "treepod-pinata-s-revenge",
+        "name": "Treepod & Pinata's Revenge"
+    },
+    {
+        "distance": 1500,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1337,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "tubes-tea-house",
+        "name": "Tubes Tea House"
+    },
+    {
+        "distance": 600,
+        "time_address": "07:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1264,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "twisted-upright-house-sf-north-bay-core",
+        "name": "Twisted Upright House (SF North Bay CORE)"
+    },
+    {
+        "distance": 1200,
+        "time_address": "03:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1239,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "unearthed",
+        "name": "Unearthed"
+    },
+    {
+        "distance": 5100,
+        "time_address": "01:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1177,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "universal-boop-zone",
+        "name": "Universal Boop Zone"
+    },
+    {
+        "distance": 3500,
+        "time_address": "11:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1194,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "universal-vagina-of-light",
+        "name": "Universal Vagina of Light"
+    },
+    {
+        "distance": 2350,
+        "time_address": "06:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1302,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "universe-revolves-around-you",
+        "name": "Universe Revolves Around YOU"
+    },
+    {
+        "distance": 3200,
+        "time_address": "12:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1369,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "venus",
+        "name": "Venus"
+    },
+    {
+        "distance": 2000,
+        "time_address": "09:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1399,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "vritra",
+        "name": "Vritra"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1174,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "warp-core",
+        "name": "warp core"
+    },
+    {
+        "distance": 1500,
+        "time_address": "06:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1366,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "watchman",
+        "name": "Watchman"
+    },
+    {
+        "distance": 1700,
+        "time_address": "10:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1381,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "way-in",
+        "name": "Way In"
+    },
+    {
+        "distance": null,
+        "time_address": null,
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1317,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "whe-build-a-garden-for-you-around-the-hunab-ku",
+        "name": "Whe build a garden for you.. around the Hunab'Ku"
+    },
+    {
+        "distance": 2200,
+        "time_address": "06:30:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1163,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "why-do-you-do-what-you-do",
+        "name": "Why Do You Do What You Do?"
+    },
+    {
+        "distance": 3600,
+        "time_address": "12:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1183,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "wind-playground",
+        "name": "Wind Playground"
+    },
+    {
+        "distance": 1200,
+        "time_address": "04:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1164,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "wind-wagon",
+        "name": "Wind Wagon"
+    },
+    {
+        "distance": 2400,
+        "time_address": "11:15:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1339,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "womb-with-a-view",
+        "name": "Womb with a View"
+    },
+    {
+        "distance": 1500,
+        "time_address": "03:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1275,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "www",
+        "name": "WWW"
+    },
+    {
+        "distance": 1400,
+        "time_address": "12:05:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1226,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "yoga-robot",
+        "name": "Yoga Robot"
+    },
+    {
+        "distance": 1700,
+        "time_address": "11:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1166,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "your-funeral",
+        "name": "Your Funeral"
+    },
+    {
+        "distance": 1800,
+        "time_address": "01:00:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1269,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "zoa",
+        "name": "zoa"
+    },
+    {
+        "distance": 1200,
+        "time_address": "09:45:00",
+        "location_string": null,
+        "description": null,
+        "artist": null,
+        "url": null,
+        "id": 1243,
+        "circular_street": null,
+        "contact_email": null,
+        "year": {
+            "id": 8,
+            "year": "2012"
+        },
+        "slug": "zonotopia-and-the-two-trees",
+        "name": "Zonotopia and the Two Trees"
+    }
+]

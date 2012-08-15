@@ -9,6 +9,8 @@
 #import "XMLTableViewController.h"
 #import "NodeController.h"
 
+#define k
+
 @interface EventDayTable : XMLTableViewController <NodeFetchDelegate> {
   NSArray *events;  
 }
