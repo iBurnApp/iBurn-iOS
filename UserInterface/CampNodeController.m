@@ -68,6 +68,9 @@
     camp.latitude =  [f numberFromString:[dict objectForKey:@"latitude"]];
     camp.longitude = [f numberFromString:[dict objectForKey:@"longitude"]];
   }
+  if ([dict objectForKey:@"location"]) {
+    camp.playaLocation = [self nullStringOrString:[dict objectForKey:@"location"]];
+  }
 
   if ([dict objectForKey:@"description"]) {
     camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
@@ -84,6 +87,7 @@
   camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
   camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
   camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+  camp.playaLocation = [self nullStringOrString:[dict objectForKey:@"location"]];
   camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
 

@@ -21,6 +21,7 @@
 @property (nonatomic, retain) NSNumber * longitude;
 @property (nonatomic, retain) NSString * url;
 @property (nonatomic, retain) NSNumber * latitude;
+@property (nonatomic, retain) NSString * playaLocation;
 @property (nonatomic, retain) NSString * desc;
 @property (nonatomic, retain) NSString * location;
 @property (nonatomic, retain) NSNumber * bm_id;

@@ -70,6 +70,15 @@
 			[tempTexts addObject:locString];
 		}
   }
+  if (camp.playaLocation && ![camp.playaLocation isEqualToString:@""]) {
+    [tempTitles addObject:@"Playa Location"];
+    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+		if ([t embargoed]) {
+			[tempTexts addObject:@"Location data is embargoed until gates open."];
+		} else {
+			[tempTexts addObject:camp.playaLocation];
+		}
+  }
   if (camp.desc && ![camp.desc isEqualToString:@""] ) {
     [tempTitles addObject:@"Description"];
     [tempTexts addObject:camp.desc];
