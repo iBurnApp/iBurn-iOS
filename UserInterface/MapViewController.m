@@ -316,10 +316,14 @@
   [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
   [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
   
-  CLLocationCoordinate2D center = CLLocationCoordinate2DMake(40.782920000000004, -119.20903000000001);
+  CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   
   [mapView.contents moveToLatLong:center];
-}	
+}
+
++ (CLLocationCoordinate2D) burningManCoordinate {
+  return CLLocationCoordinate2DMake(40.78629, -119.20650);
+}
 
 
 - (void)loadView {
