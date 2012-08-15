@@ -168,6 +168,7 @@
 		D9F8F9C915DC22E500E9D055 /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = D9F8F9C615DC22E500E9D055 /* art_data_and_locations.json */; };
 		D9F8F9CA15DC22E500E9D055 /* camp_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = D9F8F9C715DC22E500E9D055 /* camp_data_and_locations.json */; };
 		D9F8F9CB15DC22E500E9D055 /* event_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = D9F8F9C815DC22E500E9D055 /* event_data_and_locations.json */; };
+		D9F8FA0215DC682C00E9D055 /* iBurn.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = D9F8FA0115DC682C00E9D055 /* iBurn.sqlite */; };
 		EA02BE1D12064667000D058B /* GaiaMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1A12064667000D058B /* GaiaMarker.m */; };
 		EA02BE1E12064667000D058B /* GaiaMarkerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE1C12064667000D058B /* GaiaMarkerManager.m */; };
 		EA02BE23120646D4000D058B /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA02BE21120646D4000D058B /* BurnMapView.m */; };
@@ -486,6 +487,7 @@
 		D9F8F9C615DC22E500E9D055 /* art_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data_and_locations.json; path = playa_data/results/art_data_and_locations.json; sourceTree = "<group>"; };
 		D9F8F9C715DC22E500E9D055 /* camp_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = camp_data_and_locations.json; path = playa_data/results/camp_data_and_locations.json; sourceTree = "<group>"; };
 		D9F8F9C815DC22E500E9D055 /* event_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = event_data_and_locations.json; path = playa_data/results/event_data_and_locations.json; sourceTree = "<group>"; };
+		D9F8FA0115DC682C00E9D055 /* iBurn.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = iBurn.sqlite; sourceTree = "<group>"; };
 		EA02BE1912064667000D058B /* GaiaMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarker.h; sourceTree = "<group>"; };
 		EA02BE1A12064667000D058B /* GaiaMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GaiaMarker.m; sourceTree = "<group>"; };
 		EA02BE1B12064667000D058B /* GaiaMarkerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaiaMarkerManager.h; sourceTree = "<group>"; };
@@ -595,6 +597,7 @@
 			children = (
 				6301BD6A15DB2F6500152C8D /* tiles */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
+				D9F8FA0115DC682C00E9D055 /* iBurn.sqlite */,
 				D9F8F9C615DC22E500E9D055 /* art_data_and_locations.json */,
 				D9F8F9C715DC22E500E9D055 /* camp_data_and_locations.json */,
 				D9F8F9C815DC22E500E9D055 /* event_data_and_locations.json */,
@@ -1288,6 +1291,7 @@
 				D9F8F9C915DC22E500E9D055 /* art_data_and_locations.json in Resources */,
 				D9F8F9CA15DC22E500E9D055 /* camp_data_and_locations.json in Resources */,
 				D9F8F9CB15DC22E500E9D055 /* event_data_and_locations.json in Resources */,
+				D9F8FA0215DC682C00E9D055 /* iBurn.sqlite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
