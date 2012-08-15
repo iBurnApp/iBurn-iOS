@@ -55,15 +55,15 @@
     camp.name = [self nullStringOrString:[dict objectForKey:@"title"]];
   }
   
-  if ([dict objectForKey:@"lat"]) {
-    camp.latitude = [dict objectForKey:@"lat"];
-    camp.longitude = [dict objectForKey:@"lon"];
+  if ([dict objectForKey:@"latitude"]) {
+    camp.latitude = [dict objectForKey:@"latitude"];
+    camp.longitude = [dict objectForKey:@"longitude"];
   }
 
   if ([dict objectForKey:@"description"]) {
-    camp.desc = [dict objectForKey:@"description"];
-    camp.url = [dict objectForKey:@"url"];
-    camp.contactEmail = [dict objectForKey:@"contact"];
+    camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+    camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
+    camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact"]];
     NSString *artists = @"by ";
     int x = 0;
     id artistsObject = [dict objectForKey:@"artists"];
@@ -174,8 +174,7 @@
             withObjects:arts 
            forClassName:@"ArtInstall"
 							 fromFile:NO];
-  [self importDataFromFile:@"playaevents-art-2012"];
-	[self importDataFromFile:@"art-2012"];
+  [self importDataFromFile:@"art_data_and_locations"];
 }
 
 

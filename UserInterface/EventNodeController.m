@@ -122,7 +122,7 @@
             withObjects:sortedArray 
            forClassName:@"Event"];
   
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"playaevents-camps-2012" ofType:@"json"];
+  NSString *path = [[NSBundle mainBundle] pathForResource:@"event_data_and_locations" ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *eventArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
  
