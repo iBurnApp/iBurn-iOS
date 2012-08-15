@@ -80,24 +80,47 @@
 
 - (NSString*) dayString:(NSString*)ttl {
 	NSString *dayString = nil;
-	if ([ttl isEqualToString:@"August 29"])
+	if ([ttl isEqualToString:kDay1String]) {
+		dayString = @"27";
+  } else if ([ttl isEqualToString:kDay2String]) {
+		dayString = @"28";
+  } else if ([ttl isEqualToString:kDay3String]) {
 		dayString = @"29";
-	if ([ttl isEqualToString:@"August 30"])
+  } else if ([ttl isEqualToString:kDay4String]) {
 		dayString = @"30";
-	if ([ttl isEqualToString:@"August 31"])
+  } else if ([ttl isEqualToString:kDay5String]) {
 		dayString = @"31";
-	if ([ttl isEqualToString:@"September 1"])
+  } else if ([ttl isEqualToString:kDay6String]) {
 		dayString = @"01";
-	if ([ttl isEqualToString:@"September 2"])
+  } else if ([ttl isEqualToString:kDay7String]) {
 		dayString = @"02";
-	if ([ttl isEqualToString:@"September 3"])
+  } else if ([ttl isEqualToString:kDay8String]) {
 		dayString = @"03";
-	if ([ttl isEqualToString:@"September 4"])
-		dayString = @"04";
-	if ([ttl isEqualToString:@"September 5"])
-		dayString = @"05";
+  }
 	return dayString;
-}	
+}
+
++ (NSString*) subtitleString:(NSString*)ttl {
+	NSString *dayString = nil;
+	if ([ttl isEqualToString:kDay1String]) {
+		dayString = @"8/27";
+  } else if ([ttl isEqualToString:kDay2String]) {
+		dayString = @"8/28";
+  } else if ([ttl isEqualToString:kDay3String]) {
+		dayString = @"8/29";
+  } else if ([ttl isEqualToString:kDay4String]) {
+		dayString = @"8/30";
+  } else if ([ttl isEqualToString:kDay5String]) {
+		dayString = @"8/31";
+  } else if ([ttl isEqualToString:kDay6String]) {
+		dayString = @"9/1";
+  } else if ([ttl isEqualToString:kDay7String]) {
+		dayString = @"9/2";
+  } else if ([ttl isEqualToString:kDay8String]) {
+		dayString = @"9/3";
+  }
+	return dayString;
+}
 
 - (void) sortByFavorites { 
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
