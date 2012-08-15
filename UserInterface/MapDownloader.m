@@ -129,7 +129,7 @@
     }
     
     NSString * filePath = [self.tileSource tileFile:t];
-    // NSLog(@"downloading tile from url %@", filePath);
+    //NSLog(@"downloading tile from url %@", filePath);
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
       [self downloadTile:t fromURL:[self.tileSource tileURL:t] toPath:filePath];

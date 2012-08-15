@@ -14,7 +14,6 @@
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
 		4E99497212063C6A00F410EF /* iBurn.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4E99497112063C6A00F410EF /* iBurn.xcdatamodel */; };
-		507380CF1402597200B127EE /* tiles in Resources */ = {isa = PBXBuildFile; fileRef = 507380CE1402597200B127EE /* tiles */; };
 		50B8EDCB121BB1EF0093E402 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC6121BB1EF0093E402 /* Event.m */; };
 		50B8EDCC121BB1EF0093E402 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDC8121BB1EF0093E402 /* ArtInstall.m */; };
 		50B8EDCD121BB1EF0093E402 /* ThemeCamp.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8EDCA121BB1EF0093E402 /* ThemeCamp.m */; };
@@ -131,6 +130,7 @@
 		57F472750F22C49900827FAC /* TweetTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472570F22C49900827FAC /* TweetTableViewController.m */; };
 		57F472760F22C49900827FAC /* CampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472590F22C49900827FAC /* CampTableViewController.m */; };
 		57F472770F22C49900827FAC /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4725B0F22C49900827FAC /* MapViewController.m */; };
+		6301BD6B15DB2F6500152C8D /* tiles in Resources */ = {isa = PBXBuildFile; fileRef = 6301BD6A15DB2F6500152C8D /* tiles */; };
 		844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 844873EC14034C4300DBD3A3 /* rod_garrett.jpg */; };
 		8448741D14034FBD00DBD3A3 /* ContactInfoScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */; };
 		84487492140358E200DBD3A3 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84487491140358E200DBD3A3 /* routeme.plist */; };
@@ -241,7 +241,6 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* iBurn_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iBurn_Prefix.pch; sourceTree = "<group>"; };
 		4E99497112063C6A00F410EF /* iBurn.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = iBurn.xcdatamodel; sourceTree = "<group>"; };
-		507380CE1402597200B127EE /* tiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tiles; sourceTree = "<group>"; };
 		50B8EDC5121BB1EF0093E402 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
 		50B8EDC6121BB1EF0093E402 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Event.m; sourceTree = "<group>"; };
 		50B8EDC7121BB1EF0093E402 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
@@ -439,6 +438,7 @@
 		57F4725B0F22C49900827FAC /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapViewController.m; sourceTree = "<group>"; };
 		57F4725C0F22C49900827FAC /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
 		57F4725D0F22C49900827FAC /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
+		6301BD6A15DB2F6500152C8D /* tiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tiles; sourceTree = "<group>"; };
 		844873EC14034C4300DBD3A3 /* rod_garrett.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = rod_garrett.jpg; sourceTree = "<group>"; };
 		8448741B14034FBD00DBD3A3 /* ContactInfoScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContactInfoScreen.h; sourceTree = "<group>"; };
 		8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContactInfoScreen.m; sourceTree = "<group>"; };
@@ -599,7 +599,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				507380CE1402597200B127EE /* tiles */,
+				6301BD6A15DB2F6500152C8D /* tiles */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
 				D90F5A5715DB3463006DC097 /* playaevents-camps-2012.json */,
 				D90F5A5815DB3463006DC097 /* playaevents-art-2012.json */,
@@ -1289,7 +1289,6 @@
 				A0F1681F140C59C2004DCF90 /* lock-icon.png in Resources */,
 				A0F16863140C5EB5004DCF90 /* green-pin-down.png in Resources */,
 				A0F16864140C5EB5004DCF90 /* green-pin-down@2x.png in Resources */,
-				507380CF1402597200B127EE /* tiles in Resources */,
 				844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */,
 				84487492140358E200DBD3A3 /* routeme.plist in Resources */,
 				84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */,
@@ -1300,6 +1299,7 @@
 				D90F5A5A15DB3463006DC097 /* playaevents-camps-2012.json in Resources */,
 				D90F5A5B15DB3463006DC097 /* playaevents-art-2012.json in Resources */,
 				D90F5A5C15DB3463006DC097 /* playaevents-events-2012.json in Resources */,
+				6301BD6B15DB2F6500152C8D /* tiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
