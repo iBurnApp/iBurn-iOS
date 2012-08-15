@@ -11,6 +11,7 @@
 #import "iBurnAppDelegate.h"
 #import "util.h"
 #import "ThemeCamp.h"
+#import "CJSONDeserializer.h"
 
 @implementation EventNodeController
 @synthesize eventDateHash;
@@ -117,10 +118,16 @@
                                          names:[self getNamesFromDicts:sortedArray] 
                                      upperLeft:dummy 
                                     lowerRight:dummy];
-  
-  
   [self createAndUpdate:events
             withObjects:sortedArray 
+           forClassName:@"Event"];
+  
+  NSString *path = [[NSBundle mainBundle] pathForResource:@"playaevents-camps-2012" ofType:@"json"];
+	NSData *fileData = [NSData dataWithContentsOfFile:path];
+	NSArray *eventArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
+ 
+  [self createAndUpdate:events
+            withObjects:eventArray
            forClassName:@"Event"];
 }
 

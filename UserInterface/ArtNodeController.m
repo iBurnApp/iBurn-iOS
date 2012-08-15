@@ -174,6 +174,7 @@
             withObjects:arts 
            forClassName:@"ArtInstall"
 							 fromFile:NO];
+  [self importDataFromFile:@"playaevents-art-2012"];
 	[self importDataFromFile:@"art-2012"];
 }
 

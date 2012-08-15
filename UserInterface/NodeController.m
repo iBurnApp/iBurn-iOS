@@ -230,7 +230,9 @@
 - (void)requestWentWrong:(ASIHTTPRequest *)request {
   NSLog(@"ERROR is %@", [request error]); 
 
-  NSLog(@"ERROR is %@", [request responseString]); 
+  NSLog(@"ERROR is %@", [request responseString]);
+  
+  [self processJSONThreaded:request];
   [request release];
 }
 

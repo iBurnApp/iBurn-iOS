@@ -158,6 +158,9 @@
 		A0F1681F140C59C2004DCF90 /* lock-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F1681E140C59C2004DCF90 /* lock-icon.png */; };
 		A0F16863140C5EB5004DCF90 /* green-pin-down.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16861140C5EB5004DCF90 /* green-pin-down.png */; };
 		A0F16864140C5EB5004DCF90 /* green-pin-down@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F16862140C5EB5004DCF90 /* green-pin-down@2x.png */; };
+		D90F5A5A15DB3463006DC097 /* playaevents-camps-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D90F5A5715DB3463006DC097 /* playaevents-camps-2012.json */; };
+		D90F5A5B15DB3463006DC097 /* playaevents-art-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D90F5A5815DB3463006DC097 /* playaevents-art-2012.json */; };
+		D90F5A5C15DB3463006DC097 /* playaevents-events-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D90F5A5915DB3463006DC097 /* playaevents-events-2012.json */; };
 		D917F56515D9C002009F87DE /* camps-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D917F56415D9C002009F87DE /* camps-2012.json */; };
 		D91AF29215D9CA580021167E /* tiles-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D91AF29115D9CA580021167E /* tiles-2012.json */; };
 		D91AF29415D9CA8A0021167E /* art-2012.json in Resources */ = {isa = PBXBuildFile; fileRef = D91AF29315D9CA8A0021167E /* art-2012.json */; };
@@ -470,6 +473,9 @@
 		A0F1681E140C59C2004DCF90 /* lock-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock-icon.png"; sourceTree = "<group>"; };
 		A0F16861140C5EB5004DCF90 /* green-pin-down.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "green-pin-down.png"; sourceTree = "<group>"; };
 		A0F16862140C5EB5004DCF90 /* green-pin-down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "green-pin-down@2x.png"; sourceTree = "<group>"; };
+		D90F5A5715DB3463006DC097 /* playaevents-camps-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "playaevents-camps-2012.json"; sourceTree = "<group>"; };
+		D90F5A5815DB3463006DC097 /* playaevents-art-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "playaevents-art-2012.json"; sourceTree = "<group>"; };
+		D90F5A5915DB3463006DC097 /* playaevents-events-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "playaevents-events-2012.json"; sourceTree = "<group>"; };
 		D917F56415D9C002009F87DE /* camps-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "camps-2012.json"; sourceTree = "<group>"; };
 		D91AF29115D9CA580021167E /* tiles-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "tiles-2012.json"; sourceTree = "<group>"; };
 		D91AF29315D9CA8A0021167E /* art-2012.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "art-2012.json"; sourceTree = "<group>"; };
@@ -595,6 +601,9 @@
 			children = (
 				507380CE1402597200B127EE /* tiles */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
+				D90F5A5715DB3463006DC097 /* playaevents-camps-2012.json */,
+				D90F5A5815DB3463006DC097 /* playaevents-art-2012.json */,
+				D90F5A5915DB3463006DC097 /* playaevents-events-2012.json */,
 				D91AF29515D9DAA90021167E /* camp-locations-2012.json */,
 				D91AF29315D9CA8A0021167E /* art-2012.json */,
 				D917F56415D9C002009F87DE /* camps-2012.json */,
@@ -1288,6 +1297,9 @@
 				D91AF29215D9CA580021167E /* tiles-2012.json in Resources */,
 				D91AF29415D9CA8A0021167E /* art-2012.json in Resources */,
 				D91AF29615D9DAA90021167E /* camp-locations-2012.json in Resources */,
+				D90F5A5A15DB3463006DC097 /* playaevents-camps-2012.json in Resources */,
+				D90F5A5B15DB3463006DC097 /* playaevents-art-2012.json in Resources */,
+				D90F5A5C15DB3463006DC097 /* playaevents-events-2012.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

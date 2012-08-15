@@ -104,6 +104,7 @@
             withObjects:camps 
            forClassName:@"ThemeCamp"
 							fromFile:NO];
+  [self importDataFromFile:@"playaevents-camps-2012"];
 	[self importDataFromFile:@"camps-2012"];
   [self importLocationDataFromFile:@"camp-locations-2012" knownCamps:knownCamps];
 }
