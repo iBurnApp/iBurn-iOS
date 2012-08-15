@@ -1,4 +1,4 @@
 
 
 def cleanString(string):
-    return string.lower().replace(", the", "").replace("the ", "").replace(", a", "").replace("a ", "").strip()
+    return string.lower().replace("&", "").replace("and", "").replace(", the", "").replace("the ", "").replace(", a", "").replace("a ", "").strip()

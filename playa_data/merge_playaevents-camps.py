@@ -11,7 +11,7 @@ import json
 from string_util import cleanString
 
 # Threshold under which to discard partial string matches
-MATCH_THRESHOLD = .6
+MATCH_THRESHOLD = .7
 
 location_file = open('./data/camp-locations-2012.json')
 playa_file = open('./data/playaevents-camps-2012.json')
@@ -36,25 +36,36 @@ if scraper_file:
         max_match_playa_camp_index = -1
         if scraper_camp != None:
             for index, playa_camp in enumerate(playa_json):
-                if scraper_camp != None:
+                if playa_camp != None:
                     match = Levenshtein.ratio(cleanString(playa_camp['name']), cleanString(scraper_camp['name']))
                     if match > max_match:
                         max_match = match
                         max_match_playa_camp_index = index
             #print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
             if max_match > MATCH_THRESHOLD:
-                pass
+                print "merging"
                 # Match found. Merge scraper data into playa data
-                # For now, at least, it doesn't look like there's
-                # Any ADDITIONAL data of interest in the scraper entries
+                if 'description' in scraper_camp:
+                    playa_json[max_match_playa_camp_index]['description'] = scraper_camp['description']
+                if 'contact' in scraper_camp:
+                    playa_json[max_match_playa_camp_index]['contact_email'] = scraper_camp['contact']
+                if 'hometown' in scraper_camp:
+                    playa_json[max_match_playa_camp_index]['hometown'] = scraper_camp['hometown']
+                if 'url' in scraper_camp:
+                    playa_json[max_match_playa_camp_index]['url'] = scraper_camp['url']
             else:
                 # Scoop the useful fields out of the scraper entry
                 # formatting them like the playaevents list
                 new_entry = {}
                 new_entry['name'] = scraper_camp['name']
-                new_entry['description'] = scraper_camp['description']
+                if 'description' in scraper_camp:
+                    new_entry['description'] = scraper_camp['description']
                 if 'contact' in scraper_camp:
                     new_entry['contact_email'] = scraper_camp['contact']
+                if 'hometown' in scraper_camp:
+                    new_entry['hometown'] = scraper_camp['hometown']
+                if 'url' in scraper_camp:
+                    new_entry['url'] = scraper_camp['url']
                 # Add scraper data entry into playa data
                 playa_json.append(new_entry)
                 print "merged scraper entry: " + str(scraper_camp['name'])

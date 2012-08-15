@@ -7,7 +7,7 @@ from string_util import cleanString
     (The Playa Events API Art feed)
 '''
 # Threshold under which to discard partial string matches
-MATCH_THRESHOLD = .6
+MATCH_THRESHOLD = .7
 
 location_file = open('./data/art-locations-2012.json')
 playa_art_file = open('./data/playaevents-art-2012.json')

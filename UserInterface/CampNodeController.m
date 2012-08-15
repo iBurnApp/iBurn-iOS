@@ -75,7 +75,7 @@
   if ([dict objectForKey:@"description"]) {
     camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
     camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
-    camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact"]];
+    camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
     camp.location = [self nullStringOrString:[dict objectForKey:@"hometown"]];
   }
 

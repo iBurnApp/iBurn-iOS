@@ -79,6 +79,10 @@
 			[tempTexts addObject:camp.playaLocation];
 		}
   }
+  if (camp.location && ![camp.location isEqualToString:@""]) {
+    [tempTitles addObject:@"Hometown"];
+    [tempTexts addObject:camp.location];
+  }
   if (camp.desc && ![camp.desc isEqualToString:@""] ) {
     [tempTitles addObject:@"Description"];
     [tempTexts addObject:camp.desc];

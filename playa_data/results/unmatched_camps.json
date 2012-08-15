@@ -1,7 +1,32 @@
 [
     {
+        "contact_email": "zifralogic@yahoo.com", 
+        "description": "We are collecting thoughts and information to feed the universal consciousness. Please come share your thoughts with us!", 
+        "hometown": "San Jose, CA", 
+        "id": 4876, 
+        "name": "100'th Monkey Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
         "contact_email": null, 
-        "description": null, 
+        "description": "Thus spake Psychedelic Moses, down from Black Rock Mount: &#8220;The Playa delivered unto me two tablets of stone&#8230;&#8221; And thus were the 10 Principles forever spliced with the 10 Commandments, creating: THE TEN COMMANCIPLES! Our mission: to educate Burner virgins and veterans alike as to the true spirit of the Burning Man ethos. Visit our 24&#8242; long PSA/photo op to pose as Psychedelic Moses bearing the 10 Commanciples Tablets. Also, check out Potentiality, the newest sculpture from our resident art company Animus.", 
+        "hometown": "New York City", 
+        "id": 4734, 
+        "name": "10 Principles Camp", 
+        "url": "http://10commanciples.tumblr.com/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "abc@ccnv.us", 
+        "description": "Here&#8217;s your chance to relive those heady days of youngsterhood, release your inner child and express yourself in a BIG way.", 
+        "hometown": "Carson City", 
         "id": 4218, 
         "name": "ABC - Alphabet Block Camp", 
         "url": null, 
@@ -11,52 +36,57 @@
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "info@CampAboveTheLimit.com", 
+        "description": "Saraswati Tea House&#8217;s Tea Wallahs, Crystal Cavern&#8217;s 18 foot fluorescent crystals and comfy pillows, and Cafe Kona&#8217;s fresh Kona coffee welcome our guests! Those in need of tea, art, empathy, and refreshment are served by tea wallahs in honor of Saraswati, the goddess of cosmic knowledge. By day, join us for coffee, yoga and the Palenque Norte Speaker Series featuring renowned presenters discussing entheobotany and visionary transformation. By night, come dance and relax in the 40&#8242; Crystal Cavern dome.", 
+        "hometown": "Reno, NV / San Francisco, CA", 
         "id": 4736, 
         "name": "Above The Limit", 
-        "url": null, 
+        "url": "http://www.CampAboveTheLimit.com", 
         "year": {
             "id": 8, 
             "year": "2012"
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "tifinx@hotmail.fr", 
+        "description": "The French speaking camp. Welcome in our french style psychedelic world !", 
+        "hometown": "Montr&#233;al", 
         "id": 4809, 
         "name": "Abracada Booum !", 
-        "url": null, 
+        "url": "http://www.abracadabooum.fr.mu/", 
         "year": {
             "id": 8, 
             "year": "2012"
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "mtpatchen@gmail.com", 
+        "description": "Abstininthe is the friendly bar on the playa,providing our special drink to the thirsty of BRC for over a decade. Come try our many flavors and enjoy the music, ambiance and conversation of our neighborhood bar. Check out our new website.", 
+        "hometown": "San Francisco Bay area", 
         "id": 4435, 
         "name": "Abstininthe", 
-        "url": null, 
+        "url": "http://abstininthe.com", 
         "year": {
             "id": 8, 
             "year": "2012"
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "AcavalloTribalThunder@gmail.com", 
+        "description": "This is the port-of-call and dodgy playa-front town run by A Cavallo,the carousel/pirate ship-roving performance stage, and Tribal Thunder, the participatory percussion playground. Get Shanghai&#8217;d at a nightly embarkation party, learn to forge a tool in the shipyard, make rhythmic thunder with the natives on 30-plus drums, have a grog at the Blue Umbrella Lounge or Tribal Thunder Bar.", 
+        "hometown": "New York City", 
         "id": 4596, 
         "name": "A Cavallo Tribal Thunder", 
-        "url": null, 
+        "url": "http://acavallo.org", 
         "year": {
             "id": 8, 
             "year": "2012"
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "martin@moltensteelman.com", 
+        "description": "THE BEAST IS BACK!  ACME Exploration Corporation: Mission BRC 2012 welcomes all burners, new burners, refugee burners and future burners to stop by for some friendly interactions with The Walking Beast by Moltensteelman, the playa shark Flamboni , perilous G-force testing device Super Sit and Spewww!!,  Radiant Guardian Spears, a sweet little fire-breathing Pyrosaurus, the occasional batch of home baked cookies, and a camp made up of people who are glad to see you.", 
+        "hometown": "Portland, Oregon", 
         "id": 4289, 
         "name": "ACME Exploration Corporation", 
         "url": null, 
@@ -67,7 +97,7 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "The public is advised that any reports of strange transmissions in the area are false.\nUnder no condition should they investigate these reports. Do not bring a radio receiver to this location.\nAnyone investigating with contraband radios will be dealt with accordingly.\nYou have been warned.", 
         "id": 5010, 
         "name": "\u00c6therForce Home Bass - Project: Side Mission", 
         "url": null, 
@@ -78,7 +108,20 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "Breathe easy with the Maskman&#8217;s quality N95 dust masks with their psychedelic Burning Man logo.", 
+        "hometown": "Burbank, Ca", 
+        "id": 4937, 
+        "name": "A-Playa Mask", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "godidunno@gmail.com", 
+        "description": "Purify your mind body and soul. The oldest tradition.", 
+        "hometown": "NA", 
         "id": 4964, 
         "name": "Art of Creation", 
         "url": null, 
@@ -89,7 +132,8 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "You are cut from the same cloth, and you know each other (and your parents!) in a way nobody else ever can. Why not design your life to take full advantage of this most special of relationships? Better Living Through Siblinghood! brings brothers and sisters of all ages together through sibling consulting and the Sibling Secret Census. Work through your childhood angst in the sibling rivalry gladiator ring. Feeling alone? Rediscover your long lost sibling on the playa.", 
+        "hometown": "Washington, DC", 
         "id": 4987, 
         "name": "Better Living Through Siblinghood", 
         "url": null, 
@@ -99,8 +143,21 @@
         }
     }, 
     {
+        "contact_email": "blackrockcityparksandrec@gmail.com", 
+        "description": "Bring the kids to Black Rock City Parks and Recreation to play on the Yabadabadoo foot powered bumper cars, the amazing and exciting revolving teeter totters, tire swings and there are the same rides in adult sizes that mom and dad can play too! A shady park bench with cooling misters and  a refreshing ice cold glass of H2O is waiting for you at the newest totally virgin run camp on the playa!", 
+        "hometown": "Maryhill, WA", 
+        "id": 4417, 
+        "name": "Black Rock City Parks and Recreation", 
+        "url": "http://www.blackrockcityparksandrecreation.com", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
         "contact_email": null, 
-        "description": null, 
+        "description": "The Future is Better Together. We want to create a more compassionate world by bringing fun &amp; joy to the playa.", 
+        "hometown": "Seattle", 
         "id": 4383, 
         "name": "Bloop", 
         "url": null, 
@@ -111,7 +168,31 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "Bounce camp is back and bouncing your way!", 
+        "hometown": "Santa Cruz", 
+        "id": 4351, 
+        "name": "Bounce Camp", 
+        "url": "http://bouncewithin.com", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "stellafilms@mac.com", 
+        "description": "Come have a cocktail, dance to the Grateful Dead and enjoy the liquid light show. The long, strange trip has just begun&#8230;", 
+        "hometown": "Sherman Oaks, CA", 
+        "id": 4656, 
+        "name": "Brokedown Palace", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Bubble Warriors!  Come and support us in our quest for silliness, enforcing bubbles, and fun.  Bring your own wands or play with our and help us make bubbles anytime of the day and night!\nWe are veterans and virgins united as warriors under the banner of Bubbles from San Francisco, California.  Expect Irrevelent, silliness, dragon chasing bubbles, warriors with pink bubble swords, blue unicorns barfing skittles to battle normality bring laughters to the playa.", 
         "id": 4965, 
         "name": "Bubble Warriors", 
         "url": null, 
@@ -123,28 +204,42 @@
     {
         "contact_email": null, 
         "description": null, 
+        "id": 4760, 
+        "name": "Camp CAUTION)!(", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "We are a bunch of punk technical artists from around the SouthWest, organized around the theme of our precious waste gas, carbon dioxide, only slightly ironically. We are collaborating individuals who individually and collectively produce works of art, do community organizing, cultural events, all with a DIY and punk socially-responsible aesthetic.", 
+        "hometown": "Los Angeles, Santa Fe, Tucson", 
         "id": 4886, 
         "name": "Carbon Dioxide Camp", 
-        "url": null, 
+        "url": "http://co2camp.com", 
         "year": {
             "id": 8, 
             "year": "2012"
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "mkstowegnv@gmail.com", 
+        "description": "Contradancing all levels every night (and most days) to live music &#8211; looped/traditional/celtic/fusion/techno; fast-paced yet easy to learn with a caller who instructs (but with room for dancers to improvise).  Half the moves are with your partner, half with everyone else, resulting in a tribal vibe, where the Zen is flow, synchrony, and bonding (not footwork, not competition).", 
+        "hometown": "Gainesville FL (2 of us, others from all over)", 
         "id": 4329, 
         "name": "Contradance Community Camp", 
-        "url": null, 
+        "url": "http://burningmancontradance.com", 
         "year": {
             "id": 8, 
             "year": "2012"
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "burningman@zyteck.fr", 
+        "description": "We are a Chillout musical camp with psyche soul and funk tunes and the famous pastis and p&#233;tanque game combo. And we used to say love is in the air , we have very hairy costumes !", 
+        "hometown": "Paris (France)", 
         "id": 4889, 
         "name": "Cosmical Proot Temple", 
         "url": null, 
@@ -154,10 +249,11 @@
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
-        "id": 5007, 
-        "name": "Disco Shower Bar", 
+        "contact_email": "dazeofmaze@gmail.com", 
+        "description": "A camp for exercising mental participation and growth in a new fun way.sharing community and creating together.", 
+        "hometown": "Cincinnati", 
+        "id": 4887, 
+        "name": "Daze of Maze Camp", 
         "url": null, 
         "year": {
             "id": 8, 
@@ -166,7 +262,32 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "The Dickstracted Camp is and adult-gay oriented camp emphasized on bringing exhibitionism and voyeurism to the playa.", 
+        "hometown": "Los Angeles", 
+        "id": 4371, 
+        "name": "Dickstracted Camp", 
+        "url": "http://dickstractedcamp.tumblr.com", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "stuartmacintyre11@gmail.com", 
+        "description": "DISCO SHOWER BAR MACTROPOLIS is our homage to the sensuality of the human machine. We present a purpose built 19 seat fully equipped  bar With a  fully integrated shower, A performance area, Music to fire the spirit, &amp; Sun block to protect exposed skin. We promote community Cleanse the dusty, Hydrate the thirsty,  Entertain the curious, And promote healthy skin!", 
+        "hometown": "Oakland, Ca", 
+        "id": 5007, 
+        "name": "Disco Shower Bar", 
+        "url": "http://mactropolis.tumblr.com/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "We&#8217;re putting a bangin&#8217; donk on it!", 
+        "hometown": "San Francisco", 
         "id": 4802, 
         "name": "Donkocalypse", 
         "url": null, 
@@ -176,10 +297,23 @@
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
-        "id": 4846, 
-        "name": "FLOWER POWER GYPSY CAMP", 
+        "contact_email": "john@myticbeatlounge.com", 
+        "description": "Changing the World Through Art!", 
+        "hometown": "Sebastopol, CA", 
+        "id": 4707, 
+        "name": "Easel Park", 
+        "url": "http://easelpark.com", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "jkroman19@gmail.com", 
+        "description": "Tired of Techno! Come join us and listen to live acoustic music, or better yet bring an instrument, poem, or song, that you&#8217;d like to share. We have a beautiful tie-dyed lounge complete with a stage, bar, and enough shaded lounging space for everyone.", 
+        "hometown": "Yosemite", 
+        "id": 4313, 
+        "name": "Embers Acoustic Lounge", 
         "url": null, 
         "year": {
             "id": 8, 
@@ -188,7 +322,56 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "For a panoramic view of the Playa and Burningman camps, climb our 50 foot platformed tower.  Great spot to enjoy the sunshine and inhale the dust of the Playa.", 
+        "hometown": "Santa Cruz", 
+        "id": 4295, 
+        "name": "EYEFULL CAMP", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "", 
+        "description": "Come and strut your flirting skills at the first annual Flirt Camp! Stop by and hang out, flirt with the locals and have a super fun time opening yourself to the natural man-woman dynamic!", 
+        "hometown": "San Francisco, CA", 
+        "id": 5008, 
+        "name": "Flirt Camp", 
+        "url": "http://www.facebook.com/FlirtCamp", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Like pollen floating in a breeze, drift into The Flower Garden.  A Floral Playground of art and light; reflect, relax, and restore in nature&#8217;s most elegant and selfless gift of beauty, the Flower.", 
+        "hometown": "San Francisco", 
+        "id": 5005, 
+        "name": "Flow Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "jonny@gypsyflowerpowercamp.org", 
+        "description": "FLOWER POWER GYPSY CAMP an eclectic group of Psykadelik Gypsies from 7 countries &amp; 14 states celebrating FREEDOM, SUMMER OF LOVE and the FLOWER POWER MOVEMENT of the 1960&#8242;s We have a 24hr bar, 2 live bands, 5 resident DJ&#8217;s, Burlesque cabaret, a gift exchange box, confessional booth and many more interactive arts and games. Famous 15 yr Veteran Jonny Moonshine and his Gypsy Crew leads this brought together by the universe via facebook onto the Playa to spread the LOVE.", 
+        "hometown": "Genoa  NV", 
+        "id": 4846, 
+        "name": "FLOWER POWER GYPSY CAMP", 
+        "url": "http://gypsyflowerpowercamp.org", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Celebrate FUN FUR in all its plush glory! Furry-Photo-ops at furTIVE GLANCEs, plush chill at furSTBASE, or play furBALL (furred or nakid)!", 
+        "hometown": "Vancouver", 
         "id": 4526, 
         "name": "furTILITY 2.0", 
         "url": null, 
@@ -199,7 +382,20 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "GEO Dust II will post daily geo cache locations to be found using GPS devices.  We will also teach how to use GPS devices to educate people on a world wide culture of geo caching", 
+        "hometown": "San Francisco, CA", 
+        "id": 4468, 
+        "name": "GEO Dust II", 
+        "url": "http://www.geocaching.com/seek/cache_details.aspx?guid=d46b9214-f913-466d-87c4-0555e822626a", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "glow@highvizibility.com", 
+        "description": "The Man wants his people to GLOW! Lights for the lightless masses whether people, bikes or other.", 
+        "hometown": "seattle", 
         "id": 4332, 
         "name": "Glow Salvation Ministries", 
         "url": null, 
@@ -209,8 +405,9 @@
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "Grandmas.Haus@gmail.com", 
+        "description": "Visit us out in the open playa for advice, storytime, nostalgia, treats, and tips for digestive health. Daily, 4-5pm @ Grandma&#8217;s Living Room.", 
+        "hometown": "Portland, Oregon", 
         "id": 4835, 
         "name": "Grandma's Haus", 
         "url": null, 
@@ -221,7 +418,7 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "Portland isn&#8217;t here, so come to our camp if you&#8217;re a young person looking to retire. We have coconuts and games.", 
         "id": 4847, 
         "name": "Hipster Retirement Cruise", 
         "url": null, 
@@ -232,7 +429,8 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "A magical pink place to relax with pink pillows, pink drinks, snow cones and pedicures. Kimberland &amp; Moto Mike Wedding.", 
+        "hometown": "San Francisco", 
         "id": 4685, 
         "name": "Kimberland", 
         "url": null, 
@@ -242,8 +440,21 @@
         }
     }, 
     {
+        "contact_email": "tibet_88@yahoo.com", 
+        "description": "Kink&#8217;os Lounge provides a photo taking service where your personal photos are converted into stamped postcards for your mailing pleasure.", 
+        "hometown": "Cave Junction, Or", 
+        "id": 4565, 
+        "name": "Kink'os Photo Lounge", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
         "contact_email": null, 
-        "description": null, 
+        "description": "The Lollipop Guild is an inclusive group of gay friends who embrace all humanity. We are gathered to express ourselves as individuals and members of the Burning Man community. In the spirit of love and celebration, we will perform non-binding, diverse and creative Playa weddings for all.  There will also be an &#8220;End of the World Suck-Off&#8221; reception as well as lollipop art creation throughout the week.", 
+        "hometown": "San Francisco/San Diego", 
         "id": 4216, 
         "name": "Lollipop Guild", 
         "url": null, 
@@ -266,6 +477,18 @@
     {
         "contact_email": null, 
         "description": null, 
+        "id": 5006, 
+        "name": "Misting Vagina Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "glitter.mouse@yahoo.com", 
+        "description": "All naked hipsters are welcome here!  Only naked hipsters allowed.  Enjoy items gifted from other camps.", 
+        "hometown": "San Francisco", 
         "id": 4362, 
         "name": "Naked Hipsters", 
         "url": null, 
@@ -275,11 +498,12 @@
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "ninjas@naked-ninjas.com", 
+        "description": "Our sneakiness is something to be seen! Join us Monday and Wednesday afternoon for tasty libations and funky beats in the Ninja Temple.", 
+        "hometown": "San Diego", 
         "id": 4799, 
         "name": "Naked Ninjas", 
-        "url": null, 
+        "url": "http://naked-ninjas.com/", 
         "year": {
             "id": 8, 
             "year": "2012"
@@ -287,9 +511,45 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "The Monks of The Ordrer OF Silence will help you find inner Peace and Tranquility with the aid of earplugs.  Let the Joy of Silence wash over you with the aid of the earplug the Monks Of The Order Of Silence Provide!", 
+        "hometown": "Sacremento", 
         "id": 4826, 
         "name": "Order Of Silence", 
+        "url": "http://Orderofsilence.org", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": null, 
+        "id": 4561, 
+        "name": "Pee Funnel Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Planet Stardust is an oasis of galactic energies channelled through ambient sound and activating visuals.  Group meditations are held from 9pm to midnight each evening to facilitate heart-centred, intentional partying for the Burning Man community.", 
+        "hometown": "Vancouver", 
+        "id": 4800, 
+        "name": "Planet Stardust", 
+        "url": "http://www.planetstardust.com", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Porn Karaoke Camp needs your voice!  We&#8217;ll hand you and your friend/partner a mic, you provide the conversation/fucking sounds/play-by-play for our endless collection of porn clips.", 
+        "hometown": "Seattle, WA", 
+        "id": 4778, 
+        "name": "Porn Karaoke Cacmp", 
         "url": null, 
         "year": {
             "id": 8, 
@@ -299,9 +559,9 @@
     {
         "contact_email": null, 
         "description": null, 
-        "id": 4800, 
-        "name": "Planet Stardust", 
-        "url": null, 
+        "id": 4980, 
+        "name": "Project Green House", 
+        "url": "http://www.projgreenhouse.org", 
         "year": {
             "id": 8, 
             "year": "2012"
@@ -319,8 +579,9 @@
         }
     }, 
     {
-        "contact_email": null, 
-        "description": null, 
+        "contact_email": "playapatrol@gmail.com", 
+        "description": "We reincarnate Playans by having them confess their sins, do penance and then crawling through a giant vagina to be reborn on the playa. We&#8217;ll do Black Rock City parkour (running and jumping over, climbing around and crawling under obstacales), body painting, a bike race, a playa patrol dispensing aid and costume parties. Join us!", 
+        "hometown": "Los Angeles, CA", 
         "id": 4923, 
         "name": "Reincarnation and Penance", 
         "url": null, 
@@ -331,7 +592,8 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "Camp Right There is a shady chill space where we encourange you to\nexpress yourself with the written word. Come in and write you\nthoughts, feelings and experiences on one of our daily boards or in\none of the journals.", 
+        "hometown": "Reno", 
         "id": 4286, 
         "name": "Right There", 
         "url": null, 
@@ -343,6 +605,18 @@
     {
         "contact_email": null, 
         "description": null, 
+        "id": 4298, 
+        "name": "Safer Sex Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Did you have late night? Roasted out of your sleeping chamber? Do you miss the glory days of your childhood vegetating in front of the television set with a bowl full of sugary cereal goodness? Well, then head on over to Saturday Morning Cartoon Camp! Bringing you the best of Saturday morning cartoons and sugary, sugary cereal goodness on everyday but Saturday. Bring your own bowl and spoon!", 
+        "hometown": "Seattle", 
         "id": 4231, 
         "name": "Saturday Morning Cartoon Camp", 
         "url": null, 
@@ -353,7 +627,20 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "Come and visit our mother ocean in the desert!  Ride a sea horse, experience the cool sea spray, and bounce on the waves!  Sea Anomaly Camp awaits you!", 
+        "hometown": "San Francisco/Palo Alto, CA", 
+        "id": 4801, 
+        "name": "Sea Anomaly Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Come and get drunk every afternoon! Commies, pinkos, and queers welcome! Just leave your dignity at the door, because Shit Show del Fuego is where self respect comes to die folks.", 
+        "hometown": "Portland", 
         "id": 4700, 
         "name": "Shit Show del Fuego", 
         "url": null, 
@@ -375,7 +662,20 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "North Lake Tahoe skiers and burners.  This year we plan to Jump the Shark along with the entire BRC community.", 
+        "hometown": "Kings Beach, CA", 
+        "id": 4598, 
+        "name": "Tahopia", 
+        "url": "http://www.tahopia.com", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Spreading the gospel of our Lord Penis Christ to the citizens of Black Rock City!", 
+        "hometown": "Black Rock City", 
         "id": 4510, 
         "name": "The Church of Penis Christ of Latter-day Taints", 
         "url": null, 
@@ -386,7 +686,31 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "Stop by The Lemonade Stand for delicious, ice cold, lemonade!", 
+        "hometown": "Portland, Oregon", 
+        "id": 4959, 
+        "name": "The Lemonade Stand", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "hrock1@juno.com", 
+        "description": "The Tittyman Camp, Where Burners have given their Body and Soul for twelve Years, Evolution: &#8220;Such a Simple Word.&#8221;", 
+        "hometown": "modesto", 
+        "id": 4228, 
+        "name": "Tittyman Camp", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "Welcome to the Rusty Hanger, Black Rock City&#8217;s Sexual Health and Wellness Clinic (and Bar).\n\nDrop by for drinks in the afternoon and food in the evening while enjoying some open-mic support groups (Erotic Abstinence-Only, Oedipal, and more) and general sexual health (mis)education.  At night we\u2019ll have drinks and music.\n\nCome for the drinks, stay for the people, leave with the crabs.", 
         "id": 4756, 
         "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic", 
         "url": null, 
@@ -398,6 +722,41 @@
     {
         "contact_email": null, 
         "description": null, 
+        "id": 4781, 
+        "name": "Uhuru Village", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "info@VegCamp.org", 
+        "description": "VegCamp invites people to consider how their choices affect animals, the environment, &amp; their own health.  This year we&#8217;re planning vegan food giveaways, our popular Ask-a-Vegan booth, movies, lectures, discussions, photo exhibits, &amp; more.", 
+        "hometown": "Santa Cruz", 
+        "id": 4769, 
+        "name": "VegCamp", 
+        "url": "http://www.VegCamp.org", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": null, 
+        "description": "The Boise &amp; Denver crew from &#8220;Altitude Lounge&#8221; unite again with the Bay Area folks from the &#8220;I&#8217;m OK, You&#8217;re OK Corral&#8221; to form the &#8220;We&#8217;re OK Village&#8221; for 2012!\nJoin our daily playa virgin round-ups on the village mutant vehicle \u2013 complete with OK Corral branding station. Be sure to catch a sunrise on our spectacular 5 story lighted tower too!  After that stop by our sister camp Zanzibar for a cocktail or two on the house!!", 
+        "id": 4379, 
+        "name": "We're OK Village", 
+        "url": null, 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "contact_email": "yetibreaks@gmail.com", 
+        "description": "A cool place to chill! We&#8217;ll have the shade of an igloo and cooling arctic winds.", 
+        "hometown": "Denver, CO", 
         "id": 4391, 
         "name": "Yeti Winter Wonderland", 
         "url": null, 
@@ -408,7 +767,8 @@
     }, 
     {
         "contact_email": null, 
-        "description": null, 
+        "description": "We are Zip Ties &amp; Beer; named after the two things that hold our camp together. Come by and say hello, we&#8217;ll have plenty of both for you when your camp is falling apart &#8211; looking forward to meeting you!", 
+        "hometown": "San Francisco", 
         "id": 4682, 
         "name": "ZipTies & Beer 2.0", 
         "url": null, 
@@ -420,53 +780,92 @@
     {
         "contact_email": "contact@airshipvictoria.org", 
         "description": "The Airship Victoria Project returns to Black Rock City for it&#8217;s 4th year to conduct more tests and research towards a floating stage installation.  Swing by and say hello to the crew and friends.", 
-        "name": "Airship Victoria"
+        "hometown": "San Francisco, CA", 
+        "name": "Airship Victoria", 
+        "url": "airshipvictoria.org"
+    }, 
+    {
+        "description": "Our red shrine returns for its third year, at the heart of Black Rock Asiatown. Within the shrine we are students of motion. Martial arts, qi gong, meditation, and other pursuits are welcome here. Beneath the shade we don our orange robes and practice the form and fluidity of mind and body. Master and novice both find ways to hone their skills and cultivate their self. We are serenity. We are ferocity. And when our minds are clear and we are as one with the Zen of the universe itself&#8230;a gong rings and we d", 
+        "name": "Black Rock Kwoon and Dojo", 
+        "url": "http://www.facebook.com/blackrockkwoon"
     }, 
     {
         "description": "Tarot and palm readings, candle magic, essential oils and infusions, talismans and other expressions of the mystical arts find their home behind our unassuming storefront in the Black Rock French Quarter. Join us in crafting spirit masks, and helping visitors to customize voodoo dolls with trinkets from the object of their desire or ire. Offerings of the sacred and the profane are encouraged to keep our little Botanica and Voodoo Shop stocked. Seek us where the chalice is held aloft and the sounds of blood", 
-        "name": "Botanica Bodhi Manman nan Bejeezus"
+        "name": "Botanica Bodhi Manman nan Bejeezus", 
+        "url": "http://www.facebook.com/botanicabejeezus"
     }, 
     {
         "description": "Join us in crafting the soaps that cleanse us, the oils that fortify us, the perfumes that caress us. Join us in creating this house of water and copper and silk. Join us in sharing the gift of bath and massage, in sharing the essence of life.", 
-        "name": "Broken Angel Bathhouse"
+        "name": "Broken Angel Bathhouse", 
+        "url": "http://www.facebook.com/brokenangelbathhouse"
     }, 
     {
         "description": "Coffee was meant to be roasted fresh right before you enjoy it! Join us on our shaded patio to start those lazy mornings, and cap off those crazy nights, with a cup of the darkest expression of God&#8217;s love. Whether you&#8217;re looking for a camp to be a part of, or just bringing raw beans for us to roast, find us in the Black Rock French Quarter!", 
-        "name": "Cafe de la Fin du Monde"
+        "name": "Cafe de la Fin du Monde", 
+        "url": "http://www.facebook.com/cafedelafindumonde"
     }, 
     {
         "description": "Deep Heaven &#8211; We share our hearts with the Playa through a commitment to authenticity and honesty. Look for the heart beacon by night and the rotating heart mirror by day; find solace and laughter in our sanctuary and attend a playshop in our dome.", 
-        "name": "Deep Heaven"
+        "hometown": "Santa Rosa, CA", 
+        "name": "Deep Heaven", 
+        "url": "http://www.deepheaven.org"
+    }, 
+    {
+        "contact_email": "deptoftetheredaviation@gmail.com", 
+        "description": "DOTA creates flying art with our kites in the sky as we joyously worship the wind! Join in a daily city-wide Kite Fly, play on our aerially interactive dome, try  our interactive painting classes, try your skills in the playa&#8217;s only batting cage and wander through the awe inspiring Wind Labyrinth.", 
+        "hometown": "San Francisco Bay Area, Gainesville, FL", 
+        "name": "Department of Tethered Aviation (DOTA)"
     }, 
     {
         "contact_email": "dumpsterdivebar@gmail.com", 
         "description": "Hailing from Cascadia, bringing to you lovely libations. Foraged, free piled, naturally harvested, gleaned and grown.", 
-        "name": "Dumpster Dive Bar"
+        "hometown": "Cascadia", 
+        "name": "Dumpster Dive Bar", 
+        "url": "http://www.oldgrowthales.com"
     }, 
     {
         "description": "Celebrating its 10th Anniversary this year, the Golden Cafe is your home on the playa for exotic cocktails and live music since 2003. Swing by for elegant libations served in real glassware, jam with our house band, and sample strange infusions from our cellars. Donations of liquor and mixers keep the party going, and our Wednesday all-day all-night anniversary party is not to be missed!", 
-        "name": "Golden Cafe"
+        "name": "Golden Cafe", 
+        "url": "http://www.goldencafe.org"
     }, 
     {
         "contact_email": "thinfilmguy@hotmail.com", 
         "description": "A comfortable, small chill space with good liquor, fine cigars, and great people.", 
+        "hometown": "Reno", 
         "name": "Jungle Bus Lounge and Cigar Bar"
+    }, 
+    {
+        "description": "Kostume Kult is back presenting &#8220;The Island of Dr. More-Oh!&#8221;, with a twisted take on fertility, cross-breeding and animal experimentation. In Nyrvana Village, KK offers free costumery, personal transformations &amp; runway shows every afternoon Tues-Fri along with day &amp; evening dancing at the Garden of Heathen&#8217;s Rainbow Lounge. Come by to channel your inner beast or to recycle your old costumery in our Kostume Dome.", 
+        "hometown": "NYC", 
+        "name": "Kostume Kult", 
+        "url": "www.KostumeKult.com"
     }, 
     {
         "contact_email": "landofnodexperiment@gmail.com", 
         "description": "Land of NOD Experiment is an evolving collaboration of art and free expression. We operate off the grid and provide a performance space and canvas for people to share their art with the world.", 
-        "name": "Land of NOD Experiment"
+        "hometown": "New Orleans", 
+        "name": "Land of NOD Experiment", 
+        "url": "http://www.landofnodexperiment.com"
     }, 
     {
         "description": "Shrimp, okra, crab, sausage, celery, catfish, crawfish, onions, gator, lobster &#8211; it all goes in there one time or another, and the recipe changes with the ingredients. Bring something to share or something to throw into the pot under the direction of the gumbo chefs! Soupfiends and stewmasters from around the globe &#8211; lend your talents to our everchanging savory delight! Help us shuck oysters and do a proper crawfish boil on playa!", 
-        "name": "Lonesome Gator Gumbo Cookery"
+        "name": "Lonesome Gator Gumbo Cookery", 
+        "url": "http://www.facebook.com/lonesomegator"
     }, 
     {
         "description": "Culinary and mixological performance art gifted to the builders and shapers of Black Rock City, since 2006. The Sunset Supper Club exists for one reason &#8211; to host stunningly extravagant sunset dinners for a handful of Black Rock citizens selected each year for their contributions to the city. Each year our agents wander the playa, gifting gilded dinner tickets to the creators of art, the leaders of camps, the lighters of lamps, the makers of infrastructure, the recyclers of trash, and the performers of stra", 
-        "name": "Sunset Supper Club"
+        "name": "Sunset Supper Club", 
+        "url": "http://www.facebook.com/thesunsetsupperclub"
+    }, 
+    {
+        "contact_email": "ninjaparamedic@yahoo.com", 
+        "description": "Do you make stuff, have stuff, gift stuff? If you want other people&#8217;s stuff, come to The Exchange. It&#8217;s what we do. (and we like virgins)", 
+        "hometown": "Sacramento", 
+        "name": "The Exchange"
     }, 
     {
         "description": "An undead shit-show with an predilection for beez. Come join in on the grotesque debauchery and resurrect your passion for brainz, booze, and beez &#8211; warning: super sloppy fun times await you!", 
+        "hometown": "Calgary", 
         "name": "Zombeez"
     }
 ]
