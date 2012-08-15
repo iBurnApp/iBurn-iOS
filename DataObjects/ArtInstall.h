@@ -31,6 +31,7 @@
 @property (nonatomic, retain) NSString * artist;
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * contactEmail;
+@property (nonatomic, retain) NSString * artistHometown;
 @property (nonatomic, retain) Favorite * Favorite;
 
 + (ArtInstall*) artForName:(NSString*) sName;
