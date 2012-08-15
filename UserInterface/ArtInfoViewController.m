@@ -59,6 +59,10 @@
     [tempTitles addObject:@"Contact Email"];
     [tempTexts addObject:art.contactEmail];
   }
+  if (art.artistHometown && ![art.artistHometown isEqualToString:@""]) {
+    [tempTitles addObject:@"Artist Hometown"];
+    [tempTexts addObject:art.artistHometown];
+  }
   if ([art.latitude floatValue] > 1 
       && [art.longitude floatValue] < -1) {
 		iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];

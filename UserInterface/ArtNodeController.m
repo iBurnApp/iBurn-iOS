@@ -51,38 +51,20 @@
 
 - (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
   ArtInstall *camp = (ArtInstall*)object;
-  if (!camp.name) {
-    camp.name = [self nullStringOrString:[dict objectForKey:@"title"]];
-  }
   
   if ([dict objectForKey:@"latitude"]) {
     camp.latitude = [dict objectForKey:@"latitude"];
     camp.longitude = [dict objectForKey:@"longitude"];
   }
-
-  if ([dict objectForKey:@"description"]) {
-    camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
-    camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
-    camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact"]];
-    NSString *artists = @"by ";
-    int x = 0;
-    id artistsObject = [dict objectForKey:@"artists"];
-    if ([artistsObject isKindOfClass:[NSArray class]]) {
-      for (NSString *name in artistsObject) {
-        artists = [artists stringByAppendingString:name];
-        if (x != [[dict objectForKey:@"artists"]count]-1) {
-          artists = [artists stringByAppendingString:@", "];
-        }
-        x++;
-      }
-    } else if ([artistsObject isKindOfClass:[NSString class]]) {
-      artists = [artists stringByAppendingString:artistsObject];
-    }
-
-    if(![artists isEqualToString:@"by "]) {
-      camp.artist = [self nullStringOrString:artists];
-    }
-  }
+  
+  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  
+  camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
+  camp.artist = [self nullStringOrString:[dict objectForKey:@"artist"]];
+  camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+  camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
+  camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
+  camp.artistHometown = [self nullStringOrString:[dict objectForKey:@"artist_location"]];
 	
 	
 	// camp.location = [dict objectForKey:@"artist_location"];
@@ -149,6 +131,7 @@
   camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
   camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
   camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
+  camp.artistHometown = [self nullStringOrString:[dict objectForKey:@"artist_location"]];
 
   NSDictionary *locPoint = [self getLocationDictionary:dict];
   if (locPoint) {

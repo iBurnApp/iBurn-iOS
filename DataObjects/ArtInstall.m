@@ -26,6 +26,7 @@
 @dynamic artist;
 @dynamic name;
 @dynamic contactEmail;
+@dynamic artistHometown;
 @dynamic Favorite;
 
 
