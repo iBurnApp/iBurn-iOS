@@ -124,6 +124,7 @@
     if (!dict || [dict isEqual:[NSNull null]]) {
       continue;
     }
+    
     id matchedCamp = nil;
     NSString* name = (NSString*)[self nullOrObject:[dict objectForKey:@"title"]];
     if (fromFile) {
@@ -132,15 +133,9 @@
         name = (NSString*)[self nullOrObject:[dict objectForKey:@"Name"]];
       }
     }
-
     NSString * simpleName = [ThemeCamp createSimpleName:name];
 		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
     for (ThemeCamp * c in knownObjects) {
-      if([[c bm_id]isEqual:[NSNumber numberWithInt:4462]])
-      {
-        NSLog(@"");
-      }
-      
       
       if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
 					|| [c.simpleName isEqual:simpleName]) {
@@ -156,10 +151,9 @@
     if (!matchedCamp) {
       if (fromFile) {
         NSLog(@"%@", name);
-      } else {
+      }
         matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
                                                     inManagedObjectContext:moc];  
-      }
     }
 		if (fromFile) {
       [self updateObjectFromFile:matchedCamp withDict:dict];
