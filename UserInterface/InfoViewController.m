@@ -87,7 +87,7 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath  {
-  NSArray *identifiers = [NSArray arrayWithObjects:@"a", @"b", @"c", @"d", @"e", @"f", nil];
+  NSArray *identifiers = [NSArray arrayWithObjects:@"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", nil];
 	NSInteger section = [indexPath section];
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[identifiers objectAtIndex:section]];
   if(!cell) cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[identifiers objectAtIndex:section]] autorelease];

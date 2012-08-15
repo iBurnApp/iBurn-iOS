@@ -26,6 +26,7 @@
 @dynamic contactEmail;
 @dynamic Favorite;
 @dynamic simpleName;
+@dynamic playaLocation;
 
 
 

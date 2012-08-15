@@ -72,6 +72,11 @@
 }
 
 - (void) objectDictItUp {
+  NSSet * alphabetSet = [NSSet setWithArray:[NSArray arrayWithArray:
+                       [@"A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z"
+                        componentsSeparatedByString:@"|"]]];
+  NSString * lettersAndSymbols = @"#";
+  
 	[objectDict release];
 	objectDict = [[NSMutableArray alloc]init];
 	[sections release];
@@ -81,7 +86,9 @@
 	
 	NSMutableDictionary *tempDict = [NSMutableDictionary dictionary];
 	for (id object in objects) {
-		NSString *letter = [[[object name]substringToIndex:1]lowercaseString];
+		NSString *letter = [[[object name]substringToIndex:1]uppercaseString];
+    if( ![alphabetSet containsObject:letter])
+      letter = lettersAndSymbols;
 		if (![tempDict objectForKey:letter]) {
 			[tempDict setValue:[NSMutableArray arrayWithObject:object] forKey:letter];
 			NSLog(@"New letter: %@", letter);
