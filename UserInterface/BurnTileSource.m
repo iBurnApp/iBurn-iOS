@@ -32,7 +32,8 @@
     self.minZoom = 5;
     self.maxZoom = 18;
     //self.tileURL = @"http://earthdev.burningman.com/osm_tiles_2010/ZPARAM/XPARAM/YPARAM.png";
-    self.tileURL = @"http://iburn.s3.amazonaws.com/ZPARAM/XPARAM/YPARAM.png";\
+    //self.tileURL = @"http://iburn.s3.amazonaws.com/ZPARAM/XPARAM/YPARAM.png";
+    self.tileURL = @"http://iburn.s3.amazonaws.com/2012/ZPARAM/XPARAM/YPARAM.png";
 
     NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
