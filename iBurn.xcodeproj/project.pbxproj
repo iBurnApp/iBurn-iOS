@@ -130,6 +130,7 @@
 		57F472750F22C49900827FAC /* TweetTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472570F22C49900827FAC /* TweetTableViewController.m */; };
 		57F472760F22C49900827FAC /* CampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472590F22C49900827FAC /* CampTableViewController.m */; };
 		57F472770F22C49900827FAC /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4725B0F22C49900827FAC /* MapViewController.m */; };
+		6301BD6B15DB2F6500152C8D /* tiles in Resources */ = {isa = PBXBuildFile; fileRef = 6301BD6A15DB2F6500152C8D /* tiles */; };
 		844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 844873EC14034C4300DBD3A3 /* rod_garrett.jpg */; };
 		8448741D14034FBD00DBD3A3 /* ContactInfoScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */; };
 		84487492140358E200DBD3A3 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84487491140358E200DBD3A3 /* routeme.plist */; };
@@ -434,6 +435,7 @@
 		57F4725B0F22C49900827FAC /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapViewController.m; sourceTree = "<group>"; };
 		57F4725C0F22C49900827FAC /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
 		57F4725D0F22C49900827FAC /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
+		6301BD6A15DB2F6500152C8D /* tiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tiles; sourceTree = "<group>"; };
 		844873EC14034C4300DBD3A3 /* rod_garrett.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = rod_garrett.jpg; sourceTree = "<group>"; };
 		8448741B14034FBD00DBD3A3 /* ContactInfoScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContactInfoScreen.h; sourceTree = "<group>"; };
 		8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContactInfoScreen.m; sourceTree = "<group>"; };
@@ -591,6 +593,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				6301BD6A15DB2F6500152C8D /* tiles */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
 				D91AF29515D9DAA90021167E /* camp-locations-2012.json */,
 				D91AF29315D9CA8A0021167E /* art-2012.json */,
@@ -1284,6 +1287,7 @@
 				D91AF29215D9CA580021167E /* tiles-2012.json in Resources */,
 				D91AF29415D9CA8A0021167E /* art-2012.json in Resources */,
 				D91AF29615D9DAA90021167E /* camp-locations-2012.json in Resources */,
+				6301BD6B15DB2F6500152C8D /* tiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

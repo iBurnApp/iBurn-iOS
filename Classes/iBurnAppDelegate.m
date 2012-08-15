@@ -99,7 +99,7 @@
   //[self testOAuthAccessProtected];
   [window addSubview:tabBarController.view];
   [window makeKeyAndVisible];
-  //[self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
+  [self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
   
   self.artNodeController = [[[ArtNodeController alloc]init]autorelease];
   self.artNodeController.delegate = (ArtTableViewController*)[[tabBarController.viewControllers objectAtIndex:1]visibleViewController];
