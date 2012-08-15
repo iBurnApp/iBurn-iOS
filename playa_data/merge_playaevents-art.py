@@ -1,6 +1,7 @@
 import Levenshtein
 import json
-from string_util import cleanString
+from string_util import cleanString, convert_html_entities
+import codecs
 '''
     This script merges art locations from art-locations-2012.json
     into art entries from playaevents-art-2012.json
@@ -39,17 +40,36 @@ if scraper_art_file:
                         max_match_playa_art_index = index
             #print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
             if max_match > MATCH_THRESHOLD:
-                pass
                 # Match found. Merge scraper data into playa data
-                # For now, at least, it doesn't look like there's
-                # Any ADDITIONAL data of interest in the scraper entries
+                if 'description' in scraper_art:
+                    playa_json[max_match_playa_art_index]['description'] = scraper_art['description']
+                if 'url' in scraper_art:
+                    playa_json[max_match_playa_art_index]['url'] = scraper_art['url']
+                if 'image_url' in scraper_art:
+                    playa_json[max_match_playa_art_index]['image_url'] = scraper_art['image_url']
+                if 'artists' in scraper_art:
+                    playa_json[max_match_playa_art_index]['artist'] = scraper_art['artists']
+                if 'artist_location' in scraper_art:
+                    playa_json[max_match_playa_art_index]['artist_location'] = scraper_art['artist_location']
+                if 'contact' in scraper_art:
+                    playa_json[max_match_playa_art_index]['contact_email'] = scraper_art['contact']
             else:
                 # Scoop the useful fields out of the scraper entry
                 # formatting them like the playaevents list
                 new_entry = {}
                 new_entry['name'] = scraper_art['title']
-                new_entry['description'] = scraper_art['description']
-                new_entry['artst'] = scraper_art['artists']
+                if 'description' in scraper_art:
+                    new_entry['description'] = scraper_art['description']
+                if 'url' in scraper_art:
+                    new_entry['url'] = scraper_art['url']
+                if 'image_url' in scraper_art:
+                    new_entry['image_url'] = scraper_art['image_url']
+                if 'artists' in scraper_art:
+                    new_entry['artist'] = scraper_art['artists']
+                if 'artist_location' in scraper_art:
+                    new_entry['artist_location'] = scraper_art['artist_location']
+                if 'contact' in scraper_art:
+                    new_entry['contact_email'] = scraper_art['contact']
                 # Add scraper data entry into playa data
                 playa_json.append(new_entry)
                 print "merged scraper entry: " + str(scraper_art)
@@ -85,11 +105,20 @@ null_art_indexes.reverse()
 for index in null_art_indexes:
     playa_json.pop(index)
 
-unmatched_art_file = open('./results/unmatched_art.json', 'w')
-unmatched_art_file.write(json.dumps(unmatched_art, sort_keys=True, indent=4))
+#unmatched_art_file = open('./results/unmatched_art.json', 'w')
+unmatched_art_file = codecs.open('./results/unmatched_art.json', 'w', "utf-8")
+json_content = json.dumps(unmatched_art, sort_keys=True, indent=4)
+json_stripped = json_content.strip(codecs.BOM_UTF8)
+json_stripped_cleaned = convert_html_entities(json_stripped)
+unmatched_art_file.write(json_stripped_cleaned)
 
-result_file = open('./results/art_data_and_locations.json', 'w')
-result_file.write(json.dumps(playa_json, sort_keys=True, indent=4))
+#result_file = open('./results/art_data_and_locations.json', 'w')
+result_file = codecs.open('./results/art_data_and_locations.json', 'w', "utf-8")
+json_content = json.dumps(playa_json, sort_keys=True, indent=4)
+json_stripped = json_content.strip(codecs.BOM_UTF8)
+json_stripped_cleaned = convert_html_entities(json_stripped)
+result_file.write(json_stripped_cleaned)
+#result_file.write(convert_html_entities(json.dumps(playa_json, sort_keys=True, indent=4)))
 
 if len(unmatched_art) > 0:
     print "Location not determined for " + str(len(unmatched_art)) + " art pieces"

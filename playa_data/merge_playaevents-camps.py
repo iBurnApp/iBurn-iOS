@@ -8,7 +8,8 @@
 
 import Levenshtein
 import json
-from string_util import cleanString
+from string_util import cleanString, convert_html_entities
+import codecs
 
 # Threshold under which to discard partial string matches
 MATCH_THRESHOLD = .7
@@ -43,7 +44,6 @@ if scraper_file:
                         max_match_playa_camp_index = index
             #print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
             if max_match > MATCH_THRESHOLD:
-                print "merging"
                 # Match found. Merge scraper data into playa data
                 if 'description' in scraper_camp:
                     playa_json[max_match_playa_camp_index]['description'] = scraper_camp['description']
@@ -100,11 +100,19 @@ null_camp_indexes.reverse()
 for index in null_camp_indexes:
     playa_json.pop(index)
 
-unmatched_camps_file = open('./results/unmatched_camps.json', 'w')
-unmatched_camps_file.write(json.dumps(unmatched_camps, sort_keys=True, indent=4))
+unmatched_camps_file = codecs.open('./results/unmatched_camps.json', 'w', "utf-8")
+json_content = json.dumps(unmatched_camps, sort_keys=True, indent=4)
+json_stripped = json_content.strip(codecs.BOM_UTF8)
+json_stripped_cleaned = convert_html_entities(json_stripped)
+unmatched_camps_file.write(json_stripped_cleaned)
+#unmatched_camps_file.write(convert_html_entities(json.dumps(unmatched_camps, sort_keys=True, indent=4)).strip(codecs.BOM_UTF8))
 
-result_file = open('./results/camp_data_and_locations.json', 'w')
-result_file.write(json.dumps(playa_json, sort_keys=True, indent=4))
+result_file = codecs.open('./results/camp_data_and_locations.json', 'w', "utf-8")
+json_content = json.dumps(playa_json, sort_keys=True, indent=4)
+json_stripped = json_content.strip(codecs.BOM_UTF8)
+json_stripped_cleaned = convert_html_entities(json_stripped)
+result_file.write(json_stripped_cleaned)
+#result_file.write(convert_html_entities(json.dumps(playa_json, sort_keys=True, indent=4)).strip(codecs.BOM_UTF8))
 
 if len(unmatched_camps) > 0:
     print "Location not determined for " + str(len(unmatched_camps)) + " camps"

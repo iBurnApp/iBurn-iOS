@@ -1,6 +1,6 @@
 import Levenshtein
 import json
-from string_util import cleanString
+from string_util import cleanString, convert_html_entities
 '''
     This script merges event locations from camp-locations-2012.json
     into events from playaevents-events-2012.json
@@ -50,11 +50,11 @@ null_event_indexes.reverse()
 for index in null_event_indexes:
     events_json.pop(index)
 
-unmatched_events_file = open('./results/unmatched_events.json', 'w')
-unmatched_events_file.write(json.dumps(unmatched_events, sort_keys=True, indent=4))
+unmatched_events_file = open('./results/unmatched_events.json', 'wb')
+unmatched_events_file.write(convert_html_entities(json.dumps(unmatched_events, sort_keys=True, indent=4)))
 
-result_file = open('./results/event_data_and_locations.json', 'w')
-result_file.write(json.dumps(events_json, sort_keys=True, indent=4))
+result_file = open('./results/event_data_and_locations.json', 'wb')
+result_file.write(convert_html_entities(json.dumps(events_json, sort_keys=True, indent=4)))
 
 if len(unmatched_events) > 0:
     print "Matches not found for " + str(len(unmatched_events)) + " events"
