@@ -149,7 +149,7 @@
   MapDownloader* dl = [[[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView] autorelease];
   [self setViewForDownloading];
   dl.refreshTiles = refreshTiles;
-  [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
+  //[NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
 }
 
 
