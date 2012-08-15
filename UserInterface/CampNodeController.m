@@ -132,6 +132,12 @@
     NSString * simpleName = [ThemeCamp createSimpleName:name];
 		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
     for (ThemeCamp * c in knownObjects) {
+      if([[c bm_id]isEqual:[NSNumber numberWithInt:4462]])
+      {
+        NSLog(@"");
+      }
+      
+      
       if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
 					|| [c.simpleName isEqual:simpleName]) {
         matchedCamp = c;

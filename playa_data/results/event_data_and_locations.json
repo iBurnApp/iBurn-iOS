@@ -2520,8 +2520,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6460, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 22:00:00", 
@@ -2941,10 +2939,6 @@
             "name": "VegCamp"
         }, 
         "id": 6537, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 01:00:00", 
@@ -2970,10 +2964,6 @@
             "name": "VegCamp"
         }, 
         "id": 6120, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 18:00:00", 
@@ -6946,8 +6936,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7128, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 21:00:00", 
@@ -8923,8 +8911,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7299, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 02:00:00", 
@@ -16835,8 +16821,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6451, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 15:45:00", 
@@ -19743,8 +19727,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6463, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 23:45:00", 
@@ -20934,10 +20916,6 @@
             "name": "GEO Dust II"
         }, 
         "id": 6360, 
-        "latitude": "40.776764", 
-        "location": "3:00 & Jasmine", 
-        "longitude": "-119.194014", 
-        "matched_name": "Geodesia", 
         "occurrence_set": [
             {
                 "end_time": "2012-09-01 19:00:00", 
@@ -20963,10 +20941,6 @@
             "name": "GEO Dust II"
         }, 
         "id": 6356, 
-        "latitude": "40.776764", 
-        "location": "3:00 & Jasmine", 
-        "longitude": "-119.194014", 
-        "matched_name": "Geodesia", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 16:30:00", 
@@ -29611,8 +29585,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6447, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 16:00:00", 
@@ -32306,10 +32278,6 @@
             "name": "VegCamp"
         }, 
         "id": 6153, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 23:30:00", 
@@ -32335,10 +32303,6 @@
             "name": "VegCamp"
         }, 
         "id": 6168, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-09-01 01:15:00", 
@@ -32364,10 +32328,6 @@
             "name": "VegCamp"
         }, 
         "id": 6148, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 21:30:00", 
@@ -32393,10 +32353,6 @@
             "name": "VegCamp"
         }, 
         "id": 6145, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 01:45:00", 
@@ -32422,10 +32378,6 @@
             "name": "VegCamp"
         }, 
         "id": 6174, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 21:30:00", 
@@ -32455,10 +32407,6 @@
             "name": "VegCamp"
         }, 
         "id": 6165, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-31 00:45:00", 
@@ -32484,10 +32432,6 @@
             "name": "VegCamp"
         }, 
         "id": 6125, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-28 01:15:00", 
@@ -32513,10 +32457,6 @@
             "name": "VegCamp"
         }, 
         "id": 6799, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 22:00:00", 
@@ -32542,10 +32482,6 @@
             "name": "VegCamp"
         }, 
         "id": 6134, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-28 21:30:00", 
@@ -32571,10 +32507,6 @@
             "name": "VegCamp"
         }, 
         "id": 6163, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 23:30:00", 
@@ -32600,10 +32532,6 @@
             "name": "VegCamp"
         }, 
         "id": 6158, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 01:15:00", 
@@ -32629,10 +32557,6 @@
             "name": "VegCamp"
         }, 
         "id": 6124, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 23:30:00", 
@@ -32662,10 +32586,6 @@
             "name": "VegCamp"
         }, 
         "id": 6160, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 21:00:00", 
@@ -32691,10 +32611,6 @@
             "name": "VegCamp"
         }, 
         "id": 6142, 
-        "latitude": "40.775479", 
-        "location": "Foxglove & 4:45", 
-        "longitude": "-119.207551", 
-        "matched_name": "Amazecamp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 00:00:00", 
@@ -35258,10 +35174,6 @@
             "name": "Pee Funnel Camp"
         }, 
         "id": 6280, 
-        "latitude": "40.778319", 
-        "location": "Geranium & 2:45", 
-        "longitude": "-119.194706", 
-        "matched_name": "Lenny Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 23:59:00", 
@@ -36052,8 +35964,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7226, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 12:00:00", 
@@ -38081,10 +37991,6 @@
             "name": "Flow Camp"
         }, 
         "id": 7054, 
-        "latitude": "40.791450", 
-        "location": "Edelweiss & 8:30", 
-        "longitude": "-119.218604", 
-        "matched_name": "Loadie Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 11:00:00", 
@@ -38139,8 +38045,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6191, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-31 16:00:00", 
@@ -41337,8 +41241,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6194, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 13:00:00", 
@@ -42382,8 +42284,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6436, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 23:59:00", 
@@ -42738,8 +42638,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6196, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-28 17:00:00", 
@@ -42790,10 +42688,6 @@
             "name": "Flow Camp"
         }, 
         "id": 7051, 
-        "latitude": "40.791450", 
-        "location": "Edelweiss & 8:30", 
-        "longitude": "-119.218604", 
-        "matched_name": "Loadie Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-29 13:00:00", 
@@ -43425,8 +43319,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7227, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-27 12:00:00", 
@@ -47395,8 +47287,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7880, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-31 18:00:00", 
@@ -47422,8 +47312,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 8194, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-09-01 19:00:00", 
@@ -50298,8 +50186,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 6442, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-28 17:00:00", 
@@ -52879,8 +52765,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7225, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-31 12:00:00", 
@@ -53979,8 +53863,6 @@
             "name": "100'th Monkey Camp"
         }, 
         "id": 7222, 
-        "location": "Edelweiss & 9:45", 
-        "matched_name": "Laughing Monkey Camp", 
         "occurrence_set": [
             {
                 "end_time": "2012-08-30 12:00:00", 

@@ -112,9 +112,9 @@
   [self checkOrCreateDatabase];
   
   // TODO comment out these methods once loaded into final db
-  //[campNodeController getNodes];
-  //[artNodeController getNodes];
-  //[eventNodeController getNodes];
+  [campNodeController getNodes];
+  [artNodeController getNodes];
+  [eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
