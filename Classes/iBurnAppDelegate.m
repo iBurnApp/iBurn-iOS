@@ -36,6 +36,8 @@
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>
 
+#define DATABASE_NAME @"iBurn2012.sqlite"
+
 @implementation iBurnAppDelegate
 
 @synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController, embargoed, bgMoc;
@@ -110,9 +112,9 @@
   [self checkOrCreateDatabase];
   
   // TODO comment out these methods once loaded into final db
-  [campNodeController getNodes];
-  [artNodeController getNodes];
-  [eventNodeController getNodes];
+  //[campNodeController getNodes];
+  //[artNodeController getNodes];
+  //[eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -271,7 +273,7 @@
   
 
   NSFileManager *fileManager = [NSFileManager defaultManager];
-  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"];
+  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [fileManager fileExistsAtPath:dbPath];
   
   // If the database already exists then return without doing anything
@@ -290,7 +292,7 @@
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
 	[self checkAndCreateDatabase];
-	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"]];
+	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
 	NSPersistentStoreCoordinator* psc = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]] autorelease];
