@@ -32,6 +32,7 @@
 #import <CommonCrypto/CommonDigest.h>
 #import "UnlockViewController.h"
 #import "ASIHTTPRequest.h"
+#import "JSONKit.h"
 
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>
@@ -126,6 +127,13 @@
   [self initControllers];
  
 	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
+  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
+  NSString *documentsDirectory = [paths objectAtIndex:0];   
+  NSString *path = [documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"];
+  if ([[NSFileManager defaultManager]fileExistsAtPath:path]) {
+    [self liftEmbargo];
+  }
+  
 }
 
 
@@ -349,6 +357,15 @@
 
 - (void) liftEmbargo {
   self.embargoed = NO;
+  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
+  NSString *documentsDirectory = [paths objectAtIndex:0];   
+  NSError *error;
+  BOOL succeed = [@"unlocked" writeToFile:[documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"]
+                            atomically:YES encoding:NSUTF8StringEncoding error:&error];
+  if (!succeed){
+    // Handle error here
+  }
+  
   [[NSNotificationCenter defaultCenter] postNotificationName:@"LIFT_EMBARGO" object:nil];
 }
 
