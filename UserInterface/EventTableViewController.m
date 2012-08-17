@@ -37,7 +37,7 @@
 		self.tabBarItem = tabBarItem;
 		self.title = @"Events";
 		[self.navigationItem setTitle:@"Events"];
-    dayArray = [[[util days] allKeys]retain];
+    dayArray = [[util dayArray]retain];
     
 	}
   return self;

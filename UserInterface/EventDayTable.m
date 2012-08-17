@@ -71,7 +71,7 @@
 
 
 - (NSString*) dayString:(NSString*)ttl {
-  return [[[util days] objectForKey:ttl]objectForKey:@"dayString"];      
+  return [[[util dayDict] objectForKey:ttl]objectForKey:@"dayString"];      
 }
 
 

@@ -125,12 +125,22 @@ RMTile RMTileFromKey(uint64_t tilekey)
 }
 
 
-+ (NSDictionary*) days{
++ (NSDictionary*) dayDict {
   
   NSData* jsonData = [NSData dataWithContentsOfFile: [[NSBundle mainBundle]pathForResource:@"date_strings" ofType:@"json"]];
   JSONDecoder* decoder = [[JSONDecoder alloc]
                           initWithParseOptions:JKParseOptionNone];
   NSDictionary* days = [decoder objectWithData:jsonData];
+  return days;
+}
+
+
++ (NSArray*) dayArray {
+  
+  NSData* jsonData = [NSData dataWithContentsOfFile: [[NSBundle mainBundle]pathForResource:@"day_array" ofType:@"json"]];
+  JSONDecoder* decoder = [[JSONDecoder alloc]
+                          initWithParseOptions:JKParseOptionNone];
+  NSArray* days = [decoder objectWithData:jsonData];
   return days;
 }
 
