@@ -252,8 +252,11 @@
   
  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
   
- [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadMarkers) name:@"LIFT_EMBARGO" object:nil];
+  
+ [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(liftEmbargo) name:@"LIFT_EMBARGO" object:nil];
 
+  
+  
   return self;
 }
 
@@ -341,6 +344,13 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   [self loadMarkers];
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if (t.embargoed) {
+    [mapView.contents setMaxZoom:14];
+  } else {
+    [mapView.contents setMaxZoom:18];    
+  }
+  
 
 }
 
@@ -361,7 +371,21 @@
 	markerManager = [mapView markerManager];	
 	[mapView setBackgroundColor:[UIColor blackColor]];
 	//[mapView moveToLatLong:point];	
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if (t.embargoed) {
+    UILabel *lbl = [[[UILabel alloc]initWithFrame:CGRectMake(10, 25, 300, 42)]autorelease];
+    lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
+    lbl.tag = 999;
+    lbl.textAlignment = UITextAlignmentCenter;
+    lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    lbl.numberOfLines = 0;
+    lbl.layer.cornerRadius = 8;
+    lbl.layer.borderWidth = 1;
+    lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
+    [self.view addSubview:lbl];    
+  }
 }
+
 
 - (void) viewDidAppear:(BOOL)animated {
   
@@ -427,6 +451,14 @@
   [detailView release];
   [progressView release];
   [super dealloc];
+}
+
+
+- (void) liftEmbargo {	
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  [mapView.contents setMaxZoom:18];
+  [self loadMarkers];
+  [[self.view viewWithTag:999]removeFromSuperview];
 }
 
 
