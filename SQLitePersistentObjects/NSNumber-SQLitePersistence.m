@@ -23,15 +23,16 @@
 @implementation NSNumber(SQLitePersistence)
 + (id)objectWithSqlColumnRepresentation:(NSString *)columnData
 {
+	NSNumber *ret = nil;
 	double doubleValue = [columnData doubleValue];
 	long long longValue = [columnData longLongValue];
 	
 	if (doubleValue == longValue)
-		self = [[NSNumber alloc] initWithLongLong:longValue];
+		ret = [[NSNumber alloc] initWithLongLong:longValue];
 	else
-		self = [[NSNumber alloc] initWithDouble:doubleValue];
+		ret = [[NSNumber alloc] initWithDouble:doubleValue];
 	
-	return self;
+	return [ret autorelease];
 }
 - (NSString *)sqlColumnRepresentationOfSelf
 {

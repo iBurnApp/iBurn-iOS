@@ -13,4 +13,6 @@
 	UITextView *tweetContent;
 }
 
+- (TweetComposerViewController *)initWithTitle: (NSString *) aTitle;
+
 @end

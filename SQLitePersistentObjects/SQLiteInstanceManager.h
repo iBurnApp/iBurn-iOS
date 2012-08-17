@@ -58,10 +58,11 @@ typedef enum SQLITE3LockingMode
 
 + (id)sharedManager;
 - (sqlite3 *)database;
-- (void)setDatabase:(sqlite3 *)theDatabase;
+- (BOOL)tableExists:(NSString *)tableName;
 - (void)setAutoVacuum:(SQLITE3AutoVacuum)mode;
 - (void)setCacheSize:(NSUInteger)pages;
 - (void)setLockingMode:(SQLITE3LockingMode)mode;
 - (void)deleteDatabase;
 - (void)vacuum;
+- (void)executeUpdateSQL:(NSString *) updateSQL;
 @end

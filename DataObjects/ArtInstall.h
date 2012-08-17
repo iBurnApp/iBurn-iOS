@@ -7,15 +7,18 @@
 //
 
 #import <CoreData/CoreData.h>
+#import "BurnDataObject.h"
 
 @class Favorite;
 
-@interface ArtInstall :  NSManagedObject  
+@interface ArtInstall :  NSManagedObject <BurnDataObject>
 {
 	float distanceAway;
+  
+  float lastLatitude;
+  CLLocation * geolocation;
 }
 
-@property (nonatomic, assign) float distanceAway;
 @property (nonatomic, retain) NSString * timeAddress;
 
 @property (nonatomic, retain) NSNumber * circularStreet;
@@ -30,7 +33,10 @@
 @property (nonatomic, retain) NSString * artist;
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * contactEmail;
+@property (nonatomic, retain) NSString * artistHometown;
 @property (nonatomic, retain) Favorite * Favorite;
+
++ (ArtInstall*) artForName:(NSString*) sName;
 
 @end
 

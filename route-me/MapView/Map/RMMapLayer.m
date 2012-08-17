@@ -32,16 +32,18 @@
 
 - (id) init
 {
-	if (![super init])
-		return nil;
+	if (self = [super init]) {
+    
+  }
 	
 	return self;
 }
 
 - (id)initWithLayer:(id)layer
 {
-	if (![super initWithLayer:layer])
-		return nil;
+	if (self = [super initWithLayer:layer]) {
+    
+  }
 	
 	return self;
 }

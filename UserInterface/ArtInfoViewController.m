@@ -12,6 +12,8 @@
 #import "ArtTableViewController.h"
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
+#import "MapViewController.h"
+#import "util.h"
 
 @implementation ArtInfoViewController
 
@@ -20,7 +22,8 @@
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
   [[[[t tabBarController]viewControllers]objectAtIndex:0] popToRootViewControllerAnimated:YES];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:art];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:art];
 }
 
 
@@ -32,9 +35,9 @@
     if ([art.latitude floatValue] > 1 
         && [art.longitude floatValue] < -1) {
       CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[art.latitude floatValue] longitude:[art.longitude floatValue]]autorelease];
-      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
+      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc];
       if (distanceAway > 0) {
-        [tempTexts addObject:[art.name stringByAppendingFormat:@" (%1.1f miles)",distanceAway]];
+        [tempTexts addObject:[art.name stringByAppendingFormat:@" (%@)", [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]]];
       } else {
         [tempTexts addObject:art.name];
       }      
@@ -56,6 +59,10 @@
   if (art.contactEmail && ![art.contactEmail isEqualToString:@""]) {
     [tempTitles addObject:@"Contact Email"];
     [tempTexts addObject:art.contactEmail];
+  }
+  if (art.artistHometown && ![art.artistHometown isEqualToString:@""]) {
+    [tempTitles addObject:@"Artist Hometown"];
+    [tempTexts addObject:art.artistHometown];
   }
   if ([art.latitude floatValue] > 1 
       && [art.longitude floatValue] < -1) {
@@ -104,7 +111,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ArtInstall = %@", art];
   [fetchRequest setPredicate:predicate];	

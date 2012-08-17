@@ -49,7 +49,8 @@
 - (NSString *)applicationDocumentsDirectory;
 - (BOOL) canConnectToInternet;
 - (void) downloadMaps:(BOOL) refreshTiles;
-
+- (NSString*) getStoredPassword;
+- (BOOL) checkPassword:(NSString*) password;
 
 
 @end

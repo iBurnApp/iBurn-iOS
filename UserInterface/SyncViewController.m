@@ -13,7 +13,8 @@
 
 - (id)init {	
 	if(self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"sync.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"sync.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Sync";
 		[self.navigationItem setTitle:@"Sync with Web"];
 	}
@@ -53,11 +54,10 @@
   NSArray *texts = [NSArray arrayWithObjects:@"Sync Map",@"Sync Camps",@"Sync Art Installs", @"Sync Events", @"Sync Tweets", @"Sync!", nil];
 	NSInteger section = [indexPath section];
 	UITableViewCell *cell;
-  UISwitch *switchView = NULL;
-  switchView = [[UISwitch alloc] initWithFrame: CGRectMake(4.0f, 16.0f, 100.0f, 28.0f)];
+  UISwitch *switchView = [[[UISwitch alloc] initWithFrame: CGRectMake(4.0f, 16.0f, 100.0f, 28.0f)] autorelease];
   cell = [tableView dequeueReusableCellWithIdentifier:[texts objectAtIndex:indexPath.row]];
   if(!cell) {
-    cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:[texts objectAtIndex:indexPath.row]] autorelease];
+    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[texts objectAtIndex:indexPath.row]] autorelease];
     [switchView addTarget:self action:@selector(switchEm:) forControlEvents:UIControlEventValueChanged];
   }
   cell.selectionStyle = UITableViewCellSelectionStyleGray;

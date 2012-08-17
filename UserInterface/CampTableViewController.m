@@ -11,6 +11,8 @@
 #import "CampInfoViewController.h"
 #import "iBurnAppDelegate.h"
 #import "RMMapView.h"
+#import "Favorite.h"
+#import "util.h"
 
 @implementation CampTableViewController
 
@@ -46,7 +48,8 @@
 
 - (id)init {
 	if(self = [super initWithSearchPlaceholder:@"search theme camps"]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Camps";
 		[self.navigationItem setTitle:@"Theme Camps"];
 	}
@@ -71,14 +74,26 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
+  ThemeCamp *camp = nil;
+  
 	if (objectDict) {
-		cell.textLabel.text = [[[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row]name];
+    camp = [[objectDict  objectAtIndex: indexPath.section]objectAtIndex:indexPath.row];
 	} else {
-		cell.textLabel.text = [[objects objectAtIndex: storyIndex]name];
+    camp = [objects objectAtIndex: storyIndex];
 	}
+  cell.textLabel.text = camp.name;
+  float distanceAway = camp.distanceAway;
+  if (distanceAway > 0 && distanceAway < 10000000) {
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@", 
+                            [util distanceString:camp.distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
+  } else {
+    cell.detailTextLabel.text = @"";
+  }
+
+  
 	return cell;	
 }
 

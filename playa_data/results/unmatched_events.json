@@ -1,0 +1,2592 @@
+[
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Most all of us that live here in Nevada were born in another state, nation, galaxy, time, or universe.  \r\n\r\nEveryone that goes to Burning Man come from different places, and then they go home afterwards.  \r\n\r\nBut we stay and love it here in wonderfully strange Nevada.\r\n\r\nThe fact is, there are more Nevada Burners per capita than any other nation in the universe -- but there will be all these Burning Man Virgins this year playing in our backyard!\r\n\r\nIt's that time again.  It's time to take it to The Man and let him, and everyone else know, who we are, and where in the hell we stand, dammit...\r\n\r\nAlieNVation!\r\n\r\nPlease join your fellow Nevada Burners in Black Rock City for a distinguished group photo at 4pm SHARP on Thurdsay, August 30, at The Man (6:00 side).\r\n\r\nOf course, please don your finest what-not as representative of being a so-called \"Nevadan,\" hahaha!\r\n\r\nParticiparty will ensue surrounding this photo shoot.  Mingling, stories, amazing feats, rousing spirituals, ...and booze and music too!\r\n\r\nPlease bring all your fellow Nevada Burner kin, from whatever state, nation, or planet they originally sprouted from.\r\n\r\nThe group photo will be freely available to download following the Burning Man, and you can still see the photos of previous years, all here:\r\n\r\ntinyurl.com/NevadaBurnersPhotoShoot", 
+        "hosted_by_camp": {
+            "id": 4286, 
+            "name": "Right There"
+        }, 
+        "id": 6533, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 17:00:00", 
+                "start_time": "2012-08-30 16:00:00"
+            }
+        ], 
+        "other_location": "The Man, 6:00 side", 
+        "print_description": "Please join your fellow Nevada Burners for a group photo at 4pm SHARP on Thurdsay, August 30, at The Man (6:00 side).", 
+        "slug": "2012-nevada-burners-photo-shoot-alienvation", 
+        "title": "2012 Nevada Burners Photo Shoot - ALIENVATION", 
+        "url": "http://tinyurl.com/2012NevadaBurnersPhotoShoot", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": true, 
+        "check_location": false, 
+        "description": "Here's your chance to relive those heady days of youngsterhood, release your inner child and express yourself in a BIG way. Once again, Alphabet Block Camp is bringing our two foot high ABC blocks to Black Rock City- ready for YOU to create your own message to the playa, home and beyond. Say what you whatever strikes you. Spell your name, say I LOVE (or HATE) YOU, or just give a random shout out. Once you're finished, snap a photo, visit with us in our shade and give encouragement (and spel-check) to all the other kids at heart.", 
+        "hosted_by_camp": {
+            "id": 4218, 
+            "name": "ABC - Alphabet Block Camp"
+        }, 
+        "id": 8058, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 23:59:00", 
+                "start_time": "2012-08-27 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 23:59:00", 
+                "start_time": "2012-08-28 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 23:59:00", 
+                "start_time": "2012-08-29 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 23:59:00", 
+                "start_time": "2012-08-30 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 23:59:00", 
+                "start_time": "2012-08-31 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 23:59:00", 
+                "start_time": "2012-09-01 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 23:59:00", 
+                "start_time": "2012-09-02 00:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Here's your chance to relive those heady days of youngsterhood, release your inner child and express yourself in a BIG way.", 
+        "slug": "abc-block-fun", 
+        "title": "ABC Block Fun", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Come and receive an acupuncture treatment in our community space and experience bliss as your meridians are realigned and rejuvenated. Our acupuncturist runs a community-based acupuncture clinic in Colorado and has brought her needles and skills to the playa for your healing needs. You won't want to miss this opportunity! Come early as treatment will be limited to the first 10-15 burners who come by. See you there!\r\n\r\nDenver Community Acupuncture is a fully licensed and board certified holistic health center conveniently located off I-25 and Speer Blvd in the Highlands neighborhood of Denver. Our mission is to provide affordable acupuncture, Chinese herbal medicine, massage therapy, naturopathic medicine, psychotherapy, and skin care to everyone in our community. We work together with our patients and other practitioners in our office to formulate individualized wellness plans that utilize our knowledge of healthy living for a healthy community.", 
+        "hosted_by_camp": {
+            "id": 4948, 
+            "name": "Summer Camp Sync"
+        }, 
+        "id": 7768, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 15:00:00", 
+                "start_time": "2012-08-30 13:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Receive an acupuncture treatment in our community space. Experience bliss as your meridians are realigned and rejuvenated. Come early, space limited!", 
+        "slug": "acupuncture-for-the-body-soul-and-mind", 
+        "title": "Acupuncture for the Body, Soul, and Mind", 
+        "url": "http://denvercommunityacupuncture.com/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Visionary artists Alex and Allyson Grey discuss their psychedelic family business. Featuring Q&A with Android Jones and friends.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7898, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 15:00:00", 
+                "start_time": "2012-08-31 14:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Visionary artists Alex and Allyson Grey discuss their psychedelic family business. Featuring Q&A with Android Jones and friends.", 
+        "slug": "alex-allyson-grey-psychedelic-family-business", 
+        "title": "Alex & Allyson Grey - Psychedelic Family Business", 
+        "url": "http://www.matrixmasters.com/pn/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Serving on the playa for the second year, the Saraswati Tea House is\r\ndeveloping a model for community Tea Houses that offer guests a place\r\nto rest, rehydrate and participate in the Chinese Gong Fu tea ritual. This\r\nform of compassionate hospitality is particularly helpful for people under\r\nstress on their journeys who need a calm place to center\r\nthemselves. This talk explores how Tea Houses can provide harm reduction\r\nservices and welcome refreshment in challenging environments.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7901, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 14:00:00", 
+                "start_time": "2012-08-31 13:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Annie Oak, founder of the Women's Visionary Congress, discusses the Saraswati Tea House as a model for developing community Tea Houses.", 
+        "slug": "annie-oak-developing-a-community-tea-house-model", 
+        "title": "Annie Oak - Developing a Community Tea House Model", 
+        "url": "http://www.matrixmasters.com/pn/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Open discussion about any form of alternate sexuality or kink. Come ask your questions in an open and accepting space. Get the truth, dispel the myths. Lifestyle kinksters will be there that are open to any subject.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6460, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 22:00:00", 
+                "start_time": "2012-08-30 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Open discussion about any form of alternate sexuality or kink. Come ask your questions in an open and accepting space. Get the truth, dispel the myths", 
+        "slug": "answers-to-your-questions-about-kink", 
+        "title": "Answers to your questions about Kink", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Vegans live happy, healthy lives without the use of animal products.  Do you have questions?  Have you always wondered where we get our protein, or why we don't eat eggs or dairy?  Here's your chance to ask a real, live vegan (and get a treat!).", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6537, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 01:00:00", 
+                "start_time": "2012-08-27 00:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Vegans live happy, healthy lives without animal products. Do you have questions? Here's your chance to ask a real, live vegan (and get a treat!).", 
+        "slug": "ask-a-vegan-booth", 
+        "title": "Ask-a-Vegan Booth", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Vegans live happy, healthy lives without the use of animal products.  Do you have questions?  Have you always wondered where we get our protein, or why we don't eat eggs or dairy?  Here's your chance to ask a real, live vegan (and get a treat!).", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6120, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 18:00:00", 
+                "start_time": "2012-08-27 17:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 18:00:00", 
+                "start_time": "2012-08-28 17:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 18:00:00", 
+                "start_time": "2012-08-29 17:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 18:00:00", 
+                "start_time": "2012-08-30 17:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 18:00:00", 
+                "start_time": "2012-08-31 17:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 18:00:00", 
+                "start_time": "2012-09-01 17:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 18:00:00", 
+                "start_time": "2012-09-02 17:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Vegans live happy, healthy lives without animal products. Do you have questions? Here's your chance to ask a real, live vegan (and get a treat!).", 
+        "slug": "ask-a-vegan-booth", 
+        "title": "Ask-a-Vegan Booth", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Allow us to artificially inseminate your cup with a delicious cocktail!", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 7024, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 18:00:00", 
+                "start_time": "2012-08-28 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Allow us to artificially inseminate your cup with a delicious cocktail!", 
+        "slug": "bar-in-vitro", 
+        "title": "Bar In-Vitro", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Lose yourself in the moment through improv. Learn to trust your instincts, build off of your environment, and respond positively. Games: Embrace failure! Yes and! 3 things! Alphabet soup! Dolphin training! For beginners.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7546, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 11:00:00", 
+                "start_time": "2012-08-28 10:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Lose yourself in the moment through improv. Learn to trust your instincts, build off of your environment, and respond positively. For beginners.", 
+        "slug": "being-in-the-flow-spontaneity-through-improv", 
+        "title": "Being in the flow: Spontaneity through Improv", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Better living through siblinghood! You are cut from the same cloth, and you know each other (and your parents!) in a way nobody else ever can. Why not design your life to take full advantage of this most special of relationships? Come together as brothers and sisters of all ages and learn how to be partners in adventure on playa and beyond. Feeling alone? Rediscover your long lost sibling on the playa through the scientific brothermometer and sisteradar.", 
+        "hosted_by_camp": {
+            "id": 4987, 
+            "name": "Better Living Through Siblinghood"
+        }, 
+        "id": 7636, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 17:00:00", 
+                "start_time": "2012-08-28 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Calling all siblings pairs on playa to come learn to flourish with the person who shares the most with you! Alone? We'll find your long lost sibling!", 
+        "slug": "better-living-through-siblinghood", 
+        "title": "Better Living Through Siblinghood!", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Random chance assigns your blind playa date. Join up and walk to center camp to get coffee with your new partner. Bring coffee money and a smile!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7128, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 21:00:00", 
+                "start_time": "2012-08-29 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Random chance assigns your blind playa date. Join up and walk to center camp to get coffee with your new partner. Bring coffee money and a smile!", 
+        "slug": "blind-date-night", 
+        "title": "Blind Date Night", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Belly dance is one of the best ways to connect with the flow of the body. Though the origin is unknown, belly dance has been linked to ritual fertility dances from thousands of years ago and continues to celebrate the creation of life. A great form of exercise for anybody, it helps to lengthen and strengthen muscles, as well as the mind.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7555, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 12:00:00", 
+                "start_time": "2012-08-31 11:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Belly dance is one of the best ways to connect with the flow of the body. It helps to lengthen and strengthen muscles, as well as the mind.", 
+        "slug": "body-flow-belly-dance-for-beginners", 
+        "title": "Body Flow: Belly Dance for Beginners", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "BRC bike tour/Playa Parkour will visit theme camps, bars and art by bike and climb, jump over, run around and crawl under stuff. Prize for best costume or body art! Bring 2 quarts water. Ages 13 and up. Bring your 21 and over ID to drink alcohol.", 
+        "hosted_by_camp": {
+            "id": 4923, 
+            "name": "Reincarnation and Penance"
+        }, 
+        "id": 7785, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 15:00:00", 
+                "start_time": "2012-08-27 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 15:00:00", 
+                "start_time": "2012-08-28 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 15:00:00", 
+                "start_time": "2012-08-29 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 15:00:00", 
+                "start_time": "2012-08-30 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 15:00:00", 
+                "start_time": "2012-08-31 12:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 15:00:00", 
+                "start_time": "2012-09-01 12:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 15:00:00", 
+                "start_time": "2012-09-02 12:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "BRC bike tour/Playa Parkour will visit theme camps, bars and art by bike and climb, jump over, around and crawl under stuff. Prize for best costume", 
+        "slug": "brc-bike-tourplaya-parkour", 
+        "title": "Brc bike tour/playa Parkour", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Breast awareness day at the Rusty Hanger.  We'll have breast food and breast drinks.  Come celebrate everything mammary.", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 7022, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 18:00:00", 
+                "start_time": "2012-08-30 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Breast awareness day at the Rusty Hanger.  We'll have breast food and breast drinks.  Come celebrate everything mammary.", 
+        "slug": "breast-awareness-day", 
+        "title": "Breast Awareness Day", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Pass by our camp and practice breathing for a couple hours. Our amazing dome warranties comfortable space to breathe and recharge energy for your next playa adventure.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7996, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 12:00:00", 
+                "start_time": "2012-08-28 10:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 12:00:00", 
+                "start_time": "2012-08-30 10:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 12:00:00", 
+                "start_time": "2012-09-01 10:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Pass by our camp to breath together. Our amazing dome warranties comfortable space to breathe and recharge energy for your next playa adventure.", 
+        "slug": "breathing-together", 
+        "title": "Breathing Together", 
+        "url": "http://breathingburner.com/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "It prowls the playa ... part machine ... part insect ... is that a screaming face growing out the front ... OMG ... the legs are moving!!! What madness is this? RUUUUUN! Find the \"Grrr-sect\", yell \"SWEET!\" and get one! We used to have a trampoline built in, but this year we are converting the entire back end into a better seating area and a whole insect \"shell\".  The URL provided isn't the new form, but it should help I.D. us enough.Open for playa rides as space allows!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7299, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 02:00:00", 
+                "start_time": "2012-08-29 21:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 02:00:00", 
+                "start_time": "2012-08-30 21:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 02:00:00", 
+                "start_time": "2012-08-31 21:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 02:00:00", 
+                "start_time": "2012-09-01 21:00:00"
+            }
+        ], 
+        "other_location": "Playa", 
+        "print_description": "It prowls the playa ... part machine ... part insect ... a screaming face ... are those legs moving?  Eeeek!  Find us and yell \"sweet!\" to get one!", 
+        "slug": "bug-hunt", 
+        "title": "Bug Hunt", 
+        "url": "http://www.youtube.com/watch?v=zWlTBG_VJhk", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Wake up and smell the rich aromas of 100% Kona coffee, latte, and espresso, freshly ground and brewed daily for a bit of playa decadence. Learn about what it's like to grow coffee, how to \"cup\" coffee (did you know there's a flavor wheel for coffee, just as there is for wine and beer?) and a bit about the culture of Hawaii Nei. Listen to soft Hawaiian music and watch the City arise from its slumbers-or head home for a nap.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7161, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 10:00:00", 
+                "start_time": "2012-08-27 06:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 10:00:00", 
+                "start_time": "2012-08-28 06:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 10:00:00", 
+                "start_time": "2012-08-29 06:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 10:00:00", 
+                "start_time": "2012-08-30 06:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 10:00:00", 
+                "start_time": "2012-08-31 06:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 10:00:00", 
+                "start_time": "2012-09-01 06:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 10:00:00", 
+                "start_time": "2012-09-02 06:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Serving 100% Kona coffee and espresso freshly ground and brewed. Listen to soft Hawaiian music, learn about growing coffee, and watch the City awaken.", 
+        "slug": "cafe-kona", 
+        "title": "Cafe Kona", 
+        "url": "http://www.campabovethelimit.com/visit.html", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "When was the last time you saw a group of women drumming? Exactly. We're going to have some drinks, point ourselves at the sunset, and pound shockwaves of all-female rhythmic percussion across the playa. We have lots of drums, but if you got, bring.", 
+        "hosted_by_camp": {
+            "id": 4596, 
+            "name": "A Cavallo Tribal Thunder"
+        }, 
+        "id": 7706, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 21:00:00", 
+                "start_time": "2012-08-30 19:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Have some drinks, face the sunset and pound shockwaves of all-female rhythmic percussion across the playa. We have lots of drums, or BYO.", 
+        "slug": "chicks-drumming-at-sunset", 
+        "title": "Chicks Drumming at Sunset", 
+        "url": "http://www.acavallo.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Learn how to use breath, focus, and meditation to build compassion for yourself and others (even people you don't like!). Develop a Compassionate Image as a future tool for yourself, and get a sense of how you could use the Compassionate Mind Training process in your daily life. This is an experiential workshop. We'll debrief at the end but it will mainly be a guided meditation session and no direct teaching.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7556, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 11:00:00", 
+                "start_time": "2012-08-30 10:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Learn how to use breath, focus, and meditation to build compassion for yourself and others (even people you don't like!)", 
+        "slug": "compassion-meditation-and-mind-training", 
+        "title": "Compassion Meditation and Mind Training", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Don't have crabs?  No problem, we can help with that!  Drinks, music, and crabs!  Bring your crab outfit.", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 7019, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 18:00:00", 
+                "start_time": "2012-08-31 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Don't have crabs?  No problem, we can help with that!  Drinks, music, and crabs!  Bring your crab outfit.", 
+        "slug": "crab-infestation-party", 
+        "title": "Crab Infestation Party", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "We're going to have an official donk MC contest-2 people at a time, rap battling over bangin donk beats. After we choose the winners, we shall celebrate with the most bangin donk party EVER!", 
+        "hosted_by_camp": {
+            "id": 4802, 
+            "name": "Donkocalypse"
+        }, 
+        "id": 7710, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 00:00:00", 
+                "start_time": "2012-08-29 17:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Think you have what it takes to be the illest donk MC on the playa? Come showcase your mad skills at Camp Donkpocalypse-and party with us after!", 
+        "slug": "donk-mc-contestofficial-donk-party", 
+        "title": "Donk MC Contest/Official Donk Party", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Come kick off the Burn with an Argentine treat: dulce de leche flows down and around sugar cones,  with sprinkles for a festive touch!", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7551, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 11:00:00", 
+                "start_time": "2012-08-27 10:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Come kick off the Burn with an Argentine treat: dulce de leche flows down and around sugar cones,  with sprinkles for a festive touch!", 
+        "slug": "dulce-de-leche-flows", 
+        "title": "Dulce De Leche Flows", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Bring your bunny ears and baskets for a laughter filled Easter Egg Hunt! Everyone's a winner!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6451, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 15:45:00", 
+                "start_time": "2012-08-30 15:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Bring your bunny ears and baskets for a laughter filled Easter Egg Hunt! Everyone's a winner!", 
+        "slug": "easter-egg-hunt", 
+        "title": "Easter egg hunt", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Having issues with your eggs or weiner?  No problem!  We have hard boiled eggs and hot dogs!", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 6873, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 19:00:00", 
+                "start_time": "2012-08-28 18:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Having issues with your eggs or weiner?  No problem!  We have hard boiled eggs and hot dogs!", 
+        "slug": "eggs-weiners", 
+        "title": "Eggs & Weiners", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Entheogens and psychedelics are powerful catalysts in the evolution of consciousness, and approaching these tools with intentional attention to parameters such as set and setting, quality and dosage of chosen medicine, as well as supporting one's well-being with mindfulness practices, proper nutrition, supplements and herbs can help to prepare voyagers for and enhance the experience of the journey, the integration process, and the days to follow. This work is intended to inform and empower this community about the health aspects of entheogens and psychedelics and the role of natural medicine in creating a culture of benefit maximization for all beings.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7902, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 14:00:00", 
+                "start_time": "2012-08-29 13:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Talk by Doctuh Naughtilee how to optimize entheogenic/psychedelic experiences with nutrition, herbs and supplements.", 
+        "slug": "entheogenic-empowerment-enhancing-the-journey", 
+        "title": "Entheogenic Empowerment: Enhancing the Journey", 
+        "url": "http://www.matrixmasters.com/pn/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Open mic!  Come share detailed and provocative stories about the evils of sex. Show your fellow Burners why abstinence is the only way.  The party at our bar stays open during and after!", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 7017, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 16:00:00", 
+                "start_time": "2012-08-29 15:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Open mic!  Come share detailed and provocative stories about the evils of sex. Show your fellow Burners why abstinence is the only way.  With drinks!", 
+        "slug": "erotic-abstinence-only-support-group-and-bar", 
+        "title": "Erotic Abstinence Only Support Group (and Bar)", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "How can we find the perfect yoga pose that facilitates the most effortless and easy breath? Let's build our asanas around the breath, instead of the other way around. Guided yoga/breath class that invites you to find/play with the edges of your breath flow.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7553, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 11:00:00", 
+                "start_time": "2012-08-31 10:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "How can we find the perfect yoga pose that facilitates the most effortless and easy breath? Let's build our asanas around the breath.", 
+        "slug": "find-the-best-breath-flow-in-your-yoga-pose", 
+        "title": "Find the Best Breath Flow in Your Yoga Pose", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Learn safe, sane, sensual flogging. From light teasing to making the knees buckle, it's all about pleasure. Bring a medium-sized towel if you can.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6463, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 23:45:00", 
+                "start_time": "2012-08-30 23:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Learn safe, sane, sensual flogging. From light teasing to making the knees buckle, it's all about pleasure. Bring a medium-sized towel if you can.", 
+        "slug": "flogging-class", 
+        "title": "Flogging Class", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Well, really volleyball but the ball is furry to go with our fun fur theme! Wear something furry or go nakid!", 
+        "hosted_by_camp": {
+            "id": 4526, 
+            "name": "furTILITY 2.0"
+        }, 
+        "id": 7318, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 18:00:00", 
+                "start_time": "2012-08-27 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 18:00:00", 
+                "start_time": "2012-08-28 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 18:00:00", 
+                "start_time": "2012-08-29 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 18:00:00", 
+                "start_time": "2012-08-30 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 18:00:00", 
+                "start_time": "2012-08-31 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Well, really volleyball but the ball is furry in line with our fun fur theme! Wear something furry or go nakid!", 
+        "slug": "furball", 
+        "title": "furBALL", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "FIVE DAILY CACHES\r\n\r\nTuesday thru Saturday (8/28 - 9/1):\r\n\r\n1) Daily hides - an ammo box hidden in a different location each day; removed by 7pm.\r\n2) Daily coordinates will be posted streetside at the Geo Dust II Theme Camp information board each morning by 8am.\r\n3) Geo Dust Theme Camp location - A banner and electronic posting will be at the info booth at Center Camp announcing our exact coordinates.\r\n4) Five new \"First to Find\" prizes for each day.", 
+        "hosted_by_camp": {
+            "id": 4468, 
+            "name": "GEO Dust II"
+        }, 
+        "id": 6360, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-09-01 19:00:00", 
+                "start_time": "2012-08-28 08:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Geocachers can find one of these 5 hides, sign the log, and count it under event #GC3CWXW.  Coordinates available daily @ 8am at Geo Dust II Camp.", 
+        "slug": "geo-dust-ii-daily-hides", 
+        "title": "Geo Dust II Daily Hides", 
+        "url": "http://www.geocaching.com/seek/cache_details.aspx?guid=d46b9214-f913-466d-87c4-0555e822626a", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Geocaching is back in Black Rock City for 2012!  This is an official Geocaching event to add to your log.  A Geocaching poster will be hanging in the Info area near Center Camp announcing the exact waypoints of Geo Dust II Headquarters.  \r\n\r\nIn order to get credit for this cache, you must participate in the gift exchange/martini happy hour or post a picture of yourself next to any one of the daily hides (See Repeating Events).  \r\n\r\nWhat to Bring:\r\n\r\n1) micro/small-sized wrapped exchange gift, value = sentimental (suggestion: piece of Burning Man/BRC swag from a prior year or Geocaching swag)\r\n2) your best martini-drinking vessel\r\n3) food to share (optional)\r\n4) bacon (just kidding...okay, maybe not)", 
+        "hosted_by_camp": {
+            "id": 4468, 
+            "name": "GEO Dust II"
+        }, 
+        "id": 6356, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 16:30:00", 
+                "start_time": "2012-08-29 15:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Official Geocaching event to log. Bring: \r\n1) BRC/Geocache swag to trade \r\n2) martini-drinking vessel\r\n3) food/bacon (if u choose)\r\n4) stories to tell", 
+        "slug": "geodust-ii-gift-exchange-martini-happy-hour", 
+        "title": "GeoDust II Gift Exchange & Martini Happy Hour", 
+        "url": "http://www.geocaching.com/seek/cache_details.aspx?guid=d46b9214-f913-466d-87c4-0555e822626a", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Yup, just like in the olden days. We're gonna dress up in classic Village People gear, blast that disco, and have a boogieass-getdown-freakout as we weld together plate steel cutouts to make a life-sized A Cavallo carousel horse \u2013 but with a unicorn horn! We can hear the squeals now. Bring your designer eye protection and be ready to get sparks in your ass if you're wearing those chaps! (We'd remind you of the outfits, but we like imagining y'all trying to remember out loud \u2013 \"So it's Indian chief, construction worker\u2026)", 
+        "hosted_by_camp": {
+            "id": 4596, 
+            "name": "A Cavallo Tribal Thunder"
+        }, 
+        "id": 7650, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 22:30:00", 
+                "start_time": "2012-08-29 20:30:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Jus like in the olden days, come dress like Village People, blast disco, and have a boogieass freakout as we we weld together a life-size unicorn!", 
+        "slug": "good-ol-fashioned-queer-disco-unicorn-weldin-party", 
+        "title": "Good Ol Fashioned Queer Disco Unicorn Weldin Party", 
+        "url": "http://www.acavallo.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Today we gather together in the celebration of the boob. Every woman is graced with not one, but two of these wonderful life sustaining melons. We, the women of A Cavallo, want to decorate them! With you and for you. Come make your own pasties to get down and sassy before the one and only Critical Tits bike parade!", 
+        "hosted_by_camp": {
+            "id": 4596, 
+            "name": "A Cavallo Tribal Thunder"
+        }, 
+        "id": 7704, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 16:00:00", 
+                "start_time": "2012-08-31 14:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "We, the women of A Cavallo, want to help decorate your life-sustaining melons! Come make your own pasties to get down and sassy before Critical Tits.", 
+        "slug": "honey-trap-pastie-party", 
+        "title": "Honey Trap (Pastie Party)", 
+        "url": "http://www.acavallo.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Hula hoop assisted playtime for beginners!  No experience necessary, come and discover your centripetal flow and have fun with the basics.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7549, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 15:00:00", 
+                "start_time": "2012-08-30 14:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Hula hoop assisted playtime for beginners!  No experience necessary, come and discover your centripetal flow and have fun with the basics.", 
+        "slug": "hula-hoop-for-beginners", 
+        "title": "Hula Hoop for Beginners", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Stuck with a bad case of the (STD) Blues?  Come drink and dance your blues away.", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 7014, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 00:00:00", 
+                "start_time": "2012-08-29 21:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Stuck with a bad case of the (STD) Blues?  Come drink and dance your blues away.", 
+        "slug": "ive-got-the-std-blues-party", 
+        "title": "I've Got the (STD) Blues Party", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "We're gonna warn our neighbors about this one. Kids completely hyperoverstimulated? Come tire them out at what promises to be a cacophonously fun time at Tribal Thunder and A Cavallo. We have lots of drums, juice for the kids, and drinks and earplugs for the parents.", 
+        "hosted_by_camp": {
+            "id": 4596, 
+            "name": "A Cavallo Tribal Thunder"
+        }, 
+        "id": 7707, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 12:00:00", 
+                "start_time": "2012-08-28 10:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Kids hyperoverstimulated? Come tire them out with a cacophonously fun time at A Cavallo Tribal Thunder. Drums/juice for kids, drinks/earplugs for you.", 
+        "slug": "kids-drumming-mayhem", 
+        "title": "Kids Drumming Mayhem ", 
+        "url": "http://www.acavallo.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Tasty beverages served amidst swaying palm trees, Hawaiian music, light mist, and tiki kitsch-what more could you ask for on your afternoon stroll? No, surfing isn't an option, but you can wet your whistle with all sorts of tropical libations. The menu changes daily. Listen to live music next door on our \"You're The Limit Stage\" Musicians' Happy Hour.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7167, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 18:00:00", 
+                "start_time": "2012-08-27 14:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 18:00:00", 
+                "start_time": "2012-08-28 14:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 18:00:00", 
+                "start_time": "2012-08-29 14:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 18:00:00", 
+                "start_time": "2012-08-30 14:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 18:00:00", 
+                "start_time": "2012-08-31 14:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 18:00:00", 
+                "start_time": "2012-09-01 14:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Enjoy afternoon and early evening tropical refreshment Hawaiian style! Serving cool, creative and colorful recipes to quench the afternoon thirst.", 
+        "slug": "kona-bar", 
+        "title": "Kona Bar", 
+        "url": "http://www.campabovethelimit.com/visit.html", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Come experience the empowering and earth-shaking Kundalini rising through YOGA. Postures, Chanting, and deep meditation included. If you have never tried a Kundalini Yoga Class, this is your chance! A blissful and mind-altering experience, perfect for the playa!", 
+        "hosted_by_camp": {
+            "id": 4948, 
+            "name": "Summer Camp Sync"
+        }, 
+        "id": 7769, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 11:45:00", 
+                "start_time": "2012-08-28 10:30:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Come experience the empowering and earth-shaking Kundalini rising experience through YOGA. Postures, Chanting, and deep meditation included.", 
+        "slug": "kundalini-yoga-get-your-body-shakin", 
+        "title": "Kundalini Yoga - Get your Body Shakin'", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Whistling is in a first place tie as the most portable instrument around, but some people don't know how to use it! I want to help them learn, help them improve and let them whistle anywhere they please. This workshop will be for beginners and intermediate whistlers, with new techniques taught. I especially want to help first-timers who have been frustrated by trying to learn in the past. I'd like to have a couple of experienced volunteers to help me teach people in small groups.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7543, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 10:00:00", 
+                "start_time": "2012-08-29 09:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Whistling is in a first place tie as the most portable instrument around, but some people don't know how to use it! Come learn how.", 
+        "slug": "learning-to-whistle", 
+        "title": "Learning to Whistle", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Use air dry sculpty to make a male or female genital necklace!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6447, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 16:00:00", 
+                "start_time": "2012-08-29 15:30:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Use air dry sculpty to make a male or female genital necklace. Limit 30 attendees. Sign ups begin 30 min prior.", 
+        "slug": "make-a-genital-necklace", 
+        "title": "Make a genital necklace", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Come to our camp for available  massaging hands, first come, first serve! Massage therapists available to offer their touch to sore playafied bodies.", 
+        "hosted_by_camp": {
+            "id": 4948, 
+            "name": "Summer Camp Sync"
+        }, 
+        "id": 7766, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 15:30:00", 
+                "start_time": "2012-08-29 13:30:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Come to our camp for available  massaging hands, first come, first serve! Massage therapists available to offer their touch to sore playafied bodies.", 
+        "slug": "massage-happy-hour", 
+        "title": "Massage Happy Hour", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "What is flow & what is mindfulness? How do these two relate theoretically and practically in our daily lives? Are they competing or cooperating? Share your experiences and thoughts. Discussion with light facilitation.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7552, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 12:00:00", 
+                "start_time": "2012-08-29 11:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "What is flow & what is mindfulness? How do these two relate theoretically and practically in our daily lives? Are they competing or cooperating?", 
+        "slug": "mindfulness-and-flow-bros-or-foes", 
+        "title": "Mindfulness and Flow: Bros or Foes?", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This HBO documentary about the undercover investigation of a hog farm and the resultant court case exposes the industry's common practices. Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6153, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 23:30:00", 
+                "start_time": "2012-08-29 22:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "This HBO documentary about the undercover investigation of a hog farm and the resultant court case exposes the industry's common practices.", 
+        "slug": "movie-death-on-a-factory-farm", 
+        "title": "Movie: Death on a Factory Farm", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Narrated by Joaquin Phoenix, Earthlings is the most comprehensive film ever produced about the relationship between humans, nature, and animals. \u201cAbsolutely Epic\u201d \u2013 John Feldmann (musician Goldfinger). Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6168, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-09-01 01:15:00", 
+                "start_time": "2012-08-31 23:45:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Narrated by Joaquin Phoenix, this is the most comprehensive film ever produced about the relationship between humans, nature, and animals.", 
+        "slug": "movie-earthlings", 
+        "title": "Movie: Earthlings", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This video shows how heart disease, America's #1 killer, is preventable -- and even reversible -- with simple dietary changes. Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6148, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 21:30:00", 
+                "start_time": "2012-08-29 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "This video shows how heart disease, America's #1 killer, is preventable -- and even reversible -- with simple dietary changes.", 
+        "slug": "movie-eating", 
+        "title": "Movie: Eating", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "A fast-food company executive learns what really goes into his company's food. Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6145, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 01:45:00", 
+                "start_time": "2012-08-28 23:45:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "A fast-food company executive learns what really goes into his company's food.", 
+        "slug": "movie-fast-food-nation", 
+        "title": "Movie: Fast Food Nation", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Examines the profound claim that most, if not all, of the degenerative diseases that afflict us can be controlled, or even reversed, by rejecting our present menu of animal-based and processed foods. \u201cA film that can save your life\u201d \u2013 Roger Ebert (Chicago Sun-Times). Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6174, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 21:30:00", 
+                "start_time": "2012-08-27 20:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 21:30:00", 
+                "start_time": "2012-08-31 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Examines the profound claim that most, if not all, degenerative diseases can be controlled or reversed by rejecting animal-based and processed foods.", 
+        "slug": "movie-forks-over-knives", 
+        "title": "Movie: Forks Over Knives", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This documentary shows what the egg industry doesn't want you to know. Troubling, but also hopeful. \"The truth behind your breakfast.\" Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6165, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 00:45:00", 
+                "start_time": "2012-08-30 23:45:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "This documentary shows what the egg industry doesn't want you to know. Troubling, but also hopeful. \"The truth behind your breakfast.\"", 
+        "slug": "movie-fowl-play", 
+        "title": "Movie: Fowl Play", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "An M.D. surveys the latest in clinical nutrition in this fun and informative video presentation. Game-show format: show your knowledge of nutrition and win a prize!", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6125, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 01:15:00", 
+                "start_time": "2012-08-27 23:45:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "An M.D. surveys the latest in clinical nutrition in this fun and informative video. Game-show format: show your knowledge of nutrition & win a prize!", 
+        "slug": "movie-latest-in-clinical-nutrition", 
+        "title": "Movie: Latest in Clinical Nutrition", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This 30 minute film shows how to combine delicious, healthy food with solutions to many of the ethical and global challenges facing us today and into the future.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6799, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 22:00:00", 
+                "start_time": "2012-08-30 21:30:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Shows how to combine delicious, healthy food with solutions to many of the ethical and global challenges facing us today & into the future.", 
+        "slug": "movie-making-the-connection", 
+        "title": "Movie: Making the Connection", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "To the rhythm of conveyor belts and immense machines, this film presents -- without comment -- the places where food is produced.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6134, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 21:30:00", 
+                "start_time": "2012-08-28 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "To the rhythm of conveyor belts and immense machines, this film presents -- without comment -- the places where food is produced.", 
+        "slug": "movie-our-daily-bread", 
+        "title": "Movie: Our Daily Bread", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This film highlights the struggles of people who have come to a point in their lives where they must follow their conscience, even though it means giving up their livelihood, their community, and all they were raised to believe. \"A masterpiece.\" \u2013 Dr. Jane Goodall. Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6163, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 23:30:00", 
+                "start_time": "2012-08-30 22:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Highlights the struggles of people who must follow their conscience, even though it means giving up all they were raised to believe.", 
+        "slug": "movie-peaceable-kingdom", 
+        "title": "Movie: Peaceable Kingdom", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Is the \"faux\" fur trim on your neck really made of dog fur? Understand what makes this savage industry tick and what it will take to change it. Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6158, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 01:15:00", 
+                "start_time": "2012-08-29 23:45:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Is the \"faux\" fur trim on your neck really made of dog fur? Understand what makes this savage industry tick and what it will take to change it.", 
+        "slug": "movie-skin-trade", 
+        "title": "Movie: Skin Trade", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This Oscar-winning documentary tells the amazing true story about how an elite team of activists, filmmakers, and freedivers embarked on a covert mission to penetrate a hidden cove in Japan, shining light on a dark and deadly secret. Their discoveries were only the tip of the iceberg. Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6124, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 23:30:00", 
+                "start_time": "2012-08-27 22:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 23:30:00", 
+                "start_time": "2012-08-31 22:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "This Oscar-winning documentary follows an elite team on a covert mission to shine light on a dark & deadly secret in a hidden Japanese cove.", 
+        "slug": "movie-the-cove", 
+        "title": "Movie: The Cove", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Winner of six film festival awards for best documentary, The Witness tells the story of Eddie Lama, a tough construction contractor from Brooklyn whose chance encounter with a kitten completely transforms his life.  \u201cMay be the most important and persuasive film about animals ever made.\u201d - LA Times.  Film screening and discussion.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6160, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 21:00:00", 
+                "start_time": "2012-08-30 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "The life of tough Brooklyn contractor Eddie Lama is completely transformed by a chance encounter with a kitten. Winner of numerous awards.", 
+        "slug": "movie-the-witness", 
+        "title": "Movie: The Witness", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "This documentary shows how a single corporation holds the patents for much of the world's food supply and how they are destroying agricultural diversity.", 
+        "hosted_by_camp": {
+            "id": 4769, 
+            "name": "VegCamp"
+        }, 
+        "id": 6142, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 00:00:00", 
+                "start_time": "2012-08-28 22:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "This documentary shows how a single corporation holds the patents for much of the world's food supply & how they're destroying agricultural diversity.", 
+        "slug": "movie-the-world-according-to-monsanto", 
+        "title": "Movie: The World According to Monsanto", 
+        "url": "http://www.VegCamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Just kidding, this IS your grandma's dance party. Come play with us @ Grandma's Haus.", 
+        "hosted_by_camp": {
+            "id": 4835, 
+            "name": "Grandma's Haus"
+        }, 
+        "id": 6070, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 03:00:00", 
+                "start_time": "2012-08-29 21:00:00"
+            }
+        ], 
+        "other_location": "Over the river and through the woods", 
+        "print_description": "Just kidding, this IS your grandma's dance party. Come play with us @ Grandma's Haus.", 
+        "slug": "not-yo-grandmas-dance-party", 
+        "title": "Not Yo' Grandma's DANCE PARTY", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Ever want to do things you shouldn't?  Are those things people?  Come share stories.  Cocktails available.", 
+        "hosted_by_camp": {
+            "id": 4756, 
+            "name": "(TMWC) The Rusty Hanger, BRC Sexual Wellness Clinic"
+        }, 
+        "id": 7021, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 16:00:00", 
+                "start_time": "2012-08-31 15:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Ever want to do things you shouldn't?  Are those things people?  Come share stories.  Cocktails available.", 
+        "slug": "oedipal-support-group-and-bar", 
+        "title": "Oedipal Support Group (and Bar)", 
+        "url": "http://sites.google.com/site/therustyhanger", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Since 2003, Palenque Norte has been the Burning Man reincarnation of the legendary Entheobotany Conferences held near the ancient Mayan temples near Palenque, Mexico. There, Terence McKenna, Jonathan Ott, Ann & Sasha Shulgin, and a host of other luminaries held forth. This year we are featuring many visionary talks, community circles, art and performances on subjects such as: the psychedelic experience and research, technological transformation of the human condition and far future, the weird and the strange, and healing plant medicines. \r\n\r\nBruce Damer, Annie Oak, Robert Forte and many others (TBA) will be joining us for three afternoons of lively sessions which will be held in The Crystal Cavern at Camp Above the Limit. Our schedules are posted daily.\r\n\r\nAs is our tradition, all sessions will be later broadcast in the Psychedelic Salon podcast.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7160, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 18:00:00", 
+                "start_time": "2012-08-29 13:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 18:00:00", 
+                "start_time": "2012-08-30 13:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 18:00:00", 
+                "start_time": "2012-08-31 13:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Visionary talks and discussion, community circles & art: consciousness, psychedelics, technology & human future, weird and strange, healing medicines.", 
+        "slug": "palenque-norte-speaker-series", 
+        "title": "Palenque Norte Speaker Series", 
+        "url": "http://www.campabovethelimit.com/palenque.html", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Paul Stamets will be giving a lecture about his work. Stay tuned for details.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7899, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 21:30:00", 
+                "start_time": "2012-08-30 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Paul Stamets will be giving a lecture about his work. Stay tuned for details.", 
+        "slug": "paul-stamets", 
+        "title": "Paul Stamets ", 
+        "url": "http://www.matrixmasters.com/pn/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": true, 
+        "check_location": true, 
+        "description": "Pee Funnel Camp dispenses Pee Funnels at two convenient locations serving Black Rock City all day and all night! Pee Funnels allow ladies to easily stand and pee or aim into a jug. No more exhausting and cold visits to the port-a-potty during the night - pee in a bottle and dump it in the morning!", 
+        "hosted_by_camp": {
+            "id": 4561, 
+            "name": "Pee Funnel Camp"
+        }, 
+        "id": 6280, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 23:59:00", 
+                "start_time": "2012-08-27 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 23:59:00", 
+                "start_time": "2012-08-28 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 23:59:00", 
+                "start_time": "2012-08-29 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 23:59:00", 
+                "start_time": "2012-08-30 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 23:59:00", 
+                "start_time": "2012-08-31 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 23:59:00", 
+                "start_time": "2012-09-01 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 23:59:00", 
+                "start_time": "2012-09-02 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-03 23:59:00", 
+                "start_time": "2012-09-03 00:00:00"
+            }
+        ], 
+        "other_location": "2 locations!", 
+        "print_description": "Pee funnels allow ladies to easily stand and pee or aim into a bottle.  No more exhausting and cold visits to the port-a-potty during the night!", 
+        "slug": "pee-funnel-camp", 
+        "title": "Pee Funnel Camp", 
+        "url": "http://peefunnelcamp.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Learn the basics of interviewing for the radio, including how to set scene, ask questions that will generate good answers, get found sound, and operate equipment.  Then we tag-team taking out equipment and interviewing people about what's happpening, and what their stories are!", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7548, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 13:00:00", 
+                "start_time": "2012-08-28 12:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Learn the basics of interviewing for the radio, including how to set scene, ask questions that will generate good answers.", 
+        "slug": "piecemeal-pirate-radio-narrative", 
+        "title": "Piecemeal Pirate Radio Narrative", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Schoolgirls, punk rockers, and golfers unite!  Wear your funkiest plaid 'fit and skip the line at the Playhouse.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7226, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 12:00:00", 
+                "start_time": "2012-08-29 09:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Schoolgirls, punk rockers, and golfers unite!  Wear your funkiest plaid 'fit and skip the line at the Playhouse.", 
+        "slug": "plaid-n-pancakes", 
+        "title": "Plaid 'n' Pancakes", 
+        "url": "http://pancakeplayhouse.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "The playa sibling census will be open Wednesday thru Friday from 4-5pm to allow all siblings (loosely defined) to be counted.Come to make your sibling pledge, and be counted in the census by sealing a shared secret in the Wall of Sibling Secrets. You will be sent on your way with new energy to unlock the awesomeness of having a sibling on the playa (and in your life)!Thank you, brethren and sistren, for strengthening the city with your bond!", 
+        "hosted_by_camp": {
+            "id": 4987, 
+            "name": "Better Living Through Siblinghood"
+        }, 
+        "id": 7643, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 17:00:00", 
+                "start_time": "2012-08-29 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 17:00:00", 
+                "start_time": "2012-08-30 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 17:00:00", 
+                "start_time": "2012-08-31 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Come and be counted! Cement your bro- and sisterhood by adding to the vault of sibling secrets. Thanks for strengthening the city with your bond!", 
+        "slug": "playa-sibling-census", 
+        "title": "Playa Sibling Census", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "The Lollipop Guild is an inclusive group of gay friends who embrace all humanity. We are gathered to express ourselves as individuals and members of the Burning Man community. In the spirit of love and celebration, we will perform non-binding, diverse and creative Playa weddings for all.", 
+        "hosted_by_camp": {
+            "id": 4216, 
+            "name": "Lollipop Guild"
+        }, 
+        "id": 8193, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 17:00:00", 
+                "start_time": "2012-08-30 15:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 17:00:00", 
+                "start_time": "2012-09-01 15:00:00"
+            }
+        ], 
+        "other_location": "7:45 & E (BloPopOasis)", 
+        "print_description": "The Lollipop Guild will perform non-binding, diverse and creative Playa Weddings for all. Form a bond with anyone, any number of anyone's or anything!", 
+        "slug": "playa-weddings", 
+        "title": "Playa Weddings", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Cooperative or mildly-competitive games that focus on flowing playful spontaneous movement. Example - tug-of-war on one foot while hopping around. Inspired by http://exuberantanimal.com/web/books/play_book/index.html", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7545, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 11:00:00", 
+                "start_time": "2012-08-29 10:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Cooperative or mildly-competitive games that focus on flowing playful spontaneous movement. Example - tug-of-war on one foot while hopping around.", 
+        "slug": "primal-play", 
+        "title": "Primal Play", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Play like your soul needs it! Achieve effortless flow and release your inner frisky otter with a range of non-competitive and never-ending games. James Carse would approve.", 
+        "hosted_by_camp": {
+            "id": 5005, 
+            "name": "Flow Camp"
+        }, 
+        "id": 7054, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 11:00:00", 
+                "start_time": "2012-08-29 10:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Play like your soul needs it! Achieve effortless flow and release your inner frisky otter with a range of non-competitive and never-ending games.", 
+        "slug": "primal-play-and-infinite-games", 
+        "title": "Primal Play and Infinite Games", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Make your own BRC University t-shirt.  Learn the screen printing process.  Bring your own t-shirt, or take one of ours!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6191, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 16:00:00", 
+                "start_time": "2012-08-31 15:00:00"
+            }
+        ], 
+        "other_location": "BRC University at Silicon Village", 
+        "print_description": "Make your own BRC University t-shirt.  Learn the screen printing process.  Bring your own t-shirt, or take one of ours!", 
+        "slug": "print-your-skin", 
+        "title": "Print your skin", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Rick Doblin, the executive director of MAPS (Multidisciplinary Association for Psychedelic Studies) will speak about psychedelic medicines. More details coming soon!", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7900, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 20:00:00", 
+                "start_time": "2012-08-29 19:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Rick Doblin, the executive director of MAPS (Multidisciplinary Association for Psychedelic Studies) will speak about psychedelic medicines.", 
+        "slug": "rick-doblin", 
+        "title": "Rick Doblin", 
+        "url": "http://www.matrixmasters.com/pn/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "A smorgasbord of performance art, music, and spoken word. Bring your  5 -10 min performance to share. Or participate in the Battle of Words hip hop and spoken word slam down. Come early if you have special tech requests. On Playa collaborations and works in progress encouraged. Bear Margaritas for all!!", 
+        "hosted_by_camp": {
+            "id": 4948, 
+            "name": "Summer Camp Sync"
+        }, 
+        "id": 7932, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 00:30:00", 
+                "start_time": "2012-08-29 20:30:00"
+            }
+        ], 
+        "other_location": "Daniel ", 
+        "print_description": "A smorgasbord of performance art, music, and spoken word. Bring your  5 -10 min performance to share. Or participate in the Battle of Words!", 
+        "slug": "salon-at-intense-intense-intense", 
+        "title": "Salon at Intense Intense Intense", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Learn how to B-schnitzeled and eat it the right way", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6194, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 13:00:00", 
+                "start_time": "2012-08-29 11:30:00"
+            }
+        ], 
+        "other_location": "BRC University at Silicon Village", 
+        "print_description": "Learn how to B-schnitzeled and eat it the right way.  Be sure to bring your appetite.", 
+        "slug": "schnitzel-101", 
+        "title": "Schnitzel 101", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Breathe into the bliss that you are. Uncover ancient secrets of the breath with practices that harness the breath to detoxify the blood & increase energy and presence.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7554, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 17:00:00", 
+                "start_time": "2012-08-28 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 17:00:00", 
+                "start_time": "2012-08-30 16:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "Breathe into the bliss that you are. Uncover ancient secrets of the breath w/ practices that harness the breath to detoxify the blood & increase ener", 
+        "slug": "secrets-of-the-breath", 
+        "title": "Secrets of the Breath", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": true, 
+        "check_location": false, 
+        "description": "We collect thoughts to feed the universal conciousness. Come share what's important to you so we all know. Write, draw, chant, speak, just come share! 24 hours a day we are open for you to come with your input. As we learn from the lessons of Ken Keyes in his book The Hundredth Monkey, once enough of us know something, we all know it. What do you want the world to know? Tell us so we can share.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6436, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 23:59:00", 
+                "start_time": "2012-08-27 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 23:59:00", 
+                "start_time": "2012-08-28 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 23:59:00", 
+                "start_time": "2012-08-29 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 23:59:00", 
+                "start_time": "2012-08-30 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 23:59:00", 
+                "start_time": "2012-08-31 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 23:59:00", 
+                "start_time": "2012-09-01 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 23:59:00", 
+                "start_time": "2012-09-02 00:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "We collect thoughts to feed the universal conciousness. Come share what's important to you so we all know. Write, draw, chant, speak, just come share!", 
+        "slug": "share-thoughts-with-the-world", 
+        "title": "Share thoughts with the world!", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Caring for your skin on the Playa.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6196, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 17:00:00", 
+                "start_time": "2012-08-28 16:00:00"
+            }
+        ], 
+        "other_location": "BRC University at Silicon Village", 
+        "print_description": "Caring for your skin on the Playa.", 
+        "slug": "skin-care-on-the-playa", 
+        "title": "Skin care on the Playa", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "A simple slackline. Participants try to balance while everyone else shouts curses to make them fall. Jk. We're friendly. Bring a special mask or hat to make it super cool.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7544, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 13:00:00", 
+                "start_time": "2012-08-29 12:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "A simple slackline. Participants try to balance while everyone else shouts curses to make them fall. Jk. We're friendly.", 
+        "slug": "slackline-in-the-boneyard", 
+        "title": "Slackline in the Boneyard", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Ancient Tibetan monks once tested their focus by meditating in sky-burial sites, surrounded by vultures and human bones. We will do the next best thing - try to maintain your center as you balance on a tightrope surrounded by jeering crowds armed with air horns, bad jokes, and unprovoked cruelty. Learn to let it all go.", 
+        "hosted_by_camp": {
+            "id": 5005, 
+            "name": "Flow Camp"
+        }, 
+        "id": 7051, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 13:00:00", 
+                "start_time": "2012-08-29 12:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Tibetan monks once tested their focus by meditating in burial sites with vultures and human bones. We'll use a tightrope, air horns, and bad jokes.", 
+        "slug": "slackline-in-the-boneyard", 
+        "title": "Slackline in the Boneyard", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "The Pancake Playhouse proudly presents 12 years of 'cakes and soft rock.  Join us for a tasty morning experience.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7227, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 12:00:00", 
+                "start_time": "2012-08-27 09:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 12:00:00", 
+                "start_time": "2012-08-28 09:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 12:00:00", 
+                "start_time": "2012-08-29 09:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 12:00:00", 
+                "start_time": "2012-08-30 09:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 12:00:00", 
+                "start_time": "2012-08-31 09:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "The Pancake Playhouse proudly presents 12 years of 'cakes and soft rock.  Join us for a tasty morning experience.", 
+        "slug": "soft-rock-cafe", 
+        "title": "Soft Rock Cafe", 
+        "url": "http://pancakeplayhouse.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "In \"Religion for Atheists\" Alain de Botton argues that \"rather than mocking religions, agnostics and atheists should instead steal from them \u2013 because they're packed with good ideas on how we might live and arrange our societies.\" This discussion is about distilling the tools of religions from the dogmas that surround them. (Don't don't throw out the baby with the holy water!) Rather than trying to cover this whole topic in a single workshop, the goal will be to introduce the general concepts while facilitating the sharing of resources (books, articles, quotes, etc.) for people to explore on their own. Please bring something to share.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7550, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 12:00:00", 
+                "start_time": "2012-08-29 11:00:00"
+            }
+        ], 
+        "other_location": "Flow Dome - 9:15 & C", 
+        "print_description": "This discussion is about distilling the tools of religions from the dogmas that surround them. Please bring something to share.", 
+        "slug": "spirituality-for-atheists", 
+        "title": "Spirituality for Atheists", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Virgins looking for other Virgin or not so to play with.  \r\n\r\nRelaxe with arts and craft.  Decorate your body and playa gear while our virgins serve you tea.  Come and chill in our dome.  Bring over supplies to share if you care.  Bring tidbits for tea if you please.  Our virgins will paint your body and gears.  Just be a dear.\r\n\r\nWe are open for fun everyday from noon til dusk or until our playa virgins revolt.\r\n\r\nBubbles, Bubbles, everywhere - virgins will also be playing on the playa.   Find the bubble trails if you're looking for fun.\r\n\r\nTwo Rules to live by:\r\n- Have Fun, No Drama\r\n- Live, Learn and Grow", 
+        "hosted_by_camp": {
+            "id": 4965, 
+            "name": "Bubble Warriors"
+        }, 
+        "id": 7259, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 12:00:00", 
+                "start_time": "2012-08-27 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 12:00:00", 
+                "start_time": "2012-08-28 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 12:00:00", 
+                "start_time": "2012-08-29 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 12:00:00", 
+                "start_time": "2012-08-30 12:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 12:00:00", 
+                "start_time": "2012-08-31 12:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 12:00:00", 
+                "start_time": "2012-09-01 12:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 12:00:00", 
+                "start_time": "2012-09-02 12:00:00"
+            }
+        ], 
+        "other_location": "on the playa", 
+        "print_description": "Come for a tea party with Body Paint, Goggle and Playa Gear decoration, and to blow some bubbles at Camp BUBBLE WARRIOR everyday from noon til dusk.", 
+        "slug": "tea-with-bubbles-body-paint-gear-decoration", 
+        "title": "Tea with Bubbles, Body paint, Gear Decoration", 
+        "url": "http://www.bubblewarrior.com/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "By night, indulge yourself in transcendent experience as you enter \r\nanother world within The Crystal Cavern. Surrounded by two story \r\nfluorescent crystals, vividly colored mushrooms, and silk mandalas, enjoy live and recorded music - mandolin, shamanic icaros, world beat, down tempo, and at least one night of psytrance. Come lounge on the soft, fluffy pillows and absorb our ambiance, light shows, and music.\r\n\r\nBy day, our comfortable 40-foot dome hosts the Palenque Norte Speaker Series (see separate listing). Enjoy presentations from leaders in the visionary, entheogenic, and psychedelic communities.\r\n\r\nIn the morning, bring your yoga mat and join us for morning and evening community yoga practice in our yoga area. Leave the dust behind and expand your body and mind.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7157, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 06:00:00", 
+                "start_time": "2012-08-27 20:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 06:00:00", 
+                "start_time": "2012-08-28 20:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 06:00:00", 
+                "start_time": "2012-08-29 20:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 06:00:00", 
+                "start_time": "2012-08-30 20:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 06:00:00", 
+                "start_time": "2012-08-31 20:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 06:00:00", 
+                "start_time": "2012-09-01 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Visually striking 40\u2019 dome lounge with giant fluorescent crystals, mushrooms, fluffy pillows. Live & recorded music\u2013down tempo, world beat, psytrance.", 
+        "slug": "the-crystal-cavern", 
+        "title": "The Crystal Cavern", 
+        "url": "http://www.campabovethelimit.com/visit.html", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Learn the movements and grace of traditional swordplay. Wooden practice swords provided. Get a good stretch and have some Fun!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7880, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 18:00:00", 
+                "start_time": "2012-08-31 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Learn the movements and grace of traditional swordplay. Wooden practice swords provided. Get a good stretch and have some Fun!", 
+        "slug": "the-dance-of-the-sword", 
+        "title": "The dance of the sword", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "It's 2012! The end is nigh!  Race to the finish and be the first to pop ;-)  Jolly Rancher Cocktails for all, especially the raucous, cheering crowd!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 8194, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-09-01 19:00:00", 
+                "start_time": "2012-09-01 17:00:00"
+            }
+        ], 
+        "other_location": "7:45 & E (BloPopOasis)", 
+        "print_description": "It's 2012! The end is nigh!  Race to the finish and be the first to pop ;-)  Jolly Rancher Cocktails for all, especially the raucous, cheering crowd!", 
+        "slug": "the-end-of-the-world-suck-off", 
+        "title": "The End-of-the-World Suck-off!", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "A smorgasbord of performance art, music, and spoken word. Bring your \u00a05 -10 min performance to share. Or participate in the Battle of Words hip hop and spoken word slam down. Come early if you have special tech requests. On Playa collaborations and works in progress encouraged. Bear Margaritas for all!!\r\n\r\nThe Salon is a night of creative expression. Our community started hosting salons in January 2010 as a safe space for the folks of Synchronicity and our friends to share finished or unfinished works of art, poetry, song, or any form of creative release.  The idea was to encourage people in the community to create, share, and hear thoughts or ideas from fellow creative souls.  It has since expanded, and we have enjoyed works of musicians, poets, storytellers, palindromists, historians, novelists, ramblers, gamblers, painters, filmmakers, drunks, fathers, mothers, lovers, dreamers, and psychedelic clowns from all over this land!\r\nA crowd of lovely folks from across the playa will be gathering at 7.30 pm in preparation for the night's event.  A list will be roaming around, with 20 spots to fill. As 8 pm nears, we pile in front of our stage and are greeted by the lovely host of the evening.  From there.. anything goes!", 
+        "hosted_by_camp": {
+            "id": 4948, 
+            "name": "Summer Camp Sync"
+        }, 
+        "id": 7764, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 22:30:00", 
+                "start_time": "2012-08-29 20:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Come to Camp Sync for a wonderful evening of community and creativity. Artists are invited to share their hearts/talents. Join the artistic reverie!", 
+        "slug": "the-salon-at-summer-camp-sync-sundown", 
+        "title": "The Salon at Summer Camp Sync. @ Sundown", 
+        "url": "http://www.synchronicityla.com/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": true, 
+        "check_location": false, 
+        "description": "The Saraswati Tea House offers fine teas and herbal infusions served in the Chinese Gong Fu tea tradition. The Tea House is a refuge where guests can rest, rehydrate and have quiet conversations. The tea ceremony provides stillness in the midst of chaos. All are welcome at the tea tables where servers offer compassionate hospitality and moist towelettes to refresh journeying visitors.\r\n\r\nThe Saraswati Tea House has both indoor and outdoor lounge spaces serving tea and providing an oasis for visitors who need a place to reflect on the ebb and flow of their personal cosmic journey. Tended day and night by our gentle tea servers, we honor Saraswati, the Hindu Goddess of Cosmic Knowledge, by welcoming those who need respite, insight, and a kind word during their passage towards wisdom and evolved consciousness. You are welcome to rest and reflect at the Saraswati Tea House during your transformation and initiation.", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7166, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 23:59:00", 
+                "start_time": "2012-08-27 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 23:59:00", 
+                "start_time": "2012-08-28 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 23:59:00", 
+                "start_time": "2012-08-29 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 23:59:00", 
+                "start_time": "2012-08-30 00:00:00"
+            }, 
+            {
+                "end_time": "2012-08-31 23:59:00", 
+                "start_time": "2012-08-31 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 23:59:00", 
+                "start_time": "2012-09-01 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-02 23:59:00", 
+                "start_time": "2012-09-02 00:00:00"
+            }, 
+            {
+                "end_time": "2012-09-03 23:59:00", 
+                "start_time": "2012-09-03 00:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "A tranquil lounge providing fine teas and herbal infusions in the Chinese Gong Fu tradition for those needing rest, rehydration, and conversation.", 
+        "slug": "the-saraswati-tea-house", 
+        "title": "The Saraswati Tea House", 
+        "url": "http://www.campabovethelimit.com/visit.html", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Join us for a playa ballet competion. Practice your 1 minute routine alone or with a partner.Then join us for the fun with trophies for the winners! Or just come to watch the hilarity.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 6442, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-28 17:00:00", 
+                "start_time": "2012-08-28 16:30:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Join us for a playa ballet competion. Practice your 1 minute routine alone or with a partner.Then join us for the fun with trophies for the winners!", 
+        "slug": "tutu-tuesday-ballet-contest", 
+        "title": "Tutu Tuesday Ballet Contest", 
+        "url": "", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": true, 
+        "description": "Get funky to the bass while you tie ribbons on your handle bars. Shake a tail feather with your spray paint cans. Ease on down to A Cavallo Tribal Thunder and get your groove on while you pimp your bike! Materials provided, donations accepted and appreciated.", 
+        "hosted_by_camp": {
+            "id": 4596, 
+            "name": "A Cavallo Tribal Thunder"
+        }, 
+        "id": 7708, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-29 17:00:00", 
+                "start_time": "2012-08-29 15:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Ease on down to A Cavallo Tribal Thunder and get your groove on while you pimp your bike! Materials provided, donations accepted and appreciated.", 
+        "slug": "wheelie-funk-shui", 
+        "title": "Wheelie Funk Shui", 
+        "url": "http://www.acavallo.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Drive up on our lawn, toss us a PBR, and (soft) rock out with the good folks at the Playhouse.  Wear your mullet and wife beater to skip the line.", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7225, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-31 12:00:00", 
+                "start_time": "2012-08-31 09:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Drive up on our lawn, toss us a PBR, and (soft) rock out with the good folks at the Playhouse.  Wear your mullet and wife beater to skip the line.", 
+        "slug": "white-trash-breakfast", 
+        "title": "White Trash Breakfast", 
+        "url": "http://pancakeplayhouse.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Come sail away with the Playhouse.  Dress in your finest deck gear, sailing duds, captain's uniform, or pirate garb and skip the line. Rock softly and carry a big, delicious pancake!", 
+        "hosted_by_camp": {
+            "id": 4876, 
+            "name": "100'th Monkey Camp"
+        }, 
+        "id": 7222, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-30 12:00:00", 
+                "start_time": "2012-08-30 09:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Come sail away with the Playhouse.  Dress in your finest deck gear, sailing duds, captain's uniform, or pirate garb and skip the line. Rock softly and", 
+        "slug": "yacht-rock", 
+        "title": "Yacht Rock", 
+        "url": "http://pancakeplayhouse.org/", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }, 
+    {
+        "all_day": false, 
+        "check_location": false, 
+        "description": "Camp Above The Limit is hosting an open mic Musicians' Happy Hour Monday thru Thursday from 4:00 pm till 8:00 pm with a grand performance on Saturday. \r\nWe will have scheduled and ad hoc performances promoting musical diversity, radical self expression, participation, and entertainment. \r\n\r\nIf you are a musician or performance artist and wish to play on the \"You're The Limit Stage\" bring yourself, your talent and your instrument to Camp Above The Limit and participate in our Musical Diversity Program! It doesn't matter what it is! From violin to kazoo, guitar to ocarina, banjo, sarod, sitar, Spanish bagpipes, heck even accordions are welcome. \r\n\r\nBluegrass, Shamanic, Old Timey, Country, Rock, Classical, Irish, English, Morris Dancing, French, Middle Eastern, Balkan, Afghan, Indian, Barber Shop, or performance art. Whether it be your whole band or your radically self-expressive solo act, bring it! We will provide sound and we'll have other musicians for accompaniment: drums, guitar, mandolin, most likely anything you would need. We will be putting together an all-star performance on Saturday for all those who participate so come be a part of a great community of musicians and performance artists and share your gifts with us and the playa! Community is what makes the Burn so great and within all communities there is greatness! Come share yours with all of us!", 
+        "hosted_by_camp": {
+            "id": 4736, 
+            "name": "Above The Limit"
+        }, 
+        "id": 7163, 
+        "occurrence_set": [
+            {
+                "end_time": "2012-08-27 20:00:00", 
+                "start_time": "2012-08-27 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-28 20:00:00", 
+                "start_time": "2012-08-28 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-29 20:00:00", 
+                "start_time": "2012-08-29 16:00:00"
+            }, 
+            {
+                "end_time": "2012-08-30 20:00:00", 
+                "start_time": "2012-08-30 16:00:00"
+            }, 
+            {
+                "end_time": "2012-09-01 20:00:00", 
+                "start_time": "2012-09-01 16:00:00"
+            }
+        ], 
+        "other_location": "", 
+        "print_description": "Musicians' Happy Hour! Open mic, scheduled and ad hoc performances promoting musical diversity, radical self expression, and great entertainment!", 
+        "slug": "youre-the-limit-stage", 
+        "title": "You're The Limit Stage", 
+        "url": "http://www.campabovethelimit.com/visit.html", 
+        "year": {
+            "id": 8, 
+            "year": "2012"
+        }
+    }
+]

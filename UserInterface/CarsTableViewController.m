@@ -13,7 +13,8 @@
 
 - (id)init {
 	if( self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"art_cars2.png"] tag:NULL];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art_cars2.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		//self.title=@"Mutant Veh";
 		self.title = @"Art Cars";
 	}
@@ -39,7 +40,7 @@
   static NSString *CellIdentifier = @"Cell";
   UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
   if (cell == nil) {
-    cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:CellIdentifier] autorelease];
+    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
   }
   return cell;
 }

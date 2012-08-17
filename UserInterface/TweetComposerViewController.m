@@ -15,7 +15,8 @@
 - (TweetComposerViewController *)initWithTitle: (NSString *) aTitle {
 	self = [super init];
 	self.title = aTitle;
-	[self.tabBarItem initWithTitle:self.title image:NULL tag:0];
+  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:nil tag:0] autorelease];
+  self.tabBarItem = tabBarItem;
   return self;
 }
 

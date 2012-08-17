@@ -30,8 +30,8 @@
 - (void) importDataFromFile:(NSString*)filename {
 	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
-	NSArray *artArray = [[[CJSONDeserializer deserializer] deserialize:fileData error:nil]retain];
-  CLLocationCoordinate2D dummy = {0,0};
+	NSArray *artArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
+  //CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownArts = [self getAllArt];
   
   [self createAndUpdate:knownArts
@@ -44,41 +44,30 @@
 - (NSString *)getUrl {
  	NSString *theString;
 	// theString = @"http://earth.burningman.com/api/0.1/2010/art/";	
-	theString = @"http://playaevents.burningman.com/api/0.2/2011/art/";
+	theString = @"http://playaevents.burningman.com/api/0.2/2012/art/";
 	return theString;
 }
 
 
-- (void) updateObjectFromFile:(ArtInstall*)camp withDict:(NSDictionary*)dict {
-  if (!camp.name) {
-    camp.name = [self nullStringOrString:[dict objectForKey:@"title"]];
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
+  ArtInstall *camp = (ArtInstall*)object;
+  
+  if ([dict objectForKey:@"latitude"]) {
+    camp.latitude = [dict objectForKey:@"latitude"];
+    camp.longitude = [dict objectForKey:@"longitude"];
   }
   
-  if ([dict objectForKey:@"lat"]) {
-    camp.latitude = [dict objectForKey:@"lat"];
-    camp.longitude = [dict objectForKey:@"lon"];
-  }
-
-  if ([dict objectForKey:@"description"]) {
-    camp.desc = [dict objectForKey:@"description"];
-    camp.url = [dict objectForKey:@"url"];
-    camp.contactEmail = [dict objectForKey:@"contact"];
-    NSString *artists = @"by ";
-    int x = 0;
-    for (NSString *name in [dict objectForKey:@"artists"]) {
-      artists = [artists stringByAppendingString:name];
-      if (x != [[dict objectForKey:@"artists"]count]-1) {
-        artists = [artists stringByAppendingString:@", "];
-      }
-      x++;
-    }
-    if(![artists isEqualToString:@"by "]) {
-      camp.artist = [self nullStringOrString:artists];
-    }
-  }
+  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  
+  camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
+  camp.artist = [self nullStringOrString:[dict objectForKey:@"artist"]];
+  camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+  camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
+  camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
+  camp.artistHometown = [self nullStringOrString:[dict objectForKey:@"artist_location"]];
 	
 	
-	//camp.location = [dict objectForKey:@"artist_location"];
+	// camp.location = [dict objectForKey:@"artist_location"];
 	// image_url
 	
 }
@@ -92,11 +81,11 @@
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
 
-    NSString* name = [self nullOrObject:[dict objectForKey:@"name"]];
+    NSString* name = (NSString*)[self nullOrObject:[dict objectForKey:@"name"]];
     if (!name) {
-      name = [self nullOrObject:[dict objectForKey:@"title"]];
+      name = (NSString*)[self nullOrObject:[dict objectForKey:@"title"]];
       if (!name) {
-        name = [self nullOrObject:[dict objectForKey:@"Name"]];
+        name = (NSString*)[self nullOrObject:[dict objectForKey:@"Name"]];
       }
     }
     NSString* simpleName = [ThemeCamp createSimpleName:name];
@@ -135,17 +124,18 @@
 
 
 - (void) updateObject:(ArtInstall*)camp withDict:(NSDictionary*)dict {
-  camp.bm_id = N([[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
 
   camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
   camp.artist = [self nullStringOrString:[dict objectForKey:@"artist"]];
   camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
   camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
   camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
+  camp.artistHometown = [self nullStringOrString:[dict objectForKey:@"artist_location"]];
 
   NSDictionary *locPoint = [self getLocationDictionary:dict];
   if (locPoint) {
-    NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
+    //NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
     //camp.latitude = [coordArray objectAtIndex:1];
     //camp.longitude = [coordArray objectAtIndex:0];
     NSLog(@"%1.5f, %1.5f", [camp.latitude floatValue], [camp.longitude floatValue]);
@@ -167,8 +157,7 @@
             withObjects:arts 
            forClassName:@"ArtInstall"
 							 fromFile:NO];
-	[self importDataFromFile:@"allart_public"];
-	[self importDataFromFile:@"art-info"];
+  [self importDataFromFile:@"art_data_and_locations"];
 }
 
 

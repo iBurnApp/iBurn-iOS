@@ -38,25 +38,25 @@
 
 -(id) initFromProjection:(RMProjection*)projection tileSideLength:(NSUInteger)aTileSideLength maxZoom: (NSUInteger) aMaxZoom minZoom: (NSUInteger) aMinZoom
 {
-	if (![super init])
-		return nil;
-	
-	// We don't care about the rest of the projection... just the bounds is important.
-	planetBounds = [projection planetBounds];
-	
-	if (planetBounds.size.width == 0.0f || planetBounds.size.height == 0.0f)
-	{
-		/// \bug magic string literals
-		@throw [NSException exceptionWithName:@"RMUnknownBoundsException"
-									   reason:@"RMFractalTileProjection was initialised with a projection with unknown bounds"
-									 userInfo:nil];
-	}
-	
-	tileSideLength = aTileSideLength;
-	maxZoom = aMaxZoom;
-	minZoom = aMinZoom;
-	
-	scaleFactor = log2(planetBounds.size.width / tileSideLength);
+	if (self = [super init]) {
+    
+    // We don't care about the rest of the projection... just the bounds is important.
+    planetBounds = [projection planetBounds];
+    
+    if (planetBounds.size.width == 0.0f || planetBounds.size.height == 0.0f)
+    {
+      /// \bug magic string literals
+      @throw [NSException exceptionWithName:@"RMUnknownBoundsException"
+                       reason:@"RMFractalTileProjection was initialised with a projection with unknown bounds"
+                     userInfo:nil];
+    }
+    
+    tileSideLength = aTileSideLength;
+    maxZoom = aMaxZoom;
+    minZoom = aMinZoom;
+    
+    scaleFactor = log2(planetBounds.size.width / tileSideLength);
+  }
 	
 	return self;
 }

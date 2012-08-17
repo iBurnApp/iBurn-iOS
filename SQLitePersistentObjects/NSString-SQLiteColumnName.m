@@ -20,7 +20,6 @@
 
 #import "NSString-SQLiteColumnName.h"
 
-
 @implementation NSString(SQLiteColumnName)
 - (NSString *)stringAsSQLColumnName
 {

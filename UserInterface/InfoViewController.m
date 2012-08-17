@@ -20,7 +20,8 @@
 - (id)initWithTitle:(NSString*)title {
   self = [super init];
   self.title = title;
-	[self.tabBarItem initWithTitle:self.title image:NULL tag:0];
+  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:nil tag:0] autorelease];
+  self.tabBarItem = tabBarItem;
   return self;
 }
 
@@ -63,12 +64,12 @@
 	return 1;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath object:(id)object {
+- (CGFloat)tableView:(UITableView *)theTableView heightForRowAtIndexPath:(NSIndexPath *) indexPath object:(id)object {
 	int section = [indexPath section];
 	if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Description"] 
 			&& section != 0) { 
 			CGSize constraintSize;
-			constraintSize.width = tableView.frame.size.width-PADDING*4;
+			constraintSize.width = theTableView.frame.size.width-PADDING*4;
 			constraintSize.height = MAXFLOAT;
 			CGSize theSize = [[object desc] sizeWithFont:[UIFont systemFontOfSize:17.0f] constrainedToSize:constraintSize lineBreakMode:UILineBreakModeWordWrap];
 			return theSize.height+PADDING*8;
@@ -86,10 +87,10 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath  {
-  NSArray *identifiers = [NSArray arrayWithObjects:@"a", @"b", @"c", @"d", @"e", @"f", nil];
+  NSArray *identifiers = [NSArray arrayWithObjects:@"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", nil];
 	NSInteger section = [indexPath section];
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[identifiers objectAtIndex:section]];
-  if(!cell) cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:[identifiers objectAtIndex:section]] autorelease];
+  if(!cell) cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[identifiers objectAtIndex:section]] autorelease];
   if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Description"]) {
     if(!descriptionLabel) {
       descriptionLabel = [[[UILabel alloc] initWithFrame:CGRectZero]autorelease];
@@ -146,9 +147,11 @@
 
 }
 
+- (void) showOnMap {}
+- (void) showCamp {}
 
 - (NSIndexPath*)tableView:(UITableView *)tb willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-  UITableViewCell *cell = [tb cellForRowAtIndexPath:indexPath];
+  //UITableViewCell *cell = [tb cellForRowAtIndexPath:indexPath];
   if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"URL"]
       || [[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Camp"]
       || [[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"]

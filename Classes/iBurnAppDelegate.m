@@ -36,9 +36,11 @@
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>
 
+#define DATABASE_NAME @"iBurn2012.sqlite"
+
 @implementation iBurnAppDelegate
 
-@synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController, embargoed;
+@synthesize window, themeCamps, launchDefault, campNodeController, artNodeController, eventNodeController, tabBarController, embargoed, bgMoc;
 
 
 - (NSString*) documentsDirectory {
@@ -48,11 +50,13 @@
 
 - (void) checkOrCreateDatabase {
 	//See if the CoreData database is populated.  If not populate it from the API.
-	NSFetchRequest *testRequest = [[NSFetchRequest alloc] init];
+	NSFetchRequest *testRequest = [[[NSFetchRequest alloc] init] autorelease];
 	[testRequest setEntity:[NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[self managedObjectContext]]];
-	NSError *error;
+	NSError *error = nil;
 	NSInteger dbCount = [[self managedObjectContext] countForFetchRequest:testRequest error:&error];
-  //NSLog(@"DBCount: %i", dbCount);
+  if (error) {
+    NSLog(@"DB Error: %@ %@, DBCount: %i", [error localizedDescription], [error userInfo], dbCount);
+  }
 }
 
 
@@ -105,7 +109,13 @@
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
-  //[self checkOrCreateDatabase];
+  
+  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+    [[MyCLController sharedInstance].locationManager startUpdatingLocation];
+  }
+  [self checkOrCreateDatabase];
+  
+  // TODO comment out these methods once loaded into final db
   //[campNodeController getNodes];
   //[artNodeController getNodes];
   //[eventNodeController getNodes];
@@ -114,6 +124,7 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
   [self initControllers];
+ 
 	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
 }
 
@@ -142,7 +153,7 @@
   }
   
   MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
-  MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:bts progressView:mapViewController.progressView];
+  MapDownloader* dl = [[[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView] autorelease];
   [self setViewForDownloading];
   dl.refreshTiles = refreshTiles;
   [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
@@ -175,10 +186,10 @@
   [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:2];
 }
 
-/*- (void) requestDone {
+- (void) requestDone {
  //[[[tabBarController.viewControllers objectAtIndex:0]visibleViewController] showMarkersOnScreen];  
- [(CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController]reloadTable];
- }*/
+ //[(CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController]reloadTable];
+}
 
 
 - (void) setViewForDownloading {
@@ -267,7 +278,7 @@
   
 
   NSFileManager *fileManager = [NSFileManager defaultManager];
-  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"];
+  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [fileManager fileExistsAtPath:dbPath];
   
   // If the database already exists then return without doing anything
@@ -286,10 +297,10 @@
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
 	[self checkAndCreateDatabase];
-	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: @"iBurn2011A.sqlite"]];
+	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
-	NSPersistentStoreCoordinator* psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+	NSPersistentStoreCoordinator* psc = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]] autorelease];
 	if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
 		/*
 		 Replace this implementation with code to handle the error appropriately.
@@ -353,7 +364,7 @@
   NSLog(@"mdf password %@", [iBurnAppDelegate md5:password]);
   NSString* hash = [iBurnAppDelegate md5:password];
   if ([hash isEqualToString:CORRECT_HASH]) {
-    [password writeToFile:[self passwordFile] atomically:YES];
+    [password writeToFile:[self passwordFile] atomically:YES encoding:NSUTF8StringEncoding error:nil];
     [self liftEmbargo];
     return YES;
   }
@@ -362,7 +373,7 @@
 
 - (NSString*) getStoredPassword {
   if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
-    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile]];
+    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile] encoding:NSUTF8StringEncoding error:nil];
     return password;
   }
   return nil;
@@ -382,7 +393,7 @@
   NSLog(@"%@", [self passwordFile]);
 
   if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
-    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile]];
+    NSString * password = [NSString stringWithContentsOfFile:[self passwordFile] encoding:NSUTF8StringEncoding error:nil];
     [self checkPassword:password];
     return;
   }

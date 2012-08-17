@@ -15,7 +15,8 @@
 - (id)init {
 	if (self = [super init]) {
 		self.title = @"Tweets";
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"tweet.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"tweet.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
                                                initWithTitle:@"Write"
                                                style:UIBarButtonItemStylePlain
@@ -27,7 +28,7 @@
 
 
 - (void)write:(id)sender {
-	TweetComposerViewController *tweetComposer = [[TweetComposerViewController alloc] initWithTitle:@"Write a Tweet"];	
+	TweetComposerViewController *tweetComposer = [[[TweetComposerViewController alloc] initWithTitle:@"Write a Tweet"] autorelease];	
 	[[self navigationController] pushViewController:tweetComposer animated:YES];	
 }	
 

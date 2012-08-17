@@ -10,8 +10,10 @@
 #import "ThemeCamp.h"
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
+#import "MapViewController.h"
 
 @implementation XMLTableViewController
+@synthesize objects, objectDict;
 
 - (void) loadView {
   [super loadView];
@@ -22,19 +24,12 @@
 
 - (void) sortByDistance { 
 	[self sortByName];
-	[objectDict release];
-	objectDict = nil;
-	for (id object in objects) {
-		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
-
-		[object setDistanceAway:[[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192];		
-	}
+	self.objectDict = nil;
 	NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
 																																	ascending:YES] autorelease];
 	NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
 	NSArray * newObjects = [objects sortedArrayUsingDescriptors:sortDescriptors];
-	[objects release];
-	objects = [newObjects retain];
+	self.objects = [NSMutableArray arrayWithArray:newObjects];
 }
 
 
@@ -77,6 +72,11 @@
 }
 
 - (void) objectDictItUp {
+  NSSet * alphabetSet = [NSSet setWithArray:[NSArray arrayWithArray:
+                       [@"A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z"
+                        componentsSeparatedByString:@"|"]]];
+  NSString * lettersAndSymbols = @"#";
+  
 	[objectDict release];
 	objectDict = [[NSMutableArray alloc]init];
 	[sections release];
@@ -86,7 +86,9 @@
 	
 	NSMutableDictionary *tempDict = [NSMutableDictionary dictionary];
 	for (id object in objects) {
-		NSString *letter = [[[object name]substringToIndex:1]lowercaseString];
+		NSString *letter = [[[object name]substringToIndex:1]uppercaseString];
+    if( ![alphabetSet containsObject:letter])
+      letter = lettersAndSymbols;
 		if (![tempDict objectForKey:letter]) {
 			[tempDict setValue:[NSMutableArray arrayWithObject:object] forKey:letter];
 			NSLog(@"New letter: %@", letter);
@@ -139,8 +141,18 @@
     default: // favorites
 			[self sortByFavorites];
       break;
-  }  
+  }
   [self.tableView reloadData];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  if (sortControl.selectedSegmentIndex == -1) {
+    sortControl.selectedSegmentIndex = 0;
+    // sortByName must be called to populate the objects
+    [self sortByName];
+  }
+  [self sortTable:sortControl];
 }
 
 
@@ -149,7 +161,8 @@
 	id obj = [objects objectAtIndex: index];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:obj];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:obj];
 }
 
 
@@ -249,6 +262,8 @@
   [self showOnMapForIndexPath];
 }
 
+- (void) sortByName {}
+- (void) makeObjectsForFavs:(NSArray*)favs {}
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)index {
   switch (index) {

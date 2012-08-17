@@ -6,15 +6,20 @@
 //  Copyright 2009 Burning Man Earth. All rights reserved.
 
 #import "XMLTableViewController.h"
+#import "NodeController.h"
 #import <UIKit/UIKit.h>
+#import "EventDayTable.h"
 
-@class EventDayTable;
-@interface EventTableViewController : XMLTableViewController {
+
+
+@interface EventTableViewController : XMLTableViewController <NodeFetchDelegate> {
 
   EventDayTable *eventDayTable;
   NSArray *dayArray;
 }
 
-@property (nonatomic,retain) EventDayTable *eventDayTable;
+@property (nonatomic, retain) EventDayTable *eventDayTable;
+
+
 
 @end

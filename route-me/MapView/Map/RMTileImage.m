@@ -39,21 +39,20 @@
 
 - (id) initWithTile: (RMTile)_tile
 {
-	if (![super init])
-		return nil;
-	
-	tile = _tile;
-	layer = nil;
-	lastUsedTime = nil;
-	screenLocation = CGRectZero;
+	if (self = [super init]) {    
+    tile = _tile;
+    layer = nil;
+    lastUsedTime = nil;
+    screenLocation = CGRectZero;
 
-        [self makeLayer];
+          [self makeLayer];
 
-	[self touch];
-	
-	[[NSNotificationCenter defaultCenter] addObserver:self
-						selector:@selector(tileRemovedFromScreen:)
-						name:RMMapImageRemovedFromScreenNotification object:self];
+    [self touch];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+              selector:@selector(tileRemovedFromScreen:)
+              name:RMMapImageRemovedFromScreenNotification object:self];
+  }
 		
 	return self;
 }

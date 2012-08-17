@@ -64,17 +64,17 @@
 
 -(id) initWithDatabase: (NSString*)path
 {
-	if (![super init])
-		return nil;
-	
-	
-	self.databasePath = path;
-	dao = [[RMTileCacheDAO alloc] initWithDatabase:path];
+	if (self = [super init]) {
+    self.databasePath = path;
+    dao = [[RMTileCacheDAO alloc] initWithDatabase:path];
+    
+    if (dao == nil)
+      return nil;
+    
 
-	if (dao == nil)
-		return nil;
+  }
 	
-	return self;	
+  return self;	
 }
 
 -(id) initWithTileSource: (id<RMTileSource>) source usingCacheDir: (BOOL) useCacheDir

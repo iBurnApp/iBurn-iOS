@@ -7,20 +7,22 @@
 //
 
 #import <CoreData/CoreData.h>
+#import "BurnDataObject.h"
 
-@class Favorite;
+@class Favorite, CLLocation;
 
-@interface ThemeCamp :  NSManagedObject  
+@interface ThemeCamp :  NSManagedObject <BurnDataObject>
 {
-	
+  CLLocation * geolocation;
+  float lastLatitude;
 	float distanceAway;
 }
 
-@property (nonatomic, assign) float distanceAway;
 @property (nonatomic, retain) NSNumber * zoom;
 @property (nonatomic, retain) NSNumber * longitude;
 @property (nonatomic, retain) NSString * url;
 @property (nonatomic, retain) NSNumber * latitude;
+@property (nonatomic, retain) NSString * playaLocation;
 @property (nonatomic, retain) NSString * desc;
 @property (nonatomic, retain) NSString * location;
 @property (nonatomic, retain) NSNumber * bm_id;
@@ -28,6 +30,9 @@
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * contactEmail, * simpleName;
 @property (nonatomic, retain) Favorite * Favorite;
+
++ (ThemeCamp*) campForSimpleName:(NSString*) sName;
++ (NSString*) createSimpleName:(NSString*) name;
 
 @end
 

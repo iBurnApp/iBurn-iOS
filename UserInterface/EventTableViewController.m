@@ -12,6 +12,7 @@
 #import "EventDayTable.h"
 #import "iBurnAppDelegate.h"
 #import "FavoritesTableViewController.h"
+#import "EventNodeController.h"
 
 @implementation EventTableViewController
 @synthesize eventDayTable;
@@ -24,24 +25,27 @@
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  [[t eventNodeController]loadDBEvents];
+  EventNodeController *eventNode = (EventNodeController*)[t eventNodeController];
+  [eventNode loadDBEvents];
 }
 
 
 - (id)init {
 	if (self = [super initWithSearchPlaceholder:@""]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Events";
 		[self.navigationItem setTitle:@"Events"];
     dayArray = [[NSArray arrayWithObjects:
-								 @"August 29", 
-								 @"August 30", 
-                @"August 31", 
-                @"September 1", 
-                @"September 2", 
-                @"September 3", 
-                @"September 4", 
-                @"September 5",nil]retain]; 
+								 kDay1String,
+								 kDay2String, 
+                kDay3String, 
+                kDay4String, 
+                kDay5String, 
+                kDay6String, 
+                kDay7String, 
+                kDay8String,nil]retain];
+    
 	}
   return self;
 }
@@ -80,10 +84,12 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
   }
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
-	cell.textLabel.text = [dayArray objectAtIndex: storyIndex];
+  NSString *labelText = [dayArray objectAtIndex: storyIndex];
+	cell.textLabel.text = labelText;
+  cell.detailTextLabel.text = [EventDayTable subtitleString:labelText];
 	return cell;	
 }
 

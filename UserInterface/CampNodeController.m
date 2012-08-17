@@ -11,6 +11,7 @@
 #import "iBurnAppDelegate.h"
 #import "util.h"
 #import "CJSONDeserializer.h"
+#import "JSONKit.h"
 
 @implementation CampNodeController
 
@@ -32,7 +33,7 @@
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *campArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
 	//NSLog(@"The camp array is %@", campArray);
-  CLLocationCoordinate2D dummy = {0,0};
+  //CLLocationCoordinate2D dummy = {0,0};
   NSArray *knownCamps = [self getAllThemeCamps];
   
   [self createAndUpdate:knownCamps
@@ -44,14 +45,14 @@
 
 - (NSString *)getUrl {
  	NSString *theString;
-	theString = @"http://playaevents.burningman.com/api/0.2/2011/camp/";
+	theString = @"http://playaevents.burningman.com/api/0.2/2012/camp/";
 	// theString = @"http://earth.burningman.com/api/0.1/2010/camp/";	
 	return theString;
 }
 
 
-- (void) updateObjectFromFile:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
-  
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
+  ThemeCamp *camp = (ThemeCamp*)object;
   if ([dict objectForKey:@"name"]) {
     camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
 	} else {
@@ -61,26 +62,32 @@
   }
 	
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];    
-  if ([dict objectForKey:@"Latitude"]) {
-    camp.latitude = [dict objectForKey:@"Latitude"];
-    camp.longitude = [dict objectForKey:@"Longitude"];
+  if ([dict objectForKey:@"latitude"]) {
+    NSNumberFormatter * f = [[[NSNumberFormatter alloc] init] autorelease];
+    [f setNumberStyle:NSNumberFormatterDecimalStyle];
+    camp.latitude =  [f numberFromString:[dict objectForKey:@"latitude"]];
+    camp.longitude = [f numberFromString:[dict objectForKey:@"longitude"]];
+  }
+  if ([dict objectForKey:@"location"]) {
+    camp.playaLocation = [self nullStringOrString:[dict objectForKey:@"location"]];
   }
 
   if ([dict objectForKey:@"description"]) {
-    camp.desc = [dict objectForKey:@"description"];
-    camp.url = [dict objectForKey:@"url"];
-    camp.contactEmail = [dict objectForKey:@"contact"];
-    camp.location = [dict objectForKey:@"hometown"];
+    camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+    camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
+    camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
+    camp.location = [self nullStringOrString:[dict objectForKey:@"hometown"]];
   }
 
 }
 
 
 - (void) updateObject:(ThemeCamp*)camp withDict:(NSDictionary*)dict {
-  camp.bm_id = N([[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
   camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
   camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
   camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+  camp.playaLocation = [self nullStringOrString:[dict objectForKey:@"location"]];
   camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];                        
 
@@ -103,8 +110,7 @@
             withObjects:camps 
            forClassName:@"ThemeCamp"
 							fromFile:NO];
-	[self importDataFromFile:@"camps"];
-	[self importDataFromFile:@"camps-info"];
+  [self importDataFromFile:@"camp_data_and_locations"];
 }
 
 
@@ -115,18 +121,22 @@
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   for (NSDictionary *dict in objects) {
+    if (!dict || [dict isEqual:[NSNull null]]) {
+      continue;
+    }
+    
     id matchedCamp = nil;
-    NSString* name = [self nullOrObject:[dict objectForKey:@"title"]];
+    NSString* name = (NSString*)[self nullOrObject:[dict objectForKey:@"title"]];
     if (fromFile) {
-      name = [self nullOrObject:[dict objectForKey:@"name"]];
+      name = (NSString*)[self nullOrObject:[dict objectForKey:@"name"]];
       if (!name) {
-        name = [self nullOrObject:[dict objectForKey:@"Name"]];
+        name = (NSString*)[self nullOrObject:[dict objectForKey:@"Name"]];
       }
     }
-
     NSString * simpleName = [ThemeCamp createSimpleName:name];
 		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
     for (ThemeCamp * c in knownObjects) {
+      
       if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
 					|| [c.simpleName isEqual:simpleName]) {
         matchedCamp = c;
@@ -141,10 +151,9 @@
     if (!matchedCamp) {
       if (fromFile) {
         NSLog(@"%@", name);
-      } else {
+      }
         matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
                                                     inManagedObjectContext:moc];  
-      }
     }
 		if (fromFile) {
       [self updateObjectFromFile:matchedCamp withDict:dict];

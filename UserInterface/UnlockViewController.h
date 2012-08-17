@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface UnlockViewController : UIViewController <UIWebViewDelegate> {
+@interface UnlockViewController : UIViewController <UIWebViewDelegate, UITextFieldDelegate> {
 
 	BOOL didLoad;
 	

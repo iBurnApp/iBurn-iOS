@@ -17,6 +17,7 @@
 #import "iBurnAppDelegate.h"
 #import "DetailTableCell.h"
 #import "RMMapView.h"
+#import "MapViewController.h"
 
 @implementation FavoritesTableViewController
 
@@ -44,7 +45,7 @@
 
 - (void) showOnMapForIndexPath {
   Favorite *favorite = [objects objectAtIndex: touchedIndexPath.row];
-  id obj;
+  id obj = nil;
   if (favorite.ThemeCamp) {    
     obj = favorite.ThemeCamp;
   } else if (favorite.ArtInstall) {
@@ -54,7 +55,8 @@
   }  
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:obj];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:obj];
 }
 
 
@@ -97,7 +99,7 @@
 
 - (id)init {
 	if( self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"favorites.png"] tag:0];
+		self.tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"favorites.png"] tag:0] autorelease];
 		self.title = @"Favorites";
 	}
     return self;
@@ -127,20 +129,20 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithFrame:CGRectZero reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
     //[cell setBlackness];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
   Favorite *favorite = [objects objectAtIndex: storyIndex];
   if (favorite.ThemeCamp) {    
     cell.textLabel.text = [favorite.ThemeCamp name];
-    cell.image = [UIImage imageNamed:@"camps-reversed.png"];
+    cell.imageView.image = [UIImage imageNamed:@"camps-reversed.png"];
   } else if (favorite.ArtInstall) {
     cell.textLabel.text = [favorite.ArtInstall name];
-    cell.image = [UIImage imageNamed:@"art-reverse.png"];
+    cell.imageView.image = [UIImage imageNamed:@"art-reverse.png"];
   } else if (favorite.Event) {
     cell.textLabel.text = [favorite.Event name];
-    cell.image = [UIImage imageNamed:@"events-reversed.png"];
+    cell.imageView.image = [UIImage imageNamed:@"events-reversed.png"];
     //cell.accessoryType = UITableViewCellAccessoryNone;
   }  
 	return cell;	

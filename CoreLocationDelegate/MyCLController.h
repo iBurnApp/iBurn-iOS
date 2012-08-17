@@ -14,6 +14,7 @@
   CLLocationCoordinate2D lastReading;
 }
 
+@property (nonatomic, retain) NSTimer *timer;
 @property (nonatomic, assign) CLLocationCoordinate2D lastReading;
 @property (nonatomic, retain) CLLocationManager *locationManager;
 @property (nonatomic, assign) id <MyCLControllerDelegate> delegate;

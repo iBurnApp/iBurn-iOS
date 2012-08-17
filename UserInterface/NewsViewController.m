@@ -13,7 +13,8 @@
 
 - (id)init {
 	if( self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"news.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"news.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"News";
 	}
 	return self;

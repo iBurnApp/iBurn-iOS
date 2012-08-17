@@ -13,6 +13,7 @@
 //#import "Networking.h"
 //#import "DBOperations.h"
 #import "iBurnAppDelegate.h"
+#import "BurnDataObject.h"
 
 @implementation NodeController
 
@@ -39,8 +40,8 @@
 
 - (NSMutableArray*) getPredicateArrayForUpperLeft:(CLLocationCoordinate2D)upperLeft 
                                        lowerRight:(CLLocationCoordinate2D)lowerRight {
-  NSPredicate *p = [NSPredicate predicateWithFormat: @"latitude >= %@ AND latitude <= %@", 
-                    F(lowerRight.latitude), F(upperLeft.latitude)]; 
+  //NSPredicate *p = [NSPredicate predicateWithFormat: @"latitude >= %@ AND latitude <= %@", 
+  //                  F(lowerRight.latitude), F(upperLeft.latitude)]; 
   NSPredicate *lonPredicate;
   if (upperLeft.longitude > lowerRight.longitude) {
   	lonPredicate = [NSPredicate predicateWithFormat: @"longitude >= %@ OR longitude <= %@", 
@@ -60,27 +61,23 @@
                         names:(NSArray*)names
                     upperLeft:(CLLocationCoordinate2D)upperLeft 
                    lowerRight:(CLLocationCoordinate2D)lowerRight {  
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];  
-  //NSMutableArray *predicates = [self getPredicateArrayForUpperLeft:(CLLocationCoordinate2D)upperLeft 
-//                                                        lowerRight://(CLLocationCoordinate2D)lowerRight];  
-  //NSPredicate *finalPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSEntityDescription *entity = [NSEntityDescription entityForName:type inManagedObjectContext:[t managedObjectContext]];
-  [fetchRequest setEntity:entity];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", names];
-  [fetchRequest setPredicate:predicate];	
-  NSError *error;
-  NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error]retain];
-  [fetchRequest release];
-  fetchRequest = nil;
-  /*for (KnownPlace *kp in knownPlaces) {    
-   Place *place = [[[Place alloc]initWithKnownPlace:kp] autorelease];
-   [self tagPlaceWithDistanceAway:place];
-   [places addObject:place];
-   }*/
-  [pool release];
-	return objects;
+  @autoreleasepool {
+    //NSMutableArray *predicates = [self getPredicateArrayForUpperLeft:(CLLocationCoordinate2D)upperLeft 
+    //                                                        lowerRight://(CLLocationCoordinate2D)lowerRight];  
+    //NSPredicate *finalPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:type inManagedObjectContext:[t managedObjectContext]];
+    [fetchRequest setEntity:entity];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", names];
+    [fetchRequest setPredicate:predicate];	
+    NSError *error;
+    NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error] retain];
+    [fetchRequest release];
+    fetchRequest = nil;
+   
+    return objects;
+  }
 }
 
 
@@ -118,9 +115,9 @@
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
 		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
-    for (id c in knownObjects) {
+    for (id<BurnDataObject> c in knownObjects) {
       if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
-					|| [[[c name]lowercaseString] isEqual:[[self nullOrObject:[dict objectForKey:@"title"]]lowercaseString]]) {
+					|| [[[c name]lowercaseString] isEqual:[(NSString*)[self nullOrObject:[dict objectForKey:@"title"]]lowercaseString]]) {
         matchedCamp = c;
         break;
       }
@@ -165,12 +162,15 @@
   NSObject *locPoint = (NSDictionary*)[self nullOrObject:[dict objectForKey:@"location_point"]];
   NSDictionary* locDict;
   if ([locPoint isKindOfClass:[NSString class]]) {
-    NSData *jsonData = [locPoint dataUsingEncoding:NSUTF32BigEndianStringEncoding];	
+    NSString *locString = (NSString*)locPoint;
+    NSData *jsonData = [locString dataUsingEncoding:NSUTF32BigEndianStringEncoding];	
     locDict =  [[CJSONDeserializer deserializer] deserialize:jsonData error:nil];
+  } else if ([locPoint isKindOfClass:[NSDictionary class]]) {
+    locDict = (NSDictionary*)locPoint;
   } else {
-    locDict = locPoint;
-  } 
-
+    locDict = [NSDictionary dictionary];
+  }
+  
   return locDict;
     
 }
@@ -226,7 +226,9 @@
 - (void)requestWentWrong:(ASIHTTPRequest *)request {
   NSLog(@"ERROR is %@", [request error]); 
 
-  NSLog(@"ERROR is %@", [request responseString]); 
+  NSLog(@"ERROR is %@", [request responseString]);
+  
+  [self processJSONThreaded:request];
   [request release];
 }
 

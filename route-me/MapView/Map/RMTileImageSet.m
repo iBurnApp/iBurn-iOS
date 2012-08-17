@@ -41,18 +41,18 @@
 
 -(id) initWithDelegate: (id) _delegate
 {
-	if (![super init])
-		return nil;
-	
-	tileSource = nil;
-	self.delegate = _delegate;
-	images = [[NSMutableSet alloc] init];
-	[[NSNotificationCenter defaultCenter]
-		addObserver:self
-		selector:@selector(tileImageLoaded:)
-		name:RMMapImageLoadedNotification
-		object:nil
-	];
+	if (self = [super init]) {
+    tileSource = nil;
+    self.delegate = _delegate;
+    images = [[NSMutableSet alloc] init];
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(tileImageLoaded:)
+     name:RMMapImageLoadedNotification
+     object:nil
+     ];
+  }	
+
 	return self;
 }
 

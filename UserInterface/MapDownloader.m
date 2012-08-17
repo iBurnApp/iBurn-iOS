@@ -64,7 +64,7 @@
 
 
 - (void) downloadTile:(RMTile)tile fromURL:(NSString*)url toPath:(NSString*)path {
-  ASIHTTPRequest *request = [[ASIHTTPRequest alloc]initWithURL:[NSURL URLWithString:url]];
+  ASIHTTPRequest *request = [[[ASIHTTPRequest alloc]initWithURL:[NSURL URLWithString:url]] autorelease];
   [request setNumberOfTimesToRetryOnTimeout:3];
   [request setQueue:self.networkQueue];
   [request setUserInfo:[[[NSDictionary alloc] initWithObjectsAndKeys:path, @"path",
@@ -73,7 +73,6 @@
   [self createDirectoryIfNeeded:path];
   [request setDownloadDestinationPath:path];
   [[self networkQueue] addOperation:request];
-  
 }
 
 
@@ -107,11 +106,11 @@
 -(void) startMapDownload {
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-  NSString * path = [[NSBundle mainBundle] pathForResource:@"tiles" ofType:@"json"];
+  NSString * path = [[NSBundle mainBundle] pathForResource:@"tiles-2012" ofType:@"json"];
   NSString* responseTxt = [[[NSString alloc] initWithContentsOfFile:path
                                                            encoding:NSUTF8StringEncoding 
                                                               error:nil] autorelease];
-  NSDictionary * dict = [[responseTxt objectFromJSONString] retain];
+  NSDictionary * dict = [responseTxt objectFromJSONString];
   int batchCount = 0;
   totalRequests = [dict count];
   downloadSectionComplete = NO;
@@ -130,7 +129,7 @@
     }
     
     NSString * filePath = [self.tileSource tileFile:t];
-    // NSLog(@"downloading tile from url %@", filePath);
+    //NSLog(@"downloading tile from url %@", filePath);
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
       [self downloadTile:t fromURL:[self.tileSource tileURL:t] toPath:filePath];

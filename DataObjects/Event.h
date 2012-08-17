@@ -7,11 +7,15 @@
 //
 
 #import <CoreData/CoreData.h>
+#import "BurnDataObject.h"
 
-@class Favorite;
+@class Favorite, ThemeCamp;
 
-@interface Event :  NSManagedObject  
+@interface Event :  NSManagedObject <BurnDataObject>
 {
+  CLLocation * geolocation;
+  float lastLatitude;
+  float distanceAway;
 }
 
 @property (nonatomic, retain) NSString * name;
@@ -32,7 +36,14 @@
 @property (nonatomic, retain) NSNumber * latitude;
 @property (nonatomic, retain) NSString * day;
 
+
+@property (nonatomic, retain) ThemeCamp *camp;
+
 + (NSArray*) eventsForDay:(NSString*) day;
++ (NSString*) getDay:(NSDate*) date;
++ (NSArray*) getTodaysEvents;
++ (Event*) eventForName:(NSString*) sName;
+
 
 @end
 

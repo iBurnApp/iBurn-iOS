@@ -12,6 +12,8 @@
 #import "EventInfoViewController.h"
 #import "NSDate-Utilities.h"
 #import "Favorite.h"
+#import "Event.h"
+#import "util.h"
 
 @implementation EventDayTable
 @synthesize events;
@@ -78,25 +80,48 @@
 
 
 - (NSString*) dayString:(NSString*)ttl {
-	NSString *dayString;
-	if ([ttl isEqualToString:@"August 29"])
+	NSString *dayString = nil;
+	if ([ttl isEqualToString:kDay1String]) {
+		dayString = @"27";
+  } else if ([ttl isEqualToString:kDay2String]) {
+		dayString = @"28";
+  } else if ([ttl isEqualToString:kDay3String]) {
 		dayString = @"29";
-	if ([ttl isEqualToString:@"August 30"])
+  } else if ([ttl isEqualToString:kDay4String]) {
 		dayString = @"30";
-	if ([ttl isEqualToString:@"August 31"])
+  } else if ([ttl isEqualToString:kDay5String]) {
 		dayString = @"31";
-	if ([ttl isEqualToString:@"September 1"])
+  } else if ([ttl isEqualToString:kDay6String]) {
 		dayString = @"01";
-	if ([ttl isEqualToString:@"September 2"])
+  } else if ([ttl isEqualToString:kDay7String]) {
 		dayString = @"02";
-	if ([ttl isEqualToString:@"September 3"])
+  } else if ([ttl isEqualToString:kDay8String]) {
 		dayString = @"03";
-	if ([ttl isEqualToString:@"September 4"])
-		dayString = @"04";
-	if ([ttl isEqualToString:@"September 5"])
-		dayString = @"05";
+  }
 	return dayString;
-}	
+}
+
++ (NSString*) subtitleString:(NSString*)ttl {
+	NSString *dayString = nil;
+	if ([ttl isEqualToString:kDay1String]) {
+		dayString = @"8/27";
+  } else if ([ttl isEqualToString:kDay2String]) {
+		dayString = @"8/28";
+  } else if ([ttl isEqualToString:kDay3String]) {
+		dayString = @"8/29";
+  } else if ([ttl isEqualToString:kDay4String]) {
+		dayString = @"8/30";
+  } else if ([ttl isEqualToString:kDay5String]) {
+		dayString = @"8/31";
+  } else if ([ttl isEqualToString:kDay6String]) {
+		dayString = @"9/1";
+  } else if ([ttl isEqualToString:kDay7String]) {
+		dayString = @"9/2";
+  } else if ([ttl isEqualToString:kDay8String]) {
+		dayString = @"9/3";
+  }
+	return dayString;
+}
 
 - (void) sortByFavorites { 
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -147,17 +172,38 @@
 	self.navigationItem.rightBarButtonItem.enabled = NO;
 }
 
+- (void) sortByDistance {
+  self.events = [self getEventsForTitle:self.title];
+	NSSortDescriptor *distanceDescriptor =
+  [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
+                               ascending:YES
+                                selector:@selector(compare:)] autorelease];
+  NSSortDescriptor *timeDescriptor =
+  [[[NSSortDescriptor alloc] initWithKey:@"startTime"
+                               ascending:YES
+                                selector:@selector(compare:)] autorelease];
+  NSArray *descriptors = [NSArray arrayWithObjects:distanceDescriptor, timeDescriptor, nil];
+  NSArray *sortedArray = [self.events sortedArrayUsingDescriptors:descriptors];
+  self.events = sortedArray;
+	
+  [self.tableView reloadData];
+	self.navigationItem.rightBarButtonItem.enabled = NO;
+}
+
 
 
 - (void) sortTable:(id)sender {
 	switch ([sender selectedSegmentIndex]) {
-    case 0:  // name
+    case 0:  // time
 			[self sortByCurrent];
       break;
     case 1:  // distance
+      [self sortByDistance];
+      break;
+    case 2:  // favorites
 			[self sortByFavorites];
       break;
-    default: // favorites
+    default: // name
 			[self sortByName];
       break;
   }  
@@ -183,7 +229,7 @@
 - (void) loadView {
 	[super loadView];
 	[sortControl release];
-	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Favorites", @"Name",nil]]retain];
+	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Distance", @"Favorites", @"Name",nil]]retain];
 	sortControl.tintColor = [UIColor colorWithRed:35/255.0f green:97/255.0f blue:222/255.0f alpha:1];
 	sortControl.backgroundColor = [UIColor blackColor];
 	CGRect fr = sortControl.frame;
@@ -252,8 +298,9 @@
     cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
   }
   //cell.accessoryType = UITableViewCellAccessoryNone;
-	
-	cell.textLabel.text = [[events objectAtIndex:indexPath.row]name];  
+	Event *event = [events objectAtIndex:indexPath.row];
+  
+	cell.textLabel.text = [event name];  
   static NSDateFormatter *formatter = nil;
   if (!formatter) {
     formatter = [[NSDateFormatter alloc] init];
@@ -262,8 +309,16 @@
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"hh:mm a"];
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
-  }  
-  cell.detailTextLabel.text = [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]];
+  }
+  float distanceAway = [event distanceAway];
+  if (distanceAway >= 0 && distanceAway < 10000000) {
+      cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %@",
+                                   [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], 
+                    [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
+  } else {
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - Unknown Location", [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]]];
+  }
+  
 	
   return cell;
 }

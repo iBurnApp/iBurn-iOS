@@ -11,6 +11,8 @@
 #import "Favorite.h"
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
+#import "MapViewController.h"
+#import "util.h"
 
 @implementation CampInfoViewController
 
@@ -21,7 +23,8 @@
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
   [[[[t tabBarController]viewControllers]objectAtIndex:0] popToRootViewControllerAnimated:YES];
-  [[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] showMapForObject:camp];
+  MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [mapViewController showMapForObject:camp];
 }
 
 
@@ -34,9 +37,10 @@
         && [camp.longitude floatValue] < -1) {
       CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[camp.latitude floatValue] longitude:[camp.longitude floatValue]]autorelease];
       
-      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
+      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc];
       if (distanceAway > 0) {
-        [tempTexts addObject:[camp.name stringByAppendingFormat:@" (%1.1f miles)",distanceAway]];
+        [tempTexts addObject:[camp.name stringByAppendingFormat:@" (%@)",
+                              [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]]];
       } else {
         [tempTexts addObject:camp.name];
       }            
@@ -68,6 +72,19 @@
 			[tempTexts addObject:locString];
 		}
   }
+  if (camp.playaLocation && ![camp.playaLocation isEqualToString:@""]) {
+    [tempTitles addObject:@"Playa Location"];
+    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+		if ([t embargoed]) {
+			[tempTexts addObject:@"Location data is embargoed until gates open."];
+		} else {
+			[tempTexts addObject:camp.playaLocation];
+		}
+  }
+  if (camp.location && ![camp.location isEqualToString:@""]) {
+    [tempTitles addObject:@"Hometown"];
+    [tempTexts addObject:camp.location];
+  }
   if (camp.desc && ![camp.desc isEqualToString:@""] ) {
     [tempTitles addObject:@"Description"];
     [tempTexts addObject:camp.desc];
@@ -94,7 +111,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ThemeCamp = %@", camp];
   [fetchRequest setPredicate:predicate];	

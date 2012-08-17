@@ -9,10 +9,12 @@
 #import "SortableTable.h"
 
 @implementation SortableTable
+@synthesize sortControl;
 
 - (id)init {
 	if (self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"Art";
 		[self.navigationItem setTitle:@"Art Installations"];
 	}

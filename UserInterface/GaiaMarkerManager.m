@@ -34,13 +34,14 @@
 
 
 - (id)initWithContents:(RMMapContents *)mapContents {
-	if (![super initWithContents:mapContents]) return nil;
-  self.markerList = [[[NSMutableArray alloc] init]autorelease];
-	self.markersOnScreen = [[[NSMutableArray alloc] init]autorelease]; 	
-	self.markerIdSet = [[[NSMutableSet alloc] init]autorelease];
-	self.showLabels = YES;
-	self.hideMarkers = NO;
-	self.hideUserMarkers = NO;
+	if (self = [super initWithContents:mapContents]) {
+    self.markerList = [[[NSMutableArray alloc] init]autorelease];
+    self.markersOnScreen = [[[NSMutableArray alloc] init]autorelease]; 	
+    self.markerIdSet = [[[NSMutableSet alloc] init]autorelease];
+    self.showLabels = YES;
+    self.hideMarkers = NO;
+    self.hideUserMarkers = NO;
+  }
 	return self;
 }
 

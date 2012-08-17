@@ -11,19 +11,10 @@
 #import "iBurnAppDelegate.h"
 #import "util.h"
 #import "ThemeCamp.h"
+#import "CJSONDeserializer.h"
 
 @implementation EventNodeController
 @synthesize eventDateHash;
-
-
-- (void) sortHashByDate {
-
-  for (id key in eventDateHash) {
-    NSArray *events = [eventDateHash objectForKey:key];
-  }  
-
-
-}
 
 
 - (id) init {
@@ -36,7 +27,7 @@
  	NSString *theString;
 
 	//theString = @"http://earth.burningman.com/api/0.1/2010/event/";	
-	theString = @"http://playaevents.burningman.com/api/0.2/2011/event/";	
+	theString = @"http://playaevents.burningman.com/api/0.2/2012/event/";	
 	return theString;
 }
 
@@ -78,7 +69,7 @@
 
 - (void) updateObject:(Event*)event withDict:(NSDictionary*)dict occurenceIndex:(int)idx {
   NSObject *bmid = [self nullOrObject:[dict objectForKey:@"id"]];
-  if (bmid) event.bm_id = N([bmid intValue]);
+  if (bmid) event.bm_id = N([(NSString*)bmid intValue]);
 
   event.name = [self nullStringOrString:[dict objectForKey:@"title"]];
   NSDictionary *locPoint = [self getLocationDictionary:dict];
@@ -89,7 +80,7 @@
     //NSLog(@"%1.5f, %1.5f", [event.latitude floatValue], [event.longitude floatValue]);
   }
   event.desc = [self nullStringOrString:[dict objectForKey:@"print_description"]];
-  NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
+  NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
   if (occurrenceSet && [occurrenceSet count] > 0) {
     NSDictionary* times =  (NSDictionary*)[occurrenceSet objectAtIndex:idx];
     NSDate *startTime = [self getDateFromString:[times objectForKey:@"start_time"]];
@@ -127,11 +118,18 @@
                                          names:[self getNamesFromDicts:sortedArray] 
                                      upperLeft:dummy 
                                     lowerRight:dummy];
-  
-  
   [self createAndUpdate:events
             withObjects:sortedArray 
            forClassName:@"Event"];
+  /*
+  NSString *path = [[NSBundle mainBundle] pathForResource:@"event_data_and_locations" ofType:@"json"];
+	NSData *fileData = [NSData dataWithContentsOfFile:path];
+	NSArray *eventArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
+ 
+  [self createAndUpdate:events
+            withObjects:eventArray
+           forClassName:@"Event"];
+   */
 }
 
 - (NSArray*) getNamesFromDicts:(NSArray*)dicts {
@@ -151,17 +149,21 @@
   //[self.eventDateHash removeAllObjects];
   for (NSDictionary *dict in objects) {
     id matchedCamp = nil;
-    for (id c in knownObjects) {
-      if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]) {
-        matchedCamp = c;
-        break;
+    if (knownObjects && [knownObjects isKindOfClass:[NSArray class]]) {
+      for (id c in knownObjects) {
+        if ([c respondsToSelector:@selector(bm_id)]) {
+          if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]) {
+            matchedCamp = c;
+            break;
+          }
+        }
       }
     }
     if (!matchedCamp) {
       matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
                                                   inManagedObjectContext:moc]; 
       [self updateObject:matchedCamp withDict:dict occurenceIndex:0];
-      NSArray* occurrenceSet = [self nullOrObject:[dict objectForKey:@"occurrence_set"]];
+      NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
       if (occurrenceSet && [occurrenceSet count] > 0) {
         for (int i = 1; i < [occurrenceSet count]; i++) {
           matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
@@ -205,7 +207,6 @@
     for (Event* event in sortedArray) {
       [self addEventToHash:event];
     }
-    //[self sortHashByDate];
   }
 }
 

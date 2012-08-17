@@ -9,18 +9,20 @@
 #import "PeopleTableViewController.h"
 #import "User.h"
 #import "PeopleInfoViewController.h"
+#import "NSObject-SQLitePersistence.h"
 
 @implementation PeopleTableViewController
 
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
-  [self loadObjects:[User class]];
+  [self loadUsers];
 }
 
 
 - (id)init {
 	if(self = [super init]) {
-		[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"people.png"] tag:0];
+    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"people.png"] tag:0] autorelease];
+		self.tabBarItem = tabBarItem;
 		self.title = @"People";
 	}
   return self;
@@ -31,7 +33,7 @@
   static NSString *CellIdentifier = @"Cell";
   UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
   if (cell == nil) {
-    cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:CellIdentifier] autorelease];
+    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
   }
   
 	int userIndex = [indexPath indexAtPosition: [indexPath length] - 1];
@@ -43,7 +45,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	int userIndex = [indexPath indexAtPosition: [indexPath length] - 1];
 	int userPk = [[[objects objectAtIndex: userIndex] objectForKey:@"primaryKey"] intValue];
-	PeopleInfoViewController *PeopleInfoView = [[PeopleInfoViewController alloc] initWithPk:userPk];
+	PeopleInfoViewController *PeopleInfoView = [[[PeopleInfoViewController alloc] initWithPk:userPk] autorelease];
 	[[self navigationController] pushViewController:PeopleInfoView animated:YES];
 }
 

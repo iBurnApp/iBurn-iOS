@@ -24,7 +24,6 @@
 @implementation NSMutableData(SQLitePersistence)
 - (id)initWithSQLBlobRepresentation:(NSData *)data
 {
-	self = [[NSMutableData dataWithData:data] retain];
-	return self;
+	return [self initWithData:data];
 }
 @end

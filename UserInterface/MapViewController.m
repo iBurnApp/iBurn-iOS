@@ -26,6 +26,7 @@
 #import "Event.h"
 #import "EventInfoViewController.h"
 #import "GaiaMarker.h"
+#import "GaiaMarkerManager.h"
 
 @implementation MapViewController
 @synthesize mapView, detailView, progressView;
@@ -52,7 +53,9 @@
 	[mapView.contents.markerManager addMarker:newMarker AtLatLong:point];	
   [mapView moveToLatLong:point];                
   [[mapView contents] setZoom:16.0];
-	[mapView.contents.markerManager showMarkersOnScreen];	
+  
+  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
+	[gaiaMarkerManager showMarkersOnScreen];	
 }  
 
 - (NSArray*) getAllObjects:(NSString*) objType {  
@@ -147,8 +150,9 @@
 - (void) loadMarkers {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   if (t.embargoed) return;
-  [mapView.contents.markerManager removeMarkers];
-  [mapView.contents.markerManager setShowLabels:YES];
+  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
+  [gaiaMarkerManager removeMarkers];
+  [gaiaMarkerManager setShowLabels:YES];
 
   [self loadArt];
   [self loadCamps];
@@ -165,21 +169,22 @@
 }
 
 
-- (void) tapOnMarker: (RMMarker*) marker onMap: (RMMapView*) map {
+- (void) tapOnMarker: (GaiaMarker*) marker onMap: (RMMapView*) map {
 	if (![marker.data isKindOfClass:[NSString class]]) return;
-  if ([marker.data isEqualToString:@"ThemeCamp"]) {
+  NSString *markerString = (NSString*)marker.data;
+  if ([markerString isEqualToString:@"ThemeCamp"]) {
     ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
-    self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
+    self.detailView = [[[CampInfoViewController alloc] initWithCamp:camp] autorelease];
 
   }
-  if ([marker.data isEqualToString:@"ArtInstall"]) {
+  if ([markerString isEqualToString:@"ArtInstall"]) {
     ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
-    self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
+    self.detailView = [[[ArtInfoViewController alloc] initWithArt:art] autorelease];
     
   }
-  if ([marker.data isEqualToString:@"Event"]) {
+  if ([markerString isEqualToString:@"Event"]) {
     Event * event = [Event eventForName:[marker waypointID]];
-    self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
+    self.detailView = [[[EventInfoViewController alloc] initWithEvent:event] autorelease];
     
   }
   [self.navigationController pushViewController:detailView animated:YES];	
@@ -207,7 +212,8 @@
   _needFetchQuadrant = 0;
   _markersNeedDisplay = 0;
 	self.title = aTitle;
-	[self.tabBarItem initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0];
+  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0] autorelease];
+  self.tabBarItem = tabBarItem;
 	
   UISegmentedControl *downloadButton = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]]autorelease];
   downloadButton.frame = CGRectMake(0,0,35,35);
@@ -248,8 +254,11 @@
   
  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
   
- [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadMarkers) name:@"LIFT_EMBARGO" object:nil];
+  
+ [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(liftEmbargo) name:@"LIFT_EMBARGO" object:nil];
 
+  
+  
   return self;
 }
 
@@ -312,18 +321,20 @@
   [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
   [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
   
+  CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   
-  CLLocationCoordinate2D center = {bounds.southwest.latitude/2+bounds.northeast.latitude/2,bounds.southwest.longitude/2+bounds.northeast.longitude/2};
-  
-  center = (CLLocationCoordinate2D) {40.782920000000004, -119.20903000000001};
   [mapView.contents moveToLatLong:center];
-}	
+}
+
++ (CLLocationCoordinate2D) burningManCoordinate {
+  return CLLocationCoordinate2DMake(40.78629, -119.20650);
+}
 
 
 - (void)loadView {
   [super loadView];
   [self setMapView:[[[BurnMapView alloc]initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)]autorelease]];
-  BurnTileSource* bts = [[BurnTileSource alloc] init];
+  BurnTileSource* bts = [[[BurnTileSource alloc] init] autorelease];
   NSLog(@"bts zooms %f %f", [bts minZoom], [bts maxZoom]);
   RMCachedTileSource* cts = [RMCachedTileSource cachedTileSourceWithSource:bts];
   [mapView.contents setTileSource:cts];
@@ -335,6 +346,13 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   [self loadMarkers];
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if (t.embargoed) {
+    [mapView.contents setMaxZoom:14];
+  } else {
+    [mapView.contents setMaxZoom:18];    
+  }
+  
 
 }
 
@@ -355,7 +373,21 @@
 	markerManager = [mapView markerManager];	
 	[mapView setBackgroundColor:[UIColor blackColor]];
 	//[mapView moveToLatLong:point];	
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if (t.embargoed) {
+    UILabel *lbl = [[[UILabel alloc]initWithFrame:CGRectMake(10, 25, 300, 42)]autorelease];
+    lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
+    lbl.tag = 999;
+    lbl.textAlignment = UITextAlignmentCenter;
+    lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    lbl.numberOfLines = 0;
+    lbl.layer.cornerRadius = 8;
+    lbl.layer.borderWidth = 1;
+    lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
+    [self.view addSubview:lbl];    
+  }
 }
+
 
 - (void) viewDidAppear:(BOOL)animated {
   
@@ -421,6 +453,14 @@
   [detailView release];
   [progressView release];
   [super dealloc];
+}
+
+
+- (void) liftEmbargo {	
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  [mapView.contents setMaxZoom:18];
+  [self loadMarkers];
+  [[self.view viewWithTag:999]removeFromSuperview];
 }
 
 

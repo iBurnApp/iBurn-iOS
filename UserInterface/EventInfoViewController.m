@@ -34,21 +34,7 @@
 
 
 - (ThemeCamp*) getCampForEvent:(Event*)evt {
-  iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
-	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"ThemeCamp" 
-																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
-	[request setEntity:entityDescription];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"bm_id = %@", evt.camp_id];
-  [request setPredicate:predicate];	
-	NSError *error;
-	NSArray *objects = [moc executeFetchRequest:request error:&error];
-	if(objects && [objects count] > 0) {
-    return [objects objectAtIndex:0];
-	} else {
-		return nil;
-  }
+  return evt.camp;
 }  
 
 
@@ -121,7 +107,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"Event = %@", event];
   [fetchRequest setPredicate:predicate];	
