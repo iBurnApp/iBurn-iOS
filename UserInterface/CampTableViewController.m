@@ -89,7 +89,10 @@
   if (distanceAway > 0 && distanceAway < 10000000) {
     cell.detailTextLabel.text = [NSString stringWithFormat:@"%@", 
                             [util distanceString:camp.distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
+  } else {
+    cell.detailTextLabel.text = @"";
   }
+
   
 	return cell;	
 }
