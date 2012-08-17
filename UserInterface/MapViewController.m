@@ -67,6 +67,7 @@
   return objects;
 }
 
+
 - (void) loadCamps {
   for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
    
@@ -79,7 +80,7 @@
     [newMarker changeLabelUsingText:[camp name] 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
-                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"ThemeCamp";
@@ -95,6 +96,7 @@
 	}
 }
 
+
 - (void) loadArt {
   for (ArtInstall* camp in [self getAllObjects:@"ArtInstall"]) {
     
@@ -105,13 +107,13 @@
     [newMarker changeLabelUsingText:[camp name] 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
-                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"ArtInstall";
     newMarker.waypointID = [camp name];
     newMarker.zoom = 17;
-		newMarker.anchorPoint = CGPointMake(.3,.8);
+		newMarker.anchorPoint = CGPointMake(.5,.8);
     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
     
 	}
@@ -130,7 +132,7 @@
     [newMarker changeLabelUsingText:nil 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
-                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
                                        newMarker.label.frame.size.width, newMarker.label.frame.size.height);
     newMarker.data = @"Event";
