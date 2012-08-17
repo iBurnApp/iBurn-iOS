@@ -7,7 +7,7 @@
 //
 
 #import "util.h"
-
+#import "JSONKit.h"
 
 @implementation util
 
@@ -124,5 +124,14 @@ RMTile RMTileFromKey(uint64_t tilekey)
 	return formattedDecimal;
 }
 
+
++ (NSDictionary*) days{
+  
+  NSData* jsonData = [NSData dataWithContentsOfFile: [[NSBundle mainBundle]pathForResource:@"date_strings" ofType:@"json"]];
+  JSONDecoder* decoder = [[JSONDecoder alloc]
+                          initWithParseOptions:JKParseOptionNone];
+  NSDictionary* days = [decoder objectWithData:jsonData];
+  return days;
+}
 
 @end

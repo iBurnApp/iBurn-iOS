@@ -14,6 +14,7 @@
 #import "FavoritesTableViewController.h"
 #import "EventNodeController.h"
 
+#import "util.h"
 @implementation EventTableViewController
 @synthesize eventDayTable;
 
@@ -36,15 +37,7 @@
 		self.tabBarItem = tabBarItem;
 		self.title = @"Events";
 		[self.navigationItem setTitle:@"Events"];
-    dayArray = [[NSArray arrayWithObjects:
-								 kDay1String,
-								 kDay2String, 
-                kDay3String, 
-                kDay4String, 
-                kDay5String, 
-                kDay6String, 
-                kDay7String, 
-                kDay8String,nil]retain];
+    dayArray = [[[util days] allKeys]retain];
     
 	}
   return self;
@@ -89,7 +82,8 @@
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
   NSString *labelText = [dayArray objectAtIndex: storyIndex];
 	cell.textLabel.text = labelText;
-  cell.detailTextLabel.text = [EventDayTable subtitleString:labelText];
+  NSDictionary *days = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle]pathForResource:@"date_strings" ofType:@"json"]];
+  cell.detailTextLabel.text = [[days objectForKey:labelText]objectForKey:@"dateString"];
 	return cell;	
 }
 

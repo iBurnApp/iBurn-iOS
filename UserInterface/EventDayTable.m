@@ -15,6 +15,7 @@
 #import "Event.h"
 #import "util.h"
 
+
 @implementation EventDayTable
 @synthesize events;
 
@@ -59,17 +60,7 @@
 		[[self tableView] scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:MAX(0,scrollCount-6) inSection:0] 
 														atScrollPosition:UITableViewScrollPositionBottom animated:YES];
 	}
-	
-	
 }	
-
-
-- (NSArray*) getEventsForTitle:(NSString*) ttl {
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  EventNodeController *nc = (EventNodeController*)[t eventNodeController];
-	return [[nc eventDateHash]objectForKey:[self dayString:ttl]];
-}
-
 
 
 - (void) sortByCurrent { 
@@ -80,48 +71,16 @@
 
 
 - (NSString*) dayString:(NSString*)ttl {
-	NSString *dayString = nil;
-	if ([ttl isEqualToString:kDay1String]) {
-		dayString = @"27";
-  } else if ([ttl isEqualToString:kDay2String]) {
-		dayString = @"28";
-  } else if ([ttl isEqualToString:kDay3String]) {
-		dayString = @"29";
-  } else if ([ttl isEqualToString:kDay4String]) {
-		dayString = @"30";
-  } else if ([ttl isEqualToString:kDay5String]) {
-		dayString = @"31";
-  } else if ([ttl isEqualToString:kDay6String]) {
-		dayString = @"01";
-  } else if ([ttl isEqualToString:kDay7String]) {
-		dayString = @"02";
-  } else if ([ttl isEqualToString:kDay8String]) {
-		dayString = @"03";
-  }
-	return dayString;
+  return [[[util days] objectForKey:ttl]objectForKey:@"dayString"];      
 }
 
-+ (NSString*) subtitleString:(NSString*)ttl {
-	NSString *dayString = nil;
-	if ([ttl isEqualToString:kDay1String]) {
-		dayString = @"8/27";
-  } else if ([ttl isEqualToString:kDay2String]) {
-		dayString = @"8/28";
-  } else if ([ttl isEqualToString:kDay3String]) {
-		dayString = @"8/29";
-  } else if ([ttl isEqualToString:kDay4String]) {
-		dayString = @"8/30";
-  } else if ([ttl isEqualToString:kDay5String]) {
-		dayString = @"8/31";
-  } else if ([ttl isEqualToString:kDay6String]) {
-		dayString = @"9/1";
-  } else if ([ttl isEqualToString:kDay7String]) {
-		dayString = @"9/2";
-  } else if ([ttl isEqualToString:kDay8String]) {
-		dayString = @"9/3";
-  }
-	return dayString;
+
+- (NSArray*) getEventsForTitle:(NSString*) ttl {
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  EventNodeController *nc = (EventNodeController*)[t eventNodeController];
+	return [[nc eventDateHash]objectForKey:[self dayString:ttl]];
 }
+
 
 - (void) sortByFavorites { 
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];

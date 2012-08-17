@@ -25,4 +25,8 @@ RMTile RMTileFromKey(uint64_t tilekey);
                  includeUnit:(BOOL)includeUnit 
                decimalPlaces:(int)decimalPlaces;
 
++ (NSDictionary*) days;
+
+
+
 @end

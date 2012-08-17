@@ -375,11 +375,16 @@
 	//[mapView moveToLatLong:point];	
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   if (t.embargoed) {
-    UILabel *lbl = [[[UILabel alloc]initWithFrame:CGRectMake(10, 25, 300, 42)]autorelease];
+    int width = self.view.frame.size.width-20;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+      width -= 200;
+    }
+    UILabel *lbl = [[[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)]autorelease];
+    
     lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
     lbl.tag = 999;
     lbl.textAlignment = UITextAlignmentCenter;
-    lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     lbl.numberOfLines = 0;
     lbl.layer.cornerRadius = 8;
     lbl.layer.borderWidth = 1;

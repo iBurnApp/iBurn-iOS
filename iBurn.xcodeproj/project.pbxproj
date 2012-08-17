@@ -134,6 +134,7 @@
 		844873ED14034C4300DBD3A3 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 844873EC14034C4300DBD3A3 /* rod_garrett.jpg */; };
 		8448741D14034FBD00DBD3A3 /* ContactInfoScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */; };
 		84487492140358E200DBD3A3 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84487491140358E200DBD3A3 /* routeme.plist */; };
+		84FDDB0F15DEEA7E00AF74A1 /* date_strings.json in Resources */ = {isa = PBXBuildFile; fileRef = 84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */; };
 		84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */ = {isa = PBXBuildFile; fileRef = 84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */; };
 		A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F15FB51401BCBB004DCF90 /* SortableTable.m */; };
 		A0F160E81401F5FC004DCF90 /* UnlockViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F160E71401F5FC004DCF90 /* UnlockViewController.m */; };
@@ -442,6 +443,7 @@
 		8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContactInfoScreen.m; sourceTree = "<group>"; };
 		84487491140358E200DBD3A3 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		84E95D3B14037F5000BE4427 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
+		84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = date_strings.json; sourceTree = "<group>"; };
 		84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BurnerMapLogoSquarish.png; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0F15FB41401BCBB004DCF90 /* SortableTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SortableTable.h; sourceTree = "<group>"; };
@@ -595,6 +597,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */,
 				6301BD6A15DB2F6500152C8D /* tiles */,
 				4E99497112063C6A00F410EF /* iBurn.xcdatamodel */,
 				D9F8FA0115DC682C00E9D055 /* iBurn.sqlite */,
@@ -1292,6 +1295,7 @@
 				D9F8F9CA15DC22E500E9D055 /* camp_data_and_locations.json in Resources */,
 				D9F8F9CB15DC22E500E9D055 /* event_data_and_locations.json in Resources */,
 				D9F8FA0215DC682C00E9D055 /* iBurn.sqlite in Resources */,
+				84FDDB0F15DEEA7E00AF74A1 /* date_strings.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

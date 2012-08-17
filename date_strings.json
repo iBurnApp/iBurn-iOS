@@ -1,0 +1,34 @@
+{
+  "MONDAY - Gates open":{
+    "dayString":"27",
+    "dateString":"8/27"
+  },
+  "TUESDAY":{
+    "dayString":"28",
+    "dateString":"8/28"
+  },
+  "WEDNESDAY":{
+    "dayString":"29",
+    "dateString":"8/29"
+  },
+  "THURSDAY - Core Burn":{
+    "dayString":"30",
+    "dateString":"8/30"
+  },
+  "FRIDAY - Satellite fly-by 11:45:d40 am":{
+    "dayString":"31",
+    "dateString":"8/31"
+  },
+  "SATURDAY - Man Burn":{
+    "dayString":"01",
+    "dateString":"9/1"
+  },
+  "SUNDAY - Temple Burn":{
+    "dayString":"02",
+    "dateString":"9/2"
+  },
+  "MONDAY - Exodus":{
+    "dayString":"03",
+    "dateString":"9/3"
+  }
+}
