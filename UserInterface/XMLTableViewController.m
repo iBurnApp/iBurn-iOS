@@ -131,7 +131,6 @@
 
 
 - (void) sortTable:(id)sender {
-  [self updateDistanceAway];
 	switch ([sender selectedSegmentIndex]) {
     case 0:  // name
 			[self sortByName];
@@ -154,14 +153,6 @@
     [self sortByName];
   }
   [self sortTable:sortControl];
-}
-
-- (void) updateDistanceAway {
-  for (id object in objects) {
-		CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[[object latitude] floatValue] longitude:[[object longitude] floatValue]]autorelease];
-    
-		[object setDistanceAway:[[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192];
-	}
 }
 
 

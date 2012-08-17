@@ -13,6 +13,7 @@
 #import "iBurnAppDelegate.h"
 #import "RMMapView.h"
 #import "Favorite.h"
+#import "util.h"
 
 @implementation ArtTableViewController
 
@@ -100,11 +101,11 @@
 	}
   cell.textLabel.text = art.name;
   float distanceAway = art.distanceAway;
-  if (distanceAway >= 0 && distanceAway < 50) {
-      cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", art.distanceAway];
-  } else {
-      cell.detailTextLabel.text = @"Unknown Location";
+      
+  if (distanceAway > 0 && distanceAway < 10000000) {
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@", [util distanceString:art.distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
   }
+ 
 
   
 	return cell;	

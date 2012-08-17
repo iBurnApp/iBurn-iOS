@@ -107,6 +107,10 @@ int fakeTime;
 }
 
 
+- (double) latitude {
+  return self.locationManager.location.coordinate.latitude;
+}
+
 -(void) updateTime {
   if (FAKE_POINTS) [self postFakePoint:0];
   fakeTime++;

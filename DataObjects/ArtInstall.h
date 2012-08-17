@@ -14,9 +14,11 @@
 @interface ArtInstall :  NSManagedObject <BurnDataObject>
 {
 	float distanceAway;
+  
+  float lastLatitude;
+  CLLocation * geolocation;
 }
 
-@property (nonatomic, assign) float distanceAway;
 @property (nonatomic, retain) NSString * timeAddress;
 
 @property (nonatomic, retain) NSNumber * circularStreet;

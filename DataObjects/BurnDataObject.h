@@ -13,4 +13,5 @@
 - (NSNumber*) bm_id;
 - (NSString*) desc;
 - (NSString*) name;
+- (float) distanceAway;
 @end

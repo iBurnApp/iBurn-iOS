@@ -12,6 +12,7 @@
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
 #import "MapViewController.h"
+#import "util.h"
 
 @implementation CampInfoViewController
 
@@ -36,9 +37,10 @@
         && [camp.longitude floatValue] < -1) {
       CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[camp.latitude floatValue] longitude:[camp.longitude floatValue]]autorelease];
       
-      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
+      float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc];
       if (distanceAway > 0) {
-        [tempTexts addObject:[camp.name stringByAppendingFormat:@" (%1.1f miles)",distanceAway]];
+        [tempTexts addObject:[camp.name stringByAppendingFormat:@" (%@)",
+                              [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]]];
       } else {
         [tempTexts addObject:camp.name];
       }            

@@ -13,6 +13,9 @@
 
 @interface Event :  NSManagedObject <BurnDataObject>
 {
+  CLLocation * geolocation;
+  float lastLatitude;
+  float distanceAway;
 }
 
 @property (nonatomic, retain) NSString * name;
@@ -33,6 +36,7 @@
 @property (nonatomic, retain) NSNumber * latitude;
 @property (nonatomic, retain) NSString * day;
 
+
 @property (nonatomic, retain) ThemeCamp *camp;
 
 + (NSArray*) eventsForDay:(NSString*) day;
@@ -40,7 +44,6 @@
 + (NSArray*) getTodaysEvents;
 + (Event*) eventForName:(NSString*) sName;
 
-- (float) distanceAway;
 
 @end
 

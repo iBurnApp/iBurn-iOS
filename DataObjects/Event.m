@@ -31,7 +31,14 @@
 @dynamic Favorite;
 @dynamic day;
 
+
+- (void)awakeFromFetch {
+  geolocation = nil;
+}
+
+
 - (void) dealloc {
+  [geolocation release];
   self.camp = nil;
   [super dealloc];
 }
@@ -105,20 +112,28 @@
   return camp;
 }
 
-- (float) distanceAway {
-  ThemeCamp *themeCamp = [self camp];
-  if (!themeCamp) {
-    return 100;
+
+- (CLLocation *)geolocation {
+  if (!geolocation) {
+    geolocation = [[CLLocation alloc] initWithLatitude:[self.latitude floatValue] 
+                                          longitude:[self.longitude floatValue]];
   }
-  float lat = [[themeCamp latitude] floatValue];
-  float lon = [[themeCamp longitude] floatValue];
-  if (lat == 0 || lon == 0) {
-    return 100;
+  return geolocation;
+}
+
+- (float) distanceAway {
+	// prevent crash at start-up sometimes
+  CLLocationManager* locationManager = [[MyCLController sharedInstance] locationManager];
+  
+  if (!locationManager.location) return 0;
+  
+  if (geolocation && distanceAway > 0 && lastLatitude == locationManager.location.coordinate.latitude) {
+    return distanceAway;
   }
   
-  CLLocation *loc = [[[CLLocation alloc]initWithLatitude:lat  longitude:lon]autorelease];
-  float distanceInMiles = [[MyCLController sharedInstance] currentDistanceToLocation:loc] * 0.000621371192;
-  return roundf(10 * distanceInMiles) / 10;
+  lastLatitude = locationManager.location.coordinate.latitude;
+  distanceAway = [locationManager.location distanceFromLocation:[self geolocation]];
+  return distanceAway;
 }
 
 @end

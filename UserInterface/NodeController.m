@@ -75,11 +75,7 @@
     NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error] retain];
     [fetchRequest release];
     fetchRequest = nil;
-    /*for (KnownPlace *kp in knownPlaces) {    
-     Place *place = [[[Place alloc]initWithKnownPlace:kp] autorelease];
-     [self tagPlaceWithDistanceAway:place];
-     [places addObject:place];
-     }*/
+   
     return objects;
   }
 }

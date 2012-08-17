@@ -9,14 +9,15 @@
 #import <CoreData/CoreData.h>
 #import "BurnDataObject.h"
 
-@class Favorite;
+@class Favorite, CLLocation;
 
 @interface ThemeCamp :  NSManagedObject <BurnDataObject>
 {
+  CLLocation * geolocation;
+  float lastLatitude;
 	float distanceAway;
 }
 
-@property (nonatomic, assign) float distanceAway;
 @property (nonatomic, retain) NSNumber * zoom;
 @property (nonatomic, retain) NSNumber * longitude;
 @property (nonatomic, retain) NSString * url;

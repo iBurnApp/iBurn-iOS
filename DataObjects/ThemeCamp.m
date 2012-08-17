@@ -8,11 +8,12 @@
 
 #import "ThemeCamp.h"
 #import "iBurnAppDelegate.h"
+#import "MyCLController.h"
+#import <CoreLocation/CoreLocation.h>
 
 #import "Favorite.h"
 
 @implementation ThemeCamp 
-@synthesize distanceAway;
 
 @dynamic zoom;
 @dynamic longitude;
@@ -28,6 +29,9 @@
 @dynamic simpleName;
 @dynamic playaLocation;
 
+- (void)awakeFromFetch {
+  geolocation = nil;
+}
 
 
 + (NSCharacterSet*) getNonAlphaNumericCharacterSet {
@@ -64,5 +68,34 @@
   }
   return nil;
 
+}
+
+- (void) dealloc {
+  [geolocation release];
+  geolocation = nil;
+  [super dealloc];
+}
+
+- (CLLocation *)geolocation {
+  if (!geolocation) {
+    geolocation = [[CLLocation alloc] initWithLatitude:[self.latitude floatValue] 
+                                          longitude:[self.longitude floatValue]];
+  }
+  return geolocation;
+}
+
+- (float) distanceAway {
+	// prevent crash at start-up sometimes
+  CLLocationManager* locationManager = [[MyCLController sharedInstance] locationManager];
+  
+  if (!locationManager.location) return 0;
+  
+  if (geolocation && distanceAway > 0 && lastLatitude == locationManager.location.coordinate.latitude) {
+    return distanceAway;
+  }
+  
+  lastLatitude = locationManager.location.coordinate.latitude;
+  distanceAway = [locationManager.location distanceFromLocation:[self geolocation]];
+  return distanceAway;
 }
 @end

@@ -13,6 +13,7 @@
 #import "NSDate-Utilities.h"
 #import "Favorite.h"
 #import "Event.h"
+#import "util.h"
 
 @implementation EventDayTable
 @synthesize events;
@@ -310,8 +311,10 @@
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
   }
   float distanceAway = [event distanceAway];
-  if (distanceAway >= 0 && distanceAway < 50) {
-      cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %1.1f miles",[formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], [event distanceAway]];
+  if (distanceAway >= 0 && distanceAway < 10000000) {
+      cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %@",
+                                   [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], 
+                    [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
   } else {
     cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - Unknown Location", [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]]];
   }

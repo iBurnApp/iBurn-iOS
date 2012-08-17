@@ -12,6 +12,7 @@
 #import "iBurnAppDelegate.h"
 #import "RMMapView.h"
 #import "Favorite.h"
+#import "util.h"
 
 @implementation CampTableViewController
 
@@ -85,10 +86,9 @@
 	}
   cell.textLabel.text = camp.name;
   float distanceAway = camp.distanceAway;
-  if (distanceAway >= 0 && distanceAway < 50) {
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"%1.2f miles", camp.distanceAway];
-  } else {
-    cell.detailTextLabel.text = @"Unknown Location";
+  if (distanceAway > 0 && distanceAway < 10000000) {
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@", 
+                            [util distanceString:camp.distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
   }
   
 	return cell;	

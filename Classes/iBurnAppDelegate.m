@@ -109,6 +109,10 @@
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
   self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
+  
+  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+    [[MyCLController sharedInstance].locationManager startUpdatingLocation];
+  }
   [self checkOrCreateDatabase];
   
   // TODO comment out these methods once loaded into final db
@@ -120,6 +124,7 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
   [self initControllers];
+ 
 	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
 }
 

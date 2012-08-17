@@ -12,10 +12,17 @@
 #define N(N$)  [NSNumber numberWithInt: (N$)]
 #define F(N$)  [NSNumber numberWithFloat: (N$)]
 #define B(N$)  [NSNumber numberWithBool: (N$)]
+#define metersToFeet(meters) meters > 0?  meters * 3.2808399: 0.0f
+
 RMTile RMTileFromKey(uint64_t tilekey);
 
 @interface util : NSObject {
 
 }
+
++ (NSString*) distanceString:(float)distance 
+                  convertMax:(int)convertMax 
+                 includeUnit:(BOOL)includeUnit 
+               decimalPlaces:(int)decimalPlaces;
 
 @end

@@ -9,9 +9,9 @@
 #import "ArtInstall.h"
 #import "iBurnAppDelegate.h"
 #import "Favorite.h"
+#import "MyCLController.h"
 
 @implementation ArtInstall 
-@synthesize distanceAway;
 
 @dynamic circularStreet;
 @dynamic zoom;
@@ -49,4 +49,33 @@
   return nil;
   
 }
+
+- (void) dealloc {
+  [geolocation release];
+  [super dealloc];
+}
+
+- (CLLocation *)geolocation {
+  if (!geolocation) {
+    geolocation = [[CLLocation alloc] initWithLatitude:[self.latitude floatValue] 
+                                          longitude:[self.longitude floatValue]];
+  }
+  return geolocation;
+}
+
+- (float) distanceAway {
+	// prevent crash at start-up sometimes
+  CLLocationManager* locationManager = [[MyCLController sharedInstance] locationManager];
+  
+  if (!locationManager.location) return 0;
+  
+  if (geolocation && distanceAway > 0 && lastLatitude == locationManager.location.coordinate.latitude) {
+    return distanceAway;
+  }
+
+  lastLatitude = locationManager.location.coordinate.latitude;
+  distanceAway = [locationManager.location distanceFromLocation:[self geolocation]];
+  return distanceAway;
+}
+
 @end
