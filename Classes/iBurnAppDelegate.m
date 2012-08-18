@@ -118,7 +118,7 @@
   // TODO comment out these methods once loaded into final db
   //[campNodeController getNodes];
   //[artNodeController getNodes];
-  [eventNodeController getNodes];
+  //[eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -373,10 +373,11 @@
   
 }
 
-#define CORRECT_HASH  @"38EBE77897EC9D73675BC8182DA7F75D"
+#define CORRECT_HASH  @"A5717A649D346ED0C51BE68888C130CD"
 
 - (BOOL) checkPassword:(NSString*) password {
   //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah
+  password = [password lowercaseString];
   NSLog(@"mdf password %@", [iBurnAppDelegate md5:password]);
   NSString* hash = [iBurnAppDelegate md5:password];
   if ([hash isEqualToString:CORRECT_HASH]) {
@@ -410,6 +411,7 @@
 
   if ([[NSFileManager defaultManager] fileExistsAtPath:[self passwordFile]]) {
     NSString * password = [NSString stringWithContentsOfFile:[self passwordFile] encoding:NSUTF8StringEncoding error:nil];
+    
     [self checkPassword:password];
     return;
   }
