@@ -153,5 +153,28 @@ RMTile RMTileFromKey(uint64_t tilekey)
   return days;
 }
 
++ (void) checkDirectory:(NSString*) filePath {
+  
+  if(![[NSFileManager defaultManager] fileExistsAtPath:filePath isDirectory:nil]) {
+    if(![[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil])
+      NSLog(@"Error: Create folder failed");
+  } 
+  
+}
+
+NSString* privateDocumentsDirectory() {
+  static NSString* dir = nil;
+  if (!dir) {
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains (NSLibraryDirectory, NSUserDomainMask, YES);
+    dir = [[[paths objectAtIndex:0] stringByAppendingString:@"/Private Documents"] retain];	
+    [util checkDirectory:dir];
+    
+  }
+  return dir;
+}
+
+
+
 
 @end
