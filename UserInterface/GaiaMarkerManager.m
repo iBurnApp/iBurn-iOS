@@ -11,7 +11,7 @@
 #import "RMMapContents.h"
 #import "RMLayerCollection.h"
 
-#define MAX_LABELS_TO_SHOW ([[UIScreen mainScreen] applicationFrame].size.height * [[UIScreen mainScreen] applicationFrame].size.width)/15000
+#define MAX_LABELS_TO_SHOW ([[UIScreen mainScreen] applicationFrame].size.height * [[UIScreen mainScreen] applicationFrame].size.width)/5000
 
 
 @implementation GaiaMarkerManager

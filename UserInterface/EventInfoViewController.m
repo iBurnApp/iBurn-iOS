@@ -32,6 +32,20 @@
   return [formatter stringFromDate:date];
 }
 
+- (NSString*) dayStringFromDate:(NSDate*)date {
+  static NSDateFormatter *formatter = nil;
+  if (!formatter) {
+    formatter = [[NSDateFormatter alloc] init];
+    NSLocale *enUSPOSIXLocale;
+    enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
+    [formatter setLocale:enUSPOSIXLocale];
+    [formatter setDateFormat:@"cccc, MMM dd"];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
+  }  
+  return [formatter stringFromDate:date];
+}
+
+
 
 - (ThemeCamp*) getCampForEvent:(Event*)evt {
   return evt.camp;
@@ -62,6 +76,11 @@
   NSString *startTime = event.startTime ? [self stringFromDate:event.startTime] : @"Unknown.";
   NSString *endTime = event.endTime ? [self stringFromDate:event.endTime] : @"Unknown";
   NSString *schedule = [NSString stringWithFormat:@"%@ - %@", startTime, endTime];
+
+  if ([event.allDay boolValue]) {
+    schedule = [NSString stringWithFormat:@"%@ - ALL DAY", [self dayStringFromDate:event.startTime]];
+  }
+  
   [tempTitles addObject:@"Schedule"];
   [tempTexts addObject:schedule];
   if (event.url && ![event.url isEqualToString:@""]) {

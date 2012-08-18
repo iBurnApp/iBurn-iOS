@@ -20,33 +20,6 @@
 @synthesize events;
 
 
-+ (NSDate*) dateFromDay:(int)day month:(int)month {
-	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-  [gregorian setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];
-	NSDateComponents *components = [gregorian components:NSYearCalendarUnit | NSMonthCalendarUnit |  NSDayCalendarUnit fromDate:[NSDate date]];
-	[components setDay:day];
-	[components setMonth:month];
-	NSDate * date = [gregorian dateFromComponents:components];
-	[gregorian release];
-	return date;
-}
-
-
-+ (NSDate*) dateFromDay:(int)day month:(int)month hour:(int)hour minutes:(int)minutes {
-	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-  [gregorian setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];
-	NSDateComponents *components = [gregorian components:NSYearCalendarUnit | NSMonthCalendarUnit |  NSDayCalendarUnit fromDate:[NSDate date]];
-	[components setHour:hour];
-	[components setHour:minutes];
-	[components setHour:9];
-	[components setDay:day];
-	[components setMonth:month];
-	NSDate * date = [gregorian dateFromComponents:components];
-	[gregorian release];
-	return date;
-}
-
-
 - (void) scrollIfToday {
 	NSDate *now = [NSDate date];
 	int scrollCount = 0;
@@ -270,12 +243,16 @@
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
   }
   float distanceAway = [event distanceAway];
+  NSString * startTimeString = [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]];
+  if ([event.allDay boolValue]) {
+    startTimeString = @"All Day";
+  }
   if (distanceAway >= 0 && distanceAway < 10000000) {
       cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - %@",
-                                   [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]], 
+                                   startTimeString, 
                     [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]];
   } else {
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - Unknown Location", [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]]];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ - Unknown Location", startTimeString];
   }
   
 	
