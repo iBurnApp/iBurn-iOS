@@ -91,6 +91,7 @@
     [self addEventToHash:event];
   }
   event.allDay = B([[self nullOrObject:[dict objectForKey:@"all_day"]] boolValue]);
+ 
   NSDictionary* hostDict =  (NSDictionary*)[self nullOrObject:[dict objectForKey:@"hosted_by_camp"]];
   if (!hostDict) return;
   event.campHost = [hostDict objectForKey:@"name"];

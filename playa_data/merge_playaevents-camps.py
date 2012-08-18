@@ -42,33 +42,28 @@ if scraper_file:
                     if match > max_match:
                         max_match = match
                         max_match_playa_camp_index = index
-            #print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
+            matchDict = None
             if max_match > MATCH_THRESHOLD:
-                # Match found. Merge scraper data into playa data
-                if 'description' in scraper_camp:
-                    playa_json[max_match_playa_camp_index]['description'] = scraper_camp['description']
-                if 'contact' in scraper_camp:
-                    playa_json[max_match_playa_camp_index]['contact_email'] = scraper_camp['contact']
-                if 'hometown' in scraper_camp:
-                    playa_json[max_match_playa_camp_index]['hometown'] = scraper_camp['hometown']
-                if 'url' in scraper_camp:
-                    playa_json[max_match_playa_camp_index]['url'] = scraper_camp['url']
+                matchDict = playa_json[max_match_playa_camp_index]
             else:
-                # Scoop the useful fields out of the scraper entry
-                # formatting them like the playaevents list
-                new_entry = {}
-                new_entry['name'] = scraper_camp['name']
-                if 'description' in scraper_camp:
-                    new_entry['description'] = scraper_camp['description']
-                if 'contact' in scraper_camp:
-                    new_entry['contact_email'] = scraper_camp['contact']
-                if 'hometown' in scraper_camp:
-                    new_entry['hometown'] = scraper_camp['hometown']
-                if 'url' in scraper_camp:
-                    new_entry['url'] = scraper_camp['url']
-                # Add scraper data entry into playa data
-                playa_json.append(new_entry)
-                print "merged scraper entry: " + str(scraper_camp['name'])
+              #print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
+              
+              matchDict = {}
+              matchDict['name'] = scraper_camp['name']
+              playa_json.append(matchDict)
+                
+            if 'description' in scraper_camp:
+                matchDict['description'] = scraper_camp['description']
+            if 'contact' in scraper_camp:
+                matchDict['contact_email'] = scraper_camp['contact']
+            if 'hometown' in scraper_camp:
+                matchDict['hometown'] = scraper_camp['hometown']
+            if 'url' in scraper_camp:
+                matchDict['url'] = scraper_camp['url']
+            if 'name' in scraper_camp:
+                matchDict['alt_name'] = scraper_camp['name']
+      
+            #print "merged scraper entry: " + str(scraper_camp['name'])
 
 
 # match name fields between entries in two files
@@ -81,7 +76,6 @@ for index, camp in enumerate(playa_json):
                 if match > max_match:
                     max_match = match
                     max_match_location = location
-        #print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
         if max_match > MATCH_THRESHOLD:
             # Match found
             if 'latitude' in max_match_location and max_match_location['latitude'] != "":
@@ -90,7 +84,9 @@ for index, camp in enumerate(playa_json):
             camp['location'] = max_match_location['location']
             camp['matched_name'] = max_match_location['name']
         else:
-            unmatched_camps.append(camp)
+          print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
+          unmatched_camps.append(camp)
+          
     else:
         null_camp_indexes.append(index)
 

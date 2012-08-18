@@ -119,7 +119,7 @@
   // TODO comment out these methods once loaded into final db
   //[campNodeController getNodes];
   //[artNodeController getNodes];
-  //[eventNodeController getNodes];
+  [eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
