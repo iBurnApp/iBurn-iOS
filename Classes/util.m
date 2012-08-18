@@ -144,4 +144,14 @@ RMTile RMTileFromKey(uint64_t tilekey)
   return days;
 }
 
++ (NSArray*) creditsArray {
+  
+  NSData* jsonData = [NSData dataWithContentsOfFile: [[NSBundle mainBundle]pathForResource:@"credits" ofType:@"json"]];
+  JSONDecoder* decoder = [[JSONDecoder alloc]
+                          initWithParseOptions:JKParseOptionNone];
+  NSArray* days = [decoder objectWithData:jsonData];
+  return days;
+}
+
+
 @end

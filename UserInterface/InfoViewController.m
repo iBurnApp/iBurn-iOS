@@ -9,6 +9,7 @@
 #import "InfoViewController.h"
 #import "PageViewer.h"
 #import "iBurnAppDelegate.h"
+#import "ArtInfoViewController.h"
 
 @implementation InfoViewController
 
@@ -139,8 +140,11 @@
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Contact Email"]) {
     NSString *mailString = [NSString stringWithFormat:@"mailto:?to=%@",[cell.textLabel.text stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]];
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:mailString]];
-  } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"] && ![t embargoed]) {
-    [self showOnMap];
+  } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Coordinates"]) {
+    if (![t embargoed] 
+        || [self isKindOfClass:[ArtInfoViewController class]]) {
+      [self showOnMap];      
+    }
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Camp"]) {
     [self showCamp];    
   }

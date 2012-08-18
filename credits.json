@@ -1,0 +1,37 @@
+[
+ {"title":"App Dev",
+ "description": "Chris Ballinger. Check out his encrypted chat app, ChatSecure.",
+ "icon":"chatsecure-icon.png",
+ "url":"http://itunes.apple.com/us/app/chatsecure-encrypted-secure/id464200063?mt=8"
+
+ },
+ {"title":"App Dev",
+ "description": "Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.",
+ "icon":"gaia-icon.png",
+ "url":"http://itunes.apple.com/us/app/gaia-gps-offline-topo-maps/id329127297?mt=8"
+ },
+ {"title":"Map and GIS",
+ "description": "Virgil Zetterlind. Check out his boating app, Marine Charts.",
+ "icon":"earthnc-icon.png",
+ "url": "http://itunes.apple.com/us/app/marine-charts/id386584429?mt=8"
+ },
+ {"title":"App Dev",
+ "description": "David Brodsky.",
+ "url":"http://dbro.pro"
+ },
+ {"title":"App Dev",
+ "description": "David Chiles.",
+ "url":"https://github.com/davidchiles"
+ },
+ {"title":"Data Dev",
+ "description": "Josh Braegger"
+ },
+ {"title":"Artwork",
+ "description": "Andrew Johnstone"
+ },
+ {"title":"Other Contributors",
+ "description": "Rod Garrett, Jeff Johnson, Tom Longson, Mikel Maron",
+ "icon":"iBurn-57.png"
+
+ }
+]
