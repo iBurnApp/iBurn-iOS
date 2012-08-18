@@ -27,7 +27,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"MMM dd, hh:mm a"];
-    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
   }  
   return [formatter stringFromDate:date];
 }
@@ -40,7 +40,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"cccc, MMM dd"];
-    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
   }  
   return [formatter stringFromDate:date];
 }

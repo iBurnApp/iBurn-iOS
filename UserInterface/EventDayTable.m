@@ -240,7 +240,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"hh:mm a"];
-    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
   }
   float distanceAway = [event distanceAway];
   NSString * startTimeString = [formatter stringFromDate:[[events objectAtIndex:indexPath.row]startTime]];

@@ -43,7 +43,7 @@
     enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
     [gpxDateFormatter setLocale:enUSPOSIXLocale];
 	  [gpxDateFormatter setDateFormat:@"yyyy-MM-dd' 'HH:mm:ss"];
-    [gpxDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"PDT"]];
+    [gpxDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
   }
   NSDate* date = [gpxDateFormatter dateFromString:dateString];
   //NSLog(@"%@", date);
