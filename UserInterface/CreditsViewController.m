@@ -9,6 +9,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "PageViewer.h"
 #import "iBurnAppDelegate.h"
+#import "util.h"
 
 @implementation CreditsViewController
 
@@ -27,9 +28,6 @@
 
 	// sorry for this hack :(
 	int height = 22;
-	if ([titleText isEqualToString:@"Data Dev"]) {
-		height = 40;
-	}
 	fr = CGRectMake(10, row*rowHeight + 22 + offset, self.view.frame.size.width-40, height);
 
 	UILabel *textLabel = [[[UILabel alloc]initWithFrame:fr]autorelease];
@@ -78,30 +76,11 @@
 #pragma mark Table view methods
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath {
-	switch (indexPath.row) {
-		case 0:
-			return 80;
-			break;
-		case 1:
-			return 67;
-			break;
-		case 2:
-			return 67;
-			break;
-		case 3:
-			return 43;
-			break;
-		case 4:
-			return 43;
-			break;
-		case 5:
-			return 67;
-			break;
-		default:
-			return 0;
-			break;
-	}
-	
+  NSDictionary *dict = [[util creditsArray]objectAtIndex:indexPath.row];
+  if ([dict objectForKey:@"icon"]) {
+    return 67; 
+  }
+  return 43;	
 }
 
 
@@ -111,7 +90,7 @@
 
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return 7;
+	return [[util creditsArray]count];
 }
 
 
@@ -119,33 +98,17 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   
+  NSDictionary *dict = [[util creditsArray]objectAtIndex:indexPath.row];
+  if(![dict objectForKey:@"url"]) {
+    return;
+  }
+
   if (![t canConnectToInternet]) {
     UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
     [as show];
     return;
   }
-  
-	switch (indexPath.row) {
-		case 1:
-			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/gaia-gps-offline-topo-maps/id329127297?mt=8"]];			
-			break;
-		case 2:
-			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://itunes.apple.com/us/app/marine-charts/id386584429?mt=8"]];
-			break;
-		case 6:
-			[[UIApplication sharedApplication]openURL:[NSURL URLWithString:@"http://www.burnermap.com"]];
-			break;
-		default:
-			break;
-	}
-}
-
-
-- (NSIndexPath*)tableView:(UITableView *)tb willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-  if (indexPath.row == 1 || indexPath.row == 2 || indexPath.row == 3) {
-    return indexPath;
-  }
-  return nil;
+  [[UIApplication sharedApplication]openURL:[NSURL URLWithString:[dict objectForKey:@"url"]]];			
 }
 
 
@@ -155,65 +118,21 @@
 	if (cell == nil) {
 		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
 	}
-	switch (indexPath.row) {
-		case 0:
-			cell.textLabel.text = @"R.I.P. Rod Garrett";
-			cell.detailTextLabel.text = @"BRC City Planner, Designer of the Man, Liberator of Map Data.";
-			cell.detailTextLabel.numberOfLines = 0;
-			cell.imageView .image = [UIImage imageNamed:@"rod_garrett.jpg"];
-			//cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-			break;
-		case 1:
-			cell.textLabel.text = @"App Dev";
-			cell.detailTextLabel.text = @"Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.";
-			cell.detailTextLabel.numberOfLines = 0;
-			cell.imageView .image = [UIImage imageNamed:@"gaia-icon.png"];
-			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-			break;
-		case 2:
-			cell.textLabel.text = @"Cartography";
-			cell.detailTextLabel.text = @"Virgil Zetterlind. Check out his boating app, Marine Charts.";
-			cell.detailTextLabel.numberOfLines = 0;
-			cell.imageView .image = [UIImage imageNamed:@"earthnc-icon.png"];
-			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-			break;
-    case 3:
-			cell.textLabel.text = @"Funding";
-			cell.detailTextLabel.text = @"Andrew Johnstone and TrailBehind, Inc.";
-			break;
-		case 4:
-			cell.textLabel.text = @"Artwork";
-			cell.detailTextLabel.text = @"Kim Rullo and Andrew Johnstone";
-			break;
-		case 5:
-			cell.textLabel.text = @"Data Dev";
-			cell.detailTextLabel.numberOfLines = 0;
-			cell.detailTextLabel.text = @"Josh Braegger, Jeff Johnson, Tom Longson, Mikel Maron";
-			break;
-		default:
-			break;
-	}
+  NSDictionary *dict = [[util creditsArray]objectAtIndex:indexPath.row];
+  cell.textLabel.text = [dict objectForKey:@"title"];
+  cell.detailTextLabel.text = [dict objectForKey:@"description"];
+  cell.detailTextLabel.numberOfLines = 0;
+  if ([dict objectForKey:@"icon"]) {
+    cell.imageView.image = [UIImage imageNamed:[dict objectForKey:@"icon"]];    
+  }
+  if ([dict objectForKey:@"url"]) {
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+  } else {
+    cell.accessoryType = UITableViewCellAccessoryNone;
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+  }
 	return cell;		
 }
 	
-
-- (void)didReceiveMemoryWarning {
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    
-    // Release any cached data, images, etc. that aren't in use.
-}
-
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-}
-
-
-- (void)dealloc {
-    [super dealloc];
-}
-
-
 @end

@@ -61,7 +61,6 @@
 		577775050FCB1D1900E193CA /* PeopleInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 577775030FCB1D1900E193CA /* PeopleInfoViewController.m */; };
 		579582F51040C084007571ED /* EventTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 579582F41040C084007571ED /* EventTableViewController.m */; };
 		579584B51040E287007571ED /* EventInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 579584B41040E287007571ED /* EventInfoViewController.m */; };
-		579704DE0F257F4C0044448D /* TweetComposerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 579704DD0F257F4C0044448D /* TweetComposerViewController.m */; };
 		5797052C0F2637F20044448D /* DQMultipartForm.m in Sources */ = {isa = PBXBuildFile; fileRef = 579705290F2637F20044448D /* DQMultipartForm.m */; };
 		5797052D0F2637F20044448D /* MultipartForm.m in Sources */ = {isa = PBXBuildFile; fileRef = 5797052B0F2637F20044448D /* MultipartForm.m */; };
 		57AD53530F23D0E90061D786 /* dist.plist in Resources */ = {isa = PBXBuildFile; fileRef = 57AD53520F23D0E90061D786 /* dist.plist */; };
@@ -127,7 +126,6 @@
 		57F4726F0F22C49900827FAC /* NSString-SQLitePersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4724A0F22C49900827FAC /* NSString-SQLitePersistence.m */; };
 		57F472700F22C49900827FAC /* NSString-UppercaseFirst.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4724C0F22C49900827FAC /* NSString-UppercaseFirst.m */; };
 		57F472730F22C49900827FAC /* UIImage-SQLitePersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472520F22C49900827FAC /* UIImage-SQLitePersistence.m */; };
-		57F472750F22C49900827FAC /* TweetTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472570F22C49900827FAC /* TweetTableViewController.m */; };
 		57F472760F22C49900827FAC /* CampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F472590F22C49900827FAC /* CampTableViewController.m */; };
 		57F472770F22C49900827FAC /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57F4725B0F22C49900827FAC /* MapViewController.m */; };
 		6301BD6B15DB2F6500152C8D /* tiles in Resources */ = {isa = PBXBuildFile; fileRef = 6301BD6A15DB2F6500152C8D /* tiles */; };
@@ -135,6 +133,8 @@
 		8448741D14034FBD00DBD3A3 /* ContactInfoScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 8448741C14034FBD00DBD3A3 /* ContactInfoScreen.m */; };
 		84487492140358E200DBD3A3 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84487491140358E200DBD3A3 /* routeme.plist */; };
 		84F2D25B15DEFBDA00AC19B5 /* day_array.json in Resources */ = {isa = PBXBuildFile; fileRef = 84F2D25A15DEFBDA00AC19B5 /* day_array.json */; };
+		84F2D25D15DF0D7500AC19B5 /* credits.json in Resources */ = {isa = PBXBuildFile; fileRef = 84F2D25C15DF0D7400AC19B5 /* credits.json */; };
+		84F2D25F15DF134900AC19B5 /* chatsecure-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 84F2D25E15DF134900AC19B5 /* chatsecure-icon.png */; };
 		84FDDB0F15DEEA7E00AF74A1 /* date_strings.json in Resources */ = {isa = PBXBuildFile; fileRef = 84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */; };
 		84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */ = {isa = PBXBuildFile; fileRef = 84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */; };
 		A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F15FB51401BCBB004DCF90 /* SortableTable.m */; };
@@ -332,8 +332,8 @@
 		579582F41040C084007571ED /* EventTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventTableViewController.m; sourceTree = "<group>"; };
 		579584B31040E287007571ED /* EventInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventInfoViewController.h; sourceTree = "<group>"; };
 		579584B41040E287007571ED /* EventInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventInfoViewController.m; sourceTree = "<group>"; };
-		579704DC0F257F4C0044448D /* TweetComposerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TweetComposerViewController.h; sourceTree = "<group>"; };
-		579704DD0F257F4C0044448D /* TweetComposerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TweetComposerViewController.m; sourceTree = "<group>"; };
+		579704DC0F257F4C0044448D /* TweetComposerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TweetComposerViewController.h; path = /Users/admin/Desktop/iBurn/UserInterface/TweetComposerViewController.h; sourceTree = "<absolute>"; };
+		579704DD0F257F4C0044448D /* TweetComposerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TweetComposerViewController.m; path = /Users/admin/Desktop/iBurn/UserInterface/TweetComposerViewController.m; sourceTree = "<absolute>"; };
 		579705280F2637F20044448D /* DQMultipartForm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DQMultipartForm.h; sourceTree = "<group>"; };
 		579705290F2637F20044448D /* DQMultipartForm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DQMultipartForm.m; sourceTree = "<group>"; };
 		5797052A0F2637F20044448D /* MultipartForm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultipartForm.h; sourceTree = "<group>"; };
@@ -429,8 +429,8 @@
 		57F4724C0F22C49900827FAC /* NSString-UppercaseFirst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString-UppercaseFirst.m"; sourceTree = "<group>"; };
 		57F472510F22C49900827FAC /* UIImage-SQLitePersistence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage-SQLitePersistence.h"; sourceTree = "<group>"; };
 		57F472520F22C49900827FAC /* UIImage-SQLitePersistence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage-SQLitePersistence.m"; sourceTree = "<group>"; };
-		57F472560F22C49900827FAC /* TweetTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TweetTableViewController.h; sourceTree = "<group>"; };
-		57F472570F22C49900827FAC /* TweetTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TweetTableViewController.m; sourceTree = "<group>"; };
+		57F472560F22C49900827FAC /* TweetTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TweetTableViewController.h; path = /Users/admin/Desktop/iBurn/UserInterface/TweetTableViewController.h; sourceTree = "<absolute>"; };
+		57F472570F22C49900827FAC /* TweetTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TweetTableViewController.m; path = /Users/admin/Desktop/iBurn/UserInterface/TweetTableViewController.m; sourceTree = "<absolute>"; };
 		57F472580F22C49900827FAC /* CampTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CampTableViewController.h; sourceTree = "<group>"; };
 		57F472590F22C49900827FAC /* CampTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CampTableViewController.m; sourceTree = "<group>"; };
 		57F4725A0F22C49900827FAC /* MapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapViewController.h; sourceTree = "<group>"; };
@@ -444,6 +444,8 @@
 		84487491140358E200DBD3A3 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		84E95D3B14037F5000BE4427 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
 		84F2D25A15DEFBDA00AC19B5 /* day_array.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = day_array.json; sourceTree = "<group>"; };
+		84F2D25C15DF0D7400AC19B5 /* credits.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = credits.json; sourceTree = "<group>"; };
+		84F2D25E15DF134900AC19B5 /* chatsecure-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "chatsecure-icon.png"; sourceTree = "<group>"; };
 		84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = date_strings.json; sourceTree = "<group>"; };
 		84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BurnerMapLogoSquarish.png; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -597,6 +599,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				84F2D25C15DF0D7400AC19B5 /* credits.json */,
 				84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */,
 				84F2D25A15DEFBDA00AC19B5 /* day_array.json */,
 				6301BD6A15DB2F6500152C8D /* tiles */,
@@ -796,6 +799,7 @@
 		57A016350F4965E2004F53D0 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				84F2D25E15DF134900AC19B5 /* chatsecure-icon.png */,
 				84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */,
 				844873EC14034C4300DBD3A3 /* rod_garrett.jpg */,
 				A0F16861140C5EB5004DCF90 /* green-pin-down.png */,
@@ -914,8 +918,6 @@
 				EA3ACD5A120E362600D87967 /* MyCLController.h */,
 				EA3ACD5B120E362600D87967 /* MyCLController.m */,
 				57BFE2EC0FC94E4F0049C315 /* MessageTableViewController.h */,
-				57F472560F22C49900827FAC /* TweetTableViewController.h */,
-				57F472570F22C49900827FAC /* TweetTableViewController.m */,
 				57C8806B0F23846D00B70DB7 /* CampInfoViewController.h */,
 				57C8806C0F23846D00B70DB7 /* CampInfoViewController.m */,
 				57F472580F22C49900827FAC /* CampTableViewController.h */,
@@ -924,8 +926,6 @@
 				57F4725B0F22C49900827FAC /* MapViewController.m */,
 				57F4725C0F22C49900827FAC /* TestViewController.h */,
 				57F4725D0F22C49900827FAC /* TestViewController.m */,
-				579704DC0F257F4C0044448D /* TweetComposerViewController.h */,
-				579704DD0F257F4C0044448D /* TweetComposerViewController.m */,
 				1D3623240D0F684500981E51 /* iBurnAppDelegate.h */,
 				1D3623250D0F684500981E51 /* iBurnAppDelegate.m */,
 				EADDBBBC11D6122B0067BBE4 /* Abstract Classes */,
@@ -1296,6 +1296,8 @@
 				D9F8FA0215DC682C00E9D055 /* iBurn.sqlite in Resources */,
 				84FDDB0F15DEEA7E00AF74A1 /* date_strings.json in Resources */,
 				84F2D25B15DEFBDA00AC19B5 /* day_array.json in Resources */,
+				84F2D25D15DF0D7500AC19B5 /* credits.json in Resources */,
+				84F2D25F15DF134900AC19B5 /* chatsecure-icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1318,7 +1320,6 @@
 				57F4726F0F22C49900827FAC /* NSString-SQLitePersistence.m in Sources */,
 				57F472700F22C49900827FAC /* NSString-UppercaseFirst.m in Sources */,
 				57F472730F22C49900827FAC /* UIImage-SQLitePersistence.m in Sources */,
-				57F472750F22C49900827FAC /* TweetTableViewController.m in Sources */,
 				57F472760F22C49900827FAC /* CampTableViewController.m in Sources */,
 				57F472770F22C49900827FAC /* MapViewController.m in Sources */,
 				57C8806D0F23846D00B70DB7 /* CampInfoViewController.m in Sources */,
@@ -1330,7 +1331,6 @@
 				57B84A640F24339600CA38AA /* KLGridView.m in Sources */,
 				57B84A650F24339600CA38AA /* KLTile.m in Sources */,
 				57B84A660F24339600CA38AA /* THCalendarInfo.m in Sources */,
-				579704DE0F257F4C0044448D /* TweetComposerViewController.m in Sources */,
 				5797052C0F2637F20044448D /* DQMultipartForm.m in Sources */,
 				5797052D0F2637F20044448D /* MultipartForm.m in Sources */,
 				5733584C0F2B80F200712246 /* NSMutableURLRequest+Parameters.m in Sources */,

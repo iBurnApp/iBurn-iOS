@@ -27,7 +27,7 @@ RMTile RMTileFromKey(uint64_t tilekey);
 
 + (NSDictionary*) dayDict;
 + (NSArray*) dayArray;
-
++ (NSArray*) creditsArray;
 
 
 @end
