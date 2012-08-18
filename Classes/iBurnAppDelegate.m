@@ -357,6 +357,9 @@
 }
 
 - (void) liftEmbargo {
+  if (!self.embargoed) {
+    return;
+  }
   self.embargoed = NO;
   NSError *error;
   BOOL succeed = [@"unlocked" writeToFile:[privateDocumentsDirectory() stringByAppendingPathComponent:@"unlocked.txt"]

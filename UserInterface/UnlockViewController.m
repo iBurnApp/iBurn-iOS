@@ -100,7 +100,7 @@
 	
 	UIWebView *infoLabel = [[[UIWebView alloc]initWithFrame:fr]autorelease];
 	infoLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	[infoLabel loadHTMLString:@"The art and camp locations are embargoed until gates open.<BR><BR>At that time, you can access the location data either by being able to connect to our server (it will just work), or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a><p><b>PLEASE NOTE: THE DATA IN THIS APP IS INCOMPLETE AND INACCURATE IN SOME CASES.</b></p>." baseURL:nil];
+	[infoLabel loadHTMLString:@"The camp locations are embargoed until gates open.<BR><BR>The app will unlock when you get to BRC based on GPS, or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a><p><b>PLEASE NOTE: THE DATA IN THIS APP IS INCOMPLETE AND INACCURATE IN SOME CASES.</b></p>." baseURL:nil];
 	infoLabel.delegate = self;
 	[self.view addSubview:infoLabel];
 	

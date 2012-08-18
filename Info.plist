@@ -10,8 +10,6 @@
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
 	<string>iBurn-57.png</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.trailbehind.iBurn2010</string>
 	<key>CFBundleIconFiles</key>
 	<array>
 		<string>iBurn-57.png</string>
@@ -19,6 +17,8 @@
 		<string>iBurn-72.png</string>
 		<string>iBurn-small.png</string>
 	</array>
+	<key>CFBundleIdentifier</key>
+	<string>com.trailbehind.iBurn2010</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -27,29 +27,29 @@
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>2.01</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleUrlName</key>
-			<string>com.pictearth.iburn</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>mobitag</string>
 			</array>
+			<key>CFBundleUrlName</key>
+			<string>com.pictearth.iburn</string>
 		</dict>
 	</array>
+	<key>CFBundleVersion</key>
+	<string>3.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMainNibFile</key>
 	<string>MainWindow</string>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleBlackOpaque</string>
 	<key>NSMainNibFile~ipad</key>
 	<string>MainWindow-iPad</string>
 	<key>UILaunchImageFile~ipad</key>
 	<string>iPadImage.png</string>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleBlackOpaque</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
