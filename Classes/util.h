@@ -15,6 +15,7 @@
 #define metersToFeet(meters) meters > 0?  meters * 3.2808399: 0.0f
 
 RMTile RMTileFromKey(uint64_t tilekey);
+NSString* privateDocumentsDirectory();
 
 @interface util : NSObject {
 
@@ -28,6 +29,7 @@ RMTile RMTileFromKey(uint64_t tilekey);
 + (NSDictionary*) dayDict;
 + (NSArray*) dayArray;
 + (NSArray*) creditsArray;
++ (void) checkDirectory:(NSString*) filePath;
 
 
 @end

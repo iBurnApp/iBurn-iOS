@@ -32,6 +32,7 @@
 #import "UnlockViewController.h"
 #import "ASIHTTPRequest.h"
 #import "JSONKit.h"
+#import "util.h"
 
 //#import <JSON/JSON.h>
 //#import <JSON/SBJSON.h>
@@ -280,12 +281,13 @@
   }
 }
 
+
 - (void) checkAndCreateDatabase {
   NSString* defaultDBName =  @"iBurn.sqlite";
   
 
   NSFileManager *fileManager = [NSFileManager defaultManager];
-  NSString* dbPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent: DATABASE_NAME];
+  NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [fileManager fileExistsAtPath:dbPath];
   
   // If the database already exists then return without doing anything
@@ -304,7 +306,7 @@
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
 	[self checkAndCreateDatabase];
-	NSURL *storeURL = [NSURL fileURLWithPath: [[self applicationDocumentsDirectory] stringByAppendingPathComponent: DATABASE_NAME]];
+	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
 	NSPersistentStoreCoordinator* psc = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]] autorelease];
@@ -356,10 +358,8 @@
 
 - (void) liftEmbargo {
   self.embargoed = NO;
-  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
-  NSString *documentsDirectory = [paths objectAtIndex:0];   
   NSError *error;
-  BOOL succeed = [@"unlocked" writeToFile:[documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"]
+  BOOL succeed = [@"unlocked" writeToFile:[privateDocumentsDirectory() stringByAppendingPathComponent:@"unlocked.txt"]
                             atomically:YES encoding:NSUTF8StringEncoding error:&error];
   if (!succeed){
     // Handle error here
