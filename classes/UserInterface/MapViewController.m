@@ -16,7 +16,9 @@
 #import "iBurnAppDelegate.h"
 #import "MapViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import <RMAnnotation.h>
 #import <RMMapBoxSource.h>
+#import <RMMarker.h>
 #import <RMMBTilesSource.h>
 #import <RMMapView.h>
 #import "ThemeCamp.h"
@@ -32,12 +34,29 @@
 }
 
 #warning mapbox
-/*
+
+
+-(RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+  NSLog(@"Marker is called!"); //Is not outputted so this method is never called.
+  RMMarker *marker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"map_button.png"]];
+  return marker;
+}
+
  - (void) showMapForObject:(id)obj {
  CLLocationCoordinate2D point;
  point.latitude = [[obj latitude] floatValue]; //Center of 2009 City
  point.longitude = [[obj longitude] floatValue];
- GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
+   
+   RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
+                                                        coordinate:point
+                                                          andTitle:@"Map Point!"];
+   newMarker.
+   [mapView addAnnotation:annotation01];
+   
+ RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
+  newMa
+   
+   
  [newMarker changeLabelUsingText:[obj name]
  font:[UIFont boldSystemFontOfSize:12.0]
  foregroundColor:[UIColor blueColor]
@@ -53,7 +72,7 @@
  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
  [gaiaMarkerManager showMarkersOnScreen];
  }
- */
+ 
 - (NSArray*) getAllObjects:(NSString*) objType {
   NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
