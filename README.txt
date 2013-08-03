@@ -8,4 +8,8 @@
  
  * pod install
 
+ * open iBurn.xcworkspace
+
+ * add libProj4.a to the MapBox pod, because of a bug
+
  
