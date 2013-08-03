@@ -12,9 +12,8 @@
 #import "InfoViewController.h"
 
 @interface MapViewController : UIViewController <RMMapViewDelegate, MyCLControllerDelegate> {
-	IBOutlet RMMapView * mapView;
+	RMMapView * mapView;
 	BOOL tap;
-	NSInteger tapCount;
 	BOOL isCurrentlyUpdating;
 	BOOL firstUpdate;		
 	UISegmentedControl *locationButton;

@@ -23,7 +23,6 @@
 		4933575117AD9C0E0014C2C2 /* ArtInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D0217AD9C060014C2C2 /* ArtInfoViewController.m */; };
 		4933575217AD9C0E0014C2C2 /* ArtNodeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D0417AD9C060014C2C2 /* ArtNodeController.m */; };
 		4933575317AD9C0E0014C2C2 /* ArtTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D0617AD9C060014C2C2 /* ArtTableViewController.m */; };
-		4933575417AD9C0E0014C2C2 /* BurnMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D0817AD9C060014C2C2 /* BurnMapView.m */; };
 		4933575617AD9C0E0014C2C2 /* CampInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D0C17AD9C060014C2C2 /* CampInfoViewController.m */; };
 		4933575717AD9C0E0014C2C2 /* CampNodeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D0E17AD9C060014C2C2 /* CampNodeController.m */; };
 		4933575817AD9C0E0014C2C2 /* CampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334D1017AD9C060014C2C2 /* CampTableViewController.m */; };
@@ -87,7 +86,6 @@
 		4933610617AD9C0E0014C2C2 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4933573C17AD9C0E0014C2C2 /* rod_garrett.jpg */; };
 		4933610717AD9C0E0014C2C2 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573D17AD9C0E0014C2C2 /* MainWindow-iPad.xib */; };
 		4933610817AD9C0E0014C2C2 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573E17AD9C0E0014C2C2 /* MainWindow.xib */; };
-		495E753417AD8EC500419C43 /* Pods.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1794D3F212054D21BCF52B79 /* Pods.xcconfig */; };
 		5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415D17ADB7370070BBAB /* art_data_and_locations.json */; };
 		5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */; };
 		5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415F17ADB7370070BBAB /* event_data_and_locations.json */; };
@@ -135,10 +133,6 @@
 		49334D0417AD9C060014C2C2 /* ArtNodeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtNodeController.m; sourceTree = "<group>"; };
 		49334D0517AD9C060014C2C2 /* ArtTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtTableViewController.h; sourceTree = "<group>"; };
 		49334D0617AD9C060014C2C2 /* ArtTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtTableViewController.m; sourceTree = "<group>"; };
-		49334D0717AD9C060014C2C2 /* BurnMapView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnMapView.h; sourceTree = "<group>"; };
-		49334D0817AD9C060014C2C2 /* BurnMapView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BurnMapView.m; sourceTree = "<group>"; };
-		49334D0917AD9C060014C2C2 /* BurnTileSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnTileSource.h; sourceTree = "<group>"; };
-		49334D0A17AD9C060014C2C2 /* BurnTileSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BurnTileSource.m; sourceTree = "<group>"; };
 		49334D0B17AD9C060014C2C2 /* CampInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CampInfoViewController.h; sourceTree = "<group>"; };
 		49334D0C17AD9C060014C2C2 /* CampInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CampInfoViewController.m; sourceTree = "<group>"; };
 		49334D0D17AD9C060014C2C2 /* CampNodeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CampNodeController.h; sourceTree = "<group>"; };
@@ -171,7 +165,7 @@
 		49334D2917AD9C060014C2C2 /* UnlockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnlockViewController.m; sourceTree = "<group>"; };
 		49334D2A17AD9C060014C2C2 /* XMLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLTableViewController.h; sourceTree = "<group>"; };
 		49334D2B17AD9C060014C2C2 /* XMLTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLTableViewController.m; sourceTree = "<group>"; };
-		49334D2C17AD9C060014C2C2 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+		49334D2C17AD9C060014C2C2 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = classes/util.h; sourceTree = "<group>"; };
 		49334D2D17AD9C060014C2C2 /* util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = util.m; sourceTree = "<group>"; };
 		49334D3017AD9C060014C2C2 /* CDataScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner.h; sourceTree = "<group>"; };
 		49334D3117AD9C060014C2C2 /* CDataScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner.m; sourceTree = "<group>"; };
@@ -292,6 +286,7 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				1794D3F212054D21BCF52B79 /* Pods.xcconfig */,
+				49334D2C17AD9C060014C2C2 /* util.h */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -325,7 +320,6 @@
 				49334CE617AD9C060014C2C2 /* DataObjects */,
 				49334CF717AD9C060014C2C2 /* iBurnAppDelegate.h */,
 				49334CF817AD9C060014C2C2 /* iBurnAppDelegate.m */,
-				49334D2C17AD9C060014C2C2 /* util.h */,
 				49334D2D17AD9C060014C2C2 /* util.m */,
 				49334CF917AD9C060014C2C2 /* main.m */,
 			);
@@ -351,10 +345,11 @@
 		49334D0017AD9C060014C2C2 /* UserInterface */ = {
 			isa = PBXGroup;
 			children = (
+				49334D2117AD9C060014C2C2 /* MapViewController.h */,
+				49334D2217AD9C060014C2C2 /* MapViewController.m */,
 				49334CFC17AD9C060014C2C2 /* RotatingTabBarController.h */,
 				49334CFD17AD9C060014C2C2 /* RotatingTabBarController.m */,
 				4933610E17AD9C680014C2C2 /* art */,
-				4933611317AD9CB30014C2C2 /* map */,
 				4933610F17AD9C6F0014C2C2 /* camps */,
 				4933611217AD9C9D0014C2C2 /* other views */,
 				4933611117AD9C8B0014C2C2 /* abstract classes */,
@@ -543,19 +538,6 @@
 			name = "other views";
 			sourceTree = "<group>";
 		};
-		4933611317AD9CB30014C2C2 /* map */ = {
-			isa = PBXGroup;
-			children = (
-				49334D0717AD9C060014C2C2 /* BurnMapView.h */,
-				49334D0817AD9C060014C2C2 /* BurnMapView.m */,
-				49334D0917AD9C060014C2C2 /* BurnTileSource.h */,
-				49334D0A17AD9C060014C2C2 /* BurnTileSource.m */,
-				49334D2117AD9C060014C2C2 /* MapViewController.h */,
-				49334D2217AD9C060014C2C2 /* MapViewController.m */,
-			);
-			name = map;
-			sourceTree = "<group>";
-		};
 		4933611417AD9CD90014C2C2 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -727,7 +709,6 @@
 				4933575117AD9C0E0014C2C2 /* ArtInfoViewController.m in Sources */,
 				4933575217AD9C0E0014C2C2 /* ArtNodeController.m in Sources */,
 				4933575317AD9C0E0014C2C2 /* ArtTableViewController.m in Sources */,
-				4933575417AD9C0E0014C2C2 /* BurnMapView.m in Sources */,
 				4933575617AD9C0E0014C2C2 /* CampInfoViewController.m in Sources */,
 				4933575717AD9C0E0014C2C2 /* CampNodeController.m in Sources */,
 				4933575817AD9C0E0014C2C2 /* CampTableViewController.m in Sources */,

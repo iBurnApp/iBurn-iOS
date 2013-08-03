@@ -20,5 +20,11 @@
 }  
 
 
+- (BOOL)shouldAutorotate {
+  return [self shouldAutorotateToInterfaceOrientation:UIDeviceOrientationPortrait];
+}
+
+
+
 @end
  

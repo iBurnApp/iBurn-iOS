@@ -6,21 +6,19 @@
 //  Copyright Burning Man Earth 2009. All rights reserved.
 //
 
+#import "ArtNodeController.h"
+#import "ArtTableViewController.h"
+#import <ASIHTTPRequest.h>
+#import "CampTableViewController.h"
+#import "EventNodeController.h"
+#import "EventTableViewController.h"
 #import "iBurnAppDelegate.h"
 #import "MapViewController.h"
-#import "CampTableViewController.h"
-#import "ArtTableViewController.h"
-#import "EventTableViewController.h"
-#import "ThemeCamp.h"
-// #import "BurnTileSource.h"
-#import "ArtNodeController.h"
-#import "EventNodeController.h"
+#import <Reachability.h>
 #import "RotatingTabBarController.h"
-#import <CommonCrypto/CommonDigest.h>
+#import "ThemeCamp.h"
 #import "UnlockViewController.h"
 #import "util.h"
-#import <Reachability.h>
-#import <ASIHTTPRequest.h>
 
 
 #define DATABASE_NAME @"iBurn2012.sqlite"
@@ -111,9 +109,7 @@ void printTimer(NSString* name) {
   tabBarController.viewControllers = controllers;
   tabBarController.delegate = self;
   //[self testOAuthAccessProtected];
-  [window addSubview:tabBarController.view];
-  [window makeKeyAndVisible];
-  //[self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
+  window.rootViewController = tabBarController;
   
   self.artNodeController = [[ArtNodeController alloc]init];
   self.artNodeController.delegate = (ArtTableViewController*)[[tabBarController.viewControllers objectAtIndex:1]visibleViewController];
@@ -405,8 +401,6 @@ void printTimer(NSString* name) {
 - (NSString *)applicationDocumentsDirectory {
 	return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
 }
-
-
 
 
 @end
