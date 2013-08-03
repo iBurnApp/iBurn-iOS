@@ -32,12 +32,8 @@
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *artArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
   //CLLocationCoordinate2D dummy = {0,0};
-  NSArray *knownArts = [self getAllArt];
   
-  [self createAndUpdate:knownArts
-            withObjects:artArray 
-           forClassName:@"ArtInstall"
-							 fromFile:YES];
+  [self createAndUpdate:artArray];
 }
 
 
@@ -49,22 +45,24 @@
 }
 
 
-- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
-  ArtInstall *camp = (ArtInstall*)object;
-  
+- (void) createObjectFromDict:(NSDictionary*)dict {
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSManagedObjectContext *moc = [t managedObjectContext];
+  ArtInstall *artInstall = [NSEntityDescription insertNewObjectForEntityForName:@"ArtInstall"
+                                                  inManagedObjectContext:moc];
   if ([dict objectForKey:@"latitude"]) {
-    camp.latitude = [dict objectForKey:@"latitude"];
-    camp.longitude = [dict objectForKey:@"longitude"];
+    artInstall.latitude = [dict objectForKey:@"latitude"];
+    artInstall.longitude = [dict objectForKey:@"longitude"];
   }
   
-  camp.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
+  artInstall.bm_id = N([(NSString*)[self nullOrObject:[dict objectForKey:@"id"]] intValue]);
   
-  camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
-  camp.artist = [self nullStringOrString:[dict objectForKey:@"artist"]];
-  camp.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
-  camp.url = [self nullStringOrString:[dict objectForKey:@"url"]];
-  camp.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
-  camp.artistHometown = [self nullStringOrString:[dict objectForKey:@"artist_location"]];
+  artInstall.name = [self nullStringOrString:[dict objectForKey:@"name"]];
+  artInstall.artist = [self nullStringOrString:[dict objectForKey:@"artist"]];
+  artInstall.desc = [self nullStringOrString:[dict objectForKey:@"description"]];
+  artInstall.url = [self nullStringOrString:[dict objectForKey:@"url"]];
+  artInstall.contactEmail = [self nullStringOrString:[dict objectForKey:@"contact_email"]];
+  artInstall.artistHometown = [self nullStringOrString:[dict objectForKey:@"artist_location"]];
 	
 	
 	// camp.location = [dict objectForKey:@"artist_location"];
