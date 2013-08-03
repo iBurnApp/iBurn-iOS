@@ -40,7 +40,9 @@
 - (NSDictionary*) getLocationDictionary:(NSDictionary*) dict;
 - (void) saveObjects:(NSArray*)objects;
 - (void) updateObject:(id)object withDict:(NSDictionary*)dict;
-  
+- (void) importDataFromFile:(NSString*)filename;
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict;
+
 @property (nonatomic, strong) NSArray *nodes;
 @property (nonatomic, unsafe_unretained) id<NodeFetchDelegate> delegate;
 

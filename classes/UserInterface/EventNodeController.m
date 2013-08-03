@@ -105,35 +105,26 @@
   event.camp_id = N([[hostDict objectForKey:@"id"] intValue]);
 }
 
-
-- (void) getNodesFromJson:(NSObject*) jsonNodes {
-  //NSLog(@"%@", jsonNodes);
-  NSLog(@"parsing events");
-  NSMutableArray* arts = [NSMutableArray arrayWithArray:(NSArray*)jsonNodes];
-  NSSortDescriptor *lastDescriptor =
-  [[NSSortDescriptor alloc] initWithKey:@"start_time"
-                               ascending:YES
-                                selector:@selector(compare:)];
-  NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
-  NSArray *sortedArray = [arts sortedArrayUsingDescriptors:descriptors];
-  CLLocationCoordinate2D dummy = {0,0};
-  NSArray *events = [self getObjectsForType:@"Event" 
-                                         names:[self getNamesFromDicts:sortedArray] 
-                                     upperLeft:dummy 
-                                    lowerRight:dummy];
-  [self createAndUpdate:events
-            withObjects:sortedArray 
-           forClassName:@"Event"];
-  /*
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"event_data_and_locations" ofType:@"json"];
+- (void) importDataFromFile:(NSString*)filename {
+	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
 	NSData *fileData = [NSData dataWithContentsOfFile:path];
 	NSArray *eventArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
- 
-  [self createAndUpdate:events
-            withObjects:eventArray
-           forClassName:@"Event"];
-   */
+  
+    NSSortDescriptor *lastDescriptor =
+    [[NSSortDescriptor alloc] initWithKey:@"start_time"
+                                ascending:YES
+                                 selector:@selector(compare:)];
+  
+    NSArray *sortedArray = [eventArray sortedArrayUsingDescriptors:@[lastDescriptor]];
+
+    
+    [self createAndUpdate:nil
+              withObjects:eventArray
+             forClassName:@"Event"
+                 fromFile:YES];
 }
+
+
 
 - (NSArray*) getNamesFromDicts:(NSArray*)dicts {
   NSMutableArray *names = [[NSMutableArray alloc] init];
@@ -144,43 +135,30 @@
 }  
 
 
-- (void) createAndUpdate:(NSArray*)knownObjects 
-             withObjects:(NSArray*)objects 
+- (void) createAndUpdate:(NSArray*)knownObjects
+             withObjects:(NSArray*)objects
             forClassName:(NSString*)className {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
-  //[self.eventDateHash removeAllObjects];
+  
+  [self.eventDateHash removeAllObjects];
   for (NSDictionary *dict in objects) {
-    id matchedCamp = nil;
-    if (knownObjects && [knownObjects isKindOfClass:[NSArray class]]) {
-      for (id c in knownObjects) {
-        if ([c respondsToSelector:@selector(bm_id)]) {
-          if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]) {
-            matchedCamp = c;
-            break;
-          }
-        }
+    
+    Event * event = [NSEntityDescription insertNewObjectForEntityForName:className
+                                                  inManagedObjectContext:moc];
+    [self updateObject:event withDict:dict occurenceIndex:0];
+    NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
+    if (occurrenceSet && [occurrenceSet count] > 0) {
+      for (int i = 1; i < [occurrenceSet count]; i++) {
+        event = [NSEntityDescription insertNewObjectForEntityForName:className
+                                              inManagedObjectContext:moc];
+        [self updateObject:event withDict:dict occurenceIndex:i];
       }
-    }
-    if (!matchedCamp) {
-      matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
-                                                  inManagedObjectContext:moc]; 
-      [self updateObject:matchedCamp withDict:dict occurenceIndex:0];
-      NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
-      if (occurrenceSet && [occurrenceSet count] > 0) {
-        for (int i = 1; i < [occurrenceSet count]; i++) {
-          matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
-                                                      inManagedObjectContext:moc]; 
-          [self updateObject:matchedCamp withDict:dict occurenceIndex:i];
-        }
-      }
-           
-    } else { 
-      [self updateObject:matchedCamp withDict:dict];
     }
   }
+  
   [self saveObjects:knownObjects];
-}  
+}
 
 
 - (void) loadDBEvents {
