@@ -11,7 +11,6 @@
 #import "iBurnAppDelegate.h"
 #import "util.h"
 #import "CJSONDeserializer.h"
-#import "JSONKit.h"
 
 @implementation CampNodeController
 

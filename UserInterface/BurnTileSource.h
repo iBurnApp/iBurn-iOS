@@ -7,10 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RMAbstractMercatorWebSource.h"
 
 
-@interface BurnTileSource : RMAbstractMercatorWebSource <RMAbstractMercatorWebSource> {
+@interface BurnTileSource : NSObject <NSObject> {
   NSString* uniqueTilecacheKey;
   NSString* shortName;
   NSString* longDescription;

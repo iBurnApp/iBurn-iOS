@@ -6,7 +6,7 @@
 //  Copyright 2010 __MyCompanyName__. All rights reserved.
 //
 
-#import "BurnTileSource.h"
+// #import "BurnTileSource.h"
 #import "util.h"
 
 @implementation BurnTileSource
@@ -23,7 +23,6 @@
       .southwest = {.latitude = 40.759210, .longitude = -119.23454}});
     //bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 46.816, .longitude = -92.0}, 
     //  .southwest = {.latitude = 35.700, .longitude = -125.156}});
-     
     sourceMinZoom = 8;
     self.uniqueTilecacheKey = @"iBurn";
     self.shortName = @"iBurn";

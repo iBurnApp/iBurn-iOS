@@ -65,8 +65,8 @@
   point.longitude = [camp.longitude floatValue];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   RMMapView* mapView = (RMMapView*)[[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController] view]; 
-  [mapView moveToLatLong:point];                
-  [[mapView contents] setZoom:16.0];
+  //[mapView moveToLatLong:point];
+  //[[mapView contents] setZoom:16.0];
   [[t tabBarController]setSelectedIndex:0];
 }
 

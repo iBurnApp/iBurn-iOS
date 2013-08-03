@@ -18,24 +18,25 @@ static MyCLController *sharedCLDelegate = nil;
 	return self;
 }
 
-
-BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, RMLatLong point) {
+#warning mapbox
+/*BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, RMLatLong point) {
   return (rect.northeast.latitude > point.latitude && rect.southwest.latitude < point.latitude &&
           rect.northeast.longitude > point.longitude && rect.southwest.longitude < point.longitude);
-}
+}*/
 
+#warning mapbox
 // Called when the location is updated
 - (void)locationManager:(CLLocationManager *)manager
 	didUpdateToLocation:(CLLocation *)newLocation
 		   fromLocation:(CLLocation *)oldLocation {
 	[self.delegate newLocationUpdate:newLocation];
-  RMSphericalTrapezium bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 40.802822, .longitude = -119.172673}, 
+  /*RMSphericalTrapezium bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 40.802822, .longitude = -119.172673},
     .southwest = {.latitude = 40.759210, .longitude = -119.23454}});
 
   if (sphericalTrapeziumContainsPoint(bounds, newLocation.coordinate)) {
     iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     [t liftEmbargo];
-  }
+  }*/
     
 }
 

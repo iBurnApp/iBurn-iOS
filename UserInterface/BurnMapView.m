@@ -6,21 +6,9 @@
 
 
 #import "BurnMapView.h"
-#import "GaiaMarkerManager.h"
-#import "RMMapContents.h"
 
-@implementation BurnMapView 
+@implementation BurnMapView
 
-
-- (RMMapContents *)contents {
-  if (![self isContentsSet]) {
-    [super contents];
-    contents.markerManager = [[GaiaMarkerManager alloc] initWithContents:contents];
-    [(GaiaMarkerManager*)contents.markerManager setShowLabels:NO];
-    [(GaiaMarkerManager*)contents.markerManager setHideUserMarkers:YES];
- 	}
-	return contents; 
-}
 
 
 @end

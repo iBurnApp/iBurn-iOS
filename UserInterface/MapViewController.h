@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "RMMapView.h"
+#import <RMMapView.h>
 #import "MyCLController.h"
 #import "InfoViewController.h"
 
@@ -18,7 +18,7 @@
 	BOOL isCurrentlyUpdating;
 	BOOL firstUpdate;		
 	UISegmentedControl *locationButton;
-	RMMarkerManager *markerManager;
+	//RMMarkerManager *markerManager;
 	RMMarker *currentLocationMarker;
   InfoViewController *detailView;
   float lastFetchedZoom;

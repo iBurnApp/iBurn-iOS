@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ASIHTTPRequest.h"
+#import <ASIHTTPRequest.h>
 
 @interface PageViewer : UIViewController <UIWebViewDelegate>{
 	UIWebView *page;

@@ -12,17 +12,15 @@
 #import "ArtTableViewController.h"
 #import "EventTableViewController.h"
 #import "ThemeCamp.h"
-#import "MapDownloader.h"
-#import "BurnTileSource.h"
-#import "Reachability.h"
+// #import "BurnTileSource.h"
 #import "ArtNodeController.h"
 #import "EventNodeController.h"
 #import "RotatingTabBarController.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "UnlockViewController.h"
-#import "ASIHTTPRequest.h"
-#import "JSONKit.h"
 #import "util.h"
+#import <Reachability.h>
+#import <ASIHTTPRequest.h>
 
 
 #define DATABASE_NAME @"iBurn2012.sqlite"
@@ -123,7 +121,8 @@
 
 
 - (void) downloadMaps:(BOOL) refreshTiles {
-  // Check internet connection
+#warning use mbtiles instead
+  /*  // Check internet connection
   BurnTileSource *bts = [[BurnTileSource alloc] init];
   if (![self canConnectToInternet]) {
     NSFileManager *NSFm= [NSFileManager defaultManager]; 
@@ -138,12 +137,16 @@
       return;
     }
   }
-  
+  */
   MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
+  
+#warning use mbtiles instead
+  /*
   MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView];
   [self setViewForDownloading];
   dl.refreshTiles = refreshTiles;
   [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
+   */
 }
 
 
@@ -162,7 +165,7 @@
 - (void)postLaunch {
 	if (!launchDefault) return;
   //reachability = [[Reachability reachabilityWithHostName:@"earthdev.burningman.com"] retain];
-  reachability = [Reachability reachabilityWithHostName:@"www.gaiagps.com"];
+  reachability = [Reachability reachabilityWithHostname:@"www.gaiagps.com"];
   
 	[reachability startNotifier];
   [self canConnectToInternet];
