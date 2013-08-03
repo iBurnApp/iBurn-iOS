@@ -50,11 +50,11 @@
    RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
                                                         coordinate:point
                                                           andTitle:@"Map Point!"];
-   newMarker.
-   [mapView addAnnotation:annotation01];
+   //newMarker.
+   //[mapView addAnnotation:annotation01];
    
  RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
-  newMa
+  //newMa
    
    
  [newMarker changeLabelUsingText:[obj name]
@@ -63,14 +63,14 @@
  backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
  newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
  newMarker.label.frame.size.width, newMarker.label.frame.size.height);
- newMarker.data = obj;
+/* newMarker.data = obj;
  newMarker.zoom = 1;
  [mapView.contents.markerManager addMarker:newMarker AtLatLong:point];
  [mapView moveToLatLong:point];
  [[mapView contents] setZoom:16.0];
  
  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
- [gaiaMarkerManager showMarkersOnScreen];
+ [gaiaMarkerManager showMarkersOnScreen];*/
  }
  
 - (NSArray*) getAllObjects:(NSString*) objType {
