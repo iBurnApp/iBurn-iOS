@@ -34,10 +34,7 @@
 	//NSLog(@"The camp array is %@", campArray);
   //CLLocationCoordinate2D dummy = {0,0};
   
-  [self createAndUpdate:nil
-            withObjects:campArray 
-           forClassName:@"ThemeCamp"
-							 fromFile:YES];
+  [self createAndUpdate:campArray];
 }
 
 
@@ -46,8 +43,12 @@
 }
 
 
-- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict {
-  ThemeCamp *camp = (ThemeCamp*)object;
+- (void) createObjectFromDict:(NSDictionary*)dict {
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSManagedObjectContext *moc = [t managedObjectContext];
+  ThemeCamp *camp = [NSEntityDescription insertNewObjectForEntityForName:@"ThemeCamp"
+                                              inManagedObjectContext:moc];
+  
   if ([dict objectForKey:@"name"]) {
     camp.name = [self nullStringOrString:[dict objectForKey:@"name"]];
 	} else {

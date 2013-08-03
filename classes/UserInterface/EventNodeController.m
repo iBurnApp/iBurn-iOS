@@ -118,10 +118,7 @@
     NSArray *sortedArray = [eventArray sortedArrayUsingDescriptors:@[lastDescriptor]];
 
     
-    [self createAndUpdate:nil
-              withObjects:eventArray
-             forClassName:@"Event"
-                 fromFile:YES];
+    [self createAndUpdate:eventArray];
 }
 
 
@@ -135,29 +132,27 @@
 }  
 
 
-- (void) createAndUpdate:(NSArray*)knownObjects
-             withObjects:(NSArray*)objects
-            forClassName:(NSString*)className {
+- (void) createAndUpdate:objects {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   
   [self.eventDateHash removeAllObjects];
   for (NSDictionary *dict in objects) {
     
-    Event * event = [NSEntityDescription insertNewObjectForEntityForName:className
+    Event * event = [NSEntityDescription insertNewObjectForEntityForName:@"Event"
                                                   inManagedObjectContext:moc];
     [self updateObject:event withDict:dict occurenceIndex:0];
     NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
     if (occurrenceSet && [occurrenceSet count] > 0) {
       for (int i = 1; i < [occurrenceSet count]; i++) {
-        event = [NSEntityDescription insertNewObjectForEntityForName:className
+        event = [NSEntityDescription insertNewObjectForEntityForName:@"Event"
                                               inManagedObjectContext:moc];
         [self updateObject:event withDict:dict occurenceIndex:i];
       }
     }
   }
   
-  [self saveObjects:knownObjects];
+  [self saveObjects:nil];
 }
 
 
