@@ -9,7 +9,6 @@
 #import "ArtInfoViewController.h"
 #import "ArtInstall.h"
 #import <ASIFormDataRequest.h>
-#import "BurnMapView.h"
 #import "CampInfoViewController.h"
 #import "Event.h"
 #import "EventInfoViewController.h"
@@ -38,41 +37,22 @@
 
 -(RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
   NSLog(@"Marker is called!"); //Is not outputted so this method is never called.
-  RMMarker *marker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"map_button.png"]];
+  RMMarker *marker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
   return marker;
 }
 
- - (void) showMapForObject:(id)obj {
- CLLocationCoordinate2D point;
- point.latitude = [[obj latitude] floatValue]; //Center of 2009 City
- point.longitude = [[obj longitude] floatValue];
-   
-   RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                        coordinate:point
-                                                          andTitle:@"Map Point!"];
-   //newMarker.
-   //[mapView addAnnotation:annotation01];
-   
- RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
-  //newMa
-   
-   
- [newMarker changeLabelUsingText:[obj name]
- font:[UIFont boldSystemFontOfSize:12.0]
- foregroundColor:[UIColor blueColor]
- backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
- newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
- newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-/* newMarker.data = obj;
- newMarker.zoom = 1;
- [mapView.contents.markerManager addMarker:newMarker AtLatLong:point];
- [mapView moveToLatLong:point];
- [[mapView contents] setZoom:16.0];
- 
- GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
- [gaiaMarkerManager showMarkersOnScreen];*/
- }
- 
+
+- (void) showMapForObject:(id)obj {
+  CLLocationCoordinate2D point;
+  point.latitude = [[obj latitude] floatValue];
+  point.longitude = [[obj longitude] floatValue];
+  RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
+                                                       coordinate:point
+                                                         andTitle:[obj name]];
+  [mapView addAnnotation:annotation];
+}
+
+
 - (NSArray*) getAllObjects:(NSString*) objType {
   NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -437,7 +417,6 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-	tap = YES;
 	[mapView setDelegate:self];
 	[MyCLController sharedInstance].delegate = self;
   if (![MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
@@ -473,16 +452,6 @@
     lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
     [self.view addSubview:lbl];
   }
-}
-
-
-- (void) viewDidAppear:(BOOL)animated {
-  
-  [super viewDidAppear:animated];
-  if (tap) {
-    [self home:nil];
-  }
-  tap = NO;
 }
 
 
@@ -524,6 +493,11 @@
 }
 
 
+- (BOOL)shouldAutorotate {
+  return [self shouldAutorotateToInterfaceOrientation:UIDeviceOrientationPortrait];
+}
+
+
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -535,6 +509,8 @@
   [self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];
 }
+
+
 
 
 @end

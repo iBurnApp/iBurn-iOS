@@ -78,9 +78,7 @@
   tabBarController.viewControllers = controllers;
   tabBarController.delegate = self;
   //[self testOAuthAccessProtected];
-  [window addSubview:tabBarController.view];
-  [window makeKeyAndVisible];
-  //[self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
+  window.rootViewController = tabBarController;
   
   self.artNodeController = [[ArtNodeController alloc]init];
   self.artNodeController.delegate = (ArtTableViewController*)[[tabBarController.viewControllers objectAtIndex:1]visibleViewController];
@@ -397,8 +395,6 @@
 - (NSString *)applicationDocumentsDirectory {
 	return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
 }
-
-
 
 
 @end
