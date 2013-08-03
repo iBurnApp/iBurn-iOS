@@ -95,7 +95,6 @@
 		84F2D25F15DF134900AC19B5 /* chatsecure-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 84F2D25E15DF134900AC19B5 /* chatsecure-icon.png */; };
 		84FDDB0F15DEEA7E00AF74A1 /* date_strings.json in Resources */ = {isa = PBXBuildFile; fileRef = 84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */; };
 		84FF9A861405BAEB008088A9 /* BurnerMapLogoSquarish.png in Resources */ = {isa = PBXBuildFile; fileRef = 84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */; };
-		A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F15FB51401BCBB004DCF90 /* SortableTable.m */; };
 		A0F160E81401F5FC004DCF90 /* UnlockViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F160E71401F5FC004DCF90 /* UnlockViewController.m */; };
 		A0F161531402043A004DCF90 /* CreditsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A0F161521402043A004DCF90 /* CreditsViewController.m */; };
 		A0F1617114020860004DCF90 /* gaia-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A0F1617014020860004DCF90 /* gaia-icon.png */; };
@@ -315,8 +314,6 @@
 		84FDDB0E15DEEA7E00AF74A1 /* date_strings.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = date_strings.json; sourceTree = "<group>"; };
 		84FF9A851405BAEB008088A9 /* BurnerMapLogoSquarish.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BurnerMapLogoSquarish.png; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A0F15FB41401BCBB004DCF90 /* SortableTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SortableTable.h; sourceTree = "<group>"; };
-		A0F15FB51401BCBB004DCF90 /* SortableTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SortableTable.m; sourceTree = "<group>"; };
 		A0F160E61401F5FC004DCF90 /* UnlockViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnlockViewController.h; sourceTree = "<group>"; };
 		A0F160E71401F5FC004DCF90 /* UnlockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnlockViewController.m; sourceTree = "<group>"; };
 		A0F161511402043A004DCF90 /* CreditsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreditsViewController.h; sourceTree = "<group>"; };
@@ -666,8 +663,6 @@
 		57F472530F22C49900827FAC /* UserInterface */ = {
 			isa = PBXGroup;
 			children = (
-				A0F15FB41401BCBB004DCF90 /* SortableTable.h */,
-				A0F15FB51401BCBB004DCF90 /* SortableTable.m */,
 				EA0FFF2B121BCB9300EF6702 /* RotatingTabBarController.m */,
 				EA0FFF2C121BCB9300EF6702 /* RotatingTabBarController.h */,
 				EA37A28B121B95C10091E9C3 /* PageViewer.h */,
@@ -1069,7 +1064,6 @@
 				EA0FFF2D121BCB9300EF6702 /* RotatingTabBarController.m in Sources */,
 				EA0F00EE121BE75400EF6702 /* EventDayTable.m in Sources */,
 				50C7DC8C14007F74006E8259 /* JSONKit.m in Sources */,
-				A0F15FB61401BCBB004DCF90 /* SortableTable.m in Sources */,
 				A0F160E81401F5FC004DCF90 /* UnlockViewController.m in Sources */,
 				A0F161531402043A004DCF90 /* CreditsViewController.m in Sources */,
 				A0F164B014022FDE004DCF90 /* NSDate-Utilities.m in Sources */,

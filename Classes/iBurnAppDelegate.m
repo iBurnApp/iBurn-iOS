@@ -18,7 +18,6 @@
 #import "ArtNodeController.h"
 #import "EventNodeController.h"
 #import "RotatingTabBarController.h"
-#import "SortableTable.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "UnlockViewController.h"
 #import "ASIHTTPRequest.h"
