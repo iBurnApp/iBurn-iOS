@@ -6,17 +6,22 @@
 //  Copyright Burning Man Earth 2008. All rights reserved.
 //
 
-#import "MapViewController.h"
-// #import "BurnTileSource.h"
-#import "ThemeCamp.h"
-#import "ArtInstall.h"
 #import "ArtInfoViewController.h"
-#import "CampInfoViewController.h"
+#import "ArtInstall.h"
+#import <ASIFormDataRequest.h>
 #import "BurnMapView.h"
-#import "iBurnAppDelegate.h"
-#import <QuartzCore/QuartzCore.h>
+#import "CampInfoViewController.h"
 #import "Event.h"
 #import "EventInfoViewController.h"
+#import "iBurnAppDelegate.h"
+#import "MapViewController.h"
+#import <QuartzCore/QuartzCore.h>
+#import <RMMapBoxSource.h>
+#import <RMMBTilesSource.h>
+#import <RMMapView.h>
+#import "ThemeCamp.h"
+#import "util.h"
+
 
 @implementation MapViewController
 @synthesize mapView, detailView, progressView;
@@ -28,28 +33,28 @@
 
 #warning mapbox
 /*
-- (void) showMapForObject:(id)obj {
-  CLLocationCoordinate2D point;
-	point.latitude = [[obj latitude] floatValue]; //Center of 2009 City
-  point.longitude = [[obj longitude] floatValue];
-	GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
-	[newMarker changeLabelUsingText:[obj name] 
-                             font:[UIFont boldSystemFontOfSize:12.0] 
-									foregroundColor:[UIColor blueColor] 
-									backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
-	newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
-																		 newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-  newMarker.data = obj;
-  newMarker.zoom = 1;
-	[mapView.contents.markerManager addMarker:newMarker AtLatLong:point];	
-  [mapView moveToLatLong:point];                
-  [[mapView contents] setZoom:16.0];
-  
-  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
-	[gaiaMarkerManager showMarkersOnScreen];	
-}  
-*/
-- (NSArray*) getAllObjects:(NSString*) objType {  
+ - (void) showMapForObject:(id)obj {
+ CLLocationCoordinate2D point;
+ point.latitude = [[obj latitude] floatValue]; //Center of 2009 City
+ point.longitude = [[obj longitude] floatValue];
+ GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
+ [newMarker changeLabelUsingText:[obj name]
+ font:[UIFont boldSystemFontOfSize:12.0]
+ foregroundColor:[UIColor blueColor]
+ backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.5]];
+ newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
+ newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+ newMarker.data = obj;
+ newMarker.zoom = 1;
+ [mapView.contents.markerManager addMarker:newMarker AtLatLong:point];
+ [mapView moveToLatLong:point];
+ [[mapView contents] setZoom:16.0];
+ 
+ GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
+ [gaiaMarkerManager showMarkersOnScreen];
+ }
+ */
+- (NSArray*) getAllObjects:(NSString*) objType {
   NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:objType inManagedObjectContext:[t managedObjectContext]];
@@ -64,7 +69,7 @@
 
 - (void) loadCamps {
   for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
-   
+    
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
     
@@ -72,23 +77,23 @@
 		coord.longitude = [camp.longitude floatValue];
 #warning mapbox
     /*
-    GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]];
-    [newMarker changeLabelUsingText:[camp name] 
-                               font:[UIFont boldSystemFontOfSize:12.0] 
-                    foregroundColor:[UIColor blueColor] 
-                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
-    newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
-                                       newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-    newMarker.data = @"ThemeCamp";
-    newMarker.waypointID = camp.simpleName;
-    
-    newMarker.zoom = 19;
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES && [[UIScreen mainScreen] scale] == 2.00) {
-      newMarker.zoom = 18;
-    }
-		newMarker.anchorPoint = CGPointMake(.5,.8);
-    [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
-*/
+     GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]];
+     [newMarker changeLabelUsingText:[camp name]
+     font:[UIFont boldSystemFontOfSize:12.0]
+     foregroundColor:[UIColor blueColor]
+     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
+     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
+     newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+     newMarker.data = @"ThemeCamp";
+     newMarker.waypointID = camp.simpleName;
+     
+     newMarker.zoom = 19;
+     if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES && [[UIScreen mainScreen] scale] == 2.00) {
+     newMarker.zoom = 18;
+     }
+     newMarker.anchorPoint = CGPointMake(.5,.8);
+     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];
+     */
 	}
 }
 
@@ -99,23 +104,23 @@
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
 		coord.longitude = [camp.longitude floatValue];
-#warning mapbox 
+#warning mapbox
     
     /*
-    
-    GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
-    [newMarker changeLabelUsingText:[camp name] 
-                               font:[UIFont boldSystemFontOfSize:12.0] 
-                    foregroundColor:[UIColor blueColor] 
-                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
-    newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
-                                       newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-    newMarker.data = @"ArtInstall";
-    newMarker.waypointID = [camp name];
-    newMarker.zoom = 17;
-		newMarker.anchorPoint = CGPointMake(.5,.8);
-    [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
-    */
+     
+     GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
+     [newMarker changeLabelUsingText:[camp name]
+     font:[UIFont boldSystemFontOfSize:12.0]
+     foregroundColor:[UIColor blueColor]
+     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
+     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
+     newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+     newMarker.data = @"ArtInstall";
+     newMarker.waypointID = [camp name];
+     newMarker.zoom = 17;
+     newMarker.anchorPoint = CGPointMake(.5,.8);
+     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];
+     */
 	}
 }
 
@@ -131,20 +136,20 @@
     
 #warning mapbox
     /*
-    
-    GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]];
-    [newMarker changeLabelUsingText:nil 
-                               font:[UIFont boldSystemFontOfSize:12.0] 
-                    foregroundColor:[UIColor blueColor] 
-                    backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
-    newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23, 
-                                       newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-    newMarker.data = @"Event";
-    newMarker.waypointID = camp.name;
-    newMarker.zoom = 17;
-		newMarker.anchorPoint = CGPointMake(.5,.8);
-    [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];	
-    */
+     
+     GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]];
+     [newMarker changeLabelUsingText:nil
+     font:[UIFont boldSystemFontOfSize:12.0]
+     foregroundColor:[UIColor blueColor]
+     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
+     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
+     newMarker.label.frame.size.width, newMarker.label.frame.size.height);
+     newMarker.data = @"Event";
+     newMarker.waypointID = camp.name;
+     newMarker.zoom = 17;
+     newMarker.anchorPoint = CGPointMake(.5,.8);
+     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];
+     */
 	}
 }
 
@@ -153,18 +158,18 @@
   if (t.embargoed) return;
 #warning mapbox
   /*
-  GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
-  [gaiaMarkerManager removeMarkers];
-  [gaiaMarkerManager setShowLabels:YES];
-*/
+   GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
+   [gaiaMarkerManager removeMarkers];
+   [gaiaMarkerManager setShowLabels:YES];
+   */
   [self loadArt];
   [self loadCamps];
   [self loadEvents];
-
+  
 }
 
 
- 
+
 
 
 - (void) showMarkersOnScreen {
@@ -175,44 +180,44 @@
 
 #warning mapbox
 /*- (void) tapOnMarker: (GaiaMarker*) marker onMap: (RMMapView*) map {
-	if (![marker.data isKindOfClass:[NSString class]]) return;
-  NSString *markerString = (NSString*)marker.data;
-  if ([markerString isEqualToString:@"ThemeCamp"]) {
-    ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
-    self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
-
-  }
-  if ([markerString isEqualToString:@"ArtInstall"]) {
-    ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
-    self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
-    
-  }
-  if ([markerString isEqualToString:@"Event"]) {
-    Event * event = [Event eventForName:[marker waypointID]];
-    self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
-    
-  }
-  [self.navigationController pushViewController:detailView animated:YES];	
-}
-
-
-- (void) afterMapTouch: (RMMapView*) map{
-  if ([RMMapContents performExpensiveOperations]) {
-    [self showMarkersOnScreen];
-  }
-  
-  if (isCurrentlyUpdating) {
-    [self startLocation:nil];
-  }
-}
-
-
-*/
+ if (![marker.data isKindOfClass:[NSString class]]) return;
+ NSString *markerString = (NSString*)marker.data;
+ if ([markerString isEqualToString:@"ThemeCamp"]) {
+ ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
+ self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
+ 
+ }
+ if ([markerString isEqualToString:@"ArtInstall"]) {
+ ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
+ self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
+ 
+ }
+ if ([markerString isEqualToString:@"Event"]) {
+ Event * event = [Event eventForName:[marker waypointID]];
+ self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
+ 
+ }
+ [self.navigationController pushViewController:detailView animated:YES];
+ }
+ 
+ 
+ - (void) afterMapTouch: (RMMapView*) map{
+ if ([RMMapContents performExpensiveOperations]) {
+ [self showMarkersOnScreen];
+ }
+ 
+ if (isCurrentlyUpdating) {
+ [self startLocation:nil];
+ }
+ }
+ 
+ 
+ */
 
 
 - (MapViewController *)initWithTitle: (NSString *) aTitle {
 	self = [super init];
- 
+  
   lastFetchedZoom = 0.0;
   _needFetchQuadrant = 0;
   _markersNeedDisplay = 0;
@@ -237,14 +242,14 @@
   [locationButton addTarget:self
                      action:@selector(startLocation:)
            forControlEvents:UIControlEventValueChanged];
- 
+  
 	
 	UIView *buttonView = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
   [buttonView addSubview: locationButton];
   UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithCustomView:buttonView];
   [self.navigationItem setTitle:@"Black Rock City"];
 	self.navigationItem.rightBarButtonItem = item;
-
+  
 	UIView *buttonView2 = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
   [buttonView2 addSubview: downloadButton];
   UIBarButtonItem *item2 = [[UIBarButtonItem alloc]initWithCustomView:buttonView2];
@@ -252,20 +257,20 @@
 	
 	
 	/*self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
-											   initWithImage:[UIImage imageNamed:@"map-download-icon.png"]
-											   style:UIBarButtonItemStylePlain
-											   target:self
-											   action:@selector(redownloadMaps:)] autorelease];*/
+   initWithImage:[UIImage imageNamed:@"map-download-icon.png"]
+   style:UIBarButtonItemStylePlain
+   target:self
+   action:@selector(redownloadMaps:)] autorelease];*/
   
 #warning MapBox
   
   /*
+   
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
+   
+   */
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(liftEmbargo) name:@"LIFT_EMBARGO" object:nil];
   
- [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showMarkersOnScreen) name:RMResumeExpensiveOperations object:nil];
-  
-  */
- [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(liftEmbargo) name:@"LIFT_EMBARGO" object:nil];
-
   
   
   return self;
@@ -278,18 +283,18 @@
   [t downloadMaps:YES];
 }
 
-- (void) redownloadMaps:(id)sender {  
+- (void) redownloadMaps:(id)sender {
   UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Redownload maps?" message:@"Would you like to re-download all the maps, in case there have been updates?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
   [av show];
 }
-  
+
 #warning mapbox
 /*-(BOOL)sphericalTrapezium:(RMSphericalTrapezium)rect containsPoint:(RMLatLong)point {
-	return (rect.northeast.latitude > point.latitude &&
-					rect.southwest.latitude < point.latitude &&
-					rect.northeast.longitude > point.longitude &&
-					rect.southwest.longitude < point.longitude);
-}*/
+ return (rect.northeast.latitude > point.latitude &&
+ rect.southwest.latitude < point.latitude &&
+ rect.northeast.longitude > point.longitude &&
+ rect.southwest.longitude < point.longitude);
+ }*/
 
 - (BOOL) locateMeWorks {
 	CLLocationManager *lm = [MyCLController sharedInstance].locationManager;
@@ -297,16 +302,16 @@
 	if(lm.location == nil) return NO;
 	//NSLog(@"%@", lm.location);
 #warning use mbtiles instead
-/*	BurnTileSource *tileSource = [[BurnTileSource alloc] init];
-	RMSphericalTrapezium bounds = [tileSource latitudeLongitudeBoundingBox];*/
-
+  /*	BurnTileSource *tileSource = [[BurnTileSource alloc] init];
+   RMSphericalTrapezium bounds = [tileSource latitudeLongitudeBoundingBox];*/
+  
 #warning mapbox
   /*	if([self sphericalTrapezium:bounds containsPoint:lm.location.coordinate]) {
-		return YES;
-	}
-	else {
-		return NO;
-	}*/
+   return YES;
+   }
+   else {
+   return NO;
+   }*/
 }
 
 - (void) startLocation:(id)sender {
@@ -321,25 +326,25 @@
     if (currentLocationMarker) {
 #warning mapbox
       /*      CLLocationCoordinate2D coord = [[[[MyCLController sharedInstance] locationManager] location] coordinate];
-      [self.mapView.contents moveToLatLong:coord];
+       [self.mapView.contents moveToLatLong:coord];
        */
     }
     isCurrentlyUpdating = YES;
-    locationButton.tintColor = [UIColor redColor];      
+    locationButton.tintColor = [UIColor redColor];
   }
-}	
+}
 
 
 - (void) home: (id) sender {
 #warning mapbox
   /*
-  RMSphericalTrapezium bounds = [mapView.contents.tileSource latitudeLongitudeBoundingBox];
-  [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
-  [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
-  
-  CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
-  
-  [mapView.contents moveToLatLong:center];
+   RMSphericalTrapezium bounds = [mapView.contents.tileSource latitudeLongitudeBoundingBox];
+   [mapView.contents zoomWithLatLngBoundsNorthEast:bounds.northeast SouthWest:bounds.southwest];
+   [mapView.contents zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+   
+   CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
+   
+   [mapView.contents moveToLatLong:center];
    */
 }
 
@@ -348,29 +353,66 @@
 }
 
 
+- (NSURL*) mbTilesURL {
+  return [NSURL URLWithString:@"http://com.gaiagps.iburn.s3-website-us-east-1.amazonaws.com/iburn.mbtiles"];
+}
+
+
+- (NSString*) mbTilesPath {
+  return [privateDocumentsDirectory() stringByAppendingPathComponent:@"iburn.mbtiles"];;
+}
+
+
+- (void) loadMBTilesFile {
+#warning set this up to only fetch a new file if needed
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[self mbTilesURL]];
+    [request setTimeOutSeconds:240];
+    [request setDownloadDestinationPath:[self mbTilesPath]];
+    [request startSynchronous];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self mbTilesPath]]];
+      [mapView setTileSource:offlineSource];
+    });
+  });
+  
+}
+
+
+
+#define kNormalMapID @"examples.map-z2effxa8"
+#define kRetinaMapID @"examples.map-zswgei2n"
 - (void)loadView {
   [super loadView];
-#warning mapbox
-  /*  [self setMapView:[[BurnMapView alloc]initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)]];
-  BurnTileSource* bts = [[BurnTileSource alloc] init];
-  RMCachedTileSource* cts = [RMCachedTileSource cachedTileSourceWithSource:bts];
-  [mapView.contents setTileSource:cts];
-  [mapView setBackgroundColor:[UIColor blackColor]];
-  self.view = mapView;
-  self.progressView = [[UIProgressView alloc] 
-                        initWithProgressViewStyle:UIProgressViewStyleBar];
-  progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
-  progressView.alpha = 0;
-  [self.view addSubview:self.progressView];
-  [self loadMarkers];
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) {
-    [mapView.contents setMaxZoom:14];
-  } else {
-    [mapView.contents setMaxZoom:18];    
-  }
-  */
+  
+  //RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
+  [mapView setTileSource:offlineSource];
 
+  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:offlineSource];
+  mapView.zoom = 2;
+  mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+  [self.view addSubview:mapView];
+  
+  //[self loadMBTilesFile];
+  
+#warning mapbox
+  /* 
+   [mapView setBackgroundColor:[UIColor blackColor]];
+   self.progressView = [[UIProgressView alloc]
+   initWithProgressViewStyle:UIProgressViewStyleBar];
+   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
+   progressView.alpha = 0;
+   [self.view addSubview:self.progressView];
+   [self loadMarkers];
+   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+   if (t.embargoed) {
+   [mapView.contents setMaxZoom:14];
+   } else {
+   [mapView.contents setMaxZoom:18];
+   }
+   */
+  
 }
 
 
@@ -380,20 +422,20 @@
 	[mapView setDelegate:self];
 	[MyCLController sharedInstance].delegate = self;
   if (![MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
-      locationButton.enabled = NO;
+    locationButton.enabled = NO;
   } else {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
   }
 	// Offset slightly south from 2009 city location so that map is center
 	//CLLocationCoordinate2D point = {40.78775, -119.200037};
   //[mapView.contents setZoom:15];
-
+  
 	
 #warning mapbox
   /*markerManager = [mapView markerManager];
    */
 	[mapView setBackgroundColor:[UIColor blackColor]];
-	//[mapView moveToLatLong:point];	
+	//[mapView moveToLatLong:point];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   if (t.embargoed) {
     int width = self.view.frame.size.width-20;
@@ -410,7 +452,7 @@
     lbl.layer.cornerRadius = 8;
     lbl.layer.borderWidth = 1;
     lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
-    [self.view addSubview:lbl];    
+    [self.view addSubview:lbl];
   }
 }
 
@@ -419,7 +461,7 @@
   
   [super viewDidAppear:animated];
   if (tap) {
-   [self home:nil];
+    [self home:nil];
   }
   tap = NO;
 }
@@ -428,32 +470,32 @@
 - (void)newLocationUpdate:(CLLocation *)newLocation {
 #warning mapbox
   /*	if (signbit(newLocation.horizontalAccuracy)) {
-	} else {
-    CLLocationCoordinate2D coord = newLocation.coordinate;
-    if (!currentLocationMarker) {	
-      currentLocationMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue_dot.gif"]];
-      [currentLocationMarker setProjectedLocation:[[mapView.contents projection] latLongToPoint:coord]];
-      [[mapView.contents overlay] addSublayer:currentLocationMarker];	
-    } else {
-      [mapView.contents.markerManager moveMarker:currentLocationMarker AtLatLon:coord];
-    }
-  
-    if(isCurrentlyUpdating) {
-      [mapView.contents moveToLatLong:coord];
-    }  
-    
-  }*/
+   } else {
+   CLLocationCoordinate2D coord = newLocation.coordinate;
+   if (!currentLocationMarker) {
+   currentLocationMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue_dot.gif"]];
+   [currentLocationMarker setProjectedLocation:[[mapView.contents projection] latLongToPoint:coord]];
+   [[mapView.contents overlay] addSublayer:currentLocationMarker];
+   } else {
+   [mapView.contents.markerManager moveMarker:currentLocationMarker AtLatLon:coord];
+   }
+   
+   if(isCurrentlyUpdating) {
+   [mapView.contents moveToLatLong:coord];
+   }
+   
+   }*/
 }
 
 
 - (void)newError:(NSString *)text {
 	//[self addTextToLog:text];
 	UIAlertView *errorAlert = [[UIAlertView alloc]
-								   initWithTitle:@"Location Delegate Error"
-								   message:text
-								   delegate:self 
-								   cancelButtonTitle:nil
-								   otherButtonTitles:@"OK", nil];
+                             initWithTitle:@"Location Delegate Error"
+                             message:text
+                             delegate:self
+                             cancelButtonTitle:nil
+                             otherButtonTitles:@"OK", nil];
 	[errorAlert show];
 }
 
@@ -468,7 +510,7 @@
 }
 
 
-- (void) liftEmbargo {	
+- (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
   [self loadMarkers];

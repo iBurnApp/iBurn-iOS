@@ -10,6 +10,7 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
+		42F52FEB17ADBE2F004BF8B6 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 42F52FEA17ADBE2F004BF8B6 /* iburn.mbtiles */; };
 		4933574517AD9C0E0014C2C2 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CE817AD9C060014C2C2 /* ArtInstall.m */; };
 		4933574917AD9C0E0014C2C2 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CF217AD9C060014C2C2 /* Event.m */; };
 		4933574A17AD9C0E0014C2C2 /* Favorite.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CF417AD9C060014C2C2 /* Favorite.m */; };
@@ -109,6 +110,7 @@
 		1D6058910D05DD3D006BFB54 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		42F52FEA17ADBE2F004BF8B6 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = iburn.mbtiles; path = ../../../../Downloads/iburn.mbtiles; sourceTree = "<group>"; };
 		49334CE717AD9C060014C2C2 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
 		49334CE817AD9C060014C2C2 /* ArtInstall.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtInstall.m; sourceTree = "<group>"; };
 		49334CE917AD9C060014C2C2 /* BurnDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnDataObject.h; sourceTree = "<group>"; };
@@ -407,6 +409,7 @@
 				5002415D17ADB7370070BBAB /* art_data_and_locations.json */,
 				5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */,
 				5002415F17ADB7370070BBAB /* event_data_and_locations.json */,
+				42F52FEA17ADBE2F004BF8B6 /* iburn.mbtiles */,
 				49334D4017AD9C060014C2C2 /* credits.json */,
 				49334D4117AD9C060014C2C2 /* date_strings.json */,
 				49334D4217AD9C060014C2C2 /* day_array.json */,
@@ -601,7 +604,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iBurn" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -627,7 +630,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				495E753417AD8EC500419C43 /* Pods.xcconfig in Resources */,
 				4933576F17AD9C0E0014C2C2 /* credits.json in Resources */,
 				4933577017AD9C0E0014C2C2 /* date_strings.json in Resources */,
 				4933577117AD9C0E0014C2C2 /* day_array.json in Resources */,
@@ -669,6 +671,7 @@
 				5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */,
 				5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */,
 				5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */,
+				42F52FEB17ADBE2F004BF8B6 /* iburn.mbtiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
