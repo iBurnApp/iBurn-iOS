@@ -35,6 +35,26 @@
   return [documentPaths objectAtIndex:0];
 }
 
+static NSMutableDictionary * timerDict = nil;
+
+void startTimer(NSString* name) {
+  if (!timerDict) {
+    timerDict = [NSMutableDictionary dictionary];
+  }
+  [timerDict setObject:[NSDate date] forKey:name];
+  
+}
+
+void printTimer(NSString* name) {
+  NSDate * startTime = (NSDate*) [timerDict objectForKey:name];
+  NSLog(@"%@ time %f", name, -[startTime timeIntervalSinceNow]);
+}
+
+- (void) closeDatabaseCompletely {
+  
+}
+
+
 - (void) checkOrCreateDatabase {
 	//See if the CoreData database is populated.  If not populate it from the API.
 	NSFetchRequest *testRequest = [[NSFetchRequest alloc] init];
@@ -44,6 +64,19 @@
   if (error) {
     NSLog(@"DB Error: %@ %@, DBCount: %i", [error localizedDescription], [error userInfo], dbCount);
   }
+  
+  if (dbCount < 1000) {
+    startTimer(@"parsingJson");
+    [self.campNodeController importDataFromFile:@"camp_data_and_locations_ids"];
+    printTimer(@"parsingJson");
+    [self.eventNodeController importDataFromFile:@"event_data_and_locations"];
+    printTimer(@"parsingJson");
+    [self.artNodeController importDataFromFile:@"art_data_and_locations"];
+    printTimer(@"parsingJson");
+  }
+
+  
+  
 }
 
 
@@ -68,7 +101,7 @@
     } else {
       viewController = [[vcClass alloc]initWithTitle:title];
     }
-    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:viewController];  
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:viewController];
     nav.navigationBar.barStyle = UIBarStyleBlack;
     [controllers addObject:nav];
     i++;
@@ -92,17 +125,13 @@
   if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
   }
-  [self checkOrCreateDatabase];
+  //[self checkOrCreateDatabase];
   
-  // TODO comment out these methods once loaded into final db
-  //[campNodeController getNodes];
-  //[artNodeController getNodes];
-  //[eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
-  [self initControllers];
+
  
 	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
@@ -112,7 +141,15 @@
     [self liftEmbargo];
   }
   
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+    [self managedObjectContext];
+    [self checkOrCreateDatabase];
+    [self initControllers];
+    [self postLaunch];
+  });
+  
 }
+
 
 
 - (void) downloadMaps {
@@ -121,32 +158,9 @@
 
 
 - (void) downloadMaps:(BOOL) refreshTiles {
-#warning use mbtiles instead
-  /*  // Check internet connection
-  BurnTileSource *bts = [[BurnTileSource alloc] init];
-  if (![self canConnectToInternet]) {
-    NSFileManager *NSFm= [NSFileManager defaultManager]; 
-    
-    // if no internet and thet tiles arent cached, show an alert
-    if(![NSFm fileExistsAtPath:[bts tileDirectory] isDirectory:nil] || refreshTiles) {
-      UIAlertView *alert = [[UIAlertView alloc] 
-                            initWithTitle: @"No Internet Connection" 
-                            message:@"Please start iBurn while connected to the internet to download playa data"
-                            delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-      [alert show];
-      return;
-    }
-  }
-  */
+
   MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
   
-#warning use mbtiles instead
-  /*
-  MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView];
-  [self setViewForDownloading];
-  dl.refreshTiles = refreshTiles;
-  [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
-   */
 }
 
 
@@ -271,6 +285,8 @@
   NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [[NSFileManager defaultManager] fileExistsAtPath:dbPath];
   
+  [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
+  
 	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
@@ -281,15 +297,7 @@
     [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
     return [self createPersistentStoreCoordinator];
 	}    
-	
-  if (!success) {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
-      [self.campNodeController importDataFromFile:@"camp_data_and_location_ids.json"];
-      [self.eventNodeController importDataFromFile:@"event_data_and_locations"];
-      [self.artNodeController importDataFromFile:@"art_data_and_locations"];
-    });
-    
-  }
+  
 	return psc;
 }
 

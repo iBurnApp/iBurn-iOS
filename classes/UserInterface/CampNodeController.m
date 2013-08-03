@@ -57,7 +57,6 @@
     }
   }
 	
-  camp.simpleName = [ThemeCamp createSimpleName:camp.name];    
   if ([dict objectForKey:@"latitude"]) {
     NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
     [f setNumberStyle:NSNumberFormatterDecimalStyle];

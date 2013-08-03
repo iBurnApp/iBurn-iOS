@@ -97,12 +97,13 @@
   NSDictionary* hostDict =  (NSDictionary*)[self nullOrObject:[dict objectForKey:@"hosted_by_camp"]];
   if (!hostDict) return;
   event.campHost = [hostDict objectForKey:@"name"];
-  NSString* campSimpleName = [ThemeCamp createSimpleName:event.campHost];
-  ThemeCamp* camp = [ThemeCamp campForSimpleName:campSimpleName];
+  event.camp_id = N([[hostDict objectForKey:@"id"] intValue]);
+
+
+  ThemeCamp* camp = [ThemeCamp campForID:[event.camp_id intValue]];
   //NSLog(@"camp match %@ %@", [camp name], camp.latitude);
   event.latitude = camp.latitude;
   event.longitude = camp.longitude;
-  event.camp_id = N([[hostDict objectForKey:@"id"] intValue]);
 }
 
 - (void) importDataFromFile:(NSString*)filename {
