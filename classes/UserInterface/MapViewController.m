@@ -18,6 +18,9 @@
 #import "Event.h"
 #import "EventInfoViewController.h"
 
+#import <RMMapBoxSource.h>
+#import <RMMapView.h>
+
 @implementation MapViewController
 @synthesize mapView, detailView, progressView;
 
@@ -347,9 +350,22 @@
   return CLLocationCoordinate2DMake(40.78629, -119.20650);
 }
 
-
+#define kNormalMapID @"examples.map-z2effxa8"
+#define kRetinaMapID @"examples.map-zswgei2n"
 - (void)loadView {
   [super loadView];
+    
+  RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+
+    RMMapView *mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:onlineSource];
+    
+    mapView.zoom = 2;
+    
+    mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    
+    [self.view addSubview:mapView];
+    
+    
 #warning mapbox
   /*  [self setMapView:[[BurnMapView alloc]initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)]];
   BurnTileSource* bts = [[BurnTileSource alloc] init];
