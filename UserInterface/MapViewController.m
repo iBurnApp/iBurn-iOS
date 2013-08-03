@@ -442,16 +442,6 @@
 }
 
 
--(void)zoomMapToLocation:(double)latitude: (double) longitude {
-	CLLocationCoordinate2D point;
-	point.latitude = latitude;
-	point.longitude = longitude;
-	[mapView moveToLatLong:point];
-	RMMapContents *contents = [mapView contents];
-	[contents setZoom:18.0];
-	self.tabBarController.selectedIndex = 0;
-}
-
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 	[mapView release];
@@ -462,7 +452,6 @@
 
 
 - (void) liftEmbargo {	
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [mapView.contents setMaxZoom:18];
   [self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];

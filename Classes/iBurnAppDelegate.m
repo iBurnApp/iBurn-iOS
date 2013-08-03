@@ -10,16 +10,13 @@
 #import "MapViewController.h"
 #import "CampTableViewController.h"
 #import "ArtTableViewController.h"
-#import "MessageTableViewController.h"
 #import "EventTableViewController.h"
 #import "NewsViewController.h"
 #import "SyncViewController.h"
 #import "SettingsTableViewController.h"
-#import "PeopleTableViewController.h"
 #import "CarsTableViewController.h"
 #import "FavoritesTableViewController.h"
 #import "ThemeCamp.h"
-//#import "SQLiteInstanceManager.h"
 #import "OAuthConsumer.h"
 #import "MapDownloader.h"
 #import "BurnTileSource.h"
@@ -34,8 +31,6 @@
 #import "JSONKit.h"
 #import "util.h"
 
-//#import <JSON/JSON.h>
-//#import <JSON/SBJSON.h>
 
 #define DATABASE_NAME @"iBurn2012.sqlite"
 
@@ -71,16 +66,8 @@
                       [CampTableViewController class],
                       [EventTableViewController class],
                       [UnlockViewController class],
-                      //[PeopleTableViewController class],
-                      //[TweetTableViewController class],
-                      //[MessageTableViewController class],
-                      //[FavoritesTableViewController class],
-                      //[SettingsTableViewController class],
-                      //[NewsViewController class],
-                      //[SyncViewController class],
                       nil];
   NSArray *titles = [NSArray arrayWithObjects:@"Map",@"",@"",@"",@"",nil];
-  //,@"",@"",@"",@"",@"",@"",@"",@"",
   int i = 0;
   id viewController;
   for (NSString *title in titles) {
