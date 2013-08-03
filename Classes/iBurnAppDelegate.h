@@ -32,15 +32,15 @@
 }
 
 @property BOOL launchDefault;
-@property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) NSMutableArray *themeCamps;
-@property (nonatomic, retain) NodeController *campNodeController, *artNodeController, *eventNodeController;
+@property (nonatomic, strong) IBOutlet UIWindow *window;
+@property (nonatomic, strong) NSMutableArray *themeCamps;
+@property (nonatomic, strong) NodeController *campNodeController, *artNodeController, *eventNodeController;
 
 
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext, *bgMoc;
-@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-@property (nonatomic, retain) UITabBarController *tabBarController;
+@property (nonatomic, strong, readonly) NSManagedObjectContext *managedObjectContext, *bgMoc;
+@property (nonatomic, strong, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong) UITabBarController *tabBarController;
 @property (nonatomic, assign) BOOL embargoed;
 
 - (NSString *)applicationDocumentsDirectory;

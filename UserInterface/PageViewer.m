@@ -22,13 +22,13 @@
   if (useCache) {
     NSData* cached = [SimpleDiskCache getDataForURL:url];
     if (cached) {
-      [self displayWebpage:[[[NSString alloc] initWithData:cached encoding:NSUTF8StringEncoding]autorelease]
+      [self displayWebpage:[[NSString alloc] initWithData:cached encoding:NSUTF8StringEncoding]
                    withURL:url];
       return;
     }
   }
   
-  request = [[ASIHTTPRequest requestWithURL:url]retain];  
+  request = [ASIHTTPRequest requestWithURL:url];  
   request.delegate = self;
   request.didFinishSelector = @selector(webpageRequestFinished:);
   request.didFailSelector = @selector(webpageRequestFailed:);
@@ -42,7 +42,7 @@
 // The designated initializer. Override to perform setup that is required before the view is loaded.
 - (id)initForString:(NSString*)string {
   self = [super init];
-	urlString = [string retain];
+	urlString = string;
 	return self;
 }
 
@@ -80,7 +80,7 @@
 - (void) loadView {
   [super loadView];
   CGRect fr = CGRectMake(0,0,self.view.frame.size.width,self.view.frame.size.height);
-  self.page = [[[UIWebView alloc] initWithFrame:fr]autorelease];
+  self.page = [[UIWebView alloc] initWithFrame:fr];
 	self.page.delegate = self;
 	self.page.scalesPageToFit = YES;  
 	[self.view addSubview: self.page];		
@@ -107,10 +107,10 @@
   [forwardButton addTarget:self action:@selector(goForward:) forControlEvents:UIControlEventValueChanged];
   [self setStyle: forwardButton];  
 
-  UIView *v = [[[UIView alloc]initWithFrame:CGRectMake(0,7,backButton.frame.size.width + forwardButton.frame.size.width + 15,30)]autorelease];
+  UIView *v = [[UIView alloc]initWithFrame:CGRectMake(0,7,backButton.frame.size.width + forwardButton.frame.size.width + 15,30)];
   [v addSubview:backButton];
   [v addSubview:forwardButton];
-  UIBarButtonItem *segmentBarItem = [[[UIBarButtonItem alloc] initWithCustomView:v] autorelease];
+  UIBarButtonItem *segmentBarItem = [[UIBarButtonItem alloc] initWithCustomView:v];
 	self.navigationItem.rightBarButtonItem = segmentBarItem;
 }
 
@@ -140,15 +140,6 @@
 }
 
 
-- (void)dealloc {
-	[page release];
-  [spinner release];
-  [urlString release];
-  [request release];
-  [backButton release];
-  [forwardButton release];
-	[super dealloc];
-}
 
 
 //UIWebView Delegate Methods Feature
@@ -165,7 +156,6 @@
 	if ([error code] != -999) {
 	  UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Sorry, there was a problem loading the page." delegate:self cancelButtonTitle:@"Hide"otherButtonTitles:nil];
 	  [alert show];
-	  [alert release];
 	}
 }
 

@@ -16,9 +16,9 @@
 	BOOL hideMarkers, showLabels, hideUserMarkers;
 }
 
-@property (nonatomic, retain) NSMutableArray *markerList, *markersOnScreen;
+@property (nonatomic, strong) NSMutableArray *markerList, *markersOnScreen;
 @property (nonatomic, assign) BOOL hideMarkers, showLabels, hideUserMarkers;
-@property (nonatomic, retain) NSMutableSet *markerIdSet;
+@property (nonatomic, strong) NSMutableSet *markerIdSet;
 
 - (void) showMarkersOnScreen;
 - (void) addMarker: (GaiaMarker*)marker AtLatLong:(CLLocationCoordinate2D)point;

@@ -60,14 +60,13 @@
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
 																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
 	NSError *error;
 	NSArray *favs = [moc executeFetchRequest:request error:&error];
 	if(favs == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}
-	[objects release];
   objects = [[NSMutableArray alloc]init];
 	for (Favorite *f in favs) {
 		if ([f Event]) {
@@ -78,9 +77,9 @@
 	}
 	
   NSSortDescriptor *lastDescriptor =
-  [[[NSSortDescriptor alloc] initWithKey:@"startTime"
+  [[NSSortDescriptor alloc] initWithKey:@"startTime"
                                ascending:YES
-                                selector:@selector(compare:)] autorelease];
+                                selector:@selector(compare:)];
   NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
   NSArray *sortedArray = [objects sortedArrayUsingDescriptors:descriptors];
   self.events = sortedArray;
@@ -93,9 +92,9 @@
 - (void) sortByName { 
   self.events = [self getEventsForTitle:self.title];
 	NSSortDescriptor *lastDescriptor =
-  [[[NSSortDescriptor alloc] initWithKey:@"name"
+  [[NSSortDescriptor alloc] initWithKey:@"name"
                                ascending:YES
-                                selector:@selector(compare:)] autorelease];
+                                selector:@selector(compare:)];
   NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
   NSArray *sortedArray = [self.events sortedArrayUsingDescriptors:descriptors];
   self.events = sortedArray;
@@ -107,13 +106,13 @@
 - (void) sortByDistance {
   self.events = [self getEventsForTitle:self.title];
 	NSSortDescriptor *distanceDescriptor =
-  [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
+  [[NSSortDescriptor alloc] initWithKey:@"distanceAway"
                                ascending:YES
-                                selector:@selector(compare:)] autorelease];
+                                selector:@selector(compare:)];
   NSSortDescriptor *timeDescriptor =
-  [[[NSSortDescriptor alloc] initWithKey:@"startTime"
+  [[NSSortDescriptor alloc] initWithKey:@"startTime"
                                ascending:YES
-                                selector:@selector(compare:)] autorelease];
+                                selector:@selector(compare:)];
   NSArray *descriptors = [NSArray arrayWithObjects:distanceDescriptor, timeDescriptor, nil];
   NSArray *sortedArray = [self.events sortedArrayUsingDescriptors:descriptors];
   self.events = sortedArray;
@@ -160,8 +159,7 @@
 
 - (void) loadView {
 	[super loadView];
-	[sortControl release];
-	sortControl = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Distance", @"Favorites", @"Name",nil]]retain];
+	sortControl = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObjects:@"Time", @"Distance", @"Favorites", @"Name",nil]];
 	sortControl.tintColor = [UIColor colorWithRed:35/255.0f green:97/255.0f blue:222/255.0f alpha:1];
 	sortControl.backgroundColor = [UIColor blackColor];
 	CGRect fr = sortControl.frame;
@@ -173,10 +171,10 @@
 	
 	self.tableView.tableHeaderView = sortControl;
 	
-	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Now" 
+	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Now" 
 																																						style:UIBarButtonItemStyleDone 
 																																					 target:self 
-																																					 action:@selector(scrollIfToday)]autorelease];
+																																					 action:@selector(scrollIfToday)];
   sortControl.selectedSegmentIndex = 0;
 
 }
@@ -215,19 +213,19 @@
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	if ([events count] == 0) {
-		UITableViewCell *cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"] autorelease];
+		UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
 		cell.textLabel.text = @"Mark some favorites.";
 		return cell;
 	}
   if(events == nil) {
-		UITableViewCell *cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"] autorelease];
+		UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
 		cell.textLabel.text = @"Loading, please be patient.";
 		return cell;
 	}
 	static NSString *CellIdentifier = @"Cell";
   DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
   if (cell == nil) {
-    cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
+    cell = [[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
   }
   //cell.accessoryType = UITableViewCellAccessoryNone;
 	Event *event = [events objectAtIndex:indexPath.row];
@@ -237,7 +235,7 @@
   if (!formatter) {
     formatter = [[NSDateFormatter alloc] init];
     NSLocale *enUSPOSIXLocale;
-    enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
+    enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"hh:mm a"];
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
@@ -268,7 +266,7 @@
 		return;
 	} 
 	int eventIndex = [indexPath indexAtPosition: [indexPath length] - 1];
-	EventInfoViewController *eventView = [[[EventInfoViewController alloc] initWithEvent:[events objectAtIndex:eventIndex]]autorelease];
+	EventInfoViewController *eventView = [[EventInfoViewController alloc] initWithEvent:[events objectAtIndex:eventIndex]];
 	[[self navigationController] pushViewController:eventView animated:YES];
 }
 
@@ -289,11 +287,6 @@
 }
 
 
-- (void)dealloc {
-  [events release];
-	[sortControl release];
-	[super dealloc];
-}
 
 
 @end

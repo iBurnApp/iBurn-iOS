@@ -42,7 +42,7 @@
 	NSCharacterSet *doubleCharacters;
 }
 
-@property (readwrite, nonatomic, retain) NSData *data;
+@property (readwrite, nonatomic, strong) NSData *data;
 @property (readwrite, nonatomic, assign) NSUInteger scanLocation;
 @property (readonly, nonatomic, assign) BOOL isAtEnd;
 

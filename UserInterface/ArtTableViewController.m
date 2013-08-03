@@ -47,7 +47,7 @@
 
 - (id)init {
 	if (self = [super initWithSearchPlaceholder:@"search art installations"]) {
-    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0] autorelease];
+    UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Art";
 		[self.navigationItem setTitle:@"Art Installations"];
@@ -80,7 +80,7 @@
     int artIndex = [indexPath indexAtPosition: [indexPath length] - 1];
     art = [objects objectAtIndex: artIndex];
 	}
-	ArtInfoViewController *artInfoView = [[[ArtInfoViewController alloc] initWithArt:art]autorelease];
+	ArtInfoViewController *artInfoView = [[ArtInfoViewController alloc] initWithArt:art];
 	[[self navigationController] pushViewController:artInfoView animated:YES];
 }
 
@@ -89,7 +89,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	DetailTableCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[DetailTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier];
 	}
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
   ArtInstall *art = nil;

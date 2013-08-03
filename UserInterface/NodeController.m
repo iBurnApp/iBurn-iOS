@@ -23,7 +23,7 @@
 
 
 - (NSArray*) getNamesFromDicts:(NSArray*)dicts {
-  NSMutableArray *names = [[[NSMutableArray alloc] init] autorelease];
+  NSMutableArray *names = [[NSMutableArray alloc] init];
   for (NSDictionary *dict in dicts) {
 		if ([dict objectForKey:@"name"]) {
       [names addObject:[dict objectForKey:@"name"]];
@@ -53,7 +53,7 @@
                     [NSNumber numberWithDouble:lowerRight.longitude]];
   }      
   //return [NSMutableArray arrayWithObjects:p, lonPredicate, nil];
-  return [[[NSMutableArray alloc]init]autorelease];
+  return [[NSMutableArray alloc]init];
 }
 
 
@@ -72,8 +72,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", names];
     [fetchRequest setPredicate:predicate];	
     NSError *error;
-    NSArray *objects = [[[t managedObjectContext] executeFetchRequest:fetchRequest error:&error] retain];
-    [fetchRequest release];
+    NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
     fetchRequest = nil;
    
     return objects;
@@ -97,12 +96,12 @@
 
 
 - (void) saveObjects:(NSArray*)objects {
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  @autoreleasepool {
+		iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSError *error;
   if (![moc save:&error]) {}
-  [pool release];
+  }
 }
 
 
@@ -127,11 +126,10 @@
                                                   inManagedObjectContext:moc];      
     }
 		if (fromFile) {
-      [self updateObjectFromFile:matchedCamp withDict:[dict retain]];
+      [self updateObjectFromFile:matchedCamp withDict:dict];
 		} else {
-      [self updateObject:matchedCamp withDict:[dict retain]];
+      [self updateObject:matchedCamp withDict:dict];
 		}
-    [dict release];
   }
   [self saveObjects:knownObjects];
 }  
@@ -149,10 +147,6 @@
 }
 
   
-- (void) dealloc {
-  self.nodes = nil;
-  [super dealloc];
-}
 
 
 - (NSString *)getUrl {return nil;}
@@ -198,22 +192,21 @@
 
 
 - (void) processJSONThreaded:(ASIHTTPRequest *) request {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+	@autoreleasepool {
+    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 
-  NSManagedObjectContext* moc = [t managedObjectContext];
-  
+    NSManagedObjectContext* moc = [t managedObjectContext];
+    
 	NSError *error;
 	NSData *jsonData = [[request responseString] dataUsingEncoding:NSUTF32BigEndianStringEncoding];	
-  NSArray* jsonNodes = [[CJSONDeserializer deserializer] deserialize:jsonData error:&error];
-  [moc lock];
-  [self getNodesFromJson:jsonNodes];
+    NSArray* jsonNodes = [[CJSONDeserializer deserializer] deserialize:jsonData error:&error];
+    [moc lock];
+    [self getNodesFromJson:jsonNodes];
 	if (self.delegate) {
 		[(NSObject*)self.delegate performSelectorOnMainThread:@selector(requestDone) withObject:nil waitUntilDone:NO];
 	}
-  [moc unlock];
-  [pool release];
-  [request release];
+    [moc unlock];
+  }
 }
 
 
@@ -233,7 +226,6 @@
   NSLog(@"ERROR is %@", [request responseString]);
   
   [self processJSONThreaded:request];
-  [request release];
 }
 
 

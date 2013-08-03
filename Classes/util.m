@@ -24,7 +24,7 @@ RMTile RMTileFromKey(uint64_t tilekey)
 + (NSString*) formatDecimal_0:(float)num {
 	static NSNumberFormatter *numFormatter;
 	if (!numFormatter) {
-		numFormatter = [[[NSNumberFormatter alloc] init] retain];
+		numFormatter = [[NSNumberFormatter alloc] init];
 		[numFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
 		[numFormatter setLocale:[NSLocale currentLocale]];
 		[numFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -38,7 +38,7 @@ RMTile RMTileFromKey(uint64_t tilekey)
 + (NSString*) formatDecimal_1:(float)num {
 	static NSNumberFormatter *numFormatter;
 	if (!numFormatter) {
-		numFormatter = [[[NSNumberFormatter alloc] init] retain];
+		numFormatter = [[NSNumberFormatter alloc] init];
 		[numFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
 		[numFormatter setLocale:[NSLocale currentLocale]];
 		[numFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -51,7 +51,7 @@ RMTile RMTileFromKey(uint64_t tilekey)
 + (NSString*) formatDecimal_2:(double)num {
 	static NSNumberFormatter *numFormatter;
 	if (!numFormatter) {
-		numFormatter = [[[NSNumberFormatter alloc] init] retain];
+		numFormatter = [[NSNumberFormatter alloc] init];
 		[numFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
 		[numFormatter setLocale:[NSLocale currentLocale]];
 		[numFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -167,7 +167,7 @@ NSString* privateDocumentsDirectory() {
   if (!dir) {
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains (NSLibraryDirectory, NSUserDomainMask, YES);
-    dir = [[[paths objectAtIndex:0] stringByAppendingString:@"/Private Documents"] retain];	
+    dir = [[paths objectAtIndex:0] stringByAppendingString:@"/Private Documents"];	
     [util checkDirectory:dir];
     
   }

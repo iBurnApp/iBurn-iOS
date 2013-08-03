@@ -29,13 +29,13 @@
 
 
 - (void) setupViewInfo {
-  NSMutableArray *tempTitles = [[[NSMutableArray alloc]init]autorelease];
-  NSMutableArray *tempTexts = [[[NSMutableArray alloc]init]autorelease];
+  NSMutableArray *tempTitles = [[NSMutableArray alloc]init];
+  NSMutableArray *tempTexts = [[NSMutableArray alloc]init];
   if (camp.name && ![camp.name isEqualToString:@""]) {
     [tempTitles addObject:@"Name"];
     if ([camp.latitude floatValue] > 1 
         && [camp.longitude floatValue] < -1) {
-      CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[camp.latitude floatValue] longitude:[camp.longitude floatValue]]autorelease];
+      CLLocation *loc = [[CLLocation alloc]initWithLatitude:[camp.latitude floatValue] longitude:[camp.longitude floatValue]];
       
       float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc];
       if (distanceAway > 0) {
@@ -89,13 +89,13 @@
     [tempTitles addObject:@"Description"];
     [tempTexts addObject:camp.desc];
   }  
-  cellTexts = [tempTexts retain];
-  headerTitles = [tempTitles retain];
+  cellTexts = tempTexts;
+  headerTitles = tempTitles;
 }
 
 - (id)initWithCamp:(ThemeCamp*)cmp {
 	self = [super initWithTitle:cmp.name];
-	camp = [cmp retain];
+	camp = cmp;
   [self setupViewInfo];
   return self;
 }
@@ -111,7 +111,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ThemeCamp = %@", camp];
   [fetchRequest setPredicate:predicate];	
@@ -127,10 +127,6 @@
 }
 
 
-- (void)dealloc {
-  [camp release];
-  [super dealloc];
-}
 
 
 @end

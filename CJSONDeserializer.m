@@ -38,7 +38,7 @@ NSString *const kJSONDeserializerErrorDomain  = @"CJSONDeserializerErrorDomain";
 
 + (id)deserializer
 {
-return([[[self alloc] init] autorelease]);
+return([[self alloc] init]);
 }
 
 - (id)deserializeAsDictionary:(NSData *)inData error:(NSError **)outError;

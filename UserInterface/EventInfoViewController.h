@@ -14,7 +14,7 @@
     Event *event;
 }
 
-@property (nonatomic, retain) Event *event;
+@property (nonatomic, strong) Event *event;
 
 - (id)initWithEvent:(Event*)evt;
 

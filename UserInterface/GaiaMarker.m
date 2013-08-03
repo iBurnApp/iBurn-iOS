@@ -12,10 +12,6 @@
 @implementation GaiaMarker
 @synthesize zoom, waypointID, userCreated;
 
-- (void) dealloc {
-  self.waypointID = nil;
-	[super dealloc];
-}
 
 #define defaultMarkerAnchorPoint CGPointMake(0.5, 0.5)
 - (id) initWithUIImage: (UIImage*) image withZoom:(int)z withID:(NSString*)wptID {
@@ -30,11 +26,10 @@
 	if (label == aView) return;
 	if (label) {
 		[[label layer] removeFromSuperlayer];
-		[label release];
 		label = nil;
 	}
 	if (aView) {
-		label = [aView retain];
+		label = aView;
 		//[self addSublayer:[label layer]];
 	}
 }

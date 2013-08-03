@@ -19,8 +19,8 @@
 	NSMutableArray *sections;
 }
 
-@property (nonatomic, retain) NSMutableArray *objects;
-@property (nonatomic, retain) NSMutableArray *objectDict;
+@property (nonatomic, strong) NSMutableArray *objects;
+@property (nonatomic, strong) NSMutableArray *objectDict;
 
 
 - (id) initWithSearchPlaceholder:(NSString*)searchPlaceholder;

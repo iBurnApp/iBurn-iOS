@@ -21,7 +21,7 @@
 - (id)initWithTitle:(NSString*)title {
   self = [super init];
   self.title = title;
-  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:nil tag:0] autorelease];
+  UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:nil tag:0];
   self.tabBarItem = tabBarItem;
   return self;
 }
@@ -36,11 +36,11 @@
   tableView.sectionFooterHeight = 0;
 	tableView.dataSource = self;
 	[self.view addSubview:tableView];
-	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
+	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
                                              initWithImage:[UIImage imageNamed:@"empty_star.png"]
                                              style:UIBarButtonItemStylePlain
                                              target:self
-                                             action:@selector(addToFavorites:)] autorelease];
+                                             action:@selector(addToFavorites:)];
 	
 }
 
@@ -91,10 +91,10 @@
   NSArray *identifiers = [NSArray arrayWithObjects:@"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", nil];
 	NSInteger section = [indexPath section];
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[identifiers objectAtIndex:section]];
-  if(!cell) cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[identifiers objectAtIndex:section]] autorelease];
+  if(!cell) cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[identifiers objectAtIndex:section]];
   if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Description"]) {
     if(!descriptionLabel) {
-      descriptionLabel = [[[UILabel alloc] initWithFrame:CGRectZero]autorelease];
+      descriptionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 			descriptionLabel.backgroundColor = [UIColor clearColor];
 			descriptionLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
       CGSize constraintSize;
@@ -132,10 +132,10 @@
   UITableViewCell *cell = [tb cellForRowAtIndexPath:indexPath];
   if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"URL"]) {
     if (![t canConnectToInternet]) {
-      UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"This page will only display if you have previously cached it." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+      UIAlertView *as = [[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"This page will only display if you have previously cached it." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
       [as show];
     }
-    PageViewer *w = [[[PageViewer alloc] initForString:cell.textLabel.text]autorelease];
+    PageViewer *w = [[PageViewer alloc] initForString:cell.textLabel.text];
     [self.navigationController pushViewController:w animated:YES];
   } else if ([[headerTitles objectAtIndex:indexPath.section]isEqualToString:@"Contact Email"]) {
     NSString *mailString = [NSString stringWithFormat:@"mailto:?to=%@",[cell.textLabel.text stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]];
@@ -168,12 +168,6 @@
 - (void) addToFavorites:(id)sender {}
 
 
-- (void)dealloc {
-  [headerTitles release];
-  [cellTexts release];
-  [tableView release];
-  [super dealloc];
-}
 
 
 @end

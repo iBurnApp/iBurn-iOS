@@ -16,9 +16,9 @@
 {
 }
 
-@property (nonatomic, retain) ThemeCamp * ThemeCamp;
-@property (nonatomic, retain) Event * Event;
-@property (nonatomic, retain) ArtInstall * ArtInstall;
+@property (nonatomic, strong) ThemeCamp * ThemeCamp;
+@property (nonatomic, strong) Event * Event;
+@property (nonatomic, strong) ArtInstall * ArtInstall;
 
 @end
 

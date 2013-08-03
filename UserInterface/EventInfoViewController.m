@@ -24,7 +24,7 @@
   if (!formatter) {
     formatter = [[NSDateFormatter alloc] init];
     NSLocale *enUSPOSIXLocale;
-    enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
+    enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"MMM dd, hh:mm a"];
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
@@ -37,7 +37,7 @@
   if (!formatter) {
     formatter = [[NSDateFormatter alloc] init];
     NSLocale *enUSPOSIXLocale;
-    enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
+    enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
     [formatter setLocale:enUSPOSIXLocale];
     [formatter setDateFormat:@"cccc, MMM dd"];
     [formatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
@@ -54,7 +54,7 @@
 
 - (void) showCamp {  
   ThemeCamp *camp = [self getCampForEvent:event];
-  CampInfoViewController *civp = [[[CampInfoViewController alloc]initWithCamp:camp]autorelease];
+  CampInfoViewController *civp = [[CampInfoViewController alloc]initWithCamp:camp];
   [self.navigationController pushViewController:civp animated:YES];
 }
 
@@ -62,8 +62,8 @@
 
 - (void) setupViewInfo {
   //headerTitles = [[NSArray arrayWithObjects:@"Name", @"Start Time", @"End Time",@"Type",  @"URL", @"Contact Email", @"Hometown",  @"Coordinates", @"Description",nil]retain];
-  NSMutableArray *tempTitles = [[[NSMutableArray alloc]init]autorelease];
-  NSMutableArray *tempTexts = [[[NSMutableArray alloc]init]autorelease];
+  NSMutableArray *tempTitles = [[NSMutableArray alloc]init];
+  NSMutableArray *tempTexts = [[NSMutableArray alloc]init];
   if (event.name && ![event.name isEqualToString:@""]) {
     [tempTitles addObject:@"Name"];
     [tempTexts addObject:event.name];
@@ -94,14 +94,14 @@
     [tempTitles addObject:@"Description"];
     [tempTexts addObject:event.desc];
   }  
-  cellTexts = [tempTexts retain];
-  headerTitles = [tempTitles retain];
+  cellTexts = tempTexts;
+  headerTitles = tempTitles;
 }
 
 
 - (id)initWithEvent:(Event*)evt {
 	self = [super initWithTitle:evt.name];
-	event = [evt retain];
+	event = evt;
   [self setupViewInfo];
   return self;
 }
@@ -126,7 +126,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"Event = %@", event];
   [fetchRequest setPredicate:predicate];	
@@ -143,9 +143,5 @@
 
 
 
-- (void)dealloc {
-    [event release];
-    [super dealloc];
-}
 
 @end

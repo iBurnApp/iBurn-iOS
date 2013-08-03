@@ -13,7 +13,7 @@
 
 - (id)init {
 	if (self = [super init]) {
-    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0] autorelease];
+    UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Art";
 		[self.navigationItem setTitle:@"Art Installations"];
@@ -73,9 +73,5 @@
 }  
 
 
-- (void)dealloc {
-  [sortControl release];
-	[super dealloc];
-}
 
 @end

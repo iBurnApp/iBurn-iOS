@@ -16,7 +16,7 @@
 
 
 - (NSArray*) getAllArt {  
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"ArtInstall" inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];

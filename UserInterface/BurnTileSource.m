@@ -105,13 +105,5 @@
 
 
 
-- (void) dealloc {
-  [uniqueTilecacheKey release];
-  [shortName release];
-  [longDescription release];
-  [attribution release];
-  [tileURL release];
-  [super dealloc];
-}  
 
 @end

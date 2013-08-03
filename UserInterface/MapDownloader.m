@@ -64,11 +64,11 @@
 
 
 - (void) downloadTile:(RMTile)tile fromURL:(NSString*)url toPath:(NSString*)path {
-  ASIHTTPRequest *request = [[[ASIHTTPRequest alloc]initWithURL:[NSURL URLWithString:url]] autorelease];
+  ASIHTTPRequest *request = [[ASIHTTPRequest alloc]initWithURL:[NSURL URLWithString:url]];
   [request setNumberOfTimesToRetryOnTimeout:3];
   [request setQueue:self.networkQueue];
-  [request setUserInfo:[[[NSDictionary alloc] initWithObjectsAndKeys:path, @"path",
-                         url, @"url", nil]autorelease]];
+  [request setUserInfo:[[NSDictionary alloc] initWithObjectsAndKeys:path, @"path",
+                         url, @"url", nil]];
   //NSLog(@"url %@ path %@", url, path);
   [self createDirectoryIfNeeded:path];
   [request setDownloadDestinationPath:path];
@@ -104,58 +104,53 @@
 
 
 -(void) startMapDownload {
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+  @autoreleasepool {
 
-  NSString * path = [[NSBundle mainBundle] pathForResource:@"tiles-2012" ofType:@"json"];
-  NSString* responseTxt = [[[NSString alloc] initWithContentsOfFile:path
-                                                           encoding:NSUTF8StringEncoding 
-                                                              error:nil] autorelease];
-  NSDictionary * dict = [responseTxt objectFromJSONString];
-  int batchCount = 0;
-  totalRequests = [dict count];
-  downloadSectionComplete = NO;
-  NSAutoreleasePool* pool2 = [[NSAutoreleasePool alloc] init];
+    NSString * path = [[NSBundle mainBundle] pathForResource:@"tiles-2012" ofType:@"json"];
+    NSString* responseTxt = [[NSString alloc] initWithContentsOfFile:path
+                                                             encoding:NSUTF8StringEncoding 
+                                                                error:nil];
+    NSDictionary * dict = [responseTxt objectFromJSONString];
+    int batchCount = 0;
+    totalRequests = [dict count];
+    downloadSectionComplete = NO;
 
-  for (NSDictionary* zDict in dict) {
-    uint64_t key = [[zDict objectForKey:@"k"] longLongValue];
-    RMTile t = RMTileFromKey(key);
-    
-    //if (t.zoom < self.tileSource.sourceMinZoom)
-    //  continue;
-    
-    if (self.tileSource.reverseY) {
-      int maxY = 1 << t.zoom;
-      t.y = maxY - t.y - 1;
-    }
-    
-    NSString * filePath = [self.tileSource tileFile:t];
-    //NSLog(@"downloading tile from url %@", filePath);
+    for (NSDictionary* zDict in dict) {
+      uint64_t key = [[zDict objectForKey:@"k"] longLongValue];
+      RMTile t = RMTileFromKey(key);
+      
+      //if (t.zoom < self.tileSource.sourceMinZoom)
+      //  continue;
+      
+      if (self.tileSource.reverseY) {
+        int maxY = 1 << t.zoom;
+        t.y = maxY - t.y - 1;
+      }
+      
+      NSString * filePath = [self.tileSource tileFile:t];
+      //NSLog(@"downloading tile from url %@", filePath);
 
-    if (![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-      [self downloadTile:t fromURL:[self.tileSource tileURL:t] toPath:filePath];
-    } else {
-      totalRequests--;
-    }
-  
-    if ((batchCount++ > 500 || completedRequests == totalRequests) && [self.networkQueue requestsCount] > 0) {
-      [self waitForQueueToFinish];
-      downloadSectionComplete = NO;
-      batchCount = 0;
-      [pool2 release];
-      pool2 = [[NSAutoreleasePool alloc] init];
-    }
+      if (![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        [self downloadTile:t fromURL:[self.tileSource tileURL:t] toPath:filePath];
+      } else {
+        totalRequests--;
+      }
     
+      if ((batchCount++ > 500 || completedRequests == totalRequests) && [self.networkQueue requestsCount] > 0) {
+        [self waitForQueueToFinish];
+        downloadSectionComplete = NO;
+        batchCount = 0;
+      }
+      
+    }
+    [self waitForQueueToFinish];
+    
+    downloading = YES;
+
+    
+    iBurnAppDelegate *d = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+    [d performSelectorOnMainThread:@selector(dismissProgessIndicator) withObject:nil waitUntilDone:NO];  
   }
-  [self waitForQueueToFinish];
-  
-  downloading = YES;
-
-  
-  [pool2 release];
-    
-  iBurnAppDelegate *d = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  [d performSelectorOnMainThread:@selector(dismissProgessIndicator) withObject:nil waitUntilDone:NO];  
-  [pool release];
 }
   
 
@@ -188,13 +183,5 @@
 
 
 
--(void)dealloc {
- 
-  [networkQueue release];
-  [mapDirectory release];
-  [tileDirectory release];
-  self.tileSource = nil;
-  [super dealloc];
-}
 
 @end

@@ -34,7 +34,7 @@
 + (ArtInstall*) artForName:(NSString*) sName {
   
   
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"ArtInstall" inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
@@ -50,10 +50,6 @@
   
 }
 
-- (void) dealloc {
-  [geolocation release];
-  [super dealloc];
-}
 
 - (CLLocation *)geolocation {
   if (!geolocation) {

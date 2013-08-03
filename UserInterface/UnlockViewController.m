@@ -19,19 +19,19 @@
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	if ([t checkPassword:textField.text]) {
-		UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Success" 
+		UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Success" 
 																								 message:@"The data is now unlocked." 
 																								delegate:self 
 																			 cancelButtonTitle:@"OK" 
-																			 otherButtonTitles:nil]autorelease];
+																			 otherButtonTitles:nil];
 		[av show];
 		[textField resignFirstResponder];
 	} else {
-		UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Fail" 
+		UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Fail" 
 																								 message:@"That password is incorrect." 
 																								delegate:self 
 																			 cancelButtonTitle:@"OK" 
-																			 otherButtonTitles:nil]autorelease];
+																			 otherButtonTitles:nil];
 		[av show];
 	}
 	return NO;
@@ -40,7 +40,7 @@
 
 - (id)init {
 	if(self = [super init]) {
-    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"lock-icon.png"] tag:0] autorelease];
+    UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"lock-icon.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Unlock";
 		[self.navigationItem setTitle:@"Unlock"];
@@ -58,27 +58,27 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   
   if (![t canConnectToInternet]) {
-    UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+    UIAlertView *as = [[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [as show];
     return NO;
   }
   
   
-	PageViewer *p = [[[PageViewer alloc]initForString:[[request URL]absoluteString]]autorelease];
+	PageViewer *p = [[PageViewer alloc]initForString:[[request URL]absoluteString]];
 	[self.navigationController pushViewController:p animated:YES];
 	return NO;
 }
 
 
 - (void) showCredits {
-	CreditsViewController *c = [[[CreditsViewController alloc]init]autorelease];
+	CreditsViewController *c = [[CreditsViewController alloc]init];
 	[self.navigationController pushViewController:c animated:YES];
 	
 }
 
 
 - (void) showAbout {
-	ContactInfoScreen *c = [[[ContactInfoScreen alloc]init]autorelease];
+	ContactInfoScreen *c = [[ContactInfoScreen alloc]init];
 	[self.navigationController pushViewController:c animated:YES];
 	
 }
@@ -88,17 +88,17 @@
 - (void)loadView {
 	[super loadView];
 	didLoad = NO;
-	self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"About" 
+	self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"About" 
 																																						style:UIBarButtonItemStyleDone
 																																					 target:self 
-																																					 action:@selector(showAbout)]autorelease];	
-	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Credits" 
+																																					 action:@selector(showAbout)];	
+	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Credits" 
 																																						style:UIBarButtonItemStyleDone
 																																					 target:self 
-																																					 action:@selector(showCredits)]autorelease];	
+																																					 action:@selector(showCredits)];	
 	CGRect fr = CGRectMake(0, 44, self.view.frame.size.width, 300);
 	
-	UIWebView *infoLabel = [[[UIWebView alloc]initWithFrame:fr]autorelease];
+	UIWebView *infoLabel = [[UIWebView alloc]initWithFrame:fr];
 	infoLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	[infoLabel loadHTMLString:@"The camp locations are embargoed until gates open.<BR><BR>The app will unlock when you get to BRC based on GPS, or if someone tells you the password.<BR><BR>We’ll announce the password at <a href=http://www.gaiagps.com/news>www.gaiagps.com/news</a><p><b>PLEASE NOTE: THE DATA IN THIS APP IS INCOMPLETE AND INACCURATE IN SOME CASES.</b></p>." baseURL:nil];
 	infoLabel.delegate = self;
@@ -106,7 +106,7 @@
 	
 	fr = CGRectMake(60, 15, 200, 24);
 	
-	UITextField *passwordField = [[[UITextField alloc]initWithFrame:fr]autorelease];
+	UITextField *passwordField = [[UITextField alloc]initWithFrame:fr];
 	passwordField.placeholder = @"Enter the password";
 	passwordField.textAlignment = UITextAlignmentCenter;
 	passwordField.borderStyle = UITextBorderStyleRoundedRect;
@@ -152,9 +152,6 @@
 }
 
 
-- (void)dealloc {
-    [super dealloc];
-}
 
 
 @end

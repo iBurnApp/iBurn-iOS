@@ -18,18 +18,18 @@
 	float distanceAway;
 }
 
-@property (nonatomic, retain) NSNumber * zoom;
-@property (nonatomic, retain) NSNumber * longitude;
-@property (nonatomic, retain) NSString * url;
-@property (nonatomic, retain) NSNumber * latitude;
-@property (nonatomic, retain) NSString * playaLocation;
-@property (nonatomic, retain) NSString * desc;
-@property (nonatomic, retain) NSString * location;
-@property (nonatomic, retain) NSNumber * bm_id;
-@property (nonatomic, retain) NSNumber * year;
-@property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSString * contactEmail, * simpleName;
-@property (nonatomic, retain) Favorite * Favorite;
+@property (nonatomic, strong) NSNumber * zoom;
+@property (nonatomic, strong) NSNumber * longitude;
+@property (nonatomic, strong) NSString * url;
+@property (nonatomic, strong) NSNumber * latitude;
+@property (nonatomic, strong) NSString * playaLocation;
+@property (nonatomic, strong) NSString * desc;
+@property (nonatomic, strong) NSString * location;
+@property (nonatomic, strong) NSNumber * bm_id;
+@property (nonatomic, strong) NSNumber * year;
+@property (nonatomic, strong) NSString * name;
+@property (nonatomic, strong) NSString * contactEmail, * simpleName;
+@property (nonatomic, strong) Favorite * Favorite;
 
 + (ThemeCamp*) campForSimpleName:(NSString*) sName;
 + (NSString*) createSimpleName:(NSString*) name;

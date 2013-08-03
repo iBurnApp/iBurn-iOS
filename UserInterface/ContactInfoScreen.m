@@ -52,40 +52,42 @@
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 
   if (![t canConnectToInternet] && indexPath.row > 0) {
-    UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+    UIAlertView *as = [[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [as show];
     return;
   }
 
   switch (indexPath.row) {
-		case 0:
-      ;
-      MFMailComposeViewController* controller = [[[MFMailComposeViewController alloc] init]autorelease];
+		case 0: {
+      MFMailComposeViewController* controller = [[MFMailComposeViewController alloc] init];
       controller.mailComposeDelegate = self;
       [controller setSubject:@"iBurn 2011 Feedback"];
       [controller setToRecipients:[NSArray arrayWithObject:@"iburn@gaiagps.com"]];
       [self presentModalViewController:controller animated:YES];
 			break;
-		case 1:
-      ;
+    }
+		case 1: {
       NSString *urlString = @"http://github.com/trailbehind/iBurn-2011";
-      PageViewer *p = [[[PageViewer alloc]initForString:urlString]autorelease];
+      PageViewer *p = [[PageViewer alloc]initForString:urlString];
       [self.navigationController pushViewController:p animated:YES];
 			break;
-		case 2:
-      ;
+		}
+    case 2: {
       NSString *urlString2 = @"http://www.burningmap.org";
-      PageViewer *p2 = [[[PageViewer alloc]initForString:urlString2]autorelease];
+      PageViewer *p2 = [[PageViewer alloc]initForString:urlString2];
       [self.navigationController pushViewController:p2 animated:YES];
 			break;
-    case 3:
-      ;
+    }
+    case 3: {
       NSString *urlString3 = @"http://www.burnermap.com";
-      PageViewer *p3 = [[[PageViewer alloc]initForString:urlString3]autorelease];
+      PageViewer *p3 = [[PageViewer alloc]initForString:urlString3];
       [self.navigationController pushViewController:p3 animated:YES];
 			break;
-		default:
+    }
+		default: {
 			break;
+      
+    }
 	}
   
   
@@ -97,7 +99,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier];
 	}
   switch (indexPath.row) {
 		case 0:

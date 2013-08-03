@@ -13,7 +13,7 @@
   NSArray *events;  
 }
 
-@property(nonatomic,retain) NSArray *events;
+@property(nonatomic,strong) NSArray *events;
 
 - (id)initWithTitle:(NSString*)ttl;
 

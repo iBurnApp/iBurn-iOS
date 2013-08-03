@@ -19,22 +19,22 @@
   CLLocation * geolocation;
 }
 
-@property (nonatomic, retain) NSString * timeAddress;
+@property (nonatomic, strong) NSString * timeAddress;
 
-@property (nonatomic, retain) NSNumber * circularStreet;
-@property (nonatomic, retain) NSNumber * zoom;
-@property (nonatomic, retain) NSNumber * longitude;
-@property (nonatomic, retain) NSNumber * latitude;
-@property (nonatomic, retain) NSString * url;
-@property (nonatomic, retain) NSString * desc;
-@property (nonatomic, retain) NSNumber * bm_id;
-@property (nonatomic, retain) NSString * slug;
-@property (nonatomic, retain) NSNumber * year;
-@property (nonatomic, retain) NSString * artist;
-@property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSString * contactEmail;
-@property (nonatomic, retain) NSString * artistHometown;
-@property (nonatomic, retain) Favorite * Favorite;
+@property (nonatomic, strong) NSNumber * circularStreet;
+@property (nonatomic, strong) NSNumber * zoom;
+@property (nonatomic, strong) NSNumber * longitude;
+@property (nonatomic, strong) NSNumber * latitude;
+@property (nonatomic, strong) NSString * url;
+@property (nonatomic, strong) NSString * desc;
+@property (nonatomic, strong) NSNumber * bm_id;
+@property (nonatomic, strong) NSString * slug;
+@property (nonatomic, strong) NSNumber * year;
+@property (nonatomic, strong) NSString * artist;
+@property (nonatomic, strong) NSString * name;
+@property (nonatomic, strong) NSString * contactEmail;
+@property (nonatomic, strong) NSString * artistHometown;
+@property (nonatomic, strong) Favorite * Favorite;
 
 + (ArtInstall*) artForName:(NSString*) sName;
 

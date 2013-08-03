@@ -31,9 +31,9 @@
   Boolean refreshTiles;
 }  
 
-@property (nonatomic, retain) ASINetworkQueue *networkQueue;
+@property (nonatomic, strong) ASINetworkQueue *networkQueue;
 @property (nonatomic, assign) float lastProgress;
-@property (nonatomic, retain) BurnTileSource *tileSource;
+@property (nonatomic, strong) BurnTileSource *tileSource;
 @property (nonatomic, assign) Boolean refreshTiles;
 
 - (id)initWithTileSource:(RMTileSource*)_tileSource progressView:(UIProgressView*) progressView;

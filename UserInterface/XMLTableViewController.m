@@ -25,8 +25,8 @@
 - (void) sortByDistance { 
 	[self sortByName];
 	self.objectDict = nil;
-	NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"distanceAway"
-																																	ascending:YES] autorelease];
+	NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"distanceAway"
+																																	ascending:YES];
 	NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
 	NSArray * newObjects = [objects sortedArrayUsingDescriptors:sortDescriptors];
 	self.objects = [NSMutableArray arrayWithArray:newObjects];
@@ -38,13 +38,12 @@
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName
 																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
 	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"simpleName" ascending:YES];
 	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
-	[sort release];
 	NSError *error;
-	objects = [(NSMutableArray*)[moc executeFetchRequest:request error:&error]retain];
+	objects = (NSMutableArray*)[moc executeFetchRequest:request error:&error];
 	if(objects == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}	
@@ -58,13 +57,12 @@
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName
 																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
 	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
 	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
-	[sort release];
 	NSError *error;
-	objects = [(NSMutableArray*)[moc executeFetchRequest:request error:&error]retain];
+	objects = (NSMutableArray*)[moc executeFetchRequest:request error:&error];
 	if(objects == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}	
@@ -77,9 +75,7 @@
                         componentsSeparatedByString:@"|"]]];
   NSString * lettersAndSymbols = @"#";
   
-	[objectDict release];
 	objectDict = [[NSMutableArray alloc]init];
-	[sections release];
 	sections = [[NSMutableArray alloc]init];
 	NSString *lastLetter = nil;
 	int index = -1;
@@ -108,21 +104,19 @@
 
 
 - (void) sortByFavorites { 
-	[objectDict release];
 	objectDict = nil;
 
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
 																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
 	NSError *error;
 	NSArray *favs = [moc executeFetchRequest:request error:&error];
 	if(favs == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}
-	[objects release];
   objects = [[NSMutableArray alloc]init];
 	[self makeObjectsForFavs:favs];
 }
@@ -191,7 +185,6 @@
       UITextField *searchField = [[searchBar subviews] lastObject];
       [searchField setReturnKeyType:UIReturnKeyDone];
       self.tableView.tableHeaderView = searchBar;
-      [searchBar release];
     }      
 		if ([objects count] == 0) {
 			//NSString * path = @"http://bme.burningman.com/feeds/Messages/all/";
@@ -246,11 +239,6 @@
 }
 
 
-- (void)dealloc {
-  [touchedIndexPath release];
-	[sortControl release];
-  [super dealloc];
-}
 
 
 - (void) showDetails {
@@ -276,7 +264,6 @@
     default:
       break;
   }
-  [touchedIndexPath release];
   touchedIndexPath = nil;
 }
 

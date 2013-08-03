@@ -11,7 +11,7 @@
 }
 
 
-@property(nonatomic,retain) UISegmentedControl *sortControl;
+@property(nonatomic,strong) UISegmentedControl *sortControl;
 
 
 @end

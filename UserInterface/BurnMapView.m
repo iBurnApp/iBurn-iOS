@@ -15,7 +15,7 @@
 - (RMMapContents *)contents {
   if (![self isContentsSet]) {
     [super contents];
-    contents.markerManager = [[[GaiaMarkerManager alloc] initWithContents:contents] autorelease];
+    contents.markerManager = [[GaiaMarkerManager alloc] initWithContents:contents];
     [(GaiaMarkerManager*)contents.markerManager setShowLabels:NO];
     [(GaiaMarkerManager*)contents.markerManager setHideUserMarkers:YES];
  	}

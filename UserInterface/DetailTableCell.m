@@ -12,7 +12,7 @@
 @implementation DetailTableCell
 
 - (void) setBlackness {
-  self.backgroundView = [[[UIView  alloc]initWithFrame:self.frame]autorelease];
+  self.backgroundView = [[UIView  alloc]initWithFrame:self.frame];
   self.backgroundView.backgroundColor = [UIColor blackColor];
   self.contentView.backgroundColor = [UIColor blackColor];
 }  
@@ -33,9 +33,6 @@
 }
 
 
-- (void)dealloc {
-    [super dealloc];
-}
 
 
 @end

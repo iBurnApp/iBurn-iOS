@@ -28,13 +28,13 @@
 
 
 - (void) setupViewInfo {
-  NSMutableArray *tempTitles = [[[NSMutableArray alloc]init]autorelease];
-  NSMutableArray *tempTexts = [[[NSMutableArray alloc]init]autorelease];
+  NSMutableArray *tempTitles = [[NSMutableArray alloc]init];
+  NSMutableArray *tempTexts = [[NSMutableArray alloc]init];
   if (art.name && ![art.name isEqualToString:@""]) {
     [tempTitles addObject:@"Name"];
     if ([art.latitude floatValue] > 1 
         && [art.longitude floatValue] < -1) {
-      CLLocation *loc = [[[CLLocation alloc]initWithLatitude:[art.latitude floatValue] longitude:[art.longitude floatValue]]autorelease];
+      CLLocation *loc = [[CLLocation alloc]initWithLatitude:[art.latitude floatValue] longitude:[art.longitude floatValue]];
       float distanceAway = [[MyCLController sharedInstance] currentDistanceToLocation:loc];
       if (distanceAway > 0) {
         [tempTexts addObject:[art.name stringByAppendingFormat:@" (%@)", [util distanceString:distanceAway convertMax:1000 includeUnit:YES decimalPlaces:2]]];
@@ -74,15 +74,15 @@
     [tempTitles addObject:@"Description"];
     [tempTexts addObject:art.desc];
   }  
-  cellTexts = [tempTexts retain];
-  headerTitles = [tempTitles retain];
+  cellTexts = tempTexts;
+  headerTitles = tempTitles;
   
   
 }
 
 - (id)initWithArt:(ArtInstall*)artInstall {
 	self = [super initWithTitle:artInstall.name];
-	art = [artInstall retain];
+	art = artInstall;
   [self setupViewInfo];
   return self;
 }
@@ -93,10 +93,6 @@
 }
 
 
-- (void)dealloc {
-  [art release];
-  [super dealloc];
-}
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	return YES;
@@ -106,7 +102,7 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   [fetchRequest setEntity:entity];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ArtInstall = %@", art];
   [fetchRequest setPredicate:predicate];	

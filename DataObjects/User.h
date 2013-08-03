@@ -13,9 +13,9 @@
 {
 }
 
-@property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSString * username;
-@property (nonatomic, retain) NSString * emailAddress;
+@property (nonatomic, strong) NSString * name;
+@property (nonatomic, strong) NSString * username;
+@property (nonatomic, strong) NSString * emailAddress;
 
 @end
 

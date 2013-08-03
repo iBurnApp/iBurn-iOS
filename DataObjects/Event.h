@@ -18,26 +18,26 @@
   float distanceAway;
 }
 
-@property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSDate * startTime;
-@property (nonatomic, retain) NSDate * endTime;
-@property (nonatomic, retain) NSString * url;
-@property (nonatomic, retain) NSString * desc;
+@property (nonatomic, strong) NSString * name;
+@property (nonatomic, strong) NSDate * startTime;
+@property (nonatomic, strong) NSDate * endTime;
+@property (nonatomic, strong) NSString * url;
+@property (nonatomic, strong) NSString * desc;
 
-@property (nonatomic, retain) NSNumber * allDay;
-@property (nonatomic, retain) NSString * campHost;
-@property (nonatomic, retain) NSNumber * year;
-@property (nonatomic, retain) NSNumber * bm_id;
-@property (nonatomic, retain) NSNumber * camp_id;
-@property (nonatomic, retain) NSNumber * zoom;
-@property (nonatomic, retain) Favorite * Favorite;
+@property (nonatomic, strong) NSNumber * allDay;
+@property (nonatomic, strong) NSString * campHost;
+@property (nonatomic, strong) NSNumber * year;
+@property (nonatomic, strong) NSNumber * bm_id;
+@property (nonatomic, strong) NSNumber * camp_id;
+@property (nonatomic, strong) NSNumber * zoom;
+@property (nonatomic, strong) Favorite * Favorite;
 
-@property (nonatomic, retain) NSNumber * longitude;
-@property (nonatomic, retain) NSNumber * latitude;
-@property (nonatomic, retain) NSString * day;
+@property (nonatomic, strong) NSNumber * longitude;
+@property (nonatomic, strong) NSNumber * latitude;
+@property (nonatomic, strong) NSString * day;
 
 
-@property (nonatomic, retain) ThemeCamp *camp;
+@property (nonatomic, strong) ThemeCamp *camp;
 
 + (NSArray*) eventsForDay:(NSString*) day;
 + (NSString*) getDay:(NSDate*) date;

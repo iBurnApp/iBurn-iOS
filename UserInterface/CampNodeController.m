@@ -17,7 +17,7 @@
 
 
 - (NSArray*) getAllThemeCamps {  
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
@@ -63,7 +63,7 @@
 	
   camp.simpleName = [ThemeCamp createSimpleName:camp.name];    
   if ([dict objectForKey:@"latitude"]) {
-    NSNumberFormatter * f = [[[NSNumberFormatter alloc] init] autorelease];
+    NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
     [f setNumberStyle:NSNumberFormatterDecimalStyle];
     camp.latitude =  [f numberFromString:[dict objectForKey:@"latitude"]];
     camp.longitude = [f numberFromString:[dict objectForKey:@"longitude"]];

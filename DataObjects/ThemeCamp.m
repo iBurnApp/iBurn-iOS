@@ -38,7 +38,7 @@
   static NSCharacterSet* cs;
   if (!cs) {
     cs = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
-    cs = [cs retain];
+    cs = cs;
   }
   return cs;
 }
@@ -54,7 +54,7 @@
 + (ThemeCamp*) campForSimpleName:(NSString*) sName {
   
   
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
@@ -71,9 +71,7 @@
 }
 
 - (void) dealloc {
-  [geolocation release];
   geolocation = nil;
-  [super dealloc];
 }
 
 - (CLLocation *)geolocation {

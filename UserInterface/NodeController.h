@@ -17,7 +17,7 @@
 
 
 @interface NodeController : NSObject  {
-  id<NodeFetchDelegate> delegate;
+  id<NodeFetchDelegate> __unsafe_unretained delegate;
 }
 
 - (id) init;
@@ -41,7 +41,7 @@
 - (void) saveObjects:(NSArray*)objects;
 - (void) updateObject:(id)object withDict:(NSDictionary*)dict;
   
-@property (nonatomic, retain) NSArray *nodes;
-@property (nonatomic, assign) id<NodeFetchDelegate> delegate;
+@property (nonatomic, strong) NSArray *nodes;
+@property (nonatomic, unsafe_unretained) id<NodeFetchDelegate> delegate;
 
 @end

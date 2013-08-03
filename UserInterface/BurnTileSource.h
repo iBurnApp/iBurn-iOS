@@ -24,11 +24,11 @@
   BOOL reverseY;
 }
 
-@property (nonatomic, retain) NSString *uniqueTilecacheKey;
-@property (nonatomic, retain) NSString *shortName;
-@property (nonatomic, retain) NSString *longDescription;
-@property (nonatomic, retain) NSString *attribution;
-@property (nonatomic, retain) NSString *tileURL, *tileDirectory;
+@property (nonatomic, strong) NSString *uniqueTilecacheKey;
+@property (nonatomic, strong) NSString *shortName;
+@property (nonatomic, strong) NSString *longDescription;
+@property (nonatomic, strong) NSString *attribution;
+@property (nonatomic, strong) NSString *tileURL, *tileDirectory;
 
 @property (nonatomic, assign) CLLocationCoordinate2D demoCoord;
 @property (nonatomic, assign) RMSphericalTrapezium bounds;

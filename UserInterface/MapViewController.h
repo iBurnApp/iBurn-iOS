@@ -28,9 +28,9 @@
 
 }
 
-@property (nonatomic, retain) UIProgressView *progressView;
-@property (nonatomic, retain) InfoViewController *detailView;
-@property (nonatomic, retain) RMMapView *mapView;
+@property (nonatomic, strong) UIProgressView *progressView;
+@property (nonatomic, strong) InfoViewController *detailView;
+@property (nonatomic, strong) RMMapView *mapView;
 
 
 - (void) loadCamps;

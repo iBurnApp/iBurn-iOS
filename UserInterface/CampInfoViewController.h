@@ -14,7 +14,7 @@
   ThemeCamp *camp;
 }
 
-@property(nonatomic,retain) ThemeCamp *camp;
+@property(nonatomic,strong) ThemeCamp *camp;
 
 
 - (id)initWithCamp:(ThemeCamp*)cmp;

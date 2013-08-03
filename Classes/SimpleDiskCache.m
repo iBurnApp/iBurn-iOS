@@ -11,7 +11,7 @@
   static NSCharacterSet* cs;
   if (!cs) {
     cs = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
-    cs = [cs retain];
+    cs = cs;
   }
   return cs;
 }

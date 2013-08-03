@@ -21,7 +21,7 @@
 	int rowHeight = 47;
 	int offset = 135;
 	CGRect fr = CGRectMake(10, row*rowHeight+5+offset, self.view.frame.size.width-40, 24);
-	UILabel *titleLabel = [[[UILabel alloc]initWithFrame:fr]autorelease];
+	UILabel *titleLabel = [[UILabel alloc]initWithFrame:fr];
 	titleLabel.text = titleText;
 	titleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:14];
 	[bgView addSubview:titleLabel];
@@ -30,7 +30,7 @@
 	int height = 22;
 	fr = CGRectMake(10, row*rowHeight + 22 + offset, self.view.frame.size.width-40, height);
 
-	UILabel *textLabel = [[[UILabel alloc]initWithFrame:fr]autorelease];
+	UILabel *textLabel = [[UILabel alloc]initWithFrame:fr];
 	textLabel.font = [UIFont fontWithName:@"Helvetica" size:13];
 	textLabel.numberOfLines = 0;
 	textLabel.text = bodyText;
@@ -47,19 +47,19 @@
 													row:(int)row {
 	int rowHeight = 67;
 	CGRect fr = CGRectMake(10, row*rowHeight+5, self.view.frame.size.width-20-57, 24);
-	UILabel *titleLabel = [[[UILabel alloc]initWithFrame:fr]autorelease];
+	UILabel *titleLabel = [[UILabel alloc]initWithFrame:fr];
 	titleLabel.text = titleText;
 	titleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:14];
 	[bgView addSubview:titleLabel];
 
 	fr = CGRectMake(10, row*rowHeight + 27, self.view.frame.size.width-57-30, 44);
-	UILabel *textLabel = [[[UILabel alloc]initWithFrame:fr]autorelease];
+	UILabel *textLabel = [[UILabel alloc]initWithFrame:fr];
 	textLabel.font = [UIFont fontWithName:@"Helvetica" size:13];
 	textLabel.numberOfLines = 0;
 	textLabel.text = bodyText;
 	[bgView addSubview:textLabel];
 	
-	UIImageView *iv = [[[UIImageView alloc]initWithImage:[UIImage imageNamed:imageName]]autorelease];
+	UIImageView *iv = [[UIImageView alloc]initWithImage:[UIImage imageNamed:imageName]];
 	fr = CGRectMake(self.view.frame.size.width-57-10, row*rowHeight+10, iv.image.size.width, iv.image.size.height);
 	iv.frame = fr;
 	[bgView addSubview:iv];
@@ -104,7 +104,7 @@
   }
 
   if (![t canConnectToInternet]) {
-    UIAlertView *as = [[[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil]autorelease];
+    UIAlertView *as = [[UIAlertView alloc]initWithTitle:@"No Internet Connection" message:@"Sorry, please try again later." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [as show];
     return;
   }
@@ -116,7 +116,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier];
 	}
   NSDictionary *dict = [[util creditsArray]objectAtIndex:indexPath.row];
   cell.textLabel.text = [dict objectForKey:@"title"];

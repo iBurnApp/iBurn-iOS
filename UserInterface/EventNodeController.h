@@ -15,7 +15,7 @@
   
 }
 
-@property(nonatomic,retain) NSMutableDictionary *eventDateHash;
+@property(nonatomic,strong) NSMutableDictionary *eventDateHash;
 
 - (void) loadDBEvents;
 

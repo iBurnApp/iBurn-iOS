@@ -6,13 +6,12 @@
 //  Copyright 2009 Burning Man Earth. All rights reserved.
 //
 
-#import "EventTableViewController.h"
 #import "Event.h"
-#import "EventInfoViewController.h"
 #import "EventDayTable.h"
-#import "iBurnAppDelegate.h"
-#import "FavoritesTableViewController.h"
+#import "EventInfoViewController.h"
 #import "EventNodeController.h"
+#import "EventTableViewController.h"
+#import "iBurnAppDelegate.h"
 
 #import "util.h"
 @implementation EventTableViewController
@@ -33,30 +32,19 @@
 
 - (id)init {
 	if (self = [super initWithSearchPlaceholder:@""]) {
-    UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0] autorelease];
+    UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Events";
 		[self.navigationItem setTitle:@"Events"];
-    dayArray = [[util dayArray]retain];
+    dayArray = [util dayArray];
     
 	}
   return self;
 }
 
 
-- (void) showFavorites {
-	FavoritesTableViewController *f = [[[FavoritesTableViewController alloc]init]autorelease];
-	[self.navigationController pushViewController:f animated:YES];
-}
-
 - (void) loadView {
   [super loadView];
-	/*self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]initWithTitle:@"Favorites" 
-																																						style:UIBarButtonItemStyleDone 
-																																					 target:self action:@selector(showFavorites)]autorelease];
-	
-	*/
-	 [sortControl release];
 	sortControl = nil;
   self.tableView.tableHeaderView = nil;
 
@@ -68,7 +56,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	int eventIndex = [indexPath indexAtPosition: [indexPath length] - 1];
-	eventDayTable = [[[EventDayTable alloc] initWithTitle:[dayArray objectAtIndex:eventIndex]]autorelease];
+	eventDayTable = [[EventDayTable alloc] initWithTitle:[dayArray objectAtIndex:eventIndex]];
 	[[self navigationController] pushViewController:eventDayTable animated:YES];
 }
 
@@ -77,7 +65,7 @@
 	static NSString *MyIdentifier = @"MyIdentifier";
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
 	if (cell == nil) {
-		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier] autorelease];
+		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:MyIdentifier];
   }
 	int storyIndex = [indexPath indexAtPosition: [indexPath length] - 1];
   NSString *labelText = [dayArray objectAtIndex: storyIndex];

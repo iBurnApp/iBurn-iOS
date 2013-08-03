@@ -11,11 +11,6 @@
 #import "CampTableViewController.h"
 #import "ArtTableViewController.h"
 #import "EventTableViewController.h"
-#import "NewsViewController.h"
-#import "SyncViewController.h"
-#import "SettingsTableViewController.h"
-#import "CarsTableViewController.h"
-#import "FavoritesTableViewController.h"
 #import "ThemeCamp.h"
 #import "MapDownloader.h"
 #import "BurnTileSource.h"
@@ -45,7 +40,7 @@
 
 - (void) checkOrCreateDatabase {
 	//See if the CoreData database is populated.  If not populate it from the API.
-	NSFetchRequest *testRequest = [[[NSFetchRequest alloc] init] autorelease];
+	NSFetchRequest *testRequest = [[NSFetchRequest alloc] init];
 	[testRequest setEntity:[NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[self managedObjectContext]]];
 	NSError *error = nil;
 	NSInteger dbCount = [[self managedObjectContext] countForFetchRequest:testRequest error:&error];
@@ -58,7 +53,7 @@
 - (void) initControllers {
 	self.embargoed = YES;
 
-  NSMutableArray *controllers = [[[NSMutableArray alloc] init]autorelease];
+  NSMutableArray *controllers = [[NSMutableArray alloc] init];
   NSArray *classes = [NSArray arrayWithObjects:
                       [MapViewController class], 
                       [ArtTableViewController class],
@@ -72,11 +67,11 @@
   for (NSString *title in titles) {
     Class vcClass = [classes objectAtIndex:i];
     if ([title isEqualToString:@""]) {
-      viewController = [[[vcClass alloc]init]autorelease];
+      viewController = [[vcClass alloc]init];
     } else {
-      viewController = [[[vcClass alloc]initWithTitle:title]autorelease];
+      viewController = [[vcClass alloc]initWithTitle:title];
     }
-    UINavigationController *nav = [[[UINavigationController alloc]initWithRootViewController:viewController]autorelease];  
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:viewController];  
     nav.navigationBar.barStyle = UIBarStyleBlack;
     [controllers addObject:nav];
     i++;
@@ -90,11 +85,11 @@
   [window makeKeyAndVisible];
   //[self performSelector:@selector(downloadMaps) withObject:nil afterDelay:5];
   
-  self.artNodeController = [[[ArtNodeController alloc]init]autorelease];
+  self.artNodeController = [[ArtNodeController alloc]init];
   self.artNodeController.delegate = (ArtTableViewController*)[[tabBarController.viewControllers objectAtIndex:1]visibleViewController];
-  self.campNodeController = [[[CampNodeController alloc]init]autorelease];
+  self.campNodeController = [[CampNodeController alloc]init];
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
-  self.eventNodeController = [[[EventNodeController alloc]init]autorelease];
+  self.eventNodeController = [[EventNodeController alloc]init];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   
   if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
@@ -130,7 +125,7 @@
 
 - (void) downloadMaps:(BOOL) refreshTiles {
   // Check internet connection
-  BurnTileSource *bts = [[[BurnTileSource alloc] init] autorelease];
+  BurnTileSource *bts = [[BurnTileSource alloc] init];
   if (![self canConnectToInternet]) {
     NSFileManager *NSFm= [NSFileManager defaultManager]; 
     
@@ -141,13 +136,12 @@
                             message:@"Please start iBurn while connected to the internet to download playa data"
                             delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
       [alert show];
-      [alert release];
       return;
     }
   }
   
   MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
-  MapDownloader* dl = [[[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView] autorelease];
+  MapDownloader* dl = [[MapDownloader alloc] initWithTileSource:(RMTileSource*)bts progressView:mapViewController.progressView];
   [self setViewForDownloading];
   dl.refreshTiles = refreshTiles;
   [NSThread detachNewThreadSelector:@selector(startMapDownload) toTarget:dl withObject:nil];
@@ -169,7 +163,7 @@
 - (void)postLaunch {
 	if (!launchDefault) return;
   //reachability = [[Reachability reachabilityWithHostName:@"earthdev.burningman.com"] retain];
-  reachability = [[Reachability reachabilityWithHostName:@"www.gaiagps.com"] retain];
+  reachability = [Reachability reachabilityWithHostName:@"www.gaiagps.com"];
   
 	[reachability startNotifier];
   [self canConnectToInternet];
@@ -295,7 +289,7 @@
 	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
-	NSPersistentStoreCoordinator* psc = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]] autorelease];
+	NSPersistentStoreCoordinator* psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
 	if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
 		/*
 		 Replace this implementation with code to handle the error appropriately.
@@ -433,17 +427,6 @@
 }
 
 
-- (void)dealloc {
-	[managedObjectContext_ release];
-	[managedObjectModel_ release];
-	[persistentStoreCoordinator_ release];	
-	[tabBarController release];
-  [window release];
-  [campNodeController release];
-  [artNodeController release];
-  [eventNodeController release];
-  [super dealloc];
-}
 
 
 @end

@@ -22,7 +22,9 @@
 #import "GaiaMarkerManager.h"
 #import "BurnMapView.h"
 #import "iBurnAppDelegate.h"
+#import "RMLayerCollection.h"
 #import "RMProjection.h"
+
 #import "Event.h"
 #import "EventInfoViewController.h"
 #import "GaiaMarker.h"
@@ -34,14 +36,13 @@
 - (void) showLocationErrorAlertView {
 	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Location Unknown" message:@"Either we can't find you or you're not at Burning Man.  Make sure you are at Burning Man with a clear view of the sky and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
 	[av show];
-	[av release];
 }
 
 - (void) showMapForObject:(id)obj {
   CLLocationCoordinate2D point;
 	point.latitude = [[obj latitude] floatValue]; //Center of 2009 City
   point.longitude = [[obj longitude] floatValue];
-	GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]] autorelease];
+	GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
 	[newMarker changeLabelUsingText:[obj name] 
                              font:[UIFont boldSystemFontOfSize:12.0] 
 									foregroundColor:[UIColor blueColor] 
@@ -59,7 +60,7 @@
 }  
 
 - (NSArray*) getAllObjects:(NSString*) objType {  
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:objType inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
@@ -79,7 +80,7 @@
     
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
-    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]] autorelease];
+    GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]];
     [newMarker changeLabelUsingText:[camp name] 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
@@ -106,7 +107,7 @@
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
 		coord.longitude = [camp.longitude floatValue];
-    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]] autorelease];
+    GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
     [newMarker changeLabelUsingText:[camp name] 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
@@ -131,7 +132,7 @@
 		coord.latitude = [camp.latitude floatValue];
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
-    GaiaMarker *newMarker = [[[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]] autorelease];
+    GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]];
     [newMarker changeLabelUsingText:nil 
                                font:[UIFont boldSystemFontOfSize:12.0] 
                     foregroundColor:[UIColor blueColor] 
@@ -174,17 +175,17 @@
   NSString *markerString = (NSString*)marker.data;
   if ([markerString isEqualToString:@"ThemeCamp"]) {
     ThemeCamp * camp = [ThemeCamp campForSimpleName:[marker waypointID]];
-    self.detailView = [[[CampInfoViewController alloc] initWithCamp:camp] autorelease];
+    self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
 
   }
   if ([markerString isEqualToString:@"ArtInstall"]) {
     ArtInstall * art = [ArtInstall artForName:[marker waypointID]];
-    self.detailView = [[[ArtInfoViewController alloc] initWithArt:art] autorelease];
+    self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
     
   }
   if ([markerString isEqualToString:@"Event"]) {
     Event * event = [Event eventForName:[marker waypointID]];
-    self.detailView = [[[EventInfoViewController alloc] initWithEvent:event] autorelease];
+    self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
     
   }
   [self.navigationController pushViewController:detailView animated:YES];	
@@ -212,10 +213,10 @@
   _needFetchQuadrant = 0;
   _markersNeedDisplay = 0;
 	self.title = aTitle;
-  UITabBarItem *tabBarItem = [[[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0] autorelease];
+  UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0];
   self.tabBarItem = tabBarItem;
 	
-  UISegmentedControl *downloadButton = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]]autorelease];
+  UISegmentedControl *downloadButton = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]];
   downloadButton.frame = CGRectMake(0,0,35,35);
   downloadButton.momentary = YES;
   downloadButton.tintColor = [UIColor darkGrayColor];
@@ -224,7 +225,7 @@
                      action:@selector(home:)
            forControlEvents:UIControlEventValueChanged];
   
-  locationButton = [[[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"locate-icon.png"]]]autorelease];
+  locationButton = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"locate-icon.png"]]];
   locationButton.frame = CGRectMake(45,0,35,35);
   locationButton.tintColor = [UIColor darkGrayColor];
   locationButton.momentary = YES;
@@ -234,15 +235,15 @@
            forControlEvents:UIControlEventValueChanged];
  
 	
-	UIView *buttonView = [[[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)]autorelease];
+	UIView *buttonView = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
   [buttonView addSubview: locationButton];
-  UIBarButtonItem *item = [[[UIBarButtonItem alloc]initWithCustomView:buttonView]autorelease];
+  UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithCustomView:buttonView];
   [self.navigationItem setTitle:@"Black Rock City"];
 	self.navigationItem.rightBarButtonItem = item;
 
-	UIView *buttonView2 = [[[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)]autorelease];
+	UIView *buttonView2 = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
   [buttonView2 addSubview: downloadButton];
-  UIBarButtonItem *item2 = [[[UIBarButtonItem alloc]initWithCustomView:buttonView2]autorelease];
+  UIBarButtonItem *item2 = [[UIBarButtonItem alloc]initWithCustomView:buttonView2];
 	self.navigationItem.leftBarButtonItem = item2;
 	
 	
@@ -270,7 +271,7 @@
 }
 
 - (void) redownloadMaps:(id)sender {  
-  UIAlertView *av = [[[UIAlertView alloc]initWithTitle:@"Redownload maps?" message:@"Would you like to re-download all the maps, in case there have been updates?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil]autorelease];
+  UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Redownload maps?" message:@"Would you like to re-download all the maps, in case there have been updates?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
   [av show];
 }
   
@@ -286,7 +287,7 @@
 	if(!lm.locationServicesEnabled) return NO;
 	if(lm.location == nil) return NO;
 	//NSLog(@"%@", lm.location);
-	BurnTileSource *tileSource = [[[BurnTileSource alloc] init] autorelease];
+	BurnTileSource *tileSource = [[BurnTileSource alloc] init];
 	RMSphericalTrapezium bounds = [tileSource latitudeLongitudeBoundingBox];
 	if([self sphericalTrapezium:bounds containsPoint:lm.location.coordinate]) {
 		return YES;
@@ -333,15 +334,15 @@
 
 - (void)loadView {
   [super loadView];
-  [self setMapView:[[[BurnMapView alloc]initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)]autorelease]];
-  BurnTileSource* bts = [[[BurnTileSource alloc] init] autorelease];
+  [self setMapView:[[BurnMapView alloc]initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)]];
+  BurnTileSource* bts = [[BurnTileSource alloc] init];
   NSLog(@"bts zooms %f %f", [bts minZoom], [bts maxZoom]);
   RMCachedTileSource* cts = [RMCachedTileSource cachedTileSourceWithSource:bts];
   [mapView.contents setTileSource:cts];
   [mapView setBackgroundColor:[UIColor blackColor]];
   self.view = mapView;
-  self.progressView = [[[UIProgressView alloc] 
-                        initWithProgressViewStyle:UIProgressViewStyleBar]autorelease];
+  self.progressView = [[UIProgressView alloc] 
+                        initWithProgressViewStyle:UIProgressViewStyleBar];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
@@ -379,7 +380,7 @@
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
       width -= 200;
     }
-    UILabel *lbl = [[[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)]autorelease];
+    UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)];
     
     lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
     lbl.tag = 999;
@@ -409,7 +410,7 @@
 	} else {
     CLLocationCoordinate2D coord = newLocation.coordinate;
     if (!currentLocationMarker) {	
-      currentLocationMarker = [[[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue_dot.gif"]] retain];
+      currentLocationMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue_dot.gif"]];
       [currentLocationMarker setProjectedLocation:[[mapView.contents projection] latLongToPoint:coord]];
       [[mapView.contents overlay] addSublayer:currentLocationMarker];	
     } else {
@@ -433,7 +434,6 @@
 								   cancelButtonTitle:nil
 								   otherButtonTitles:@"OK", nil];
 	[errorAlert show];
-	[errorAlert release];
 }
 
 
@@ -444,10 +444,6 @@
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-	[mapView release];
-  [detailView release];
-  [progressView release];
-  [super dealloc];
 }
 
 

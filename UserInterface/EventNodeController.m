@@ -40,7 +40,7 @@
   if (!gpxDateFormatter) {
     gpxDateFormatter = [[NSDateFormatter alloc] init];
     NSLocale *enUSPOSIXLocale;
-    enUSPOSIXLocale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
+    enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
     [gpxDateFormatter setLocale:enUSPOSIXLocale];
 	  [gpxDateFormatter setDateFormat:@"yyyy-MM-dd' 'HH:mm:ss"];
     [gpxDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"MDT"]];
@@ -60,7 +60,7 @@
   }                                   
   NSString *dow = [dateFormatter stringFromDate:event.startTime];
   if (dow && ![eventDateHash objectForKey:dow]) {
-    [eventDateHash setValue:[[[NSMutableArray alloc]init]autorelease] forKey:dow];
+    [eventDateHash setValue:[[NSMutableArray alloc]init] forKey:dow];
     //NSLog(@"Making new array %@",dow);
   }
   if (dow) [[eventDateHash objectForKey:dow]addObject:event];  
@@ -111,9 +111,9 @@
   NSLog(@"parsing events");
   NSMutableArray* arts = [NSMutableArray arrayWithArray:(NSArray*)jsonNodes];
   NSSortDescriptor *lastDescriptor =
-  [[[NSSortDescriptor alloc] initWithKey:@"start_time"
+  [[NSSortDescriptor alloc] initWithKey:@"start_time"
                                ascending:YES
-                                selector:@selector(compare:)] autorelease];
+                                selector:@selector(compare:)];
   NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
   NSArray *sortedArray = [arts sortedArrayUsingDescriptors:descriptors];
   CLLocationCoordinate2D dummy = {0,0};
@@ -136,7 +136,7 @@
 }
 
 - (NSArray*) getNamesFromDicts:(NSArray*)dicts {
-  NSMutableArray *names = [[[NSMutableArray alloc] init] autorelease];
+  NSMutableArray *names = [[NSMutableArray alloc] init];
   for (NSDictionary *dict in dicts) {
     [names addObject:[dict objectForKey:@"title"]];
   }
@@ -191,20 +191,19 @@
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Event"
 																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
 	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
 	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
-	[sort release];
 	NSError *error;
 	NSArray *events = [moc executeFetchRequest:request error:&error];
 	if(events == nil || [events count] == 0) {
 		//NSLog(@"Fetch failed with error: %@", error);
 	} else {
     NSSortDescriptor *lastDescriptor =
-    [[[NSSortDescriptor alloc] initWithKey:@"startTime"
+    [[NSSortDescriptor alloc] initWithKey:@"startTime"
                                  ascending:YES
-                                  selector:@selector(compare:)] autorelease];
+                                  selector:@selector(compare:)];
     NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
     NSArray *sortedArray = [events sortedArrayUsingDescriptors:descriptors];
     for (Event* event in sortedArray) {

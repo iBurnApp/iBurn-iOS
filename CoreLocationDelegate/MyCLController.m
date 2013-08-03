@@ -9,7 +9,7 @@ static MyCLController *sharedCLDelegate = nil;
 
 - (id) init {
 	if (self = [super init]) {
-		self.locationManager = [[[CLLocationManager alloc] init] autorelease];
+		self.locationManager = [[CLLocationManager alloc] init];
 		self.locationManager.delegate = self; 
     iOSVersion = [[UIDevice currentDevice].systemVersion doubleValue];
 
@@ -56,10 +56,7 @@ BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, RMLatLong point)
 
 - (void)dealloc {
   delegate = nil;
-  self.locationManager = nil;
   [self.timer invalidate];
-  self.timer = nil;
-  [super dealloc];
 }
 
 
@@ -85,25 +82,24 @@ int fakeTime;
 - (void) postFakePoint:(int) cnt {
 	//if (fakeTime % 3 != 0) return;
   
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-  CLLocationCoordinate2D reading = lastReading;
-  float randomLat = .0004 + (.0002/ (arc4random() % 10 + 1));
-  float randomLon = .0004 + (.0002 / (arc4random() % 10 + 1));
-  float latitude = reading.latitude + randomLat;
-  float longitude = reading.longitude + randomLon;
+  @autoreleasepool {
+    CLLocationCoordinate2D reading = lastReading;
+    float randomLat = .0004 + (.0002/ (arc4random() % 10 + 1));
+    float randomLon = .0004 + (.0002 / (arc4random() % 10 + 1));
+    float latitude = reading.latitude + randomLat;
+    float longitude = reading.longitude + randomLon;
 
-  
-  CLLocationCoordinate2D coord = {latitude, longitude};
-  //NSLog(@"%@", [NSDate date]);
-  CLLocation * location = [[[CLLocation alloc] initWithCoordinate:coord
-                                                         altitude:0
-                                               horizontalAccuracy:10
-                                                 verticalAccuracy:10 
-                                                        timestamp:[NSDate date]] 
-                           autorelease];
-  lastReading = coord;
-  [self locationManager:locationManager didUpdateToLocation:location fromLocation:nil];
-  [pool release];
+    
+    CLLocationCoordinate2D coord = {latitude, longitude};
+    //NSLog(@"%@", [NSDate date]);
+    CLLocation * location = [[CLLocation alloc] initWithCoordinate:coord
+                                                           altitude:0
+                                                 horizontalAccuracy:10
+                                                   verticalAccuracy:10 
+                                                          timestamp:[NSDate date]];
+    lastReading = coord;
+    [self locationManager:locationManager didUpdateToLocation:location fromLocation:nil];
+  }
 }	
 
 

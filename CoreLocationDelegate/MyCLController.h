@@ -9,15 +9,15 @@
 // Class definition
 @interface MyCLController : NSObject <CLLocationManagerDelegate> {
 	CLLocationManager *locationManager;
-	id delegate;
+	id __unsafe_unretained delegate;
   double iOSVersion;
   CLLocationCoordinate2D lastReading;
 }
 
-@property (nonatomic, retain) NSTimer *timer;
+@property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, assign) CLLocationCoordinate2D lastReading;
-@property (nonatomic, retain) CLLocationManager *locationManager;
-@property (nonatomic, assign) id <MyCLControllerDelegate> delegate;
+@property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, unsafe_unretained) id <MyCLControllerDelegate> delegate;
 
 
 - (void)locationManager:(CLLocationManager *)manager

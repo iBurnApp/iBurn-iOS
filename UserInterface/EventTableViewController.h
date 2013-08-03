@@ -18,7 +18,7 @@
   NSArray *dayArray;
 }
 
-@property (nonatomic, retain) EventDayTable *eventDayTable;
+@property (nonatomic, strong) EventDayTable *eventDayTable;
 
 
 

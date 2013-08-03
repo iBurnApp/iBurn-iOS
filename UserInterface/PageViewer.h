@@ -17,8 +17,8 @@
   UISegmentedControl *backButton, *forwardButton;
 }
 
-@property (nonatomic, retain) UIWebView *page;
-@property (nonatomic, retain) NSString *urlString;
+@property (nonatomic, strong) UIWebView *page;
+@property (nonatomic, strong) NSString *urlString;
 
 - (id)initForString:(NSString*)string;
 

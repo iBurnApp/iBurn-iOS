@@ -9,6 +9,7 @@
 #import "GaiaMarkerManager.h"
 #import "GaiaMarker.h"
 #import "RMMapContents.h"
+#import "RMMercatorToScreenProjection.h"
 #import "RMLayerCollection.h"
 
 #define MAX_LABELS_TO_SHOW ([[UIScreen mainScreen] applicationFrame].size.height * [[UIScreen mainScreen] applicationFrame].size.width)/5000
@@ -25,19 +26,13 @@
 #pragma mark Adding / Removing / Displaying Markers
 
 
-- (void)dealloc {
-	self.markerList = nil;
-	self.markersOnScreen = nil;
-	self.markerIdSet = nil;
-	[super dealloc];
-}
 
 
 - (id)initWithContents:(RMMapContents *)mapContents {
 	if (self = [super initWithContents:mapContents]) {
-    self.markerList = [[[NSMutableArray alloc] init]autorelease];
-    self.markersOnScreen = [[[NSMutableArray alloc] init]autorelease]; 	
-    self.markerIdSet = [[[NSMutableSet alloc] init]autorelease];
+    self.markerList = [[NSMutableArray alloc] init];
+    self.markersOnScreen = [[NSMutableArray alloc] init]; 	
+    self.markerIdSet = [[NSMutableSet alloc] init];
     self.showLabels = YES;
     self.hideMarkers = NO;
     self.hideUserMarkers = NO;

@@ -21,7 +21,7 @@
 
 @property(nonatomic, assign) BOOL userCreated;
 @property(nonatomic, assign) int zoom;
-@property(nonatomic,retain) NSString *waypointID;
+@property(nonatomic,strong) NSString *waypointID;
 
 
 - (id) initWithUIImage: (UIImage*) image withZoom:(int)z withID:(NSString*)wptID;

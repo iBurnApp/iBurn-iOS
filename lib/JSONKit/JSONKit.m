@@ -4,6 +4,8 @@
 //  Dual licensed under either the terms of the BSD License, or alternatively
 //  under the terms of the Apache License, Version 2.0, as specified below.
 //
+// using this fork to rrmove warnings: https://github.com/creativemess/JSONKit
+
 
 /*
  Copyright (c) 2011, John Engelhart

@@ -37,11 +37,6 @@
 }
 
 
-- (void) dealloc {
-  [geolocation release];
-  self.camp = nil;
-  [super dealloc];
-}
 
 + (NSString*) getDay:(NSDate*) date {
   static NSDateFormatter *dateFormatter = nil;
@@ -59,7 +54,7 @@
 }
 
 + (NSArray*) eventsForDay:(NSString*) day {
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Event" inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
@@ -76,7 +71,7 @@
 + (Event*) eventForName:(NSString*) sName {
   
   
-  NSFetchRequest *fetchRequest = [[[NSFetchRequest alloc] init] autorelease];
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:@"Event" inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
@@ -100,7 +95,7 @@
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"ThemeCamp"
 																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[[NSFetchRequest alloc]init]autorelease];
+	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"bm_id = %@", self.camp_id];
   [request setPredicate:predicate];
