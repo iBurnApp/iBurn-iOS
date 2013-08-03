@@ -104,36 +104,28 @@
 }
 
 
-- (void) createAndUpdate:(NSArray*)knownObjects 
-             withObjects:(NSArray*)objects 
-            forClassName:(NSString*)className 
-								fromFile:(BOOL)fromFile {
+- (void) createAndUpdate:(NSArray*)knownObjects
+             withObjects:(NSArray*)objects
+            forClassName:(NSString*)className
+                fromFile:(BOOL)fromFile {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t managedObjectContext];
-  for (NSDictionary *dict in objects) {
-    id matchedCamp = nil;
+    NSManagedObjectContext *moc = [t managedObjectContext];
+    for (NSDictionary *dict in objects) {
+        id matchedCamp = nil;
 		//NSLog(@"The title is %@", [dict objectForKey:@"title"]);
-    for (id<BurnDataObject> c in knownObjects) {
-      if ([[c bm_id] isEqual:[self nullOrObject:[dict objectForKey:@"id"]]]
-					|| [[[c name]lowercaseString] isEqual:[(NSString*)[self nullOrObject:[dict objectForKey:@"title"]]lowercaseString]]) {
-        matchedCamp = c;
-        break;
-      }
+       
+        matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
+                                                        inManagedObjectContext:moc];
+        
+        [self updateObjectFromFile:matchedCamp withDict:dict];
+	
     }
-    if (!matchedCamp) {
-      matchedCamp = [NSEntityDescription insertNewObjectForEntityForName:className
-                                                  inManagedObjectContext:moc];      
-    }
-		if (fromFile) {
-      [self updateObjectFromFile:matchedCamp withDict:dict];
-		} else {
-      [self updateObject:matchedCamp withDict:dict];
-		}
-  }
-  [self saveObjects:knownObjects];
+    [self saveObjects:knownObjects];
 }  
 
-
+- (void) importDataFromFile:(NSString*)filename {
+  
+}
 // implemented in subclasses
 - (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict { }
 

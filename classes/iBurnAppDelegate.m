@@ -264,62 +264,32 @@
 }
 
 
-- (void) checkAndCreateDatabase {
-  NSString* defaultDBName =  @"iBurn.sqlite";
-  
-
-  NSFileManager *fileManager = [NSFileManager defaultManager];
-  NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
-  BOOL success = [fileManager fileExistsAtPath:dbPath];
-  
-  // If the database already exists then return without doing anything
-  if(success) return;
-  
-  // Get the path to the database in the application package
-  NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath]
-                                   stringByAppendingPathComponent:defaultDBName];
-  
-  // Copy the database from the package to the users filesystem  
-  [fileManager copyItemAtPath:databasePathFromApp toPath:dbPath
-                        error:nil];
-}
 
 
 
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
-	[self checkAndCreateDatabase];
+  NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
+  BOOL success = [[NSFileManager defaultManager] fileExistsAtPath:dbPath];
+  
 	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
 	NSPersistentStoreCoordinator* psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
 	if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
-		/*
-		 Replace this implementation with code to handle the error appropriately.
-		 
-		 abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. If it is not possible to recover from the error, display an alert panel that instructs the user to quit the application by pressing the Home button.
-		 
-		 Typical reasons for an error here include:
-		 * The persistent store is not accessible;
-		 * The schema for the persistent store is incompatible with current managed object model.
-		 Check the error message to determine what the actual problem was.
-		 
-		 
-		 If the persistent store is not accessible, there is typically something wrong with the file path. Often, a file URL is pointing into the application's resources directory instead of a writeable directory.
-		 
-		 If you encounter schema incompatibility errors during development, you can reduce their frequency by:
-		 * Simply deleting the existing store:
-		 [[NSFileManager defaultManager] removeItemAtURL:storeURL error:nil]
-		 
-		 * Performing automatic lightweight migration by passing the following dictionary as the options parameter: 
-		 [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES],NSMigratePersistentStoresAutomaticallyOption, [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption, nil];
-		 
-		 Lightweight migration will only work for a limited set of schema changes; consult "Core Data Model Versioning and Data Migration Programming Guide" for details.
-		 
-		 */
-		NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-		abort();
+    NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+
+    [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
+    return [self createPersistentStoreCoordinator];
 	}    
 	
+  if (!success) {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+      [self.campNodeController importDataFromFile:@"camp_data_and_location_ids.json"];
+      [self.eventNodeController importDataFromFile:@"event_data_and_locations"];
+      [self.artNodeController importDataFromFile:@"art_data_and_locations"];
+    });
+    
+  }
 	return psc;
 }
 

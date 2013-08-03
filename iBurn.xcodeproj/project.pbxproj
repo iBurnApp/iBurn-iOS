@@ -86,12 +86,10 @@
 		4933610617AD9C0E0014C2C2 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4933573C17AD9C0E0014C2C2 /* rod_garrett.jpg */; };
 		4933610717AD9C0E0014C2C2 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573D17AD9C0E0014C2C2 /* MainWindow-iPad.xib */; };
 		4933610817AD9C0E0014C2C2 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573E17AD9C0E0014C2C2 /* MainWindow.xib */; };
-		4933610917AD9C0E0014C2C2 /* dist.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4933574017AD9C0E0014C2C2 /* dist.plist */; };
-		4933610A17AD9C0E0014C2C2 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4933574117AD9C0E0014C2C2 /* Entitlements.plist */; };
-		4933610B17AD9C0E0014C2C2 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4933574217AD9C0E0014C2C2 /* Info.plist */; };
-		4933610C17AD9C0E0014C2C2 /* routeme.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4933574317AD9C0E0014C2C2 /* routeme.plist */; };
-		4933610D17AD9C0E0014C2C2 /* Test.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4933574417AD9C0E0014C2C2 /* Test.plist */; };
 		495E753417AD8EC500419C43 /* Pods.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1794D3F212054D21BCF52B79 /* Pods.xcconfig */; };
+		5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415D17ADB7370070BBAB /* art_data_and_locations.json */; };
+		5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */; };
+		5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415F17ADB7370070BBAB /* event_data_and_locations.json */; };
 		50BF510B12062D4F00555D13 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF510A12062D4F00555D13 /* MobileCoreServices.framework */; };
 		50BF511C12062DA800555D13 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511B12062DA800555D13 /* SystemConfiguration.framework */; };
 		50BF511F12062DB100555D13 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511E12062DB100555D13 /* CFNetwork.framework */; };
@@ -232,6 +230,9 @@
 		4933574217AD9C0E0014C2C2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4933574317AD9C0E0014C2C2 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		4933574417AD9C0E0014C2C2 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
+		5002415D17ADB7370070BBAB /* art_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data_and_locations.json; path = bin/playa_data/results/art_data_and_locations.json; sourceTree = SOURCE_ROOT; };
+		5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = camp_data_and_locations_ids.json; path = bin/playa_data/results/camp_data_and_locations_ids.json; sourceTree = SOURCE_ROOT; };
+		5002415F17ADB7370070BBAB /* event_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = event_data_and_locations.json; path = bin/playa_data/results/event_data_and_locations.json; sourceTree = SOURCE_ROOT; };
 		50BF510A12062D4F00555D13 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		50BF511B12062DA800555D13 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		50BF511E12062DB100555D13 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
@@ -403,6 +404,9 @@
 		49334D3F17AD9C060014C2C2 /* data */ = {
 			isa = PBXGroup;
 			children = (
+				5002415D17ADB7370070BBAB /* art_data_and_locations.json */,
+				5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */,
+				5002415F17ADB7370070BBAB /* event_data_and_locations.json */,
 				49334D4017AD9C060014C2C2 /* credits.json */,
 				49334D4117AD9C060014C2C2 /* date_strings.json */,
 				49334D4217AD9C060014C2C2 /* day_array.json */,
@@ -662,11 +666,9 @@
 				4933610617AD9C0E0014C2C2 /* rod_garrett.jpg in Resources */,
 				4933610717AD9C0E0014C2C2 /* MainWindow-iPad.xib in Resources */,
 				4933610817AD9C0E0014C2C2 /* MainWindow.xib in Resources */,
-				4933610917AD9C0E0014C2C2 /* dist.plist in Resources */,
-				4933610A17AD9C0E0014C2C2 /* Entitlements.plist in Resources */,
-				4933610B17AD9C0E0014C2C2 /* Info.plist in Resources */,
-				4933610C17AD9C0E0014C2C2 /* routeme.plist in Resources */,
-				4933610D17AD9C0E0014C2C2 /* Test.plist in Resources */,
+				5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */,
+				5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */,
+				5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
