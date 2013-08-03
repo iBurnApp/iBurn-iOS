@@ -9,6 +9,7 @@ import sys
 import re
 import urllib2
 import json
+import re
 
 def _clean_string(str):
     if str:
@@ -25,27 +26,33 @@ def _clean_string(str):
 def _parse_xml(xml):
     parsed_data = []
     for p in xml.iterchildren():
-        data = p.text
-        if data is None:
-            data = lxml.html.tostring(p)
+        if p.text is None:
+            data = lxml.html.tostring(p, encoding=unicode)
+        else:
+            data = lxml.html.tostring(p, method='text', encoding=unicode)
         data = re.sub(r"^<br>", "", data)\
             .replace("<p>", "\n")\
             .replace("<div style=\"clear:both\"></div>", "")
+        data = data.encode("utf-8")
         parsed_data.append(data)
     return parsed_data
 
 def _request(url, element):
+    #print url
     opener = urllib2.build_opener()
     req = urllib2.Request(url)
     f = opener.open(req)
-    data = json.loads(f.read()[1:-1])
-    root = lxml.html.soupparser.fromstring(data[element])
-    return root   
+    data = f.read()[1:-1]
+    data = json.loads(data)
+    data = data[element]
+    data = re.sub(r"<script[\w\s=\/\"\n{}>:,;'-\.#]*</script>", "", data, flags=re.MULTILINE)
+    root = lxml.html.soupparser.fromstring(data)
+    return root
 
 class Honorarium(object):
 
     # http://www.burningman.com/installations/art_honor.html
-    PROXY_URL = "http://blog.burningman.com/ctrl/art/?job=getData&yy=2012&artType=H"
+    PROXY_URL = "http://blog.burningman.com/ctrl/art/?job=getData&yy=2013&artType=H"
 
     def _parse_artist(self, artist):
         ret = {}
@@ -92,17 +99,20 @@ class Camp(object):
     ROOT_URL = "http://www.burningman.com"
 
     def get_index(self):
-        return list("ABCDEFGHIJKLMNOPQRSTUVWXYZ#")
+        #return list("ABCDEFGHIJKLMNOPQRSTUVWXYZ#")
+        return list("W")
 
     def _parse_camps(self, camp):
-        c = camp.getnext()
+        c = camp
+        #c = camp.getnext()
+        #print c.text_content().encode("utf-8")
         parsed_data = []
 
         if c is None:
             return
 
         parsed_data = _parse_xml(c)
-        
+
         ret = {}
         i = 0
         parsing_desc = False
@@ -140,8 +150,8 @@ class Camp(object):
     def get_data(self):
         results = []
         for index in self.get_index():
-            root = _request(self.PROXY_URL+"?job=getData&yy=2012&ci=%s" % index, "campData")
-            camps = root.xpath('//div')
+            root = _request(self.PROXY_URL+"?job=getData&yy=2013&ci=%s" % index, "campData")
+            camps = root.xpath('//div[@class="camp"]')
             results.extend([self._parse_camps(i) for i in camps])
         return results
 
@@ -157,4 +167,5 @@ if __name__ == "__main__":
 
     h = Class()
     data = h.get_data()
-    print json.dumps(data)
+    print json.dumps(data, ensure_ascii=False)
+    #print json.dumps(data)
