@@ -32,13 +32,11 @@
 	[av show];
 }
 
-#warning mapbox
 
-
--(RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-  NSLog(@"Marker is called!"); //Is not outputted so this method is never called.
-  RMMarker *marker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
-  return marker;
+- (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+  RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
+  newMarker.anchorPoint = CGPointMake(.5,.8);
+  return newMarker;
 }
 
 
@@ -58,124 +56,66 @@
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSEntityDescription *entity = [NSEntityDescription entityForName:objType inManagedObjectContext:[t managedObjectContext]];
   [fetchRequest setEntity:entity];
-  
   NSError *error;
   NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
-  
   return objects;
 }
 
 
-- (void) loadCamps {
-  for (ThemeCamp* camp in [self getAllObjects:@"ThemeCamp"]) {
-    
+- (void) loadDataType:(NSString*)dataType iconName:(NSString*)iconName {
+  for (ThemeCamp* camp in [self getAllObjects:dataType]) {
 		CLLocationCoordinate2D coord;
 		coord.latitude = [camp.latitude floatValue];
-    
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
-#warning mapbox
-    /*
-     GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"blue-pin-down.png"]];
-     [newMarker changeLabelUsingText:[camp name]
-     font:[UIFont boldSystemFontOfSize:12.0]
-     foregroundColor:[UIColor blueColor]
-     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
-     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
-     newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-     newMarker.data = @"ThemeCamp";
-     newMarker.waypointID = camp.simpleName;
-     
-     newMarker.zoom = 19;
-     if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES && [[UIScreen mainScreen] scale] == 2.00) {
-     newMarker.zoom = 18;
-     }
-     newMarker.anchorPoint = CGPointMake(.5,.8);
-     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];
-     */
+    
+    RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
+                                                         coordinate:coord
+                                                           andTitle:[camp name]];
+    annotation.annotationIcon = [UIImage imageNamed:iconName];
+    annotation.annotationType = dataType;
+    [mapView addAnnotation:annotation];
+    // newMarker.waypointID = camp.simpleName;
 	}
+}
+
+
+- (void) loadCamps {
+  [self loadDataType:@"ThemeCamp" iconName:@"red-pin-down.png"];
+  // zoom 18 or 19
 }
 
 
 - (void) loadArt {
-  for (ArtInstall* camp in [self getAllObjects:@"ArtInstall"]) {
-    
-		CLLocationCoordinate2D coord;
-		coord.latitude = [camp.latitude floatValue];
-		coord.longitude = [camp.longitude floatValue];
-#warning mapbox
-    
-    /*
-     
-     GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"red-pin-down.png"]];
-     [newMarker changeLabelUsingText:[camp name]
-     font:[UIFont boldSystemFontOfSize:12.0]
-     foregroundColor:[UIColor blueColor]
-     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
-     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
-     newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-     newMarker.data = @"ArtInstall";
-     newMarker.waypointID = [camp name];
-     newMarker.zoom = 17;
-     newMarker.anchorPoint = CGPointMake(.5,.8);
-     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];
-     */
-	}
+  [self loadDataType:@"ArtInstall" iconName:@"blue-pin-down.png"];
+  // zoom 17
 }
 
 
 - (void) loadEvents {
-  //TODO change to today
-  for (ThemeCamp* camp in [Event getTodaysEvents]) {
-    
+  for (Event* event in [Event getTodaysEvents]) {
 		CLLocationCoordinate2D coord;
-		coord.latitude = [camp.latitude floatValue];
+		coord.latitude = [event.latitude floatValue];
     if (coord.latitude < 1) continue;
-		coord.longitude = [camp.longitude floatValue];
-    
-#warning mapbox
-    /*
-     
-     GaiaMarker *newMarker = [[GaiaMarker alloc] initWithUIImage:[UIImage imageNamed:@"green-pin-down.png"]];
-     [newMarker changeLabelUsingText:nil
-     font:[UIFont boldSystemFontOfSize:12.0]
-     foregroundColor:[UIColor blueColor]
-     backgroundColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:.7]];
-     newMarker.label.frame = CGRectMake(newMarker.label.frame.origin.x, newMarker.label.frame.origin.y-23,
-     newMarker.label.frame.size.width, newMarker.label.frame.size.height);
-     newMarker.data = @"Event";
-     newMarker.waypointID = camp.name;
-     newMarker.zoom = 17;
-     newMarker.anchorPoint = CGPointMake(.5,.8);
-     [mapView.contents.markerManager addMarker:newMarker AtLatLong:coord];
-     */
-	}
+		coord.longitude = [event.longitude floatValue];
+    RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
+                                                         coordinate:coord
+                                                           andTitle:[event name]];
+    annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
+    annotation.annotationType = @"Event";
+    [mapView addAnnotation:annotation];
+  }
 }
+
 
 - (void) loadMarkers {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   if (t.embargoed) return;
-#warning mapbox
-  /*
-   GaiaMarkerManager *gaiaMarkerManager = (GaiaMarkerManager*)mapView.contents.markerManager;
-   [gaiaMarkerManager removeMarkers];
-   [gaiaMarkerManager setShowLabels:YES];
-   */
   [self loadArt];
   [self loadCamps];
   [self loadEvents];
-  
 }
 
-
-
-
-
-- (void) showMarkersOnScreen {
-#warning mapbox
-  /*  [(GaiaMarkerManager*)self.mapView.contents.markerManager showMarkersOnScreen];
-   */
-}
 
 #warning mapbox
 /*- (void) tapOnMarker: (GaiaMarker*) marker onMap: (RMMapView*) map {
@@ -216,7 +156,7 @@
 
 - (MapViewController *)initWithTitle: (NSString *) aTitle {
 	self = [super init];
-  
+  if (!self) return nil;
   lastFetchedZoom = 0.0;
   _needFetchQuadrant = 0;
   _markersNeedDisplay = 0;
@@ -392,7 +332,6 @@
   mapView.zoom = 2;
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
-  
   //[self loadMBTilesFile];
   
 #warning mapbox
