@@ -17,7 +17,6 @@
 #import "CarsTableViewController.h"
 #import "FavoritesTableViewController.h"
 #import "ThemeCamp.h"
-#import "OAuthConsumer.h"
 #import "MapDownloader.h"
 #import "BurnTileSource.h"
 #import "Reachability.h"

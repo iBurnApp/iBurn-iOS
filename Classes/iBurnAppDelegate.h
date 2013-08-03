@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <sqlite3.h>
 #import <CoreData/CoreData.h>
-#import "OAuthConsumer.h"
 #import "CampNodeController.h"
 
 
@@ -24,8 +23,6 @@
 	NSString *databasePath;
 	NSString *oauthUrlString;
 	Reachability* reachability;
-	OAToken *requestToken;
-	OAToken *accessToken;
   NodeController *campNodeController, *artNodeController, *eventNodeController;
 	NSManagedObjectContext *managedObjectContext_;
   NSManagedObjectContext *bgMoc_;
