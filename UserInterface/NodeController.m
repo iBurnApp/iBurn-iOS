@@ -137,6 +137,10 @@
 }  
 
 
+// implemented in subclasses
+- (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict { }
+
+
 - (id)init {
 	if (self = [super init]) {
 		self.nodes = nil;

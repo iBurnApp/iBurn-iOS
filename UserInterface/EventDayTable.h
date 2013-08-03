@@ -17,6 +17,4 @@
 
 - (id)initWithTitle:(NSString*)ttl;
 
-+ (NSString*) subtitleString:(NSString*)ttl;
-
 @end

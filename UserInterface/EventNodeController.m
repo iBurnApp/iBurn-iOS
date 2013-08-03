@@ -90,7 +90,9 @@
     event.endTime = [self getDateFromString:[times objectForKey:@"end_time"]];
     [self addEventToHash:event];
   }
-  event.allDay = B([[self nullOrObject:[dict objectForKey:@"all_day"]] boolValue]);
+  
+  BOOL allDay = [(NSNumber*)[self nullOrObject:[dict objectForKey:@"all_day"]]boolValue];
+  event.allDay = [NSNumber numberWithBool:allDay];
  
   NSDictionary* hostDict =  (NSDictionary*)[self nullOrObject:[dict objectForKey:@"hosted_by_camp"]];
   if (!hostDict) return;
