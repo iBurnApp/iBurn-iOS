@@ -6,21 +6,19 @@
 //  Copyright Burning Man Earth 2009. All rights reserved.
 //
 
+#import "ArtNodeController.h"
+#import "ArtTableViewController.h"
+#import <ASIHTTPRequest.h>
+#import "CampTableViewController.h"
+#import "EventNodeController.h"
+#import "EventTableViewController.h"
 #import "iBurnAppDelegate.h"
 #import "MapViewController.h"
-#import "CampTableViewController.h"
-#import "ArtTableViewController.h"
-#import "EventTableViewController.h"
-#import "ThemeCamp.h"
-// #import "BurnTileSource.h"
-#import "ArtNodeController.h"
-#import "EventNodeController.h"
+#import <Reachability.h>
 #import "RotatingTabBarController.h"
-#import <CommonCrypto/CommonDigest.h>
+#import "ThemeCamp.h"
 #import "UnlockViewController.h"
 #import "util.h"
-#import <Reachability.h>
-#import <ASIHTTPRequest.h>
 
 
 #define DATABASE_NAME @"iBurn2012.sqlite"
@@ -92,10 +90,6 @@
   }
   [self checkOrCreateDatabase];
   
-  // TODO comment out these methods once loaded into final db
-  //[campNodeController getNodes];
-  //[artNodeController getNodes];
-  //[eventNodeController getNodes];
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
