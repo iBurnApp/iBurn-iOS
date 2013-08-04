@@ -11,18 +11,14 @@
 #import "MyCLController.h"
 #import "InfoViewController.h"
 
+@class RMAnnotation;
+
 @interface MapViewController : UIViewController <RMMapViewDelegate, MyCLControllerDelegate> {
 	RMMapView * mapView;
-	BOOL tap;
-	BOOL isCurrentlyUpdating;
-	BOOL firstUpdate;		
 	UISegmentedControl *locationButton;
-	//RMMarkerManager *markerManager;
 	RMMarker *currentLocationMarker;
+	RMAnnotation *currentLocationAnnotation;
   InfoViewController *detailView;
-  float lastFetchedZoom;
-  CLLocationCoordinate2D lastFetchedCenter;
-  int _markersNeedDisplay, _needFetchQuadrant;
   UIProgressView *progressView;
   RMAnnotation * navigationLineAnnotation;
   CLLocation * toLocation;

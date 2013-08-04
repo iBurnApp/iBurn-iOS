@@ -31,8 +31,9 @@
 @property (nonatomic, strong) NSString * contactEmail, * simpleName;
 @property (nonatomic, strong) Favorite * Favorite;
 
++ (ThemeCamp*) campForID:(int) campId;
 + (ThemeCamp*) campForSimpleName:(NSString*) sName;
-+ (NSString*) createSimpleName:(NSString*) name;
+
 
 @end
 

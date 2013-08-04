@@ -9,7 +9,6 @@
 #import "ArtNodeController.h"
 #import "ArtInstall.h"
 #import "util.h"
-#import "CJSONDeserializer.h"
 #import "iBurnAppDelegate.h"
 #import "ThemeCamp.h"
 @implementation ArtNodeController
@@ -25,15 +24,6 @@
   NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
   
 	return objects;
-}
-
-- (void) importDataFromFile:(NSString*)filename {
-	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
-	NSData *fileData = [NSData dataWithContentsOfFile:path];
-	NSArray *artArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
-  //CLLocationCoordinate2D dummy = {0,0};
-  
-  [self createAndUpdate:artArray];
 }
 
 

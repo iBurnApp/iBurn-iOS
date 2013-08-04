@@ -5,39 +5,36 @@
 // This is a singleton class, see below
 static MyCLController *sharedCLDelegate = nil;
 @implementation MyCLController
-@synthesize delegate, locationManager, lastReading, timer;
+@synthesize delegate, locationManager, lastReading;
 
 - (id) init {
 	if (self = [super init]) {
 		self.locationManager = [[CLLocationManager alloc] init];
 		self.locationManager.delegate = self; 
-    iOSVersion = [[UIDevice currentDevice].systemVersion doubleValue];
-
 	}
-  //[self startTimer];
 	return self;
 }
 
-#warning mapbox
-/*BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, RMLatLong point) {
-  return (rect.northeast.latitude > point.latitude && rect.southwest.latitude < point.latitude &&
-          rect.northeast.longitude > point.longitude && rect.southwest.longitude < point.longitude);
-}*/
 
-#warning mapbox
+#warning duplicated code
+BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, CLLocationCoordinate2D point) {
+  return (rect.northEast.latitude > point.latitude && rect.southWest.latitude < point.latitude &&
+          rect.northEast.longitude > point.longitude && rect.southWest.longitude < point.longitude);
+}
+
+
 // Called when the location is updated
 - (void)locationManager:(CLLocationManager *)manager
 	didUpdateToLocation:(CLLocation *)newLocation
 		   fromLocation:(CLLocation *)oldLocation {
 	[self.delegate newLocationUpdate:newLocation];
-  /*RMSphericalTrapezium bounds = ((RMSphericalTrapezium){.northeast = {.latitude = 40.802822, .longitude = -119.172673},
-    .southwest = {.latitude = 40.759210, .longitude = -119.23454}});
-
+#warning bounds are wrong
+  RMSphericalTrapezium bounds = ((RMSphericalTrapezium){.northEast = {.latitude = 40.802822, .longitude = -119.172673},
+    .southWest = {.latitude = 40.759210, .longitude = -119.23454}});
   if (sphericalTrapeziumContainsPoint(bounds, newLocation.coordinate)) {
     iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     [t liftEmbargo];
-  }*/
-    
+  }
 }
 
 
@@ -57,89 +54,12 @@ static MyCLController *sharedCLDelegate = nil;
 
 - (void)dealloc {
   delegate = nil;
-  [self.timer invalidate];
 }
-
-
-// FAKE POINT METHODS
-#define FAKE_POINTS YES
-
-int fakeTime;
-
-- (void) startTimer {
-  lastReading = (CLLocationCoordinate2D){40.78, -119.21};
-  //lastReading = (CLLocationCoordinate2D){40.766, -119.12};
-  fakeTime = 0;
-  self.timer = [NSTimer scheduledTimerWithTimeInterval:(1)
-                                            target:self
-                                          selector:@selector(updateTime)
-                                          userInfo:nil
-                                           repeats:YES];
-  [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
-}  
-
-
-
-- (void) postFakePoint:(int) cnt {
-	//if (fakeTime % 3 != 0) return;
-  
-  @autoreleasepool {
-    CLLocationCoordinate2D reading = lastReading;
-    float randomLat = .0004 + (.0002/ (arc4random() % 10 + 1));
-    float randomLon = .0004 + (.0002 / (arc4random() % 10 + 1));
-    float latitude = reading.latitude + randomLat;
-    float longitude = reading.longitude + randomLon;
-
-    
-    CLLocationCoordinate2D coord = {latitude, longitude};
-    //NSLog(@"%@", [NSDate date]);
-    CLLocation * location = [[CLLocation alloc] initWithCoordinate:coord
-                                                           altitude:0
-                                                 horizontalAccuracy:10
-                                                   verticalAccuracy:10 
-                                                          timestamp:[NSDate date]];
-    lastReading = coord;
-    [self locationManager:locationManager didUpdateToLocation:location fromLocation:nil];
-  }
-}	
-
-
-- (double) getDistanceFrom:(CLLocation*)lastLocation toLocation:(CLLocation*)loc1 {
-  if (iOSVersion < 3.2) {
-    return [lastLocation getDistanceFrom:loc1];
-  } else {
-    return [lastLocation distanceFromLocation: loc1];
-  }
-}  
 
 
 - (double) currentDistanceToLocation:(CLLocation*)location {
-  return [self getDistanceFrom:location toLocation:locationManager.location];
+  return [location distanceFromLocation: locationManager.location];
 }
-
-
-- (double) latitude {
-  return self.locationManager.location.coordinate.latitude;
-}
-
--(void) updateTime {
-  if (FAKE_POINTS) [self postFakePoint:0];
-  fakeTime++;
-}
-
--(void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading{
-    if (newHeading.headingAccuracy >= 0) {
-        NSLog(@"Updated Heading: %f",newHeading.trueHeading);
-        
-    }
-    else
-    {
-        NSLog(@"Inaccurate Heading: %f",newHeading.trueHeading);
-    }
-    
-    
-}
-
 
 
 @end

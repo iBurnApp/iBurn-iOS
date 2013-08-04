@@ -149,9 +149,6 @@
 - (MapViewController *)initWithTitle: (NSString *) aTitle {
 	self = [super init];
   if (!self) return nil;
-  lastFetchedZoom = 0.0;
-  _needFetchQuadrant = 0;
-  _markersNeedDisplay = 0;
 	self.title = aTitle;
   UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0];
   self.tabBarItem = tabBarItem;
@@ -222,14 +219,15 @@
     [self showLocationErrorAlertView];
 		return;
   }
-	if(isCurrentlyUpdating) {
+  if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+    mapView.userTrackingMode = RMUserTrackingModeFollow;
+    locationButton.tintColor = [UIColor blueColor];
+  } else if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+    mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
+    locationButton.tintColor = [UIColor redColor];
+  } else if (mapView.userTrackingMode == RMUserTrackingModeNone) {
     mapView.userTrackingMode = RMUserTrackingModeNone;
     locationButton.tintColor = [UIColor darkGrayColor];
-    isCurrentlyUpdating = NO;
-  } else {
-    mapView.userTrackingMode = RMUserTrackingModeFollow;
-    isCurrentlyUpdating = YES;
-    locationButton.tintColor = [UIColor redColor];
   }
 }
 
@@ -297,12 +295,12 @@
 #define kRetinaMapID @"examples.map-zswgei2n"
 - (void)loadView {
   [super loadView];
-  //RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+  RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
-  [mapView setTileSource:offlineSource];
   
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:offlineSource];
   mapView.zoom = 2;
+  mapView.adjustTilesForRetinaDisplay = YES;
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
   //[self loadMBTilesFile];
@@ -313,7 +311,7 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   
-  [self loadMarkers];
+  //[self loadMarkers];
 #warning this freezes it
   /*
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -333,6 +331,7 @@
     locationButton.enabled = NO;
   } else {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
+    [[MyCLController sharedInstance]setDelegate:self];
   }
 	
 	[mapView setBackgroundColor:[UIColor blackColor]];
@@ -376,7 +375,7 @@
 - (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
-  [self loadMarkers];
+  //[self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];
 }
 
@@ -388,6 +387,30 @@
   }
 }
 
+
+- (void) newLocationUpdate:(CLLocation *)newLocation {
+  if (currentLocationAnnotation) {
+    [mapView removeAnnotations:@[currentLocationAnnotation]];
+  }
+
+  if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
+    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
+                                                          coordinate:newLocation.coordinate
+                                                            andTitle:nil];
+    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"blue-arrow.png"];
+    [mapView addAnnotation:currentLocationAnnotation];
+  }
+  
+  if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
+    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
+                                                          coordinate:newLocation.coordinate
+                                                            andTitle:nil];
+    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"course-up-arrow.png"];
+    [mapView addAnnotation:currentLocationAnnotation];
+  }
+
+  
+}
 
 
 

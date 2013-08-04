@@ -13,18 +13,12 @@
 #import "RMMapView.h"
 #import "Favorite.h"
 #import "util.h"
+#import "NSManagedObject_util.h"
 
 @implementation CampTableViewController
 
 //@synthesize mapDelegate;
 
-- (void) makeObjectsForFavs:(NSArray*)favs {
-	for (Favorite *f in favs) {
-		if ([f ThemeCamp]) {
-			[objects addObject:[f ThemeCamp]];
-		}
-	}
-}
 
 
 - (void) sortByName { 
@@ -51,6 +45,7 @@
     UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"camps.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Camps";
+    self.objectType = @"ThemeCamp";
 		[self.navigationItem setTitle:@"Theme Camps"];
 	}
   return self;
