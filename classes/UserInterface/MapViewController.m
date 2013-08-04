@@ -233,8 +233,9 @@
 
 
 - (void) home: (id) sender {
-  RMSphericalTrapezium bounds = [self brcBounds];
-  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
+  //RMSphericalTrapezium bounds = [self brcBounds];
+  //[mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
+  
   // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
@@ -254,7 +255,12 @@
 -(void)navigateToLocation:(CLLocation *)location
 {
   toLocation = location;
-  navigationLineAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[location,self.mapView.userLocation.location]];
+  CLLocation * currentLocation = [[MyCLController sharedInstance] location];
+  if(currentLocation)
+  {
+    navigationLineAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[location,currentLocation]];
+    [self.mapView addAnnotation:navigationLineAnnotation];
+  }
 }
 
 -(void)stopNavigation
@@ -379,15 +385,6 @@
   [[self.view viewWithTag:999]removeFromSuperview];
 }
 
--(void)newLocationUpdate:(CLLocation *)newLocation
-{
-  if(navigationLineAnnotation)
-  {
-    [self navigateToLocation:toLocation];
-  }
-}
-
-
 - (void) newLocationUpdate:(CLLocation *)newLocation {
   if (currentLocationAnnotation) {
     [mapView removeAnnotations:@[currentLocationAnnotation]];
@@ -407,6 +404,11 @@
                                                             andTitle:nil];
     currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"course-up-arrow.png"];
     [mapView addAnnotation:currentLocationAnnotation];
+  }
+  
+  if(navigationLineAnnotation)
+  {
+    [self navigateToLocation:toLocation];
   }
 
   

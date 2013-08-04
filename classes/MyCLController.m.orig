@@ -5,7 +5,7 @@
 // This is a singleton class, see below
 static MyCLController *sharedCLDelegate = nil;
 @implementation MyCLController
-@synthesize delegate, locationManager, lastReading,location;
+@synthesize delegate, locationManager, lastReading;
 
 - (id) init {
 	if (self = [super init]) {
@@ -27,7 +27,6 @@ BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, CLLocationCoordi
 - (void)locationManager:(CLLocationManager *)manager
 	didUpdateToLocation:(CLLocation *)newLocation
 		   fromLocation:(CLLocation *)oldLocation {
-  location = newLocation;
 	[self.delegate newLocationUpdate:newLocation];
 #warning bounds are wrong
   RMSphericalTrapezium bounds = ((RMSphericalTrapezium){.northEast = {.latitude = 40.802822, .longitude = -119.172673},
@@ -63,4 +62,31 @@ BOOL sphericalTrapeziumContainsPoint(RMSphericalTrapezium rect, CLLocationCoordi
 }
 
 
+<<<<<<< HEAD
+- (double) latitude {
+  return self.locationManager.location.coordinate.latitude;
+}
+
+-(void) updateTime {
+  if (FAKE_POINTS) [self postFakePoint:0];
+  fakeTime++;
+}
+
+-(void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading{
+    if (newHeading.headingAccuracy >= 0) {
+        NSLog(@"Updated Heading: %f",newHeading.trueHeading);
+        
+    }
+    else
+    {
+        NSLog(@"Inaccurate Heading: %f",newHeading.trueHeading);
+    }
+    
+    
+}
+
+
+
+=======
+>>>>>>> origin/master
 @end
