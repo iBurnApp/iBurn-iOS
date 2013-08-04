@@ -247,7 +247,6 @@
 
 
 - (void) loadMBTilesFile {
-#warning set this up to only fetch a new file if needed
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
     ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[self mbTilesURL]];
     [request setTimeOutSeconds:240];
@@ -268,6 +267,7 @@
 #define kRetinaMapID @"examples.map-zswgei2n"
 - (void)loadView {
   [super loadView];
+  // [self loadMBTilesFile];
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
   
@@ -278,7 +278,6 @@
   [self.view addSubview:mapView];
   RMSphericalTrapezium bounds = [self brcBounds];
   [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
-  //[self loadMBTilesFile];
   self.progressView = [[UIProgressView alloc]
                        initWithProgressViewStyle:UIProgressViewStyleBar];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
