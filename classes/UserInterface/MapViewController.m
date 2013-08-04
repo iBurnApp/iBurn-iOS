@@ -16,6 +16,7 @@
 #import "iBurnAppDelegate.h"
 #import "MapViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import <RMCompositeSource.h>
 #import <RMMapBoxSource.h>
 #import <RMMarker.h>
 #import <RMMBTilesSource.h>
@@ -197,22 +198,11 @@
 }
 
 
-- (RMSphericalTrapezium) brcBounds {
-  return [mapView.tileSource latitudeLongitudeBoundingBox];
-}
-
-
 - (BOOL) locateMeWorks {
 	CLLocationManager *lm = [MyCLController sharedInstance].locationManager;
 	if(!lm.locationServicesEnabled) return NO;
 	if(lm.location == nil) return NO;
-	//NSLog(@"%@", lm.location);
-  	if([self sphericalTrapezium:[self brcBounds] containsPoint:lm.location.coordinate]) {
    return YES;
-   }
-   else {
-   return NO;
-   }
 }
 
 
@@ -234,12 +224,15 @@
 }
 
 
+- (RMSphericalTrapezium) brcBounds {
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
+  return [offlineSource latitudeLongitudeBoundingBox];
+}
+
+
 - (void) home: (id) sender {
   RMSphericalTrapezium bounds = [self brcBounds];
   [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
-  // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
-  //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
-  // [mapView moveToLatLong:center];
 }
 
 
@@ -265,8 +258,10 @@
       [mapView setTileSource:offlineSource];
     });
   });
-  
 }
+
+
+
 
 
 #define kNormalMapID @"examples.map-z2effxa8"
@@ -276,12 +271,14 @@
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
   
-  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:onlineSource];
-  mapView.zoom = 2;
+  RMCompositeSource *compSource = [[RMCompositeSource alloc]initWithTileSources:@[onlineSource, offlineSource] tileCacheKey:@"burnmap"];
+  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
+  [mapView setTileSource:compSource];
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
+  RMSphericalTrapezium bounds = [self brcBounds];
+  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
   //[self loadMBTilesFile];
-  [mapView setBackgroundColor:[UIColor blackColor]];
   self.progressView = [[UIProgressView alloc]
                        initWithProgressViewStyle:UIProgressViewStyleBar];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
@@ -346,48 +343,6 @@
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-
-// kudos - http://blog.coriolis.ch/2009/09/04/arbitrary-rotation-of-a-cgimage/
-- (CGImageRef)newCGImageRotatedByAngle:(CGImageRef)imgRef angle:(CGFloat)angle {
-  if (!imgRef) {
-    return nil;
-  }
-  CGFloat angleInRadians = angle * (M_PI / 180);
-  CGFloat width = CGImageGetWidth(imgRef);
-  CGFloat height = CGImageGetHeight(imgRef);
-  CGRect imgRect = CGRectMake(0, 0, width, height);
-  CGAffineTransform transform = CGAffineTransformMakeRotation(angleInRadians);
-  CGRect rotatedRect = CGRectApplyAffineTransform(imgRect, transform);
-  
-  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-  CGContextRef bmContext = CGBitmapContextCreate(NULL,
-                                                 rotatedRect.size.width,
-                                                 rotatedRect.size.height,
-                                                 8,
-                                                 0,
-                                                 colorSpace,
-                                                 kCGImageAlphaPremultipliedFirst);
-  CGColorSpaceRelease(colorSpace);
-  CGContextTranslateCTM(bmContext,
-                        +(rotatedRect.size.width/2),
-                        +(rotatedRect.size.height/2));
-  CGContextRotateCTM(bmContext, angleInRadians);
-  CGContextTranslateCTM(bmContext,
-                        -(rotatedRect.size.width/2),
-                        -(rotatedRect.size.height/2));
-  
-  CGContextDrawImage(bmContext, CGRectMake(0,
-                                           0,
-                                           rotatedRect.size.width,
-                                           rotatedRect.size.height),
-                     imgRef);
-  
-  CGImageRef rotatedImage = CGBitmapContextCreateImage(bmContext);
-  CFRelease(bmContext);
-  
-  return rotatedImage;
 }
 
 
