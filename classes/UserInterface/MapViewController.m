@@ -285,7 +285,7 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   
-  [self loadMarkers];
+  //[self loadMarkers];
 #warning this freezes it
   /*
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -349,7 +349,7 @@
 - (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
-  [self loadMarkers];
+  //[self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];
 }
 

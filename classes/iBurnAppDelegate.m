@@ -270,15 +270,23 @@ void printTimer(NSString* name) {
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
   [self checkEmbargo];
-  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+  if ([CLLocationManager locationServicesEnabled] ) {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
+  }
+  if([CLLocationManager headingAvailable])
+  {
+    [[MyCLController sharedInstance].locationManager startUpdatingHeading];
   }
 }
 
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+  if ([CLLocationManager locationServicesEnabled] ) {
     [[MyCLController sharedInstance].locationManager stopUpdatingLocation];
+  }
+  if([CLLocationManager headingAvailable])
+  {
+    [[MyCLController sharedInstance].locationManager stopUpdatingHeading];
   }
 }
 
