@@ -8,8 +8,23 @@
 
 #import "util.h"
 #import <JSONKit.h>
+#import <math.h>
+
+#define kHomeLocationLatKey @"kHomeLocationLatKey"
+#define kHomeLocationLonKey @"kHomeLocationLonKey"
 
 @implementation util
+
+double cosd(double deg) {
+    return cos(deg/57.2957795);
+}
+
+double sind(double deg) {
+    return sin(deg/57.2957795);
+}
+double tand(double deg) {return sind(deg)/cosd(deg);}
+double atand(double n) {return atan(n) * 57.2957795;}
+double acosd(double n) {return acos(n) * 57.2957795;}
 
 RMTile RMTileFromKey(uint64_t tilekey)
 {
@@ -172,6 +187,38 @@ NSString* privateDocumentsDirectory() {
     
   }
   return dir;
+}
+
++ (double)bearingFromCoordinate:(CLLocationCoordinate2D)fromCoordinate toCoordinate:(CLLocationCoordinate2D)toCoordinate
+{
+    double dLon = toCoordinate.longitude-fromCoordinate.longitude;
+    
+    double y = sind(dLon) * cosd(toCoordinate.latitude);
+    
+    double x = cosd(fromCoordinate.latitude) * sind(toCoordinate.latitude)
+    - sind(fromCoordinate.latitude) * cosd(toCoordinate.latitude) * cosd(dLon);
+    
+    double bearing = atan2(y, x) * 57.2957795;
+    
+    double bearingInDegrees = (int)(bearing + 360) % 360;
+    return bearingInDegrees;
+}
+
++(void)setHomeLocation:(CLLocation*)newHomeCoordinate
+{
+  NSUserDefaults * defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setObject:[NSNumber numberWithDouble:newHomeCoordinate.coordinate.latitude] forKey:kHomeLocationLatKey];
+  [defaults setObject:[NSNumber numberWithDouble:newHomeCoordinate.coordinate.longitude] forKey:kHomeLocationLonKey];
+  [defaults synchronize];
+}
+
++(CLLocation*)homeLocation
+{
+  if (![[[NSUserDefaults standardUserDefaults] objectForKey:kHomeLocationLatKey] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey:kHomeLocationLonKey] boolValue]) {
+    return nil;
+  }
+  NSUserDefaults * defaults = [NSUserDefaults standardUserDefaults];
+  return [[CLLocation alloc] initWithLatitude:[defaults doubleForKey:kHomeLocationLatKey] longitude:[defaults doubleForKey:kHomeLocationLonKey]];
 }
 
 

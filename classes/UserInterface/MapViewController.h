@@ -24,6 +24,8 @@
   CLLocationCoordinate2D lastFetchedCenter;
   int _markersNeedDisplay, _needFetchQuadrant;
   UIProgressView *progressView;
+  RMAnnotation * navigationLineAnnotation;
+  CLLocation * toLocation;
 
 }
 

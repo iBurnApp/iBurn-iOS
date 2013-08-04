@@ -74,6 +74,10 @@
   geolocation = nil;
 }
 
+-(NSString *)playaLocation{
+    
+}
+
 - (CLLocation *)geolocation {
   if (!geolocation) {
     geolocation = [[CLLocation alloc] initWithLatitude:[self.latitude floatValue] 

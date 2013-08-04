@@ -127,6 +127,19 @@ int fakeTime;
   fakeTime++;
 }
 
+-(void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading{
+    if (newHeading.headingAccuracy >= 0) {
+        NSLog(@"Updated Heading: %f",newHeading.trueHeading);
+        
+    }
+    else
+    {
+        NSLog(@"Inaccurate Heading: %f",newHeading.trueHeading);
+    }
+    
+    
+}
+
 
 
 @end

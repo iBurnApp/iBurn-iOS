@@ -3,16 +3,16 @@ import json
 from string_util import cleanString, convert_html_entities
 import codecs
 '''
-    This script merges art locations from art-locations-2012.json
-    into art entries from playaevents-art-2012.json
+    This script merges art locations from art-locations-2013.json
+    into art entries from playaevents-art-2013.json
     (The Playa Events API Art feed)
 '''
 # Threshold under which to discard partial string matches
 MATCH_THRESHOLD = .7
 
-location_file = open('./data/art-locations-2012.json')
-playa_art_file = open('./data/playaevents-art-2012.json')
-scraper_art_file = open('./data/art-2012.json')
+location_file = open('./data/art-locations-2013.json')
+playa_art_file = open('./data/playaevents-art-2013.json')
+scraper_art_file = open('./data/art-2013.json')
 # Comment out the above line to disregard scraper data
 
 location_json = json.loads(location_file.read())

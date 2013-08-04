@@ -22,6 +22,8 @@
 #import <RMMapView.h>
 #import "ThemeCamp.h"
 #import "util.h"
+#import "RMPolylineAnnotation.h"
+#import "RMUserLocation.h"
 
 
 @implementation MapViewController
@@ -154,12 +156,12 @@
   UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"map.png"] tag:0];
   self.tabBarItem = tabBarItem;
 	
-  UISegmentedControl *downloadButton = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]];
-  downloadButton.frame = CGRectMake(0,0,35,35);
-  downloadButton.momentary = YES;
-  downloadButton.tintColor = [UIColor darkGrayColor];
-  downloadButton.segmentedControlStyle = UISegmentedControlStyleBar;
-  [downloadButton addTarget:self
+  UISegmentedControl *homeButton = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"home_nav_button.png"]]];
+  homeButton.frame = CGRectMake(0,0,35,35);
+  homeButton.momentary = YES;
+  homeButton.tintColor = [UIColor darkGrayColor];
+  homeButton.segmentedControlStyle = UISegmentedControlStyleBar;
+  [homeButton addTarget:self
                      action:@selector(home:)
            forControlEvents:UIControlEventValueChanged];
   
@@ -180,7 +182,7 @@
 	self.navigationItem.rightBarButtonItem = item;
   
 	UIView *buttonView2 = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
-  [buttonView2 addSubview: downloadButton];
+  [buttonView2 addSubview: homeButton];
   UIBarButtonItem *item2 = [[UIBarButtonItem alloc]initWithCustomView:buttonView2];
 	self.navigationItem.leftBarButtonItem = item2;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(liftEmbargo) name:@"LIFT_EMBARGO" object:nil];
@@ -238,6 +240,30 @@
   // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
+  CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
+  [util setHomeLocation:fakeHome];
+  if(![util homeLocation])
+  {
+    //ask to set home location
+  }
+  else{
+    [self navigateToLocation:[util homeLocation]];
+    
+    
+  }
+}
+
+-(void)navigateToLocation:(CLLocation *)location
+{
+  toLocation = location;
+  navigationLineAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[location,self.mapView.userLocation.location]];
+}
+
+-(void)stopNavigation
+{
+  [self.mapView removeAnnotation:navigationLineAnnotation];
+  navigationLineAnnotation = nil;
+  toLocation = nil;
 }
 
 
@@ -352,6 +378,14 @@
   /*  [mapView.contents setMaxZoom:18];*/
   [self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];
+}
+
+-(void)newLocationUpdate:(CLLocation *)newLocation
+{
+  if(navigationLineAnnotation)
+  {
+    [self navigateToLocation:toLocation];
+  }
 }
 
 

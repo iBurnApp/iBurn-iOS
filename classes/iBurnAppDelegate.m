@@ -85,7 +85,7 @@
   self.eventNodeController = [[EventNodeController alloc]init];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   
-  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+  if ([CLLocationManager locationServicesEnabled]) {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
   }
   [self checkOrCreateDatabase];

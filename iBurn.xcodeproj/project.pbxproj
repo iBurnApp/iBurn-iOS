@@ -168,7 +168,7 @@
 		49334D2917AD9C060014C2C2 /* UnlockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnlockViewController.m; sourceTree = "<group>"; };
 		49334D2A17AD9C060014C2C2 /* XMLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLTableViewController.h; sourceTree = "<group>"; };
 		49334D2B17AD9C060014C2C2 /* XMLTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLTableViewController.m; sourceTree = "<group>"; };
-		49334D2C17AD9C060014C2C2 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = classes/util.h; sourceTree = "<group>"; };
+		49334D2C17AD9C060014C2C2 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
 		49334D2D17AD9C060014C2C2 /* util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = util.m; sourceTree = "<group>"; };
 		49334D3017AD9C060014C2C2 /* CDataScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner.h; sourceTree = "<group>"; };
 		49334D3117AD9C060014C2C2 /* CDataScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner.m; sourceTree = "<group>"; };
@@ -289,7 +289,6 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				1794D3F212054D21BCF52B79 /* Pods.xcconfig */,
-				49334D2C17AD9C060014C2C2 /* util.h */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -323,6 +322,7 @@
 				49334CE617AD9C060014C2C2 /* DataObjects */,
 				49334CF717AD9C060014C2C2 /* iBurnAppDelegate.h */,
 				49334CF817AD9C060014C2C2 /* iBurnAppDelegate.m */,
+				49334D2C17AD9C060014C2C2 /* util.h */,
 				49334D2D17AD9C060014C2C2 /* util.m */,
 				49334CF917AD9C060014C2C2 /* main.m */,
 				4236EF7B17ADD21600EEA611 /* BurnRMAnnotation.h */,
