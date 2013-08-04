@@ -32,15 +32,15 @@
                         names:(NSArray*)names
                     upperLeft:(CLLocationCoordinate2D)upperLeft 
                    lowerRight:(CLLocationCoordinate2D)lowerRight;
-- (void) createAndUpdate:(NSArray*)knownObjects 
-             withObjects:(NSArray*)objects 
-            forClassName:(NSString*)className 
-								fromFile:(BOOL)fromFile;
+
 - (NSObject*) nullOrObject:(NSObject*)str;
 - (NSDictionary*) getLocationDictionary:(NSDictionary*) dict;
 - (void) saveObjects:(NSArray*)objects;
 - (void) updateObject:(id)object withDict:(NSDictionary*)dict;
-  
+- (void) importDataFromFile:(NSString*)filename;
+- (void) createObjectFromDict:(NSDictionary*)dict;
+- (void) createAndUpdate:(NSArray*)objects;
+
 @property (nonatomic, strong) NSArray *nodes;
 @property (nonatomic, unsafe_unretained) id<NodeFetchDelegate> delegate;
 
