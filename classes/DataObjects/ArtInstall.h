@@ -37,6 +37,7 @@
 @property (nonatomic, strong) Favorite * Favorite;
 
 + (ArtInstall*) artForName:(NSString*) sName;
+- (BOOL) isFavorite;
 
 @end
 

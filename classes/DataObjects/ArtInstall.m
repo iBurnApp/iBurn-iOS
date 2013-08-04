@@ -74,4 +74,8 @@
   return distanceAway;
 }
 
+- (BOOL) isFavorite {
+  return [Favorite isFavorite:@"ArtInstall" id:self.bm_id];
+}
+
 @end

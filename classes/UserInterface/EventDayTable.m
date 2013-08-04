@@ -55,7 +55,8 @@
 }
 
 
-- (void) sortByFavorites { 
+- (void) sortByFavorites {
+  /*
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
@@ -84,7 +85,7 @@
   NSArray *sortedArray = [objects sortedArrayUsingDescriptors:descriptors];
   self.events = sortedArray;
   [self.tableView reloadData];
-	self.navigationItem.rightBarButtonItem.enabled = YES;
+	self.navigationItem.rightBarButtonItem.enabled = YES;*/
 }
 
 

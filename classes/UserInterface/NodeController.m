@@ -13,6 +13,7 @@
 //#import "DBOperations.h"
 #import "iBurnAppDelegate.h"
 #import "BurnDataObject.h"
+#import "JSONKit.h"
 
 @implementation NodeController
 
@@ -34,6 +35,13 @@
   return names;
 }  
 
+- (void) importDataFromFile:(NSString*)filename {
+	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
+	NSData *fileData = [NSData dataWithContentsOfFile:path];
+  NSArray * objects = [fileData objectFromJSONData];
+  
+  [self createAndUpdate:objects];
+}
 
 #define F(N$)  [NSNumber numberWithFloat: (N$)]
 
@@ -61,9 +69,7 @@
                     upperLeft:(CLLocationCoordinate2D)upperLeft 
                    lowerRight:(CLLocationCoordinate2D)lowerRight {  
   @autoreleasepool {
-    //NSMutableArray *predicates = [self getPredicateArrayForUpperLeft:(CLLocationCoordinate2D)upperLeft 
-    //                                                        lowerRight://(CLLocationCoordinate2D)lowerRight];  
-    //NSPredicate *finalPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     NSEntityDescription *entity = [NSEntityDescription entityForName:type inManagedObjectContext:[t managedObjectContext]];
@@ -108,17 +114,12 @@
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
     NSManagedObjectContext *moc = [t managedObjectContext];
     for (NSDictionary *dict in objects) {
-        
-        
         [self createObjectFromDict:dict];
-	
     }
     [self saveObjects:nil];
 }  
 
-- (void) importDataFromFile:(NSString*)filename {
-  
-}
+
 // implemented in subclasses
 - (void) updateObjectFromFile:(id<BurnDataObject>)object withDict:(NSDictionary*)dict { }
 

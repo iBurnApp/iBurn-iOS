@@ -123,22 +123,8 @@
 
 
 - (void) addToFavorites: (id) sender {
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t managedObjectContext];
-  NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-  [fetchRequest setEntity:entity];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"Event = %@", event];
-  [fetchRequest setPredicate:predicate];	
-  NSError *error;
-  NSArray *favorites = [moc executeFetchRequest:fetchRequest error:&error];
-  if ([favorites count] == 0) {
-    Favorite *newFav = [NSEntityDescription insertNewObjectForEntityForName:@"Favorite"
-                                                     inManagedObjectContext:moc];      
-    newFav.Event = self.event;
-    NSError *error;
-    [moc save:&error];
-  }
+  [Favorite addFavorite:@"Event" id:event.bm_id];
+
 }
 
 

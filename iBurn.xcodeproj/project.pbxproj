@@ -86,6 +86,7 @@
 		4933610617AD9C0E0014C2C2 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4933573C17AD9C0E0014C2C2 /* rod_garrett.jpg */; };
 		4933610717AD9C0E0014C2C2 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573D17AD9C0E0014C2C2 /* MainWindow-iPad.xib */; };
 		4933610817AD9C0E0014C2C2 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573E17AD9C0E0014C2C2 /* MainWindow.xib */; };
+		5000C59A17ADD42300AAA481 /* NSManagedObject_util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5000C59917ADD42300AAA481 /* NSManagedObject_util.m */; };
 		5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415D17ADB7370070BBAB /* art_data_and_locations.json */; };
 		5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */; };
 		5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415F17ADB7370070BBAB /* event_data_and_locations.json */; };
@@ -226,6 +227,8 @@
 		4933574217AD9C0E0014C2C2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4933574317AD9C0E0014C2C2 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		4933574417AD9C0E0014C2C2 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
+		5000C59817ADD42300AAA481 /* NSManagedObject_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSManagedObject_util.h; sourceTree = "<group>"; };
+		5000C59917ADD42300AAA481 /* NSManagedObject_util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSManagedObject_util.m; sourceTree = "<group>"; };
 		5002415D17ADB7370070BBAB /* art_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data_and_locations.json; path = bin/playa_data/results/art_data_and_locations.json; sourceTree = SOURCE_ROOT; };
 		5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = camp_data_and_locations_ids.json; path = bin/playa_data/results/camp_data_and_locations_ids.json; sourceTree = SOURCE_ROOT; };
 		5002415F17ADB7370070BBAB /* event_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = event_data_and_locations.json; path = bin/playa_data/results/event_data_and_locations.json; sourceTree = SOURCE_ROOT; };
@@ -315,6 +318,7 @@
 		49334CE517AD9C060014C2C2 /* classes */ = {
 			isa = PBXGroup;
 			children = (
+				5000C59717ADD40100AAA481 /* util */,
 				4933611417AD9CD90014C2C2 /* Controllers */,
 				49334D0017AD9C060014C2C2 /* UserInterface */,
 				49334CE617AD9C060014C2C2 /* DataObjects */,
@@ -558,6 +562,15 @@
 			path = UserInterface;
 			sourceTree = "<group>";
 		};
+		5000C59717ADD40100AAA481 /* util */ = {
+			isa = PBXGroup;
+			children = (
+				5000C59817ADD42300AAA481 /* NSManagedObject_util.h */,
+				5000C59917ADD42300AAA481 /* NSManagedObject_util.m */,
+			);
+			name = util;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -734,6 +747,7 @@
 				4933576D17AD9C0E0014C2C2 /* NSCharacterSet_Extensions.m in Sources */,
 				4933576E17AD9C0E0014C2C2 /* NSDate-Utilities.m in Sources */,
 				4933577317AD9C0E0014C2C2 /* iBurn.xcdatamodel in Sources */,
+				5000C59A17ADD42300AAA481 /* NSManagedObject_util.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

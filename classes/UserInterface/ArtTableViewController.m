@@ -12,22 +12,13 @@
 #import "DetailTableCell.h"
 #import "iBurnAppDelegate.h"
 #import "RMMapView.h"
-#import "Favorite.h"
 #import "util.h"
+#import "NSManagedObject_util.h";
 
 @implementation ArtTableViewController
 
 - (void) sortByName { 
   [self sortByNameForEntity:@"ArtInstall"];
-}
-
-
-- (void) makeObjectsForFavs:(NSArray*)favs {
-	for (Favorite *f in favs) {
-		if ([f ArtInstall]) {
-			[objects addObject:[f ArtInstall]];
-		}
-	}
 }
 
 
@@ -50,6 +41,7 @@
     UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"art2.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Art";
+    self.objectType = @"ArtInstall";
 		[self.navigationItem setTitle:@"Art Installations"];
 	}
   return self;

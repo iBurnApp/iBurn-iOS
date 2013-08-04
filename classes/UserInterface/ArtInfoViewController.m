@@ -99,22 +99,6 @@
 }
 
 - (void) addToFavorites: (id) sender {
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSManagedObjectContext *moc = [t managedObjectContext];
-  NSEntityDescription *entity = [NSEntityDescription entityForName:@"Favorite" inManagedObjectContext:moc];
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-  [fetchRequest setEntity:entity];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ArtInstall = %@", art];
-  [fetchRequest setPredicate:predicate];	
-  NSError *error;
-  NSArray *favorites = [moc executeFetchRequest:fetchRequest error:&error];
-  if ([favorites count] == 0) {
-    Favorite *newFav = [NSEntityDescription insertNewObjectForEntityForName:@"Favorite"
-                                                     inManagedObjectContext:moc];      
-    newFav.ArtInstall = art;
-    NSError *error;
-    [moc save:&error];
-  }
 }
 
 
