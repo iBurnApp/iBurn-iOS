@@ -272,8 +272,9 @@
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
   
-  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:onlineSource];
+  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:offlineSource];
   mapView.zoom = 2;
+  mapView.adjustTilesForRetinaDisplay = YES;
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
   //[self loadMBTilesFile];
@@ -284,7 +285,7 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   
-  [self loadMarkers];
+  //[self loadMarkers];
 #warning this freezes it
   /*
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -348,7 +349,7 @@
 - (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
-  [self loadMarkers];
+  //[self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];
 }
 
