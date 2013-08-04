@@ -8,7 +8,6 @@
 
 #import "ArtInfoViewController.h"
 #import "ArtInstall.h"
-#import <ASIFormDataRequest.h>
 #import "BurnRMAnnotation.h"
 #import "CampInfoViewController.h"
 #import "Event.h"
@@ -21,18 +20,20 @@
 #import <RMMarker.h>
 #import <RMMBTilesSource.h>
 #import <RMMapView.h>
-#import "ThemeCamp.h"
-#import "util.h"
 #import "RMPolylineAnnotation.h"
 #import "RMUserLocation.h"
+#import "S3BigFileDownloader.h"
+#import "ThemeCamp.h"
+#import "util.h"
 
 #define SET_HOME_STRING @"Set Home"
 #define NAVIGATE_STRING @"Navigate Home"
 #define STOP_NAVIGATION_STRING @"Stop Navigation"
 #define CANCEL_STRING @"Cancel"
 
+
 @implementation MapViewController
-@synthesize mapView, detailView, progressView;
+@synthesize mapView, detailView, progressView, bigFileDownloader;
 
 - (void) showLocationErrorAlertView {
 	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Location Unknown" message:@"Either we can't find you or you're not at Burning Man.  Make sure you are at Burning Man with a clear view of the sky and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -40,13 +41,12 @@
 }
 
 
-- (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-  if (mapView.zoom < 14) {
+- (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(RMAnnotation *)annotation {
+  if (mv.zoom < 14) {
     return nil;
   }
-  
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
-  newMarker.anchorPoint = CGPointMake(.5,.8);
+  newMarker.anchorPoint = CGPointMake(.5, .8);
   return newMarker;
 }
 
@@ -79,7 +79,6 @@
 		coord.latitude = [camp.latitude floatValue];
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
-    
     BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
                                                          coordinate:coord
                                                            andTitle:[camp name]];
@@ -180,7 +179,6 @@
                      action:@selector(startLocation:)
            forControlEvents:UIControlEventValueChanged];
   
-	
 	UIView *buttonView = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
   [buttonView addSubview: locationButton];
   UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithCustomView:buttonView];
@@ -208,7 +206,7 @@
 	CLLocationManager *lm = [MyCLController sharedInstance].locationManager;
 	if(!lm.locationServicesEnabled) return NO;
 	if(lm.location == nil) return NO;
-   return YES;
+  return YES;
 }
 
 
@@ -288,68 +286,60 @@
   }
 }
 
--(void)navigateToLocation:(CLLocation *)location
-{
+- (void)navigateToLocation:(CLLocation *)location {
   toLocation = location;
   CLLocation * currentLocation = [[MyCLController sharedInstance] location];
-  
   if (navigationLineAnnotation) {
     [self.mapView removeAnnotation:navigationLineAnnotation];
   }
-  
-  if(currentLocation)
-  {
+  if(currentLocation) {
     navigationLineAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[location,currentLocation]];
     [self.mapView addAnnotation:navigationLineAnnotation];
   }
 }
 
--(void)stopNavigation
-{
+
+- (void)stopNavigation {
   [self.mapView removeAnnotation:navigationLineAnnotation];
   navigationLineAnnotation = nil;
   toLocation = nil;
 }
 
 
-- (NSURL*) mbTilesURL {
-  return [NSURL URLWithString:@"http://com.gaiagps.iburn.s3-website-us-east-1.amazonaws.com/iburn.mbtiles"];
+- (S3BigFileDownloader*) bigFileDownloader {
+  if (!bigFileDownloader) {
+    bigFileDownloader = [[S3BigFileDownloader alloc]init];
+  }
+  return bigFileDownloader;
 }
 
 
-- (NSString*) mbTilesPath {
-  return [privateDocumentsDirectory() stringByAppendingPathComponent:@"iburn.mbtiles"];;
+- (int) fileSizeForPath:(NSString*)path {
+  NSDictionary* fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil];
+  return [fileAttribs fileSize];
 }
 
 
-- (void) loadMBTilesFile {
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-    ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[self mbTilesURL]];
-    [request setTimeOutSeconds:240];
-    [request setDownloadDestinationPath:[self mbTilesPath]];
-    [request startSynchronous];
-    dispatch_async(dispatch_get_main_queue(), ^{
-      RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self mbTilesPath]]];
-      [mapView setTileSource:offlineSource];
-    });
-  });
+#define kNormalMapID @"iburn.map-0ytz4sz2"
+#define kRetinaMapID @"iburn.map-0ytz4sz2"
+- (void) setMapSources {
+  RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self.bigFileDownloader mbTilesPath]]];
+  [mapView setTileSource:onlineSource];
+  [mapView addTileSource:offlineSource];
+  // [mapView setTileSources:@[onlineSource, offlineSource]];
 }
 
 
-
-
-
-#define kNormalMapID @"examples.map-z2effxa8"
-#define kRetinaMapID @"examples.map-zswgei2n"
 - (void)loadView {
   [super loadView];
-  // [self loadMBTilesFile];
-  RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
-  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
-  
-  RMCompositeSource *compSource = [[RMCompositeSource alloc]initWithTileSources:@[onlineSource, offlineSource] tileCacheKey:@"burnmap"];
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
-  [mapView setTileSource:compSource];
+  [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setMapSources) name:@"BIG_FILE_DOWNLOAD_DONE" object:nil];
+  [self.bigFileDownloader copyMBTileFileFromBundle];
+  [self setMapSources];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self.bigFileDownloader loadMBTilesFile];
+  });
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
   RMSphericalTrapezium bounds = [self brcBounds];
