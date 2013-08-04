@@ -26,10 +26,6 @@
 #import "RMPolylineAnnotation.h"
 #import "RMUserLocation.h"
 
-#define SET_HOME_STRING @"Set Home"
-#define NAVIGATE_STRING @"Navigate Home"
-#define STOP_NAVIGATION_STRING @"Stop Navigation"
-#define CANCEL_STRING @"Cancel"
 
 @implementation MapViewController
 @synthesize mapView, detailView, progressView;
@@ -237,54 +233,23 @@
 
 
 - (void) home: (id) sender {
+<<<<<<< HEAD
   //RMSphericalTrapezium bounds = [self brcBounds];
   //[mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
   
   // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
-  /*CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
+  CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
   [util setHomeLocation:fakeHome];
-   */
-  NSArray * otherTitles = nil;
-  if(navigationLineAnnotation)
+  if(![util homeLocation])
   {
-    otherTitles = @[STOP_NAVIGATION_STRING,CANCEL_STRING];
+    //ask to set home location
   }
-  else if(![util homeLocation])
-  {
-    otherTitles = @[SET_HOME_STRING,CANCEL_STRING];
-  }
-  else
-  {
-    otherTitles = @[SET_HOME_STRING,NAVIGATE_STRING,CANCEL_STRING];
-  }
-  
-  UIActionSheet * actionSheet = [[UIActionSheet alloc] init];
-  actionSheet.delegate =self;
-  actionSheet.title = @"Home";
-  [otherTitles enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-    [actionSheet addButtonWithTitle:obj];
-  }];
-  actionSheet.cancelButtonIndex = [otherTitles count]-1;
-  [actionSheet showInView:self.view];
-}
-
--(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
-  if (actionSheet.cancelButtonIndex == buttonIndex) {
-    return;
-  }
-  else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:STOP_NAVIGATION_STRING])
-  {
-    [self stopNavigation];
-  }
-  else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:NAVIGATE_STRING])
-  {
+  else{
     [self navigateToLocation:[util homeLocation]];
-  }
-  else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:SET_HOME_STRING])
-  {
-    [util setHomeLocation:[MyCLController sharedInstance].location];
+    
+    
   }
 }
 
@@ -292,11 +257,6 @@
 {
   toLocation = location;
   CLLocation * currentLocation = [[MyCLController sharedInstance] location];
-  
-  if (navigationLineAnnotation) {
-    [self.mapView removeAnnotation:navigationLineAnnotation];
-  }
-  
   if(currentLocation)
   {
     navigationLineAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[location,currentLocation]];
@@ -309,6 +269,10 @@
   [self.mapView removeAnnotation:navigationLineAnnotation];
   navigationLineAnnotation = nil;
   toLocation = nil;
+=======
+  RMSphericalTrapezium bounds = [self brcBounds];
+  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
+>>>>>>> origin/master
 }
 
 
@@ -430,6 +394,7 @@
 }
 
 - (void) newLocationUpdate:(CLLocation *)newLocation {
+<<<<<<< HEAD
   if (currentLocationAnnotation) {
     [mapView removeAnnotations:@[currentLocationAnnotation]];
   }
@@ -456,6 +421,8 @@
   }
 
   
+=======
+>>>>>>> origin/master
 }
 
 

@@ -129,8 +129,7 @@ void printTimer(NSString* name) {
   if ([CLLocationManager locationServicesEnabled]) {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
   }
-  //[self checkOrCreateDatabase];
-  
+
 }  
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -297,9 +296,7 @@ void printTimer(NSString* name) {
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
   NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [[NSFileManager defaultManager] fileExistsAtPath:dbPath];
-  
-  [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
-  
+    
 	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;

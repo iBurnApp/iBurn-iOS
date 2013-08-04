@@ -13,7 +13,7 @@
 
 @class RMAnnotation;
 
-@interface MapViewController : UIViewController <RMMapViewDelegate, MyCLControllerDelegate> {
+@interface MapViewController : UIViewController <RMMapViewDelegate, MyCLControllerDelegate,UIActionSheetDelegate> {
 	RMMapView * mapView;
 	UISegmentedControl *locationButton;
 	RMMarker *currentLocationMarker;
