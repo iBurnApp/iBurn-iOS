@@ -16,6 +16,7 @@
 #import "iBurnAppDelegate.h"
 #import "MapViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import <RMCompositeSource.h>
 #import <RMMapBoxSource.h>
 #import <RMMarker.h>
 #import <RMMBTilesSource.h>
@@ -34,6 +35,10 @@
 
 
 - (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+  if (mapView.zoom < 14) {
+    return nil;
+  }
+  
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5,.8);
   return newMarker;
@@ -193,22 +198,11 @@
 }
 
 
-- (RMSphericalTrapezium) brcBounds {
-  return [mapView.tileSource latitudeLongitudeBoundingBox];
-}
-
-
 - (BOOL) locateMeWorks {
 	CLLocationManager *lm = [MyCLController sharedInstance].locationManager;
 	if(!lm.locationServicesEnabled) return NO;
 	if(lm.location == nil) return NO;
-	//NSLog(@"%@", lm.location);
-  	if([self sphericalTrapezium:[self brcBounds] containsPoint:lm.location.coordinate]) {
    return YES;
-   }
-   else {
-   return NO;
-   }
 }
 
 
@@ -220,22 +214,25 @@
   if (mapView.userTrackingMode == RMUserTrackingModeNone) {
     mapView.userTrackingMode = RMUserTrackingModeFollow;
     locationButton.tintColor = [UIColor blueColor];
-  } else if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+  } else if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
     mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
     locationButton.tintColor = [UIColor redColor];
-  } else if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+  } else if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
     mapView.userTrackingMode = RMUserTrackingModeNone;
     locationButton.tintColor = [UIColor darkGrayColor];
   }
 }
 
 
+- (RMSphericalTrapezium) brcBounds {
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
+  return [offlineSource latitudeLongitudeBoundingBox];
+}
+
+
 - (void) home: (id) sender {
   RMSphericalTrapezium bounds = [self brcBounds];
   [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
-  // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
-  //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
-  // [mapView moveToLatLong:center];
 }
 
 
@@ -261,8 +258,10 @@
       [mapView setTileSource:offlineSource];
     });
   });
-  
 }
+
+
+
 
 
 #define kNormalMapID @"examples.map-z2effxa8"
@@ -272,13 +271,14 @@
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
   
-  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:offlineSource];
-  mapView.zoom = 2;
-  mapView.adjustTilesForRetinaDisplay = YES;
+  RMCompositeSource *compSource = [[RMCompositeSource alloc]initWithTileSources:@[onlineSource, offlineSource] tileCacheKey:@"burnmap"];
+  mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
+  [mapView setTileSource:compSource];
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
+  RMSphericalTrapezium bounds = [self brcBounds];
+  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
   //[self loadMBTilesFile];
-  [mapView setBackgroundColor:[UIColor blackColor]];
   self.progressView = [[UIProgressView alloc]
                        initWithProgressViewStyle:UIProgressViewStyleBar];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
@@ -355,27 +355,6 @@
 
 
 - (void) newLocationUpdate:(CLLocation *)newLocation {
-  if (currentLocationAnnotation) {
-    [mapView removeAnnotations:@[currentLocationAnnotation]];
-  }
-
-  if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
-    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                          coordinate:newLocation.coordinate
-                                                            andTitle:nil];
-    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"blue-arrow.png"];
-    [mapView addAnnotation:currentLocationAnnotation];
-  }
-  
-  if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
-    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                          coordinate:newLocation.coordinate
-                                                            andTitle:nil];
-    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"course-up-arrow.png"];
-    [mapView addAnnotation:currentLocationAnnotation];
-  }
-
-  
 }
 
 
