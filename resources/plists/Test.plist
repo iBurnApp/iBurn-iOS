@@ -12,13 +12,6 @@
 	<string>iBurn-57.png</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.trailbehind.iburntest</string>
-	<key>CFBundleIconFiles</key>
-	<array>
-		<string>iBurn-57.png</string>
-		<string>iBurn-57@2x.png</string>
-		<string>iBurn-72.png</string>
-		<string>iBurn-small.png</string>
-	</array>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -44,6 +37,13 @@
 	<true/>
 	<key>NSMainNibFile</key>
 	<string>MainWindow</string>
+	<key>CFBundleIconFiles</key>
+	<array>
+		<string>iBurn-57.png</string>
+		<string>iBurn-57@2x.png</string>
+		<string>iBurn-72.png</string>
+		<string>iBurn-small.png</string>
+	</array>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleBlackOpaque</string>
 	<key>NSMainNibFile~ipad</key>
