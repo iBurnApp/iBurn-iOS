@@ -10,7 +10,6 @@
 #import "ThemeCamp.h"
 #import "iBurnAppDelegate.h"
 #import "util.h"
-#import "CJSONDeserializer.h"
 
 @implementation CampNodeController
 
@@ -27,19 +26,9 @@
 	return objects;
 }
 
-- (void) importDataFromFile:(NSString*)filename {
-	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
-	NSData *fileData = [NSData dataWithContentsOfFile:path];
-	NSArray *campArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
-	//NSLog(@"The camp array is %@", campArray);
-  //CLLocationCoordinate2D dummy = {0,0};
-  
-  [self createAndUpdate:campArray];
-}
-
 
 - (NSString *)getUrl {
-    // 
+    return @"https://s3.amazonaws.com/uploads.hipchat.com/24265/137546/nrep0cpx19y3m26/camp_data_and_locations_ids.json";
 }
 
 
@@ -57,7 +46,6 @@
     }
   }
 	
-  camp.simpleName = [ThemeCamp createSimpleName:camp.name];    
   if ([dict objectForKey:@"latitude"]) {
     NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
     [f setNumberStyle:NSNumberFormatterDecimalStyle];

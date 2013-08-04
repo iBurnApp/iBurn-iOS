@@ -11,7 +11,8 @@
 #import "iBurnAppDelegate.h"
 #import "util.h"
 #import "ThemeCamp.h"
-#import "CJSONDeserializer.h"
+#import "NSManagedObject_util.h"
+#import "JSONKit.h"
 
 @implementation EventNodeController
 @synthesize eventDateHash;
@@ -24,11 +25,7 @@
 
   
 - (NSString *)getUrl {
- 	NSString *theString;
-
-	//theString = @"http://earth.burningman.com/api/0.1/2010/event/";	
-	theString = @"http://playaevents.burningman.com/api/0.2/2012/event/";	
-	return theString;
+ 	return @"https://s3.amazonaws.com/uploads.hipchat.com/24265/137546/r6dbjfjzdlcoxda/event_data_and_locations.json";
 }
 
 
@@ -66,19 +63,22 @@
   if (dow) [[eventDateHash objectForKey:dow]addObject:event];  
 }
 
+- (ThemeCamp*) getThemeCamp:(NSArray*) themeCamps campId:(int)campId {
+  for (ThemeCamp * tc in themeCamps) {
+    if (campId == [tc.bm_id intValue]) {
+      return tc;
+    }
+  }
+  
+  return nil;
+}
 
-- (void) updateObject:(Event*)event withDict:(NSDictionary*)dict occurenceIndex:(int)idx {
+- (void) updateObject:(Event*)event withDict:(NSDictionary*)dict occurenceIndex:(int)idx themeCamps:(NSArray*)themeCamps {
   NSObject *bmid = [self nullOrObject:[dict objectForKey:@"id"]];
   if (bmid) event.bm_id = N([(NSString*)bmid intValue]);
 
   event.name = [self nullStringOrString:[dict objectForKey:@"title"]];
-  NSDictionary *locPoint = [self getLocationDictionary:dict];
-  if (locPoint) {
-    NSArray *coordArray = [locPoint objectForKey:@"coordinates"];
-    event.latitude = [coordArray objectAtIndex:1];
-    event.longitude = [coordArray objectAtIndex:0];
-    //NSLog(@"%1.5f, %1.5f", [event.latitude floatValue], [event.longitude floatValue]);
-  }
+ 
   event.desc = [self nullStringOrString:[dict objectForKey:@"print_description"]];
   NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
   if (occurrenceSet && [occurrenceSet count] > 0) {
@@ -97,29 +97,13 @@
   NSDictionary* hostDict =  (NSDictionary*)[self nullOrObject:[dict objectForKey:@"hosted_by_camp"]];
   if (!hostDict) return;
   event.campHost = [hostDict objectForKey:@"name"];
-  NSString* campSimpleName = [ThemeCamp createSimpleName:event.campHost];
-  ThemeCamp* camp = [ThemeCamp campForSimpleName:campSimpleName];
-  //NSLog(@"camp match %@ %@", [camp name], camp.latitude);
-  event.latitude = camp.latitude;
-  event.longitude = camp.longitude;
   event.camp_id = N([[hostDict objectForKey:@"id"] intValue]);
+
+  event.latitude = F([[dict objectForKey:@"latitude"] floatValue]);
+  event.longitude = F([[dict objectForKey:@"longitude"] floatValue]);
 }
 
-- (void) importDataFromFile:(NSString*)filename {
-	NSString *path = [[NSBundle mainBundle] pathForResource:filename ofType:@"json"];
-	NSData *fileData = [NSData dataWithContentsOfFile:path];
-	NSArray *eventArray = [[CJSONDeserializer deserializer] deserialize:fileData error:nil];
-  
-    NSSortDescriptor *lastDescriptor =
-    [[NSSortDescriptor alloc] initWithKey:@"start_time"
-                                ascending:YES
-                                 selector:@selector(compare:)];
-  
-    NSArray *sortedArray = [eventArray sortedArrayUsingDescriptors:@[lastDescriptor]];
 
-    
-    [self createAndUpdate:eventArray];
-}
 
 
 
@@ -133,22 +117,37 @@
 
 
 - (void) createAndUpdate:objects {
+  NSSortDescriptor *lastDescriptor =
+  [[NSSortDescriptor alloc] initWithKey:@"start_time"
+                              ascending:YES
+                               selector:@selector(compare:)];
+  
+  NSArray *events = [objects sortedArrayUsingDescriptors:@[lastDescriptor]];
+  
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   NSManagedObjectContext *moc = [t managedObjectContext];
   
   [self.eventDateHash removeAllObjects];
-  for (NSDictionary *dict in objects) {
+  //NSArray * themeCamps = [ThemeCamp allObjectsForEntity:@"ThemeCamp" inManagedObjectContext:moc];
+  NSArray * themeCamps = nil;
+  int i = 0;
+  for (NSDictionary *dict in events) {
     
     Event * event = [NSEntityDescription insertNewObjectForEntityForName:@"Event"
                                                   inManagedObjectContext:moc];
-    [self updateObject:event withDict:dict occurenceIndex:0];
+    [self updateObject:event withDict:dict occurenceIndex:0 themeCamps:(NSArray*)themeCamps];
     NSArray* occurrenceSet = (NSArray*)[self nullOrObject:[dict objectForKey:@"occurrence_set"]];
     if (occurrenceSet && [occurrenceSet count] > 0) {
       for (int i = 1; i < [occurrenceSet count]; i++) {
         event = [NSEntityDescription insertNewObjectForEntityForName:@"Event"
                                               inManagedObjectContext:moc];
-        [self updateObject:event withDict:dict occurenceIndex:i];
+        [self updateObject:event withDict:dict occurenceIndex:i themeCamps:(NSArray*)themeCamps];
       }
+    }
+    if ((i++ % 500) == 0) {
+      [self saveObjects:nil];
+      [moc reset];
+
     }
   }
   

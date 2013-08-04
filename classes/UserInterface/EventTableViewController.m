@@ -35,6 +35,7 @@
     UITabBarItem *tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:[UIImage imageNamed:@"events.png"] tag:0];
 		self.tabBarItem = tabBarItem;
 		self.title = @"Events";
+    self.objectType = @"Event";
 		[self.navigationItem setTitle:@"Events"];
     dayArray = [util dayArray];
     
