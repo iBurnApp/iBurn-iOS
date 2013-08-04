@@ -11,6 +11,10 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		4236EF7D17ADD21600EEA611 /* BurnRMAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4236EF7C17ADD21600EEA611 /* BurnRMAnnotation.m */; };
+		4236EF8217ADE86D00EEA611 /* blue-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF7E17ADE86C00EEA611 /* blue-arrow.png */; };
+		4236EF8317ADE86D00EEA611 /* blue-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */; };
+		4236EF8417ADE86D00EEA611 /* course-up-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF8017ADE86D00EEA611 /* course-up-arrow.png */; };
+		4236EF8517ADE86D00EEA611 /* course-up-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF8117ADE86D00EEA611 /* course-up-arrow@2x.png */; };
 		42F52FED17ADC465004BF8B6 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 42F52FEC17ADC465004BF8B6 /* iburn.mbtiles */; };
 		4933574517AD9C0E0014C2C2 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CE817AD9C060014C2C2 /* ArtInstall.m */; };
 		4933574917AD9C0E0014C2C2 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CF217AD9C060014C2C2 /* Event.m */; };
@@ -111,6 +115,10 @@
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		4236EF7B17ADD21600EEA611 /* BurnRMAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnRMAnnotation.h; sourceTree = "<group>"; };
 		4236EF7C17ADD21600EEA611 /* BurnRMAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BurnRMAnnotation.m; sourceTree = "<group>"; };
+		4236EF7E17ADE86C00EEA611 /* blue-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-arrow.png"; sourceTree = "<group>"; };
+		4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-arrow@2x.png"; sourceTree = "<group>"; };
+		4236EF8017ADE86D00EEA611 /* course-up-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "course-up-arrow.png"; sourceTree = "<group>"; };
+		4236EF8117ADE86D00EEA611 /* course-up-arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "course-up-arrow@2x.png"; sourceTree = "<group>"; };
 		42F52FEC17ADC465004BF8B6 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; path = iburn.mbtiles; sourceTree = "<group>"; };
 		49334CE717AD9C060014C2C2 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
 		49334CE817AD9C060014C2C2 /* ArtInstall.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtInstall.m; sourceTree = "<group>"; };
@@ -424,6 +432,10 @@
 		4933571C17AD9C0E0014C2C2 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				4236EF7E17ADE86C00EEA611 /* blue-arrow.png */,
+				4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */,
+				4236EF8017ADE86D00EEA611 /* course-up-arrow.png */,
+				4236EF8117ADE86D00EEA611 /* course-up-arrow@2x.png */,
 				4933571D17AD9C0E0014C2C2 /* app-images */,
 				4933572917AD9C0E0014C2C2 /* art2.png */,
 				4933572A17AD9C0E0014C2C2 /* blue-pin-down.png */,
@@ -659,6 +671,10 @@
 				5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */,
 				5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */,
 				42F52FED17ADC465004BF8B6 /* iburn.mbtiles in Resources */,
+				4236EF8217ADE86D00EEA611 /* blue-arrow.png in Resources */,
+				4236EF8317ADE86D00EEA611 /* blue-arrow@2x.png in Resources */,
+				4236EF8417ADE86D00EEA611 /* course-up-arrow.png in Resources */,
+				4236EF8517ADE86D00EEA611 /* course-up-arrow@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
