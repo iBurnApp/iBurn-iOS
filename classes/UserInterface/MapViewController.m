@@ -34,6 +34,10 @@
 
 
 - (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+  if (mapView.zoom < 14) {
+    return nil;
+  }
+  
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5,.8);
   return newMarker;
@@ -220,10 +224,10 @@
   if (mapView.userTrackingMode == RMUserTrackingModeNone) {
     mapView.userTrackingMode = RMUserTrackingModeFollow;
     locationButton.tintColor = [UIColor blueColor];
-  } else if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+  } else if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
     mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
     locationButton.tintColor = [UIColor redColor];
-  } else if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+  } else if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
     mapView.userTrackingMode = RMUserTrackingModeNone;
     locationButton.tintColor = [UIColor darkGrayColor];
   }
@@ -345,6 +349,48 @@
 }
 
 
+// kudos - http://blog.coriolis.ch/2009/09/04/arbitrary-rotation-of-a-cgimage/
+- (CGImageRef)newCGImageRotatedByAngle:(CGImageRef)imgRef angle:(CGFloat)angle {
+  if (!imgRef) {
+    return nil;
+  }
+  CGFloat angleInRadians = angle * (M_PI / 180);
+  CGFloat width = CGImageGetWidth(imgRef);
+  CGFloat height = CGImageGetHeight(imgRef);
+  CGRect imgRect = CGRectMake(0, 0, width, height);
+  CGAffineTransform transform = CGAffineTransformMakeRotation(angleInRadians);
+  CGRect rotatedRect = CGRectApplyAffineTransform(imgRect, transform);
+  
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  CGContextRef bmContext = CGBitmapContextCreate(NULL,
+                                                 rotatedRect.size.width,
+                                                 rotatedRect.size.height,
+                                                 8,
+                                                 0,
+                                                 colorSpace,
+                                                 kCGImageAlphaPremultipliedFirst);
+  CGColorSpaceRelease(colorSpace);
+  CGContextTranslateCTM(bmContext,
+                        +(rotatedRect.size.width/2),
+                        +(rotatedRect.size.height/2));
+  CGContextRotateCTM(bmContext, angleInRadians);
+  CGContextTranslateCTM(bmContext,
+                        -(rotatedRect.size.width/2),
+                        -(rotatedRect.size.height/2));
+  
+  CGContextDrawImage(bmContext, CGRectMake(0,
+                                           0,
+                                           rotatedRect.size.width,
+                                           rotatedRect.size.height),
+                     imgRef);
+  
+  CGImageRef rotatedImage = CGBitmapContextCreateImage(bmContext);
+  CFRelease(bmContext);
+  
+  return rotatedImage;
+}
+
+
 - (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
@@ -354,27 +400,6 @@
 
 
 - (void) newLocationUpdate:(CLLocation *)newLocation {
-  if (currentLocationAnnotation) {
-    [mapView removeAnnotations:@[currentLocationAnnotation]];
-  }
-
-  if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
-    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                          coordinate:newLocation.coordinate
-                                                            andTitle:nil];
-    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"blue-arrow.png"];
-    [mapView addAnnotation:currentLocationAnnotation];
-  }
-  
-  if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
-    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                          coordinate:newLocation.coordinate
-                                                            andTitle:nil];
-    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"course-up-arrow.png"];
-    [mapView addAnnotation:currentLocationAnnotation];
-  }
-
-  
 }
 
 
