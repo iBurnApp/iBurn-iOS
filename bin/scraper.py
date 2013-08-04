@@ -45,7 +45,7 @@ def _request(url, element):
 class Honorarium(object):
 
     # http://www.burningman.com/installations/art_honor.html
-    PROXY_URL = "http://blog.burningman.com/ctrl/art/?job=getData&yy=2012&artType=H"
+    PROXY_URL = "http://blog.burningman.com/ctrl/art/?job=getData&yy=2013&artType=H"
 
     def _parse_artist(self, artist):
         ret = {}
@@ -140,7 +140,7 @@ class Camp(object):
     def get_data(self):
         results = []
         for index in self.get_index():
-            root = _request(self.PROXY_URL+"?job=getData&yy=2012&ci=%s" % index, "campData")
+            root = _request(self.PROXY_URL+"?job=getData&yy=2013&ci=%s" % index, "campData")
             camps = root.xpath('//div')
             results.extend([self._parse_camps(i) for i in camps])
         return results
