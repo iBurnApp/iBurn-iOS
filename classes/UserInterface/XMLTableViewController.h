@@ -21,6 +21,7 @@
 
 @property (nonatomic, strong) NSMutableArray *objects;
 @property (nonatomic, strong) NSMutableArray *objectDict;
+@property (nonatomic, retain) NSString* objectType;
 
 
 - (id) initWithSearchPlaceholder:(NSString*)searchPlaceholder;
@@ -29,6 +30,5 @@
 - (void) sortBySimpleNameForEntity:(NSString*)entityName;
 
 - (void) sortByName;
-- (void) makeObjectsForFavs:(NSArray*)favs;
 
 @end

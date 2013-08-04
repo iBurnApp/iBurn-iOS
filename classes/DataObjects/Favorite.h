@@ -14,11 +14,16 @@
 
 @interface Favorite :  NSManagedObject  
 {
+  
 }
 
 @property (nonatomic, strong) ThemeCamp * ThemeCamp;
 @property (nonatomic, strong) Event * Event;
 @property (nonatomic, strong) ArtInstall * ArtInstall;
+
++ (void) addFavorite:(NSString*) type id:(NSNumber*)bm_id;
++ (BOOL) isFavorite:(NSString*) type id:(NSNumber*)bm_id;
++ (NSArray*) favoritesForType:(NSString*) type;
 
 @end
 

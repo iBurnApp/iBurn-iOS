@@ -63,20 +63,31 @@ void printTimer(NSString* name) {
     NSLog(@"DB Error: %@ %@, DBCount: %i", [error localizedDescription], [error userInfo], dbCount);
   }
   
-  if (dbCount < 1000) {
-    startTimer(@"parsingJson");
-    [self.campNodeController importDataFromFile:@"camp_data_and_locations_ids"];
-    printTimer(@"parsingJson");
-    [self.eventNodeController importDataFromFile:@"event_data_and_locations"];
-    printTimer(@"parsingJson");
-    [self.artNodeController importDataFromFile:@"art_data_and_locations"];
-    printTimer(@"parsingJson");
+  if (dbCount < 100) {
+    [self reloadData];
   }
 
-  
-  
 }
 
+- (void) reloadData {
+  startTimer(@"parsingJson");
+  [self.campNodeController importDataFromFile:@"camp_data_and_locations_ids"];
+  [self.managedObjectContext reset];
+  printTimer(@"parsingJson");
+  [self.eventNodeController importDataFromFile:@"event_data_and_locations"];
+  [self.managedObjectContext reset];
+  printTimer(@"parsingJson");
+  [self.artNodeController importDataFromFile:@"art_data_and_locations"];
+  [self.managedObjectContext reset];
+  printTimer(@"parsingJson");
+}
+
+- (void) initNodeControllers {
+  self.artNodeController = [[ArtNodeController alloc]init];
+  self.campNodeController = [[CampNodeController alloc]init];
+  self.eventNodeController = [[EventNodeController alloc]init];
+
+}
 
 - (void) initControllers {
 	self.embargoed = YES;
@@ -111,11 +122,8 @@ void printTimer(NSString* name) {
   //[self testOAuthAccessProtected];
   window.rootViewController = tabBarController;
   
-  self.artNodeController = [[ArtNodeController alloc]init];
   self.artNodeController.delegate = (ArtTableViewController*)[[tabBarController.viewControllers objectAtIndex:1]visibleViewController];
-  self.campNodeController = [[CampNodeController alloc]init];
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
-  self.eventNodeController = [[EventNodeController alloc]init];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   
   if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
@@ -138,6 +146,7 @@ void printTimer(NSString* name) {
   }
   
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+    [self initNodeControllers];
     [self managedObjectContext];
     [self checkOrCreateDatabase];
     [self initControllers];

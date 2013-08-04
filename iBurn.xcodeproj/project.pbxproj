@@ -11,6 +11,10 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		4236EF7D17ADD21600EEA611 /* BurnRMAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4236EF7C17ADD21600EEA611 /* BurnRMAnnotation.m */; };
+		4236EF8217ADE86D00EEA611 /* blue-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF7E17ADE86C00EEA611 /* blue-arrow.png */; };
+		4236EF8317ADE86D00EEA611 /* blue-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */; };
+		4236EF8417ADE86D00EEA611 /* course-up-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF8017ADE86D00EEA611 /* course-up-arrow.png */; };
+		4236EF8517ADE86D00EEA611 /* course-up-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF8117ADE86D00EEA611 /* course-up-arrow@2x.png */; };
 		42F52FED17ADC465004BF8B6 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 42F52FEC17ADC465004BF8B6 /* iburn.mbtiles */; };
 		4933574517AD9C0E0014C2C2 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CE817AD9C060014C2C2 /* ArtInstall.m */; };
 		4933574917AD9C0E0014C2C2 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CF217AD9C060014C2C2 /* Event.m */; };
@@ -87,6 +91,7 @@
 		4933610617AD9C0E0014C2C2 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4933573C17AD9C0E0014C2C2 /* rod_garrett.jpg */; };
 		4933610717AD9C0E0014C2C2 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573D17AD9C0E0014C2C2 /* MainWindow-iPad.xib */; };
 		4933610817AD9C0E0014C2C2 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573E17AD9C0E0014C2C2 /* MainWindow.xib */; };
+		5000C59A17ADD42300AAA481 /* NSManagedObject_util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5000C59917ADD42300AAA481 /* NSManagedObject_util.m */; };
 		5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415D17ADB7370070BBAB /* art_data_and_locations.json */; };
 		5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */; };
 		5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415F17ADB7370070BBAB /* event_data_and_locations.json */; };
@@ -111,6 +116,10 @@
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		4236EF7B17ADD21600EEA611 /* BurnRMAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnRMAnnotation.h; sourceTree = "<group>"; };
 		4236EF7C17ADD21600EEA611 /* BurnRMAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BurnRMAnnotation.m; sourceTree = "<group>"; };
+		4236EF7E17ADE86C00EEA611 /* blue-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-arrow.png"; sourceTree = "<group>"; };
+		4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-arrow@2x.png"; sourceTree = "<group>"; };
+		4236EF8017ADE86D00EEA611 /* course-up-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "course-up-arrow.png"; sourceTree = "<group>"; };
+		4236EF8117ADE86D00EEA611 /* course-up-arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "course-up-arrow@2x.png"; sourceTree = "<group>"; };
 		42F52FEC17ADC465004BF8B6 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; path = iburn.mbtiles; sourceTree = "<group>"; };
 		49334CE717AD9C060014C2C2 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
 		49334CE817AD9C060014C2C2 /* ArtInstall.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtInstall.m; sourceTree = "<group>"; };
@@ -229,6 +238,8 @@
 		4933574217AD9C0E0014C2C2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4933574317AD9C0E0014C2C2 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		4933574417AD9C0E0014C2C2 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
+		5000C59817ADD42300AAA481 /* NSManagedObject_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSManagedObject_util.h; sourceTree = "<group>"; };
+		5000C59917ADD42300AAA481 /* NSManagedObject_util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSManagedObject_util.m; sourceTree = "<group>"; };
 		5002415D17ADB7370070BBAB /* art_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data_and_locations.json; path = bin/playa_data/results/art_data_and_locations.json; sourceTree = SOURCE_ROOT; };
 		5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = camp_data_and_locations_ids.json; path = bin/playa_data/results/camp_data_and_locations_ids.json; sourceTree = SOURCE_ROOT; };
 		5002415F17ADB7370070BBAB /* event_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = event_data_and_locations.json; path = bin/playa_data/results/event_data_and_locations.json; sourceTree = SOURCE_ROOT; };
@@ -318,6 +329,7 @@
 		49334CE517AD9C060014C2C2 /* classes */ = {
 			isa = PBXGroup;
 			children = (
+				5000C59717ADD40100AAA481 /* util */,
 				4933611417AD9CD90014C2C2 /* Controllers */,
 				49334D0017AD9C060014C2C2 /* UserInterface */,
 				49334CE617AD9C060014C2C2 /* DataObjects */,
@@ -424,6 +436,10 @@
 		4933571C17AD9C0E0014C2C2 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				4236EF7E17ADE86C00EEA611 /* blue-arrow.png */,
+				4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */,
+				4236EF8017ADE86D00EEA611 /* course-up-arrow.png */,
+				4236EF8117ADE86D00EEA611 /* course-up-arrow@2x.png */,
 				4933571D17AD9C0E0014C2C2 /* app-images */,
 				4933572917AD9C0E0014C2C2 /* art2.png */,
 				4933572A17AD9C0E0014C2C2 /* blue-pin-down.png */,
@@ -563,6 +579,15 @@
 			path = UserInterface;
 			sourceTree = "<group>";
 		};
+		5000C59717ADD40100AAA481 /* util */ = {
+			isa = PBXGroup;
+			children = (
+				5000C59817ADD42300AAA481 /* NSManagedObject_util.h */,
+				5000C59917ADD42300AAA481 /* NSManagedObject_util.m */,
+			);
+			name = util;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -659,6 +684,10 @@
 				5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */,
 				5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */,
 				42F52FED17ADC465004BF8B6 /* iburn.mbtiles in Resources */,
+				4236EF8217ADE86D00EEA611 /* blue-arrow.png in Resources */,
+				4236EF8317ADE86D00EEA611 /* blue-arrow@2x.png in Resources */,
+				4236EF8417ADE86D00EEA611 /* course-up-arrow.png in Resources */,
+				4236EF8517ADE86D00EEA611 /* course-up-arrow@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -740,6 +769,7 @@
 				4933576E17AD9C0E0014C2C2 /* NSDate-Utilities.m in Sources */,
 				4933577317AD9C0E0014C2C2 /* iBurn.xcdatamodel in Sources */,
 				4236EF7D17ADD21600EEA611 /* BurnRMAnnotation.m in Sources */,
+				5000C59A17ADD42300AAA481 /* NSManagedObject_util.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

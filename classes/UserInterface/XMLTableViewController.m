@@ -11,6 +11,8 @@
 #import "iBurnAppDelegate.h"
 #import "MyCLController.h"
 #import "MapViewController.h"
+#import "NSManagedObject_util.h"
+#import "Favorite.h"
 
 @implementation XMLTableViewController
 @synthesize objects, objectDict;
@@ -103,7 +105,7 @@
 }
 
 
-- (void) sortByFavorites { 
+- (void) sortByFavorites {
 	objectDict = nil;
 
 	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -117,8 +119,8 @@
 	if(favs == nil) {
 		NSLog(@"Fetch failed with error: %@", error);
 	}
-  objects = [[NSMutableArray alloc]init];
-	[self makeObjectsForFavs:favs];
+  objects = [NSManagedObject objectsForKey:@"bm_id" values:[Favorite favoritesForType:self.objectType] entityName:self.objectType sortField:nil inManagedObjectContext:moc];
+
 }
 
 
@@ -251,7 +253,6 @@
 }
 
 - (void) sortByName {}
-- (void) makeObjectsForFavs:(NSArray*)favs {}
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)index {
   switch (index) {
