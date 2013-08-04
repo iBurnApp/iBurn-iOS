@@ -25,7 +25,7 @@
 }
 
 + (NSMutableDictionary*) favorites {
-  NSMutableDictionary * favorites = nil;
+  static NSMutableDictionary * favorites = nil;
   if (!favorites) {
     NSData * fileData = [NSData dataWithContentsOfFile:[self fileUrl]];
     if (fileData) {

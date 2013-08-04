@@ -99,6 +99,8 @@
 }
 
 - (void) addToFavorites: (id) sender {
+  [Favorite addFavorite:@"ArtInstall" id:art.bm_id];
+
 }
 
 
