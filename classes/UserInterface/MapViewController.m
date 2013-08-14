@@ -42,12 +42,31 @@
 
 
 - (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(RMAnnotation *)annotation {
-  if (mv.zoom < 14) {
+  if (mv.zoom < 17
+      && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
+    return nil;
+  }
+  if (mv.zoom < 16
+      && [annotation.annotationType isEqualToString:@"ArtInstall"]) {
     return nil;
   }
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5, .8);
   return newMarker;
+}
+
+
+- (void) beforeMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
+  previousZoom = mapView.zoom;
+  
+}
+
+
+- (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
+  if (mapView.zoom < previousZoom) {
+    [self.mapView removeAllAnnotations];
+    [self loadMarkers];
+  }
 }
 
 
@@ -124,7 +143,8 @@
 
 - (void) loadMarkers {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) return;
+#warning remove
+  //if (t.embargoed) return;
   [self loadArt];
   [self loadCamps];
   [self loadEvents];
@@ -354,7 +374,7 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   
-  //[self loadMarkers];
+  [self loadMarkers];
 #warning this freezes it
   /*
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];

@@ -20,6 +20,7 @@
   UIProgressView *progressView;
   RMAnnotation * navigationLineAnnotation;
   CLLocation * toLocation;
+  float previousZoom;
 }
 
 @property (nonatomic, strong) UIProgressView *progressView;
