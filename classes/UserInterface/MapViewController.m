@@ -323,7 +323,7 @@
 #define kNormalMapID @"iburn.map-0ytz4sz2"
 #define kRetinaMapID @"iburn.map-0ytz4sz2"
 - (void) setMapSources {
-  RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+  // RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self.bigFileDownloader mbTilesPath]]];
   [mapView setTileSource:offlineSource];
   //[mapView addTileSource:offlineSource];
@@ -335,6 +335,8 @@
   [super loadView];
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
   mapView.adjustTilesForRetinaDisplay = YES;
+  mapView.hideAttribution = YES;
+  mapView.showLogoBug = NO;
   [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setMapSources) name:@"BIG_FILE_DOWNLOAD_DONE" object:nil];
   [self.bigFileDownloader copyMBTileFileFromBundle];
   [self setMapSources];
