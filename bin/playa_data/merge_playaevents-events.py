@@ -2,15 +2,15 @@ import Levenshtein
 import json
 from string_util import cleanString, convert_html_entities
 '''
-    This script merges event locations from camp-locations-2012.json
-    into events from playaevents-events-2012.json
+    This script merges event locations from camp-locations-2013.json
+    into events from playaevents-events-2013.json
     (The Playa Events API Events feed)
 '''
 # Threshold under which to discard partial string matches
 MATCH_THRESHOLD = .7
 
-location_file = open('./data/camp-locations-2012.json')
-events_file = open('./data/playaevents-events-2012.json')
+location_file = open('./data/camp-locations-2013.json')
+events_file = open('./data/playaevents-events-2013.json')
 
 location_json = json.loads(location_file.read())
 events_json = json.loads(events_file.read())
@@ -20,6 +20,7 @@ null_event_indexes = []
 
 # events without a match, for manual inspection
 unmatched_events = []
+matched_events = []
 
 # match name fields between entries in two files
 for index, event in enumerate(events_json):
@@ -37,8 +38,9 @@ for index, event in enumerate(events_json):
             if 'latitude' in max_match_location and max_match_location['latitude'] != "":
                 event['latitude'] = max_match_location['latitude']
                 event['longitude'] = max_match_location['longitude']
-            event['location'] = max_match_location['location']
+            #event['location'] = max_match_location['location']
             event['matched_name'] = max_match_location['name']
+            matched_events.append(event)
         else:
             unmatched_events.append(event)
     elif not 'hosted_by_camp' in event:
@@ -58,3 +60,5 @@ result_file.write(convert_html_entities(json.dumps(events_json, sort_keys=True, 
 
 if len(unmatched_events) > 0:
     print "Matches not found for " + str(len(unmatched_events)) + " events"
+
+print "Matched events: "+ str(len(matched_events))

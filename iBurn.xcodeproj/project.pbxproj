@@ -10,7 +10,6 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
-		4225B6BE17B558F3008544AC /* australia250k.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 4225B6BD17B558F3008544AC /* australia250k.mbtiles */; };
 		4236EF7D17ADD21600EEA611 /* BurnRMAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4236EF7C17ADD21600EEA611 /* BurnRMAnnotation.m */; };
 		4236EF8217ADE86D00EEA611 /* blue-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF7E17ADE86C00EEA611 /* blue-arrow.png */; };
 		4236EF8317ADE86D00EEA611 /* blue-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */; };
@@ -92,6 +91,14 @@
 		4933610617AD9C0E0014C2C2 /* rod_garrett.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4933573C17AD9C0E0014C2C2 /* rod_garrett.jpg */; };
 		4933610717AD9C0E0014C2C2 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573D17AD9C0E0014C2C2 /* MainWindow-iPad.xib */; };
 		4933610817AD9C0E0014C2C2 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4933573E17AD9C0E0014C2C2 /* MainWindow.xib */; };
+		499E3C8417AE1DF10047F9F3 /* S3BigFileDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C8317AE1DF10047F9F3 /* S3BigFileDownloader.m */; };
+		499E3C8D17AE21F00047F9F3 /* DownloadStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C8617AE21EF0047F9F3 /* DownloadStatusTableViewCell.m */; };
+		499E3C8E17AE21F00047F9F3 /* DownloadStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C8717AE21EF0047F9F3 /* DownloadStatus.m */; };
+		499E3C8F17AE21F00047F9F3 /* DownloadStatusCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C8917AE21EF0047F9F3 /* DownloadStatusCenter.m */; };
+		499E3C9017AE21F00047F9F3 /* DownloadStatusTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C8A17AE21F00047F9F3 /* DownloadStatusTableViewController.m */; };
+		499E3C9317AE22A70047F9F3 /* Networking.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C9217AE22A60047F9F3 /* Networking.m */; };
+		499E3C9617AE233D0047F9F3 /* OrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 499E3C9517AE233D0047F9F3 /* OrderedDictionary.m */; };
+		49D4460617AEB9190078B7AD /* NSDate-Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 49D4460517AEB9190078B7AD /* NSDate-Utilities.m */; };
 		5000C59A17ADD42300AAA481 /* NSManagedObject_util.m in Sources */ = {isa = PBXBuildFile; fileRef = 5000C59917ADD42300AAA481 /* NSManagedObject_util.m */; };
 		5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415D17ADB7370070BBAB /* art_data_and_locations.json */; };
 		5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */; };
@@ -115,7 +122,6 @@
 		1D6058910D05DD3D006BFB54 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		4225B6BD17B558F3008544AC /* australia250k.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = australia250k.mbtiles; path = ../../../../Downloads/australia250k.mbtiles; sourceTree = "<group>"; };
 		4236EF7B17ADD21600EEA611 /* BurnRMAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BurnRMAnnotation.h; sourceTree = "<group>"; };
 		4236EF7C17ADD21600EEA611 /* BurnRMAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BurnRMAnnotation.m; sourceTree = "<group>"; };
 		4236EF7E17ADE86C00EEA611 /* blue-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blue-arrow.png"; sourceTree = "<group>"; };
@@ -179,7 +185,7 @@
 		49334D2917AD9C060014C2C2 /* UnlockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnlockViewController.m; sourceTree = "<group>"; };
 		49334D2A17AD9C060014C2C2 /* XMLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLTableViewController.h; sourceTree = "<group>"; };
 		49334D2B17AD9C060014C2C2 /* XMLTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLTableViewController.m; sourceTree = "<group>"; };
-		49334D2C17AD9C060014C2C2 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = classes/util.h; sourceTree = "<group>"; };
+		49334D2C17AD9C060014C2C2 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
 		49334D2D17AD9C060014C2C2 /* util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = util.m; sourceTree = "<group>"; };
 		49334D3017AD9C060014C2C2 /* CDataScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner.h; sourceTree = "<group>"; };
 		49334D3117AD9C060014C2C2 /* CDataScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner.m; sourceTree = "<group>"; };
@@ -240,6 +246,22 @@
 		4933574217AD9C0E0014C2C2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4933574317AD9C0E0014C2C2 /* routeme.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = routeme.plist; sourceTree = "<group>"; };
 		4933574417AD9C0E0014C2C2 /* Test.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Test.plist; sourceTree = "<group>"; };
+		499E3C8217AE1DF10047F9F3 /* S3BigFileDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = S3BigFileDownloader.h; path = classes/S3BigFileDownloader.h; sourceTree = SOURCE_ROOT; };
+		499E3C8317AE1DF10047F9F3 /* S3BigFileDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = S3BigFileDownloader.m; path = classes/S3BigFileDownloader.m; sourceTree = SOURCE_ROOT; };
+		499E3C8517AE21EF0047F9F3 /* DownloadStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadStatus.h; sourceTree = "<group>"; };
+		499E3C8617AE21EF0047F9F3 /* DownloadStatusTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadStatusTableViewCell.m; sourceTree = "<group>"; };
+		499E3C8717AE21EF0047F9F3 /* DownloadStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadStatus.m; sourceTree = "<group>"; };
+		499E3C8817AE21EF0047F9F3 /* DownloadStatusCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadStatusCenter.h; sourceTree = "<group>"; };
+		499E3C8917AE21EF0047F9F3 /* DownloadStatusCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadStatusCenter.m; sourceTree = "<group>"; };
+		499E3C8A17AE21F00047F9F3 /* DownloadStatusTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadStatusTableViewController.m; sourceTree = "<group>"; };
+		499E3C8B17AE21F00047F9F3 /* DownloadStatusTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadStatusTableViewCell.h; sourceTree = "<group>"; };
+		499E3C8C17AE21F00047F9F3 /* DownloadStatusTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadStatusTableViewController.h; sourceTree = "<group>"; };
+		499E3C9117AE22A60047F9F3 /* Networking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Networking.h; sourceTree = "<group>"; };
+		499E3C9217AE22A60047F9F3 /* Networking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Networking.m; sourceTree = "<group>"; };
+		499E3C9417AE233D0047F9F3 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderedDictionary.h; sourceTree = "<group>"; };
+		499E3C9517AE233D0047F9F3 /* OrderedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderedDictionary.m; sourceTree = "<group>"; };
+		49D4460417AEB9190078B7AD /* NSDate-Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate-Utilities.h"; sourceTree = "<group>"; };
+		49D4460517AEB9190078B7AD /* NSDate-Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate-Utilities.m"; sourceTree = "<group>"; };
 		5000C59817ADD42300AAA481 /* NSManagedObject_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSManagedObject_util.h; sourceTree = "<group>"; };
 		5000C59917ADD42300AAA481 /* NSManagedObject_util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSManagedObject_util.m; sourceTree = "<group>"; };
 		5002415D17ADB7370070BBAB /* art_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data_and_locations.json; path = bin/playa_data/results/art_data_and_locations.json; sourceTree = SOURCE_ROOT; };
@@ -302,7 +324,6 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				1794D3F212054D21BCF52B79 /* Pods.xcconfig */,
-				49334D2C17AD9C060014C2C2 /* util.h */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -337,6 +358,7 @@
 				49334CE617AD9C060014C2C2 /* DataObjects */,
 				49334CF717AD9C060014C2C2 /* iBurnAppDelegate.h */,
 				49334CF817AD9C060014C2C2 /* iBurnAppDelegate.m */,
+				49334D2C17AD9C060014C2C2 /* util.h */,
 				49334D2D17AD9C060014C2C2 /* util.m */,
 				49334CF917AD9C060014C2C2 /* main.m */,
 				4236EF7B17ADD21600EEA611 /* BurnRMAnnotation.h */,
@@ -420,7 +442,6 @@
 		49334D3F17AD9C060014C2C2 /* data */ = {
 			isa = PBXGroup;
 			children = (
-				4225B6BD17B558F3008544AC /* australia250k.mbtiles */,
 				5002415D17ADB7370070BBAB /* art_data_and_locations.json */,
 				5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */,
 				5002415F17ADB7370070BBAB /* event_data_and_locations.json */,
@@ -565,6 +586,18 @@
 		4933611417AD9CD90014C2C2 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				499E3C9417AE233D0047F9F3 /* OrderedDictionary.h */,
+				499E3C9517AE233D0047F9F3 /* OrderedDictionary.m */,
+				499E3C9117AE22A60047F9F3 /* Networking.h */,
+				499E3C9217AE22A60047F9F3 /* Networking.m */,
+				499E3C8517AE21EF0047F9F3 /* DownloadStatus.h */,
+				499E3C8717AE21EF0047F9F3 /* DownloadStatus.m */,
+				499E3C8B17AE21F00047F9F3 /* DownloadStatusTableViewCell.h */,
+				499E3C8617AE21EF0047F9F3 /* DownloadStatusTableViewCell.m */,
+				499E3C8817AE21EF0047F9F3 /* DownloadStatusCenter.h */,
+				499E3C8917AE21EF0047F9F3 /* DownloadStatusCenter.m */,
+				499E3C8C17AE21F00047F9F3 /* DownloadStatusTableViewController.h */,
+				499E3C8A17AE21F00047F9F3 /* DownloadStatusTableViewController.m */,
 				49334CFE17AD9C060014C2C2 /* SimpleDiskCache.h */,
 				49334CFF17AD9C060014C2C2 /* SimpleDiskCache.m */,
 				49334CFA17AD9C060014C2C2 /* MyCLController.h */,
@@ -577,6 +610,8 @@
 				49334D0417AD9C060014C2C2 /* ArtNodeController.m */,
 				49334D0D17AD9C060014C2C2 /* CampNodeController.h */,
 				49334D0E17AD9C060014C2C2 /* CampNodeController.m */,
+				499E3C8217AE1DF10047F9F3 /* S3BigFileDownloader.h */,
+				499E3C8317AE1DF10047F9F3 /* S3BigFileDownloader.m */,
 			);
 			name = Controllers;
 			path = UserInterface;
@@ -585,6 +620,8 @@
 		5000C59717ADD40100AAA481 /* util */ = {
 			isa = PBXGroup;
 			children = (
+				49D4460417AEB9190078B7AD /* NSDate-Utilities.h */,
+				49D4460517AEB9190078B7AD /* NSDate-Utilities.m */,
 				5000C59817ADD42300AAA481 /* NSManagedObject_util.h */,
 				5000C59917ADD42300AAA481 /* NSManagedObject_util.m */,
 			);
@@ -691,7 +728,6 @@
 				4236EF8317ADE86D00EEA611 /* blue-arrow@2x.png in Resources */,
 				4236EF8417ADE86D00EEA611 /* course-up-arrow.png in Resources */,
 				4236EF8517ADE86D00EEA611 /* course-up-arrow@2x.png in Resources */,
-				4225B6BE17B558F3008544AC /* australia250k.mbtiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -774,6 +810,14 @@
 				4933577317AD9C0E0014C2C2 /* iBurn.xcdatamodel in Sources */,
 				4236EF7D17ADD21600EEA611 /* BurnRMAnnotation.m in Sources */,
 				5000C59A17ADD42300AAA481 /* NSManagedObject_util.m in Sources */,
+				499E3C8417AE1DF10047F9F3 /* S3BigFileDownloader.m in Sources */,
+				499E3C8D17AE21F00047F9F3 /* DownloadStatusTableViewCell.m in Sources */,
+				499E3C8E17AE21F00047F9F3 /* DownloadStatus.m in Sources */,
+				499E3C8F17AE21F00047F9F3 /* DownloadStatusCenter.m in Sources */,
+				499E3C9017AE21F00047F9F3 /* DownloadStatusTableViewController.m in Sources */,
+				499E3C9317AE22A70047F9F3 /* Networking.m in Sources */,
+				499E3C9617AE233D0047F9F3 /* OrderedDictionary.m in Sources */,
+				49D4460617AEB9190078B7AD /* NSDate-Utilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

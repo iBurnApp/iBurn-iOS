@@ -29,6 +29,9 @@ NSString* privateDocumentsDirectory();
 + (NSArray*) dayArray;
 + (NSArray*) creditsArray;
 + (void) checkDirectory:(NSString*) filePath;
++ (double)bearingFromCoordinate:(CLLocationCoordinate2D)fromCoordinate toCoordinate:(CLLocationCoordinate2D)toCoordinate;
 
++(void)setHomeLocation:(CLLocation*)newHomeCoordinate;
++(CLLocation*)homeLocation;
 
 @end

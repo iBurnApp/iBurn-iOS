@@ -1,6 +1,6 @@
 '''
-    This script merges camp locations from camp-locations-2012.json
-    into camp entries from playaevents-camps-2012.json
+    This script merges camp locations from camp-locations-2013.json
+    into camp entries from playaevents-camps-2013.json
     (The Playa Events API Camp feed)
     AND camps-2012.json (optional)
     (The result of scraper.py in the iBurn-2011 iOS repo)
@@ -14,9 +14,9 @@ import codecs
 # Threshold under which to discard partial string matches
 MATCH_THRESHOLD = .7
 
-location_file = open('./data/camp-locations-2012.json')
-playa_file = open('./data/playaevents-camps-2012.json')
-scraper_file = open('./data/camps-2012.json')
+location_file = open('./data/camp-locations-2013.json')
+playa_file = open('./data/playaevents-camps-2013.json')
+scraper_file = open('./data/camps-2013.json')
 # Comment out the above line to disable the scraper.py datasource
 
 location_json = json.loads(location_file.read())
@@ -29,6 +29,8 @@ null_camp_indexes = []
 
 # camps without a match, for manual inspection
 unmatched_camps = []
+
+matched_camps = []
 
 # First, merge camps-2012.json data into playaevents-camps-2012.json
 if scraper_file:
@@ -81,8 +83,9 @@ for index, camp in enumerate(playa_json):
             if 'latitude' in max_match_location and max_match_location['latitude'] != "":
                 camp['latitude'] = max_match_location['latitude']
                 camp['longitude'] = max_match_location['longitude']
-            camp['location'] = max_match_location['location']
+            #camp['location'] = max_match_location['location']
             camp['matched_name'] = max_match_location['name']
+            matched_camps.append(camp)
         else:
           print "Best match for " + camp['name'] + " : " + max_match_location['name'] + " (confidence: " + str(max_match) + ")"
           unmatched_camps.append(camp)
@@ -112,3 +115,5 @@ result_file.write(json_stripped_cleaned)
 
 if len(unmatched_camps) > 0:
     print "Location not determined for " + str(len(unmatched_camps)) + " camps"
+
+print "Matched camps: "+str(len(matched_camps))

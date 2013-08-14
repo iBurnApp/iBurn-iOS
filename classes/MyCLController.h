@@ -14,6 +14,7 @@
 }
 
 @property (nonatomic, assign) CLLocationCoordinate2D lastReading;
+@property (nonatomic, strong) CLLocation *location;
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, unsafe_unretained) id <MyCLControllerDelegate> delegate;
 

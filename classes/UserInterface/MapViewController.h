@@ -6,27 +6,27 @@
 //  Copyright Burning Man Earth 2008. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 #import <RMMapView.h>
 #import "MyCLController.h"
-#import "InfoViewController.h"
 
-@class RMAnnotation;
+@class RMAnnotation, InfoViewController, S3BigFileDownloader;
 
-@interface MapViewController : UIViewController <RMMapViewDelegate, MyCLControllerDelegate> {
+@interface MapViewController : UIViewController <RMMapViewDelegate, MyCLControllerDelegate,UIActionSheetDelegate> {
 	RMMapView * mapView;
 	UISegmentedControl *locationButton;
 	RMMarker *currentLocationMarker;
 	RMAnnotation *currentLocationAnnotation;
   InfoViewController *detailView;
   UIProgressView *progressView;
-
+  RMAnnotation * navigationLineAnnotation;
+  CLLocation * toLocation;
+  float previousZoom;
 }
 
 @property (nonatomic, strong) UIProgressView *progressView;
 @property (nonatomic, strong) InfoViewController *detailView;
 @property (nonatomic, strong) RMMapView *mapView;
-
+@property (nonatomic, strong) S3BigFileDownloader *bigFileDownloader;
 
 - (void) loadCamps;
 - (void) showMapForObject:(id)obj;

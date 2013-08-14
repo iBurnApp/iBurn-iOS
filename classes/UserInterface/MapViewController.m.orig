@@ -64,10 +64,9 @@
 
 
 - (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
-  if (mapView.zoom < previousZoom
-      && mapView.zoom >= 15) {
+  if (mapView.zoom < previousZoom) {
     [self.mapView removeAllAnnotations];
-    [NSThread detachNewThreadSelector:@selector(loadMarkers) toTarget:self withObject:nil];
+    [self loadMarkers];
   }
 }
 
@@ -102,8 +101,8 @@
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
     BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
-                                                                 coordinate:coord
-                                                                   andTitle:[camp name]];
+                                                         coordinate:coord
+                                                           andTitle:[camp name]];
     annotation.annotationIcon = [UIImage imageNamed:iconName];
     annotation.annotationType = dataType;
     // if it's a camp
@@ -188,8 +187,8 @@
   homeButton.tintColor = [UIColor darkGrayColor];
   homeButton.segmentedControlStyle = UISegmentedControlStyleBar;
   [homeButton addTarget:self
-                 action:@selector(home:)
-       forControlEvents:UIControlEventValueChanged];
+                     action:@selector(home:)
+           forControlEvents:UIControlEventValueChanged];
   
   locationButton = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"locate-icon.png"]]];
   locationButton.frame = CGRectMake(45,0,35,35);
@@ -263,7 +262,7 @@
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
   /*CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
-   [util setHomeLocation:fakeHome];
+  [util setHomeLocation:fakeHome];
    */
   NSArray * otherTitles = nil;
   if(navigationLineAnnotation)
@@ -327,11 +326,26 @@
 }
 
 
+<<<<<<< HEAD
+- (void) loadMBTilesFile {
+  return;
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[self mbTilesURL]];
+    [request setTimeOutSeconds:240];
+    [request setDownloadDestinationPath:[self mbTilesPath]];
+    [request startSynchronous];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self mbTilesPath]]];
+      [mapView setTileSource:offlineSource];
+    });
+  });
+=======
 - (S3BigFileDownloader*) bigFileDownloader {
   if (!bigFileDownloader) {
     bigFileDownloader = [[S3BigFileDownloader alloc]init];
   }
   return bigFileDownloader;
+>>>>>>> 7b958f9222ec654c85813d9e4274e77f19746c84
 }
 
 
@@ -353,8 +367,20 @@
 }
 
 
+<<<<<<< HEAD
+#define kNormalMapID @"iburn.map-0ytz4sz2"
+#define kRetinaMapID @"iburn.map-0ytz4sz2"
 - (void)loadView {
   [super loadView];
+  // [self loadMBTilesFile];
+  RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"australia250k" ofType:@"mbtiles"];
+  
+  RMCompositeSource *compSource = [[RMCompositeSource alloc]initWithTileSources:@[onlineSource, offlineSource] tileCacheKey:@"burnmap"];
+=======
+- (void)loadView {
+  [super loadView];
+>>>>>>> 7b958f9222ec654c85813d9e4274e77f19746c84
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
   mapView.adjustTilesForRetinaDisplay = YES;
   mapView.hideAttribution = YES;
@@ -378,12 +404,12 @@
   [self loadMarkers];
 #warning this freezes it
   /*
-   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-   if (t.embargoed) {
-   [mapView setMaxZoom:14];
-   } else {
-   [mapView setMaxZoom:18];
-   }
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if (t.embargoed) {
+    [mapView setMaxZoom:14];
+  } else {
+    [mapView setMaxZoom:18];
+  } 
    */
 }
 
@@ -401,23 +427,23 @@
 	[mapView setBackgroundColor:[UIColor blackColor]];
 	//[mapView moveToLatLong:point];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  /*  if (t.embargoed) {
-   int width = self.view.frame.size.width-20;
-   if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-   width -= 200;
-   }
-   UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)];
-   
-   lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
-   lbl.tag = 999;
-   lbl.textAlignment = UITextAlignmentCenter;
-   lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-   lbl.numberOfLines = 0;
-   lbl.layer.cornerRadius = 8;
-   lbl.layer.borderWidth = 1;
-   lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
-   [self.view addSubview:lbl];
-   }*/
+/*  if (t.embargoed) {
+    int width = self.view.frame.size.width-20;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+      width -= 200;
+    }
+    UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)];
+    
+    lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
+    lbl.tag = 999;
+    lbl.textAlignment = UITextAlignmentCenter;
+    lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    lbl.numberOfLines = 0;
+    lbl.layer.cornerRadius = 8;
+    lbl.layer.borderWidth = 1;
+    lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
+    [self.view addSubview:lbl];
+  }*/
 }
 
 
@@ -447,7 +473,7 @@
   if (currentLocationAnnotation) {
     [mapView removeAnnotations:@[currentLocationAnnotation]];
   }
-  
+
   if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
     currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
                                                           coordinate:newLocation.coordinate
@@ -468,7 +494,7 @@
   {
     [self navigateToLocation:toLocation];
   }
-  
+
   
 }
 

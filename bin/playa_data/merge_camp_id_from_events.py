@@ -3,9 +3,9 @@ import json
 from string_util import cleanString
 '''
     This script merges camp ids into the data from 
-    ./data/playaevents-camps-2012.json
+    ./data/playaevents-camps-2013.json
     OR ./results/camp_data_and_locations.json
-    using playaevents-events-2012
+    using playaevents-events-2013
     (The Playa Events API Events feed)
 '''
 
@@ -13,7 +13,7 @@ from string_util import cleanString
 MATCH_THRESHOLD = .7
 
 camp_file = open('./results/camp_data_and_locations.json')
-events_file = open('./data/playaevents-events-2012.json')
+events_file = open('./data/playaevents-events-2013.json')
 
 camp_json = json.loads(camp_file.read())
 events_json = json.loads(events_file.read())
@@ -23,6 +23,8 @@ null_camp_indexes = []
 
 # camps without a match, for manual inspection
 unmatched_camps = []
+
+matched_camps = []
 
 # match name fields between entries in two files
 for index, camp in enumerate(camp_json):
@@ -39,6 +41,7 @@ for index, camp in enumerate(camp_json):
         if max_match > MATCH_THRESHOLD:
             # Match found
             camp['id'] = max_match_event['hosted_by_camp']['id']
+            matched_camps.append(camp)
         else:
             unmatched_camps.append(camp)
     elif not 'name' in camp:
@@ -58,3 +61,5 @@ result_file.write(json.dumps(camp_json, sort_keys=True, indent=4))
 
 if len(unmatched_camps) > 0:
     print "Matches not found for " + str(len(unmatched_camps)) + " camps"
+
+print "Matched: "+str(len(matched_camps))

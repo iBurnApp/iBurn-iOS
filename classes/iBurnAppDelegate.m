@@ -126,7 +126,7 @@ void printTimer(NSString* name) {
   self.campNodeController.delegate = (CampTableViewController*)[[tabBarController.viewControllers objectAtIndex:2]visibleViewController];
   self.eventNodeController.delegate = (EventTableViewController*)[[tabBarController.viewControllers objectAtIndex:3]visibleViewController];
   
-  if ([MyCLController sharedInstance].locationManager.locationServicesEnabled ) {
+  if ([CLLocationManager locationServicesEnabled]) {
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
   }
 
@@ -134,21 +134,19 @@ void printTimer(NSString* name) {
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
-
- 
-	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
   NSString *documentsDirectory = [paths objectAtIndex:0];   
   NSString *path = [documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"];
   if ([[NSFileManager defaultManager]fileExistsAtPath:path]) {
     [self liftEmbargo];
   }
-  
+  [self initControllers];
+  [window makeKeyAndVisible];
+
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
     [self initNodeControllers];
     [self managedObjectContext];
     [self checkOrCreateDatabase];
-    [self initControllers];
     [self postLaunch];
   });
   
@@ -346,7 +344,7 @@ void printTimer(NSString* name) {
   
 }
 
-#define CORRECT_HASH  @"A5717A649D346ED0C51BE68888C130CD"
+#define CORRECT_HASH  @"59D59BD0A95DB884EC0442C80411D52D"
 
 - (BOOL) checkPassword:(NSString*) password {
   //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah

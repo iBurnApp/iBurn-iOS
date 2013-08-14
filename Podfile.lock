@@ -10,6 +10,43 @@ PODS:
     - Reachability
   - ASIHTTPRequest/S3 (1.8.1):
     - Reachability
+  - AWSiOSSDK (1.6.0):
+    - AWSiOSSDK/AutoScaling
+    - AWSiOSSDK/CloudWatch
+    - AWSiOSSDK/DynamoDB
+    - AWSiOSSDK/EC2
+    - AWSiOSSDK/ElasticLoadBalancing
+    - AWSiOSSDK/Runtime
+    - AWSiOSSDK/S3
+    - AWSiOSSDK/SES
+    - AWSiOSSDK/SimpleDB
+    - AWSiOSSDK/SNS
+    - AWSiOSSDK/SQS
+    - AWSiOSSDK/STS
+  - AWSiOSSDK/AutoScaling (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/CloudWatch (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/DynamoDB (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/EC2 (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/ElasticLoadBalancing (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/Runtime (1.6.0):
+    - AWSiOSSDK/DynamoDB
+  - AWSiOSSDK/S3 (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/SES (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/SimpleDB (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/SNS (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/SQS (1.6.0):
+    - AWSiOSSDK/Runtime
+  - AWSiOSSDK/STS (1.6.0):
+    - AWSiOSSDK/Runtime
   - FMDB (2.0):
     - FMDB/standard
   - FMDB/common (2.0)
@@ -28,13 +65,15 @@ PODS:
 
 DEPENDENCIES:
   - ASIHTTPRequest
+  - AWSiOSSDK
   - JSONKit (~> 1.5pre)
   - MapBox
   - Reachability (~> 3.1.0)
 
 SPEC CHECKSUMS:
   ASIHTTPRequest: a411b8d0f006ed8fc24248be6a0c4ad2abc9b101
-  FMDB: 30a7cbcdbd354f5ee1ba081a8773fd9130c43b48
+  AWSiOSSDK: 947b8f0458299e97b81e269c91293a3e6f6f2f8f
+  FMDB: 370eb54b9f057aa4de7cf9c757d103b21ee30ecc
   GRMustache: f97f90a320c36896b08ca2624003e4ab8da7cfb1
   JRSwizzle: 6242ff38485d870fc2636899048ee1ab883ae587
   JSONKit: 409734ab3407fce90ef7eaa95d7168f38d9a6601

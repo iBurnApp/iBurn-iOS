@@ -1,42 +1,42 @@
 {
   "MONDAY - Gates open":{
     "index":0,
-    "dayString":"27",
-    "dateString":"8/27"
+    "dayString":"26",
+    "dateString":"8/26"
   },
   "TUESDAY":{
     "index":1,
-    "dayString":"28",
-    "dateString":"8/28"
+    "dayString":"27",
+    "dateString":"8/27"
   },
   "WEDNESDAY":{
     "index":2,
-    "dayString":"29",
-    "dateString":"8/29"
+    "dayString":"28",
+    "dateString":"8/28"
   },
   "THURSDAY - Core Burn":{
     "index":3,
+    "dayString":"29",
+    "dateString":"8/29"
+  },
+  "FRIDAY":{
+    "index":4,
     "dayString":"30",
     "dateString":"8/30"
   },
-  "FRIDAY - Satellite fly-by 11:45am":{
-    "index":4,
+  "SATURDAY - Man Burn":{
+    "index":5,
     "dayString":"31",
     "dateString":"8/31"
   },
-  "SATURDAY - Man Burn":{
-    "index":5,
+  "index":6,
+  "SUNDAY - Temple Burn":{
     "dayString":"01",
     "dateString":"9/1"
   },
-  "index":6,
-  "SUNDAY - Temple Burn":{
-    "dayString":"02",
-    "dateString":"9/2"
-  },
   "index":7,
   "MONDAY - Exodus":{
-    "dayString":"03",
-    "dateString":"9/3"
+    "dayString":"02",
+    "dateString":"9/2"
   }
 }
