@@ -73,7 +73,7 @@
 
 
 - (NSString*) mbTilesBucketKey {
-  return @"iburn-transparent.mbtiles";
+  return @"iburn.mbtiles";
 }
 
 
@@ -89,6 +89,19 @@
     s3Client.timeout = 1200;
     s3Client.connectionTimeout = 60;
   }
+  [AmazonErrorHandler shouldNotThrowExceptions];
+  [AmazonLogger verboseLogging];
+
+  S3ListObjectsRequest *req = [[S3ListObjectsRequest alloc] initWithName:[self s3BucketName]];
+  
+  S3ListObjectsResponse *listObjectResponse = [s3Client listObjects:req];
+  
+  S3ListObjectsResult *listObjectsResults = listObjectResponse.listObjectsResult;
+  
+  for (S3ObjectSummary *objectSummary in listObjectsResults.objectSummaries) {
+    NSLog(@"Bucket Contents %@ " ,[objectSummary key]);
+  }
+  [AmazonLogger turnLoggingOff];
 }
 
 

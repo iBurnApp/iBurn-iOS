@@ -325,8 +325,8 @@
 - (void) setMapSources {
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self.bigFileDownloader mbTilesPath]]];
-  [mapView setTileSource:onlineSource];
-  [mapView addTileSource:offlineSource];
+  [mapView setTileSource:offlineSource];
+  //[mapView addTileSource:offlineSource];
   // [mapView setTileSources:@[onlineSource, offlineSource]];
 }
 
@@ -334,6 +334,7 @@
 - (void)loadView {
   [super loadView];
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
+  mapView.adjustTilesForRetinaDisplay = YES;
   [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setMapSources) name:@"BIG_FILE_DOWNLOAD_DONE" object:nil];
   [self.bigFileDownloader copyMBTileFileFromBundle];
   [self setMapSources];
