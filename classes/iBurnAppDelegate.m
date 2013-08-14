@@ -134,20 +134,19 @@ void printTimer(NSString* name) {
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
-  [window makeKeyAndVisible];
-	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
   NSString *documentsDirectory = [paths objectAtIndex:0];   
   NSString *path = [documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"];
   if ([[NSFileManager defaultManager]fileExistsAtPath:path]) {
     [self liftEmbargo];
   }
-  
+  [self initControllers];
+  [window makeKeyAndVisible];
+
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
     [self initNodeControllers];
     [self managedObjectContext];
     [self checkOrCreateDatabase];
-    [self initControllers];
     [self postLaunch];
   });
   

@@ -79,6 +79,7 @@
                                                        coordinate:point
                                                          andTitle:[obj name]];
   [mapView addAnnotation:annotation];
+  [mapView setZoom:17 atCoordinate:point animated:YES];
 }
 
 
@@ -399,7 +400,7 @@
 	[mapView setBackgroundColor:[UIColor blackColor]];
 	//[mapView moveToLatLong:point];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) {
+/*  if (t.embargoed) {
     int width = self.view.frame.size.width-20;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
       width -= 200;
@@ -415,7 +416,7 @@
     lbl.layer.borderWidth = 1;
     lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
     [self.view addSubview:lbl];
-  }
+  }*/
 }
 
 
