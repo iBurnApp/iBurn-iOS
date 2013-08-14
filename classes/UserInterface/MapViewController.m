@@ -247,6 +247,7 @@
 
 
 - (void) loadMBTilesFile {
+  return;
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
     ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[self mbTilesURL]];
     [request setTimeOutSeconds:240];
@@ -263,13 +264,13 @@
 
 
 
-#define kNormalMapID @"examples.map-z2effxa8"
-#define kRetinaMapID @"examples.map-zswgei2n"
+#define kNormalMapID @"iburn.map-0ytz4sz2"
+#define kRetinaMapID @"iburn.map-0ytz4sz2"
 - (void)loadView {
   [super loadView];
   // [self loadMBTilesFile];
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
-  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"australia250k" ofType:@"mbtiles"];
   
   RMCompositeSource *compSource = [[RMCompositeSource alloc]initWithTileSources:@[onlineSource, offlineSource] tileCacheKey:@"burnmap"];
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
