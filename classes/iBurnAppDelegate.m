@@ -134,7 +134,7 @@ void printTimer(NSString* name) {
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
- 
+  [window makeKeyAndVisible];
 	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
   NSString *documentsDirectory = [paths objectAtIndex:0];   
