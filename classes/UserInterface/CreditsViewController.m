@@ -77,10 +77,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath {
   NSDictionary *dict = [[util creditsArray]objectAtIndex:indexPath.row];
-  if ([dict objectForKey:@"icon"]) {
-    return 67; 
-  }
-  return 43;	
+    return 67;
 }
 
 

@@ -42,7 +42,8 @@
 
 
 - (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(RMAnnotation *)annotation {
-  if (mv.zoom < 17
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if ((mv.zoom < 17 || t.embargoed)
       && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
     return nil;
   }
@@ -143,8 +144,6 @@
 
 - (void) loadMarkers {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-#warning remove
-  //if (t.embargoed) return;
   [self loadArt];
   [self loadCamps];
   [self loadEvents];

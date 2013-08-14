@@ -1,38 +1,29 @@
 [
- {"title":"App Dev",
- "description": "Chris Ballinger. Check out his encrypted chat app, ChatSecure.",
- "icon":"chatsecure-icon.png",
- "url":"http://itunes.apple.com/us/app/chatsecure-encrypted-secure/id464200063?mt=8"
-
+ {"title":"Art & Map Data",
+ "description": "Andrew Johnstone",
+ "icon":"iBurn-57.png",
+ "url":"http://adjohnstone.com/"
  },
  {"title":"App Dev",
- "description": "Anna & Andrew Johnson. Check out their hiking app, Gaia GPS.",
+ "description": "Anna, Andrew, Jesse, and Savannah, of Gaia GPS.",
  "icon":"gaia-icon.png",
  "url":"http://itunes.apple.com/us/app/gaia-gps-offline-topo-maps/id329127297?mt=8"
  },
- {"title":"Map and GIS",
- "description": "Virgil Zetterlind. Check out his boating app, Marine Charts.",
- "icon":"earthnc-icon.png",
- "url": "http://itunes.apple.com/us/app/marine-charts/id386584429?mt=8"
- },
  {"title":"App Dev",
- "description": "David Brodsky.",
- "url":"http://dbro.pro"
+ "description": "Chris Ballinger and David Brodsky, of OpenWatch.",
+ "icon":"chatsecure-icon.png",
+ "url":"https://openwatch.net/"
+
  },
  {"title":"App Dev",
  "description": "David Chiles.",
  "url":"https://github.com/davidchiles"
  },
  {"title":"Data Dev",
- "description": "Josh Braegger"
+ "description": "Josh Braegger, of Space Monkey",
+ "url":"http://www.spacemonkey.com"
  },
- {"title":"Artwork",
- "description": "Andrew Johnstone",
- "url":"http://adjohnstone.com/"
- },
- {"title":"Other Contributors",
- "description": "Rod Garrett, Jeff Johnson, Tom Longson, Mikel Maron",
- "icon":"iBurn-57.png"
-
+ {"title":"Emeritus",
+ "description": "Rod Garrett, Jeff Johnson, Tom Longson, Mikel Maron"
  }
 ]
