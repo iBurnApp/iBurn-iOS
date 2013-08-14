@@ -328,6 +328,7 @@
   [mapView setTileSource:offlineSource];
   //[mapView addTileSource:offlineSource];
   // [mapView setTileSources:@[onlineSource, offlineSource]];
+  NSLog(@"The center is %f, %f", mapView.centerCoordinate.latitude, mapView.centerCoordinate.longitude);
 }
 
 

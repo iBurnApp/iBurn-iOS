@@ -134,7 +134,6 @@ void printTimer(NSString* name) {
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
-
  
 	[self performSelector:@selector(postLaunch) withObject:nil afterDelay:0.1];
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
@@ -346,7 +345,7 @@ void printTimer(NSString* name) {
   
 }
 
-#define CORRECT_HASH  @"A5717A649D346ED0C51BE68888C130CD"
+#define CORRECT_HASH  @"59D59BD0A95DB884EC0442C80411D52D"
 
 - (BOOL) checkPassword:(NSString*) password {
   //if ([iBurnAppDelegate md5:password] isEqualToString:@"blah
