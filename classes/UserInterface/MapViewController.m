@@ -160,7 +160,7 @@
     
   }
   if ([markerString isEqualToString:@"ArtInstall"]) {
-    ArtInstall * art = [ArtInstall artForName:[annotation simpleName]];
+    ArtInstall * art = [ArtInstall artForName:[annotation title]];
     self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
     
   }
