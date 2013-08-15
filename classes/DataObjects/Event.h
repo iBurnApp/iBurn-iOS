@@ -43,6 +43,7 @@
 + (NSString*) getDay:(NSDate*) date;
 + (NSArray*) getTodaysEvents;
 + (Event*) eventForName:(NSString*) sName;
++ (Event*) eventForID:(NSNumber*) bm_id;
 
 
 @end
