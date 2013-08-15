@@ -69,7 +69,7 @@
   objects = [[NSMutableArray alloc]init];
 
   for (Event *f in allFavObjects) {
-    if ([[self dayString:self.title] isEqualToString:[Event getDay:[f startTime]]]) {
+    if ([[self dayString:self.dayName] isEqualToString:[Event getDay:[f startTime]]]) {
       [objects addObject:f];
     }
 		
