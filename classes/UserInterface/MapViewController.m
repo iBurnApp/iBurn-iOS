@@ -53,6 +53,18 @@
   }
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5, .8);
+  if ((mv.zoom < 17 || t.embargoed)
+      && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
+    newMarker.zPosition = 800;
+  }
+  if (mv.zoom < 16
+      && [annotation.annotationType isEqualToString:@"Event"]) {
+    newMarker.zPosition = 801;
+  }
+  if (mv.zoom < 16
+      && [annotation.annotationType isEqualToString:@"ArtInstall"]) {
+    newMarker.zPosition = 801;
+  }
   return newMarker;
 }
 
