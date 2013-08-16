@@ -134,8 +134,6 @@ void printTimer(NSString* name) {
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
-  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
-  NSString *documentsDirectory = [paths objectAtIndex:0];   
   NSString *path = [self unlockedFile];
   if ([[NSFileManager defaultManager]fileExistsAtPath:path]) {
     [self liftEmbargo];
@@ -149,19 +147,6 @@ void printTimer(NSString* name) {
     [self checkOrCreateDatabase];
     [self postLaunch];
   });
-  
-}
-
-
-
-- (void) downloadMaps {
-  [self downloadMaps:NO];
-}
-
-
-- (void) downloadMaps:(BOOL) refreshTiles {
-
-  MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
   
 }
 
@@ -180,17 +165,16 @@ void printTimer(NSString* name) {
 
 - (void)postLaunch {
 	if (!launchDefault) return;
-  //reachability = [[Reachability reachabilityWithHostName:@"earthdev.burningman.com"] retain];
-  reachability = [Reachability reachabilityWithHostname:@"www.gaiagps.com"];
+  reachability = [Reachability reachabilityWithHostname:@"www.google.com"];
   
 	[reachability startNotifier];
   [self canConnectToInternet];
   // count running network processes to show/hide indicator
   [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) 
                                                name: kReachabilityChangedNotification object:reachability];
-  //[self initializeOAuthConsumer];
   [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:2];
 }
+
 
 - (void) requestDone {
  //[[[tabBarController.viewControllers objectAtIndex:0]visibleViewController] showMarkersOnScreen];  
