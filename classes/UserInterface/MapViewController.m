@@ -100,22 +100,26 @@
 
 
 - (void) loadDataType:(NSString*)dataType iconName:(NSString*)iconName {
-  for (ThemeCamp* camp in [self getAllObjects:dataType]) {
-		CLLocationCoordinate2D coord;
-		coord.latitude = [camp.latitude floatValue];
-    if (coord.latitude < 1) continue;
-		coord.longitude = [camp.longitude floatValue];
-    BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
-                                                                 coordinate:coord
-                                                                   andTitle:[camp name]];
-    annotation.annotationIcon = [UIImage imageNamed:iconName];
-    annotation.annotationType = dataType;
-    // if it's a camp
-    if ([camp respondsToSelector:@selector(bm_id)]) {
-      annotation.burningManID = camp.bm_id;
+  NSArray * themeCamps = [self getAllObjects:dataType];
+  dispatch_async(dispatch_get_main_queue(), ^{
+
+    for (ThemeCamp* camp in themeCamps) {
+      CLLocationCoordinate2D coord;
+      coord.latitude = [camp.latitude floatValue];
+      if (coord.latitude < 1) continue;
+      coord.longitude = [camp.longitude floatValue];
+      BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
+                                                                   coordinate:coord
+                                                                     andTitle:[camp name]];
+      annotation.annotationIcon = [UIImage imageNamed:iconName];
+      annotation.annotationType = dataType;
+      // if it's a camp
+      if ([camp respondsToSelector:@selector(bm_id)]) {
+        annotation.burningManID = camp.bm_id;
+      }
+      [mapView addAnnotation:annotation];
     }
-    [mapView performSelectorOnMainThread:@selector(addAnnotation:) withObject:annotation waitUntilDone:YES];
-	}
+  });
 }
 
 
@@ -132,24 +136,27 @@
 
 
 - (void) loadEvents {
-  for (Event* event in [Event getTodaysEvents]) {
-		CLLocationCoordinate2D coord;
-		coord.latitude = [event.latitude floatValue];
-    if (coord.latitude < 1) continue;
-		coord.longitude = [event.longitude floatValue];
-    RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                         coordinate:coord
-                                                           andTitle:[event name]];
-    annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
-    annotation.annotationType = @"Event";
-    // annotation.simpleName = event.sim
-    [mapView addAnnotation:annotation];
-  }
+  NSArray * events = [Event getTodaysEvents];
+  dispatch_async(dispatch_get_main_queue(), ^{
+
+    for (Event* event in events ) {
+      CLLocationCoordinate2D coord;
+      coord.latitude = [event.latitude floatValue];
+      if (coord.latitude < 1) continue;
+      coord.longitude = [event.longitude floatValue];
+      BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
+                                                           coordinate:coord
+                                                             andTitle:[event name]];
+      annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
+      annotation.annotationType = @"Event";
+      annotation.burningManID = event.bm_id;
+      [mapView addAnnotation:annotation];
+    }
+  });
 }
 
 
 - (void) loadMarkers {
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [self loadArt];
   [self loadCamps];
   [self loadEvents];

@@ -21,7 +21,7 @@
   int sizeTransfered, totalFileSize, downloadRetyCount, downloadAttempts;
   NSDate *lastTransferUpdate;
   NSOutputStream *downloadOutputStream;
-  NSString *downloadDestinationPath;
+  NSString *temporaryDestinationPath;
   S3GetObjectRequest *getObjectRequest;
 }
 @end
@@ -113,15 +113,32 @@
 
 - (void) cacheMBTiles {
   [self initS3Client];
+  
+  S3GetObjectMetadataRequest *metadataRequest = [[S3GetObjectMetadataRequest alloc] initWithKey:[self mbTilesBucketKey]
+                                                                                     withBucket:[self s3BucketName]];
+  S3GetObjectMetadataResponse *metadataResponse = [s3Client getObjectMetadata:metadataRequest];
+  
+  totalFileSize = metadataResponse.contentLength;
+  
+  NSDate * lastUpdateDate;
+  if([[NSFileManager defaultManager] fileExistsAtPath:[self mbTilesPath]]) {
+    NSDate *lastUpdateDate = [self lastSavedDate];
+    if ([[metadataResponse lastModified] isLaterThanDate:lastUpdateDate]) {
+      return;
+    }
+  }
+  
+  
   BOOL append = NO;
-  downloadDestinationPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[self mbTilesBucketKey]];;
-  if ([[NSFileManager defaultManager] fileExistsAtPath:downloadDestinationPath]) {
-    sizeTransfered = [self fileSizeForPath:downloadDestinationPath];
+  temporaryDestinationPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[self mbTilesBucketKey]];;
+  if ([[NSFileManager defaultManager] fileExistsAtPath:temporaryDestinationPath]) {
+    sizeTransfered = [self fileSizeForPath:temporaryDestinationPath];
     if (sizeTransfered < totalFileSize -1) {
       append = YES;
     }
   }
-  downloadOutputStream = [[NSOutputStream alloc] initToFileAtPath:downloadDestinationPath append:append];
+  
+  downloadOutputStream = [[NSOutputStream alloc] initToFileAtPath:temporaryDestinationPath append:append];
   [downloadOutputStream open];
   getObjectRequest = [[S3GetObjectRequest alloc] initWithKey:[self mbTilesBucketKey]
                                                   withBucket:[self s3BucketName]];
@@ -132,18 +149,9 @@
   }
   
   getObjectRequest.outputStream = downloadOutputStream;
-  if([[NSFileManager defaultManager] fileExistsAtPath:[self mbTilesPath]]) {
-    NSDate *lastUpdateDate = [self lastSavedDate];
-    getObjectRequest.ifModifiedSince = lastUpdateDate;
-    
-   S3GetObjectMetadataRequest *metadataRequest = [[S3GetObjectMetadataRequest alloc] initWithKey:[self mbTilesBucketKey]
-                                                    withBucket:[self s3BucketName]];
-    S3GetObjectMetadataResponse *metadataResponse = [s3Client getObjectMetadata:metadataRequest];
-    if ([[metadataResponse lastModified] isLaterThanDate:lastUpdateDate]) {
-      getObjectRequest.delegate = self;
-      [s3Client getObject:getObjectRequest];
-    }
-  }
+  getObjectRequest.ifModifiedSince = lastUpdateDate;
+  getObjectRequest.delegate = self;
+  [s3Client getObject:getObjectRequest]; 
 }
 
 
@@ -173,10 +181,6 @@
 }
 
 
-- (void) fileIsDoneDownloading {
-}
-
-
 - (void)request:(AmazonServiceRequest *)request didCompleteWithResponse:(AmazonServiceResponse *)response {
   [downloadOutputStream close];
   downloadOutputStream = nil;
@@ -192,12 +196,11 @@
       if (response.httpStatusCode == 200) {
         [self databaseDownloadFinished];
       }
-      downloadDestinationPath = nil;
-      [self fileIsDoneDownloading];
+      temporaryDestinationPath = nil;
     });
   } else {
-    [[NSFileManager defaultManager] removeItemAtPath:downloadDestinationPath error:nil];
-    downloadDestinationPath = nil;
+    [[NSFileManager defaultManager] removeItemAtPath:temporaryDestinationPath error:nil];
+    temporaryDestinationPath = nil;
     
   }
   
@@ -237,8 +240,8 @@
   } else {
     [downloadOutputStream close];
     downloadOutputStream = nil;
-    [[NSFileManager defaultManager] removeItemAtPath:downloadDestinationPath error:nil];
-    downloadDestinationPath = nil;
+    [[NSFileManager defaultManager] removeItemAtPath:temporaryDestinationPath error:nil];
+    temporaryDestinationPath = nil;
     getObjectRequest = nil;
   }
 }
@@ -246,8 +249,8 @@
 
 - (void)databaseDownloadFinished {
   [[NSFileManager defaultManager] removeItemAtPath:[self mbTilesPath] error:nil];
-  [[NSFileManager defaultManager]copyItemAtPath:downloadDestinationPath toPath:[self mbTilesPath] error:nil];
-  [[NSFileManager defaultManager] removeItemAtPath:downloadDestinationPath error:nil];
+  [[NSFileManager defaultManager]copyItemAtPath:temporaryDestinationPath toPath:[self mbTilesPath] error:nil];
+  [[NSFileManager defaultManager] removeItemAtPath:temporaryDestinationPath error:nil];
   [[NSNotificationCenter defaultCenter]postNotificationName:@"BIG_FILE_DOWNLOAD_DONE" object:nil];
   dispatch_async(dispatch_get_main_queue(), ^{
     [self saveCacheDate];
