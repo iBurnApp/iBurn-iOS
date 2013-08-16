@@ -70,8 +70,8 @@
 - (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
   if (mapView.zoom < previousZoom
       && mapView.zoom >= 15) {
-    [self.mapView removeAllAnnotations];
-    [NSThread detachNewThreadSelector:@selector(removeAndLoad) toTarget:self withObject:nil];
+    //[self.mapView removeAllAnnotations];
+    //[NSThread detachNewThreadSelector:@selector(removeAndLoad) toTarget:self withObject:nil];
   }
 }
 
@@ -102,7 +102,7 @@
 - (void) loadDataType:(NSString*)dataType iconName:(NSString*)iconName {
   NSArray * themeCamps = [self getAllObjects:dataType];
   dispatch_async(dispatch_get_main_queue(), ^{
-
+    NSLog(@"loading camps %d", [themeCamps count]);
     for (ThemeCamp* camp in themeCamps) {
       CLLocationCoordinate2D coord;
       coord.latitude = [camp.latitude floatValue];
@@ -111,11 +111,13 @@
       BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
                                                                    coordinate:coord
                                                                      andTitle:[camp name]];
+      annotation.minZoom = 16;
       annotation.annotationIcon = [UIImage imageNamed:iconName];
       annotation.annotationType = dataType;
       // if it's a camp
       if ([camp respondsToSelector:@selector(bm_id)]) {
         annotation.burningManID = camp.bm_id;
+        annotation.minZoom = 15;
       }
       [mapView addAnnotation:annotation];
     }
@@ -147,6 +149,7 @@
       BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
                                                            coordinate:coord
                                                              andTitle:[event name]];
+      annotation.minZoom = 16;
       annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
       annotation.annotationType = @"Event";
       annotation.burningManID = event.bm_id;
@@ -450,7 +453,7 @@
 - (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
-  //[self loadMarkers];
+  [self loadMarkers];
   [[self.view viewWithTag:999]removeFromSuperview];
 }
 
