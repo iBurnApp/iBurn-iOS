@@ -10,6 +10,6 @@
 
 @interface BurnRMAnnotation : RMAnnotation
 
-@property(nonatomic, strong) NSString* simpleName;
+@property(nonatomic, strong) NSNumber* burningManID;
 
 @end

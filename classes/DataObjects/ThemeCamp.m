@@ -52,21 +52,6 @@
 }
 
 
-+ (ThemeCamp*) campForSimpleName:(NSString*) sName {
-  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  NSEntityDescription *entity = [NSEntityDescription entityForName:@"ThemeCamp" inManagedObjectContext:[t managedObjectContext]];
-  [fetchRequest setEntity:entity];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simpleName = %@", sName];
-  [fetchRequest setPredicate:predicate];
-  NSError *error;
-  NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
-  if ([objects count] > 0) {
-    return [objects objectAtIndex:0];
-  }
-  return nil;
-}
-
 
 + (ThemeCamp*) campForID:(int) campId {
   NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];

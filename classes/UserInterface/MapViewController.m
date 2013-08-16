@@ -62,11 +62,16 @@
   
 }
 
+- (void) removeAndLoad {
+  [self loadMarkers];
+}
+
 
 - (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
-  if (mapView.zoom < previousZoom) {
+  if (mapView.zoom < previousZoom
+      && mapView.zoom >= 15) {
     [self.mapView removeAllAnnotations];
-    [self loadMarkers];
+    [NSThread detachNewThreadSelector:@selector(removeAndLoad) toTarget:self withObject:nil];
   }
 }
 
@@ -79,6 +84,7 @@
                                                        coordinate:point
                                                          andTitle:[obj name]];
   [mapView addAnnotation:annotation];
+  [mapView setZoom:17 atCoordinate:point animated:YES];
 }
 
 
@@ -100,15 +106,15 @@
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
     BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
-                                                         coordinate:coord
-                                                           andTitle:[camp name]];
+                                                                 coordinate:coord
+                                                                   andTitle:[camp name]];
     annotation.annotationIcon = [UIImage imageNamed:iconName];
     annotation.annotationType = dataType;
     // if it's a camp
-    if ([camp respondsToSelector:@selector(simpleName)]) {
-      annotation.simpleName = camp.simpleName;
+    if ([camp respondsToSelector:@selector(bm_id)]) {
+      annotation.burningManID = camp.bm_id;
     }
-    [mapView addAnnotation:annotation];
+    [mapView performSelectorOnMainThread:@selector(addAnnotation:) withObject:annotation waitUntilDone:YES];
 	}
 }
 
@@ -155,7 +161,7 @@
   NSString *markerString = annotation.annotationType;
   
   if ([markerString isEqualToString:@"ThemeCamp"]) {
-    ThemeCamp * camp = [ThemeCamp campForSimpleName:[annotation simpleName]];
+    ThemeCamp * camp = [ThemeCamp campForID:[[annotation burningManID] intValue]];
     self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
     
   }
@@ -165,7 +171,7 @@
     
   }
   if ([markerString isEqualToString:@"Event"]) {
-    Event * event = [Event eventForName:[annotation simpleName]];
+    Event * event = [Event eventForID:[annotation burningManID]];
     self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
     
   }
@@ -186,8 +192,8 @@
   homeButton.tintColor = [UIColor darkGrayColor];
   homeButton.segmentedControlStyle = UISegmentedControlStyleBar;
   [homeButton addTarget:self
-                     action:@selector(home:)
-           forControlEvents:UIControlEventValueChanged];
+                 action:@selector(home:)
+       forControlEvents:UIControlEventValueChanged];
   
   locationButton = [[UISegmentedControl alloc]initWithItems:[NSArray arrayWithObject:[UIImage imageNamed:@"locate-icon.png"]]];
   locationButton.frame = CGRectMake(45,0,35,35);
@@ -261,7 +267,7 @@
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
   /*CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
-  [util setHomeLocation:fakeHome];
+   [util setHomeLocation:fakeHome];
    */
   NSArray * otherTitles = nil;
   if(navigationLineAnnotation)
@@ -376,12 +382,12 @@
   [self loadMarkers];
 #warning this freezes it
   /*
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) {
-    [mapView setMaxZoom:14];
-  } else {
-    [mapView setMaxZoom:18];
-  } 
+   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+   if (t.embargoed) {
+   [mapView setMaxZoom:14];
+   } else {
+   [mapView setMaxZoom:18];
+   }
    */
 }
 
@@ -399,23 +405,23 @@
 	[mapView setBackgroundColor:[UIColor blackColor]];
 	//[mapView moveToLatLong:point];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) {
-    int width = self.view.frame.size.width-20;
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-      width -= 200;
-    }
-    UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)];
-    
-    lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
-    lbl.tag = 999;
-    lbl.textAlignment = UITextAlignmentCenter;
-    lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-    lbl.numberOfLines = 0;
-    lbl.layer.cornerRadius = 8;
-    lbl.layer.borderWidth = 1;
-    lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
-    [self.view addSubview:lbl];
-  }
+  /*  if (t.embargoed) {
+   int width = self.view.frame.size.width-20;
+   if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+   width -= 200;
+   }
+   UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)];
+   
+   lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
+   lbl.tag = 999;
+   lbl.textAlignment = UITextAlignmentCenter;
+   lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+   lbl.numberOfLines = 0;
+   lbl.layer.cornerRadius = 8;
+   lbl.layer.borderWidth = 1;
+   lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
+   [self.view addSubview:lbl];
+   }*/
 }
 
 
@@ -445,7 +451,7 @@
   if (currentLocationAnnotation) {
     [mapView removeAnnotations:@[currentLocationAnnotation]];
   }
-
+  
   if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
     currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
                                                           coordinate:newLocation.coordinate
@@ -466,7 +472,7 @@
   {
     [self navigateToLocation:toLocation];
   }
-
+  
   
 }
 

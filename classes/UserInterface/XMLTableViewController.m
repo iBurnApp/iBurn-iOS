@@ -42,7 +42,7 @@
 																											 inManagedObjectContext:moc];
 	NSFetchRequest *request = [[NSFetchRequest alloc]init];
 	[request setEntity:entityDescription];
-	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"simpleName" ascending:YES];
+	NSSortDescriptor *sort = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
 	[request setSortDescriptors:[NSArray arrayWithObject:sort]];
 	NSError *error;
 	objects = (NSMutableArray*)[moc executeFetchRequest:request error:&error];

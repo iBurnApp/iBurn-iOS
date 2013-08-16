@@ -109,6 +109,10 @@
   }
 }
 
+- (void) fetchFile {
+
+  
+}
 
 - (void) createAndUpdate:(NSArray*)objects  {
  	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];

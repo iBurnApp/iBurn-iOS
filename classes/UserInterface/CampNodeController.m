@@ -46,6 +46,7 @@
     }
   }
 	
+  camp.bm_id = N([dict objectForKey:@"id"]);
   if ([dict objectForKey:@"latitude"]) {
     NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
     [f setNumberStyle:NSNumberFormatterDecimalStyle];

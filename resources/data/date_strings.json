@@ -1,42 +1,51 @@
 {
-  "MONDAY - Gates open":{
+  "MONDAY":{
     "index":0,
     "dayString":"26",
-    "dateString":"8/26"
+    "dateString":"8/26",
+    "majorEvent":"Gates open"
   },
   "TUESDAY":{
     "index":1,
     "dayString":"27",
-    "dateString":"8/27"
+    "dateString":"8/27",
+    "majorEvent":""
   },
   "WEDNESDAY":{
     "index":2,
     "dayString":"28",
-    "dateString":"8/28"
+    "dateString":"8/28",
+    "majorEvent":""
   },
-  "THURSDAY - Core Burn":{
+  "THURSDAY":{
     "index":3,
     "dayString":"29",
-    "dateString":"8/29"
+    "dateString":"8/29",
+    "majorEvent":"Core Burn"
+    
   },
   "FRIDAY":{
     "index":4,
     "dayString":"30",
-    "dateString":"8/30"
+    "dateString":"8/30",
+    "majorEvent":"Satellite fly-by 11:45am"
   },
-  "SATURDAY - Man Burn":{
+  "SATURDAY":{
     "index":5,
     "dayString":"31",
-    "dateString":"8/31"
+    "dateString":"8/31",
+    "majorEvent":"Man Burn"
   },
-  "index":6,
-  "SUNDAY - Temple Burn":{
+  "SUNDAY":{
+    "index":6,
     "dayString":"01",
-    "dateString":"9/1"
+    "dateString":"9/1",
+    "majorEvent":"Temple Burn"
   },
-  "index":7,
-  "MONDAY - Exodus":{
+  "MONDAY":{
     "dayString":"02",
-    "dateString":"9/2"
+    "dateString":"9/2",
+    "majorEvent":"Exodus",
+    "index":7
   }
 }
