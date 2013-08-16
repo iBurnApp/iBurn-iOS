@@ -130,6 +130,7 @@
       if ([camp respondsToSelector:@selector(bm_id)]) {
         annotation.burningManID = camp.bm_id;
         annotation.minZoom = 15;
+        annotation.badgeIcon = [UIImage imageNamed:@"empty_star.png"];
       }
       [mapView addAnnotation:annotation];
     }
@@ -172,6 +173,9 @@
 
 
 - (void) loadMarkers {
+  dispatch_sync(dispatch_get_main_queue(), ^{
+    [self.mapView removeAllAnnotations];
+  });
   [self loadArt];
   [self loadCamps];
   [self loadEvents];
@@ -401,7 +405,10 @@
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   
-  [self loadMarkers];
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+
+    [self loadMarkers];
+  });
 #warning this freezes it
   /*
    iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -465,7 +472,9 @@
 - (void) liftEmbargo {
 #warning mapbox
   /*  [mapView.contents setMaxZoom:18];*/
-  [self loadMarkers];
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [self loadMarkers];
+  });
   [[self.view viewWithTag:999]removeFromSuperview];
 }
 
