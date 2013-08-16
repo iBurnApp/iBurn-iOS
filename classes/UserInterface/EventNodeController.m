@@ -54,7 +54,8 @@
   if (dateFormatter == nil) {
     dateFormatter = [[NSDateFormatter alloc]init]; 
     [dateFormatter setDateFormat:@"dd"];
-  }                                   
+  }
+ 
   NSString *dow = [dateFormatter stringFromDate:event.startTime];
   if (dow && ![eventDateHash objectForKey:dow]) {
     [eventDateHash setValue:[[NSMutableArray alloc]init] forKey:dow];

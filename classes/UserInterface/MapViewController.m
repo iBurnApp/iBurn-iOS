@@ -111,8 +111,8 @@
     annotation.annotationIcon = [UIImage imageNamed:iconName];
     annotation.annotationType = dataType;
     // if it's a camp
-    if ([camp respondsToSelector:@selector(simpleName)]) {
-      annotation.simpleName = camp.simpleName;
+    if ([camp respondsToSelector:@selector(bm_id)]) {
+      annotation.burningManID = camp.bm_id;
     }
     [mapView performSelectorOnMainThread:@selector(addAnnotation:) withObject:annotation waitUntilDone:YES];
 	}
@@ -161,7 +161,7 @@
   NSString *markerString = annotation.annotationType;
   
   if ([markerString isEqualToString:@"ThemeCamp"]) {
-    ThemeCamp * camp = [ThemeCamp campForSimpleName:[annotation simpleName]];
+    ThemeCamp * camp = [ThemeCamp campForID:[[annotation burningManID] intValue]];
     self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
     
   }
@@ -171,7 +171,7 @@
     
   }
   if ([markerString isEqualToString:@"Event"]) {
-    Event * event = [Event eventForName:[annotation simpleName]];
+    Event * event = [Event eventForID:[annotation burningManID]];
     self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
     
   }

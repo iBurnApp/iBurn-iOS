@@ -136,7 +136,7 @@ void printTimer(NSString* name) {
 	launchDefault = YES;
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
   NSString *documentsDirectory = [paths objectAtIndex:0];   
-  NSString *path = [documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"];
+  NSString *path = [self unlockedFile];
   if ([[NSFileManager defaultManager]fileExistsAtPath:path]) {
     [self liftEmbargo];
   }
@@ -330,7 +330,7 @@ void printTimer(NSString* name) {
   }
   self.embargoed = NO;
   NSError *error;
-  BOOL succeed = [@"unlocked" writeToFile:[privateDocumentsDirectory() stringByAppendingPathComponent:@"unlocked.txt"]
+  BOOL succeed = [@"unlocked" writeToFile:[self unlockedFile]
                             atomically:YES encoding:NSUTF8StringEncoding error:&error];
   if (!succeed){
     // Handle error here
@@ -340,7 +340,12 @@ void printTimer(NSString* name) {
 }
 
 - (NSString*) passwordFile {
-  return [NSString stringWithFormat:@"%@/password", [self applicationDocumentsDirectory]];
+  return [NSString stringWithFormat:@"%@/password2013", [self applicationDocumentsDirectory]];
+  
+}
+
+- (NSString*) unlockedFile {
+  return [NSString stringWithFormat:@"%@/unlocked2013", [self applicationDocumentsDirectory]];
   
 }
 

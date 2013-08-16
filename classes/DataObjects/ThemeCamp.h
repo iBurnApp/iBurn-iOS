@@ -32,7 +32,6 @@
 @property (nonatomic, strong) Favorite * Favorite;
 
 + (ThemeCamp*) campForID:(int) campId;
-+ (ThemeCamp*) campForSimpleName:(NSString*) sName;
 
 
 @end

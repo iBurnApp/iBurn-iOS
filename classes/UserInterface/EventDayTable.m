@@ -14,6 +14,7 @@
 #import "Favorite.h"
 #import "Event.h"
 #import "util.h"
+#import "NSManagedObject_util.h"
 
 
 @implementation EventDayTable
@@ -37,13 +38,14 @@
 
 
 - (void) sortByCurrent { 
-  self.events = [self getEventsForTitle:self.title];
+  self.events = [self getEventsForTitle:self.dayName];
   [self.tableView reloadData];
 	self.navigationItem.rightBarButtonItem.enabled = YES;
 }
 
 
 - (NSString*) dayString:(NSString*)ttl {
+  NSLog(@"day dict %@", [[util dayDict] objectForKey:ttl]);
   return [[[util dayDict] objectForKey:ttl]objectForKey:@"dayString"];      
 }
 
@@ -56,42 +58,38 @@
 
 
 - (void) sortByFavorites {
-  /*
-	iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  objectDict = nil;
+  
+  iBurnAppDelegate *iBurnDelegate = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
 	NSManagedObjectContext *moc = [iBurnDelegate managedObjectContext];
-	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"Favorite" 
-																											 inManagedObjectContext:moc];
-	NSFetchRequest *request = [[NSFetchRequest alloc]init];
-	[request setEntity:entityDescription];
-	NSError *error;
-	NSArray *favs = [moc executeFetchRequest:request error:&error];
-	if(favs == nil) {
-		NSLog(@"Fetch failed with error: %@", error);
-	}
+
+
+  NSArray * allFavObjects = [NSManagedObject objectsForKey:@"bm_id" values:[Favorite favoritesForType:@"Event"] entityName:@"Event" sortField:nil inManagedObjectContext:moc];
+  
   objects = [[NSMutableArray alloc]init];
-	for (Favorite *f in favs) {
-		if ([f Event]) {
-			if ([[self dayString:self.title] isEqualToString:[Event getDay:[[f Event]startTime]]]) {
-	  		[objects addObject:[f Event]];
-			}
-		}
+
+  for (Event *f in allFavObjects) {
+    if ([[self dayString:self.dayName] isEqualToString:[Event getDay:[f startTime]]]) {
+      [objects addObject:f];
+    }
+		
 	}
-	
-  NSSortDescriptor *lastDescriptor =
-  [[NSSortDescriptor alloc] initWithKey:@"startTime"
+  
+		
+  NSSortDescriptor *lastDescriptor = [[NSSortDescriptor alloc] initWithKey:@"startTime"
                                ascending:YES
                                 selector:@selector(compare:)];
   NSArray *descriptors = [NSArray arrayWithObjects:lastDescriptor, nil];
   NSArray *sortedArray = [objects sortedArrayUsingDescriptors:descriptors];
   self.events = sortedArray;
   [self.tableView reloadData];
-	self.navigationItem.rightBarButtonItem.enabled = YES;*/
+	self.navigationItem.rightBarButtonItem.enabled = YES;
 }
 
 
 
 - (void) sortByName { 
-  self.events = [self getEventsForTitle:self.title];
+  self.events = [self getEventsForTitle:self.dayName];
 	NSSortDescriptor *lastDescriptor =
   [[NSSortDescriptor alloc] initWithKey:@"name"
                                ascending:YES
@@ -105,7 +103,7 @@
 }
 
 - (void) sortByDistance {
-  self.events = [self getEventsForTitle:self.title];
+  self.events = [self getEventsForTitle:self.dayName];
 	NSSortDescriptor *distanceDescriptor =
   [[NSSortDescriptor alloc] initWithKey:@"distanceAway"
                                ascending:YES

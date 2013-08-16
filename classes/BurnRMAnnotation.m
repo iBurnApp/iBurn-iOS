@@ -9,6 +9,6 @@
 #import "BurnRMAnnotation.h"
 
 @implementation BurnRMAnnotation
-@synthesize simpleName;
+@synthesize burningManID;
 
 @end
