@@ -62,12 +62,16 @@
   
 }
 
+- (void) removeAndLoad {
+  [self loadMarkers];
+}
+
 
 - (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
   if (mapView.zoom < previousZoom
       && mapView.zoom >= 15) {
     [self.mapView removeAllAnnotations];
-    [NSThread detachNewThreadSelector:@selector(loadMarkers) toTarget:self withObject:nil];
+    [NSThread detachNewThreadSelector:@selector(removeAndLoad) toTarget:self withObject:nil];
   }
 }
 
@@ -110,7 +114,7 @@
     if ([camp respondsToSelector:@selector(simpleName)]) {
       annotation.simpleName = camp.simpleName;
     }
-    [mapView addAnnotation:annotation];
+    [mapView performSelectorOnMainThread:@selector(addAnnotation:) withObject:annotation waitUntilDone:YES];
 	}
 }
 
