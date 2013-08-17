@@ -388,7 +388,7 @@ void printTimer(NSString* name) {
   [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
   
   if ([self canConnectToInternet]) {
-    NSURL *url = [NSURL URLWithString:@"http://www.gaiagps.com/iburn/embargo"];
+    NSURL *url = [NSURL URLWithString:@"http://www.gaiagps.com/iburn/embargo2013"];
     ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
     [request setDidFinishSelector:@selector(requestDone:)];
 		[request setDidFailSelector:@selector(requestWentWrong:)];
