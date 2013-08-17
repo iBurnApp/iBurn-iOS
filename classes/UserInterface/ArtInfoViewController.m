@@ -23,6 +23,8 @@
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
   [[[[t tabBarController]viewControllers]objectAtIndex:0] popToRootViewControllerAnimated:YES];
   MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+  [Favorite setSelected:@"ArtInstall" id:art.bm_id];
+
   [mapViewController showMapForObject:art];
 }
 

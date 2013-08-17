@@ -21,7 +21,7 @@
 #import "util.h"
 
 
-#define DATABASE_NAME @"iBurn2012.sqlite"
+#define DATABASE_NAME @"iBurn2013.sqlite"
 
 @implementation iBurnAppDelegate
 

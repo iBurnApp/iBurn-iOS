@@ -68,6 +68,24 @@
 
 }
 
++ (NSString*) selectedString:(NSString*) type id:(NSNumber*) bm_id {
+  return [NSString stringWithFormat:@"%@%d", type, [bm_id intValue]];
+}
+
++ (void) setSelected:(NSString*) type id:(NSNumber*)bm_id {
+  [[Favorite favorites] setObject:[Favorite selectedString:type id:bm_id] forKey:@"selected"];
+  [Favorite save];
+}
+
++ (BOOL) isSelected:(NSString*) type id:(NSNumber*)bm_id {
+  NSString * selectedString = [[Favorite favorites] objectForKey:@"selected"];
+  if ([selectedString isEqualToString:[Favorite selectedString:type id:bm_id]]) {
+    return YES;
+  }
+  return NO;
+}
+
+
 
 
 

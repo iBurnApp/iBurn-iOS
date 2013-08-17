@@ -24,6 +24,8 @@
 + (void) addFavorite:(NSString*) type id:(NSNumber*)bm_id;
 + (BOOL) isFavorite:(NSString*) type id:(NSNumber*)bm_id;
 + (NSArray*) favoritesForType:(NSString*) type;
++ (void) setSelected:(NSString*) type id:(NSNumber*)bm_id;
++ (BOOL) isSelected:(NSString*) type id:(NSNumber*)bm_id;
 
 @end
 
