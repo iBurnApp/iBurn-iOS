@@ -67,17 +67,8 @@
   
 }
 
-- (void) removeAndLoad {
-  [self loadMarkers];
-}
-
-
 - (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
-  if (mapView.zoom < previousZoom
-      && mapView.zoom >= 15) {
-    //[self.mapView removeAllAnnotations];
-    //[NSThread detachNewThreadSelector:@selector(removeAndLoad) toTarget:self withObject:nil];
-  }
+
 }
 
 
@@ -467,7 +458,7 @@
 - (void) liftEmbargo {
 #warning mapbox
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    [self loadMarkers];
+    //[self loadMarkers];
   });
   [[self.view viewWithTag:999]removeFromSuperview];
 }
