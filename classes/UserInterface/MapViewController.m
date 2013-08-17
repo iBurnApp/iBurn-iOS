@@ -51,6 +51,10 @@
       && [annotation.annotationType isEqualToString:@"ArtInstall"]) {
     return nil;
   }
+  if (mv.zoom < 16
+      && [annotation.annotationType isEqualToString:@"Event"]) {
+    return nil;
+  }
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5, .8);
   if ((mv.zoom < 17 || t.embargoed)
