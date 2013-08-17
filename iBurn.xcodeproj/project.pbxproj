@@ -21,6 +21,8 @@
 		426A98E917BED09E007E0EA2 /* iPadImage-iBurn-Landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 426A98E317BED09E007E0EA2 /* iPadImage-iBurn-Landscape@2x.png */; };
 		426A98EA17BED09E007E0EA2 /* iPadImage-iBurn-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 426A98E417BED09E007E0EA2 /* iPadImage-iBurn-Portrait.png */; };
 		426A98EB17BED09E007E0EA2 /* iPadImage-iBurn-Portrait@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 426A98E517BED09E007E0EA2 /* iPadImage-iBurn-Portrait@2x.png */; };
+		426A98F017BEF47A007E0EA2 /* star-pin-down.png in Resources */ = {isa = PBXBuildFile; fileRef = 426A98EE17BEF47A007E0EA2 /* star-pin-down.png */; };
+		426A98F117BEF47A007E0EA2 /* star-pin-down@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 426A98EF17BEF47A007E0EA2 /* star-pin-down@2x.png */; };
 		42F52FED17ADC465004BF8B6 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 42F52FEC17ADC465004BF8B6 /* iburn.mbtiles */; };
 		4933574517AD9C0E0014C2C2 /* ArtInstall.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CE817AD9C060014C2C2 /* ArtInstall.m */; };
 		4933574917AD9C0E0014C2C2 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 49334CF217AD9C060014C2C2 /* Event.m */; };
@@ -137,6 +139,8 @@
 		426A98E317BED09E007E0EA2 /* iPadImage-iBurn-Landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPadImage-iBurn-Landscape@2x.png"; sourceTree = "<group>"; };
 		426A98E417BED09E007E0EA2 /* iPadImage-iBurn-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPadImage-iBurn-Portrait.png"; sourceTree = "<group>"; };
 		426A98E517BED09E007E0EA2 /* iPadImage-iBurn-Portrait@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPadImage-iBurn-Portrait@2x.png"; sourceTree = "<group>"; };
+		426A98EE17BEF47A007E0EA2 /* star-pin-down.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-pin-down.png"; sourceTree = "<group>"; };
+		426A98EF17BEF47A007E0EA2 /* star-pin-down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-pin-down@2x.png"; sourceTree = "<group>"; };
 		42F52FEC17ADC465004BF8B6 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; path = iburn.mbtiles; sourceTree = "<group>"; };
 		49334CE717AD9C060014C2C2 /* ArtInstall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArtInstall.h; sourceTree = "<group>"; };
 		49334CE817AD9C060014C2C2 /* ArtInstall.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArtInstall.m; sourceTree = "<group>"; };
@@ -466,6 +470,8 @@
 		4933571C17AD9C0E0014C2C2 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				426A98EE17BEF47A007E0EA2 /* star-pin-down.png */,
+				426A98EF17BEF47A007E0EA2 /* star-pin-down@2x.png */,
 				4236EF7E17ADE86C00EEA611 /* blue-arrow.png */,
 				4236EF7F17ADE86C00EEA611 /* blue-arrow@2x.png */,
 				4236EF8017ADE86D00EEA611 /* course-up-arrow.png */,
@@ -740,6 +746,8 @@
 				426A98EA17BED09E007E0EA2 /* iPadImage-iBurn-Portrait.png in Resources */,
 				426A98EB17BED09E007E0EA2 /* iPadImage-iBurn-Portrait@2x.png in Resources */,
 				503EB3E617CEC436002D09D2 /* iBurn2012.sqlite in Resources */,
+				426A98F017BEF47A007E0EA2 /* star-pin-down.png in Resources */,
+				426A98F117BEF47A007E0EA2 /* star-pin-down@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

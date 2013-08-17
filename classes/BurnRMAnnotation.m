@@ -19,13 +19,13 @@
 
 - (void) setFavoriteIcon {
   if ([self isFavorite]) {
-    self.badgeIcon = [UIImage imageNamed:@"empty_star.png"];
+    self.badgeIcon = [UIImage imageNamed:@"star-pin-down.png"];
   }
 }
 
 - (UIImage*) annotationIcon {
   if ([self isFavorite]) {
-    return [UIImage imageNamed:@"empty_star.png"];
+    return [UIImage imageNamed:@"star-pin-down.png"];
   }
   return annotationIcon;
 }
