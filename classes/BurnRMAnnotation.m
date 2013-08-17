@@ -38,4 +38,11 @@
   return annotationIcon;
 }
 
+- (int) minZoom {
+  if ([self isFavorite]) {
+    return 13;
+  }
+  return [super minZoom];
+}
+
 @end
