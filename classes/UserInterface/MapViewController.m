@@ -420,6 +420,11 @@
    */
 }
 
+- (void) viewWillAppear:(BOOL)animated {
+  NSArray * annotations = [self.mapView annotations];
+  [self.mapView removeAllAnnotations];
+  [self.mapView addAnnotations:annotations];
+}
 
 - (void)viewDidLoad {
   [super viewDidLoad];
