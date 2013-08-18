@@ -99,8 +99,8 @@ class Camp(object):
     ROOT_URL = "http://www.burningman.com"
 
     def get_index(self):
-        #return list("ABCDEFGHIJKLMNOPQRSTUVWXYZ#")
-        return list("W")
+        return list("ABCDEFGHIJKLMNOPQRSTUVWXYZ#")
+        #return list("W")
 
     def _parse_camps(self, camp):
         c = camp
@@ -167,5 +167,5 @@ if __name__ == "__main__":
 
     h = Class()
     data = h.get_data()
-    print json.dumps(data, ensure_ascii=False)
+    print json.dumps(data, ensure_ascii=False, sort_keys=True, indent=4)
     #print json.dumps(data)

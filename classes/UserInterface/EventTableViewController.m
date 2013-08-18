@@ -58,6 +58,15 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	int eventIndex = [indexPath indexAtPosition: [indexPath length] - 1];
 	eventDayTable = [[EventDayTable alloc] initWithTitle:[dayArray objectAtIndex:eventIndex]];
+  NSString *myString= eventDayTable.title;
+  NSRange range = [myString rangeOfString:@" "];
+  NSLog(@"range.location: %lu", range.location);
+  
+  if (range.length > 0) {
+    myString = [myString substringToIndex:range.location];
+  }
+  NSLog(@"substring: '%@'", myString);
+  eventDayTable.dayName = myString;
 	[[self navigationController] pushViewController:eventDayTable animated:YES];
 }
 

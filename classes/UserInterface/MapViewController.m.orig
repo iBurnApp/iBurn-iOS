@@ -8,7 +8,6 @@
 
 #import "ArtInfoViewController.h"
 #import "ArtInstall.h"
-#import <ASIFormDataRequest.h>
 #import "BurnRMAnnotation.h"
 #import "CampInfoViewController.h"
 #import "Event.h"
@@ -21,14 +20,20 @@
 #import <RMMarker.h>
 #import <RMMBTilesSource.h>
 #import <RMMapView.h>
-#import "ThemeCamp.h"
-#import "util.h"
 #import "RMPolylineAnnotation.h"
 #import "RMUserLocation.h"
+#import "S3BigFileDownloader.h"
+#import "ThemeCamp.h"
+#import "util.h"
+
+#define SET_HOME_STRING @"Set Home"
+#define NAVIGATE_STRING @"Navigate Home"
+#define STOP_NAVIGATION_STRING @"Stop Navigation"
+#define CANCEL_STRING @"Cancel"
 
 
 @implementation MapViewController
-@synthesize mapView, detailView, progressView;
+@synthesize mapView, detailView, progressView, bigFileDownloader;
 
 - (void) showLocationErrorAlertView {
 	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Location Unknown" message:@"Either we can't find you or you're not at Burning Man.  Make sure you are at Burning Man with a clear view of the sky and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -36,14 +41,33 @@
 }
 
 
-- (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-  if (mapView.zoom < 14) {
+- (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(RMAnnotation *)annotation {
+  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  if ((mv.zoom < 17 || t.embargoed)
+      && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
     return nil;
   }
-  
+  if (mv.zoom < 16
+      && [annotation.annotationType isEqualToString:@"ArtInstall"]) {
+    return nil;
+  }
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
-  newMarker.anchorPoint = CGPointMake(.5,.8);
+  newMarker.anchorPoint = CGPointMake(.5, .8);
   return newMarker;
+}
+
+
+- (void) beforeMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
+  previousZoom = mapView.zoom;
+  
+}
+
+
+- (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
+  if (mapView.zoom < previousZoom) {
+    [self.mapView removeAllAnnotations];
+    [self loadMarkers];
+  }
 }
 
 
@@ -55,6 +79,7 @@
                                                        coordinate:point
                                                          andTitle:[obj name]];
   [mapView addAnnotation:annotation];
+  [mapView setZoom:17 atCoordinate:point animated:YES];
 }
 
 
@@ -75,7 +100,6 @@
 		coord.latitude = [camp.latitude floatValue];
     if (coord.latitude < 1) continue;
 		coord.longitude = [camp.longitude floatValue];
-    
     BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
                                                          coordinate:coord
                                                            andTitle:[camp name]];
@@ -121,7 +145,6 @@
 
 - (void) loadMarkers {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) return;
   [self loadArt];
   [self loadCamps];
   [self loadEvents];
@@ -138,7 +161,7 @@
     
   }
   if ([markerString isEqualToString:@"ArtInstall"]) {
-    ArtInstall * art = [ArtInstall artForName:[annotation simpleName]];
+    ArtInstall * art = [ArtInstall artForName:[annotation title]];
     self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
     
   }
@@ -176,7 +199,6 @@
                      action:@selector(startLocation:)
            forControlEvents:UIControlEventValueChanged];
   
-	
 	UIView *buttonView = [[UIView alloc]initWithFrame:CGRectMake(0,0,80,35)];
   [buttonView addSubview: locationButton];
   UIBarButtonItem *item = [[UIBarButtonItem alloc]initWithCustomView:buttonView];
@@ -204,7 +226,7 @@
 	CLLocationManager *lm = [MyCLController sharedInstance].locationManager;
 	if(!lm.locationServicesEnabled) return NO;
 	if(lm.location == nil) return NO;
-   return YES;
+  return YES;
 }
 
 
@@ -233,61 +255,80 @@
 
 
 - (void) home: (id) sender {
-<<<<<<< HEAD
   //RMSphericalTrapezium bounds = [self brcBounds];
   //[mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
   
   // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
-  CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
+  /*CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
   [util setHomeLocation:fakeHome];
-  if(![util homeLocation])
+   */
+  NSArray * otherTitles = nil;
+  if(navigationLineAnnotation)
   {
-    //ask to set home location
+    otherTitles = @[STOP_NAVIGATION_STRING,CANCEL_STRING];
   }
-  else{
+  else if(![util homeLocation])
+  {
+    otherTitles = @[SET_HOME_STRING,CANCEL_STRING];
+  }
+  else
+  {
+    otherTitles = @[SET_HOME_STRING,NAVIGATE_STRING,CANCEL_STRING];
+  }
+  
+  UIActionSheet * actionSheet = [[UIActionSheet alloc] init];
+  actionSheet.delegate =self;
+  actionSheet.title = @"Home";
+  [otherTitles enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+    [actionSheet addButtonWithTitle:obj];
+  }];
+  actionSheet.cancelButtonIndex = [otherTitles count]-1;
+  [actionSheet showInView:self.view];
+}
+
+-(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
+  if (actionSheet.cancelButtonIndex == buttonIndex) {
+    return;
+  }
+  else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:STOP_NAVIGATION_STRING])
+  {
+    [self stopNavigation];
+  }
+  else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:NAVIGATE_STRING])
+  {
     [self navigateToLocation:[util homeLocation]];
-    
-    
+  }
+  else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:SET_HOME_STRING])
+  {
+    [util setHomeLocation:[MyCLController sharedInstance].location];
   }
 }
 
--(void)navigateToLocation:(CLLocation *)location
-{
+- (void)navigateToLocation:(CLLocation *)location {
   toLocation = location;
   CLLocation * currentLocation = [[MyCLController sharedInstance] location];
-  if(currentLocation)
-  {
+  if (navigationLineAnnotation) {
+    [self.mapView removeAnnotation:navigationLineAnnotation];
+  }
+  if(currentLocation) {
     navigationLineAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[location,currentLocation]];
     [self.mapView addAnnotation:navigationLineAnnotation];
   }
 }
 
--(void)stopNavigation
-{
+
+- (void)stopNavigation {
   [self.mapView removeAnnotation:navigationLineAnnotation];
   navigationLineAnnotation = nil;
   toLocation = nil;
-=======
-  RMSphericalTrapezium bounds = [self brcBounds];
-  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
->>>>>>> origin/master
 }
 
 
-- (NSURL*) mbTilesURL {
-  return [NSURL URLWithString:@"http://com.gaiagps.iburn.s3-website-us-east-1.amazonaws.com/iburn.mbtiles"];
-}
-
-
-- (NSString*) mbTilesPath {
-  return [privateDocumentsDirectory() stringByAppendingPathComponent:@"iburn.mbtiles"];;
-}
-
-
+<<<<<<< HEAD
 - (void) loadMBTilesFile {
-#warning set this up to only fetch a new file if needed
+  return;
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
     ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[self mbTilesURL]];
     [request setTimeOutSeconds:240];
@@ -298,34 +339,69 @@
       [mapView setTileSource:offlineSource];
     });
   });
+=======
+- (S3BigFileDownloader*) bigFileDownloader {
+  if (!bigFileDownloader) {
+    bigFileDownloader = [[S3BigFileDownloader alloc]init];
+  }
+  return bigFileDownloader;
+>>>>>>> 7b958f9222ec654c85813d9e4274e77f19746c84
 }
 
 
+- (int) fileSizeForPath:(NSString*)path {
+  NSDictionary* fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil];
+  return [fileAttribs fileSize];
+}
 
 
+#define kNormalMapID @"iburn.map-0ytz4sz2"
+#define kRetinaMapID @"iburn.map-0ytz4sz2"
+- (void) setMapSources {
+  // RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self.bigFileDownloader mbTilesPath]]];
+  [mapView setTileSource:offlineSource];
+  //[mapView addTileSource:offlineSource];
+  // [mapView setTileSources:@[onlineSource, offlineSource]];
+  NSLog(@"The center is %f, %f", mapView.centerCoordinate.latitude, mapView.centerCoordinate.longitude);
+}
 
-#define kNormalMapID @"examples.map-z2effxa8"
-#define kRetinaMapID @"examples.map-zswgei2n"
+
+<<<<<<< HEAD
+#define kNormalMapID @"iburn.map-0ytz4sz2"
+#define kRetinaMapID @"iburn.map-0ytz4sz2"
 - (void)loadView {
   [super loadView];
+  // [self loadMBTilesFile];
   RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
-  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
+  RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetResource:@"australia250k" ofType:@"mbtiles"];
   
   RMCompositeSource *compSource = [[RMCompositeSource alloc]initWithTileSources:@[onlineSource, offlineSource] tileCacheKey:@"burnmap"];
+=======
+- (void)loadView {
+  [super loadView];
+>>>>>>> 7b958f9222ec654c85813d9e4274e77f19746c84
   mapView = [[RMMapView alloc] initWithFrame:self.view.bounds];
-  [mapView setTileSource:compSource];
+  mapView.adjustTilesForRetinaDisplay = YES;
+  mapView.hideAttribution = YES;
+  mapView.showLogoBug = NO;
+  [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setMapSources) name:@"BIG_FILE_DOWNLOAD_DONE" object:nil];
+  [self.bigFileDownloader copyMBTileFileFromBundle];
+  [self setMapSources];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self.bigFileDownloader loadMBTilesFile];
+  });
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
   RMSphericalTrapezium bounds = [self brcBounds];
   [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
-  //[self loadMBTilesFile];
   self.progressView = [[UIProgressView alloc]
                        initWithProgressViewStyle:UIProgressViewStyleBar];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
   
-  //[self loadMarkers];
+  [self loadMarkers];
 #warning this freezes it
   /*
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -351,7 +427,7 @@
 	[mapView setBackgroundColor:[UIColor blackColor]];
 	//[mapView moveToLatLong:point];
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed) {
+/*  if (t.embargoed) {
     int width = self.view.frame.size.width-20;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
       width -= 200;
@@ -367,7 +443,7 @@
     lbl.layer.borderWidth = 1;
     lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
     [self.view addSubview:lbl];
-  }
+  }*/
 }
 
 
@@ -394,7 +470,6 @@
 }
 
 - (void) newLocationUpdate:(CLLocation *)newLocation {
-<<<<<<< HEAD
   if (currentLocationAnnotation) {
     [mapView removeAnnotations:@[currentLocationAnnotation]];
   }
@@ -421,8 +496,6 @@
   }
 
   
-=======
->>>>>>> origin/master
 }
 
 

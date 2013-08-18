@@ -67,17 +67,22 @@ DEPENDENCIES:
   - ASIHTTPRequest
   - AWSiOSSDK
   - JSONKit (~> 1.5pre)
-  - MapBox
+  - MapBox (from `git@github.com:trailbehind/mapbox-ios-sdk.git`, commit `84ff50b255757da8ea277ac7af5aabc2a7bb9c36`)
   - Reachability (~> 3.1.0)
+
+EXTERNAL SOURCES:
+  MapBox:
+    :commit: 84ff50b255757da8ea277ac7af5aabc2a7bb9c36
+    :git: git@github.com:trailbehind/mapbox-ios-sdk.git
 
 SPEC CHECKSUMS:
   ASIHTTPRequest: a411b8d0f006ed8fc24248be6a0c4ad2abc9b101
   AWSiOSSDK: 947b8f0458299e97b81e269c91293a3e6f6f2f8f
-  FMDB: 30a7cbcdbd354f5ee1ba081a8773fd9130c43b48
+  FMDB: 370eb54b9f057aa4de7cf9c757d103b21ee30ecc
   GRMustache: f97f90a320c36896b08ca2624003e4ab8da7cfb1
   JRSwizzle: 6242ff38485d870fc2636899048ee1ab883ae587
   JSONKit: 409734ab3407fce90ef7eaa95d7168f38d9a6601
-  MapBox: 8648417af23ee342c40b2ad9b2366c1c512b660b
+  MapBox: b9c1924b58a06d4b32e350142d39a2fc84753469
   Reachability: 2be6bc2fd2bd31d97f5db33e75e4b29c79e95883
   SMCalloutView: 1c7d62044508a8d405c25495c380b17c613f769e
 

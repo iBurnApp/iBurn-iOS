@@ -67,6 +67,24 @@
   return objects;
 }
 
++ (Event*) eventForID:(NSNumber*) bm_id {
+  
+  
+  NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
+  NSEntityDescription *entity = [NSEntityDescription entityForName:@"Event" inManagedObjectContext:[t managedObjectContext]];
+  [fetchRequest setEntity:entity];
+  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"bm_id = %@", bm_id];
+  [fetchRequest setPredicate:predicate];
+  NSError *error;
+  NSArray *objects = [[t managedObjectContext] executeFetchRequest:fetchRequest error:&error];
+  
+  if ([objects count] > 0) {
+    return [objects objectAtIndex:0];
+  }
+  return nil;
+  
+}
 
 + (Event*) eventForName:(NSString*) sName {
   

@@ -134,9 +134,7 @@ void printTimer(NSString* name) {
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 	launchDefault = YES;
-  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES); 
-  NSString *documentsDirectory = [paths objectAtIndex:0];   
-  NSString *path = [documentsDirectory stringByAppendingPathComponent:@"unlocked.txt"];
+  NSString *path = [self unlockedFile];
   if ([[NSFileManager defaultManager]fileExistsAtPath:path]) {
     [self liftEmbargo];
   }
@@ -149,19 +147,6 @@ void printTimer(NSString* name) {
     [self checkOrCreateDatabase];
     [self postLaunch];
   });
-  
-}
-
-
-
-- (void) downloadMaps {
-  [self downloadMaps:NO];
-}
-
-
-- (void) downloadMaps:(BOOL) refreshTiles {
-
-  MapViewController *mapViewController = (MapViewController*)[[tabBarController.viewControllers objectAtIndex:0]visibleViewController];
   
 }
 
@@ -180,17 +165,16 @@ void printTimer(NSString* name) {
 
 - (void)postLaunch {
 	if (!launchDefault) return;
-  //reachability = [[Reachability reachabilityWithHostName:@"earthdev.burningman.com"] retain];
-  reachability = [Reachability reachabilityWithHostname:@"www.gaiagps.com"];
+  reachability = [Reachability reachabilityWithHostname:@"www.google.com"];
   
 	[reachability startNotifier];
   [self canConnectToInternet];
   // count running network processes to show/hide indicator
   [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) 
                                                name: kReachabilityChangedNotification object:reachability];
-  //[self initializeOAuthConsumer];
   [self performSelector:@selector(checkEmbargo) withObject:nil afterDelay:2];
 }
+
 
 - (void) requestDone {
  //[[[tabBarController.viewControllers objectAtIndex:0]visibleViewController] showMarkersOnScreen];  
@@ -294,7 +278,16 @@ void printTimer(NSString* name) {
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
   NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [[NSFileManager defaultManager] fileExistsAtPath:dbPath];
+  
+  
+  if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
+    NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath]
+                                     stringByAppendingPathComponent:DATABASE_NAME];
     
+    NSError* error = nil;
+    [[NSFileManager defaultManager] copyItemAtPath:databasePathFromApp toPath:dbPath
+                          error:&error];
+  }
 	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
@@ -330,7 +323,7 @@ void printTimer(NSString* name) {
   }
   self.embargoed = NO;
   NSError *error;
-  BOOL succeed = [@"unlocked" writeToFile:[privateDocumentsDirectory() stringByAppendingPathComponent:@"unlocked.txt"]
+  BOOL succeed = [@"unlocked" writeToFile:[self unlockedFile]
                             atomically:YES encoding:NSUTF8StringEncoding error:&error];
   if (!succeed){
     // Handle error here
@@ -340,7 +333,12 @@ void printTimer(NSString* name) {
 }
 
 - (NSString*) passwordFile {
-  return [NSString stringWithFormat:@"%@/password", [self applicationDocumentsDirectory]];
+  return [NSString stringWithFormat:@"%@/password2013", [self applicationDocumentsDirectory]];
+  
+}
+
+- (NSString*) unlockedFile {
+  return [NSString stringWithFormat:@"%@/unlocked2013", [self applicationDocumentsDirectory]];
   
 }
 
