@@ -107,7 +107,8 @@
 		5002416017ADB7370070BBAB /* art_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415D17ADB7370070BBAB /* art_data_and_locations.json */; };
 		5002416117ADB7370070BBAB /* camp_data_and_locations_ids.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */; };
 		5002416217ADB7370070BBAB /* event_data_and_locations.json in Resources */ = {isa = PBXBuildFile; fileRef = 5002415F17ADB7370070BBAB /* event_data_and_locations.json */; };
-		503EB3E617CEC436002D09D2 /* iBurn2012.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 503EB3E517CEC436002D09D2 /* iBurn2012.sqlite */; };
+		503EB3E617CEC436002D09D2 /* iBurn2013.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 503EB3E517CEC436002D09D2 /* iBurn2013.sqlite */; };
+		505469A217BF3752007360E2 /* MapBox.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 505469A117BF3752007360E2 /* MapBox.bundle */; };
 		50BF510B12062D4F00555D13 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF510A12062D4F00555D13 /* MobileCoreServices.framework */; };
 		50BF511C12062DA800555D13 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511B12062DA800555D13 /* SystemConfiguration.framework */; };
 		50BF511F12062DB100555D13 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50BF511E12062DB100555D13 /* CFNetwork.framework */; };
@@ -276,7 +277,8 @@
 		5002415D17ADB7370070BBAB /* art_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data_and_locations.json; path = bin/playa_data/results/art_data_and_locations.json; sourceTree = SOURCE_ROOT; };
 		5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = camp_data_and_locations_ids.json; path = bin/playa_data/results/camp_data_and_locations_ids.json; sourceTree = SOURCE_ROOT; };
 		5002415F17ADB7370070BBAB /* event_data_and_locations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = event_data_and_locations.json; path = bin/playa_data/results/event_data_and_locations.json; sourceTree = SOURCE_ROOT; };
-		503EB3E517CEC436002D09D2 /* iBurn2012.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = iBurn2012.sqlite; sourceTree = SOURCE_ROOT; };
+		503EB3E517CEC436002D09D2 /* iBurn2013.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = iBurn2013.sqlite; sourceTree = SOURCE_ROOT; };
+		505469A117BF3752007360E2 /* MapBox.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; name = MapBox.bundle; path = Pods/Resources/MapBox.bundle; sourceTree = "<group>"; };
 		50BF510A12062D4F00555D13 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		50BF511B12062DA800555D13 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		50BF511E12062DB100555D13 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
@@ -326,6 +328,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				505469A117BF3752007360E2 /* MapBox.bundle */,
 				49334D3F17AD9C060014C2C2 /* data */,
 				4933571C17AD9C0E0014C2C2 /* images */,
 				49334CE517AD9C060014C2C2 /* classes */,
@@ -452,7 +455,7 @@
 		49334D3F17AD9C060014C2C2 /* data */ = {
 			isa = PBXGroup;
 			children = (
-				503EB3E517CEC436002D09D2 /* iBurn2012.sqlite */,
+				503EB3E517CEC436002D09D2 /* iBurn2013.sqlite */,
 				5002415D17ADB7370070BBAB /* art_data_and_locations.json */,
 				5002415E17ADB7370070BBAB /* camp_data_and_locations_ids.json */,
 				5002415F17ADB7370070BBAB /* event_data_and_locations.json */,
@@ -743,9 +746,10 @@
 				426A98E717BED09E007E0EA2 /* iBurn-72@2x.png in Resources */,
 				426A98E817BED09E007E0EA2 /* iPadImage-iBurn-Landscape.png in Resources */,
 				426A98E917BED09E007E0EA2 /* iPadImage-iBurn-Landscape@2x.png in Resources */,
+				505469A217BF3752007360E2 /* MapBox.bundle in Resources */,
 				426A98EA17BED09E007E0EA2 /* iPadImage-iBurn-Portrait.png in Resources */,
 				426A98EB17BED09E007E0EA2 /* iPadImage-iBurn-Portrait@2x.png in Resources */,
-				503EB3E617CEC436002D09D2 /* iBurn2012.sqlite in Resources */,
+				503EB3E617CEC436002D09D2 /* iBurn2013.sqlite in Resources */,
 				426A98F017BEF47A007E0EA2 /* star-pin-down.png in Resources */,
 				426A98F117BEF47A007E0EA2 /* star-pin-down@2x.png in Resources */,
 			);

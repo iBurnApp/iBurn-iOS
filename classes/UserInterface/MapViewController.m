@@ -43,30 +43,19 @@
 
 - (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(RMAnnotation *)annotation {
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if ((mv.zoom < 17 || t.embargoed)
-      && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
+  if (t.embargoed && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
     return nil;
   }
-  if (mv.zoom < 16
-      && [annotation.annotationType isEqualToString:@"ArtInstall"]) {
-    return nil;
-  }
-  if (mv.zoom < 16
-      && [annotation.annotationType isEqualToString:@"Event"]) {
-    return nil;
-  }
+
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5, .8);
-  if ((mv.zoom < 17 || t.embargoed)
-      && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
+  if ([annotation.annotationType isEqualToString:@"ThemeCamp"]) {
     newMarker.zPosition = 800;
   }
-  if (mv.zoom < 16
-      && [annotation.annotationType isEqualToString:@"Event"]) {
+  if ([annotation.annotationType isEqualToString:@"Event"]) {
     newMarker.zPosition = 801;
   }
-  if (mv.zoom < 16
-      && [annotation.annotationType isEqualToString:@"ArtInstall"]) {
+  if ([annotation.annotationType isEqualToString:@"ArtInstall"]) {
     newMarker.zPosition = 801;
   }
   return newMarker;
@@ -78,17 +67,8 @@
   
 }
 
-- (void) removeAndLoad {
-  [self loadMarkers];
-}
-
-
 - (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
-  if (mapView.zoom < previousZoom
-      && mapView.zoom >= 15) {
-    //[self.mapView removeAllAnnotations];
-    //[NSThread detachNewThreadSelector:@selector(removeAndLoad) toTarget:self withObject:nil];
-  }
+
 }
 
 
@@ -116,9 +96,11 @@
 
 
 - (void) loadDataType:(NSString*)dataType iconName:(NSString*)iconName {
-  NSArray * themeCamps = [self getAllObjects:dataType];
   dispatch_async(dispatch_get_main_queue(), ^{
+    NSArray * themeCamps = [self getAllObjects:dataType];
+
     NSLog(@"loading camps %d", [themeCamps count]);
+    NSMutableArray * annotations = [NSMutableArray array];
     for (ThemeCamp* camp in themeCamps) {
       CLLocationCoordinate2D coord;
       coord.latitude = [camp.latitude floatValue];
@@ -133,11 +115,12 @@
       // if it's a camp
       if ([camp respondsToSelector:@selector(bm_id)]) {
         annotation.burningManID = camp.bm_id;
-        annotation.minZoom = 15;
+        annotation.minZoom = 17;
         annotation.badgeIcon = [UIImage imageNamed:@"empty_star.png"];
       }
-      [mapView addAnnotation:annotation];
+      [annotations addObject:annotation];
     }
+    [mapView addAnnotations:annotations];
   });
 }
 
@@ -155,9 +138,9 @@
 
 
 - (void) loadEvents {
-  NSArray * events = [Event getTodaysEvents];
   dispatch_async(dispatch_get_main_queue(), ^{
-
+    NSArray * events = [Event getTodaysEvents];
+    NSMutableArray * annotations = [NSMutableArray array];
     for (Event* event in events ) {
       CLLocationCoordinate2D coord;
       coord.latitude = [event.latitude floatValue];
@@ -170,8 +153,9 @@
       annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
       annotation.annotationType = @"Event";
       annotation.burningManID = event.bm_id;
-      [mapView addAnnotation:annotation];
+      [annotations addObject:annotation];
     }
+    [mapView addAnnotations:annotations];
   });
 }
 
@@ -414,14 +398,7 @@
     [self loadMarkers];
   });
 #warning this freezes it
-  /*
-   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-   if (t.embargoed) {
-   [mapView setMaxZoom:14];
-   } else {
-   [mapView setMaxZoom:18];
-   }
-   */
+
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -480,9 +457,8 @@
 
 - (void) liftEmbargo {
 #warning mapbox
-  /*  [mapView.contents setMaxZoom:18];*/
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    [self loadMarkers];
+    //[self loadMarkers];
   });
   [[self.view viewWithTag:999]removeFromSuperview];
 }

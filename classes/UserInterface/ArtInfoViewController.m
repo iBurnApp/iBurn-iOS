@@ -19,10 +19,13 @@
 
 
 - (void) showOnMap {
+  [Favorite setSelected:@"ArtInstall" id:art.bm_id];
+
 	iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
   [[t tabBarController]setSelectedViewController:[[[t tabBarController]viewControllers]objectAtIndex:0]];
   [[[[t tabBarController]viewControllers]objectAtIndex:0] popToRootViewControllerAnimated:YES];
   MapViewController *mapViewController = (MapViewController*)[[[[t tabBarController]viewControllers]objectAtIndex:0]visibleViewController];
+
   [mapViewController showMapForObject:art];
 }
 
