@@ -34,6 +34,7 @@
   RMAnnotation * navigationLineAnnotation;
   CLLocation * toLocation;
   float previousZoom;
+  NSDate * lastLoadMarkers;
 }
 
 @property (nonatomic, strong) UIProgressView *progressView;

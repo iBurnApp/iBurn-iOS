@@ -417,13 +417,17 @@
 }
 
 - (void) viewWillAppear:(BOOL)animated {
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    [self loadMarkers];
-  });
+  if (!lastLoadMarkers || -[lastLoadMarkers timeIntervalSinceNow] > 3600) {
+    lastLoadMarkers = [NSDate date];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+      [self loadMarkers];
+    });
+  } else {
 
-  //NSArray * annotations = [self.mapView annotations];
-  //[self.mapView removeAllAnnotations];
-  //[self.mapView addAnnotations:annotations];
+    NSArray * annotations = [self.mapView annotations];
+    [self.mapView removeAllAnnotations];
+    [self.mapView addAnnotations:annotations];
+  }
 }
 
 
@@ -457,7 +461,7 @@
 
 - (void) liftEmbargo {
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    [self loadMarkers];
+    //[self loadMarkers];
   });
 }
 
