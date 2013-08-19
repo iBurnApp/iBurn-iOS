@@ -407,8 +407,7 @@
   });
   mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
   [self.view addSubview:mapView];
-  RMSphericalTrapezium bounds = [self brcBounds];
-  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
+  [self home:nil];
   self.progressView = [[UIProgressView alloc]
                        initWithProgressViewStyle:UIProgressViewStyleBar];
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
