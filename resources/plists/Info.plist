@@ -30,19 +30,8 @@
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>mobitag</string>
-			</array>
-			<key>CFBundleUrlName</key>
-			<string>com.pictearth.iburn</string>
-		</dict>
-	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0</string>
+	<string>4.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMainNibFile</key>

@@ -1145,15 +1145,15 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_ENTITLEMENTS = Info.plist;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Pict'Earth";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Pict'Earth";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Trailbehind, INC. (8VTZU79ASP)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Trailbehind, INC. (8VTZU79ASP)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "/usr/src/route-me/MapView/**";
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "B2810F0E-415A-485D-A0AD-0161814A92C2";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "B2810F0E-415A-485D-A0AD-0161814A92C2";
+				PROVISIONING_PROFILE = "F8A931EF-3BFC-44BB-8514-3672C7A985E5";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "F8A931EF-3BFC-44BB-8514-3672C7A985E5";
 				SDKROOT = iphoneos;
 			};
 			name = Beta;
@@ -1212,11 +1212,13 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_ENTITLEMENTS = Info.plist;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Pict'Earth";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Pict'Earth";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 			};
 			name = Release;
