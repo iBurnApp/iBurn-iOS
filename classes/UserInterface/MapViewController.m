@@ -271,20 +271,19 @@
 
 
 - (void) startLocation:(id)sender {
-	if (![self locateMeWorks]) {
+	CLLocationManager *lm = [MyCLController sharedInstance].locationManager;
+	if (![self locateMeWorks]
+      || ![self sphericalTrapezium:[self brcBounds] containsPoint:lm.location.coordinate]) {
     [self showLocationErrorAlertView];
 		return;
   }
   if (mapView.userTrackingMode == RMUserTrackingModeNone) {
-    mapView.showsUserLocation = YES;
     mapView.userTrackingMode = RMUserTrackingModeFollow;
     locationButton.tintColor = [UIColor blueColor];
   } else if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
-    mapView.showsUserLocation = YES;
     mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
     locationButton.tintColor = [UIColor redColor];
   } else if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
-    mapView.showsUserLocation = NO;
    mapView.userTrackingMode = RMUserTrackingModeNone;
     locationButton.tintColor = [UIColor darkGrayColor];
   }
@@ -299,13 +298,17 @@
 
 - (void) home: (id) sender {
   RMSphericalTrapezium bounds = [self brcBounds];
-  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
-  [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
-  //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
-  // [mapView moveToLatLong:center];
-  //CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
-   //[util setHomeLocation:fakeHome];
-   
+  
+  if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad
+      && UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication]statusBarOrientation])) {
+    [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
+    [mapView zoomByFactor:1.1 near:CGPointMake(self.view.bounds.size.width/2, 0) animated:NO];
+    [mapView moveBy:CGSizeMake(0, -400)];
+  } else {
+    [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
+    
+  }
+  
   
   return;
   NSArray * otherTitles = nil;
@@ -396,6 +399,7 @@
   mapView.adjustTilesForRetinaDisplay = YES;
   mapView.hideAttribution = YES;
   mapView.showLogoBug = NO;
+  mapView.showsUserLocation = YES;
   [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setMapSources) name:@"BIG_FILE_DOWNLOAD_DONE" object:nil];
   [self.bigFileDownloader copyMBTileFileFromBundle];
   [self setMapSources];
