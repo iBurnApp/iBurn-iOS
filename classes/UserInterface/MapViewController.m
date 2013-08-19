@@ -299,8 +299,7 @@
 - (void) home: (id) sender {
   RMSphericalTrapezium bounds = [self brcBounds];
   
-  if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad
-      && UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication]statusBarOrientation])) {
+  if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication]statusBarOrientation])) {
     [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:NO];
     [mapView zoomByFactor:1.1 near:CGPointMake(self.view.bounds.size.width/2, 0) animated:NO];
     [mapView moveBy:CGSizeMake(0, -400)];
