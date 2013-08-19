@@ -169,10 +169,11 @@
       BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
                                                            coordinate:coord
                                                              andTitle:[event name]];
-      annotation.minZoom = 16;
+      annotation.minZoom = 17;
       annotation.annotationIcon = [UIImage imageNamed:EVENT_PIN_NAME];
       annotation.annotationType = EVENT_TYPE;
       annotation.burningManID = event.bm_id;
+      annotation.startDate = event.startTime;
       [annotations addObject:annotation];
     }
     [mapView addAnnotations:annotations];

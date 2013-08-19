@@ -12,6 +12,7 @@
 
 @property(nonatomic, strong) NSNumber* burningManID;
 @property(nonatomic, assign) BOOL favorite;
+@property(nonatomic, retain) NSDate * startDate;
 
 
 - (BOOL) isFavorite;

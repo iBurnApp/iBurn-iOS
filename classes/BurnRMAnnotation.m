@@ -44,29 +44,32 @@
 
 
 - (int) minZoom {
+  if (self.mapView.zoom < 13) {
+    return [super minZoom];
+  }
+  
   if ([self isFavorite]) {
     return 13;
   }
   if ([self isSelected]) {
     return 13;
   }
-  if ([self.annotationType isEqualToString:THEME_CAMP_TYPE]) {
-    return 17;
-  } else if ([self.annotationType isEqualToString:ART_INSTALL_TYPE]) {
-    return 16;
-  } else if ([self.annotationType isEqualToString:EVENT_TYPE]) {
-    Event *e = [Event eventForID:self.burningManID];
-    int minutesToStart = abs([e.startTime timeIntervalSinceDate:[NSDate date]])/60;
-    if (minutesToStart < 30) {
-      return 14;
+ 
+  if (self.mapView.zoom >= 14) {
+   if (self.startDate) {
+      int minutesToStart = abs([self.startDate timeIntervalSinceDate:[NSDate date]])/60;
+
+      if (minutesToStart < 30) {
+        return 14;
+      }
+      if (minutesToStart < 60) {
+        return 15;
+      }
+      if (minutesToStart < 120) {
+        return 16;
+      }
+      return 17;
     }
-    if (minutesToStart < 60) {
-      return 15;
-    }
-    if (minutesToStart < 120) {
-      return 16;
-    }
-    return 17;
   }
   return [super minZoom];
 }
