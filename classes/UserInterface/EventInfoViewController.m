@@ -11,12 +11,27 @@
 #import "Favorite.h"
 #import "EventTableViewController.h"
 #import "iBurnAppDelegate.h"
+#import "MapViewController.h"
 #import "ThemeCamp.h"
 #import "CampInfoViewController.h"
 
 @implementation EventInfoViewController
 
 @synthesize event;
+
+
+- (void) setFavButton {
+  NSString *imgName = @"empty_star.png";
+  if ([Favorite isFavorite:EVENT_TYPE id:event.bm_id]) {
+    imgName = @"full_star.png";
+  }
+  self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+                                            initWithImage:[UIImage imageNamed:imgName]
+                                            style:UIBarButtonItemStylePlain
+                                            target:self
+                                            action:@selector(addToFavorites:)];
+  
+}
 
 
 - (NSString*) stringFromDate:(NSDate*)date {
@@ -124,7 +139,7 @@
 
 - (void) addToFavorites: (id) sender {
   [Favorite addFavorite:@"Event" id:event.bm_id];
-
+  [self setFavButton];
 }
 
 

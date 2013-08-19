@@ -7,7 +7,9 @@
 //
 
 #import "BurnRMAnnotation.h"
+#import "Event.h"
 #import "Favorite.h"
+#import "MapViewController.h"
 
 @implementation BurnRMAnnotation
 @synthesize burningManID;
@@ -22,25 +24,49 @@
   
 }
 
-- (void) setFavoriteIcon {
-  if ([self isFavorite]) {
-    self.badgeIcon = [UIImage imageNamed:@"star-pin-down.png"];
-  }
-}
-
 - (UIImage*) annotationIcon {
   if ([self isSelected]) {
-    return [UIImage imageNamed:@"gaia-icon.png"];
+    return [UIImage imageNamed:@"super-star-pin-down.png"];
   }
   if ([self isFavorite]) {
-    return [UIImage imageNamed:@"star-pin-down.png"];
+    if ([self.annotationType isEqualToString:THEME_CAMP_TYPE]) {
+      return [UIImage imageNamed:FAVORITE_THEME_CAMP_PIN_NAME];
+    }
+    if ([self.annotationType isEqualToString:ART_INSTALL_TYPE]) {
+      return [UIImage imageNamed:FAVORITE_ART_INSTALL_PIN_NAME];
+    }
+    if ([self.annotationType isEqualToString:EVENT_TYPE]) {
+      return [UIImage imageNamed:FAVORITE_EVENT_PIN_NAME];
+    }
   }
   return annotationIcon;
 }
 
+
 - (int) minZoom {
   if ([self isFavorite]) {
     return 13;
+  }
+  if ([self isSelected]) {
+    return 13;
+  }
+  if ([self.annotationType isEqualToString:THEME_CAMP_TYPE]) {
+    return 17;
+  } else if ([self.annotationType isEqualToString:ART_INSTALL_TYPE]) {
+    return 16;
+  } else if ([self.annotationType isEqualToString:EVENT_TYPE]) {
+    Event *e = [Event eventForID:self.burningManID];
+    int minutesToStart = abs([e.startTime timeIntervalSinceDate:[NSDate date]])/60;
+    if (minutesToStart < 30) {
+      return 14;
+    }
+    if (minutesToStart < 60) {
+      return 15;
+    }
+    if (minutesToStart < 120) {
+      return 16;
+    }
+    return 17;
   }
   return [super minZoom];
 }

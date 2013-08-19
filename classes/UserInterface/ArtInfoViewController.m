@@ -17,6 +17,20 @@
 
 @implementation ArtInfoViewController
 
+- (void) setFavButton {
+  NSString *imgName = @"empty_star.png";
+  if ([Favorite isFavorite:ART_INSTALL_TYPE id:art.bm_id]) {
+    imgName = @"full_star.png";
+  }
+  self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+                                            initWithImage:[UIImage imageNamed:imgName]
+                                            style:UIBarButtonItemStylePlain
+                                            target:self
+                                            action:@selector(addToFavorites:)];
+  
+}
+
+
 
 - (void) showOnMap {
   [Favorite setSelected:@"ArtInstall" id:art.bm_id];
@@ -103,7 +117,7 @@
 
 - (void) addToFavorites: (id) sender {
   [Favorite addFavorite:@"ArtInstall" id:art.bm_id];
-
+  [self setFavButton];
 }
 
 

@@ -41,22 +41,50 @@
 }
 
 
-- (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(RMAnnotation *)annotation {
+- (RMMapLayer *)mapView:(RMMapView *)mv layerForAnnotation:(BurnRMAnnotation *)annotation {
+  if (annotation.isUserLocationAnnotation) {
+    return nil;
+  }
   iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  if (t.embargoed && [annotation.annotationType isEqualToString:@"ThemeCamp"]) {
+  if (t.embargoed
+      && ([annotation.annotationType isEqualToString:THEME_CAMP_TYPE]
+          || [annotation.annotationType isEqualToString:EVENT_TYPE])) {
     return nil;
   }
 
   RMMarker *newMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
   newMarker.anchorPoint = CGPointMake(.5, .8);
-  if ([annotation.annotationType isEqualToString:@"ThemeCamp"]) {
+  
+  if ([annotation.annotationType isEqualToString:THEME_CAMP_TYPE]) {
     newMarker.zPosition = 800;
   }
-  if ([annotation.annotationType isEqualToString:@"Event"]) {
+  if ([annotation.annotationType isEqualToString:EVENT_TYPE]) {
     newMarker.zPosition = 801;
   }
-  if ([annotation.annotationType isEqualToString:@"ArtInstall"]) {
+  if ([annotation.annotationType isEqualToString:ART_INSTALL_TYPE]) {
     newMarker.zPosition = 801;
+  }
+  
+  if (![annotation respondsToSelector:@selector(isFavorite)]) {
+    return newMarker;
+  }
+  if (([annotation isFavorite]
+      || [annotation isSelected])) {
+    UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectZero];
+    lbl.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
+    lbl.textColor = [UIColor whiteColor];
+    lbl.font = [UIFont fontWithName:@"Helvetica" size:12];
+    lbl.layer.borderColor = [[UIColor blackColor]CGColor];
+    lbl.text = annotation.title;
+    newMarker.label = lbl;
+    [newMarker showLabel];
+    [lbl sizeToFit];
+    int lblWidth = lbl.frame.size.width;
+    lblWidth = MIN(120, lblWidth);
+    lbl.frame = CGRectMake((60-lblWidth)/2,
+                           -15,
+                           lblWidth,
+                           16);
   }
   return newMarker;
 }
@@ -67,19 +95,14 @@
   
 }
 
-- (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
 
-}
+- (void) afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction { }
 
 
 - (void) showMapForObject:(id)obj {
   CLLocationCoordinate2D point;
   point.latitude = [[obj latitude] floatValue];
   point.longitude = [[obj longitude] floatValue];
-  RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                       coordinate:point
-                                                         andTitle:[obj name]];
-  [mapView addAnnotation:annotation];
   [mapView setZoom:17 atCoordinate:point animated:YES];
 }
 
@@ -98,8 +121,6 @@
 - (void) loadDataType:(NSString*)dataType iconName:(NSString*)iconName {
   dispatch_async(dispatch_get_main_queue(), ^{
     NSArray * themeCamps = [self getAllObjects:dataType];
-
-    NSLog(@"loading camps %d", [themeCamps count]);
     NSMutableArray * annotations = [NSMutableArray array];
     for (ThemeCamp* camp in themeCamps) {
       CLLocationCoordinate2D coord;
@@ -116,7 +137,6 @@
       if ([camp respondsToSelector:@selector(bm_id)]) {
         annotation.burningManID = camp.bm_id;
         annotation.minZoom = 17;
-        annotation.badgeIcon = [UIImage imageNamed:@"empty_star.png"];
       }
       [annotations addObject:annotation];
     }
@@ -126,13 +146,13 @@
 
 
 - (void) loadCamps {
-  [self loadDataType:@"ThemeCamp" iconName:@"red-pin-down.png"];
+  [self loadDataType:THEME_CAMP_TYPE iconName:THEME_CAMP_PIN_NAME];
   // zoom 18 or 19
 }
 
 
 - (void) loadArt {
-  [self loadDataType:@"ArtInstall" iconName:@"blue-pin-down.png"];
+  [self loadDataType:ART_INSTALL_TYPE iconName:ART_INSTALL_PIN_NAME];
   // zoom 17
 }
 
@@ -150,8 +170,8 @@
                                                            coordinate:coord
                                                              andTitle:[event name]];
       annotation.minZoom = 16;
-      annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
-      annotation.annotationType = @"Event";
+      annotation.annotationIcon = [UIImage imageNamed:EVENT_PIN_NAME];
+      annotation.annotationType = EVENT_TYPE;
       annotation.burningManID = event.bm_id;
       [annotations addObject:annotation];
     }
@@ -174,17 +194,17 @@
   if (!annotation.annotationType) return;
   NSString *markerString = annotation.annotationType;
   
-  if ([markerString isEqualToString:@"ThemeCamp"]) {
+  if ([markerString isEqualToString:THEME_CAMP_TYPE]) {
     ThemeCamp * camp = [ThemeCamp campForID:[[annotation burningManID] intValue]];
     self.detailView = [[CampInfoViewController alloc] initWithCamp:camp];
     
   }
-  if ([markerString isEqualToString:@"ArtInstall"]) {
+  if ([markerString isEqualToString:ART_INSTALL_TYPE]) {
     ArtInstall * art = [ArtInstall artForName:[annotation title]];
     self.detailView = [[ArtInfoViewController alloc] initWithArt:art];
     
   }
-  if ([markerString isEqualToString:@"Event"]) {
+  if ([markerString isEqualToString:EVENT_TYPE]) {
     Event * event = [Event eventForID:[annotation burningManID]];
     self.detailView = [[EventInfoViewController alloc] initWithEvent:event];
     
@@ -255,13 +275,16 @@
 		return;
   }
   if (mapView.userTrackingMode == RMUserTrackingModeNone) {
+    mapView.showsUserLocation = YES;
     mapView.userTrackingMode = RMUserTrackingModeFollow;
     locationButton.tintColor = [UIColor blueColor];
   } else if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
+    mapView.showsUserLocation = YES;
     mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
     locationButton.tintColor = [UIColor redColor];
   } else if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
-    mapView.userTrackingMode = RMUserTrackingModeNone;
+    mapView.showsUserLocation = NO;
+   mapView.userTrackingMode = RMUserTrackingModeNone;
     locationButton.tintColor = [UIColor darkGrayColor];
   }
 }
@@ -274,15 +297,16 @@
 
 
 - (void) home: (id) sender {
-  //RMSphericalTrapezium bounds = [self brcBounds];
-  //[mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
-  
-  // [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
+  RMSphericalTrapezium bounds = [self brcBounds];
+  [mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:YES];
+  [mapView zoomByFactor:1.3 near:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2) animated:YES];
   //CLLocationCoordinate2D center = [MapViewController burningManCoordinate];
   // [mapView moveToLatLong:center];
-  /*CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
-   [util setHomeLocation:fakeHome];
-   */
+  //CLLocation * fakeHome = [[CLLocation alloc] initWithLatitude:40.786025 longitude:-119.205798];
+   //[util setHomeLocation:fakeHome];
+   
+  
+  return;
   NSArray * otherTitles = nil;
   if(navigationLineAnnotation)
   {
@@ -359,15 +383,9 @@
 }
 
 
-#define kNormalMapID @"iburn.map-0ytz4sz2"
-#define kRetinaMapID @"iburn.map-0ytz4sz2"
 - (void) setMapSources {
-  // RMMapBoxSource *onlineSource = [[RMMapBoxSource alloc] initWithMapID:(([[UIScreen mainScreen] scale] > 1.0) ? kRetinaMapID : kNormalMapID)];
   RMMBTilesSource *offlineSource = [[RMMBTilesSource alloc] initWithTileSetURL:[NSURL fileURLWithPath:[self.bigFileDownloader mbTilesPath]]];
   [mapView setTileSource:offlineSource];
-  //[mapView addTileSource:offlineSource];
-  // [mapView setTileSources:@[onlineSource, offlineSource]];
-  NSLog(@"The center is %f, %f", mapView.centerCoordinate.latitude, mapView.centerCoordinate.longitude);
 }
 
 
@@ -392,20 +410,18 @@
   progressView.frame = CGRectMake(5.0, 5, 268, 9.0);
   progressView.alpha = 0;
   [self.view addSubview:self.progressView];
-  
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-    [self loadMarkers];
-  });
-#warning this freezes it
-
 }
 
 - (void) viewWillAppear:(BOOL)animated {
-  NSArray * annotations = [self.mapView annotations];
-  [self.mapView removeAllAnnotations];
-  [self.mapView addAnnotations:annotations];
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [self loadMarkers];
+  });
+
+  //NSArray * annotations = [self.mapView annotations];
+  //[self.mapView removeAllAnnotations];
+  //[self.mapView addAnnotations:annotations];
 }
+
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -416,27 +432,7 @@
     [[MyCLController sharedInstance].locationManager startUpdatingLocation];
     [[MyCLController sharedInstance]setDelegate:self];
   }
-	
 	[mapView setBackgroundColor:[UIColor blackColor]];
-	//[mapView moveToLatLong:point];
-  iBurnAppDelegate *t = (iBurnAppDelegate *)[[UIApplication sharedApplication] delegate];
-  /*  if (t.embargoed) {
-   int width = self.view.frame.size.width-20;
-   if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-   width -= 200;
-   }
-   UILabel *lbl = [[UILabel alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - width/2, self.view.frame.size.height/2, width, 42)];
-   
-   lbl.text = @"Enter Burning Man or enter the password to unlock the map.";
-   lbl.tag = 999;
-   lbl.textAlignment = UITextAlignmentCenter;
-   lbl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-   lbl.numberOfLines = 0;
-   lbl.layer.cornerRadius = 8;
-   lbl.layer.borderWidth = 1;
-   lbl.backgroundColor = [UIColor colorWithWhite:1 alpha:.5];
-   [self.view addSubview:lbl];
-   }*/
 }
 
 
@@ -456,40 +452,16 @@
 
 
 - (void) liftEmbargo {
-#warning mapbox
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    //[self loadMarkers];
+    [self loadMarkers];
   });
-  [[self.view viewWithTag:999]removeFromSuperview];
 }
 
+
 - (void) newLocationUpdate:(CLLocation *)newLocation {
-  if (currentLocationAnnotation) {
-    [mapView removeAnnotations:@[currentLocationAnnotation]];
-  }
-  
-  if (mapView.userTrackingMode == RMUserTrackingModeFollow) {
-    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                          coordinate:newLocation.coordinate
-                                                            andTitle:nil];
-    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"blue-arrow.png"];
-    [mapView addAnnotation:currentLocationAnnotation];
-  }
-  
-  if (mapView.userTrackingMode == RMUserTrackingModeFollowWithHeading) {
-    currentLocationAnnotation = [[RMAnnotation alloc]initWithMapView:mapView
-                                                          coordinate:newLocation.coordinate
-                                                            andTitle:nil];
-    currentLocationAnnotation.annotationIcon = [UIImage imageNamed:@"course-up-arrow.png"];
-    [mapView addAnnotation:currentLocationAnnotation];
-  }
-  
-  if(navigationLineAnnotation)
-  {
-    [self navigateToLocation:toLocation];
-  }
-  
-  
+  //if(navigationLineAnnotation) {
+  //  [self navigateToLocation:toLocation];
+  //}
 }
 
 

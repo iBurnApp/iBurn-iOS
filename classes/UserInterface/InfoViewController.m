@@ -36,13 +36,12 @@
   tableView.sectionFooterHeight = 0;
 	tableView.dataSource = self;
 	[self.view addSubview:tableView];
-	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
-                                             initWithImage:[UIImage imageNamed:@"empty_star.png"]
-                                             style:UIBarButtonItemStylePlain
-                                             target:self
-                                             action:@selector(addToFavorites:)];
-	
+  [self setFavButton];	
 }
+
+
+- (void) setFavButton {}
+
 
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {

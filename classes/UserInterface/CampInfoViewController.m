@@ -19,6 +19,20 @@
 @synthesize camp;
 
 
+- (void) setFavButton {
+  NSString *imgName = @"empty_star.png";
+  if ([Favorite isFavorite:THEME_CAMP_TYPE id:camp.bm_id]) {
+    imgName = @"full_star.png";
+  }
+  self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+                                            initWithImage:[UIImage imageNamed:imgName]
+                                            style:UIBarButtonItemStylePlain
+                                            target:self
+                                            action:@selector(addToFavorites:)];
+
+}
+
+
 - (void) showOnMap {
   [Favorite setSelected:@"ThemeCamp" id:camp.bm_id];
 
@@ -108,12 +122,9 @@
 }
 
 
-
 - (void) addToFavorites: (id) sender {
   [Favorite addFavorite:@"ThemeCamp" id:camp.bm_id];
+  [self setFavButton];
 }
-
-
-
 
 @end

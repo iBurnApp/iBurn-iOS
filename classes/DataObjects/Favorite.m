@@ -24,6 +24,7 @@
   return [privateDocumentsDirectory() stringByAppendingPathComponent:@"favorites.json"];
 }
 
+
 + (NSMutableDictionary*) favorites {
   static NSMutableDictionary * favorites = nil;
   if (!favorites) {
@@ -35,23 +36,28 @@
       [favorites setObject:[NSMutableArray array] forKey:@"ArtInstall"];
       [favorites setObject:[NSMutableArray array] forKey:@"Event"];
       [favorites setObject:[NSMutableArray array] forKey:@"ThemeCamp"];
-
-
     }
   }
   return favorites;
 }
+
 
 + (void) save {
   NSData * data = [[Favorite favorites] JSONData];
   [data writeToFile:[self fileUrl] atomically:NO];
 }
 
+
 + (void) addFavorite:(NSString*) type id:(NSNumber*)bm_id {
   NSMutableArray * typeArray = [[Favorite favorites] objectForKey:type];
-  [typeArray addObject:bm_id];
+  if ([typeArray containsObject:bm_id]) {
+    [typeArray removeObject:bm_id];
+  } else {
+    [typeArray addObject:bm_id];
+  }
   [Favorite save];
 }
+
 
 + (BOOL) isFavorite:(NSString*) type id:(NSNumber*)bm_id {
   NSMutableArray * typeArray = [[Favorite favorites] objectForKey:type];

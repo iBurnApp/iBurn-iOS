@@ -12,4 +12,9 @@
 
 @property(nonatomic, strong) NSNumber* burningManID;
 @property(nonatomic, assign) BOOL favorite;
+
+
+- (BOOL) isFavorite;
+- (BOOL) isSelected;
+
 @end
