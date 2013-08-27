@@ -19,6 +19,8 @@
 #import "BRCDetailInfoTableViewCell.h"
 #import "BRCDetailMapViewController.h"
 
+static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyCellIdentifier";
+
 @interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
@@ -67,6 +69,7 @@
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
     [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
+    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBRCRowHeightDummyCellIdentifier];
     
     if (self.mapView) {
         self.tableView.tableHeaderView = self.mapView;
@@ -201,13 +204,20 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
-    if (cellInfo.cellType == BRCDetailCellInfoTypeText) {
-        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        
-        
-        CGRect labelSize = [cellInfo.value boundingRectWithSize:CGSizeMake(tableView.bounds.size.width, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: cell.textLabel.font} context:nil];
-        
-        
+    if (cellInfo.cellType == BRCDetailCellInfoTypeText || cellInfo.cellType == BRCDetailCellInfoTypeSchedule) {
+        NSString *cellText = nil;
+        if (cellInfo.cellType == BRCDetailCellInfoTypeText) {
+            cellText = cellInfo.value;
+        } else if (cellInfo.cellType == BRCDetailCellInfoTypeSchedule) {
+            NSAttributedString *attrStr = cellInfo.value;
+            cellText = [attrStr string];
+        }
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBRCRowHeightDummyCellIdentifier];
+        if (!cell) {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kBRCRowHeightDummyCellIdentifier];
+        }
+        CGRect labelSize = [cellText boundingRectWithSize:CGSizeMake(tableView.bounds.size.width, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: cell.textLabel.font} context:nil];
+
 #warning Cuts off some multi line text
         return labelSize.size.height + 20;
     }

@@ -8,6 +8,7 @@
 
 #import "TTTLocationFormatter+iBurn.h"
 #import "TTTTimeIntervalFormatter+iBurn.h"
+#import "UIColor+iBurn.h"
 
 @implementation TTTLocationFormatter (iBurn)
 
@@ -37,11 +38,11 @@
     double easyWalk = 20 * 60; // 20 minutes
     double hardWalk = 35 * 60; // 35 minutes
     if (timeInterval < easyWalk) {
-        return [UIColor colorWithRed:43/255.0f green:206/255.0f blue:18/255.0f alpha:1.0f];
+        return [UIColor brc_greenColor];
     } else if (timeInterval >= easyWalk && timeInterval < hardWalk) {
-        return [UIColor colorWithRed:249/255.0f green:175/255.0f blue:14/255.0f alpha:1.0f];
+        return [UIColor brc_orangeColor];
     } else if (timeInterval >= hardWalk) {
-        return [UIColor colorWithRed:219/255.0f green:23/255.0f blue:19/255.0f alpha:1.0f];
+        return [UIColor brc_redColor];
     }
     return nil;
 }

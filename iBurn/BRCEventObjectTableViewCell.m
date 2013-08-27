@@ -21,6 +21,9 @@
         self.eventTimeLabel.text = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
     }
     self.eventTimeLabel.textAlignment = NSTextAlignmentRight;
+    
+    UIColor *eventStatusColor = [eventObject colorForEventStatus];
+    self.eventTimeLabel.textColor = eventStatusColor;
 }
 
 @end

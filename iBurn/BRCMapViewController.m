@@ -94,7 +94,7 @@
             BRCEventObject *eventObject = [transaction objectForKey:key inCollection:[BRCEventObject collection]];
             
             //Check if event is currently happening or that the start time is in the next time window
-            if([eventObject isOngoing] || [eventObject isStartingSoon]) {
+            if([eventObject isHappeningRightNow] || [eventObject isStartingSoon]) {
                 BRCAnnotation *eventAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:eventObject];
                 
                 // if eventObject doesn't have a valid location, annotationWithMapView will

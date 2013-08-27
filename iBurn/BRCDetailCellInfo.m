@@ -101,7 +101,8 @@
                 if ([cellValue isKindOfClass:[NSNumber class]]) {
                     if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromUser))]) {
                         NSNumber *numberValue = cellValue;
-                        if (numberValue.doubleValue == CLLocationDistanceMax) {
+                        double doubleValue = numberValue.doubleValue;
+                        if (doubleValue == CLLocationDistanceMax || doubleValue == 0) {
                             return;
                         }
                     }
@@ -121,18 +122,28 @@
         
         
         //Date string
-        NSString *dateString = nil;
+        NSMutableAttributedString *fullScheduleString = nil;
+        NSString *timeString = nil;
         if (event.isAllDay) {
-            dateString = [NSString stringWithFormat:@"All Day"];
+            timeString = [NSString stringWithFormat:@"All Day"];
         }
         else {
-            NSDateFormatter *df = [NSDateFormatter brc_timeOnlyDateFormatter];
-            NSString *startString = [df stringFromDate:event.startDate];
-            NSString *endString = [df stringFromDate:event.endDate];
-            if (startString && endString) {
-                dateString = [NSString stringWithFormat:@"%@ - %@", startString, endString];
-            }
+            NSDateFormatter *timeOnlyDateFormatter = [NSDateFormatter brc_timeOnlyDateFormatter];
+            NSString *startTimeString = [timeOnlyDateFormatter stringFromDate:event.startDate];
+            NSString *endTimeString = [timeOnlyDateFormatter stringFromDate:event.endDate];
+            timeString = [NSString stringWithFormat:@"%@ - %@", startTimeString, endTimeString];
         }
+        NSDateFormatter *dayOfWeekDateFormatter = [NSDateFormatter brc_dayOfWeekDateFormatter];
+        NSDateFormatter *shortDateFormatter = [NSDateFormatter brc_shortDateFormatter];
+        NSString *dayOfWeekString = [dayOfWeekDateFormatter stringFromDate:event.startDate];
+        NSString *shortDateString = [shortDateFormatter stringFromDate:event.startDate];
+        NSString *dateString = [NSString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
+        NSString *fullString = [NSString stringWithFormat:@"%@\n%@", dateString, timeString];
+        fullScheduleString = [[NSMutableAttributedString alloc] initWithString:fullString];
+        UIColor *timeColor = [event colorForEventStatus];
+        NSRange timeRange = NSMakeRange(dateString.length+1, timeString.length);
+        [fullScheduleString setAttributes:@{NSForegroundColorAttributeName: timeColor}
+                                    range:timeRange];
         
         //Camp relationship
         BRCRelationshipDetailInfoCell *relationshipDetailInfoCell = nil;
@@ -152,8 +163,12 @@
             index = 1;
         }
         
-        if (dateString) {
-            [finalCellInfoArray insertObject:[self detailCellInfoWitDisplayName:@"Schedule" value:dateString] atIndex:index];
+        if (fullScheduleString) {
+            BRCDetailCellInfo *scheduleCellInfo = [[self alloc] init];
+            scheduleCellInfo.displayName = @"Schedule";
+            scheduleCellInfo.value = fullScheduleString;
+            scheduleCellInfo.cellType = BRCDetailCellInfoTypeSchedule;
+            [finalCellInfoArray insertObject:scheduleCellInfo atIndex:index];
         }
         
         if (relationshipDetailInfoCell) {

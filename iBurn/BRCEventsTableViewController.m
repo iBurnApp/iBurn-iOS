@@ -19,7 +19,6 @@
 
 @interface BRCEventsTableViewController ()
 @property (nonatomic, strong) NSDate *selectedDay;
-@property (nonatomic, strong) NSDateFormatter *dayOfTheWeekFormatter;
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
 @property (nonatomic, strong) NSArray *festivalDates;
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
@@ -30,8 +29,6 @@
 
 - (instancetype) init {
     if (self = [super init]) {
-        self.dayOfTheWeekFormatter = [[NSDateFormatter alloc] init];
-        self.dayOfTheWeekFormatter.dateFormat = @"EEEE";
     }
     return self;
 }
@@ -88,8 +85,6 @@
 }
 
 - (void) setupDayPicker {
-    NSDateFormatter *shortDateFormatter = [[NSDateFormatter alloc] init];
-    shortDateFormatter.dateFormat = @"M/d";
     self.festivalDates = [BRCEventObject datesOfFestival];
     
     NSArray *majorEvents = [BRCEventObject majorEvents];
@@ -97,8 +92,8 @@
     NSParameterAssert(self.festivalDates.count == majorEvents.count);
     NSMutableArray *rowTitles = [NSMutableArray arrayWithCapacity:self.festivalDates.count];
     [self.festivalDates enumerateObjectsUsingBlock:^(NSDate *date, NSUInteger idx, BOOL *stop) {
-        NSString *dayOfWeekString = [self.dayOfTheWeekFormatter stringFromDate:date];
-        NSString *shortDateString = [shortDateFormatter stringFromDate:date];
+        NSString *dayOfWeekString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:date];
+        NSString *shortDateString = [[NSDateFormatter brc_shortDateFormatter] stringFromDate:date];
         NSString *majorEvent = [majorEvents objectAtIndex:idx];
         NSMutableString *pickerString = [NSMutableString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
         if (majorEvent.length) {
@@ -117,7 +112,7 @@
         _selectedDay = [BRCEventObject festivalStartDate];
     }
     
-    NSString *dayString = [self.dayOfTheWeekFormatter stringFromDate:self.selectedDay];
+    NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:self.selectedDay];
     self.navigationItem.leftBarButtonItem.title = dayString;
     [self replaceTimeBasedEventMappings];
     [self updateAllMappings];

@@ -11,6 +11,7 @@
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "MTLValueTransformer.h"
 #import "BRCEventObject_Private.h"
+#import "UIColor+iBurn.h"
 
 NSString * const kBRCStartDateKey = @"kBRCStartDateKey";
 NSString * const kBRCEndDateKey = @"kBRCEndDateKey";
@@ -35,9 +36,10 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
     }
     return DBL_MAX;
 }
-- (BOOL)isOngoing
+
+- (BOOL)isHappeningRightNow
 {
-    if ([self timeIntervalUntilStartDate] < 0 && [self timeIntervalUntilEndDate] > 0) {
+    if ([self hasStarted] && ![self hasEnded]) {
         return YES;
     }
     return NO;
@@ -81,7 +83,7 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
     NSTimeInterval endingSoonTimeThreshold = 15 * 60; // 15 minutes
     // event will end soon
     NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEndDate];
-    if (timeIntervalUntilEventEnds < endingSoonTimeThreshold) { // event ending soon
+    if (timeIntervalUntilEventEnds < endingSoonTimeThreshold && timeIntervalUntilEventEnds > 0) { // event ending soon
         return YES;
     }
     return NO;
@@ -92,9 +94,24 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
  */
 - (BOOL)isStartingSoon {
     NSTimeInterval startingSoonTimeThreshold = 60 * 60; // one hour
-    // event will end soon
     NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStartDate];
-    if (timeIntervalUntilEventStarts < 0 && fabs(timeIntervalUntilEventStarts) < startingSoonTimeThreshold) { // event starting soon
+    if (![self hasStarted] && timeIntervalUntilEventStarts < startingSoonTimeThreshold) { // event starting soon
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)hasStarted {
+    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStartDate];
+    if (timeIntervalUntilEventStarts < 0) { // event started
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)hasEnded {
+    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEndDate];
+    if (timeIntervalUntilEventEnds < 0) { // event ended
         return YES;
     }
     return NO;
@@ -126,6 +143,25 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
         [dates addObject:nextDate];
     }
     return dates;
+}
+
+- (UIColor*) colorForEventStatus {
+    if (self.isStartingSoon) {
+        return [UIColor brc_greenColor];
+    }
+    if (!self.hasStarted) {
+        return [UIColor darkTextColor];
+    }
+    if (self.isEndingSoon) {
+        return [UIColor brc_orangeColor];
+    }
+    if (self.hasEnded) {
+        return [UIColor brc_redColor];
+    }
+    if (self.isHappeningRightNow) {
+        return [UIColor brc_greenColor];
+    }
+    return [UIColor darkTextColor];
 }
 
 @end

@@ -14,6 +14,14 @@
 
 + (NSDateFormatter*) brc_threadSafeGroupDateFormatter;
 
+/** e.g. 4:19 AM */
 + (NSDateFormatter*) brc_timeOnlyDateFormatter;
+
+/** e.g. Monday */
++ (NSDateFormatter*) brc_dayOfWeekDateFormatter;
+
+/** e.g. 8/23 */
++ (NSDateFormatter*) brc_shortDateFormatter;
+
 
 @end

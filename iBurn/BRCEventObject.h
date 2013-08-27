@@ -52,7 +52,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 /**
  *  Whether or not the event is still happening *right now*
  */
-- (BOOL)isOngoing;
+- (BOOL)isHappeningRightNow;
 
 /**
  *  Whether or not the event ends in the next 15 minutes
@@ -63,6 +63,13 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  *  Whether or not the event starts within the next hour
  */
 - (BOOL)isStartingSoon;
+
+/** Whether or not the event has started yet */
+- (BOOL)hasStarted;
+
+/** Whether or not the event has ended */
+- (BOOL)hasEnded;
+
 
 /** first day of events */
 + (NSDate*) festivalStartDate;
@@ -76,5 +83,11 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 
 /** to be used when unsetting isFavorite */
 @property (nonatomic, strong) UILocalNotification *scheduledNotification;
+
+/** 
+ *  Returns color for event status based on isOngoing
+ *  isEndingSoon, and isStartingSoon.
+ */
+- (UIColor*) colorForEventStatus;
 
 @end

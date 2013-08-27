@@ -43,14 +43,36 @@ static NSString * const kBRCGroupDateFormatterKey = @"kBRCGroupDateFormatterKey"
 }
 
 + (NSDateFormatter*) brc_timeOnlyDateFormatter {
-    static NSDateFormatter *sharedDateFormatter = nil;
+    static NSDateFormatter *brc_timeOnlyDateFormatter = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedDateFormatter = [[NSDateFormatter alloc] init];
-        sharedDateFormatter.dateFormat = @"hh:mm a";
-        sharedDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+        brc_timeOnlyDateFormatter = [[NSDateFormatter alloc] init];
+        brc_timeOnlyDateFormatter.dateFormat = @"h:mm a";
+        brc_timeOnlyDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
     });
-    return sharedDateFormatter;
+    return brc_timeOnlyDateFormatter;
+}
+
++ (NSDateFormatter*) brc_dayOfWeekDateFormatter {
+    static NSDateFormatter *brc_dayOfWeekDateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        brc_dayOfWeekDateFormatter = [[NSDateFormatter alloc] init];
+        brc_dayOfWeekDateFormatter.dateFormat = @"EEEE";
+        brc_dayOfWeekDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+    });
+    return brc_dayOfWeekDateFormatter;
+}
+
++ (NSDateFormatter*) brc_shortDateFormatter {
+    static NSDateFormatter *brc_shortDateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        brc_shortDateFormatter = [[NSDateFormatter alloc] init];
+        brc_shortDateFormatter.dateFormat = @"M/d";
+        brc_shortDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+    });
+    return brc_shortDateFormatter;
 }
 
 @end

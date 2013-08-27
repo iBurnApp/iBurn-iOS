@@ -23,13 +23,7 @@
     }
     else if (dataObjectClass == [BRCEventObject class]) {
         BRCEventObject *eventObject = (BRCEventObject*)dataObject;
-        if ([eventObject isEndingSoon]) { // event ending soon
-            tintColor = [UIColor orangeColor];
-        } else if (![eventObject isOngoing]) { // event has ended
-            tintColor = [UIColor redColor];
-        } else {
-            tintColor = [UIColor greenColor]; // event is still happening for a while
-        }
+        tintColor = [eventObject colorForEventStatus];
     }
     else if (dataObjectClass == [BRCCampObject class]) {
         tintColor = [UIColor purpleColor];

@@ -71,6 +71,13 @@
             self.selectionStyle = UITableViewCellSelectionStyleDefault;
             break;
         }
+        case BRCDetailCellInfoTypeSchedule: {
+            NSAttributedString *attributedString = cellInfo.value;
+            self.textLabel.numberOfLines = 0;
+            [self setPlainTextApperance];
+            self.textLabel.attributedText = attributedString;
+            break;
+        }
         case BRCDetailCellInfoTypeRelationship: {
             BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
             self.textLabel.text = relationshipCellInfo.dataObject.title;
