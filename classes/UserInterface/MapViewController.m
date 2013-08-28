@@ -144,12 +144,12 @@
       coord.latitude = [event.latitude floatValue];
       if (coord.latitude < 1) continue;
       coord.longitude = [event.longitude floatValue];
-      RMAnnotation *annotation = [[RMAnnotation alloc]initWithMapView:mapView
+      BurnRMAnnotation *annotation = [[BurnRMAnnotation alloc]initWithMapView:mapView
                                                            coordinate:coord
                                                              andTitle:[event name]];
       annotation.annotationIcon = [UIImage imageNamed:@"green-pin-down.png"];
       annotation.annotationType = @"Event";
-      // annotation.simpleName = event.sim
+      annotation.burningManID = event.bm_id;
       [mapView addAnnotation:annotation];
     }
   });
