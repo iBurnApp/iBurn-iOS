@@ -6,9 +6,9 @@ earthRadius = 20890700.0
 
 class clockCoordinate:
 	def __init__(self,hour,minute,distance):
-		self.hour=int(hour)
-		self.minute=int(minute)
-		self.distance=float(distance)
+		self.hour=int(hour or 0)
+		self.minute=int(minute or 0)
+		self.distance=float(distance or 0)
 
 class geoCoordinate:
 	def __init__(self,lat,lon):
@@ -20,8 +20,12 @@ class geoCoordinate:
 
 class art:
 	def __init__(self,dict):
-		self.name = dict['name']
-		self.clockCoordinate = clockCoordinate(dict['hour'],dict['minute'],dict['distance'])
+		self.name = dict.get('name','')
+		hour = dict.get('hour', 0)
+		minute = dict.get('minute', 0)
+		distance = dict.get('distance', 0)
+
+		self.clockCoordinate = clockCoordinate(hour,minute,distance)
 
 	def jsonDic(self):
 		dic = {}
@@ -62,7 +66,7 @@ class convert:
 
 
 if __name__ == '__main__':
-	center = geoCoordinate(40.78629,-119.20650)
+	center = geoCoordinate(40.78700,-119.20430)
 	converter = convert()
 	clock = open("art-clock-locations.json","r")
 	coordinateArray = json.loads(clock.read())
