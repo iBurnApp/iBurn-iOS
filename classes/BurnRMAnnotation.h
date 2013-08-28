@@ -11,5 +11,5 @@
 @interface BurnRMAnnotation : RMAnnotation
 
 @property(nonatomic, strong) NSNumber* burningManID;
-
+@property(nonatomic, assign) BOOL favorite;
 @end

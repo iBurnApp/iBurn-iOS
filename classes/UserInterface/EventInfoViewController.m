@@ -48,7 +48,7 @@
 
 
 - (ThemeCamp*) getCampForEvent:(Event*)evt {
-  return evt.camp;
+  return [ThemeCamp campForID:[evt.camp_id intValue]];
 }  
 
 
