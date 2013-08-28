@@ -294,7 +294,16 @@ void printTimer(NSString* name) {
 - (NSPersistentStoreCoordinator *) createPersistentStoreCoordinator {
   NSString* dbPath = [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME];
   BOOL success = [[NSFileManager defaultManager] fileExistsAtPath:dbPath];
+  
+  
+  if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
+    NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath]
+                                     stringByAppendingPathComponent:DATABASE_NAME];
     
+    NSError* error = nil;
+    [[NSFileManager defaultManager] copyItemAtPath:databasePathFromApp toPath:dbPath
+                          error:&error];
+  }
 	NSURL *storeURL = [NSURL fileURLWithPath: [privateDocumentsDirectory() stringByAppendingPathComponent: DATABASE_NAME]];
 	
 	NSError *error = nil;
