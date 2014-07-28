@@ -1,6 +1,0 @@
-platform :ios, '5.0'
-pod 'JSONKit',  		'~> 1.5pre'
-pod 'Reachability',		'~> 3.1.0'
-pod 'MapBox', :git => 'git@github.com:trailbehind/mapbox-ios-sdk.git', :commit=>'84ff50b255757da8ea277ac7af5aabc2a7bb9c36'
-pod 'ASIHTTPRequest'
-pod 'AWSiOSSDK'
