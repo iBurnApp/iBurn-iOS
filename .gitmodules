@@ -1,0 +1,3 @@
+[submodule "Submodules/iBurn-Data"]
+	path = Submodules/iBurn-Data
+	url = git@github.com:Burning-Man-Earth/iBurn-Data.git
