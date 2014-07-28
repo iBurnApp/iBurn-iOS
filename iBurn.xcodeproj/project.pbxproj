@@ -15,6 +15,7 @@
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
+		63D270FE19871A2D00204954 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 63D270FD19871A2D00204954 /* iburn.mbtiles */; };
 		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +35,7 @@
 		63CE2A701987140F00F65B01 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
+		63D270FD19871A2D00204954 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = iburn.mbtiles; path = resources/data/iburn.mbtiles; sourceTree = SOURCE_ROOT; };
 		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -89,6 +91,7 @@
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
 				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
+				63D270FA198716C600204954 /* Resources */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
 			path = iBurn;
@@ -112,6 +115,14 @@
 				63D270F81987159A00204954 /* BRCMapViewController.m */,
 			);
 			name = ViewControllers;
+			sourceTree = "<group>";
+		};
+		63D270FA198716C600204954 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				63D270FD19871A2D00204954 /* iburn.mbtiles */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -170,6 +181,7 @@
 			files = (
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
+				63D270FE19871A2D00204954 /* iburn.mbtiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
