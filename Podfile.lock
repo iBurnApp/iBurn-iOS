@@ -1,0 +1,46 @@
+PODS:
+  - CocoaLumberjack (1.6.5.1):
+    - CocoaLumberjack/Core
+    - CocoaLumberjack/Extensions
+  - CocoaLumberjack/Core (1.6.5.1)
+  - CocoaLumberjack/Extensions (1.6.5.1):
+    - CocoaLumberjack/Core
+  - FMDB (2.3):
+    - FMDB/standard
+  - FMDB/common (2.3)
+  - FMDB/standard (2.3):
+    - FMDB/common
+  - GRMustache (6.8.3):
+    - JRSwizzle (~> 1.0)
+  - JRSwizzle (1.0)
+  - Mantle (1.5):
+    - Mantle/extobjc
+  - Mantle/extobjc (1.5)
+  - Mapbox-iOS-SDK (1.2.0):
+    - FMDB (= 2.3)
+    - GRMustache (= 6.8.3)
+    - SMCalloutView (= 2.0)
+  - SMCalloutView (2.0)
+  - YapDatabase (2.4.3):
+    - YapDatabase/standard
+  - YapDatabase/common (2.4.3):
+    - CocoaLumberjack (~> 1.6.3)
+  - YapDatabase/standard (2.4.3):
+    - YapDatabase/common
+
+DEPENDENCIES:
+  - Mantle (~> 1.5)
+  - Mapbox-iOS-SDK (~> 1.2)
+  - YapDatabase (~> 2.4)
+
+SPEC CHECKSUMS:
+  CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
+  FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
+  GRMustache: ab96109b7ba4b9568425bea40d6cd2cdc7582b6c
+  JRSwizzle: 30da7a2c539a4ebf954b16d15f6dd8221c9f6fa5
+  Mantle: c67a7e45e14196ed42b2a7cbb98ff6a9920e6b92
+  Mapbox-iOS-SDK: 961de5e8caba54a093d69b89696816b55f4c0254
+  SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
+  YapDatabase: 2ec54726596299c88e09e899e8f17c15d7f6b18a
+
+COCOAPODS: 0.33.1

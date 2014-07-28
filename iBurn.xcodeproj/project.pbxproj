@@ -14,24 +14,12 @@
 		63CE2A641987140F00F65B01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A631987140F00F65B01 /* main.m */; };
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
-		63CE2A711987140F00F65B01 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A701987140F00F65B01 /* XCTest.framework */; };
-		63CE2A721987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
-		63CE2A731987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
-		63CE2A7B1987140F00F65B01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A791987140F00F65B01 /* InfoPlist.strings */; };
-		63CE2A7D1987140F00F65B01 /* iBurnTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A7C1987140F00F65B01 /* iBurnTests.m */; };
+		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
+		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		63CE2A741987140F00F65B01 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 63CE2A531987140F00F65B01;
-			remoteInfo = iBurn;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
+		1E93B71A95964EB6AFA26954 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A571987140F00F65B01 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63CE2A591987140F00F65B01 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -43,11 +31,10 @@
 		63CE2A661987140F00F65B01 /* BRCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCAppDelegate.h; sourceTree = "<group>"; };
 		63CE2A671987140F00F65B01 /* BRCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCAppDelegate.m; sourceTree = "<group>"; };
 		63CE2A691987140F00F65B01 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		63CE2A6F1987140F00F65B01 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A701987140F00F65B01 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		63CE2A781987140F00F65B01 /* iBurnTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "iBurnTests-Info.plist"; sourceTree = "<group>"; };
-		63CE2A7A1987140F00F65B01 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		63CE2A7C1987140F00F65B01 /* iBurnTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iBurnTests.m; sourceTree = "<group>"; };
+		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
+		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
+		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,16 +45,7 @@
 				63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */,
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		63CE2A6C1987140F00F65B01 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				63CE2A711987140F00F65B01 /* XCTest.framework in Frameworks */,
-				63CE2A731987140F00F65B01 /* UIKit.framework in Frameworks */,
-				63CE2A721987140F00F65B01 /* Foundation.framework in Frameworks */,
+				82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,9 +56,9 @@
 			isa = PBXGroup;
 			children = (
 				63CE2A5D1987140F00F65B01 /* iBurn */,
-				63CE2A761987140F00F65B01 /* iBurnTests */,
 				63CE2A561987140F00F65B01 /* Frameworks */,
 				63CE2A551987140F00F65B01 /* Products */,
+				1E93B71A95964EB6AFA26954 /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -88,7 +66,6 @@
 			isa = PBXGroup;
 			children = (
 				63CE2A541987140F00F65B01 /* iBurn.app */,
-				63CE2A6F1987140F00F65B01 /* iBurnTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -100,6 +77,7 @@
 				63CE2A591987140F00F65B01 /* CoreGraphics.framework */,
 				63CE2A5B1987140F00F65B01 /* UIKit.framework */,
 				63CE2A701987140F00F65B01 /* XCTest.framework */,
+				6E22C90E6C34438BB9A7F78E /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -109,6 +87,7 @@
 			children = (
 				63CE2A661987140F00F65B01 /* BRCAppDelegate.h */,
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
+				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
@@ -126,22 +105,13 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		63CE2A761987140F00F65B01 /* iBurnTests */ = {
+		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				63CE2A7C1987140F00F65B01 /* iBurnTests.m */,
-				63CE2A771987140F00F65B01 /* Supporting Files */,
+				63D270F71987159A00204954 /* BRCMapViewController.h */,
+				63D270F81987159A00204954 /* BRCMapViewController.m */,
 			);
-			path = iBurnTests;
-			sourceTree = "<group>";
-		};
-		63CE2A771987140F00F65B01 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				63CE2A781987140F00F65B01 /* iBurnTests-Info.plist */,
-				63CE2A791987140F00F65B01 /* InfoPlist.strings */,
-			);
-			name = "Supporting Files";
+			name = ViewControllers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -151,9 +121,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 63CE2A801987140F00F65B01 /* Build configuration list for PBXNativeTarget "iBurn" */;
 			buildPhases = (
+				CB570D6C6EA04E4EA9928285 /* Check Pods Manifest.lock */,
 				63CE2A501987140F00F65B01 /* Sources */,
 				63CE2A511987140F00F65B01 /* Frameworks */,
 				63CE2A521987140F00F65B01 /* Resources */,
+				3E19370CC64B49F6B7721F27 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -164,24 +136,6 @@
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
 			productType = "com.apple.product-type.application";
 		};
-		63CE2A6E1987140F00F65B01 /* iBurnTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 63CE2A831987140F00F65B01 /* Build configuration list for PBXNativeTarget "iBurnTests" */;
-			buildPhases = (
-				63CE2A6B1987140F00F65B01 /* Sources */,
-				63CE2A6C1987140F00F65B01 /* Frameworks */,
-				63CE2A6D1987140F00F65B01 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				63CE2A751987140F00F65B01 /* PBXTargetDependency */,
-			);
-			name = iBurnTests;
-			productName = iBurnTests;
-			productReference = 63CE2A6F1987140F00F65B01 /* iBurnTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -191,11 +145,6 @@
 				CLASSPREFIX = BRC;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Burning Man Earth";
-				TargetAttributes = {
-					63CE2A6E1987140F00F65B01 = {
-						TestTargetID = 63CE2A531987140F00F65B01;
-					};
-				};
 			};
 			buildConfigurationList = 63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -210,7 +159,6 @@
 			projectRoot = "";
 			targets = (
 				63CE2A531987140F00F65B01 /* iBurn */,
-				63CE2A6E1987140F00F65B01 /* iBurnTests */,
 			);
 		};
 /* End PBXProject section */
@@ -225,15 +173,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		63CE2A6D1987140F00F65B01 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3E19370CC64B49F6B7721F27 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				63CE2A7B1987140F00F65B01 /* InfoPlist.strings in Resources */,
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
-/* End PBXResourcesBuildPhase section */
+		CB570D6C6EA04E4EA9928285 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		63CE2A501987140F00F65B01 /* Sources */ = {
@@ -241,41 +214,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
+				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		63CE2A6B1987140F00F65B01 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				63CE2A7D1987140F00F65B01 /* iBurnTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		63CE2A751987140F00F65B01 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 63CE2A531987140F00F65B01 /* iBurn */;
-			targetProxy = 63CE2A741987140F00F65B01 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		63CE2A601987140F00F65B01 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				63CE2A611987140F00F65B01 /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		63CE2A791987140F00F65B01 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				63CE2A7A1987140F00F65B01 /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -357,6 +307,7 @@
 		};
 		63CE2A811987140F00F65B01 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1E93B71A95964EB6AFA26954 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -370,6 +321,7 @@
 		};
 		63CE2A821987140F00F65B01 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1E93B71A95964EB6AFA26954 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -378,46 +330,6 @@
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
-			};
-			name = Release;
-		};
-		63CE2A841987140F00F65B01 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = "iBurnTests/iBurnTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Debug;
-		};
-		63CE2A851987140F00F65B01 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
-				INFOPLIST_FILE = "iBurnTests/iBurnTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;
 		};
@@ -440,14 +352,7 @@
 				63CE2A821987140F00F65B01 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-		};
-		63CE2A831987140F00F65B01 /* Build configuration list for PBXNativeTarget "iBurnTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				63CE2A841987140F00F65B01 /* Debug */,
-				63CE2A851987140F00F65B01 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
