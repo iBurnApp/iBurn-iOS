@@ -140,13 +140,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath
 {
     __block BRCDataObject *dataObject = nil;
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        [transaction enumerateRowsInAllCollectionsUsingBlock:^(NSString *collection, NSString *key, id object, id metadata, BOOL *stop) {
-            dataObject = (BRCDataObject *)object;
-            *stop = YES;
-        }];
+    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionName]];
+        dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
     }];
-    
     return dataObject;
 }
 
@@ -155,11 +152,7 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilteredTableViewCellIdentifier forIndexPath:indexPath];
-    __block BRCDataObject *dataObject = nil;
-    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionName]];
-        dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
-    }];
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath];
     cell.textLabel.text = dataObject.title;
     cell.detailTextLabel.text = dataObject.detailDescription;
     return cell;
@@ -175,24 +168,12 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     return [self.activeMappings numberOfItemsInSection:section];
 }
 
-////// Optional //////
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath];
+    BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+    [self.navigationController pushViewController:detailVC animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [self.navigationController pushViewController:[[BRCDetailViewController alloc] initWithDataObject:[self dataObjectForIndexPath:indexPath]]  animated:YES];
-}
-
-- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
-{
-    NSMutableArray *titles = [[[UILocalizedIndexedCollation currentCollation] sectionIndexTitles] mutableCopy];
-    [titles insertObject:UITableViewIndexSearch atIndex:0];
-    return titles;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
-{
-    return [[UILocalizedIndexedCollation currentCollation] sectionForSectionIndexTitleAtIndex:index];
 }
 
 - (void)yapDatabaseModified:(NSNotification *)notification
