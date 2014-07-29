@@ -19,6 +19,13 @@ NSString *const bundledTileSourceName = @"iburn";
 
 @implementation BRCMapViewController
 
+- (instancetype) init {
+    if (self = [super init]) {
+        self.title = @"Map";
+    }
+    return self;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];

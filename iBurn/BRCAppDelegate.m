@@ -8,6 +8,9 @@
 
 #import "BRCAppDelegate.h"
 #import "BRCMapViewController.h"
+#import "BRCCampTableViewController.h"
+#import "BRCArtTableViewController.h"
+#import "BRCEventsTableViewController.h"
 
 @implementation BRCAppDelegate
 
@@ -16,11 +19,22 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
     BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
+    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
     
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
+    BRCArtTableViewController *artTableVC = [[BRCArtTableViewController alloc] init];
+    UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
+    
+    BRCCampTableViewController *campTableVC = [[BRCCampTableViewController alloc] init];
+    UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
+    
+    BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] init];
+    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
+    
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
+    tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
     
     self.window.backgroundColor = [UIColor whiteColor];
-    self.window.rootViewController = navigationController;
+    self.window.rootViewController = tabBarController;
     
     [self.window makeKeyAndVisible];
     return YES;
