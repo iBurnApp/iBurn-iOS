@@ -10,8 +10,6 @@
 
 @interface BRCDataImporter : NSObject
 
-- (void) loadArtDataFromURL:(NSURL*)artURL completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
-- (void) loadCampDataFromURL:(NSURL*)campsURL completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
-- (void) loadEventsDataFromURL:(NSURL*)eventsURL completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
+- (void) loadDataFromURL:(NSURL*)dataURL dataClass:(Class)dataClass completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
 
 @end

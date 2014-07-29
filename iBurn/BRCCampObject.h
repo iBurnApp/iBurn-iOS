@@ -10,4 +10,6 @@
 
 @interface BRCCampObject : BRCDataObject
 
+@property (nonatomic, strong, readonly) NSString *hometown;
+
 @end

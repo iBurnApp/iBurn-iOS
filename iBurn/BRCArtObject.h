@@ -10,4 +10,8 @@
 
 @interface BRCArtObject : BRCDataObject
 
+@property (nonatomic, strong, readonly) NSString *artistName;
+@property (nonatomic, strong, readonly) NSString *artistLocation;
+@property (nonatomic, strong, readonly) NSURL *imageURL;
+
 @end

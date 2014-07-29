@@ -59,7 +59,7 @@
 
 - (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
 {
-    self.segmentedControl.selectedSegmentIndex;
+    //self.segmentedControl.selectedSegmentIndex;
 }
 
 #pragma - mark UITableViewDataSource Methods

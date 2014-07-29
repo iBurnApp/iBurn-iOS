@@ -7,20 +7,21 @@
 //
 
 #import "BRCDataImporter.h"
+#import "BRCDatabaseManager.h"
+#import "MTLJSONAdapter.h"
 
 @implementation BRCDataImporter
 
-- (void) loadArtDataFromURL:(NSURL*)artURL completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
+- (void) loadDataFromURL:(NSURL*)dataURL dataClass:(Class)dataClass completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSData *jsonData = [NSData dataWithContentsOfURL:dataURL];
+        NSError *error = nil;
+        NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        NSArray *objects = [MTLJSONAdapter modelsOfClass:dataClass fromJSONArray:jsonObjects error:&error];
+        NSLog(@"objects count: %d", (int)objects.count);
+    });
     
+    //[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection
 }
-
-- (void) loadCampDataFromURL:(NSURL*)campsURL completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
-    
-}
-
-- (void) loadEventsDataFromURL:(NSURL*)eventsURL completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
-    
-}
-
 
 @end
