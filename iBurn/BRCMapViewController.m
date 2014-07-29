@@ -31,6 +31,10 @@ NSString *const bundledTileSourceName = @"iburn";
     
     self.mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:self.mapView];
+    
+    RMUserTrackingBarButtonItem *userTrackingBarButtonItem = [[RMUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
+    self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
+    
 }
 
 
