@@ -77,12 +77,18 @@
         //check if value exists
         
         if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
-            if ([object valueForKey:cellInfo.key] && ![[object valueForKey:cellInfo.key] isEqual:[NSNull null]]) {
+            if ([object valueForKey:cellInfo.key] != nil && ![[object valueForKey:cellInfo.key] isEqual:[NSNull null]]) {
                 
                 //if value is a string check that it has an length
                 if ([[object valueForKey:cellInfo.key] isKindOfClass:[NSString class]]) {
                     NSString *valueString = [object valueForKey:cellInfo.key];
                     if (![valueString length]) {
+                        return;
+                    }
+                }
+                if ([[object valueForKey:cellInfo.key] isKindOfClass:[NSURL class]]) {
+                    NSURL *valueURL = [object valueForKey:cellInfo.key];
+                    if (![[valueURL absoluteString] length]) {
                         return;
                     }
                 }

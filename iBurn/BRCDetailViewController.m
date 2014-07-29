@@ -106,28 +106,38 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
         BRCDetailCellInfo *cellInfo = self.detailCellInfoArray[indexPath.section];
         
         switch (cellInfo.cellType) {
-            case BRCDetailCellInfoTypeText:
+            case BRCDetailCellInfoTypeText: {
                 cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
                 cell.textLabel.text = cellInfo.value;
+                cell.textLabel.textColor = [UIColor blackColor];
                 cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
                 cell.textLabel.numberOfLines = 0;
                 
                 break;
-            case BRCDetailCellInfoTypeURL:
+            }
+            case BRCDetailCellInfoTypeURL: {
                 cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
-                cell.textLabel.text = @"URL";
+                cell.textLabel.textColor = [UIColor blueColor];
+                NSURL *url = cellInfo.value;
+                cell.textLabel.text = [url absoluteString];
                 
                 break;
-            case BRCDetailCellInfoTypeCoordinates:
+
+            }
+            case BRCDetailCellInfoTypeCoordinates: {
                 cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
                 cell.textLabel.text = @"Coordinates";
                 
                 break;
+            }
                 
-            case BRCDetailCellInfoTypeRelationship:
+                
+            case BRCDetailCellInfoTypeRelationship: {
                 cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
                 cell.textLabel.text = @"Relationshiip";
                 break;
+            }
+                
         }
         
         

@@ -20,7 +20,7 @@ typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
 @interface BRCDetailCellInfo : NSObject
 
 @property (nonatomic, strong) NSString *displayName;
-@property (nonatomic, strong) NSString *value;
+@property (nonatomic, strong) id value;
 
 @property (nonatomic) BRCDetailCellInfoType cellType;
 
