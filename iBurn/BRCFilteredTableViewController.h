@@ -8,6 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRCFilteredTableViewController : UIViewController
+@interface BRCFilteredTableViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+
+@property (nonatomic, strong, readonly) UITableView *tableView;
+@property (nonatomic, strong, readonly) UISegmentedControl *segmentedControl;
+
+- (instancetype)initWithItems:(NSArray *)items;
 
 @end
