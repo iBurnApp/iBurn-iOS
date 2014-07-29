@@ -15,7 +15,7 @@
 #import "BRCDataImporter.h"
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
-#import "BRCEventObject.h"
+#import "BRCRecurringEventObject.h"
 
 @implementation BRCAppDelegate
 
@@ -88,7 +88,7 @@
 
     NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
                             @[campsDataURL, [BRCCampObject class]],
-                            @[eventsDataURL, [BRCEventObject class]]];
+                            @[eventsDataURL, [BRCRecurringEventObject class]]];
     
     [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
         NSURL *url = [obj firstObject];

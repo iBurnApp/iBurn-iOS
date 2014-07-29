@@ -9,6 +9,7 @@
 #import "BRCDataObject.h"
 #import "MTLValueTransformer.h"
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
+#import "BRCDataObject_Private.h"
 
 @interface BRCDataObject()
 @property (nonatomic, readonly) CLLocationDegrees latitude;

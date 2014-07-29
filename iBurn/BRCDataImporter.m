@@ -10,6 +10,7 @@
 #import "BRCDatabaseManager.h"
 #import "MTLJSONAdapter.h"
 #import "BRCDataObject.h"
+#import "BRCRecurringEventObject.h"
 
 @implementation BRCDataImporter
 
@@ -37,13 +38,22 @@
         }
         [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
-                BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
-                if (existingObject) {
-                    existingObject = [existingObject copy];
-                    [existingObject mergeValuesForKeysFromModel:object];
-                    object = existingObject;
+                // We need to duplicate the recurring events to make our lives easier later
+                if ([object isKindOfClass:[BRCRecurringEventObject class]]) {
+                    BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
+                    NSArray *events = [recurringEvent eventObjects];
+                    [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
+                        [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
+                    }];
+                } else { // Art and Camps
+                    BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
+                    if (existingObject) {
+                        existingObject = [existingObject copy];
+                        [existingObject mergeValuesForKeysFromModel:object];
+                        object = existingObject;
+                    }
+                    [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
                 }
-                [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
             }];
         } completionBlock:^{
             if (completionBlock) {
