@@ -7,9 +7,10 @@
 //
 
 #import "MTLModel.h"
+#import "MTLJSONAdapter.h"
 #import <CoreLocation/CoreLocation.h>
 
-@interface BRCDataObject : MTLModel
+@interface BRCDataObject : MTLModel <MTLJSONSerializing>
 
 
 @property (nonatomic, strong, readonly) NSString *title;
@@ -39,5 +40,12 @@
 @property (nonatomic, strong, readonly) NSNumber *playaHour;
 @property (nonatomic, strong, readonly) NSNumber *playaMinute;
 @property (nonatomic, strong, readonly) NSString *playaStreet;
+
+/**
+ *  The YapDatabase collection of this class
+ *
+ *  @return collection for this class
+ */
++ (NSString*) collection;
 
 @end

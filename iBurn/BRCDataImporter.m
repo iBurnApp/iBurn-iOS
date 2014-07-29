@@ -9,19 +9,50 @@
 #import "BRCDataImporter.h"
 #import "BRCDatabaseManager.h"
 #import "MTLJSONAdapter.h"
+#import "BRCDataObject.h"
 
 @implementation BRCDataImporter
+
+- (void) handleError:(NSError*)error completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
+    if (completionBlock) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completionBlock(NO, error);
+        });
+    }
+};
 
 - (void) loadDataFromURL:(NSURL*)dataURL dataClass:(Class)dataClass completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSData *jsonData = [NSData dataWithContentsOfURL:dataURL];
         NSError *error = nil;
         NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        if (error) {
+            [self handleError:error completionBlock:completionBlock];
+            return;
+        }
         NSArray *objects = [MTLJSONAdapter modelsOfClass:dataClass fromJSONArray:jsonObjects error:&error];
-        NSLog(@"objects count: %d", (int)objects.count);
+        if (error) {
+            [self handleError:error completionBlock:completionBlock];
+            return;
+        }
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
+                BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
+                if (existingObject) {
+                    existingObject = [existingObject copy];
+                    [existingObject mergeValuesForKeysFromModel:object];
+                    object = existingObject;
+                }
+                [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
+            }];
+        } completionBlock:^{
+            if (completionBlock) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionBlock(YES, nil);
+                });
+            }
+        }];
     });
-    
-    //[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection
 }
 
 @end

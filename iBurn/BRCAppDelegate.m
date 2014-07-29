@@ -12,12 +12,25 @@
 #import "BRCArtTableViewController.h"
 #import "BRCEventsTableViewController.h"
 #import "BRCDatabaseManager.h"
+#import "BRCDataImporter.h"
+#import "BRCArtObject.h"
 
 @implementation BRCAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [[BRCDatabaseManager sharedInstance] setupDatabaseWithName:@"iBurn.sqlite"];
+    
+    BRCDataImporter *dataImporter = [[BRCDataImporter alloc] init];
+    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art_data" withExtension:@"json"];
+    
+    [dataImporter loadDataFromURL:artDataURL dataClass:[BRCArtObject class] completionBlock:^(BOOL success, NSError *error) {
+        if (!success) {
+            NSLog(@"Error importing data: %@", error);
+        } else {
+            NSLog(@"Imported art data successfully");
+        }
+    }];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
