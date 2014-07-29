@@ -10,8 +10,8 @@
 #import "YapDatabaseRelationship.h"
 #import "YapDatabaseView.h"
 #import "BRCArtObject.h"
-
-NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionName";
+#import "BRCEventObject.h"
+#import "BRCCampObject.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -66,7 +66,15 @@ NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionN
     
     [self.mainThreadReadOnlyDatabaseConnection beginLongLivedReadTransaction];
     
-    [self registerArtDatabaseView];
+    NSArray *viewsToRegister = @[[BRCArtObject class],
+                                 [BRCCampObject class],
+                                 [BRCEventObject class]];
+    
+    [viewsToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
+        [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+        [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName];
+    }];
+    
 
     if (self.database) {
         return YES;
@@ -88,10 +96,11 @@ NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionN
 }
 
 
-- (void)registerArtDatabaseView
+- (void)registerDatabaseViewForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType
 {
-    YapDatabaseView *artView = [self.database registeredExtension:BRCArtDatabaseViewExtensionName];
-    if (artView) {
+    NSString *viewName = [[self class] extensionNameForClass:viewClass extensionType:extensionType];
+    YapDatabaseView *view = [self.database registeredExtension:viewName];
+    if (view) {
         return;
     }
     
@@ -105,9 +114,9 @@ NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionN
     groupingBlockType = YapDatabaseViewBlockTypeWithKey;
     groupingBlock = ^NSString *(NSString *collection, NSString *key){
         
-        if ([collection isEqualToString:[BRCArtObject collection]])
+        if ([collection isEqualToString:[viewClass collection]])
         {
-            return [BRCArtObject collection];
+            return [viewClass collection];
         }
         
         return nil;
@@ -116,12 +125,20 @@ NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionN
     sortingBlockType = YapDatabaseViewBlockTypeWithObject;
     sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                      NSString *collection2, NSString *key2, id obj2){
-        if ([group isEqualToString:[BRCArtObject collection]]) {
-            if ([obj1 isKindOfClass:[BRCArtObject class]] && [obj1 isKindOfClass:[BRCArtObject class]]) {
-                BRCArtObject *art1 = (BRCArtObject *)obj1;
-                BRCArtObject *art2 = (BRCArtObject *)obj2;
+        if ([group isEqualToString:[viewClass collection]]) {
+            if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
+                BRCDataObject *data1 = (BRCDataObject *)obj1;
+                BRCDataObject *data2 = (BRCDataObject *)obj2;
                 
-                return [art1.title compare:art2.title options:NSCaseInsensitiveSearch];
+                if (extensionType == BRCDatabaseViewExtensionTypeName) {
+                    return [data1.title compare:data2.title options:NSCaseInsensitiveSearch];
+                } else if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
+                    if (data1.distanceFromUser > data2.distanceFromUser) {
+                        return NSOrderedAscending;
+                    } else {
+                        return NSOrderedDescending;
+                    }
+                }
             }
         }
         return NSOrderedSame;
@@ -129,7 +146,7 @@ NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionN
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
     options.isPersistent = YES;
-    options.allowedCollections = [NSSet setWithObject:[BRCArtObject collection]];
+    options.allowedCollections = [NSSet setWithObject:[viewClass collection]];
     
     YapDatabaseView *databaseView =
     [[YapDatabaseView alloc] initWithGroupingBlock:groupingBlock
@@ -138,9 +155,30 @@ NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionN
                                   sortingBlockType:sortingBlockType
                                         versionTag:@"1"
                                            options:options];
-    [self.database asyncRegisterExtension:databaseView withName:BRCArtDatabaseViewExtensionName completionBlock:^(BOOL ready) {
-        NSLog(@"art view ready");
+    [self.database asyncRegisterExtension:databaseView withName:viewName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready", viewName);
     }];
+}
+
++ (NSString*) stringForExtensionType:(BRCDatabaseViewExtensionType)extensionType {
+    switch (extensionType) {
+        case BRCDatabaseViewExtensionTypeName:
+            return @"Name";
+            break;
+        case BRCDatabaseViewExtensionTypeDistance:
+            return @"Distance";
+            break;
+        default:
+            return nil;
+            break;
+    }
+}
+
++ (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    NSString *classString = NSStringFromClass(extensionClass);
+    NSString *extensionString = [self stringForExtensionType:extensionType];
+    NSParameterAssert(extensionString != nil);
+    return [NSString stringWithFormat:@"%@%@ExtensionView", classString, extensionString];
 }
 
 @end

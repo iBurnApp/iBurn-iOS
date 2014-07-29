@@ -42,7 +42,7 @@ static NSString *const BRCArtTableViewCellIdentifier = @"BRCArtTableViewCellIden
     self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
     
-    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[BRCArtObject collection]] view:BRCArtDatabaseViewExtensionName];
+    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[BRCArtObject collection]] view:[BRCDatabaseManager extensionNameForClass:[BRCArtObject class] extensionType:BRCDatabaseViewExtensionTypeName]];
 
     [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction){
         // One-time initialization
@@ -60,7 +60,7 @@ static NSString *const BRCArtTableViewCellIdentifier = @"BRCArtTableViewCellIden
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCArtTableViewCellIdentifier forIndexPath:indexPath];
     __block BRCArtObject *artObject = nil;
     [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        artObject = [[transaction extension:BRCArtDatabaseViewExtensionName] objectAtIndexPath:indexPath withMappings:self.mappings];
+        artObject = [[transaction extension:[BRCDatabaseManager extensionNameForClass:[BRCArtObject class] extensionType:BRCDatabaseViewExtensionTypeName]] objectAtIndexPath:indexPath withMappings:self.mappings];
     }];
     cell.textLabel.text = artObject.title;
     cell.detailTextLabel.text = artObject.detailDescription;
@@ -92,7 +92,7 @@ static NSString *const BRCArtTableViewCellIdentifier = @"BRCArtTableViewCellIden
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
     
-    [[self.databaseConnection ext:BRCArtDatabaseViewExtensionName] getSectionChanges:&sectionChanges
+    [[self.databaseConnection ext:[BRCDatabaseManager extensionNameForClass:[BRCArtObject class] extensionType:BRCDatabaseViewExtensionTypeName]] getSectionChanges:&sectionChanges
                                                   rowChanges:&rowChanges
                                             forNotifications:notifications
                                                 withMappings:self.mappings];

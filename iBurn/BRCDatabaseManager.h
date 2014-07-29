@@ -9,7 +9,10 @@
 #import <Foundation/Foundation.h>
 #import "YapDatabase.h"
 
-extern NSString *const BRCArtDatabaseViewExtensionName;
+typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
+    BRCDatabaseViewExtensionTypeName,
+    BRCDatabaseViewExtensionTypeDistance
+};
 
 @interface BRCDatabaseManager : NSObject
 
@@ -20,5 +23,7 @@ extern NSString *const BRCArtDatabaseViewExtensionName;
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;
 
 + (instancetype) sharedInstance;
+
++ (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
 
 @end
