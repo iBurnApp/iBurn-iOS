@@ -17,6 +17,6 @@
 @property (nonatomic, strong) Class viewClass;
 
 // Override this in subclasses
-- (NSArray *) segmentedControlTitles;
+- (NSArray *) segmentedControlInfo;
 
 @end

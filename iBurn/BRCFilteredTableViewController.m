@@ -43,7 +43,9 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 {
     [super viewDidLoad];
     
-    [[self segmentedControlTitles] enumerateObjectsUsingBlock:^(NSString *title, NSUInteger idx, BOOL *stop) {
+    NSArray *segmentedControlInfo = [self segmentedControlInfo];
+    [segmentedControlInfo enumerateObjectsUsingBlock:^(NSArray *infoArray, NSUInteger idx, BOOL *stop) {
+        NSString *title = [infoArray firstObject];
         [self.segmentedControl insertSegmentWithTitle:title atIndex:idx animated:NO];
     }];
     self.segmentedControl.selectedSegmentIndex = 0;
@@ -88,8 +90,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
                                                object:self.databaseConnection.database];
 }
 
-- (NSArray *) segmentedControlTitles {
-    return @[@"Name", @"Distance", @"Favorites"];
+- (NSArray *) segmentedControlInfo {
+    return @[@[@"Name", @(BRCDatabaseViewExtensionTypeName)],
+             @[@"Distance", @(BRCDatabaseViewExtensionTypeDistance)],
+             @[@"Favorites", @(BRCDatabaseViewExtensionTypeUnknown)]];
 }
 
 - (void)setupConstraints
@@ -117,17 +121,16 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 }
 
 - (BRCDatabaseViewExtensionType) extensionTypeForSelectedSegmentIndex {
-    if (self.segmentedControl.selectedSegmentIndex == 0) {
-        return BRCDatabaseViewExtensionTypeName;
-    } else if (self.segmentedControl.selectedSegmentIndex == 1) {
-        return BRCDatabaseViewExtensionTypeDistance;
-    } else { // else if favorites, etc
-        return BRCDatabaseViewExtensionTypeUnknown;
-    }
+    NSArray *infoArray = [[self segmentedControlInfo] objectAtIndex:self.segmentedControl.selectedSegmentIndex];
+    BRCDatabaseViewExtensionType extensionType = [[infoArray lastObject] unsignedIntegerValue];
+    return extensionType;
 }
 
 - (NSString*) activeExtensionName {
     BRCDatabaseViewExtensionType activeExtensionType = [self extensionTypeForSelectedSegmentIndex];
+    if (activeExtensionType == BRCDatabaseViewExtensionTypeUnknown) {
+        return nil;
+    }
     return [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:activeExtensionType];
 }
 
@@ -182,6 +185,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     // End & Re-Begin the long-lived transaction atomically.
     // Also grab all the notifications for all the commits that I jump.
     // If the UI is a bit backed up, I may jump multiple commits.
+    NSString *activeExtensionName = [self activeExtensionName];
+    if (!activeExtensionName) {
+        return;
+    }
     
     NSArray *notifications = [self.databaseConnection beginLongLivedReadTransaction];
     
@@ -191,11 +198,14 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
     
-    [[self.databaseConnection ext:[self activeExtensionName]] getSectionChanges:&sectionChanges
-                                                                     rowChanges:&rowChanges
-                                                               forNotifications:notifications
-                                                                   withMappings:self.activeMappings];
+    YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:activeExtensionName];
+    YapDatabaseViewMappings *activeMappings = self.activeMappings;
     
+    [viewConnection getSectionChanges:&sectionChanges
+                           rowChanges:&rowChanges
+                     forNotifications:notifications
+                         withMappings:activeMappings];
+
     // No need to update mappings.
     // The above method did it automatically.
     
