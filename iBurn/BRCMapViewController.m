@@ -30,7 +30,8 @@ NSString *const bundledTileSourceName = @"iburn";
 {
     [super viewDidLoad];
     
-    self.mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:[self bundledTileSource]];
+    RMMBTilesSource *tileSource = [self bundledTileSource];
+    self.mapView = [[RMMapView alloc] initWithFrame:self.view.bounds andTilesource:tileSource];
     self.mapView.adjustTilesForRetinaDisplay = YES;
     self.mapView.hideAttribution = YES;
     self.mapView.showLogoBug = NO;
@@ -42,8 +43,14 @@ NSString *const bundledTileSourceName = @"iburn";
     RMUserTrackingBarButtonItem *userTrackingBarButtonItem = [[RMUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
     self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
     
+    [self zoomToFullTileSource:tileSource animated:NO];
 }
 
+- (void)zoomToFullTileSource:(RMMBTilesSource *)tileSource animated:(BOOL)animated
+{
+    RMSphericalTrapezium bounds = [tileSource latitudeLongitudeBoundingBox];
+    [self.mapView zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:animated];
+}
 
 - (RMMBTilesSource *)bundledTileSource
 {
