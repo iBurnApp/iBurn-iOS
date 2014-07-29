@@ -17,6 +17,10 @@
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		63D270FE19871A2D00204954 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 63D270FD19871A2D00204954 /* iburn.mbtiles */; };
 		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
+		D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */; };
+		D994155A19871D7200D245C7 /* BRCArtTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155919871D7200D245C7 /* BRCArtTableViewController.m */; };
+		D994155D19871D8A00D245C7 /* BRCCampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155C19871D8A00D245C7 /* BRCCampTableViewController.m */; };
+		D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156019871E8400D245C7 /* BRCEventsTableViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +41,14 @@
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
 		63D270FD19871A2D00204954 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = iburn.mbtiles; path = resources/data/iburn.mbtiles; sourceTree = SOURCE_ROOT; };
 		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCFilteredTableViewController.h; sourceTree = "<group>"; };
+		D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCFilteredTableViewController.m; sourceTree = "<group>"; };
+		D994155819871D7200D245C7 /* BRCArtTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtTableViewController.h; sourceTree = "<group>"; };
+		D994155919871D7200D245C7 /* BRCArtTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtTableViewController.m; sourceTree = "<group>"; };
+		D994155B19871D8A00D245C7 /* BRCCampTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCCampTableViewController.h; sourceTree = "<group>"; };
+		D994155C19871D8A00D245C7 /* BRCCampTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCCampTableViewController.m; sourceTree = "<group>"; };
+		D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventsTableViewController.h; sourceTree = "<group>"; };
+		D994156019871E8400D245C7 /* BRCEventsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventsTableViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +123,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D994155E19871D9000D245C7 /* Filtered Tables */,
 				63D270F71987159A00204954 /* BRCMapViewController.h */,
 				63D270F81987159A00204954 /* BRCMapViewController.m */,
 			);
@@ -123,6 +136,21 @@
 				63D270FD19871A2D00204954 /* iburn.mbtiles */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		D994155E19871D9000D245C7 /* Filtered Tables */ = {
+			isa = PBXGroup;
+			children = (
+				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
+				D994156019871E8400D245C7 /* BRCEventsTableViewController.m */,
+				D994155819871D7200D245C7 /* BRCArtTableViewController.h */,
+				D994155919871D7200D245C7 /* BRCArtTableViewController.m */,
+				D994155B19871D8A00D245C7 /* BRCCampTableViewController.h */,
+				D994155C19871D8A00D245C7 /* BRCCampTableViewController.m */,
+				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
+				D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */,
+			);
+			name = "Filtered Tables";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -225,8 +253,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */,
+				D994155A19871D7200D245C7 /* BRCArtTableViewController.m in Sources */,
+				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
+				D994155D19871D8A00D245C7 /* BRCCampTableViewController.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -326,6 +358,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -340,6 +373,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
