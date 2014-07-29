@@ -16,7 +16,7 @@
 
 - (id)init
 {
-    self = [super init];
+    self = [self initWithItems:@[@"Time",@"Name",@"Distance",@"Favorites"]];
     if (self) {
         self.title = @"Events";
     }

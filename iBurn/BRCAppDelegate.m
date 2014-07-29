@@ -20,15 +20,19 @@
 
     BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
+    mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
     BRCArtTableViewController *artTableVC = [[BRCArtTableViewController alloc] init];
     UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
+    artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
     
     BRCCampTableViewController *campTableVC = [[BRCCampTableViewController alloc] init];
     UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
+    campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
     BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] init];
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
+    eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
     tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
