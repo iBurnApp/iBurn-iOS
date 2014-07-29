@@ -7,8 +7,9 @@
 //
 
 #import "MTLModel.h"
+#import "MTLJSONAdapter.h"
 
-@interface BRCEventTime : MTLModel
+@interface BRCEventTime : MTLModel <MTLJSONSerializing>
 
 @property (nonatomic, strong, readonly) NSDate *startDate;
 @property (nonatomic, strong, readonly) NSDate *endDate;

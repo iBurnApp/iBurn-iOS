@@ -34,8 +34,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 /**
  *  NSArray of BRCEventTime objects
  */
-@property (nonatomic, strong, readonly) NSArray *times;
-
+@property (nonatomic, strong, readonly) NSArray *eventTimes;
 
 @property (nonatomic, readonly) BOOL isAllDay;
 
