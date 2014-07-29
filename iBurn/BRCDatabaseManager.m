@@ -8,6 +8,10 @@
 
 #import "BRCDatabaseManager.h"
 #import "YapDatabaseRelationship.h"
+#import "YapDatabaseView.h"
+#import "BRCArtObject.h"
+
+NSString *const BRCArtDatabaseViewExtensionName = @"BRCArtDatabaseViewExtensionName";
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -61,6 +65,8 @@
     self.readWriteDatabaseConnection.name = @"readWriteDatabaseConnection";
     
     [self.mainThreadReadOnlyDatabaseConnection beginLongLivedReadTransaction];
+    
+    [self registerArtDatabaseView];
 
     if (self.database) {
         return YES;
@@ -79,6 +85,62 @@
     });
     
     return databaseManager;
+}
+
+
+- (void)registerArtDatabaseView
+{
+    YapDatabaseView *artView = [self.database registeredExtension:BRCArtDatabaseViewExtensionName];
+    if (artView) {
+        return;
+    }
+    
+    
+    YapDatabaseViewBlockType groupingBlockType;
+    YapDatabaseViewGroupingWithKeyBlock groupingBlock;
+    
+    YapDatabaseViewBlockType sortingBlockType;
+    YapDatabaseViewSortingWithObjectBlock sortingBlock;
+    
+    groupingBlockType = YapDatabaseViewBlockTypeWithKey;
+    groupingBlock = ^NSString *(NSString *collection, NSString *key){
+        
+        if ([collection isEqualToString:[BRCArtObject collection]])
+        {
+            return [BRCArtObject collection];
+        }
+        
+        return nil;
+    };
+    
+    sortingBlockType = YapDatabaseViewBlockTypeWithObject;
+    sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+                     NSString *collection2, NSString *key2, id obj2){
+        if ([group isEqualToString:[BRCArtObject collection]]) {
+            if ([obj1 isKindOfClass:[BRCArtObject class]] && [obj1 isKindOfClass:[BRCArtObject class]]) {
+                BRCArtObject *art1 = (BRCArtObject *)obj1;
+                BRCArtObject *art2 = (BRCArtObject *)obj2;
+                
+                return [art1.title compare:art2.title options:NSCaseInsensitiveSearch];
+            }
+        }
+        return NSOrderedSame;
+    };
+    
+    YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
+    options.isPersistent = YES;
+    options.allowedCollections = [NSSet setWithObject:[BRCArtObject collection]];
+    
+    YapDatabaseView *databaseView =
+    [[YapDatabaseView alloc] initWithGroupingBlock:groupingBlock
+                                 groupingBlockType:groupingBlockType
+                                      sortingBlock:sortingBlock
+                                  sortingBlockType:sortingBlockType
+                                        versionTag:@"1"
+                                           options:options];
+    [self.database asyncRegisterExtension:databaseView withName:BRCArtDatabaseViewExtensionName completionBlock:^(BOOL ready) {
+        NSLog(@"art view ready");
+    }];
 }
 
 @end
