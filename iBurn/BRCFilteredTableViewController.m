@@ -13,6 +13,7 @@
 #import "YapDatabase.h"
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
+#import "BRCDetailViewController.h"
 
 static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableViewCellIdentifier";
 
@@ -136,6 +137,19 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     [self.tableView reloadData];
 }
 
+- (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath
+{
+    __block BRCDataObject *dataObject = nil;
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [transaction enumerateRowsInAllCollectionsUsingBlock:^(NSString *collection, NSString *key, id object, id metadata, BOOL *stop) {
+            dataObject = (BRCDataObject *)object;
+            *stop = YES;
+        }];
+    }];
+    
+    return dataObject;
+}
+
 #pragma - mark UITableViewDataSource Methods
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -163,9 +177,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 
 ////// Optional //////
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    [self.navigationController pushViewController:[[BRCDetailViewController alloc] initWithDataObject:[self dataObjectForIndexPath:indexPath]]  animated:YES];
 }
 
 - (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
+		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
+		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -34,6 +37,12 @@
 
 /* Begin PBXFileReference section */
 		1E93B71A95964EB6AFA26954 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
+		6322830019881DDE009E472B /* BRCDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailViewController.m; sourceTree = "<group>"; };
+		6322830319881F41009E472B /* BRCDetailCellInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailCellInfo.h; sourceTree = "<group>"; };
+		6322830419881F41009E472B /* BRCDetailCellInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailCellInfo.m; sourceTree = "<group>"; };
+		6322830919882153009E472B /* BRCRelationshipDetailInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRelationshipDetailInfoCell.h; sourceTree = "<group>"; };
+		6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRelationshipDetailInfoCell.m; sourceTree = "<group>"; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A571987140F00F65B01 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63CE2A591987140F00F65B01 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -92,6 +101,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6322830219881E27009E472B /* DetailViewController */ = {
+			isa = PBXGroup;
+			children = (
+				632282FF19881DDE009E472B /* BRCDetailViewController.h */,
+				6322830019881DDE009E472B /* BRCDetailViewController.m */,
+				6322830319881F41009E472B /* BRCDetailCellInfo.h */,
+				6322830419881F41009E472B /* BRCDetailCellInfo.m */,
+				6322830919882153009E472B /* BRCRelationshipDetailInfoCell.h */,
+				6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */,
+			);
+			name = DetailViewController;
+			sourceTree = "<group>";
+		};
 		63CE2A4B1987140F00F65B01 = {
 			isa = PBXGroup;
 			children = (
@@ -128,6 +150,7 @@
 				D994157B1987278400D245C7 /* Data */,
 				63CE2A661987140F00F65B01 /* BRCAppDelegate.h */,
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
+				6322830219881E27009E472B /* DetailViewController */,
 				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
 				63D270FA198716C600204954 /* Resources */,
@@ -316,7 +339,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */,
+				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
+				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
+				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
