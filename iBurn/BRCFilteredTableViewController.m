@@ -38,22 +38,35 @@
     self.tableView.delegate = self;
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     
+    UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectZero];
+    searchBar.delegate = self;
+    
+    UISearchDisplayController *searchDisplayController = [[UISearchDisplayController alloc] initWithSearchBar:searchBar contentsController:self];
+    searchDisplayController.delegate = self;
+    searchDisplayController.searchResultsDataSource = self;
+    
+    self.tableView.tableHeaderView = searchBar;
+    
     [self.view addSubview:self.segmentedControl];
     [self.view addSubview:self.tableView];
     
     
     [self setupConstraints];
+    
+    
+
 }
 
 - (void)setupConstraints
 {
     id topGuide = self.topLayoutGuide;
-    NSDictionary *views = NSDictionaryOfVariableBindings(_tableView,_segmentedControl,topGuide);
+    id bottomGuide = self.bottomLayoutGuide;
+    NSDictionary *views = NSDictionaryOfVariableBindings(_tableView,_segmentedControl,topGuide,bottomGuide);
     NSDictionary *metrics = @{@"segmentedControlHeight":@(33)};
     
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_segmentedControl]|" options:0 metrics:metrics views:views]];
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_tableView]|" options:0 metrics:metrics views:views]];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[topGuide][_segmentedControl(==segmentedControlHeight)]-2-[_tableView]|" options:0 metrics:metrics views:views]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[topGuide][_segmentedControl(==segmentedControlHeight)]-1-[_tableView][bottomGuide]" options:0 metrics:metrics views:views]];
     
 }
 
@@ -77,5 +90,25 @@
     cell.detailTextLabel.text = @"detail";
     return cell;
 }
+
+////// Optional //////
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+}
+
+- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
+{
+    NSMutableArray *titles = [[[UILocalizedIndexedCollation currentCollation] sectionIndexTitles] mutableCopy];
+    [titles insertObject:UITableViewIndexSearch atIndex:0];
+    return titles;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
+{
+    return [[UILocalizedIndexedCollation currentCollation] sectionForSectionIndexTitleAtIndex:index];
+}
+
 
 @end

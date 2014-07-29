@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRCFilteredTableViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface BRCFilteredTableViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, UISearchBarDelegate>
 
 @property (nonatomic, strong, readonly) UITableView *tableView;
 @property (nonatomic, strong, readonly) UISegmentedControl *segmentedControl;
