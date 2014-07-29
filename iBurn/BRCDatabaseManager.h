@@ -10,6 +10,7 @@
 #import "YapDatabase.h"
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
+    BRCDatabaseViewExtensionTypeUnknown,
     BRCDatabaseViewExtensionTypeName,
     BRCDatabaseViewExtensionTypeDistance
 };

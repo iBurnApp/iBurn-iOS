@@ -13,6 +13,10 @@
 @property (nonatomic, strong, readonly) UITableView *tableView;
 @property (nonatomic, strong, readonly) UISegmentedControl *segmentedControl;
 
-- (instancetype)initWithItems:(NSArray *)items;
+// Set class of object to display
+@property (nonatomic, strong) Class viewClass;
+
+// Override this in subclasses
+- (NSArray *) segmentedControlTitles;
 
 @end

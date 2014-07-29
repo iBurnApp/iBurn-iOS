@@ -8,8 +8,6 @@
 
 #import "BRCAppDelegate.h"
 #import "BRCMapViewController.h"
-#import "BRCCampTableViewController.h"
-#import "BRCArtTableViewController.h"
 #import "BRCEventsTableViewController.h"
 #import "BRCDatabaseManager.h"
 #import "BRCDataImporter.h"
@@ -31,15 +29,21 @@
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    BRCArtTableViewController *artTableVC = [[BRCArtTableViewController alloc] init];
+    BRCFilteredTableViewController *artTableVC = [[BRCFilteredTableViewController alloc] init];
+    artTableVC.title = @"Art";
+    artTableVC.viewClass = [BRCArtObject class];
     UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
     artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
     
-    BRCCampTableViewController *campTableVC = [[BRCCampTableViewController alloc] init];
+    BRCFilteredTableViewController *campTableVC = [[BRCFilteredTableViewController alloc] init];
+    campTableVC.title = @"Camps";
+    campTableVC.viewClass = [BRCCampObject class];
     UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
     campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
     BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] init];
+    eventsTableVC.title = @"Events";
+    eventsTableVC.viewClass = [BRCEventObject class];
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     

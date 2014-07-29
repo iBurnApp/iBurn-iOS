@@ -18,8 +18,6 @@
 		63D270FE19871A2D00204954 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 63D270FD19871A2D00204954 /* iburn.mbtiles */; };
 		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
 		D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */; };
-		D994155A19871D7200D245C7 /* BRCArtTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155919871D7200D245C7 /* BRCArtTableViewController.m */; };
-		D994155D19871D8A00D245C7 /* BRCCampTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155C19871D8A00D245C7 /* BRCCampTableViewController.m */; };
 		D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156019871E8400D245C7 /* BRCEventsTableViewController.m */; };
 		D99415641987222800D245C7 /* BRCDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415631987222800D245C7 /* BRCDataObject.m */; };
 		D9941568198726A700D245C7 /* BRCArtObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941567198726A700D245C7 /* BRCArtObject.m */; };
@@ -54,10 +52,6 @@
 		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCFilteredTableViewController.h; sourceTree = "<group>"; };
 		D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCFilteredTableViewController.m; sourceTree = "<group>"; };
-		D994155819871D7200D245C7 /* BRCArtTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtTableViewController.h; sourceTree = "<group>"; };
-		D994155919871D7200D245C7 /* BRCArtTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtTableViewController.m; sourceTree = "<group>"; };
-		D994155B19871D8A00D245C7 /* BRCCampTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCCampTableViewController.h; sourceTree = "<group>"; };
-		D994155C19871D8A00D245C7 /* BRCCampTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCCampTableViewController.m; sourceTree = "<group>"; };
 		D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventsTableViewController.h; sourceTree = "<group>"; };
 		D994156019871E8400D245C7 /* BRCEventsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventsTableViewController.m; sourceTree = "<group>"; };
 		D99415621987222800D245C7 /* BRCDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObject.h; sourceTree = "<group>"; };
@@ -179,10 +173,6 @@
 			children = (
 				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
 				D994156019871E8400D245C7 /* BRCEventsTableViewController.m */,
-				D994155819871D7200D245C7 /* BRCArtTableViewController.h */,
-				D994155919871D7200D245C7 /* BRCArtTableViewController.m */,
-				D994155B19871D8A00D245C7 /* BRCCampTableViewController.h */,
-				D994155C19871D8A00D245C7 /* BRCCampTableViewController.m */,
 				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
 				D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */,
 			);
@@ -327,7 +317,6 @@
 			files = (
 				D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
-				D994155A19871D7200D245C7 /* BRCArtTableViewController.m in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
@@ -335,7 +324,6 @@
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
-				D994155D19871D8A00D245C7 /* BRCCampTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,

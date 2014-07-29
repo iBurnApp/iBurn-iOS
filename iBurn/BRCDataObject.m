@@ -16,7 +16,7 @@
 @property (nonatomic, readonly) CLLocationDegrees longitude;
 
 // This is to prevent clobbering the value during re-import of data
-@property (nonatomic, readwrite) NSNumber *isFavoriteNumber;
+@property (nonatomic, strong, readwrite) NSNumber *isFavoriteNumber;
 
 @end
 
