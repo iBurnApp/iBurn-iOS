@@ -11,10 +11,11 @@
 #import "BRCRelationshipDetailInfoCell.h"
 #import "BRCDataObject.h"
 #import "BRCDatabaseManager.h"
+#import <MessageUI/MessageUI.h>
 
 NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
-@interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 
@@ -91,6 +92,14 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     }];
 }
 
+- (BRCDetailCellInfo *)cellInfoForIndexPath:(NSInteger)section
+{
+    if ([self.detailCellInfoArray count] > section) {
+        return self.detailCellInfoArray[section];
+    }
+    return nil;
+}
+
 #pragma - mark UITableViewDataSource Methods
 
 ////// Required //////
@@ -102,10 +111,12 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = nil;
-    if ([self.detailCellInfoArray count] > indexPath.section) {
-        BRCDetailCellInfo *cellInfo = self.detailCellInfoArray[indexPath.section];
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
+    if (cellInfo) {
+        
         
         switch (cellInfo.cellType) {
+            case BRCDetailCellInfoTypeEmail:
             case BRCDetailCellInfoTypeText: {
                 cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
                 cell.textLabel.text = cellInfo.value;
@@ -134,7 +145,8 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
                 
             case BRCDetailCellInfoTypeRelationship: {
                 cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
-                cell.textLabel.text = @"Relationshiip";
+                BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
+                cell.textLabel.text = relationshipCellInfo.dataObject.title;
                 break;
             }
                 
@@ -157,7 +169,9 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     NSString *title = nil;
-    if ([self.detailCellInfoArray count] > section) {
+    
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:section];
+    if (cellInfo) {
         BRCDetailCellInfo *cellInfo = self.detailCellInfoArray[section];
         title = cellInfo.displayName;
     }
@@ -166,13 +180,15 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    BRCDetailCellInfo *cellInfo = self.detailCellInfoArray[indexPath.section];
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
     if (cellInfo.cellType == BRCDetailCellInfoTypeText) {
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         
         
         CGRect labelSize = [cellInfo.value boundingRectWithSize:CGSizeMake(tableView.bounds.size.width, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: cell.textLabel.font} context:nil];
         
+        
+#warning Cuts off some multi line text
         return labelSize.size.height + 20;
     }
     
@@ -186,7 +202,42 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
+    if (cellInfo.cellType == BRCDetailCellInfoTypeURL) {
+        [[UIApplication sharedApplication] openURL:cellInfo.value];
+    }
+    else if (cellInfo.cellType == BRCDetailCellInfoTypeEmail) {
+        
+        if ([MFMailComposeViewController canSendMail]) {
+            MFMailComposeViewController *mailComposeViewController = [[MFMailComposeViewController alloc] init];
+            mailComposeViewController.mailComposeDelegate = self;
+            [mailComposeViewController setToRecipients:@[cellInfo.value]];
+            [self presentViewController:mailComposeViewController animated:YES completion:nil];
+        }
+    }
+    else if(cellInfo.cellType == BRCDetailCellInfoTypeRelationship)
+    {
+        // Go to correct camp page
+        BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
+        __block BRCDataObject *dataObject = nil;
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            dataObject = [transaction objectForKey:relationshipCellInfo.dataObject.uniqueID inCollection:[[relationshipCellInfo.dataObject class]collection]];
+            
+            
+        } completionBlock:^{
+            [self.navigationController pushViewController:[[BRCDetailViewController alloc] initWithDataObject:dataObject] animated:YES];
+        }];
+        
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
+}
+
+#pragma - mark MFMailComposeViewControllerDelegate 
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

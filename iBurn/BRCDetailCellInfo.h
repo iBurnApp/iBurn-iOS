@@ -10,6 +10,7 @@
 
 typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
     BRCDetailCellInfoTypeText,
+    BRCDetailCellInfoTypeEmail,
     BRCDetailCellInfoTypeURL,
     BRCDetailCellInfoTypeCoordinates,
     BRCDetailCellInfoTypeRelationship

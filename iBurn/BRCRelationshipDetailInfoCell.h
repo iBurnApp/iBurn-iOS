@@ -10,7 +10,6 @@
 
 @interface BRCRelationshipDetailInfoCell : BRCDetailCellInfo
 
-@property (nonatomic, strong) NSString *uniqueId;
-@property (nonatomic, strong) NSString *collection;
+@property (nonatomic, strong) BRCDataObject *dataObject;
 
 @end

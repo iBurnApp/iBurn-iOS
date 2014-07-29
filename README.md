@@ -18,5 +18,5 @@
  ## Future Plans
  
  * load `image_url` for art when internet is available
-
+ * Open in Safari pop up when clicking links
  

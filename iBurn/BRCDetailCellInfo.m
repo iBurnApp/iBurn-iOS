@@ -12,6 +12,7 @@
 #import "BRCCampObject.h"
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
+#import "BRCDatabaseManager.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -47,7 +48,7 @@
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(imageURL)) displayName:@"Image" cellType:BRCDetailCellInfoTypeText]];
     */
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(email)) displayName:@"Email" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(email)) displayName:@"Email" cellType:BRCDetailCellInfoTypeEmail]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(url)) displayName:@"URL" cellType:BRCDetailCellInfoTypeURL]];
     
@@ -119,8 +120,10 @@
         BRCRelationshipDetailInfoCell *relationshipDetailInfoCell = nil;
         if ([event.hostedByCampUniqueID length]) {
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
-            relationshipDetailInfoCell.collection = [BRCCampObject collection];
-            relationshipDetailInfoCell.uniqueId = event.hostedByCampUniqueID;
+            relationshipDetailInfoCell.displayName = @"Camp";
+            [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                relationshipDetailInfoCell.dataObject = [transaction objectForKey:event.hostedByCampUniqueID inCollection:[BRCCampObject collection]];
+            }];
         }
         
         NSUInteger index = 0;
