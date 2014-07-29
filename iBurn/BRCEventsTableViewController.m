@@ -7,14 +7,16 @@
 //
 
 #import "BRCEventsTableViewController.h"
+#import "BRCDatabaseManager.h"
 
 @interface BRCEventsTableViewController ()
 @end
 
 @implementation BRCEventsTableViewController
 
-- (NSArray *) segmentedControlTitles {
-    return [@[@"Time"] arrayByAddingObjectsFromArray:[super segmentedControlTitles]];
+- (NSArray *) segmentedControlInfo {
+    NSArray *newTitles = @[@[@"Time", @(BRCDatabaseViewExtensionTypeUnknown)]];
+    return [newTitles arrayByAddingObjectsFromArray:[super segmentedControlInfo]];
 }
 
 @end
