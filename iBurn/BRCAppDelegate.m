@@ -14,6 +14,8 @@
 #import "BRCDatabaseManager.h"
 #import "BRCDataImporter.h"
 #import "BRCArtObject.h"
+#import "BRCCampObject.h"
+#import "BRCEventObject.h"
 
 @implementation BRCAppDelegate
 
@@ -21,16 +23,7 @@
 {
     [[BRCDatabaseManager sharedInstance] setupDatabaseWithName:@"iBurn.sqlite"];
     
-    BRCDataImporter *dataImporter = [[BRCDataImporter alloc] init];
-    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art_data" withExtension:@"json"];
-    
-    [dataImporter loadDataFromURL:artDataURL dataClass:[BRCArtObject class] completionBlock:^(BOOL success, NSError *error) {
-        if (!success) {
-            NSLog(@"Error importing data: %@", error);
-        } else {
-            NSLog(@"Imported art data successfully");
-        }
-    }];
+    [self preloadExistingData];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
@@ -85,6 +78,29 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (void) preloadExistingData {
+    BRCDataImporter *dataImporter = [[BRCDataImporter alloc] init];
+    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art_data" withExtension:@"json"];
+    NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camp_data" withExtension:@"json"];
+    NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"event_data" withExtension:@"json"];
+
+    NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
+                            @[campsDataURL, [BRCCampObject class]],
+                            @[eventsDataURL, [BRCEventObject class]]];
+    
+    [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
+        NSURL *url = [obj firstObject];
+        Class dataClass = [obj lastObject];
+        [dataImporter loadDataFromURL:url dataClass:dataClass completionBlock:^(BOOL success, NSError *error) {
+            if (!success) {
+                NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
+            } else {
+                NSLog(@"Imported %@ data successfully", NSStringFromClass(dataClass));
+            }
+        }];
+    }];
 }
 
 @end

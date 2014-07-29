@@ -19,13 +19,14 @@
 @dynamic coordinate;
 
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
-    return @{NSStringFromSelector(@selector(title)): @"title",
+    return @{NSStringFromSelector(@selector(title)): @"name",
              NSStringFromSelector(@selector(uniqueID)): @"id",
              NSStringFromSelector(@selector(detailDescription)): @"description",
              NSStringFromSelector(@selector(email)): @"contact_email",
              NSStringFromSelector(@selector(url)): @"url",
              NSStringFromSelector(@selector(latitude)): @"latitude",
-             NSStringFromSelector(@selector(longitude)): @"longitude"};
+             NSStringFromSelector(@selector(longitude)): @"longitude",
+             NSStringFromSelector(@selector(year)): @"year.year"};
 }
 
 - (CLLocationCoordinate2D) coordinate {
@@ -35,12 +36,6 @@
 + (NSValueTransformer *)uniqueIDJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSString*(NSNumber* number) {
         return number.stringValue;
-    }];
-}
-
-+ (NSValueTransformer *)yearJSONTransformer {
-    return [MTLValueTransformer transformerWithBlock:^NSString*(NSDictionary * dictionary) {
-        return [dictionary objectForKey:@"year"];
     }];
 }
 

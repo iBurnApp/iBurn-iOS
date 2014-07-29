@@ -19,6 +19,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeGame,
     BRCEventTypeFire,
     BRCEventTypeAdult,
+    BRCEventTypeKid,
     BRCEventTypeParade,
     BRCEventTypeFood
 };
@@ -36,7 +37,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 @property (nonatomic, strong, readonly) NSArray *times;
 
 
-@property (nonatomic, readonly) BOOL allDay;
+@property (nonatomic, readonly) BOOL isAllDay;
 
 
 /**
