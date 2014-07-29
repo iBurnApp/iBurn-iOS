@@ -11,13 +11,16 @@
 #import "BRCCampTableViewController.h"
 #import "BRCArtTableViewController.h"
 #import "BRCEventsTableViewController.h"
+#import "BRCDatabaseManager.h"
 
 @implementation BRCAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [[BRCDatabaseManager sharedInstance] setupDatabaseWithName:@"iBurn.sqlite"];
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
+    
     BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
     
