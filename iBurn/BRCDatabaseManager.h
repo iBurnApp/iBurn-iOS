@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "YapDatabase.h"
 
+extern NSString *const BRCArtDatabaseViewExtensionName;
+
 @interface BRCDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;

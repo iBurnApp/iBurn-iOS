@@ -7,6 +7,12 @@
 //
 
 #import "BRCArtTableViewController.h"
+#import "BRCDatabaseManager.h"
+#import "YapDatabaseViewTransaction.h"
+#import "BRCArtObject.h"
+
+static NSString *const BRCArtTableViewCellIdentifier = @"BRCArtTableViewCellIdentifier";
+
 
 @interface BRCArtTableViewController ()
 
@@ -27,23 +33,35 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCArtTableViewCellIdentifier];
 }
 
-- (void)didReceiveMemoryWarning
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.tableView reloadData];
+}
+
+////// Required //////
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    __block NSInteger numberOfRows = 0;
+    [[BRCDatabaseManager sharedInstance].mainThreadReadOnlyDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        numberOfRows = [[transaction ext:BRCArtDatabaseViewExtensionName] numberOfKeysInGroup:[BRCArtObject collection]];
+    }];
+    return numberOfRows;
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCArtTableViewCellIdentifier forIndexPath:indexPath];
+    __block BRCArtObject *artObject = nil;
+    [[BRCDatabaseManager sharedInstance].mainThreadReadOnlyDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        artObject = [[transaction ext:BRCArtDatabaseViewExtensionName] objectAtIndex:indexPath.row inGroup:[BRCArtObject collection]];
+    }];
+    cell.textLabel.text = artObject.title;
+    cell.detailTextLabel.text = artObject.detailDescription;
+    return cell;
 }
-*/
 
 @end
