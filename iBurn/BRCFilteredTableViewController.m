@@ -7,6 +7,9 @@
 //
 
 #import "BRCFilteredTableViewController.h"
+#import "BRCDataObject.h"
+#import "BRCDatabaseManager.h"
+#import "BRCDetailViewController.h"
 
 @interface BRCFilteredTableViewController ()
 
@@ -75,6 +78,19 @@
     //self.segmentedControl.selectedSegmentIndex;
 }
 
+- (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath
+{
+    __block BRCDataObject *dataObject = nil;
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [transaction enumerateRowsInAllCollectionsUsingBlock:^(NSString *collection, NSString *key, id object, id metadata, BOOL *stop) {
+            dataObject = (BRCDataObject *)object;
+            *stop = YES;
+        }];
+    }];
+    
+    return dataObject;
+}
+
 #pragma - mark UITableViewDataSource Methods
 
 ////// Required //////
@@ -93,22 +109,10 @@
 
 ////// Optional //////
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return [[[UILocalizedIndexedCollation currentCollation] sectionTitles] objectAtIndex:section];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    [self.navigationController pushViewController:[[BRCDetailViewController alloc] initWithDataObject:[self dataObjectForIndexPath:indexPath]]  animated:YES];
 }
-
-- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
-{
-    NSMutableArray *titles = [[[UILocalizedIndexedCollation currentCollation] sectionIndexTitles] mutableCopy];
-    [titles insertObject:UITableViewIndexSearch atIndex:0];
-    return titles;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
-{
-    return [[UILocalizedIndexedCollation currentCollation] sectionForSectionIndexTitleAtIndex:index];
-}
-
 
 @end

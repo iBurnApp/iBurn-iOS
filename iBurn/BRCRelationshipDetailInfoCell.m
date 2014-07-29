@@ -10,4 +10,9 @@
 
 @implementation BRCRelationshipDetailInfoCell
 
+- (BRCDetailCellInfoType)cellType
+{
+    return BRCDetailCellInfoTypeRelationship;
+}
+
 @end

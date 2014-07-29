@@ -11,7 +11,8 @@
 typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
     BRCDetailCellInfoTypeText,
     BRCDetailCellInfoTypeURL,
-    BRCDetailCellInfoTypeCoordinates
+    BRCDetailCellInfoTypeCoordinates,
+    BRCDetailCellInfoTypeRelationship
 };
 
 @class BRCDataObject;

@@ -75,19 +75,24 @@
     NSMutableArray *finalCellInfoArray = [NSMutableArray new];
     [defaultArray enumerateObjectsUsingBlock:^(BRCDetailCellInfo *cellInfo, NSUInteger idx, BOOL *stop) {
         //check if value exists
-        if ([object valueForKey:cellInfo.key] || ![[object valueForKey:cellInfo.key] isEqual:[NSNull null]]) {
-            
-            //if value is a string check that it has an length
-            if ([[object valueForKey:cellInfo.key] isKindOfClass:[NSString class]]) {
-                NSString *valueString = [object valueForKey:cellInfo.key];
-                if (![valueString length]) {
-                    return;
+        
+        if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
+            if ([object valueForKey:cellInfo.key] && ![[object valueForKey:cellInfo.key] isEqual:[NSNull null]]) {
+                
+                //if value is a string check that it has an length
+                if ([[object valueForKey:cellInfo.key] isKindOfClass:[NSString class]]) {
+                    NSString *valueString = [object valueForKey:cellInfo.key];
+                    if (![valueString length]) {
+                        return;
+                    }
                 }
+                
+                //add value and dispaly name to array
+                cellInfo.value = [object valueForKey:cellInfo.key];
+                [finalCellInfoArray addObject:cellInfo];
             }
-            
-            //add value and dispaly name to array
-            [finalCellInfoArray addObject:[self detailCellInfoWitDisplayName:cellInfo.displayName value:[object valueForKey:cellInfo.key]]];
         }
+        
     }];
     
     // Special cases for Schedule and Camp for events
@@ -126,7 +131,6 @@
         if (relationshipDetailInfoCell) {
             [finalCellInfoArray insertObject:relationshipDetailInfoCell atIndex:index];
         }
-        
     }
     
     

@@ -13,6 +13,4 @@
 @property (nonatomic, strong) NSString *uniqueId;
 @property (nonatomic, strong) NSString *collection;
 
-@property (nonatomic, strong) NSString * relationshipObjectKey;
-
 @end

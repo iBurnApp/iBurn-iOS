@@ -8,8 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+@class  BRCDataObject;
+
 @interface BRCDetailViewController : UIViewController
 
 @property (nonatomic, strong) UITableView *tableView;
+
+
+- (instancetype)initWithDataObject:(BRCDataObject *)dataObject;
 
 @end
