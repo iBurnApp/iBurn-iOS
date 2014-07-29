@@ -12,6 +12,24 @@
 
 @interface BRCDataObject : MTLModel <MTLJSONSerializing>
 
+#pragma mark Mutable Properties
+
+/**
+ *  Whether or not user has favorited this object in the app.
+ */
+@property (nonatomic, readwrite) BOOL isFavorite;
+
+/**
+ *  This property is periodically recalculated in the background on significant location change.
+ */
+@property (nonatomic, readwrite) CLLocationDistance distanceFromUser;
+
+
+#pragma mark Constant Properties
+
+/**
+ *  All of the below properties are from the PlayaEvents API
+ */
 
 @property (nonatomic, strong, readonly) NSString *title;
 @property (nonatomic, strong, readonly) NSString *detailDescription;
