@@ -10,6 +10,7 @@
 #import "YapDatabaseViewTransaction.h"
 #import "YapDatabaseViewMappings.h"
 #import "YapDatabaseViewConnection.h"
+#import "YapDatabaseFullTextSearch.h"
 #import "YapDatabase.h"
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
@@ -23,6 +24,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 @property (nonatomic, strong) YapDatabaseViewMappings *nameMappings;
 @property (nonatomic, strong) YapDatabaseViewMappings *distanceMappings;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
+@property (nonatomic, strong) NSArray *searchResults;
+@property (nonatomic, strong) UISearchDisplayController *searchController;
+
+
 @end
 
 @implementation BRCFilteredTableViewController
@@ -58,9 +63,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectZero];
     searchBar.delegate = self;
     
-    UISearchDisplayController *searchDisplayController = [[UISearchDisplayController alloc] initWithSearchBar:searchBar contentsController:self];
-    searchDisplayController.delegate = self;
-    searchDisplayController.searchResultsDataSource = self;
+    self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:searchBar contentsController:self];
+    self.searchController.delegate = self;
+    self.searchController.searchResultsDataSource = self;
+    self.searchController.searchResultsDelegate = self;
     
     self.tableView.tableHeaderView = searchBar;
     
@@ -71,6 +77,7 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     [self setupConstraints];
     
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilteredTableViewCellIdentifier];
+    [self.searchController.searchResultsTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilteredTableViewCellIdentifier];
     
     self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
@@ -134,20 +141,38 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     return [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:activeExtensionType];
 }
 
+- (NSString *) activeFullTextSearchExtensionName {
+    return [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeFullTextSearch];
+}
+
 - (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
 {
     // Mappings have changed
     [self.tableView reloadData];
 }
 
-- (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath
+- (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
     __block BRCDataObject *dataObject = nil;
-    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionName]];
-        dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
-    }];
+    if ([self isSearchResultsControllerTableView:tableView] && [self.searchResults count] > indexPath.row) {
+        dataObject = self.searchResults[indexPath.row];
+    }
+    else {
+        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionName]];
+            dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
+        }];
+    }
+    
     return dataObject;
+}
+
+- (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView
+{
+    if ([tableView isEqual:self.searchDisplayController.searchResultsTableView]) {
+        return YES;
+    }
+    return NO;
 }
 
 #pragma - mark UITableViewDataSource Methods
@@ -155,7 +180,7 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilteredTableViewCellIdentifier forIndexPath:indexPath];
-    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath];
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     cell.textLabel.text = dataObject.title;
     cell.detailTextLabel.text = dataObject.detailDescription;
     return cell;
@@ -163,21 +188,66 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender
 {
+    if ([self isSearchResultsControllerTableView:sender]) {
+        return 1;
+    }
     return [self.activeMappings numberOfSections];
 }
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
 {
+    if ([self isSearchResultsControllerTableView:sender]) {
+        return [self.searchResults count];
+    }
     return [self.activeMappings numberOfItemsInSection:section];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath];
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    
     BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
     [self.navigationController pushViewController:detailVC animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
+
+#pragma - mark UISearchBarDelegate Methods
+
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
+{
+    [self.searchDisplayController setActive:YES animated:YES];
+}
+
+#pragma - mark  UISearchDisplayDelegate Methods
+
+- (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
+{
+    if ([searchString length]) {
+        
+        searchString = [NSString stringWithFormat:@"%@*",searchString];
+        
+        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            NSMutableArray *tempSearchResults = [NSMutableArray array];
+            
+            [[transaction ext:[self activeFullTextSearchExtensionName]] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
+                
+                if (object) {
+                    [tempSearchResults addObject:object];
+                }
+                
+                
+            }];
+            
+            self.searchResults = [tempSearchResults copy];
+        }];
+    }
+    else {
+        self.searchResults = nil;
+    }
+    return YES;
+}
+
+#pragma - mark YapDatabseModified
 
 - (void)yapDatabaseModified:(NSNotification *)notification
 {

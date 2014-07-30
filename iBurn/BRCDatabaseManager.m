@@ -9,6 +9,7 @@
 #import "BRCDatabaseManager.h"
 #import "YapDatabaseRelationship.h"
 #import "YapDatabaseView.h"
+#import "YapDatabaseFullTextSearch.h"
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
@@ -73,6 +74,7 @@
     [viewsToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
         [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
         [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName];
+        [self registerFullTextSearchForClass:viewClass withPropertiesToIndex:@[@"title"]];
     }];
     
 
@@ -160,6 +162,39 @@
     }];
 }
 
+- (void)registerFullTextSearchForClass:(Class)viewClass withPropertiesToIndex:(NSArray *)properties
+{
+    NSString *viewName = [[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeFullTextSearch];
+    YapDatabaseView *view = [self.database registeredExtension:viewName];
+    if (view) {
+        return;
+    }
+    
+    YapDatabaseFullTextSearchBlockType blockType = YapDatabaseFullTextSearchBlockTypeWithObject;
+    YapDatabaseFullTextSearchWithObjectBlock block = ^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
+        
+        [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
+            if ([object isKindOfClass:viewClass]) {
+                if ([object respondsToSelector:NSSelectorFromString(property)]) {
+                    if ([object valueForKey:property] != nil && ![[object valueForKey:property] isEqual:[NSNull null]]) {
+                        //may have to check if NSString and NSURL have length?
+                        
+                        [dict setObject:[object valueForKey:property] forKey:property];
+                    }
+                }
+            }
+        }];
+    };
+    
+    YapDatabaseFullTextSearch *fullTextSearch = [[YapDatabaseFullTextSearch alloc] initWithColumnNames:properties
+                                                                                                 block:block
+                                                                                             blockType:blockType];
+    
+    [self.database asyncRegisterExtension:fullTextSearch withName:viewName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready", viewName);
+    }];
+}
+
 + (NSString*) stringForExtensionType:(BRCDatabaseViewExtensionType)extensionType {
     switch (extensionType) {
         case BRCDatabaseViewExtensionTypeName:
@@ -168,6 +203,8 @@
         case BRCDatabaseViewExtensionTypeDistance:
             return @"Distance";
             break;
+        case BRCDatabaseViewExtensionTypeFullTextSearch:
+            return @"Search";
         default:
             return nil;
             break;

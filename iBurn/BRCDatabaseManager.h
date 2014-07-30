@@ -12,7 +12,8 @@
 typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
     BRCDatabaseViewExtensionTypeUnknown,
     BRCDatabaseViewExtensionTypeName,
-    BRCDatabaseViewExtensionTypeDistance
+    BRCDatabaseViewExtensionTypeDistance,
+    BRCDatabaseViewExtensionTypeFullTextSearch
 };
 
 @interface BRCDatabaseManager : NSObject
