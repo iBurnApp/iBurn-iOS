@@ -15,8 +15,7 @@
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
 #import "BRCDetailViewController.h"
-
-static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableViewCellIdentifier";
+#import "BRCDataObjectTableViewCell.h"
 
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UITableView *tableView;
@@ -73,11 +72,13 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
     [self.view addSubview:self.segmentedControl];
     [self.view addSubview:self.tableView];
     
-    
     [self setupConstraints];
     
+asdfasdf
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilteredTableViewCellIdentifier];
     [self.searchController.searchResultsTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilteredTableViewCellIdentifier];
+    UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
+    [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     
     self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
@@ -95,6 +96,10 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.databaseConnection.database];
+}
+
+- (Class) cellClass {
+    return [BRCDataObjectTableViewCell class];
 }
 
 - (NSArray *) segmentedControlInfo {
@@ -179,10 +184,15 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+
+asdfasdf
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilteredTableViewCellIdentifier forIndexPath:indexPath];
     BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     cell.textLabel.text = dataObject.title;
     cell.detailTextLabel.text = dataObject.detailDescription;
+    BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[[self cellClass] cellIdentifier] forIndexPath:indexPath];
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath];
+    [cell setDataObject:dataObject];
     return cell;
 }
 
@@ -192,6 +202,14 @@ static NSString *const BRCFilteredTableViewCellIdentifier = @"BRCFilteredTableVi
         return 1;
     }
     return [self.activeMappings numberOfSections];
+}
+
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [BRCDataObjectTableViewCell cellHeight];
+}
+
+- (CGFloat) tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [BRCDataObjectTableViewCell cellHeight];
 }
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
