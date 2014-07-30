@@ -8,6 +8,7 @@
 
 #import "BRCEventsTableViewController.h"
 #import "BRCDatabaseManager.h"
+#import "BRCEventObjectTableViewCell.h"
 
 @interface BRCEventsTableViewController ()
 @end
@@ -17,6 +18,10 @@
 - (NSArray *) segmentedControlInfo {
     NSArray *newTitles = @[@[@"Time", @(BRCDatabaseViewExtensionTypeUnknown)]];
     return [newTitles arrayByAddingObjectsFromArray:[super segmentedControlInfo]];
+}
+
+- (Class) cellClass {
+    return [BRCEventObjectTableViewCell class];
 }
 
 @end

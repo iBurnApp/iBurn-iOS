@@ -16,7 +16,8 @@
 // Set class of object to display
 @property (nonatomic, strong) Class viewClass;
 
-// Override this in subclasses
+// Override these in subclasses
 - (NSArray *) segmentedControlInfo;
+- (Class) cellClass;
 
 @end
