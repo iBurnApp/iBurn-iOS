@@ -22,7 +22,7 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
 - (void)zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 animated:(BOOL)animated
 {
     BOOL coordinate1InBounds = [[self class] isCoordinate:coordinate1 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
-    BOOL coordinate2InBounds = [[self class] isCoordinate:coordinate1 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
+    BOOL coordinate2InBounds = [[self class] isCoordinate:coordinate2 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
     
     if (coordinate1InBounds && coordinate2InBounds) {
         CLLocationDegrees minLatitude = MIN(coordinate1.latitude, coordinate2.latitude);
