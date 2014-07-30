@@ -22,9 +22,9 @@
  *  @param location        most recent location
  *  @param completionBlock always called on main thread
  */
-+ (void) updateDistanceForAllObjectsOfClass:(Class)objectClass
+- (void) updateDistanceForAllObjectsOfClass:(Class)objectClass
                                fromLocation:(CLLocation*)location
-                            completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
+                            completionBlock:(dispatch_block_t)completionBlock;
 
 /**
  *  Fetch an updated value for recentLocation (watch for KVO on recentLocation)

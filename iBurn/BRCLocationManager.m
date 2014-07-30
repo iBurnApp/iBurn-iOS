@@ -8,6 +8,7 @@
 
 #import "BRCLocationManager.h"
 #import "BRCDatabaseManager.h"
+#import "BRCDataObject.h"
 
 static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
 
@@ -52,10 +53,27 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
     [self.locationManager stopUpdatingLocation];
 }
 
-+ (void) updateDistanceForAllObjectsOfClass:(Class)objectClass
+- (void) updateDistanceForAllObjectsOfClass:(Class)objectClass
                                fromLocation:(CLLocation*)location
-                            completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
-    NSLog(@"Updating distances for %@...", NSStringFromClass(objectClass));
+                            completionBlock:(dispatch_block_t)completionBlock {
+    NSParameterAssert(location != nil);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSLog(@"Updating distances for %@...", NSStringFromClass(objectClass));
+        NSString *collection = [objectClass collection];
+        [self.databaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            NSArray *allKeys = [transaction allKeysInCollection:collection];
+            [allKeys enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop) {
+                BRCDataObject *object = [[transaction objectForKey:key inCollection:collection] copy];
+                CLLocation *objectLocation = object.location;
+                CLLocationDistance distance = DBL_MAX;
+                if (objectLocation) {
+                    distance = [objectLocation distanceFromLocation:location];
+                }
+                object.distanceFromUser = distance;
+                [transaction setObject:object forKey:object.uniqueID inCollection:collection];
+            }];
+        } completionBlock:completionBlock];
+    });
 }
 
 @end

@@ -16,12 +16,13 @@
 @property (nonatomic, readonly) CLLocationDegrees longitude;
 
 // This is to prevent clobbering the value during re-import of data
+// however, it doesn't work...
 @property (nonatomic, strong, readwrite) NSNumber *isFavoriteNumber;
 
 @end
 
 @implementation BRCDataObject
-@dynamic coordinate;
+@dynamic location;
 @dynamic isFavorite;
 
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
@@ -43,8 +44,11 @@
     return self.isFavoriteNumber.boolValue;
 }
 
-- (CLLocationCoordinate2D) coordinate {
-    return CLLocationCoordinate2DMake(self.latitude, self.longitude);
+- (CLLocation*) location {
+    if (self.latitude == 0 || self.longitude == 0) {
+        return nil;
+    }
+    return [[CLLocation alloc] initWithLatitude:self.latitude longitude:self.longitude];
 }
 
 + (NSValueTransformer *)uniqueIDJSONTransformer {

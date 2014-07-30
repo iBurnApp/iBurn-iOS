@@ -135,7 +135,7 @@
                 if (extensionType == BRCDatabaseViewExtensionTypeName) {
                     return [data1.title compare:data2.title options:NSCaseInsensitiveSearch];
                 } else if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
-                    if (data1.distanceFromUser > data2.distanceFromUser) {
+                    if (data1.distanceFromUser < data2.distanceFromUser) {
                         return NSOrderedAscending;
                     } else {
                         return NSOrderedDescending;

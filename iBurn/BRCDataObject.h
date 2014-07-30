@@ -37,10 +37,9 @@
 @property (nonatomic, strong, readonly) NSURL *url;
 
 /**
- *  Real GPS coordinate
+ *  Real GPS location (this property is dynamically generated)
  */
-@property (nonatomic, readonly) CLLocationCoordinate2D coordinate;
-
+@property (nonatomic, readonly) CLLocation *location;
 
 /**
  *  Unique 'id' from PlayaEvents API
@@ -53,7 +52,7 @@
 @property (nonatomic, strong, readonly) NSString *year;
 
 /**
- *  Playa Coordinates
+ *  Playa Coordinates - currently unused
  */
 @property (nonatomic, strong, readonly) NSNumber *playaHour;
 @property (nonatomic, strong, readonly) NSNumber *playaMinute;

@@ -164,12 +164,8 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
             [self unregisterRecentLocationObserver];
             self.lastDistanceUpdateLocation = recentLocation;
             Class objectClass = self.viewClass;
-            [BRCLocationManager updateDistanceForAllObjectsOfClass:objectClass fromLocation:recentLocation completionBlock:^(BOOL success, NSError *error) {
-                if (!success) {
-                    NSLog(@"Error updating distances for %@: %@", NSStringFromClass(objectClass), error);
-                } else {
-                    NSLog(@"Distances updated for %@", NSStringFromClass(objectClass));
-                }
+            [[BRCLocationManager sharedInstance] updateDistanceForAllObjectsOfClass:objectClass fromLocation:recentLocation completionBlock:^{
+                NSLog(@"Distances updated for %@", NSStringFromClass(objectClass));
             }];
         }
     }

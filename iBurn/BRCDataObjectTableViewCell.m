@@ -13,7 +13,12 @@
 
 - (void) setDataObject:(BRCDataObject*)dataObject {
     self.titleLabel.text = dataObject.title;
-    self.subtitleLabel.text = [NSString stringWithFormat:@"%0.1f m",  dataObject.distanceFromUser];
+    CLLocationDistance distance = dataObject.distanceFromUser;
+    if (distance == DBL_MAX || distance == 0) {
+        self.subtitleLabel.text = nil;
+    } else {
+        self.subtitleLabel.text = [NSString stringWithFormat:@"%0.1f m away", distance];
+    }
 }
 
 + (NSString*) cellIdentifier {
