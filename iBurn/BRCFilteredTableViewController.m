@@ -16,6 +16,17 @@
 #import "BRCDataObject.h"
 #import "BRCDetailViewController.h"
 #import "BRCDataObjectTableViewCell.h"
+#import "BRCLocationManager.h"
+
+/**
+ *  5 minutes
+ */
+static const NSTimeInterval kBRCMinimumLocationUpdateTimeInterval = 5;
+
+/**
+ *  50 meters
+ */
+static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
 
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UITableView *tableView;
@@ -25,8 +36,8 @@
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
-
-
+@property (nonatomic) BOOL observerIsRegistered;
+@property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -94,6 +105,74 @@
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.databaseConnection.database];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self refreshDistanceInformation];
+}
+
+- (void) refreshDistanceInformation {
+    if (!self.lastDistanceUpdateLocation) {
+        [self registerRecentLocationObserver];
+        return;
+    }
+    CLLocation *recentLocation = [BRCLocationManager sharedInstance].recentLocation;
+    if (!recentLocation) {
+        [self registerRecentLocationObserver];
+        return;
+    }
+    NSDate *now = [NSDate date];
+    NSDate *mostRecentLocationDate = self.lastDistanceUpdateLocation.timestamp;
+
+    NSTimeInterval timeIntervalSinceLastDistanceUpdate = [now timeIntervalSinceDate:mostRecentLocationDate];
+    CLLocationDistance distanceSinceLastDistanceUpdate = [ self.lastDistanceUpdateLocation distanceFromLocation:recentLocation];
+    
+    if (timeIntervalSinceLastDistanceUpdate > kBRCMinimumLocationUpdateTimeInterval || distanceSinceLastDistanceUpdate > kBRCMinimumLocationUpdateDistance) {
+        [self registerRecentLocationObserver];
+    }
+}
+
+- (void) registerRecentLocationObserver {
+    if (self.observerIsRegistered) {
+        return;
+    }
+    [[BRCLocationManager sharedInstance] addObserver:self forKeyPath:NSStringFromSelector(@selector(recentLocation)) options:NSKeyValueObservingOptionNew context:NULL];
+    [[BRCLocationManager sharedInstance] updateRecentLocation];
+    self.observerIsRegistered = YES;
+}
+
+- (void) unregisterRecentLocationObserver {
+    if (!self.observerIsRegistered) {
+        return;
+    }
+    [[BRCLocationManager sharedInstance] removeObserver:self forKeyPath:NSStringFromSelector(@selector(recentLocation)) context:NULL];
+    self.observerIsRegistered = NO;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+{
+    if ([object isKindOfClass:[BRCLocationManager class]]) {
+        if ([keyPath isEqualToString:NSStringFromSelector(@selector(recentLocation))]) {
+            CLLocation *recentLocation = [BRCLocationManager sharedInstance].recentLocation;
+            if (!recentLocation) {
+                return;
+            }
+            [self unregisterRecentLocationObserver];
+            self.lastDistanceUpdateLocation = recentLocation;
+            Class objectClass = self.viewClass;
+            [BRCLocationManager updateDistanceForAllObjectsOfClass:objectClass fromLocation:recentLocation completionBlock:^(BOOL success, NSError *error) {
+                if (!success) {
+                    NSLog(@"Error updating distances for %@: %@", NSStringFromClass(objectClass), error);
+                } else {
+                    NSLog(@"Distances updated for %@", NSStringFromClass(objectClass));
+                }
+            }];
+        }
+    }
 }
 
 - (Class) cellClass {

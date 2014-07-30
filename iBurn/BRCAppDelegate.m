@@ -14,6 +14,7 @@
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 #import "BRCRecurringEventObject.h"
+#import "BRCLocationManager.h"
 
 @implementation BRCAppDelegate
 
@@ -49,6 +50,8 @@
     
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
     tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
+    
+    [[BRCLocationManager sharedInstance] updateRecentLocation];
     
     self.window.backgroundColor = [UIColor whiteColor];
     self.window.rootViewController = tabBarController;
