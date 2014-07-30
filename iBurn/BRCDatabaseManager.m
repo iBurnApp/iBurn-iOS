@@ -212,6 +212,10 @@
 }
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
+    if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
+        return nil;
+    }
     NSString *classString = NSStringFromClass(extensionClass);
     NSString *extensionString = [self stringForExtensionType:extensionType];
     NSParameterAssert(extensionString != nil);

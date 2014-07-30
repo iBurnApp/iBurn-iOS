@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>7DCC6A07-814A-4151-9FFD-47F96F174A78</string>
+	<key>IDESourceControlProjectName</key>
+	<string>iBurn</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>0D742D41-9518-4C43-A9A0-D48626DD67BF</key>
+		<string>ssh://github.com/Burning-Man-Earth/iBurn-iOS.git</string>
+		<key>898E3C76-22DE-4D3D-B53D-160D703B7524</key>
+		<string>ssh://github.com/Burning-Man-Earth/iBurn-Data.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>iBurn.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>0D742D41-9518-4C43-A9A0-D48626DD67BF</key>
+		<string>..</string>
+		<key>898E3C76-22DE-4D3D-B53D-160D703B7524</key>
+		<string>../Submodules/iBurn-Data</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/Burning-Man-Earth/iBurn-iOS.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>0D742D41-9518-4C43-A9A0-D48626DD67BF</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>898E3C76-22DE-4D3D-B53D-160D703B7524</string>
+			<key>IDESourceControlWCCName</key>
+			<string>iBurn-Data</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>0D742D41-9518-4C43-A9A0-D48626DD67BF</string>
+			<key>IDESourceControlWCCName</key>
+			<string>iBurn-iOS</string>
+		</dict>
+	</array>
+</dict>
+</plist>

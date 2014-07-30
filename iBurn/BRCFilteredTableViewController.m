@@ -18,15 +18,6 @@
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCLocationManager.h"
 
-/**
- *  5 minutes
- */
-static const NSTimeInterval kBRCMinimumLocationUpdateTimeInterval = 5;
-
-/**
- *  50 meters
- */
-static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
 
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UITableView *tableView;
@@ -38,6 +29,8 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL observerIsRegistered;
 @property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
+@property (nonatomic, strong) NSSet *mappingsSet;
+@property (nonatomic) BOOL updatingDistanceInformation;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -95,6 +88,8 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
     self.nameMappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
     self.distanceMappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]];
     
+    self.mappingsSet = [NSSet setWithArray:@[self.nameMappings, self.distanceMappings]];
+    
     [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction){
         // One-time initialization
         [self.nameMappings updateWithTransaction:transaction];
@@ -113,24 +108,32 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
 }
 
 - (void) refreshDistanceInformation {
-    if (!self.lastDistanceUpdateLocation) {
+    if ([self shouldRefreshDistanceInformation]) {
         [self registerRecentLocationObserver];
-        return;
+    }
+}
+
+- (BOOL) shouldRefreshDistanceInformation {
+    if (!self.lastDistanceUpdateLocation) {
+        return YES;
     }
     CLLocation *recentLocation = [BRCLocationManager sharedInstance].recentLocation;
     if (!recentLocation) {
-        [self registerRecentLocationObserver];
-        return;
+        return YES;
     }
     NSDate *now = [NSDate date];
     NSDate *mostRecentLocationDate = self.lastDistanceUpdateLocation.timestamp;
-
+    
     NSTimeInterval timeIntervalSinceLastDistanceUpdate = [now timeIntervalSinceDate:mostRecentLocationDate];
     CLLocationDistance distanceSinceLastDistanceUpdate = [ self.lastDistanceUpdateLocation distanceFromLocation:recentLocation];
     
-    if (timeIntervalSinceLastDistanceUpdate > kBRCMinimumLocationUpdateTimeInterval || distanceSinceLastDistanceUpdate > kBRCMinimumLocationUpdateDistance) {
-        [self registerRecentLocationObserver];
+    NSTimeInterval minimumLocationUpdateTimeInterval = 5 * 60; // 5 minutes
+    CLLocationDistance minimumLocationUpdateDistance = 25; // 25 meters
+    
+    if (timeIntervalSinceLastDistanceUpdate > minimumLocationUpdateTimeInterval || distanceSinceLastDistanceUpdate > minimumLocationUpdateDistance) {
+        return YES;
     }
+    return NO;
 }
 
 - (void) registerRecentLocationObserver {
@@ -162,11 +165,15 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
                 return;
             }
             [self unregisterRecentLocationObserver];
-            self.lastDistanceUpdateLocation = recentLocation;
-            Class objectClass = self.viewClass;
-            [[BRCLocationManager sharedInstance] updateDistanceForAllObjectsOfClass:objectClass fromLocation:recentLocation completionBlock:^{
-                NSLog(@"Distances updated for %@", NSStringFromClass(objectClass));
-            }];
+            if ([self shouldRefreshDistanceInformation] && !self.updatingDistanceInformation) {
+                self.updatingDistanceInformation = YES;
+                Class objectClass = self.viewClass;
+                [[BRCLocationManager sharedInstance] updateDistanceForAllObjectsOfClass:objectClass fromLocation:recentLocation completionBlock:^{
+                    NSLog(@"Distances updated for %@", NSStringFromClass(objectClass));
+                    self.lastDistanceUpdateLocation = recentLocation;
+                    self.updatingDistanceInformation = NO;
+                }];
+            }
         }
     }
 }
@@ -203,6 +210,15 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
     } else {
         return nil;
     }
+}
+
+- (NSSet*) inactiveMappingsSet {
+    YapDatabaseViewMappings *activeMappings = [self activeMappings];
+    NSMutableSet *mutableMappings = [self.mappingsSet mutableCopy];
+    if (activeMappings) {
+        [mutableMappings removeObject:activeMappings];
+    }
+    return mutableMappings;
 }
 
 - (BRCDatabaseViewExtensionType) extensionTypeForSelectedSegmentIndex {
@@ -340,10 +356,6 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
     // End & Re-Begin the long-lived transaction atomically.
     // Also grab all the notifications for all the commits that I jump.
     // If the UI is a bit backed up, I may jump multiple commits.
-    NSString *activeExtensionName = [self activeExtensionName];
-    if (!activeExtensionName) {
-        return;
-    }
     
     NSArray *notifications = [self.databaseConnection beginLongLivedReadTransaction];
     
@@ -353,13 +365,26 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
     
-    YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:activeExtensionName];
     YapDatabaseViewMappings *activeMappings = self.activeMappings;
+    if (activeMappings) {
+        NSString *activeExtensionName = [self activeExtensionName];
+        YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:activeExtensionName];
+        
+        // sometimes this takes a long time if there are a LOT of changes and will block
+        // the main thread
+        [viewConnection getSectionChanges:&sectionChanges
+                               rowChanges:&rowChanges
+                         forNotifications:notifications
+                             withMappings:activeMappings];
+    }
+
     
-    [viewConnection getSectionChanges:&sectionChanges
-                           rowChanges:&rowChanges
-                     forNotifications:notifications
-                         withMappings:activeMappings];
+    NSSet *inactiveMappings = [self inactiveMappingsSet];
+    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [inactiveMappings enumerateObjectsUsingBlock:^(YapDatabaseViewMappings *inactiveMappings, BOOL *stop) {
+            [inactiveMappings updateWithTransaction:transaction];
+        }];
+    }];
 
     // No need to update mappings.
     // The above method did it automatically.
@@ -370,8 +395,11 @@ static const CLLocationDistance kBRCMinimumLocationUpdateDistance = 50;
         return;
     }
     
-    // Familiar with NSFetchedResultsController?
-    // Then this should look pretty familiar
+    // If there are too many row changes, just reload the data instead of animating
+    if ([rowChanges count] > 50) {
+        [self.tableView reloadData];
+        return;
+    }
     
     [self.tableView beginUpdates];
     

@@ -65,7 +65,7 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
             [allKeys enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop) {
                 BRCDataObject *object = [[transaction objectForKey:key inCollection:collection] copy];
                 CLLocation *objectLocation = object.location;
-                CLLocationDistance distance = DBL_MAX;
+                CLLocationDistance distance = CLLocationDistanceMax;
                 if (objectLocation) {
                     distance = [objectLocation distanceFromLocation:location];
                 }
