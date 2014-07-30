@@ -74,11 +74,9 @@
     
     [self setupConstraints];
     
-asdfasdf
-    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilteredTableViewCellIdentifier];
-    [self.searchController.searchResultsTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilteredTableViewCellIdentifier];
     UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
     [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
+    [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     
     self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
@@ -184,14 +182,8 @@ asdfasdf
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-
-asdfasdf
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilteredTableViewCellIdentifier forIndexPath:indexPath];
-    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
-    cell.textLabel.text = dataObject.title;
-    cell.detailTextLabel.text = dataObject.detailDescription;
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[[self cellClass] cellIdentifier] forIndexPath:indexPath];
-    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath];
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     [cell setDataObject:dataObject];
     return cell;
 }
