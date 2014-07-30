@@ -9,7 +9,7 @@
 #import "BRCMapViewController.h"
 #import <Mapbox-iOS-SDK/Mapbox.h>
 
-NSString *const bundledTileSourceName = @"iburn";
+//NSString *const bundledTileSourceName = @"iburn";
 
 @interface BRCMapViewController ()
 
@@ -54,7 +54,7 @@ NSString *const bundledTileSourceName = @"iburn";
 
 - (RMMBTilesSource *)bundledTileSource
 {
-    return [[RMMBTilesSource alloc] initWithTileSetResource:bundledTileSourceName ofType:@"mbtiles"];
+    return [[RMMBTilesSource alloc] initWithTileSetResource:@"iburn" ofType:@"mbtiles"];
 }
 
 @end

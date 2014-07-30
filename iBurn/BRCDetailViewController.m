@@ -12,16 +12,21 @@
 #import "BRCDataObject.h"
 #import "BRCDatabaseManager.h"
 #import <MessageUI/MessageUI.h>
+#import "BRCMapView.h"
+#import "BRCAnnotation.h"
+#import "RMUserLocation.h"
 
 NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
-@interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate>
+@interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
+
+@property (nonatomic, strong) BRCMapView *mapView;
 
 @end
 
@@ -41,6 +46,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     self.favoriteBarButtonItem.image = [self currentStarImage];
     self.title = dataObject.title;
     self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
+    [self setupMapViewWithObject:self.dataObject];
     [self.tableView reloadData];
 }
 
@@ -57,11 +63,22 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCTextCellIdentifier];
     
+    if (self.mapView) {
+        self.tableView.tableHeaderView = self.mapView;
+    }
+    
     [self.view addSubview:self.tableView];
     
     self.favoriteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[self currentStarImage] style:UIBarButtonItemStylePlain target:self action:@selector(didTapFavorite:)];
     
     self.navigationItem.rightBarButtonItem = self.favoriteBarButtonItem;
+    
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [self.mapView zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate animated:animated];
     
 }
 
@@ -98,6 +115,27 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
         return self.detailCellInfoArray[section];
     }
     return nil;
+}
+
+- (void)setupMapViewWithObject:(BRCDataObject *)dataObject
+{
+    if (dataObject.location) {
+        self.mapView = [BRCMapView defaultMapViewWithFrame:CGRectMake(0, 0, 10, 250)];
+        self.mapView.delegate = self;
+        RMAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
+        [self.mapView addAnnotation:annotation];
+        self.mapView.draggingEnabled = NO;
+    }
+    else {
+        self.mapView = nil;
+    }
+}
+
+#pragma - mark RMMapviewDelegate Methods
+
+- (void)singleTapOnMap:(RMMapView *)map at:(CGPoint)point
+{
+    
 }
 
 #pragma - mark UITableViewDataSource Methods
