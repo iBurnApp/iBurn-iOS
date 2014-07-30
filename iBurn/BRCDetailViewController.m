@@ -16,6 +16,8 @@
 #import "BRCAnnotation.h"
 #import "RMUserLocation.h"
 
+#import "BRCDetailMapViewController.h"
+
 NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 @interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
@@ -135,7 +137,8 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 - (void)singleTapOnMap:(RMMapView *)map at:(CGPoint)point
 {
-    
+    BRCDetailMapViewController *mapViewController = [[BRCDetailMapViewController alloc] initWithDataObject:self.dataObject];
+    [self.navigationController pushViewController:mapViewController animated:YES];
 }
 
 #pragma - mark UITableViewDataSource Methods
