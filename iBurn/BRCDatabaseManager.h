@@ -13,7 +13,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
     BRCDatabaseViewExtensionTypeUnknown,
     BRCDatabaseViewExtensionTypeName,
     BRCDatabaseViewExtensionTypeDistance,
+    BRCDatabaseViewExtensionTypeTime,
     BRCDatabaseViewExtensionTypeFullTextSearch
+};
+
+typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
+    BRCDatabaseFilteredViewTypeUnknown,
+    BRCDatabaseFilteredViewTypeFavorites,
+    BRCDatabaseFilteredViewTypeEventType
 };
 
 @interface BRCDatabaseManager : NSObject
@@ -26,5 +33,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
 + (instancetype) sharedInstance;
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
++ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType;
 
 @end

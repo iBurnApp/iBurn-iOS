@@ -22,14 +22,12 @@
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
-@property (nonatomic, strong) YapDatabaseViewMappings *nameMappings;
-@property (nonatomic, strong) YapDatabaseViewMappings *distanceMappings;
+@property (nonatomic, strong) NSDictionary *mappingsDictionary;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL observerIsRegistered;
 @property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
-@property (nonatomic, strong) NSSet *mappingsSet;
 @property (nonatomic) BOOL updatingDistanceInformation;
 @end
 
@@ -51,12 +49,16 @@
 {
     [super viewDidLoad];
     
+    [self setupDatabaseConnection];
+    [self setupMappingsDictionary];
+    
     NSArray *segmentedControlInfo = [self segmentedControlInfo];
     [segmentedControlInfo enumerateObjectsUsingBlock:^(NSArray *infoArray, NSUInteger idx, BOOL *stop) {
         NSString *title = [infoArray firstObject];
         [self.segmentedControl insertSegmentWithTitle:title atIndex:idx animated:NO];
     }];
     self.segmentedControl.selectedSegmentIndex = 0;
+    
     
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
     self.tableView.dataSource = self;
@@ -82,24 +84,39 @@
     [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     
+    
+}
+
+- (void)setupDatabaseConnection
+{
     self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
     
-    self.nameMappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
-    self.distanceMappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]];
     
-    self.mappingsSet = [NSSet setWithArray:@[self.nameMappings, self.distanceMappings]];
-    
-    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction){
-        // One-time initialization
-        [self.nameMappings updateWithTransaction:transaction];
-        [self.distanceMappings updateWithTransaction:transaction];
-    }];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.databaseConnection.database];
+}
+
+// Override this in subclasses
+- (void) setupMappingsDictionary {
+    NSMutableArray *viewNames = [NSMutableArray arrayWithCapacity:3];
+    [viewNames addObject:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
+    [viewNames addObject:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]];
+    [viewNames addObject:[BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites]];
+    
+    NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
+    
+    [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
+        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
+        [mutableMappingsDictionary setObject:mappings forKey:viewName];
+        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction){
+            [mappings updateWithTransaction:transaction];
+        }];
+    }];
+    self.mappingsDictionary = mutableMappingsDictionary;
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -183,9 +200,9 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    return @[@[@"Name", @(BRCDatabaseViewExtensionTypeName)],
-             @[@"Distance", @(BRCDatabaseViewExtensionTypeDistance)],
-             @[@"Favorites", @(BRCDatabaseViewExtensionTypeUnknown)]];
+    return @[@[@"Name", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]],
+             @[@"Distance", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]],
+             @[@"Favorites", [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites]]];
 }
 
 - (void)setupConstraints
@@ -202,37 +219,23 @@
 }
 
 - (YapDatabaseViewMappings*) activeMappings {
-    BRCDatabaseViewExtensionType activeExtensionType = [self extensionTypeForSelectedSegmentIndex];
-    if (activeExtensionType == BRCDatabaseViewExtensionTypeName) {
-        return self.nameMappings;
-    } else if (activeExtensionType == BRCDatabaseViewExtensionTypeDistance) {
-        return self.distanceMappings;
-    } else {
-        return nil;
-    }
+    NSString *activeExtensionName = [self activeExtensionNameForSelectedSegmentIndex];
+    YapDatabaseViewMappings *activeMappings = [self.mappingsDictionary objectForKey:activeExtensionName];
+    return activeMappings;
 }
 
-- (NSSet*) inactiveMappingsSet {
-    YapDatabaseViewMappings *activeMappings = [self activeMappings];
-    NSMutableSet *mutableMappings = [self.mappingsSet mutableCopy];
-    if (activeMappings) {
-        [mutableMappings removeObject:activeMappings];
+- (NSDictionary*) inactiveMappingsDictionary {
+    NSString *activeMappingsName = [self activeExtensionNameForSelectedSegmentIndex];
+    NSMutableDictionary *mutableMappings = [self.mappingsDictionary mutableCopy];
+    if (activeMappingsName) {
+        [mutableMappings removeObjectForKey:activeMappingsName];
     }
     return mutableMappings;
 }
 
-- (BRCDatabaseViewExtensionType) extensionTypeForSelectedSegmentIndex {
+- (NSString*) activeExtensionNameForSelectedSegmentIndex {
     NSArray *infoArray = [[self segmentedControlInfo] objectAtIndex:self.segmentedControl.selectedSegmentIndex];
-    BRCDatabaseViewExtensionType extensionType = [[infoArray lastObject] unsignedIntegerValue];
-    return extensionType;
-}
-
-- (NSString*) activeExtensionName {
-    BRCDatabaseViewExtensionType activeExtensionType = [self extensionTypeForSelectedSegmentIndex];
-    if (activeExtensionType == BRCDatabaseViewExtensionTypeUnknown) {
-        return nil;
-    }
-    return [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:activeExtensionType];
+    return [infoArray lastObject];
 }
 
 - (NSString *) activeFullTextSearchExtensionName {
@@ -253,7 +256,7 @@
     }
     else {
         [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionName]];
+            YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionNameForSelectedSegmentIndex]];
             dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
         }];
     }
@@ -367,7 +370,7 @@
     
     YapDatabaseViewMappings *activeMappings = self.activeMappings;
     if (activeMappings) {
-        NSString *activeExtensionName = [self activeExtensionName];
+        NSString *activeExtensionName = [self activeExtensionNameForSelectedSegmentIndex];
         YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:activeExtensionName];
         
         // sometimes this takes a long time if there are a LOT of changes and will block
@@ -379,9 +382,9 @@
     }
 
     
-    NSSet *inactiveMappings = [self inactiveMappingsSet];
+    NSDictionary *inactiveMappings = [self inactiveMappingsDictionary];
     [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        [inactiveMappings enumerateObjectsUsingBlock:^(YapDatabaseViewMappings *inactiveMappings, BOOL *stop) {
+        [inactiveMappings enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *inactiveMappings, BOOL *stop) {
             [inactiveMappings updateWithTransaction:transaction];
         }];
     }];

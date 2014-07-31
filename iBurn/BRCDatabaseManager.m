@@ -13,6 +13,7 @@
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
+#import "YapDatabaseFilteredView.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -67,7 +68,19 @@
         [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
         [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName];
         [self registerFullTextSearchForClass:viewClass withPropertiesToIndex:@[@"title"]];
+        
+        //filteredView
+        if (viewClass == [BRCEventObject class]) {
+            [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+            
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentType:BRCDatabaseViewExtensionTypeTime];
+        }
+        else {
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentType:BRCDatabaseViewExtensionTypeName];
+        }
+        
     }];
+    
     
 
     if (self.database) {
@@ -187,6 +200,51 @@
     }];
 }
 
+- (void)registerDatabaseFilteredViewForViewClass:(Class)viewClass filteredType:(BRCDatabaseFilteredViewType)filterType parentType:(BRCDatabaseViewExtensionType)parentExtensionType;
+{
+    NSString *filteredViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:filterType];
+    YapDatabase *view = [self.database registeredExtension:filteredViewName];
+    if (view){
+        return;
+    }
+    
+    YapDatabaseViewBlockType filteringBlockType = YapDatabaseViewBlockTypeWithObject;
+    YapDatabaseViewFilteringBlock favoritesFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        if ([object isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = (BRCDataObject*)object;
+            return dataObject.isFavorite;
+        }
+        return NO;
+    };
+    
+    YapDatabaseViewFilteringBlock eventsFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        // we set the actual filtering block later in the events tab
+        return YES;
+    };
+    
+    YapDatabaseViewFilteringBlock filteringBlock = nil;
+    
+    if (filterType == BRCDatabaseFilteredViewTypeFavorites) {
+        filteringBlock = favoritesFilteringBlock;
+    } else if (filterType == BRCDatabaseFilteredViewTypeEventType) {
+        filteringBlock = eventsFilteringBlock;
+    }
+ 
+    
+    YapDatabaseFilteredView *filteredView =
+    [[YapDatabaseFilteredView alloc] initWithParentViewName:[[self class] extensionNameForClass:viewClass extensionType:parentExtensionType]
+                                             filteringBlock:filteringBlock
+                                         filteringBlockType:filteringBlockType];
+    
+    
+    [self.database asyncRegisterExtension:filteredView withName:filteredViewName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready", filteredViewName);
+    }];
+    
+}
+
 + (NSString*) stringForExtensionType:(BRCDatabaseViewExtensionType)extensionType {
     switch (extensionType) {
         case BRCDatabaseViewExtensionTypeName:
@@ -197,10 +255,39 @@
             break;
         case BRCDatabaseViewExtensionTypeFullTextSearch:
             return @"Search";
+            break;
+        case BRCDatabaseViewExtensionTypeTime:
+            return @"Time";
+            break;
         default:
             return nil;
             break;
     }
+}
+
++ (NSString*) stringForFilteredExtensionType:(BRCDatabaseFilteredViewType)extensionType {
+    switch (extensionType) {
+        case BRCDatabaseFilteredViewTypeEventType:
+            return @"EventType";
+            break;
+        case BRCDatabaseFilteredViewTypeFavorites:
+            return @"Favorites";
+            break;
+        default:
+            return nil;
+            break;
+    }
+}
+
++ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType {
+    NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
+    if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
+        return nil;
+    }
+    NSString *classString = NSStringFromClass(extensionClass);
+    NSString *extensionString = [self stringForFilteredExtensionType:extensionType];
+    NSParameterAssert(extensionString != nil);
+    return [NSString stringWithFormat:@"%@%@ExtensionView", classString, extensionString];
 }
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
