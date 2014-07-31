@@ -42,7 +42,10 @@
     }
     
     if (tintColor) {
-        return [[RMMarker alloc] initWithMapboxMarkerImage:nil tintColor:tintColor];
+        RMMarker *marker = [[RMMarker alloc] initWithMapboxMarkerImage:nil tintColor:tintColor];
+        marker.canShowCallout = YES;
+        marker.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+        return marker;
     }
     return nil;
 }

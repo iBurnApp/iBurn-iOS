@@ -12,6 +12,7 @@
 #import "BRCMapView.h"
 #import "BRCAnnotation.h"
 #import "BRCEventObject.h"
+#import "BRCDetailViewController.h"
 
 static double const kBRCEventTimeWindow = 60; //minutes
 
@@ -62,6 +63,19 @@ static double const kBRCEventTimeWindow = 60; //minutes
         }];
         
         
+    }];
+}
+
+- (void)tapOnCalloutAccessoryControl:(UIControl *)control forAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map
+{
+    __block BRCDataObject *dataObject = nil;
+    [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        if (annotation.userInfo && annotation.annotationType) {
+            dataObject = [transaction objectForKey:annotation.userInfo inCollection:annotation.annotationType];
+        }
+    } completionBlock:^{
+        BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+        [self.navigationController pushViewController:detailViewController animated:YES];
     }];
 }
 
