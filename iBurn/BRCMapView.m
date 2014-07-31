@@ -68,6 +68,7 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
     mapView.hideAttribution = YES;
     mapView.showLogoBug = NO;
     mapView.showsUserLocation = YES;
+    //mapView.clusteringEnabled = YES;
     
     return mapView;
     

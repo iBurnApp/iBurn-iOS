@@ -73,4 +73,28 @@
     }];
 }
 
+- (BOOL) isEndingSoon {
+    NSTimeInterval endingSoonTimeThreshold = 15 * 60; // 15 minutes
+    // event will end soon
+    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEndDate];
+    if (timeIntervalUntilEventEnds < endingSoonTimeThreshold) { // event ending soon
+        return YES;
+    }
+    return NO;
+}
+
+/**
+ *  Whether or not the event starts within the next hour
+ */
+- (BOOL)isStartingSoon {
+    NSTimeInterval startingSoonTimeThreshold = 60 * 60; // one hour
+    // event will end soon
+    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStartDate];
+    if (timeIntervalUntilEventStarts < 0 && fabs(timeIntervalUntilEventStarts) < startingSoonTimeThreshold) { // event starting soon
+        return YES;
+    }
+    return NO;
+}
+
+
 @end

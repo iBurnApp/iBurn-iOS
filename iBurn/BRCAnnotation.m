@@ -13,31 +13,42 @@
 #import "BRCEventObject.h"
 #import "RMMarker.h"
 
+@interface BRCAnnotation()
+@property (nonatomic, strong, readwrite) BRCDataObject *dataObject;
+@end
+
 @implementation BRCAnnotation
 
 + (instancetype)annotationWithMapView:(RMMapView *)aMapView dataObject:(BRCDataObject *)dataObject
 {
     BRCAnnotation *annotation = nil;
     if (dataObject.location) {
-        annotation = [self annotationWithMapView:aMapView coordinate:dataObject.location.coordinate andTitle:dataObject.title];
-        annotation.userInfo = dataObject.uniqueID;
-        annotation.annotationType = [[dataObject class] collection];
-        annotation.layer = [self layerForClass:[dataObject class]];
+        annotation = [super annotationWithMapView:aMapView coordinate:dataObject.location.coordinate andTitle:dataObject.title];
+        annotation.dataObject = dataObject;
+        annotation.layer = [self layerForDataObject:dataObject];
     }
     
     return annotation;
 }
 
-+ (RMMapLayer *)layerForClass:(Class)class
++ (RMMapLayer *)layerForDataObject:(BRCDataObject*)dataObject
 {
     UIColor *tintColor = nil;
-    if (class == [BRCArtObject class]) {
+    Class dataObjectClass = [dataObject class];
+    if (dataObjectClass == [BRCArtObject class]) {
         tintColor = [UIColor blueColor];
     }
-    else if (class == [BRCEventObject class]) {
-        tintColor = [UIColor redColor];
+    else if (dataObjectClass == [BRCEventObject class]) {
+        BRCEventObject *eventObject = (BRCEventObject*)dataObject;
+        if ([eventObject isEndingSoon]) { // event ending soon
+            tintColor = [UIColor orangeColor];
+        } else if (![eventObject isOngoing]) { // event has ended
+            tintColor = [UIColor redColor];
+        } else {
+            tintColor = [UIColor greenColor]; // event is still happening for a while
+        }
     }
-    else if (class == [BRCCampObject class]) {
+    else if (dataObjectClass == [BRCCampObject class]) {
         tintColor = [UIColor purpleColor];
     }
     

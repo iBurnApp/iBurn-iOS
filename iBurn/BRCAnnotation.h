@@ -12,6 +12,7 @@
 
 @interface BRCAnnotation : RMAnnotation
 
+@property (nonatomic, strong, readonly) BRCDataObject *dataObject;
 
 + (instancetype)annotationWithMapView:(RMMapView *)aMapView dataObject:(BRCDataObject *)dataObject;
 

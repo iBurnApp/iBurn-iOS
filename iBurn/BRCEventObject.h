@@ -48,7 +48,20 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 
 - (NSTimeInterval)timeIntervalUntilStartDate;
 - (NSTimeInterval)timeIntervalUntilEndDate;
+
+/**
+ *  Whether or not the event is still happening *right now*
+ */
 - (BOOL)isOngoing;
 
+/**
+ *  Whether or not the event ends in the next 15 minutes
+ */
+- (BOOL)isEndingSoon;
+
+/**
+ *  Whether or not the event starts within the next hour
+ */
+- (BOOL)isStartingSoon;
 
 @end
