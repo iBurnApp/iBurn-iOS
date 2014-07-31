@@ -12,6 +12,9 @@
 #import "BRCAnnotation.h"
 #import "BRCEventObject.h"
 #import "BRCDetailViewController.h"
+#import "BRCCampObject.h"
+#import "RMMarker.h"
+
 
 @interface BRCMapViewController ()
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
@@ -109,6 +112,8 @@
     }];
 }
 
+#pragma mark RMMapViewDelegate methods
+
 - (void)tapOnCalloutAccessoryControl:(UIControl *)control forAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map
 {
     if ([annotation isKindOfClass:[BRCAnnotation class]]) {
@@ -117,6 +122,42 @@
         BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
         [self.navigationController pushViewController:detailViewController animated:YES];
     }
+}
+
+- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+    if (annotation.isUserLocationAnnotation) { // show default style
+        return nil;
+    }
+    if ([annotation isKindOfClass:[BRCAnnotation class]]) {
+        BRCAnnotation *brcAnnotation = (BRCAnnotation*)annotation;
+        BRCDataObject *dataObject = brcAnnotation.dataObject;
+        UIColor *tintColor = nil;
+        Class dataObjectClass = [dataObject class];
+        if (dataObjectClass == [BRCArtObject class]) {
+            tintColor = [UIColor blueColor];
+        }
+        else if (dataObjectClass == [BRCEventObject class]) {
+            BRCEventObject *eventObject = (BRCEventObject*)dataObject;
+            if ([eventObject isEndingSoon]) { // event ending soon
+                tintColor = [UIColor orangeColor];
+            } else if (![eventObject isOngoing]) { // event has ended
+                tintColor = [UIColor redColor];
+            } else {
+                tintColor = [UIColor greenColor]; // event is still happening for a while
+            }
+        }
+        else if (dataObjectClass == [BRCCampObject class]) {
+            tintColor = [UIColor purpleColor];
+        }
+        
+        if (tintColor) {
+            RMMarker *marker = [[RMMarker alloc] initWithMapboxMarkerImage:nil tintColor:tintColor];
+            marker.canShowCallout = YES;
+            marker.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+            return marker;
+        }
+    }
+    return nil;
 }
 
 @end
