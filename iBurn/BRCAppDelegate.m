@@ -15,6 +15,8 @@
 #import "BRCCampObject.h"
 #import "BRCRecurringEventObject.h"
 #import "BRCLocationManager.h"
+#import "BRCEventObject_Private.h"
+#import "NSDateFormatter+iBurn.h"
 
 static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
 
@@ -93,6 +95,8 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art_data" withExtension:@"json"];
     NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camp_data" withExtension:@"json"];
     NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"event_data" withExtension:@"json"];
+    NSURL *datesInfoURL = [[NSBundle mainBundle] URLForResource:@"dates_info" withExtension:@"json"];
+
 
     NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
                             @[campsDataURL, [BRCCampObject class]],
@@ -103,6 +107,21 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
         NSLog(@"Data already imported, skipping...");
         return;
     }
+    
+    NSData *datesInfoData = [NSData dataWithContentsOfURL:datesInfoURL];
+    NSDictionary *datesInfoDictionary = [NSJSONSerialization JSONObjectWithData:datesInfoData options:0 error:nil];
+    
+    NSDictionary *rangeInfoDictionary = [datesInfoDictionary objectForKey:@"rangeInfo"];
+    NSString *startDateString = [rangeInfoDictionary objectForKey:@"startDate"];
+    NSDate *startDate = [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:startDateString];
+    NSString *endDateString = [rangeInfoDictionary objectForKey:@"endDate"];
+    NSDate *endDate = [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:endDateString];
+    NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEventsKey];
+    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDateKey];
+    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDateKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
     
     [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
         NSURL *url = [obj firstObject];

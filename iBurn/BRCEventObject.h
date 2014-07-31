@@ -64,4 +64,12 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  */
 - (BOOL)isStartingSoon;
 
+/** first day of events */
++ (NSDate*) festivalStartDate;
+/** first day of exodus */
++ (NSDate*) festivalEndDate;
+
+/** Array of titles of major events, starting with first day of events */
++ (NSArray*) majorEvents;
+
 @end

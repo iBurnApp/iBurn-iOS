@@ -12,6 +12,10 @@
 #import "MTLValueTransformer.h"
 #import "BRCEventObject_Private.h"
 
+NSString * const kBRCStartDateKey = @"kBRCStartDateKey";
+NSString * const kBRCEndDateKey = @"kBRCEndDateKey";
+NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
+
 @interface BRCEventObject()
 @end
 
@@ -96,5 +100,15 @@
     return NO;
 }
 
++ (NSDate*) festivalStartDate {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDateKey];
+}
++ (NSDate*) festivalEndDate {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCEndDateKey];
+}
+/** Array of titles of major events, starting with first day of events */
++ (NSArray*) majorEvents {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEventsKey];
+}
 
 @end

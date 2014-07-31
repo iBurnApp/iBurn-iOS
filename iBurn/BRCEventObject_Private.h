@@ -8,6 +8,12 @@
 
 #import "BRCEventObject.h"
 
+// used by data import for NSUserDefaults
+// fetch values using static accessor methods
+extern NSString * const kBRCStartDateKey;
+extern NSString * const kBRCEndDateKey;
+extern NSString * const kBRCMajorEventsKey;
+
 @interface BRCEventObject()
 @property (nonatomic, strong, readwrite) NSDate *startDate;
 @property (nonatomic, strong, readwrite) NSDate *endDate;

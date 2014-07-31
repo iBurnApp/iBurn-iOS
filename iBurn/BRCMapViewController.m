@@ -55,7 +55,7 @@
 }
 
 - (void) reloadArtAnnotationsIfNeeded {
-    if (self.artAnnotations || self.currentlyAddingArtAnnotations) {
+    if (self.artAnnotations.count || self.currentlyAddingArtAnnotations) {
         return;
     }
     self.currentlyAddingArtAnnotations = YES;

@@ -8,6 +8,7 @@
 
 #import "BRCEventTime.h"
 #import "MTLValueTransformer.h"
+#import "NSDateFormatter+iBurn.h"
 
 @implementation BRCEventTime
 
@@ -17,32 +18,21 @@
     return paths;
 }
 
-+ (NSDateFormatter *)dateFormatter {
-    static NSDateFormatter *dateFormatter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        dateFormatter = [[NSDateFormatter alloc] init];
-        dateFormatter.dateFormat = @"yyyy-MM-dd' 'HH:mm:ss";
-        dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
-    });
-    return dateFormatter;
-}
-
 + (NSValueTransformer *)uniqueIDJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
-        return [[self dateFormatter] dateFromString:dateString];
+        return [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:dateString];
     }];
 }
 
 + (NSValueTransformer *)startDateJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
-        return [[self dateFormatter] dateFromString:dateString];
+        return [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:dateString];
     }];
 }
 
 + (NSValueTransformer *)endDateJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
-        return [[self dateFormatter] dateFromString:dateString];
+        return [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:dateString];
     }];
 }
 

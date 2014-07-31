@@ -17,13 +17,12 @@
 #import "BRCDetailViewController.h"
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCLocationManager.h"
-
+#import "BRCFilteredTableViewController.h"
+#import "BRCFilteredTableViewController_Private.h"
 
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
-@property (nonatomic, strong) NSDictionary *mappingsDictionary;
-@property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL observerIsRegistered;
@@ -51,6 +50,7 @@
     
     [self setupDatabaseConnection];
     [self setupMappingsDictionary];
+    [self updateAllMappings];
     
     NSArray *segmentedControlInfo = [self segmentedControlInfo];
     [segmentedControlInfo enumerateObjectsUsingBlock:^(NSArray *infoArray, NSUInteger idx, BOOL *stop) {
@@ -112,11 +112,16 @@
     [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
         YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
         [mutableMappingsDictionary setObject:mappings forKey:viewName];
-        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction){
+    }];
+    self.mappingsDictionary = mutableMappingsDictionary;
+}
+
+- (void) updateAllMappings {
+    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [self.mappingsDictionary enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *mappings, BOOL *stop) {
             [mappings updateWithTransaction:transaction];
         }];
     }];
-    self.mappingsDictionary = mutableMappingsDictionary;
 }
 
 - (void) viewWillAppear:(BOOL)animated {
