@@ -124,8 +124,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     if (dataObject.location) {
         self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 250)];
         self.mapView.delegate = self;
-        RMAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
-        annotation.layer = [RMMarker brc_defaultMarkerForDataObject:dataObject];
+        BRCAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
         [self.mapView addAnnotation:annotation];
         self.mapView.draggingEnabled = NO;
     }
@@ -140,6 +139,20 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 {
     BRCDetailMapViewController *mapViewController = [[BRCDetailMapViewController alloc] initWithDataObject:self.dataObject];
     [self.navigationController pushViewController:mapViewController animated:YES];
+}
+
+- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+    if (annotation.isUserLocationAnnotation) { // show default style
+        return nil;
+    }
+    if ([annotation isKindOfClass:[BRCAnnotation class]]) {
+        BRCAnnotation *brcAnnotation = (BRCAnnotation*)annotation;
+        BRCDataObject *dataObject = brcAnnotation.dataObject;
+        
+        return [RMMarker brc_defaultMarkerForDataObject:dataObject];
+        
+    }
+    return nil;
 }
 
 #pragma - mark UITableViewDataSource Methods
@@ -191,12 +204,8 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
                 cell.textLabel.text = relationshipCellInfo.dataObject.title;
                 break;
             }
-                
         }
-        
-        
     }
-    
     
     return cell;
 }
