@@ -69,7 +69,9 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 /** first day of exodus */
 + (NSDate*) festivalEndDate;
 
-/** Array of titles of major events, starting with first day of events */
+/** Array of titles of major events, starting with first day of events @see datesOfFestival */
 + (NSArray*) majorEvents;
+/** All the dates for the festival. @see majorEvents */
++ (NSArray*) datesOfFestival;
 
 @end

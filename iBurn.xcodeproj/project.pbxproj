@@ -32,6 +32,8 @@
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D97D7A2B198AD86400CA7828 /* dates_info.json in Resources */ = {isa = PBXBuildFile; fileRef = D97D7A2A198AD86400CA7828 /* dates_info.json */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
+		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
+		D97D7A37198B019A00CA7828 /* BRCActionSheetStringPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A36198B019A00CA7828 /* BRCActionSheetStringPicker.m */; };
 		D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */; };
 		D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156019871E8400D245C7 /* BRCEventsTableViewController.m */; };
 		D99415641987222800D245C7 /* BRCDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415631987222800D245C7 /* BRCDataObject.m */; };
@@ -93,6 +95,10 @@
 		D97D7A2A198AD86400CA7828 /* dates_info.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = dates_info.json; path = "Submodules/iBurn-Data/data/2013/dates_info.json"; sourceTree = SOURCE_ROOT; };
 		D97D7A2F198ADBE400CA7828 /* NSDateFormatter+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDateFormatter+iBurn.h"; sourceTree = "<group>"; };
 		D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDateFormatter+iBurn.m"; sourceTree = "<group>"; };
+		D97D7A32198AF7BD00CA7828 /* NSDate+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+iBurn.h"; sourceTree = "<group>"; };
+		D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+iBurn.m"; sourceTree = "<group>"; };
+		D97D7A35198B019A00CA7828 /* BRCActionSheetStringPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCActionSheetStringPicker.h; sourceTree = "<group>"; };
+		D97D7A36198B019A00CA7828 /* BRCActionSheetStringPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCActionSheetStringPicker.m; sourceTree = "<group>"; };
 		D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCFilteredTableViewController.h; sourceTree = "<group>"; };
 		D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCFilteredTableViewController.m; sourceTree = "<group>"; };
 		D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventsTableViewController.h; sourceTree = "<group>"; };
@@ -261,6 +267,8 @@
 			isa = PBXGroup;
 			children = (
 				D92562C91988772600ED6B50 /* Cells */,
+				D97D7A35198B019A00CA7828 /* BRCActionSheetStringPicker.h */,
+				D97D7A36198B019A00CA7828 /* BRCActionSheetStringPicker.m */,
 				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
 				D994156019871E8400D245C7 /* BRCEventsTableViewController.m */,
 				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
@@ -273,6 +281,8 @@
 		D99415651987222F00D245C7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D97D7A32198AF7BD00CA7828 /* NSDate+iBurn.h */,
+				D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */,
 				D97D7A2F198ADBE400CA7828 /* NSDateFormatter+iBurn.h */,
 				D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */,
 				D9941566198726A700D245C7 /* BRCArtObject.h */,
@@ -420,6 +430,7 @@
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
+				D97D7A37198B019A00CA7828 /* BRCActionSheetStringPicker.m in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
@@ -430,6 +441,7 @@
 				D92562CC1988929A00ED6B50 /* BRCLocationManager.m in Sources */,
 				D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */,
 				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
+				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,
 				632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,

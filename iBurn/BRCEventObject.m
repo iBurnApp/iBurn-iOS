@@ -111,4 +111,21 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
     return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEventsKey];
 }
 
++ (NSArray*) datesOfFestival {
+    NSCalendar *gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSDate *festivalStartDate = [self festivalStartDate];
+    NSUInteger numberOfDays = [self majorEvents].count;
+
+    NSMutableArray *dates = [NSMutableArray arrayWithCapacity:numberOfDays];
+    
+    for (int i = 0; i < numberOfDays; i++) {
+        NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
+        dayComponent.day = i;
+        
+        NSDate *nextDate = [gregorianCalendar dateByAddingComponents:dayComponent toDate:festivalStartDate options:0];
+        [dates addObject:nextDate];
+    }
+    return dates;
+}
+
 @end

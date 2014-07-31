@@ -1,4 +1,5 @@
 PODS:
+  - ActionSheetPicker-3.0 (1.0.13)
   - CocoaLumberjack (1.6.5.1):
     - CocoaLumberjack/Core
     - CocoaLumberjack/Extensions
@@ -29,11 +30,13 @@ PODS:
     - YapDatabase/common
 
 DEPENDENCIES:
+  - ActionSheetPicker-3.0 (~> 1.0)
   - Mantle (~> 1.5)
   - Mapbox-iOS-SDK (~> 1.2)
   - YapDatabase (~> 2.4)
 
 SPEC CHECKSUMS:
+  ActionSheetPicker-3.0: bc24c9fd9f8e8a8c7d3c266fd00d20f4a78889eb
   CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
   FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
   GRMustache: ab96109b7ba4b9568425bea40d6cd2cdc7582b6c
