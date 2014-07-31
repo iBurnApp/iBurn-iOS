@@ -9,7 +9,6 @@
 #import "BRCDetailMapViewController.h"
 #import "BRCDataObject.h"
 #import "BRCAnnotation.h"
-#import "BRCMapView.h"
 @interface BRCDetailMapViewController ()
 
 @property (nonatomic, strong) BRCDataObject *dataObject;

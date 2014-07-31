@@ -1,25 +1,26 @@
 //
-//  BRCMapView.m
+//  RMMapView+iBurn.m
 //  iBurn
 //
-//  Created by David Chiles on 7/30/14.
+//  Created by Christopher Ballinger on 7/30/14.
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "BRCMapView.h"
+#import "RMMapView+iBurn.h"
 #import "RMMBTilesSource.h"
 
-@implementation BRCMapView
+@implementation RMMapView (iBurn)
+
 
 static NSString *const kBRCBundledTileSourceName = @"iburn";
 
-- (void)zoomToFullTileSourceAnimated:(BOOL)animated
+- (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated
 {
     RMSphericalTrapezium bounds = [self.tileSource latitudeLongitudeBoundingBox];
     [self zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:animated];
 }
 
-- (void)zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 animated:(BOOL)animated
+- (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 animated:(BOOL)animated
 {
     BOOL coordinate1InBounds = [[self class] isCoordinate:coordinate1 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
     BOOL coordinate2InBounds = [[self class] isCoordinate:coordinate2 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
@@ -56,14 +57,14 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
 }
 
 
-+ (RMMBTilesSource *)defaultTileSource
++ (RMMBTilesSource *)brc_defaultTileSource
 {
     return [[RMMBTilesSource alloc] initWithTileSetResource:kBRCBundledTileSourceName ofType:@"mbtiles"];
 }
 
-+ (instancetype)defaultMapViewWithFrame:(CGRect)frame
++ (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame
 {
-    BRCMapView *mapView = [[BRCMapView alloc] initWithFrame:frame andTilesource:[self defaultTileSource]];
+    RMMapView *mapView = [[RMMapView alloc] initWithFrame:frame andTilesource:[self brc_defaultTileSource]];
     mapView.adjustTilesForRetinaDisplay = YES;
     mapView.hideAttribution = YES;
     mapView.showLogoBug = NO;

@@ -7,7 +7,7 @@
 //
 
 #import "BRCBaseMapViewController.h"
-#import "BRCMapView.h"
+#import "RMMapView+iBurn.h"
 #import <Mapbox-iOS-SDK/Mapbox.h>
 
 @implementation BRCBaseMapViewController
@@ -16,7 +16,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.mapView = [BRCMapView defaultMapViewWithFrame:self.view.bounds];
+    self.mapView = [RMMapView brc_defaultMapViewWithFrame:self.view.bounds];
     self.mapView.delegate = self;
     
     self.mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -25,7 +25,7 @@
     RMUserTrackingBarButtonItem *userTrackingBarButtonItem = [[RMUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
     self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
     
-    [self.mapView zoomToFullTileSourceAnimated:NO];
+    [self.mapView brc_zoomToFullTileSourceAnimated:NO];
 }
 
 @end

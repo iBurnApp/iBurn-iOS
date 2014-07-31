@@ -9,7 +9,6 @@
 #import "BRCMapViewController.h"
 #import "BRCDatabaseManager.h"
 #import "BRCArtObject.h"
-#import "BRCMapView.h"
 #import "BRCAnnotation.h"
 #import "BRCEventObject.h"
 #import "BRCDetailViewController.h"

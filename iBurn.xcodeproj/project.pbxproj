@@ -10,7 +10,6 @@
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
-		6322830F19898389009E472B /* BRCMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830E19898389009E472B /* BRCMapView.m */; };
 		63228312198987D0009E472B /* BRCAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228311198987D0009E472B /* BRCAnnotation.m */; };
 		632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632283141989AF92009E472B /* BRCBaseMapViewController.m */; };
 		6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322831A1989B139009E472B /* BRCDetailMapViewController.m */; };
@@ -29,6 +28,7 @@
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CC1988929A00ED6B50 /* BRCLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CB1988929A00ED6B50 /* BRCLocationManager.m */; };
+		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */; };
 		D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156019871E8400D245C7 /* BRCEventsTableViewController.m */; };
 		D99415641987222800D245C7 /* BRCDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415631987222800D245C7 /* BRCDataObject.m */; };
@@ -52,8 +52,6 @@
 		6322830419881F41009E472B /* BRCDetailCellInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailCellInfo.m; sourceTree = "<group>"; };
 		6322830919882153009E472B /* BRCRelationshipDetailInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRelationshipDetailInfoCell.h; sourceTree = "<group>"; };
 		6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRelationshipDetailInfoCell.m; sourceTree = "<group>"; };
-		6322830D19898389009E472B /* BRCMapView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapView.h; sourceTree = "<group>"; };
-		6322830E19898389009E472B /* BRCMapView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapView.m; sourceTree = "<group>"; };
 		63228310198987D0009E472B /* BRCAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAnnotation.h; sourceTree = "<group>"; };
 		63228311198987D0009E472B /* BRCAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAnnotation.m; sourceTree = "<group>"; };
 		632283131989AF92009E472B /* BRCBaseMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCBaseMapViewController.h; sourceTree = "<group>"; };
@@ -84,6 +82,8 @@
 		D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCEventObjectTableViewCell.xib; sourceTree = "<group>"; };
 		D92562CA1988929A00ED6B50 /* BRCLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocationManager.h; sourceTree = "<group>"; };
 		D92562CB1988929A00ED6B50 /* BRCLocationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocationManager.m; sourceTree = "<group>"; };
+		D92562CD198A20D600ED6B50 /* RMMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RMMapView+iBurn.h"; sourceTree = "<group>"; };
+		D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RMMapView+iBurn.m"; sourceTree = "<group>"; };
 		D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCFilteredTableViewController.h; sourceTree = "<group>"; };
 		D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCFilteredTableViewController.m; sourceTree = "<group>"; };
 		D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventsTableViewController.h; sourceTree = "<group>"; };
@@ -142,8 +142,8 @@
 		6322830C1989836F009E472B /* MapClasses */ = {
 			isa = PBXGroup;
 			children = (
-				6322830D19898389009E472B /* BRCMapView.h */,
-				6322830E19898389009E472B /* BRCMapView.m */,
+				D92562CD198A20D600ED6B50 /* RMMapView+iBurn.h */,
+				D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */,
 				63228310198987D0009E472B /* BRCAnnotation.h */,
 				63228311198987D0009E472B /* BRCAnnotation.m */,
 			);
@@ -409,9 +409,9 @@
 				63228312198987D0009E472B /* BRCAnnotation.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
-				6322830F19898389009E472B /* BRCMapView.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
 				D92562CC1988929A00ED6B50 /* BRCLocationManager.m in Sources */,
+				D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */,
 				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
 				632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,

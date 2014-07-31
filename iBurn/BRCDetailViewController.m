@@ -12,7 +12,7 @@
 #import "BRCDataObject.h"
 #import "BRCDatabaseManager.h"
 #import <MessageUI/MessageUI.h>
-#import "BRCMapView.h"
+#import "RMMapView+iBurn.h"
 #import "BRCAnnotation.h"
 #import "RMUserLocation.h"
 
@@ -28,7 +28,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 
-@property (nonatomic, strong) BRCMapView *mapView;
+@property (nonatomic, strong) RMMapView *mapView;
 
 @end
 
@@ -80,8 +80,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [self.mapView zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate animated:animated];
-    
+    [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate animated:animated];
 }
 
 - (UIImage *)currentStarImage
@@ -122,7 +121,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
     if (dataObject.location) {
-        self.mapView = [BRCMapView defaultMapViewWithFrame:CGRectMake(0, 0, 10, 250)];
+        self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 250)];
         self.mapView.delegate = self;
         RMAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
         [self.mapView addAnnotation:annotation];
