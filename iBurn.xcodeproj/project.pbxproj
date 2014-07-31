@@ -13,6 +13,7 @@
 		63228312198987D0009E472B /* BRCAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228311198987D0009E472B /* BRCAnnotation.m */; };
 		632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632283141989AF92009E472B /* BRCBaseMapViewController.m */; };
 		6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322831A1989B139009E472B /* BRCDetailMapViewController.m */; };
+		63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228320198AB383009E472B /* RMMarker+iBurn.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -58,6 +59,8 @@
 		632283141989AF92009E472B /* BRCBaseMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCBaseMapViewController.m; sourceTree = "<group>"; };
 		632283191989B139009E472B /* BRCDetailMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailMapViewController.h; sourceTree = "<group>"; };
 		6322831A1989B139009E472B /* BRCDetailMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailMapViewController.m; sourceTree = "<group>"; };
+		6322831F198AB383009E472B /* RMMarker+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RMMarker+iBurn.h"; sourceTree = "<group>"; };
+		63228320198AB383009E472B /* RMMarker+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RMMarker+iBurn.m"; sourceTree = "<group>"; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A571987140F00F65B01 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63CE2A591987140F00F65B01 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -144,6 +147,8 @@
 			children = (
 				D92562CD198A20D600ED6B50 /* RMMapView+iBurn.h */,
 				D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */,
+				6322831F198AB383009E472B /* RMMarker+iBurn.h */,
+				63228320198AB383009E472B /* RMMarker+iBurn.m */,
 				63228310198987D0009E472B /* BRCAnnotation.h */,
 				63228311198987D0009E472B /* BRCAnnotation.m */,
 			);
@@ -420,6 +425,7 @@
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
 				D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */,
+				63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

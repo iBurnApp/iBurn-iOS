@@ -15,6 +15,7 @@
 #import "RMMapView+iBurn.h"
 #import "BRCAnnotation.h"
 #import "RMUserLocation.h"
+#import "RMMarker+iBurn.h"
 
 #import "BRCDetailMapViewController.h"
 
@@ -124,6 +125,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
         self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 250)];
         self.mapView.delegate = self;
         RMAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
+        annotation.layer = [RMMarker brc_defaultMarkerForDataObject:dataObject];
         [self.mapView addAnnotation:annotation];
         self.mapView.draggingEnabled = NO;
     }
