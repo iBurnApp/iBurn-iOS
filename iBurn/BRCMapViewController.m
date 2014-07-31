@@ -17,6 +17,11 @@
 @interface BRCMapViewController ()
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
+@property (nonatomic) BOOL currentlyAddingArtAnnotations;
+@property (nonatomic) BOOL currentlyAddingEventAnnotations;
+@property (nonatomic, strong) NSArray *artAnnotations;
+@property (nonatomic, strong) NSArray *eventAnnotations;
+@property (nonatomic, strong) NSDate *lastEventAnnotationUpdate;
 @end
 
 @implementation BRCMapViewController
@@ -26,20 +31,32 @@
         self.title = @"Map";
         self.artConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         self.eventsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        [self reloadArtAnnotationsIfNeeded];
+        [self reloadEventAnnotationsIfNeeded];
     }
     return self;
+}
+
+- (void) didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    [self.mapView removeAllAnnotations];
+    self.artAnnotations = nil;
+    self.eventAnnotations = nil;
+    self.lastEventAnnotationUpdate = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [self reloadAnnotations];
+    [self reloadArtAnnotationsIfNeeded];
+    [self reloadEventAnnotationsIfNeeded];
 }
 
-- (void)reloadAnnotations
-{
-    [self.mapView removeAllAnnotations];
-    
+- (void) reloadArtAnnotationsIfNeeded {
+    if (self.artAnnotations || self.currentlyAddingArtAnnotations) {
+        return;
+    }
+    self.currentlyAddingArtAnnotations = YES;
     [self.artConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *artAnnotationsToAdd = [NSMutableArray array];
         [transaction enumerateKeysInCollection:[BRCArtObject collection] usingBlock:^(NSString *key, BOOL *stop) {
@@ -52,9 +69,22 @@
             }
         }];
         dispatch_async(dispatch_get_main_queue(), ^{
+            self.currentlyAddingArtAnnotations = NO;
+            self.artAnnotations = artAnnotationsToAdd;
             [self.mapView addAnnotations:artAnnotationsToAdd];
         });
     }];
+}
+
+- (void)reloadEventAnnotationsIfNeeded
+{
+    NSTimeInterval minTimeIntervalForRefresh = 5 * 60; // 5 minutes
+    
+    if ([[NSDate date] timeIntervalSinceDate:self.lastEventAnnotationUpdate] < minTimeIntervalForRefresh || self.currentlyAddingEventAnnotations) {
+        return;
+    }
+    self.currentlyAddingEventAnnotations = YES;
+    [self.mapView removeAnnotations:self.eventAnnotations];
     
     [self.eventsConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *eventAnnotationsToAdd = [NSMutableArray array];
@@ -73,6 +103,8 @@
             }
         }];
         dispatch_async(dispatch_get_main_queue(), ^{
+            self.currentlyAddingEventAnnotations = NO;
+            self.eventAnnotations = eventAnnotationsToAdd;
             [self.mapView addAnnotations:eventAnnotationsToAdd];
         });
     }];
