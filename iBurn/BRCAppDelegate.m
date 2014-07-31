@@ -16,6 +16,8 @@
 #import "BRCRecurringEventObject.h"
 #import "BRCLocationManager.h"
 
+static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
+
 @implementation BRCAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -88,7 +90,6 @@
 }
 
 - (void) preloadExistingData {
-    BRCDataImporter *dataImporter = [[BRCDataImporter alloc] init];
     NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art_data" withExtension:@"json"];
     NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camp_data" withExtension:@"json"];
     NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"event_data" withExtension:@"json"];
@@ -97,14 +98,21 @@
                             @[campsDataURL, [BRCCampObject class]],
                             @[eventsDataURL, [BRCRecurringEventObject class]]];
     
+    BOOL hasLoadedData = [[NSUserDefaults standardUserDefaults] boolForKey:kBRCHasImportedDataKey];
+    if (hasLoadedData) {
+        NSLog(@"Data already imported, skipping...");
+        return;
+    }
+    
     [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
         NSURL *url = [obj firstObject];
         Class dataClass = [obj lastObject];
-        [dataImporter loadDataFromURL:url dataClass:dataClass completionBlock:^(BOOL success, NSError *error) {
+        [BRCDataImporter loadDataFromURL:url dataClass:dataClass completionBlock:^(BOOL success, NSError *error) {
             if (!success) {
                 NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
             } else {
                 NSLog(@"Imported %@ data successfully", NSStringFromClass(dataClass));
+                [[NSUserDefaults standardUserDefaults] setObject:@YES forKey:kBRCHasImportedDataKey];
             }
         }];
     }];

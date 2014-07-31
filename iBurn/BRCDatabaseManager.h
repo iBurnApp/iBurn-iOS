@@ -19,7 +19,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
 @interface BRCDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;
-@property (nonatomic, strong, readonly) YapDatabaseConnection *mainThreadReadOnlyDatabaseConnection;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteDatabaseConnection;
 
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;

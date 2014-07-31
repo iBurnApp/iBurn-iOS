@@ -14,7 +14,7 @@
 
 @implementation BRCDataImporter
 
-- (void) handleError:(NSError*)error completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
++ (void) handleError:(NSError*)error completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
     if (completionBlock) {
         dispatch_async(dispatch_get_main_queue(), ^{
             completionBlock(NO, error);
@@ -22,7 +22,7 @@
     }
 };
 
-- (void) loadDataFromURL:(NSURL*)dataURL dataClass:(Class)dataClass completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
++ (void) loadDataFromURL:(NSURL*)dataURL dataClass:(Class)dataClass completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSData *jsonData = [NSData dataWithContentsOfURL:dataURL];
         NSError *error = nil;

@@ -17,7 +17,7 @@
  *  @param dataClass       subclass of BRCDataObject
  *  @param completionBlock always called on main thread
  */
-- (void) loadDataFromURL:(NSURL*)dataURL
++ (void) loadDataFromURL:(NSURL*)dataURL
                dataClass:(Class)dataClass
          completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
 

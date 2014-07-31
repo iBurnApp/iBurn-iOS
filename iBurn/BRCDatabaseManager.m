@@ -16,7 +16,6 @@
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
-@property (nonatomic, strong) YapDatabaseConnection *mainThreadReadOnlyDatabaseConnection;
 @property (nonatomic, strong) YapDatabaseConnection *readWriteDatabaseConnection;
 @end
 
@@ -55,18 +54,11 @@
                                     metadataSanitizer:NULL
                                               options:options];
     
-    self.mainThreadReadOnlyDatabaseConnection = [self.database newConnection];
-    self.mainThreadReadOnlyDatabaseConnection.objectCacheLimit = 500;
-    self.mainThreadReadOnlyDatabaseConnection.metadataCacheLimit = 500;
-    self.mainThreadReadOnlyDatabaseConnection.name = @"mainThreadReadOnlyDatabaseConnection";
-    
     self.readWriteDatabaseConnection = [self.database newConnection];
     self.readWriteDatabaseConnection.objectCacheLimit = 200;
     self.readWriteDatabaseConnection.metadataCacheLimit = 200;
     self.readWriteDatabaseConnection.name = @"readWriteDatabaseConnection";
-    
-    [self.mainThreadReadOnlyDatabaseConnection beginLongLivedReadTransaction];
-    
+        
     NSArray *viewsToRegister = @[[BRCArtObject class],
                                  [BRCCampObject class],
                                  [BRCEventObject class]];
