@@ -17,6 +17,28 @@
 
 @implementation BRCEventObject
 
+- (NSTimeInterval)timeIntervalUntilStartDate
+{
+    if (self.startDate) {
+        return [self.startDate timeIntervalSinceDate:[NSDate date]];
+    }
+    return DBL_MAX;
+}
+- (NSTimeInterval)timeIntervalUntilEndDate
+{
+    if (self.endDate) {
+        return [self.endDate timeIntervalSinceDate:[NSDate date]];
+    }
+    return DBL_MAX;
+}
+- (BOOL)isOngoing
+{
+    if ([self timeIntervalUntilStartDate] < 0 && [self timeIntervalUntilEndDate] > 0) {
+        return YES;
+    }
+    return NO;
+}
+
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(title)): @"title",

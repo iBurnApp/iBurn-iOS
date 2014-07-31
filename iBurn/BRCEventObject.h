@@ -46,4 +46,9 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  */
 @property (nonatomic, readonly) BOOL checkLocation;
 
+- (NSTimeInterval)timeIntervalUntilStartDate;
+- (NSTimeInterval)timeIntervalUntilEndDate;
+- (BOOL)isOngoing;
+
+
 @end

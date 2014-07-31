@@ -10,7 +10,7 @@
 
 @class BRCDataObject;
 
-@interface BRCAnnotation : RMPointAnnotation
+@interface BRCAnnotation : RMAnnotation
 
 
 + (instancetype)annotationWithMapView:(RMMapView *)aMapView dataObject:(BRCDataObject *)dataObject;
