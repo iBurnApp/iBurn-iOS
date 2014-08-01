@@ -24,8 +24,8 @@
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
-		63D270FE19871A2D00204954 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = 63D270FD19871A2D00204954 /* iburn.mbtiles */; };
 		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
+		D9046ECC198C60BA0013CCF4 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = D9046ECB198C60BA0013CCF4 /* iburn.mbtiles */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -89,8 +89,8 @@
 		63CE2A701987140F00F65B01 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
-		63D270FD19871A2D00204954 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = iburn.mbtiles; path = resources/data/iburn.mbtiles; sourceTree = SOURCE_ROOT; };
 		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D9046ECB198C60BA0013CCF4 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = iburn.mbtiles; path = "Submodules/iBurn-Data/data/2013/iburn.mbtiles"; sourceTree = SOURCE_ROOT; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCDataObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -262,13 +262,21 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D9046ECD198C60BD0013CCF4 /* 2013 */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		D9046ECD198C60BD0013CCF4 /* 2013 */ = {
+			isa = PBXGroup;
+			children = (
+				D9046ECB198C60BA0013CCF4 /* iburn.mbtiles */,
 				D97D7A2A198AD86400CA7828 /* dates_info.json */,
 				D99415721987272700D245C7 /* art_data.json */,
 				D99415731987272700D245C7 /* camp_data.json */,
 				D99415741987272700D245C7 /* event_data.json */,
-				63D270FD19871A2D00204954 /* iburn.mbtiles */,
 			);
-			name = Resources;
+			name = 2013;
 			sourceTree = "<group>";
 		};
 		D92562C91988772600ED6B50 /* Cells */ = {
@@ -411,13 +419,13 @@
 			files = (
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
+				D9046ECC198C60BA0013CCF4 /* iburn.mbtiles in Resources */,
 				D99415751987272700D245C7 /* art_data.json in Resources */,
 				D97D7A2B198AD86400CA7828 /* dates_info.json in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				D99415761987272700D245C7 /* camp_data.json in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 				D99415771987272700D245C7 /* event_data.json in Resources */,
-				63D270FE19871A2D00204954 /* iburn.mbtiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
