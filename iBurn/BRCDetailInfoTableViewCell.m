@@ -38,6 +38,7 @@
             CLLocationDistance distance = distanceNumber.doubleValue;
             if (distance > 0) {
                 NSAttributedString *text = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
+                self.textLabel.textColor = [UIColor darkTextColor];
                 self.textLabel.attributedText = text;
             } else {
                 self.textLabel.text = nil;

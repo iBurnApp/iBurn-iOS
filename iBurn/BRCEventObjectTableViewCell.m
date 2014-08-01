@@ -20,8 +20,16 @@
     } else {
         self.eventTimeLabel.text = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
     }
-    
     self.eventTimeLabel.textAlignment = NSTextAlignmentRight;
+    
+    UIFont *font = self.titleLabel.font;
+    UIFont *newFont = nil;
+    if (eventObject.isFavorite) {
+        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
+    } else {
+        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
+    }
+    self.titleLabel.font = newFont;
 }
 
 @end
