@@ -248,6 +248,12 @@
             [self.navigationController pushViewController:[[BRCDetailViewController alloc] initWithDataObject:dataObject] animated:YES];
         }];
         
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypeCoordinates) {
+        CLLocation *location = cellInfo.value;
+        NSString *coordinatesString = [NSString stringWithFormat:@"%f, %f", location.coordinate.latitude, location.coordinate.longitude];
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
+                                                            initWithActivityItems:@[coordinatesString] applicationActivities:nil];
+        [self presentViewController:activityViewController animated:YES completion:nil];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     

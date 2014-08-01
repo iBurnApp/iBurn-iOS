@@ -81,24 +81,34 @@
         //check if value exists
         
         if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
-            if ([object valueForKey:cellInfo.key] != nil && ![[object valueForKey:cellInfo.key] isEqual:[NSNull null]]) {
+            id cellValue = [object valueForKey:cellInfo.key];
+            if (cellValue != nil && ![cellValue isEqual:[NSNull null]]) {
                 
                 //if value is a string check that it has an length
-                if ([[object valueForKey:cellInfo.key] isKindOfClass:[NSString class]]) {
-                    NSString *valueString = [object valueForKey:cellInfo.key];
+                if ([cellValue isKindOfClass:[NSString class]]) {
+                    NSString *valueString = cellValue;
                     if (![valueString length]) {
                         return;
                     }
                 }
-                if ([[object valueForKey:cellInfo.key] isKindOfClass:[NSURL class]]) {
-                    NSURL *valueURL = [object valueForKey:cellInfo.key];
+                if ([cellValue isKindOfClass:[NSURL class]]) {
+                    NSURL *valueURL = cellValue;
                     if (![[valueURL absoluteString] length]) {
                         return;
                     }
                 }
                 
+                if ([cellValue isKindOfClass:[NSNumber class]]) {
+                    if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromUser))]) {
+                        NSNumber *numberValue = cellValue;
+                        if (numberValue.doubleValue == CLLocationDistanceMax) {
+                            return;
+                        }
+                    }
+                }
+                
                 //add value and dispaly name to array
-                cellInfo.value = [object valueForKey:cellInfo.key];
+                cellInfo.value = cellValue;
                 [finalCellInfoArray addObject:cellInfo];
             }
         }

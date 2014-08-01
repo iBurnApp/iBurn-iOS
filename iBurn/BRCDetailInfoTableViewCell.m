@@ -66,7 +66,8 @@
         case BRCDetailCellInfoTypeCoordinates: {
             CLLocation *location = cellInfo.value;
             self.textLabel.text = [NSString stringWithFormat:@"%f, %f", location.coordinate.latitude, location.coordinate.longitude];
-            [self setPlainTextApperance];
+            self.textLabel.textColor = [UIColor darkTextColor];
+            self.selectionStyle = UITableViewCellSelectionStyleDefault;
             break;
         }
         case BRCDetailCellInfoTypeRelationship: {
