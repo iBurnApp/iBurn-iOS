@@ -14,6 +14,8 @@
 		632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632283141989AF92009E472B /* BRCBaseMapViewController.m */; };
 		6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322831A1989B139009E472B /* BRCDetailMapViewController.m */; };
 		63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228320198AB383009E472B /* RMMarker+iBurn.m */; };
+		63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */; };
+		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -69,6 +71,10 @@
 		6322831A1989B139009E472B /* BRCDetailMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailMapViewController.m; sourceTree = "<group>"; };
 		6322831F198AB383009E472B /* RMMarker+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RMMarker+iBurn.h"; sourceTree = "<group>"; };
 		63228320198AB383009E472B /* RMMarker+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RMMarker+iBurn.m"; sourceTree = "<group>"; };
+		63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventsFilterTableViewController.h; sourceTree = "<group>"; };
+		63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventsFilterTableViewController.m; sourceTree = "<group>"; };
+		63228329198C2B48009E472B /* NSUserDefaults+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+iBurn.h"; sourceTree = "<group>"; };
+		6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+iBurn.m"; sourceTree = "<group>"; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A571987140F00F65B01 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63CE2A591987140F00F65B01 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -221,6 +227,8 @@
 				D994157B1987278400D245C7 /* Data */,
 				63CE2A661987140F00F65B01 /* BRCAppDelegate.h */,
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
+				63228329198C2B48009E472B /* NSUserDefaults+iBurn.h */,
+				6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */,
 				6322830C1989836F009E472B /* MapClasses */,
 				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
@@ -295,6 +303,8 @@
 				D92562C91988772600ED6B50 /* Cells */,
 				D97D7A35198B019A00CA7828 /* BRCActionSheetStringPicker.h */,
 				D97D7A36198B019A00CA7828 /* BRCActionSheetStringPicker.m */,
+				63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */,
+				63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */,
 				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
 				D994156019871E8400D245C7 /* BRCEventsTableViewController.m */,
 				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
@@ -475,6 +485,7 @@
 				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,
 				632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
+				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,
@@ -482,6 +493,7 @@
 				D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */,
 				63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,
+				6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

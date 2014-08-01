@@ -285,12 +285,21 @@
         return YES;
     };
     
+    YapDatabaseViewFilteringBlock eventTimeFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        // we set the actual filtering block later in the events tab
+        return YES;
+    };
+
+    
     YapDatabaseViewFilteringBlock filteringBlock = nil;
     
     if (filterType == BRCDatabaseFilteredViewTypeFavorites) {
         filteringBlock = favoritesFilteringBlock;
     } else if (filterType == BRCDatabaseFilteredViewTypeEventType) {
         filteringBlock = eventsFilteringBlock;
+    } else if (filterType == BRCDatabaseFilteredViewTypeEventTime) {
+        filteringBlock = eventTimeFilteringBlock;
     }
  
     

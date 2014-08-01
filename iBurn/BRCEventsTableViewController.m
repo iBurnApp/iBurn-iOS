@@ -16,6 +16,7 @@
 #import "BRCActionSheetStringPicker.h"
 #import "NSDate+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
+#import "BRCEventsFilterTableViewController.h"
 
 @interface BRCEventsTableViewController ()
 @property (nonatomic, strong) NSDate *selectedDay;
@@ -46,7 +47,11 @@
 }
 
 - (void) filterButtonPressed:(id)sender {
+    BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] init];
     
+    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:filterViewController];
+    
+    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 - (NSInteger) indexForDay:(NSDate*)date {
