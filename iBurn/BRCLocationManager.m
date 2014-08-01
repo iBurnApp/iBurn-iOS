@@ -76,4 +76,6 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
     });
 }
 
+
+
 @end

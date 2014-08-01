@@ -205,8 +205,8 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    return @[@[@"Name", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]],
-             @[@"Distance", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]],
+    return @[@[@"Distance", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]],
+             @[@"Name", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]],
              @[@"Favorites", [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites]]];
 }
 

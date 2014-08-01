@@ -16,10 +16,8 @@
 #import "BRCAnnotation.h"
 #import "RMUserLocation.h"
 #import "RMMarker+iBurn.h"
-
+#import "BRCDetailInfoTableViewCell.h"
 #import "BRCDetailMapViewController.h"
-
-NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 @interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
@@ -46,11 +44,15 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 - (void)setDataObject:(BRCDataObject *)dataObject
 {
     _dataObject = dataObject;
-    self.favoriteBarButtonItem.image = [self currentStarImage];
     self.title = dataObject.title;
     self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
     [self setupMapViewWithObject:self.dataObject];
+    [self refreshFavoriteImage];
     [self.tableView reloadData];
+}
+
+- (void) refreshFavoriteImage {
+    self.favoriteBarButtonItem.image = [self currentStarImage];
 }
 
 
@@ -64,7 +66,7 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     self.tableView.dataSource = self;
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
-    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCTextCellIdentifier];
+    [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
     
     if (self.mapView) {
         self.tableView.tableHeaderView = self.mapView;
@@ -75,7 +77,6 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     self.favoriteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[self currentStarImage] style:UIBarButtonItemStylePlain target:self action:@selector(didTapFavorite:)];
     
     self.navigationItem.rightBarButtonItem = self.favoriteBarButtonItem;
-    
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -84,10 +85,9 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate animated:animated];
 }
 
-- (UIImage *)currentStarImage
-{
+- (UIImage*)imageIfFavorite:(BOOL)isFavorite {
     UIImage *starImage = nil;
-    if (self.dataObject.isFavorite) {
+    if (isFavorite) {
         starImage = [UIImage imageNamed:@"BRCDarkStar"];
     }
     else {
@@ -96,9 +96,17 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
     return starImage;
 }
 
+- (UIImage *)currentStarImage
+{
+    UIImage *starImage = [self imageIfFavorite:self.dataObject.isFavorite];
+    return starImage;
+}
+
 - (void)didTapFavorite:(id)sender
 {
     __block BRCDataObject *tempObject = nil;
+    UIImage *reverseFavoriteImage = [self imageIfFavorite:!self.dataObject.isFavorite];
+    self.favoriteBarButtonItem.image = reverseFavoriteImage;
     [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         tempObject = [transaction objectForKey:self.dataObject.uniqueID inCollection:[[self.dataObject class] collection]];
         if (tempObject) {
@@ -165,48 +173,9 @@ NSString *const BRCTextCellIdentifier = @"BRCTextCellIdentifier";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = nil;
+    BRCDetailInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[BRCDetailInfoTableViewCell cellIdentifier] forIndexPath:indexPath];
     BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
-    if (cellInfo) {
-        
-        
-        switch (cellInfo.cellType) {
-            case BRCDetailCellInfoTypeEmail:
-            case BRCDetailCellInfoTypeText: {
-                cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
-                cell.textLabel.text = cellInfo.value;
-                cell.textLabel.textColor = [UIColor blackColor];
-                cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
-                cell.textLabel.numberOfLines = 0;
-                
-                break;
-            }
-            case BRCDetailCellInfoTypeURL: {
-                cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
-                cell.textLabel.textColor = [UIColor blueColor];
-                NSURL *url = cellInfo.value;
-                cell.textLabel.text = [url absoluteString];
-                
-                break;
-
-            }
-            case BRCDetailCellInfoTypeCoordinates: {
-                cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
-                cell.textLabel.text = @"Coordinates";
-                
-                break;
-            }
-                
-                
-            case BRCDetailCellInfoTypeRelationship: {
-                cell = [tableView dequeueReusableCellWithIdentifier:BRCTextCellIdentifier forIndexPath:indexPath];
-                BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
-                cell.textLabel.text = relationshipCellInfo.dataObject.title;
-                break;
-            }
-        }
-    }
-    
+    [cell setDetailCellInfo:cellInfo];
     return cell;
 }
 

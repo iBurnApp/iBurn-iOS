@@ -13,6 +13,7 @@
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCDatabaseManager.h"
+#import "NSDateFormatter+iBurn.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -52,7 +53,9 @@
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(url)) displayName:@"URL" cellType:BRCDetailCellInfoTypeURL]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(coordinate)) displayName:@"Location" cellType:BRCDetailCellInfoTypeCoordinates]];
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(location)) displayName:@"Location" cellType:BRCDetailCellInfoTypeCoordinates]];
+    
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(otherLocation)) displayName:@"Other Location" cellType:BRCDetailCellInfoTypeText]];
     
@@ -113,7 +116,12 @@
             dateString = [NSString stringWithFormat:@"All Day"];
         }
         else {
-            dateString = [NSString stringWithFormat:@"Some date goes here"];
+            NSDateFormatter *df = [NSDateFormatter brc_timeOnlyDateFormatter];
+            NSString *startString = [df stringFromDate:event.startDate];
+            NSString *endString = [df stringFromDate:event.endDate];
+            if (startString && endString) {
+                dateString = [NSString stringWithFormat:@"%@ - %@", startString, endString];
+            }
         }
         
         //Camp relationship
@@ -121,7 +129,8 @@
         if ([event.hostedByCampUniqueID length]) {
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
             relationshipDetailInfoCell.displayName = @"Camp";
-            [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            // TODO this should be refactored to share a persistent main thread connection
+            [[[BRCDatabaseManager sharedInstance].database newConnection] readWithBlock:^(YapDatabaseReadTransaction *transaction) {
                 relationshipDetailInfoCell.dataObject = [transaction objectForKey:event.hostedByCampUniqueID inCollection:[BRCCampObject collection]];
             }];
         }

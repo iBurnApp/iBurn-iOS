@@ -8,6 +8,7 @@
 
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCDataObject.h"
+#import "TTTLocationFormatter+iBurn.h"
 
 @implementation BRCDataObjectTableViewCell
 
@@ -17,7 +18,7 @@
     if (distance == CLLocationDistanceMax || distance == 0) {
         self.subtitleLabel.text = nil;
     } else {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"%0.1f m away", distance];
+        self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }
 }
 

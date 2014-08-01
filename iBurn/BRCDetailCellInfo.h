@@ -13,7 +13,9 @@ typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
     BRCDetailCellInfoTypeEmail,
     BRCDetailCellInfoTypeURL,
     BRCDetailCellInfoTypeCoordinates,
-    BRCDetailCellInfoTypeRelationship
+    BRCDetailCellInfoTypeRelationship,
+    BRCDetailCellInfoTypeDistanceFromCurrentLocation,
+    BRCDetailCellInfoTypeDistanceFromHomeCamp
 };
 
 @class BRCDataObject;

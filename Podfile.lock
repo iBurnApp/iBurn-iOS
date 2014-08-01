@@ -11,6 +11,8 @@ PODS:
   - FMDB/common (2.3)
   - FMDB/standard (2.3):
     - FMDB/common
+  - FormatterKit/LocationFormatter (1.6.0)
+  - FormatterKit/TimeIntervalFormatter (1.6.0)
   - GRMustache (6.8.3):
     - JRSwizzle (~> 1.0)
   - JRSwizzle (1.0)
@@ -31,6 +33,8 @@ PODS:
 
 DEPENDENCIES:
   - ActionSheetPicker-3.0 (~> 1.0)
+  - FormatterKit/LocationFormatter (~> 1.6)
+  - FormatterKit/TimeIntervalFormatter (~> 1.6)
   - Mantle (~> 1.5)
   - Mapbox-iOS-SDK (~> 1.2)
   - YapDatabase (~> 2.4)
@@ -39,6 +43,7 @@ SPEC CHECKSUMS:
   ActionSheetPicker-3.0: bc24c9fd9f8e8a8c7d3c266fd00d20f4a78889eb
   CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
   FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
+  FormatterKit: 534b21b52b9b822a9ec884a14e2debf92e7a3126
   GRMustache: ab96109b7ba4b9568425bea40d6cd2cdc7582b6c
   JRSwizzle: 30da7a2c539a4ebf954b16d15f6dd8221c9f6fa5
   Mantle: c67a7e45e14196ed42b2a7cbb98ff6a9920e6b92

@@ -8,13 +8,20 @@
 
 #import "BRCEventObjectTableViewCell.h"
 #import "BRCEventObject.h"
+#import "NSDateFormatter+iBurn.h"
 
 @implementation BRCEventObjectTableViewCell
 
 - (void) setDataObject:(BRCDataObject*)dataObject {
     [super setDataObject:dataObject];
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
-    self.eventTimeLabel.text = eventObject.startDate.description;
+    if (eventObject.isAllDay) {
+        self.eventTimeLabel.text = @"All Day";
+    } else {
+        self.eventTimeLabel.text = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
+    }
+    
+    self.eventTimeLabel.textAlignment = NSTextAlignmentRight;
 }
 
 @end

@@ -42,6 +42,15 @@ static NSString * const kBRCGroupDateFormatterKey = @"kBRCGroupDateFormatterKey"
     return sharedDateFormatter;
 }
 
-
++ (NSDateFormatter*) brc_timeOnlyDateFormatter {
+    static NSDateFormatter *sharedDateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedDateFormatter = [[NSDateFormatter alloc] init];
+        sharedDateFormatter.dateFormat = @"hh:mm a";
+        sharedDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+    });
+    return sharedDateFormatter;
+}
 
 @end

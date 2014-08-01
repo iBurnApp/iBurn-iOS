@@ -14,4 +14,6 @@
 
 + (NSDateFormatter*) brc_threadSafeGroupDateFormatter;
 
++ (NSDateFormatter*) brc_timeOnlyDateFormatter;
+
 @end

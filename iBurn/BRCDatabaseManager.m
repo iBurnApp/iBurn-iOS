@@ -159,10 +159,10 @@
                 BRCEventObject *event2 = (BRCEventObject *)obj2;
                 
                 if (event1.isAllDay && !event2.isAllDay) {
-                    return NSOrderedAscending;
+                    return NSOrderedDescending;
                 }
                 else if (!event1.isAllDay && event2.isAllDay) {
-                    return NSOrderedDescending;
+                    return NSOrderedAscending;
                 }
                 
                 NSComparisonResult dateComparison = [event1.startDate compare:event2.startDate];
