@@ -74,4 +74,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 /** All the dates for the festival. @see majorEvents */
 + (NSArray*) datesOfFestival;
 
+/** to be used when unsetting isFavorite */
+@property (nonatomic, strong) UILocalNotification *scheduledNotification;
+
 @end

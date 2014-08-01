@@ -13,13 +13,22 @@
 @implementation BRCDataObjectTableViewCell
 
 - (void) setDataObject:(BRCDataObject*)dataObject {
-    self.titleLabel.text = dataObject.title;
     CLLocationDistance distance = dataObject.distanceFromUser;
     if (distance == CLLocationDistanceMax || distance == 0) {
         self.subtitleLabel.text = nil;
     } else {
         self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }
+    
+    self.titleLabel.text = dataObject.title;
+    UIFont *font = self.titleLabel.font;
+    UIFont *newFont = nil;
+    if (dataObject.isFavorite) {
+        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
+    } else {
+        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
+    }
+    self.titleLabel.font = newFont;
 }
 
 + (NSString*) cellIdentifier {
