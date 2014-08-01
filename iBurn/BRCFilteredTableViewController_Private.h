@@ -9,7 +9,7 @@
 #import "BRCFilteredTableViewController.h"
 
 @interface BRCFilteredTableViewController ()
-@property (nonatomic, strong) NSDictionary *mappingsDictionary;
+@property (nonatomic, strong) NSMutableDictionary *mappingsDictionary;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 
 - (void) updateAllMappings;

@@ -15,6 +15,7 @@
 #import "BRCEventObject.h"
 #import "BRCActionSheetStringPicker.h"
 #import "NSDate+iBurn.h"
+#import "NSDateFormatter+iBurn.h"
 
 @interface BRCEventsTableViewController ()
 @property (nonatomic, strong) NSDate *selectedDay;
@@ -25,6 +26,15 @@
 @end
 
 @implementation BRCEventsTableViewController
+@synthesize selectedDay = _selectedDay;
+
+- (instancetype) init {
+    if (self = [super init]) {
+        self.dayOfTheWeekFormatter = [[NSDateFormatter alloc] init];
+        self.dayOfTheWeekFormatter.dateFormat = @"EEEE";
+    }
+    return self;
+}
 
 - (void) dayButtonPressed:(id)sender {
     NSInteger currentSelection = [self indexForDay:self.selectedDay];
@@ -59,6 +69,7 @@
     self.navigationItem.leftBarButtonItem = dayButton;
     UIBarButtonItem *filterButton = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(filterButtonPressed:)];
     self.navigationItem.rightBarButtonItem = filterButton;
+    self.selectedDay = [NSDate date];
 
     [self setupDayPicker];
 }
@@ -77,11 +88,8 @@
 }
 
 - (void) setupDayPicker {
-    self.dayOfTheWeekFormatter = [[NSDateFormatter alloc] init];
-    self.dayOfTheWeekFormatter.dateFormat = @"EEEE";
     NSDateFormatter *shortDateFormatter = [[NSDateFormatter alloc] init];
     shortDateFormatter.dateFormat = @"M/d";
-    self.selectedDay = [NSDate date];
     self.festivalDates = [BRCEventObject datesOfFestival];
     
     NSArray *majorEvents = [BRCEventObject majorEvents];
@@ -109,12 +117,18 @@
         _selectedDay = [BRCEventObject festivalStartDate];
     }
     
-    self.navigationItem.leftBarButtonItem.title = [self.dayOfTheWeekFormatter stringFromDate:self.selectedDay];
+    NSString *dayString = [self.dayOfTheWeekFormatter stringFromDate:self.selectedDay];
+    self.navigationItem.leftBarButtonItem.title = dayString;
+    [self replaceTimeBasedEventMappings];
+    [self updateAllMappings];
+    [self.tableView reloadData];
 }
 
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    
+- (NSDate*) selectedDay {
+    if (!_selectedDay) {
+        self.selectedDay = [NSDate date];
+    }
+    return _selectedDay;
 }
 
 - (NSArray *) segmentedControlInfo {
@@ -128,16 +142,35 @@
 
 - (void) setupMappingsDictionary {
     [super setupMappingsDictionary];
-    NSMutableDictionary *mappingsDictionary = [self.mappingsDictionary mutableCopy];
     NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites];
-    NSString *timeName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
-    NSArray *favoritesGroups = @[@""];
-    NSArray *activeTimeGroup = @[@""];
-    YapDatabaseViewMappings *favoritesMappings = [[YapDatabaseViewMappings alloc] initWithGroups:favoritesGroups view:favoritesName];
-    YapDatabaseViewMappings *timeMappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:timeName];
-    [mappingsDictionary setObject:favoritesMappings forKey:favoritesName];
-    [mappingsDictionary setObject:timeMappings forKey:timeName];
-    self.mappingsDictionary = mappingsDictionary;
+    
+    NSArray *allFestivalDates = [BRCEventObject datesOfFestival];
+    NSMutableArray *allGroups = [NSMutableArray arrayWithCapacity:allFestivalDates.count];
+    [allFestivalDates enumerateObjectsUsingBlock:^(NSDate *date, NSUInteger idx, BOOL *stop) {
+        NSString *group = [[NSDateFormatter brc_threadSafeGroupDateFormatter] stringFromDate:date];
+        [allGroups addObject:group];
+    }];
+    
+    YapDatabaseViewMappings *favoritesMappings = [[YapDatabaseViewMappings alloc] initWithGroups:allGroups view:favoritesName];
+    [self.mappingsDictionary setObject:favoritesMappings forKey:favoritesName];
+    [self replaceTimeBasedEventMappings];
 }
+
+- (void) replaceTimeBasedEventMappings {
+    NSString *timeName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+    NSString *nameName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName];
+    NSString *distanceName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+
+    NSString *group = [[NSDateFormatter brc_threadSafeGroupDateFormatter] stringFromDate:self.selectedDay];
+    NSArray *activeTimeGroup = @[group]; // selected day group
+    
+    NSArray *mappingsToRefresh = @[timeName, nameName, distanceName];
+    
+    [mappingsToRefresh enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
+        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:viewName];
+        [self.mappingsDictionary setObject:mappings forKey:viewName];
+    }];
+}
+
 
 @end

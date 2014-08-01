@@ -14,6 +14,7 @@
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
 #import "YapDatabaseFilteredView.h"
+#import "NSDateFormatter+iBurn.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -102,6 +103,100 @@
     return databaseManager;
 }
 
+- (YapDatabaseViewBlockType)groupingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    YapDatabaseViewBlockType groupingBlockType;
+    if (viewClass == [BRCEventObject class]) {
+        groupingBlockType = YapDatabaseViewBlockTypeWithObject;
+    } else {
+        groupingBlockType = YapDatabaseViewBlockTypeWithKey;
+    }
+    
+    return groupingBlockType;
+}
+
+- (YapDatabaseViewGroupingBlock)groupingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    YapDatabaseViewGroupingBlock groupingBlock;
+    
+    if (viewClass == [BRCEventObject class]) {
+        groupingBlock = ^NSString *(NSString *collection, NSString *key, id object){
+            if ([object isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *eventObject = (BRCEventObject*)object;
+                NSDateFormatter *dateFormatter = [NSDateFormatter brc_threadSafeGroupDateFormatter];
+                NSString *groupName = [dateFormatter stringFromDate:eventObject.startDate];
+                return groupName;
+            }
+            return nil;
+        };
+    } else {
+        groupingBlock = ^NSString *(NSString *collection, NSString *key){
+            if ([collection isEqualToString:[viewClass collection]])
+            {
+                return [viewClass collection];
+            }
+            return nil;
+        };
+    }
+    
+    return groupingBlock;
+}
+
+- (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    YapDatabaseViewBlockType sortingBlockType = YapDatabaseViewBlockTypeWithObject;
+    return sortingBlockType;
+}
+
+- (NSComparisonResult) compareDistanceOfFirstObject:(BRCDataObject*)object1 secondObject:(BRCDataObject*)object2 {
+    return [@(object1.distanceFromUser) compare:@(object2.distanceFromUser)];
+}
+
+- (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    YapDatabaseViewSortingBlock sortingBlock;
+    if (extensionType == BRCDatabaseViewExtensionTypeTime) {
+        sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+                         NSString *collection2, NSString *key2, id obj2){
+            if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event1 = (BRCEventObject *)obj1;
+                BRCEventObject *event2 = (BRCEventObject *)obj2;
+                
+                if (event1.isAllDay && !event2.isAllDay) {
+                    return NSOrderedAscending;
+                }
+                else if (!event1.isAllDay && event2.isAllDay) {
+                    return NSOrderedDescending;
+                }
+                
+                NSComparisonResult dateComparison = [event1.startDate compare:event2.startDate];
+                if (dateComparison == NSOrderedSame) {
+                    NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2];
+                    return distanceComparison;
+                }
+            }
+            return NSOrderedSame;
+        };
+    } else if (extensionType == BRCDatabaseViewExtensionTypeName) {
+        sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+                         NSString *collection2, NSString *key2, id obj2){
+            if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
+                BRCDataObject *data1 = (BRCDataObject *)obj1;
+                BRCDataObject *data2 = (BRCDataObject *)obj2;
+                return [data1.title compare:data2.title options:NSCaseInsensitiveSearch];
+            }
+            return NSOrderedSame;
+        };
+    } else if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
+        sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+                         NSString *collection2, NSString *key2, id obj2){
+            if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
+                BRCDataObject *data1 = (BRCDataObject *)obj1;
+                BRCDataObject *data2 = (BRCDataObject *)obj2;
+                return [self compareDistanceOfFirstObject:data1 secondObject:data2];
+            }
+            return NSOrderedSame;
+        };
+    }
+    
+    return sortingBlock;
+}
 
 - (void)registerDatabaseViewForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType
 {
@@ -111,45 +206,11 @@
         return;
     }
     
+    YapDatabaseViewBlockType groupingBlockType = [self groupingBlockTypeForClass:viewClass extensionType:extensionType];
+    YapDatabaseViewGroupingBlock groupingBlock = [self groupingBlockForClass:viewClass extensionType:extensionType];
     
-    YapDatabaseViewBlockType groupingBlockType;
-    YapDatabaseViewGroupingWithKeyBlock groupingBlock;
-    
-    YapDatabaseViewBlockType sortingBlockType;
-    YapDatabaseViewSortingWithObjectBlock sortingBlock;
-    
-    groupingBlockType = YapDatabaseViewBlockTypeWithKey;
-    groupingBlock = ^NSString *(NSString *collection, NSString *key){
-        
-        if ([collection isEqualToString:[viewClass collection]])
-        {
-            return [viewClass collection];
-        }
-        
-        return nil;
-    };
-    
-    sortingBlockType = YapDatabaseViewBlockTypeWithObject;
-    sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
-                     NSString *collection2, NSString *key2, id obj2){
-        if ([group isEqualToString:[viewClass collection]]) {
-            if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
-                BRCDataObject *data1 = (BRCDataObject *)obj1;
-                BRCDataObject *data2 = (BRCDataObject *)obj2;
-                
-                if (extensionType == BRCDatabaseViewExtensionTypeName) {
-                    return [data1.title compare:data2.title options:NSCaseInsensitiveSearch];
-                } else if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
-                    if (data1.distanceFromUser < data2.distanceFromUser) {
-                        return NSOrderedAscending;
-                    } else {
-                        return NSOrderedDescending;
-                    }
-                }
-            }
-        }
-        return NSOrderedSame;
-    };
+    YapDatabaseViewBlockType sortingBlockType = [self sortingBlockTypeForClass:viewClass extensionType:extensionType];
+    YapDatabaseViewSortingBlock sortingBlock = [self sortingBlockForClass:viewClass extensionType:extensionType];
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
     options.isPersistent = YES;
