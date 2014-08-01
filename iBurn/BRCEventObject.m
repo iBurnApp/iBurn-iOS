@@ -164,4 +164,46 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
     return [UIColor darkTextColor];
 }
 
++ (NSString *)stringForEventType:(BRCEventType)type
+{
+    switch (type) {
+        case BRCEventTypeWorkshop:
+            return @"Workshop";
+            break;
+        case BRCEventTypePerformance:
+            return @"Performance";
+            break;
+        case BRCEventTypeSupport:
+            return @"Support";
+            break;
+        case BRCEventTypeParty:
+            return @"Party";
+            break;
+        case BRCEventTypeCeremony:
+            return @"Ceremony";
+            break;
+        case BRCEventTypeGame:
+            return @"Game";
+            break;
+        case BRCEventTypeFire:
+            return @"Fire";
+            break;
+        case BRCEventTypeAdult:
+            return @"Adult";
+            break;
+        case BRCEventTypeKid:
+            return @"Kid";
+            break;
+        case BRCEventTypeParade:
+            return @"Parade";
+            break;
+        case BRCEventTypeFood:
+            return @"Food";
+            break;
+        default:
+            return @"Unkown";
+            break;
+    }
+}
+
 @end
