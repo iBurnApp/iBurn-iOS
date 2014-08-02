@@ -17,6 +17,7 @@
 #import "BRCLocationManager.h"
 #import "BRCEventObject_Private.h"
 #import "NSDateFormatter+iBurn.h"
+#import "BRCSecrets.h"
 
 static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
 
@@ -24,6 +25,12 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
+                                                         liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
+    [[BITHockeyManager sharedHockeyManager].authenticator setIdentificationType:BITAuthenticatorIdentificationTypeDevice];
+    [[BITHockeyManager sharedHockeyManager] startManager];
+    [[BITHockeyManager sharedHockeyManager].authenticator authenticateInstallation];
+    
     [[BRCDatabaseManager sharedInstance] setupDatabaseWithName:@"iBurn.sqlite"];
     
     [self preloadExistingData];
@@ -134,6 +141,15 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
             }
         }];
     }];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    if([[BITHockeyManager sharedHockeyManager].authenticator handleOpenURL:url
+                                                          sourceApplication:sourceApplication
+                                                                 annotation:annotation]) {
+        return YES;
+    }
+    return NO;
 }
 
 @end
