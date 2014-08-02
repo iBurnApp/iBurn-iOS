@@ -90,4 +90,6 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  */
 - (UIColor*) colorForEventStatus;
 
++ (NSString *)stringForEventType:(BRCEventType)type;
+
 @end
