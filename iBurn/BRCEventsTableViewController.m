@@ -132,8 +132,10 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    NSArray *newTitles = @[@[@"Time", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime]]];
-    return [newTitles arrayByAddingObjectsFromArray:[super segmentedControlInfo]];
+    return @[@[@"Time", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime]],
+             @[@"Distance", [BRCDatabaseManager sharedInstance].eventDistanceViewName],
+             @[@"Name", [BRCDatabaseManager sharedInstance].eventDistanceViewName],
+             @[@"Favorites", [BRCDatabaseManager sharedInstance].eventDistanceViewName]];
 }
 
 - (Class) cellClass {
@@ -141,8 +143,10 @@
 }
 
 - (void) setupMappingsDictionary {
-    [super setupMappingsDictionary];
-    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites];
+    //[super setupMappingsDictionary];
+    self.mappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:4];
+    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]];
+    
     
     NSArray *allFestivalDates = [BRCEventObject datesOfFestival];
     NSMutableArray *allGroups = [NSMutableArray arrayWithCapacity:allFestivalDates.count];
@@ -157,9 +161,9 @@
 }
 
 - (void) replaceTimeBasedEventMappings {
-    NSString *timeName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
-    NSString *nameName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName];
-    NSString *distanceName = [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+    NSString *timeName = [BRCDatabaseManager sharedInstance].eventTimeViewName;
+    NSString *nameName = [BRCDatabaseManager sharedInstance].eventNameViewName;
+    NSString *distanceName = [BRCDatabaseManager sharedInstance].eventDistanceViewName;
 
     NSString *group = [[NSDateFormatter brc_threadSafeGroupDateFormatter] stringFromDate:self.selectedDay];
     NSArray *activeTimeGroup = @[group]; // selected day group

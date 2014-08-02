@@ -29,11 +29,16 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteDatabaseConnection;
 
+@property (nonatomic, strong) NSString *eventNameViewName;
+@property (nonatomic, strong) NSString *eventDistanceViewName;
+@property (nonatomic, strong) NSString *eventTimeViewName;
+
+
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;
 
 + (instancetype) sharedInstance;
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
-+ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType;
++ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName;
 
 @end

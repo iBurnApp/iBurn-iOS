@@ -9,6 +9,9 @@
 #import "BRCEventsFilterTableViewController.h"
 #import "BRCEventObject.h"
 #import "NSUserDefaults+iBurn.h"
+#import "BRCDatabaseManager.h"
+#import "YapDatabaseFilteredView.h"
+#import "YapDatabaseFilteredViewTransaction.h"
 
 NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdentifier";
 
@@ -43,10 +46,19 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 @property (nonatomic) BOOL showExpiredEvents;
 
+@property (nonatomic, strong) YapDatabaseConnection* databaseConnection;
+
 @end
 
 @implementation BRCEventsFilterTableViewController
 
+- (id)init
+{
+    if (self = [super init]) {
+        self.databaseConnection = [BRCDatabaseManager sharedInstance].readWriteDatabaseConnection;
+    }
+    return self;
+}
 
 - (void)viewDidLoad
 {
@@ -106,11 +118,72 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    NSArray *filteredArray = [self.eventTypeArray filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isSelected = YES"]];
-    filteredArray = [filteredArray valueForKey:@"type"];
+    NSArray *filteredArray = [self filteredTypes];
     [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
     [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
+}
+
+- (NSArray *)filteredTypes
+{
+    NSArray *filteredArray = [self.eventTypeArray filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isSelected = YES"]];
+    filteredArray = [filteredArray valueForKey:@"type"];
+    return filteredArray;
+}
+
+- (void)updateFilteredViews
+{
     
+    
+    NSArray *filteredArray = [self filteredTypes];
+    
+    YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
+    YapDatabaseViewFilteringBlock eventTimeFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        if ([object isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *eventObject = (BRCEventObject*)object;
+            return !eventObject.hasEnded;
+        }
+        return NO;
+    };
+    YapDatabaseViewFilteringBlock eventTypeFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        if ([object isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *eventObject = (BRCEventObject*)object;
+            return [filteredArray containsObject:@(eventObject.eventType)];
+        }
+        return NO;
+    };
+    
+    NSString *eventTimeNameViewName = [BRCDatabaseManager filteredExtensionNameForClass:[BRCEventObject class] filterType:BRCDatabaseFilteredViewTypeEventTime parentName:[BRCDatabaseManager extensionNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeName]];
+    NSString *eventDistanceViewName = [BRCDatabaseManager filteredExtensionNameForClass:[BRCEventObject class] filterType:BRCDatabaseFilteredViewTypeEventTime parentName:[BRCDatabaseManager extensionNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeDistance]];
+    NSString *eventTimVieweName = [BRCDatabaseManager filteredExtensionNameForClass:[BRCEventObject class] filterType:BRCDatabaseFilteredViewTypeEventTime parentName:[BRCDatabaseManager extensionNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTime]];
+    
+
+    NSArray *eventTimeNamesArray = @[eventTimeNameViewName,eventDistanceViewName,eventTimVieweName];
+    NSArray *eventTypeNamesArray = @[[BRCDatabaseManager sharedInstance].eventTimeViewName,[BRCDatabaseManager sharedInstance].eventDistanceViewName, [BRCDatabaseManager sharedInstance].eventNameViewName];
+    
+    [self.databaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        
+        [eventTimeNamesArray enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
+            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:name];
+            [filteredTransaction setFilteringBlock:eventTimeFilteringBlock
+                                filteringBlockType:filterBlockType
+                                        versionTag:[[NSUUID UUID] UUIDString]];
+        }];
+        
+        [eventTypeNamesArray enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
+            YapDatabaseFilteredViewTransaction *filteredTypeTransaction = [transaction ext:name];
+            
+            [filteredTypeTransaction setFilteringBlock:eventTypeFilteringBlock
+                                    filteringBlockType:filterBlockType
+                                            versionTag:[[NSUUID UUID] UUIDString]];
+        }];
+        
+        
+        
+        
+    }];
+
     
 }
 

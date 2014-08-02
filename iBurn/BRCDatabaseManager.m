@@ -74,10 +74,30 @@
         if (viewClass == [BRCEventObject class]) {
             [self registerDatabaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
             
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentType:BRCDatabaseViewExtensionTypeTime];
+            NSString *timeViewName = [[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+            NSString *nameViewName = [[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName];
+            NSString *distanceViewName = [[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+            
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentName:timeViewName];
+            
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventTime parentName:nameViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventTime parentName:distanceViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventTime parentName:timeViewName];
+            
+            NSString *nameViewParentName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:nameViewName];
+            NSString *distanceViewParentName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:distanceViewName];
+            NSString *timeViewParentName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:timeViewName];
+            
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventType parentName:nameViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventType parentName:distanceViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventType parentName:timeViewName];
+            
+            self.eventNameViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:nameViewParentName];
+            self.eventDistanceViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:distanceViewParentName];
+            self.eventTimeViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:timeViewParentName];
         }
         else {
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentType:BRCDatabaseViewExtensionTypeName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentName:[[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
         }
         
     }];
@@ -261,9 +281,9 @@
     }];
 }
 
-- (void)registerDatabaseFilteredViewForViewClass:(Class)viewClass filteredType:(BRCDatabaseFilteredViewType)filterType parentType:(BRCDatabaseViewExtensionType)parentExtensionType;
+- (void)registerDatabaseFilteredViewForViewClass:(Class)viewClass filteredType:(BRCDatabaseFilteredViewType)filterType parentName:(NSString *)parentName;
 {
-    NSString *filteredViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:filterType];
+    NSString *filteredViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:filterType parentName:parentName];
     YapDatabase *view = [self.database registeredExtension:filteredViewName];
     if (view){
         return;
@@ -304,7 +324,7 @@
  
     
     YapDatabaseFilteredView *filteredView =
-    [[YapDatabaseFilteredView alloc] initWithParentViewName:[[self class] extensionNameForClass:viewClass extensionType:parentExtensionType]
+    [[YapDatabaseFilteredView alloc] initWithParentViewName:parentName
                                              filteringBlock:filteringBlock
                                          filteringBlockType:filteringBlockType];
     
@@ -343,13 +363,15 @@
         case BRCDatabaseFilteredViewTypeFavorites:
             return @"Favorites";
             break;
+        case BRCDatabaseFilteredViewTypeEventTime:
+            return @"Time";
         default:
             return nil;
             break;
     }
 }
 
-+ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType {
++ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName {
     NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
     if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
         return nil;
@@ -357,7 +379,7 @@
     NSString *classString = NSStringFromClass(extensionClass);
     NSString *extensionString = [self stringForFilteredExtensionType:extensionType];
     NSParameterAssert(extensionString != nil);
-    return [NSString stringWithFormat:@"%@%@ExtensionView", classString, extensionString];
+    return [NSString stringWithFormat:@"%@%@%@ExtensionView", classString, parentName, extensionString];
 }
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
