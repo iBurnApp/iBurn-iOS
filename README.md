@@ -14,9 +14,10 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 * open `iBurn.xcworkspace` (**not** the .xcodeproj file!)
 * Create `BRCSecrets.m` and fill it with the following contents:
 
-	```obj-c
-	NSString * const kBRCHockeyBetaIdentifier = @"";
-	NSString * const kBRCHockeyLiveIdentifier = @""; 	```
+```obj-c
+NSString * const kBRCHockeyBetaIdentifier = @"";
+NSString * const kBRCHockeyLiveIdentifier = @""; 
+```
 
 * Compile and Run!
 

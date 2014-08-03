@@ -20,8 +20,6 @@ install:
 
 before_script:
   - gem install cocoapods
-  - brew update
-  - brew upgrade xctool
 script:
   - xctool -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator7.1 ONLY_ACTIVE_ARCH=NO build
 
