@@ -181,6 +181,8 @@
                 if (dateComparison == NSOrderedSame) {
                     NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2];
                     return distanceComparison;
+                } else {
+                    return dateComparison;
                 }
             }
             return NSOrderedSame;
