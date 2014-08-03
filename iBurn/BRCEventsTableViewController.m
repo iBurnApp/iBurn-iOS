@@ -13,10 +13,10 @@
 #import "BRCDataObject.h"
 #import "BRCFilteredTableViewController_Private.h"
 #import "BRCEventObject.h"
-#import "BRCActionSheetStringPicker.h"
 #import "NSDate+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventsFilterTableViewController.h"
+#import "ActionSheetStringPicker.h"
 
 @interface BRCEventsTableViewController ()
 @property (nonatomic, strong) NSDate *selectedDay;
@@ -36,21 +36,16 @@
 
 - (void) dayButtonPressed:(id)sender {
     NSInteger currentSelection = [self indexForDay:self.selectedDay];
-    BRCActionSheetStringPicker *dayPicker = [[BRCActionSheetStringPicker alloc] initWithTitle:nil rows:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(ActionSheetStringPicker *picker, NSInteger selectedIndex, id selectedValue) {
+    ActionSheetStringPicker *dayPicker = [[ActionSheetStringPicker alloc] initWithTitle:@"Choose a Day" rows:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(ActionSheetStringPicker *picker, NSInteger selectedIndex, id selectedValue) {
         NSDate *selectedDate = [self dateForIndex:selectedIndex];
         self.selectedDay = selectedDate;
-    } cancelBlock:^(ActionSheetStringPicker *picker) {
-        
-    } origin:sender];
-    dayPicker.segmentedControl = self.dayPickerSegmentedControl;
+    } cancelBlock:nil origin:sender];
     [dayPicker showActionSheetPicker];
 }
 
 - (void) filterButtonPressed:(id)sender {
     BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] init];
-    
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:filterViewController];
-    
     [self presentViewController:navigationController animated:YES completion:nil];
 }
 
@@ -132,21 +127,26 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    return @[@[@"Time", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime]],
+    return @[@[@"Time", [BRCDatabaseManager sharedInstance].eventTimeViewName],
              @[@"Distance", [BRCDatabaseManager sharedInstance].eventDistanceViewName],
-             @[@"Name", [BRCDatabaseManager sharedInstance].eventDistanceViewName],
-             @[@"Favorites", [BRCDatabaseManager sharedInstance].eventDistanceViewName]];
+             @[@"Name", [BRCDatabaseManager sharedInstance].eventNameViewName],
+             @[@"Favorites", [self favoritesExtensionName]]];
 }
 
 - (Class) cellClass {
     return [BRCEventObjectTableViewCell class];
 }
 
+- (NSString *) favoritesExtensionName {
+    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]];
+    return favoritesName;
+}
+
 - (void) setupMappingsDictionary {
     //[super setupMappingsDictionary];
     self.mappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:4];
-    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]];
     
+    NSString *favoritesName = [self favoritesExtensionName];
     
     NSArray *allFestivalDates = [BRCEventObject datesOfFestival];
     NSMutableArray *allGroups = [NSMutableArray arrayWithCapacity:allFestivalDates.count];

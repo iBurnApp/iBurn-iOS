@@ -80,21 +80,13 @@
             
             [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentName:timeViewName];
             
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventTime parentName:nameViewName];
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventTime parentName:distanceViewName];
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventTime parentName:timeViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:nameViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:distanceViewName];
+            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:timeViewName];
             
-            NSString *nameViewParentName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:nameViewName];
-            NSString *distanceViewParentName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:distanceViewName];
-            NSString *timeViewParentName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:timeViewName];
-            
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventType parentName:nameViewName];
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventType parentName:distanceViewName];
-            [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventType parentName:timeViewName];
-            
-            self.eventNameViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:nameViewParentName];
-            self.eventDistanceViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:distanceViewParentName];
-            self.eventTimeViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventType parentName:timeViewParentName];
+            self.eventNameViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:nameViewName];
+            self.eventDistanceViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:distanceViewName];
+            self.eventTimeViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:timeViewName];
         }
         else {
             [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentName:[[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
@@ -299,29 +291,19 @@
         return NO;
     };
     
-    YapDatabaseViewFilteringBlock eventsFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    YapDatabaseViewFilteringBlock everythingFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
     {
         // we set the actual filtering block later in the events tab
         return YES;
     };
-    
-    YapDatabaseViewFilteringBlock eventTimeFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
-        // we set the actual filtering block later in the events tab
-        return YES;
-    };
-
     
     YapDatabaseViewFilteringBlock filteringBlock = nil;
     
     if (filterType == BRCDatabaseFilteredViewTypeFavorites) {
         filteringBlock = favoritesFilteringBlock;
-    } else if (filterType == BRCDatabaseFilteredViewTypeEventType) {
-        filteringBlock = eventsFilteringBlock;
-    } else if (filterType == BRCDatabaseFilteredViewTypeEventTime) {
-        filteringBlock = eventTimeFilteringBlock;
+    } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
+        filteringBlock = everythingFilteringBlock;
     }
- 
     
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentName
@@ -357,14 +339,12 @@
 
 + (NSString*) stringForFilteredExtensionType:(BRCDatabaseFilteredViewType)extensionType {
     switch (extensionType) {
-        case BRCDatabaseFilteredViewTypeEventType:
-            return @"EventType";
+        case BRCDatabaseFilteredViewTypeEventExpirationAndType:
+            return @"EventExpirationAndType";
             break;
         case BRCDatabaseFilteredViewTypeFavorites:
             return @"Favorites";
             break;
-        case BRCDatabaseFilteredViewTypeEventTime:
-            return @"Time";
         default:
             return nil;
             break;

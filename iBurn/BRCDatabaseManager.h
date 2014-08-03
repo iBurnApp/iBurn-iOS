@@ -20,8 +20,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
     BRCDatabaseFilteredViewTypeFavorites,
-    BRCDatabaseFilteredViewTypeEventType,
-    BRCDatabaseFilteredViewTypeEventTime
+    BRCDatabaseFilteredViewTypeEventExpirationAndType
 };
 
 @interface BRCDatabaseManager : NSObject

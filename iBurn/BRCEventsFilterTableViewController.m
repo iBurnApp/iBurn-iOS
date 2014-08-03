@@ -132,59 +132,37 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (void)updateFilteredViews
 {
-    
-    
     NSArray *filteredArray = [self filteredTypes];
     
+    BOOL showExpiredEvents = self.showExpiredEvents;
+    
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
-    YapDatabaseViewFilteringBlock eventTimeFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
     {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *eventObject = (BRCEventObject*)object;
-            return !eventObject.hasEnded;
-        }
-        return NO;
-    };
-    YapDatabaseViewFilteringBlock eventTypeFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
-        if ([object isKindOfClass:[BRCEventObject class]]) {
-            BRCEventObject *eventObject = (BRCEventObject*)object;
-            return [filteredArray containsObject:@(eventObject.eventType)];
+            BOOL eventHasEnded = eventObject.hasEnded;
+#warning eventMatchesTypeFilter filter won't work because containsObject compares pointers not values
+            //BOOL eventMatchesTypeFilter = [filteredArray containsObject:@(eventObject.eventType)];
+            if (showExpiredEvents) {
+                return YES;
+            } else {
+                return !eventHasEnded;
+            }
         }
         return NO;
     };
     
-    NSString *eventTimeNameViewName = [BRCDatabaseManager filteredExtensionNameForClass:[BRCEventObject class] filterType:BRCDatabaseFilteredViewTypeEventTime parentName:[BRCDatabaseManager extensionNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeName]];
-    NSString *eventDistanceViewName = [BRCDatabaseManager filteredExtensionNameForClass:[BRCEventObject class] filterType:BRCDatabaseFilteredViewTypeEventTime parentName:[BRCDatabaseManager extensionNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeDistance]];
-    NSString *eventTimVieweName = [BRCDatabaseManager filteredExtensionNameForClass:[BRCEventObject class] filterType:BRCDatabaseFilteredViewTypeEventTime parentName:[BRCDatabaseManager extensionNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTime]];
-    
-
-    NSArray *eventTimeNamesArray = @[eventTimeNameViewName,eventDistanceViewName,eventTimVieweName];
-    NSArray *eventTypeNamesArray = @[[BRCDatabaseManager sharedInstance].eventTimeViewName,[BRCDatabaseManager sharedInstance].eventDistanceViewName, [BRCDatabaseManager sharedInstance].eventNameViewName];
+    NSArray *eventsFilteredByExpirationAndTypeNamesArray = @[[BRCDatabaseManager sharedInstance].eventTimeViewName,[BRCDatabaseManager sharedInstance].eventDistanceViewName, [BRCDatabaseManager sharedInstance].eventNameViewName];
     
     [self.databaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        
-        [eventTimeNamesArray enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
+        [eventsFilteredByExpirationAndTypeNamesArray enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
             YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:name];
-            [filteredTransaction setFilteringBlock:eventTimeFilteringBlock
+            [filteredTransaction setFilteringBlock:filteringBlock
                                 filteringBlockType:filterBlockType
                                         versionTag:[[NSUUID UUID] UUIDString]];
         }];
-        
-        [eventTypeNamesArray enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
-            YapDatabaseFilteredViewTransaction *filteredTypeTransaction = [transaction ext:name];
-            
-            [filteredTypeTransaction setFilteringBlock:eventTypeFilteringBlock
-                                    filteringBlockType:filterBlockType
-                                            versionTag:[[NSUUID UUID] UUIDString]];
-        }];
-        
-        
-        
-        
     }];
-
-    
 }
 
 - (void)doneButtonPressed:(id)sender
