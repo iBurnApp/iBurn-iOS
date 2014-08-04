@@ -133,29 +133,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (void)updateFilteredViews
 {
-    NSArray *filteredArray = [self filteredTypes];
-    
-    BOOL showExpiredEvents = self.showExpiredEvents;
-    
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
-    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
-        if ([object isKindOfClass:[BRCEventObject class]]) {
-            BRCEventObject *eventObject = (BRCEventObject*)object;
-            BOOL eventHasEnded = eventObject.hasEnded;
-            BOOL eventMatchesTypeFilter = [filteredArray containsObject:@(eventObject.eventType)];
-            
-            if ((eventMatchesTypeFilter || [filteredArray count] == 0)) {
-                if (showExpiredEvents) {
-                    return YES;
-                } else {
-                    return !eventHasEnded;
-                }
-            }
-            
-        }
-        return NO;
-    };
+    YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager everythingFilteringBlock];
     
     NSArray *eventsFilteredByExpirationAndTypeNamesArray = @[[BRCDatabaseManager sharedInstance].eventTimeViewName,[BRCDatabaseManager sharedInstance].eventDistanceViewName, [BRCDatabaseManager sharedInstance].eventNameViewName];
     

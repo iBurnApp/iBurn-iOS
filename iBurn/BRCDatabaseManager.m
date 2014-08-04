@@ -15,6 +15,7 @@
 #import "BRCCampObject.h"
 #import "YapDatabaseFilteredView.h"
 #import "NSDateFormatter+iBurn.h"
+#import "NSUserDefaults+iBurn.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -293,11 +294,7 @@
         return NO;
     };
     
-    YapDatabaseViewFilteringBlock everythingFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
-        // we set the actual filtering block later in the events tab
-        return YES;
-    };
+    YapDatabaseViewFilteringBlock everythingFilteringBlock = [[self class] everythingFilteringBlock];
     
     YapDatabaseViewFilteringBlock filteringBlock = nil;
     
@@ -372,6 +369,34 @@
     NSString *extensionString = [self stringForExtensionType:extensionType];
     NSParameterAssert(extensionString != nil);
     return [NSString stringWithFormat:@"%@%@View", classString, extensionString];
+}
+
++ (YapDatabaseViewFilteringBlock)everythingFilteringBlock
+{
+    BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
+    
+    NSSet *filteredSet = [NSSet setWithArray:[[NSUserDefaults standardUserDefaults] selectedEventTypes]];
+    
+    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        if ([object isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *eventObject = (BRCEventObject*)object;
+            BOOL eventHasEnded = eventObject.hasEnded;
+            BOOL eventMatchesTypeFilter = [filteredSet containsObject:@(eventObject.eventType)];
+            
+            if ((eventMatchesTypeFilter || [filteredSet count] == 0)) {
+                if (showExpiredEvents) {
+                    return YES;
+                } else {
+                    return !eventHasEnded;
+                }
+            }
+            
+        }
+        return NO;
+    };
+    
+    return filteringBlock;
 }
 
 @end
