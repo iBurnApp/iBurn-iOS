@@ -26,7 +26,6 @@
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL observerIsRegistered;
-@property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
 @property (nonatomic) BOOL updatingDistanceInformation;
 @end
 
@@ -190,14 +189,21 @@
             if ([self shouldRefreshDistanceInformation] && !self.updatingDistanceInformation) {
                 self.updatingDistanceInformation = YES;
                 Class objectClass = self.viewClass;
-                [[BRCLocationManager sharedInstance] updateDistanceForAllObjectsOfClass:objectClass fromLocation:recentLocation completionBlock:^{
-                    NSLog(@"Distances updated for %@", NSStringFromClass(objectClass));
+                [[BRCLocationManager sharedInstance] updateDistanceForAllObjectsOfClass:objectClass
+                                                                                  group:[self selectedDataObjectGroup]
+                                                                           fromLocation:recentLocation
+                                                                        completionBlock:^{
                     self.lastDistanceUpdateLocation = recentLocation;
                     self.updatingDistanceInformation = NO;
+                    [self.tableView reloadData];
                 }];
             }
         }
     }
+}
+
+- (NSString*) selectedDataObjectGroup {
+    return [[self viewClass] collection];
 }
 
 - (Class) cellClass {

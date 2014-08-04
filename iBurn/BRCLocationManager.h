@@ -19,10 +19,12 @@
  *  subclass that you specify.
  *
  *  @param objectClass     subclass of BRCDataObject
+ *  @param group           YapDatabase group
  *  @param location        most recent location
  *  @param completionBlock always called on main thread
  */
 - (void) updateDistanceForAllObjectsOfClass:(Class)objectClass
+                                      group:(NSString*)group
                                fromLocation:(CLLocation*)location
                             completionBlock:(dispatch_block_t)completionBlock;
 

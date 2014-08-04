@@ -39,6 +39,8 @@
     ActionSheetStringPicker *dayPicker = [[ActionSheetStringPicker alloc] initWithTitle:@"Choose a Day" rows:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(ActionSheetStringPicker *picker, NSInteger selectedIndex, id selectedValue) {
         NSDate *selectedDate = [self dateForIndex:selectedIndex];
         self.selectedDay = selectedDate;
+        self.lastDistanceUpdateLocation = nil;
+        [self refreshDistanceInformation];
     } cancelBlock:nil origin:sender];
     [dayPicker showActionSheetPicker];
 }
@@ -158,6 +160,11 @@
     YapDatabaseViewMappings *favoritesMappings = [[YapDatabaseViewMappings alloc] initWithGroups:allGroups view:favoritesName];
     [self.mappingsDictionary setObject:favoritesMappings forKey:favoritesName];
     [self replaceTimeBasedEventMappings];
+}
+
+- (NSString*) selectedDataObjectGroup {
+    NSString *group = [[NSDateFormatter brc_threadSafeGroupDateFormatter] stringFromDate:self.selectedDay];
+    return group;
 }
 
 - (void) replaceTimeBasedEventMappings {
