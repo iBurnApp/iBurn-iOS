@@ -15,4 +15,6 @@
 + (UIColor*) brc_redColor;
 + (UIColor*) brc_lightGreenColor;
 
++ (UIColor*) brc_navBarColor;
+
 @end

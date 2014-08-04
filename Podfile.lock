@@ -24,6 +24,7 @@ PODS:
     - FMDB (= 2.3)
     - GRMustache (= 6.8.3)
     - SMCalloutView (= 2.0)
+  - PureLayout (1.0.1)
   - SMCalloutView (2.0)
   - YapDatabase (2.4.3):
     - YapDatabase/standard
@@ -39,6 +40,7 @@ DEPENDENCIES:
   - HockeySDK (~> 3.5)
   - Mantle (~> 1.5)
   - Mapbox-iOS-SDK (~> 1.2)
+  - PureLayout (~> 1.0)
   - YapDatabase (~> 2.4)
 
 SPEC CHECKSUMS:
@@ -51,6 +53,7 @@ SPEC CHECKSUMS:
   JRSwizzle: 30da7a2c539a4ebf954b16d15f6dd8221c9f6fa5
   Mantle: c67a7e45e14196ed42b2a7cbb98ff6a9920e6b92
   Mapbox-iOS-SDK: 961de5e8caba54a093d69b89696816b55f4c0254
+  PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
   SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
   YapDatabase: 2ec54726596299c88e09e899e8f17c15d7f6b18a
 

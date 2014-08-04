@@ -19,14 +19,19 @@
 #import "BRCLocationManager.h"
 #import "BRCFilteredTableViewController.h"
 #import "BRCFilteredTableViewController_Private.h"
+#import "UIColor+iBurn.h"
+#import "PureLayout.h"
 
-@interface BRCFilteredTableViewController ()
+@interface BRCFilteredTableViewController () <UIToolbarDelegate>
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL observerIsRegistered;
+@property (nonatomic) BOOL didUpdateConstraints;
 @property (nonatomic) BOOL updatingDistanceInformation;
+@property (nonatomic) UIToolbar *sortControlToolbar;
+@property (nonatomic, strong) UIImageView *navBarHairlineImageView;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -39,8 +44,17 @@
         self.segmentedControl.selectedSegmentIndex = 0;
         
         [self.segmentedControl addTarget:self action:@selector(didChangeValueForSegmentedControl:) forControlEvents:UIControlEventValueChanged];
+        
+        self.sortControlToolbar = [[UIToolbar alloc] init];
+        self.sortControlToolbar.delegate = self;
+        self.sortControlToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.sortControlToolbar addSubview:self.segmentedControl];
     }
     return self;
+}
+
+- (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
+    return UIBarPositionTopAttached;
 }
 
 - (void)viewDidLoad
@@ -51,6 +65,8 @@
     [self setupMappingsDictionary];
     [self updateAllMappings];
     
+    self.navBarHairlineImageView = [self findHairlineImageViewUnder:self.navigationController.navigationBar];
+
     NSArray *segmentedControlInfo = [self segmentedControlInfo];
     [segmentedControlInfo enumerateObjectsUsingBlock:^(NSArray *infoArray, NSUInteger idx, BOOL *stop) {
         NSString *title = [infoArray firstObject];
@@ -63,9 +79,13 @@
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.tableView.backgroundView = nil;
+    self.tableView.backgroundView = [[UIView alloc] init];
+    self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
     
     UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectZero];
     searchBar.delegate = self;
+    searchBar.searchBarStyle = UISearchBarStyleMinimal;
     
     self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:searchBar contentsController:self];
     self.searchController.delegate = self;
@@ -74,17 +94,31 @@
     
     self.tableView.tableHeaderView = searchBar;
     
-    [self.view addSubview:self.segmentedControl];
+    [self.view addSubview:self.sortControlToolbar];
     [self.view addSubview:self.tableView];
     
-    [self setupConstraints];
+    [self updateViewConstraints];
     
     UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
     [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
-    
-    
 }
+
+// Remove 1px hairline below UINavigationBar
+// http://stackoverflow.com/a/19227158/805882
+- (UIImageView *)findHairlineImageViewUnder:(UIView *)view {
+    if ([view isKindOfClass:UIImageView.class] && view.bounds.size.height <= 1.0) {
+        return (UIImageView *)view;
+    }
+    for (UIView *subview in view.subviews) {
+        UIImageView *imageView = [self findHairlineImageViewUnder:subview];
+        if (imageView) {
+            return imageView;
+        }
+    }
+    return nil;
+}
+
 
 - (void)setupDatabaseConnection
 {
@@ -126,6 +160,12 @@
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self refreshDistanceInformation];
+    self.navBarHairlineImageView.hidden = YES;
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    self.navBarHairlineImageView.hidden = NO;
 }
 
 - (void) refreshDistanceInformation {
@@ -195,6 +235,9 @@
                                                                         completionBlock:^{
                     self.lastDistanceUpdateLocation = recentLocation;
                     self.updatingDistanceInformation = NO;
+                    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                        [[self activeMappings] updateWithTransaction:transaction];
+                    }];
                     [self.tableView reloadData];
                 }];
             }
@@ -216,17 +259,27 @@
              @[@"Favorites", [BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeName]]]];
 }
 
-- (void)setupConstraints
+- (void)updateViewConstraints
 {
-    id topGuide = self.topLayoutGuide;
-    id bottomGuide = self.bottomLayoutGuide;
-    NSDictionary *views = NSDictionaryOfVariableBindings(_tableView,_segmentedControl,topGuide,bottomGuide);
-    NSDictionary *metrics = @{@"segmentedControlHeight":@(33)};
-    
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_segmentedControl]|" options:0 metrics:metrics views:views]];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_tableView]|" options:0 metrics:metrics views:views]];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[topGuide][_segmentedControl(==segmentedControlHeight)]-1-[_tableView][bottomGuide]" options:0 metrics:metrics views:views]];
-    
+    [super updateViewConstraints];
+    if (self.didUpdateConstraints) {
+        return;
+    }
+    [self.sortControlToolbar autoPinToTopLayoutGuideOfViewController:self withInset:0];
+    [self.sortControlToolbar autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
+    [self.sortControlToolbar autoSetDimension:ALDimensionHeight toSize:40];
+    [self.sortControlToolbar autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    [self.segmentedControl autoCenterInSuperview];
+    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:10.0f];
+    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:10.0f];
+    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeTop withInset:5.0f];
+    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:5.0f];
+
+    [self.tableView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.sortControlToolbar withOffset:1.0f];
+    [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
+    [self.tableView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
+    [self.tableView autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    self.didUpdateConstraints = YES;
 }
 
 - (YapDatabaseViewMappings*) activeMappings {
@@ -333,26 +386,28 @@
     [self.searchDisplayController setActive:YES animated:YES];
 }
 
+- (void)searchBarCancelButtonClicked:(UISearchBar *) searchBar;                    // called when cancel button pressed
+{
+    // ugly hack to re-hide the 1px navBarHairlineImageView after search bar disappears
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.navBarHairlineImageView = [self findHairlineImageViewUnder:self.navigationController.navigationBar];
+        self.navBarHairlineImageView.hidden = YES;
+    });
+}
+
 #pragma - mark  UISearchDisplayDelegate Methods
 
 - (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
 {
     if ([searchString length]) {
-        
         searchString = [NSString stringWithFormat:@"%@*",searchString];
-        
         [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             NSMutableArray *tempSearchResults = [NSMutableArray array];
-            
             [[transaction ext:[self activeFullTextSearchExtensionName]] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
-                
                 if (object) {
                     [tempSearchResults addObject:object];
                 }
-                
-                
             }];
-            
             self.searchResults = [tempSearchResults copy];
         }];
     }

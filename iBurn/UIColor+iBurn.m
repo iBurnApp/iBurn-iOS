@@ -26,5 +26,8 @@
     return [UIColor colorWithRed:219/255.0f green:23/255.0f blue:19/255.0f alpha:1.0f];
 }
 
++ (UIColor*)brc_navBarColor {
+    return [UIColor colorWithRed:247/255.0f green:247/255.0 blue:247/255.0f alpha:1.0f];
+}
 
 @end

@@ -102,6 +102,7 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
                         NSLog(@"No distance for %@", object);
                     }
                     object.distanceFromUser = distance;
+                    object.lastDistanceUpdateLocation = location;
                     [objectsToBeUpdated addObject:object];
                 }];
                 [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *readWriteTransaction) {
