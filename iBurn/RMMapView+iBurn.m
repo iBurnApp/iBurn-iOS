@@ -10,13 +10,9 @@
 #import "RMMBTilesSource.h"
 #import "BRCLocations.h"
 
-@implementation RMMapView (iBurn)
-
-static double const blackRockCityCenterLatitude = 0.0;
-static double const blackROckCityCenterLongitude = 0.0;
-
-
 static NSString *const kBRCBundledTileSourceName = @"iburn";
+
+@implementation RMMapView (iBurn)
 
 - (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated
 {

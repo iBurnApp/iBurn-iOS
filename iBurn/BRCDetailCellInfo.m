@@ -37,7 +37,9 @@
 + (NSArray *)defaultInfoArray
 {
     NSMutableArray *defaultArray = [NSMutableArray new];
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
+    //[defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
+    
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(location)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
     
@@ -52,8 +54,6 @@
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(email)) displayName:@"Email" cellType:BRCDetailCellInfoTypeEmail]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(url)) displayName:@"URL" cellType:BRCDetailCellInfoTypeURL]];
-    
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(location)) displayName:@"Location" cellType:BRCDetailCellInfoTypeCoordinates]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     

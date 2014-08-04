@@ -24,12 +24,10 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
 @interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
-
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
-
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
-
 @property (nonatomic, strong) RMMapView *mapView;
+@property (nonatomic) BOOL addedContraints;
 
 @end
 
@@ -72,7 +70,13 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBRCRowHeightDummyCellIdentifier];
     
     if (self.mapView) {
-        self.tableView.tableHeaderView = self.mapView;
+        UIView *mapContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 150, 150)];
+        self.mapView.frame = mapContainerView.frame;
+        [mapContainerView addSubview:self.mapView];
+        
+        [mapContainerView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
+        
+        self.tableView.tableHeaderView = mapContainerView;
     }
     
     [self.view addSubview:self.tableView];
@@ -122,6 +126,12 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
     }];
 }
 
+- (void)didTapMapContainerview:(id)sender
+{
+    BRCDetailMapViewController *mapViewController = [[BRCDetailMapViewController alloc] initWithDataObject:self.dataObject];
+    [self.navigationController pushViewController:mapViewController animated:YES];
+}
+
 - (BRCDetailCellInfo *)cellInfoForIndexPath:(NSInteger)section
 {
     if ([self.detailCellInfoArray count] > section) {
@@ -133,11 +143,13 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
     if (dataObject.location) {
-        self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 250)];
+        self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
         self.mapView.delegate = self;
+        self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         BRCAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
         [self.mapView addAnnotation:annotation];
         self.mapView.draggingEnabled = NO;
+        self.mapView.userInteractionEnabled = NO;
     }
     else {
         self.mapView = nil;
@@ -145,12 +157,6 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
 }
 
 #pragma - mark RMMapviewDelegate Methods
-
-- (void)singleTapOnMap:(RMMapView *)map at:(CGPoint)point
-{
-    BRCDetailMapViewController *mapViewController = [[BRCDetailMapViewController alloc] initWithDataObject:self.dataObject];
-    [self.navigationController pushViewController:mapViewController animated:YES];
-}
 
 - (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
     if (annotation.isUserLocationAnnotation) { // show default style
