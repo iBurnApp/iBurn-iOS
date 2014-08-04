@@ -121,6 +121,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     NSArray *filteredArray = [self filteredTypes];
     [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
     [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
+    [self updateFilteredViews];
 }
 
 - (NSArray *)filteredTypes
@@ -142,13 +143,16 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
         if ([object isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *eventObject = (BRCEventObject*)object;
             BOOL eventHasEnded = eventObject.hasEnded;
-#warning eventMatchesTypeFilter filter won't work because containsObject compares pointers not values
-            //BOOL eventMatchesTypeFilter = [filteredArray containsObject:@(eventObject.eventType)];
-            if (showExpiredEvents) {
-                return YES;
-            } else {
-                return !eventHasEnded;
+            BOOL eventMatchesTypeFilter = [filteredArray containsObject:@(eventObject.eventType)];
+            
+            if ((eventMatchesTypeFilter || [filteredArray count] == 0)) {
+                if (showExpiredEvents) {
+                    return YES;
+                } else {
+                    return !eventHasEnded;
+                }
             }
+            
         }
         return NO;
     };
