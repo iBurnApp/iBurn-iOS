@@ -18,8 +18,12 @@
 #import "RMMarker+iBurn.h"
 #import "BRCDetailInfoTableViewCell.h"
 #import "BRCDetailMapViewController.h"
+#import "PureLayout.h"
 
 static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyCellIdentifier";
+
+static CGFloat const kMapHeaderOffsetY = -150.0;
+static CGFloat const kMapHeaderHeight = 250.0;
 
 @interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
@@ -27,7 +31,8 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) RMMapView *mapView;
-@property (nonatomic) BOOL addedContraints;
+@property (nonatomic, strong) UIView *fakeTableViewBackground;
+@property (nonatomic) BOOL didSetContraints;
 
 @end
 
@@ -65,21 +70,33 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.view.backgroundColor = self.tableView.backgroundColor;
+    self.tableView.backgroundView = nil;
+    self.tableView.backgroundView = [[UIView alloc] init];
+    self.tableView.backgroundColor = [UIColor clearColor];
     
     [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBRCRowHeightDummyCellIdentifier];
     
+    [self.view addSubview:self.tableView];
+    
     if (self.mapView) {
-        UIView *mapContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 150, 150)];
-        self.mapView.frame = mapContainerView.frame;
-        [mapContainerView addSubview:self.mapView];
+        CGRect mapFrame = CGRectMake(0.0, 0.0, self.view.bounds.size.width, kMapHeaderHeight);
+        self.fakeTableViewBackground = [[UIView alloc] init];
+        self.fakeTableViewBackground.backgroundColor = self.view.backgroundColor;
+        self.fakeTableViewBackground.translatesAutoresizingMaskIntoConstraints = NO;
         
-        [mapContainerView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
+        self.mapView.frame = CGRectMake(0, kMapHeaderOffsetY, self.view.bounds.size.width, self.view.bounds.size.height + ABS(kMapHeaderOffsetY));
+        UIView *tableHeader = [[UIView alloc] initWithFrame: mapFrame];
+        [tableHeader addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
+        tableHeader.backgroundColor = [UIColor clearColor];
+        self.tableView.tableHeaderView = tableHeader;
         
-        self.tableView.tableHeaderView = mapContainerView;
+        [self.view insertSubview:self.mapView belowSubview:self.tableView];
+        [self.view insertSubview:self.fakeTableViewBackground belowSubview:self.tableView];
     }
     
-    [self.view addSubview:self.tableView];
+    
     
     self.favoriteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[self currentStarImage] style:UIBarButtonItemStylePlain target:self action:@selector(didTapFavorite:)];
     
@@ -90,6 +107,20 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
 {
     [super viewDidAppear:animated];
     [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate animated:animated];
+}
+
+- (void)updateViewConstraints
+{
+    [super updateViewConstraints];
+    if (!self.didSetContraints) {
+        
+        [self.fakeTableViewBackground autoAlignAxisToSuperviewAxis:ALAxisVertical];
+        [self.fakeTableViewBackground autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeTop];
+        [self.fakeTableViewBackground autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.tableView.tableHeaderView];
+        
+        
+        self.didSetContraints = YES;
+    }
 }
 
 - (UIImage*)imageIfFavorite:(BOOL)isFavorite {
@@ -274,6 +305,27 @@ static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyC
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
 }
+
+#pragma - mark UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    CGFloat scrollOffset = scrollView.contentOffset.y;
+    CGRect headerFrame = self.mapView.frame;
+    
+    if (scrollOffset < 0)
+    {
+        headerFrame.origin.y = MIN(kMapHeaderOffsetY - ((scrollOffset / 3)), 0);
+        
+    }
+    else //scrolling up
+    {
+        headerFrame.origin.y = kMapHeaderOffsetY - scrollOffset;
+    }
+    
+    self.mapView.frame = headerFrame;
+}
+
 
 #pragma - mark MFMailComposeViewControllerDelegate 
 
