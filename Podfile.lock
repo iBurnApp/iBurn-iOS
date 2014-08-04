@@ -26,6 +26,7 @@ PODS:
     - SMCalloutView (= 2.0)
   - PureLayout (1.0.1)
   - SMCalloutView (2.0)
+  - SWTableViewCell (0.3.0)
   - YapDatabase (2.4.3):
     - YapDatabase/standard
   - YapDatabase/common (2.4.3):
@@ -41,6 +42,7 @@ DEPENDENCIES:
   - Mantle (~> 1.5)
   - Mapbox-iOS-SDK (~> 1.2)
   - PureLayout (~> 1.0)
+  - SWTableViewCell (~> 0.3)
   - YapDatabase (~> 2.4)
 
 SPEC CHECKSUMS:
@@ -55,6 +57,7 @@ SPEC CHECKSUMS:
   Mapbox-iOS-SDK: 961de5e8caba54a093d69b89696816b55f4c0254
   PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
   SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
+  SWTableViewCell: 1725f7607ce4c154264c18aeb78e4636b11b0b29
   YapDatabase: 2ec54726596299c88e09e899e8f17c15d7f6b18a
 
 COCOAPODS: 0.33.1

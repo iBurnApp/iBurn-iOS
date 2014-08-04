@@ -82,7 +82,7 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
             YapDatabaseViewTransaction *viewTransaction = [transaction ext:viewName];
             allKeysInGroup = [viewTransaction numberOfKeysInGroup:group];
         }];
-        NSLog(@"Updating distances for %d items %@ (group: %@)...", (int)allKeysInGroup, NSStringFromClass(objectClass), group);
+        NSLog(@"Updating distances for %d items %@ (group: %@) from %@...", (int)allKeysInGroup, NSStringFromClass(objectClass), group, location);
         
         NSArray *subarrayRanges = [self subarrayRangesForArrayCount:allKeysInGroup splitCount:arraySplitCount];
         
@@ -115,7 +115,7 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
         }];
         NSDate *endDate = [NSDate date];
         NSTimeInterval timeTaken = [endDate timeIntervalSinceDate:startDate];
-        NSLog(@"Finished updating distances for %d items %@ (group: %@) in %f seconds", (int)allKeysInGroup, NSStringFromClass(objectClass), group, timeTaken);
+        NSLog(@"Finished updating distances for %d items %@ (group: %@) in %f seconds from %@", (int)allKeysInGroup, NSStringFromClass(objectClass), group, timeTaken, location);
         if (completionBlock) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completionBlock();

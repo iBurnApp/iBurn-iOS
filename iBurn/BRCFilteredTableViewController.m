@@ -22,7 +22,31 @@
 #import "UIColor+iBurn.h"
 #import "PureLayout.h"
 
-@interface BRCFilteredTableViewController () <UIToolbarDelegate>
+@interface UIImage(Overlay)
+- (UIImage *)imageWithColor:(UIColor *)color1;
+@end
+
+@implementation UIImage(Overlay)
+
+// http://stackoverflow.com/a/19275079/805882
+- (UIImage *)imageWithColor:(UIColor *)color1
+{
+    UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextTranslateCTM(context, 0, self.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    CGContextSetBlendMode(context, kCGBlendModeNormal);
+    CGRect rect = CGRectMake(0, 0, self.size.width, self.size.height);
+    CGContextClipToMask(context, rect, self.CGImage);
+    [color1 setFill];
+    CGContextFillRect(context, rect);
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+@end
+
+@interface BRCFilteredTableViewController () <UIToolbarDelegate, SWTableViewCellDelegate>
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
 @property (nonatomic, strong) NSArray *searchResults;
@@ -32,6 +56,7 @@
 @property (nonatomic) BOOL updatingDistanceInformation;
 @property (nonatomic) UIToolbar *sortControlToolbar;
 @property (nonatomic, strong) UIImageView *navBarHairlineImageView;
+@property (nonatomic, strong) UIButton *favoriteButton;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -343,7 +368,45 @@
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[[self cellClass] cellIdentifier] forIndexPath:indexPath];
     BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     [cell setDataObject:dataObject];
+    
+    cell.leftUtilityButtons = [self leftButtonsForObject:dataObject];
+    cell.delegate = self;
     return cell;
+}
+
+- (NSArray *)leftButtonsForObject:(BRCDataObject*)object
+{
+    UIColor *tintColor = [[[UIApplication sharedApplication] keyWindow] tintColor];
+    UIButton *favoriteButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    favoriteButton.backgroundColor = [UIColor whiteColor];
+    UIImage *lightStar = [[UIImage imageNamed:@"BRCLightStar"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage *darkStar = [[UIImage imageNamed:@"BRCDarkStar"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [favoriteButton setImage:lightStar forState:UIControlStateNormal];
+    [favoriteButton setImage:darkStar forState:UIControlStateHighlighted];
+    [favoriteButton setImage:darkStar forState:UIControlStateSelected];
+    
+    favoriteButton.tintColor = tintColor;
+    if (object.isFavorite) {
+        favoriteButton.selected = YES;
+    } else {
+        favoriteButton.selected = NO;
+    }
+    return @[favoriteButton];
+}
+
+- (void)swipeableTableViewCell:(SWTableViewCell *)cell didTriggerLeftUtilityButtonWithIndex:(NSInteger)index {
+    if (index == 0) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+        __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:self.tableView];
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            dataObject = [[transaction objectForKey:dataObject.uniqueID inCollection:[[dataObject class] collection]] copy];
+            dataObject.isFavorite = !dataObject.isFavorite;
+            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+        } completionBlock:^{
+            UIButton *favoriteButton = [cell.leftUtilityButtons objectAtIndex:index];
+            [favoriteButton setHighlighted:dataObject.isFavorite];
+        }];
+    }
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender
