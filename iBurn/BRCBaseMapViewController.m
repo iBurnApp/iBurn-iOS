@@ -28,6 +28,7 @@
     self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
     
     [self.mapView brc_zoomToFullTileSourceAnimated:NO];
+    [self.mapView brc_moveToBlackRockCityCenterAnimated:NO];
 }
 
 #pragma - mark RMMapViewDelegate Methods

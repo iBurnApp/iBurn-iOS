@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		630861C9199029D100AD7109 /* BRCLocations.m in Sources */ = {isa = PBXBuildFile; fileRef = 630861C8199029D100AD7109 /* BRCLocations.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
@@ -57,6 +58,8 @@
 
 /* Begin PBXFileReference section */
 		1E93B71A95964EB6AFA26954 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		630861C7199029D100AD7109 /* BRCLocations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocations.h; sourceTree = "<group>"; };
+		630861C8199029D100AD7109 /* BRCLocations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocations.m; sourceTree = "<group>"; };
 		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
 		6322830019881DDE009E472B /* BRCDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailViewController.m; sourceTree = "<group>"; };
 		6322830319881F41009E472B /* BRCDetailCellInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailCellInfo.h; sourceTree = "<group>"; };
@@ -192,6 +195,8 @@
 				63228320198AB383009E472B /* RMMarker+iBurn.m */,
 				63228310198987D0009E472B /* BRCAnnotation.h */,
 				63228311198987D0009E472B /* BRCAnnotation.m */,
+				630861C7199029D100AD7109 /* BRCLocations.h */,
+				630861C8199029D100AD7109 /* BRCLocations.m */,
 			);
 			name = MapClasses;
 			sourceTree = "<group>";
@@ -491,6 +496,7 @@
 			files = (
 				D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */,
 				D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */,
+				630861C9199029D100AD7109 /* BRCLocations.m in Sources */,
 				D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,

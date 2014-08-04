@@ -8,8 +8,12 @@
 
 #import "RMMapView+iBurn.h"
 #import "RMMBTilesSource.h"
+#import "BRCLocations.h"
 
 @implementation RMMapView (iBurn)
+
+static double const blackRockCityCenterLatitude = 0.0;
+static double const blackROckCityCenterLongitude = 0.0;
 
 
 static NSString *const kBRCBundledTileSourceName = @"iburn";
@@ -18,6 +22,12 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
 {
     RMSphericalTrapezium bounds = [self.tileSource latitudeLongitudeBoundingBox];
     [self zoomWithLatitudeLongitudeBoundsSouthWest:bounds.southWest northEast:bounds.northEast animated:animated];
+}
+
+- (void)brc_moveToBlackRockCityCenterAnimated:(BOOL)animated
+{
+    CLLocationCoordinate2D blackRockCityCenter = [BRCLocations blackRockCityCenter];
+    [self setCenterCoordinate:blackRockCityCenter animated:animated];
 }
 
 - (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 animated:(BOOL)animated
@@ -73,7 +83,6 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
     //mapView.clusteringEnabled = YES;
     
     return mapView;
-    
 }
 
 @end
