@@ -121,6 +121,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     NSArray *filteredArray = [self filteredTypes];
     [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
     [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
+    [self updateFilteredViews];
 }
 
 - (NSArray *)filteredTypes
@@ -132,26 +133,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (void)updateFilteredViews
 {
-    NSArray *filteredArray = [self filteredTypes];
-    
-    BOOL showExpiredEvents = self.showExpiredEvents;
-    
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
-    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
-        if ([object isKindOfClass:[BRCEventObject class]]) {
-            BRCEventObject *eventObject = (BRCEventObject*)object;
-            BOOL eventHasEnded = eventObject.hasEnded;
-#warning eventMatchesTypeFilter filter won't work because containsObject compares pointers not values
-            //BOOL eventMatchesTypeFilter = [filteredArray containsObject:@(eventObject.eventType)];
-            if (showExpiredEvents) {
-                return YES;
-            } else {
-                return !eventHasEnded;
-            }
-        }
-        return NO;
-    };
+    YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager everythingFilteringBlock];
     
     NSArray *eventsFilteredByExpirationAndTypeNamesArray = @[[BRCDatabaseManager sharedInstance].eventTimeViewName,[BRCDatabaseManager sharedInstance].eventDistanceViewName, [BRCDatabaseManager sharedInstance].eventNameViewName];
     
@@ -244,7 +227,13 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     }
     
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [tableView reloadData];
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    if (cell.accessoryType == UITableViewCellAccessoryCheckmark) {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    else {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
 }
 
 

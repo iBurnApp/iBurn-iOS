@@ -144,7 +144,7 @@
     NSMutableArray *viewNames = [NSMutableArray arrayWithCapacity:3];
     [viewNames addObject:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
     [viewNames addObject:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]];
-    [viewNames addObject:[BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]]];
+    [viewNames addObject:[BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeName]]];
     
     NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
     

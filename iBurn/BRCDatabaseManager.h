@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "YapDatabase.h"
+#import "YapDatabaseFilteredViewTypes.h"
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
     BRCDatabaseViewExtensionTypeUnknown,
@@ -39,5 +40,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
 + (NSString*) filteredExtensionNameForFilterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName;
+
++ (YapDatabaseViewFilteringBlock)everythingFilteringBlock;
 
 @end
