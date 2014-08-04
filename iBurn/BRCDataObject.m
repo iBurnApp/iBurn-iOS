@@ -33,7 +33,8 @@
              NSStringFromSelector(@selector(url)): @"url",
              NSStringFromSelector(@selector(latitude)): @"latitude",
              NSStringFromSelector(@selector(longitude)): @"longitude",
-             NSStringFromSelector(@selector(year)): @"year.year"};
+             NSStringFromSelector(@selector(year)): @"year.year",
+             NSStringFromSelector(@selector(playaLocation)):@"location"};
 }
 
 - (void) setIsFavorite:(BOOL)isFavorite {

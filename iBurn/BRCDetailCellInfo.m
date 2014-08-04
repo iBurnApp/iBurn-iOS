@@ -39,7 +39,9 @@
     NSMutableArray *defaultArray = [NSMutableArray new];
     //[defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(location)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
+    
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
     
@@ -55,9 +57,7 @@
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(url)) displayName:@"URL" cellType:BRCDetailCellInfoTypeURL]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(otherLocation)) displayName:@"Other Location" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(hometown)) displayName:@"Hometown" cellType:BRCDetailCellInfoTypeText]];
     
@@ -91,6 +91,7 @@
                         return;
                     }
                 }
+                
                 if ([cellValue isKindOfClass:[NSURL class]]) {
                     NSURL *valueURL = cellValue;
                     if (![[valueURL absoluteString] length]) {
@@ -147,21 +148,32 @@
         
         //Camp relationship
         BRCRelationshipDetailInfoCell *relationshipDetailInfoCell = nil;
+        NSString *relationshipUniqueID = nil;
+        NSString *relationshipCollection = nil;
         if ([event.hostedByCampUniqueID length]) {
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
             relationshipDetailInfoCell.displayName = @"Camp";
-            // TODO this should be refactored to share a persistent main thread connection
+            relationshipUniqueID = event.hostedByCampUniqueID;
+            relationshipCollection = [BRCCampObject collection];
+        }
+        else if ([event.hostedByArtUniqueID length]) {
+            relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
+            relationshipDetailInfoCell.displayName = @"Art";
+            relationshipUniqueID = event.hostedByArtUniqueID;
+            relationshipCollection = [BRCArtObject collection];
+        }
+        
+        
+        
+        // TODO this should be refactored to share a persistent main thread connection
+        if ([relationshipUniqueID length] && [relationshipCollection length]) {
             [[[BRCDatabaseManager sharedInstance].database newConnection] readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-                relationshipDetailInfoCell.dataObject = [transaction objectForKey:event.hostedByCampUniqueID inCollection:[BRCCampObject collection]];
+                relationshipDetailInfoCell.dataObject = [transaction objectForKey:relationshipUniqueID inCollection:relationshipCollection];
             }];
         }
         
-        NSUInteger index = 0;
         
-        //add items to second and third position
-        if ([finalCellInfoArray count]) {
-            index = 1;
-        }
+        NSUInteger index = 0;
         
         if (fullScheduleString) {
             BRCDetailCellInfo *scheduleCellInfo = [[self alloc] init];

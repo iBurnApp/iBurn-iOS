@@ -49,8 +49,8 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(title)): @"title",
                                NSStringFromSelector(@selector(checkLocation)): @"check_location",
-                               NSStringFromSelector(@selector(otherLocation)): @"location",
                                NSStringFromSelector(@selector(hostedByCampUniqueID)): @"hosted_by_camp.id",
+                               NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art.id",
                                NSStringFromSelector(@selector(eventType)): @"event_type.abbr",
                                NSStringFromSelector(@selector(isAllDay)): @"all_day"};
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:artPaths];
@@ -74,6 +74,12 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 }
 
 + (NSValueTransformer *)hostedByCampUniqueIDJSONTransformer {
+    return [MTLValueTransformer transformerWithBlock:^NSString*(NSNumber* number) {
+        return number.stringValue;
+    }];
+}
+
++ (NSValueTransformer *)hostedByArtUniqueIDJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSString*(NSNumber* number) {
         return number.stringValue;
     }];

@@ -55,9 +55,7 @@
 /**
  *  Playa Coordinates - currently unused
  */
-@property (nonatomic, strong, readonly) NSNumber *playaHour;
-@property (nonatomic, strong, readonly) NSNumber *playaMinute;
-@property (nonatomic, strong, readonly) NSString *playaStreet;
+@property (nonatomic, strong, readonly) NSString *playaLocation;
 
 /**
  *  The YapDatabase collection of this class

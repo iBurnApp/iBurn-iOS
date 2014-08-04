@@ -30,6 +30,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 
 
 @property (nonatomic, strong, readonly) NSString *hostedByCampUniqueID;
+@property (nonatomic, strong, readonly) NSString *hostedByArtUniqueID;
 
 
 @property (nonatomic, readonly) BOOL isAllDay;
@@ -37,10 +38,6 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 @property (nonatomic, strong, readonly) NSDate *startDate;
 @property (nonatomic, strong, readonly) NSDate *endDate;
 
-/**
- *  From PlayaEvents API, not sure what its for
- */
-@property (nonatomic, strong, readonly) NSString *otherLocation;
 /**
  *  From PlayaEvents API, not sure what its for
  */

@@ -80,7 +80,13 @@
         }
         case BRCDetailCellInfoTypeRelationship: {
             BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
-            self.textLabel.text = relationshipCellInfo.dataObject.title;
+            NSMutableString *textString = [relationshipCellInfo.dataObject.title mutableCopy];
+            if ([relationshipCellInfo.dataObject.playaLocation length]) {
+                [textString appendFormat:@"\n%@",relationshipCellInfo.dataObject.playaLocation];
+            }
+            self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+            self.textLabel.numberOfLines = 0;
+            self.textLabel.text = textString;
             [self setSelectableAppearance];
             break;
         }
