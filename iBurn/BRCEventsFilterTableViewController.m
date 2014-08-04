@@ -248,7 +248,13 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     }
     
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [tableView reloadData];
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    if (cell.accessoryType == UITableViewCellAccessoryCheckmark) {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    else {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
 }
 
 
