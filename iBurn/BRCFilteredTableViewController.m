@@ -241,10 +241,6 @@
                                                                         completionBlock:^{
                     self.lastDistanceUpdateLocation = recentLocation;
                     self.updatingDistanceInformation = NO;
-                    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-                        [[self activeMappings] updateWithTransaction:transaction];
-                    }];
-                    [self.tableView reloadData];
                 }];
             }
         }
@@ -491,15 +487,15 @@
                                rowChanges:&rowChanges
                          forNotifications:notifications
                              withMappings:activeMappings];
-    }
-
-    
-    NSDictionary *inactiveMappings = [self inactiveMappingsDictionary];
-    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        [inactiveMappings enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *inactiveMappings, BOOL *stop) {
-            [inactiveMappings updateWithTransaction:transaction];
+        NSDictionary *inactiveMappings = [self inactiveMappingsDictionary];
+        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            [inactiveMappings enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *inactiveMappings, BOOL *stop) {
+                [inactiveMappings updateWithTransaction:transaction];
+            }];
         }];
-    }];
+    } else {
+        [self updateAllMappings];
+    }
 
     // No need to update mappings.
     // The above method did it automatically.

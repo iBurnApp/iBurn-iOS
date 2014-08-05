@@ -73,7 +73,6 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
                             completionBlock:(dispatch_block_t)completionBlock {
     NSParameterAssert(location != nil);
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSDate *startDate = [NSDate date];
         __block NSUInteger allKeysInGroup = 0;
         NSUInteger arraySplitCount = 10;
         NSString *viewName = [BRCDatabaseManager extensionNameForClass:objectClass extensionType:BRCDatabaseViewExtensionTypeDistance];
@@ -82,8 +81,6 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
             YapDatabaseViewTransaction *viewTransaction = [transaction ext:viewName];
             allKeysInGroup = [viewTransaction numberOfKeysInGroup:group];
         }];
-        NSLog(@"Updating distances for %d items %@ (group: %@) from %@...", (int)allKeysInGroup, NSStringFromClass(objectClass), group, location);
-        
         NSArray *subarrayRanges = [self subarrayRangesForArrayCount:allKeysInGroup splitCount:arraySplitCount];
         
         [subarrayRanges enumerateObjectsUsingBlock:^(NSValue *value, NSUInteger idx, BOOL *stop) {
@@ -98,24 +95,17 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
                     if (objectLocation) {
                         distance = [objectLocation distanceFromLocation:location];
                     }
-                    if (distance == 0 || distance == CLLocationDistanceMax) {
-                        NSLog(@"No distance for %@", object);
-                    }
                     object.distanceFromUser = distance;
                     object.lastDistanceUpdateLocation = location;
                     [objectsToBeUpdated addObject:object];
                 }];
                 [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *readWriteTransaction) {
                     [objectsToBeUpdated enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
-                        [readWriteTransaction setObject:object forKey:object.uniqueID inCollection:group];
+                        [readWriteTransaction setObject:object forKey:object.uniqueID inCollection:[[object class] collection]];
                     }];
-                    NSLog(@"Updating %d items %@ (group: %@) for range %@", (int)objectsToBeUpdated.count, NSStringFromClass(objectClass), group, value);
                 }];
             }];
         }];
-        NSDate *endDate = [NSDate date];
-        NSTimeInterval timeTaken = [endDate timeIntervalSinceDate:startDate];
-        NSLog(@"Finished updating distances for %d items %@ (group: %@) in %f seconds from %@", (int)allKeysInGroup, NSStringFromClass(objectClass), group, timeTaken, location);
         if (completionBlock) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completionBlock();
