@@ -26,7 +26,7 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
     [self setCenterCoordinate:blackRockCityCenter animated:animated];
 }
 
-- (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 animated:(BOOL)animated
+- (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 inVisibleRect:(CGRect)visibleRect animated:(BOOL)animated
 {
     BOOL coordinate1InBounds = [[self class] isCoordinate:coordinate1 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
     BOOL coordinate2InBounds = [[self class] isCoordinate:coordinate2 inBounds:[self.tileSource latitudeLongitudeBoundingBox]];
@@ -40,7 +40,7 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
         CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(minLatitude, minLongitude);
         CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(maxLatitude, maxLongitude);
         
-        [self zoomWithLatitudeLongitudeBoundsSouthWest:southWest northEast:northEast animated:animated];
+        [self brc_zoomWithLatitudeLongitudeBoundsSouthWest:southWest northEast:northEast inVisibleRect:visibleRect animated:animated];
         [self zoomOutToNextNativeZoomAt:self.center animated:animated];
     }
     else if (coordinate1InBounds)
@@ -52,6 +52,71 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
         [self setCenterCoordinate:coordinate2 animated:animated];
     }
     
+}
+
+- (void)brc_zoomWithLatitudeLongitudeBoundsSouthWest:(CLLocationCoordinate2D)southWest northEast:(CLLocationCoordinate2D)northEast inVisibleRect:(CGRect)visibleRect animated:(BOOL)animated
+{
+    if (northEast.latitude == southWest.latitude && northEast.longitude == southWest.longitude) // There are no bounds, probably only one marker.
+    {
+        RMProjectedRect zoomRect;
+        RMProjectedPoint myOrigin = [self.projection coordinateToProjectedPoint:southWest];
+        
+        // Default is with scale = 2.0 * mercators/pixel
+        zoomRect.size.width = visibleRect.size.width * 2.0;
+        zoomRect.size.height = visibleRect.size.height * 2.0;
+        myOrigin.x = myOrigin.x - (zoomRect.size.width / 2.0);
+        myOrigin.y = myOrigin.y - (zoomRect.size.height / 2.0);
+        zoomRect.origin = myOrigin;
+        
+        [self setProjectedBounds:zoomRect animated:animated];
+    }
+    else
+    {
+        // Convert northEast/southWest into RMMercatorRect and call zoomWithBounds
+        CLLocationCoordinate2D midpoint = {
+            .latitude = (northEast.latitude + southWest.latitude) / 2,
+            .longitude = (northEast.longitude + southWest.longitude) / 2
+        };
+        
+        RMProjectedPoint myOrigin = [self.projection coordinateToProjectedPoint:midpoint];
+        RMProjectedPoint southWestPoint = [self.projection coordinateToProjectedPoint:southWest];
+        RMProjectedPoint northEastPoint = [self.projection coordinateToProjectedPoint:northEast];
+        RMProjectedPoint myPoint = {
+            .x = northEastPoint.x - southWestPoint.x,
+            .y = northEastPoint.y - southWestPoint.y
+        };
+        
+		// Create the new zoom layout
+        RMProjectedRect zoomRect;
+        
+        // Default is with scale = 2.0 * mercators/pixel
+        zoomRect.size.width = visibleRect.size.width * 2.0;
+        zoomRect.size.height = visibleRect.size.height * 2.0;
+        
+        if ((myPoint.x / visibleRect.size.width) < (myPoint.y / visibleRect.size.height))
+        {
+            if ((myPoint.y / visibleRect.size.height) > 1)
+            {
+                zoomRect.size.width = visibleRect.size.width * (myPoint.y / visibleRect.size.height);
+                zoomRect.size.height = visibleRect.size.height * (myPoint.y / visibleRect.size.height);
+            }
+        }
+        else
+        {
+            if ((myPoint.x / visibleRect.size.width) > 1)
+            {
+                zoomRect.size.width = visibleRect.size.width * (myPoint.x / visibleRect.size.width);
+                zoomRect.size.height = visibleRect.size.height * (myPoint.x / visibleRect.size.width);
+            }
+        }
+        
+        myOrigin.x = myOrigin.x - (zoomRect.size.width / 2);
+        myOrigin.y = myOrigin.y - (zoomRect.size.height / 2);
+        zoomRect.origin = myOrigin;
+        
+        [self setProjectedBounds:zoomRect animated:animated];
+        [self moveBy:CGSizeMake(visibleRect.origin.x, visibleRect.origin.y)];
+    }
 }
 
 + (BOOL)isCoordinate:(CLLocationCoordinate2D)coordinate inBounds:(RMSphericalTrapezium)bounds

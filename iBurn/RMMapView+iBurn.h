@@ -14,7 +14,7 @@
 
 - (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated;
 - (void)brc_moveToBlackRockCityCenterAnimated:(BOOL)animated;
-- (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 animated:(BOOL)animated;
+- (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 inVisibleRect:(CGRect)visibleRect animated:(BOOL)animated;
 
 + (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame;
 + (RMMBTilesSource *)brc_defaultTileSource;
