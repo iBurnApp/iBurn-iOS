@@ -55,7 +55,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  *  the registered view if it exists. (Caller should register the view if needed)
  */
 - (YapDatabaseFilteredView*) filteredDatabaseViewForType:(BRCDatabaseFilteredViewType)filterType
-                                              parentView:(YapDatabaseView*)parentView
+                                              parentViewName:(NSString*)parentViewName
                                            extensionName:(NSString**)extensionName
                                     previouslyRegistered:(BOOL*)previouslyRegistered;
 

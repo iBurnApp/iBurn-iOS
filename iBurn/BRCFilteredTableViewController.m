@@ -141,20 +141,22 @@
 
 // Override this in subclasses
 - (void) setupMappingsDictionary {
-    NSMutableArray *views = [NSMutableArray arrayWithCapacity:2];
-    YapDatabaseView *distanceView = [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:nil previouslyRegistered:nil];
-    // check for race
-    NSParameterAssert(distanceView.registeredName != nil);
-    [views addObject:distanceView];
-    YapDatabaseFilteredView *favoritesView = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentView:distanceView extensionName:nil previouslyRegistered:nil];
-    NSParameterAssert(favoritesView.registeredName != nil);
-    [views addObject:favoritesView];
+    NSMutableArray *viewNames = [NSMutableArray arrayWithCapacity:2];
+    NSString *distanceViewName = nil;
+    BOOL distancePreviouslyRegistered = NO;
+    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:&distanceViewName previouslyRegistered:&distancePreviouslyRegistered];
+    [viewNames addObject:distanceViewName];
     
-    NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:views.count];
+    NSString *favoritesViewName = nil;
+    BOOL favoritesPreviouslyRegistered = NO;
+    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName extensionName:&favoritesViewName previouslyRegistered:&favoritesPreviouslyRegistered];
+    [viewNames addObject:favoritesViewName];
     
-    [views enumerateObjectsUsingBlock:^(YapDatabaseView *view, NSUInteger idx, BOOL *stop) {
-        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:view.registeredName];
-        [mutableMappingsDictionary setObject:mappings forKey:view.registeredName];
+    NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
+    
+    [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
+        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
+        [mutableMappingsDictionary setObject:mappings forKey:viewName];
     }];
     self.mappingsDictionary = mutableMappingsDictionary;
 }
@@ -252,13 +254,12 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    YapDatabaseView *distanceView = [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:nil previouslyRegistered:nil];
-    // check for race
-    NSParameterAssert(distanceView.registeredName != nil);
-    YapDatabaseFilteredView *favoritesView = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentView:distanceView extensionName:nil previouslyRegistered:nil];
-    NSParameterAssert(favoritesView.registeredName != nil);
-    return @[@[@"Distance", distanceView.registeredName],
-             @[@"Favorites", favoritesView.registeredName]];
+    NSString *distanceViewName = nil;
+    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:&distanceViewName previouslyRegistered:nil];
+    NSString *favoritesViewName = nil;
+    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName extensionName:&favoritesViewName previouslyRegistered:nil];
+    return @[@[@"Distance", distanceViewName],
+             @[@"Favorites", favoritesViewName]];
 }
 
 - (void)updateViewConstraints

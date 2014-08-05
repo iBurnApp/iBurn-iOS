@@ -82,7 +82,7 @@
             NSLog(@"%@ ready %d", distanceViewName, ready);
             if (ready && viewClass == [BRCEventObject class]) {
                 NSString *filteredDistanceViewName = nil;
-                YapDatabaseFilteredView *filteredDistanceView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentView:distanceView extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
+                YapDatabaseFilteredView *filteredDistanceView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
                 [self.database asyncRegisterExtension:filteredDistanceView withName:filteredDistanceViewName completionBlock:^(BOOL ready) {
                     NSLog(@"%@ ready %d", filteredDistanceViewName, ready);
                     self.eventDistanceView = filteredDistanceView;
@@ -104,12 +104,12 @@
             [self.database asyncRegisterExtension:timeView withName:timeViewName completionBlock:^(BOOL ready) {
                 NSLog(@"%@ ready %d", timeViewName, ready);
                 NSString *favoriteTimeViewName = nil;
-                YapDatabaseFilteredView *favoriteTimeView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentView:timeView extensionName:&favoriteTimeViewName previouslyRegistered:NULL];
+                YapDatabaseFilteredView *favoriteTimeView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName extensionName:&favoriteTimeViewName previouslyRegistered:NULL];
                 [self.database asyncRegisterExtension:favoriteTimeView withName:favoriteTimeViewName completionBlock:^(BOOL ready) {
                     NSLog(@"%@ ready %d", favoriteTimeViewName, ready);
                 }];
                 NSString *filteredTimeViewName = nil;
-                YapDatabaseFilteredView *filteredTimeView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentView:timeView extensionName:&filteredTimeViewName previouslyRegistered:NULL];
+                YapDatabaseFilteredView *filteredTimeView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
                 [self.database asyncRegisterExtension:filteredTimeView withName:filteredTimeViewName completionBlock:^(BOOL ready) {
                     NSLog(@"%@ ready %d", filteredTimeViewName, ready);
                     self.eventTimeView = filteredTimeView;
@@ -286,11 +286,11 @@
                                         extensionName:(NSString**)extensionName
                                  previouslyRegistered:(BOOL*)previouslyRegistered
 {
-    NSMutableString *viewName = [NSMutableString stringWithString:[[self class] filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFullTextSearch parentName:nil]];
-    [viewName appendString:@"("];
+    NSMutableString *viewName = [NSMutableString stringWithString:NSStringFromClass(viewClass)];
+    [viewName appendString:@"-SearchFilter("];
     [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
         [viewName appendString:property];
-        if (idx - 1 != properties.count) {
+        if (idx - 1 < properties.count) {
             [viewName appendString:@","];
         }
     }];
@@ -337,11 +337,11 @@
  *  the registered view if it exists. (Caller should register the view)
  */
 - (YapDatabaseFilteredView*) filteredDatabaseViewForType:(BRCDatabaseFilteredViewType)filterType
-                                              parentView:(YapDatabaseView*)parentView
+                                              parentViewName:(NSString*)parentViewName
                                            extensionName:(NSString**)extensionName
                                            previouslyRegistered:(BOOL*)previouslyRegistered
 {
-    NSString *filteredViewName = [[self class] filteredExtensionNameForFilterType:filterType parentName:parentView.registeredName];
+    NSString *filteredViewName = [[self class] filteredExtensionNameForFilterType:filterType parentName:parentViewName];
     if (extensionName) {
         *extensionName = filteredViewName;
     }
@@ -380,11 +380,11 @@
         filteringBlock = everythingFilteringBlock;
         options.isPersistent = NO;
     }
-
+    YapDatabaseView *parentView = [self.database registeredExtension:parentViewName];
     options.allowedCollections = parentView.options.allowedCollections;
     
     YapDatabaseFilteredView *filteredView =
-    [[YapDatabaseFilteredView alloc] initWithParentViewName:parentView.registeredName
+    [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
                                              filteringBlock:filteringBlock
                                          filteringBlockType:filteringBlockType versionTag:nil options:options];
     return filteredView;
@@ -427,6 +427,7 @@
         return nil;
     }
     NSString *extensionString = [self stringForFilteredExtensionType:extensionType];
+    NSParameterAssert(parentName != nil);
     NSParameterAssert(extensionString != nil);
     return [NSString stringWithFormat:@"%@-%@Filter", parentName, extensionString];
 }
