@@ -186,8 +186,17 @@
     if (!currentLocation) {
         return NSOrderedSame;
     }
-    CLLocationDistance distance1 = [[object1 location] distanceFromLocation:currentLocation];
-    CLLocationDistance distance2 = [[object2 location] distanceFromLocation:currentLocation];
+    CLLocation *location1 = [object1 location];
+    CLLocationDistance distance1 = [location1 distanceFromLocation:currentLocation];
+    CLLocation *location2 = [object2 location];
+    CLLocationDistance distance2 = [location2 distanceFromLocation:currentLocation];
+    if (location1 && !location2) {
+        return NSOrderedAscending;
+    } else if (!location1 && location2) {
+        return NSOrderedDescending;
+    } else if (!location1 && !location2) {
+        return NSOrderedSame;
+    }
     return [@(distance1) compare:@(distance2)];
 }
 
