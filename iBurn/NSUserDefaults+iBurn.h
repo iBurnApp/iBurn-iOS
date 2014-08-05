@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 
 @interface NSUserDefaults (iBurn)
 
@@ -15,5 +16,7 @@
 
 - (BOOL)showExpiredEvents;
 - (void)setShowExpiredEvents:(BOOL)showEpiredEvents;
+
+@property (nonatomic, strong, readwrite) CLLocation *recentLocation;
 
 @end

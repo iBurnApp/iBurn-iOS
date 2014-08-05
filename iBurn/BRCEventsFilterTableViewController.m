@@ -136,11 +136,12 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
     YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager everythingFilteringBlock];
     
-    NSArray *eventsFilteredByExpirationAndTypeNamesArray = @[[BRCDatabaseManager sharedInstance].eventTimeViewName,[BRCDatabaseManager sharedInstance].eventDistanceViewName, [BRCDatabaseManager sharedInstance].eventNameViewName];
+    NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[[BRCDatabaseManager sharedInstance].eventTimeView, [BRCDatabaseManager sharedInstance].eventDistanceView];
     
     [self.databaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [eventsFilteredByExpirationAndTypeNamesArray enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
-            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:name];
+        [eventsFilteredByExpirationAndTypeViewsArray enumerateObjectsUsingBlock:^(YapDatabaseFilteredView *filteredView, NSUInteger idx, BOOL *stop) {
+            NSParameterAssert(filteredView.registeredName != nil);
+            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredView.registeredName];
             [filteredTransaction setFilteringBlock:filteringBlock
                                 filteringBlockType:filterBlockType
                                         versionTag:[[NSUUID UUID] UUIDString]];

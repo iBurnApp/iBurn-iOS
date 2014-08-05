@@ -14,16 +14,10 @@
 @interface BRCDataObject()
 @property (nonatomic, readonly) CLLocationDegrees latitude;
 @property (nonatomic, readonly) CLLocationDegrees longitude;
-
-// This is to prevent clobbering the value during re-import of data
-// however, it doesn't work...
-@property (nonatomic, strong, readwrite) NSNumber *isFavoriteNumber;
-
 @end
 
 @implementation BRCDataObject
 @dynamic location;
-@dynamic isFavorite;
 
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
     return @{NSStringFromSelector(@selector(title)): @"name",
@@ -34,15 +28,7 @@
              NSStringFromSelector(@selector(latitude)): @"latitude",
              NSStringFromSelector(@selector(longitude)): @"longitude",
              NSStringFromSelector(@selector(year)): @"year.year",
-             NSStringFromSelector(@selector(playaLocation)):@"location"};
-}
-
-- (void) setIsFavorite:(BOOL)isFavorite {
-    self.isFavoriteNumber = @(isFavorite);
-}
-
-- (BOOL) isFavorite {
-    return self.isFavoriteNumber.boolValue;
+             NSStringFromSelector(@selector(playaLocation)): @"location"};
 }
 
 - (CLLocation*) location {

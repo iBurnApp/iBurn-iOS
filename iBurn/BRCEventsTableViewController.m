@@ -129,9 +129,11 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    return @[@[@"Time", [BRCDatabaseManager sharedInstance].eventTimeViewName],
-             @[@"Distance", [BRCDatabaseManager sharedInstance].eventDistanceViewName],
-             @[@"Name", [BRCDatabaseManager sharedInstance].eventNameViewName],
+    // check for race
+    NSParameterAssert([BRCDatabaseManager sharedInstance].eventTimeView.registeredName != nil);
+    NSParameterAssert([BRCDatabaseManager sharedInstance].eventTimeView.registeredName != nil);
+    return @[@[@"Time", [BRCDatabaseManager sharedInstance].eventTimeView.registeredName],
+             @[@"Distance", [BRCDatabaseManager sharedInstance].eventDistanceView.registeredName],
              @[@"Favorites", [self favoritesExtensionName]]];
 }
 
@@ -140,8 +142,9 @@
 }
 
 - (NSString *) favoritesExtensionName {
-    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]];
-    return favoritesName;
+    YapDatabaseFilteredView *fv = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentView:[BRCDatabaseManager sharedInstance].eventTimeView extensionName:nil previouslyRegistered:nil];
+    NSParameterAssert(fv.registeredName != nil);
+    return fv.registeredName;
 }
 
 - (void) setupMappingsDictionary {
@@ -168,14 +171,13 @@
 }
 
 - (void) replaceTimeBasedEventMappings {
-    NSString *timeName = [BRCDatabaseManager sharedInstance].eventTimeViewName;
-    NSString *nameName = [BRCDatabaseManager sharedInstance].eventNameViewName;
-    NSString *distanceName = [BRCDatabaseManager sharedInstance].eventDistanceViewName;
+    YapDatabaseFilteredView *timeView = [BRCDatabaseManager sharedInstance].eventTimeView;
+    YapDatabaseFilteredView *distanceView = [BRCDatabaseManager sharedInstance].eventDistanceView;
 
     NSString *group = [[NSDateFormatter brc_threadSafeGroupDateFormatter] stringFromDate:self.selectedDay];
     NSArray *activeTimeGroup = @[group]; // selected day group
     
-    NSArray *mappingsToRefresh = @[timeName, nameName, distanceName];
+    NSArray *mappingsToRefresh = @[timeView, distanceView];
     
     [mappingsToRefresh enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
         YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:viewName];

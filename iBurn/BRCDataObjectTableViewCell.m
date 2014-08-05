@@ -9,12 +9,18 @@
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCDataObject.h"
 #import "TTTLocationFormatter+iBurn.h"
+#import "BRCLocationManager.h"
 
 @implementation BRCDataObjectTableViewCell
 
 - (void) setDataObject:(BRCDataObject*)dataObject {
     _dataObject = dataObject;
-    CLLocationDistance distance = dataObject.distanceFromUser;
+    CLLocation *recentLocation = [BRCLocationManager sharedInstance].recentLocation;
+    CLLocation *objectLocation = dataObject.location;
+    CLLocationDistance distance = CLLocationDistanceMax;
+    if (recentLocation && objectLocation) {
+        distance = [objectLocation distanceFromLocation:recentLocation];
+    }
     if (distance == CLLocationDistanceMax || distance == 0) {
         self.subtitleLabel.text = @"";
     } else {
@@ -22,14 +28,8 @@
     }
     
     self.titleLabel.text = dataObject.title;
-    UIFont *font = self.titleLabel.font;
-    UIFont *newFont = nil;
-    if (dataObject.isFavorite) {
-        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
-    } else {
-        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
-    }
-    self.titleLabel.font = newFont;
+    
+    [self setTitleLabelBold:dataObject.isFavorite];
 }
 
 + (NSString*) cellIdentifier {
@@ -38,6 +38,17 @@
 
 + (CGFloat) cellHeight {
     return 67.0f;
+}
+
+- (void) setTitleLabelBold:(BOOL)isBold {
+    UIFont *font = self.titleLabel.font;
+    UIFont *newFont = nil;
+    if (isBold) {
+        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
+    } else {
+        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
+    }
+    self.titleLabel.font = newFont;
 }
 
 @end

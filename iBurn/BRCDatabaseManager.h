@@ -9,19 +9,20 @@
 #import <Foundation/Foundation.h>
 #import "YapDatabase.h"
 #import "YapDatabaseFilteredViewTypes.h"
+#import "YapDatabaseFilteredView.h"
+#import "YapDatabaseFullTextSearch.h"
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
     BRCDatabaseViewExtensionTypeUnknown,
-    BRCDatabaseViewExtensionTypeName,
     BRCDatabaseViewExtensionTypeDistance,
     BRCDatabaseViewExtensionTypeTime,
-    BRCDatabaseViewExtensionTypeFullTextSearch
 };
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
     BRCDatabaseFilteredViewTypeFavorites,
-    BRCDatabaseFilteredViewTypeEventExpirationAndType
+    BRCDatabaseFilteredViewTypeEventExpirationAndType,
+    BRCDatabaseFilteredViewTypeFullTextSearch
 };
 
 @interface BRCDatabaseManager : NSObject
@@ -29,18 +30,42 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteDatabaseConnection;
 
-@property (nonatomic, strong) NSString *eventNameViewName;
-@property (nonatomic, strong) NSString *eventDistanceViewName;
-@property (nonatomic, strong) NSString *eventTimeViewName;
-
+@property (nonatomic, strong) YapDatabaseFilteredView *eventDistanceView;
+@property (nonatomic, strong) YapDatabaseFilteredView *eventTimeView;
 
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;
 
 + (instancetype) sharedInstance;
 
-+ (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
-+ (NSString*) filteredExtensionNameForFilterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName;
-
 + (YapDatabaseViewFilteringBlock)everythingFilteringBlock;
+
+
+/** 
+ *  Does not register the view, but checks if it is registered and returns
+ *  the registered view if it exists. (Caller should register the view if needed)
+ *  @see extensionNameForClass:extensionType:
+ */
+- (YapDatabaseView*) databaseViewForClass:(Class)viewClass
+                            extensionType:(BRCDatabaseViewExtensionType)extensionType
+                            extensionName:(NSString**)extensionName
+                     previouslyRegistered:(BOOL*)previouslyRegistered;
+
+/**
+ *  Does not register the view, but checks if it is registered and returns
+ *  the registered view if it exists. (Caller should register the view if needed)
+ */
+- (YapDatabaseFilteredView*) filteredDatabaseViewForType:(BRCDatabaseFilteredViewType)filterType
+                                              parentView:(YapDatabaseView*)parentView
+                                           extensionName:(NSString**)extensionName
+                                    previouslyRegistered:(BOOL*)previouslyRegistered;
+
+/**
+ *  Does not register the extension, but checks if it is registered and returns
+ *  the registered view if it exists. (Caller should register the view if needed)
+ */
+- (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
+                                withIndexedProperties:(NSArray *)properties
+                                        extensionName:(NSString**)extensionName
+                                 previouslyRegistered:(BOOL*)previouslyRegistered;
 
 @end

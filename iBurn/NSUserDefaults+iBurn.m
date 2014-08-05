@@ -10,6 +10,7 @@
 
 static NSString *const kBRCSelectedEventsTypesKey = @"kBRCSelectedEventsTypesKey";
 static NSString *const kBRCShowExpiredEventsKey   = @"kBRCShowExpiredEventsKey";
+static NSString *const kBRCRecentLocationKey   = @"kBRCRecentLocationKey";
 
 @implementation NSUserDefaults (iBurn)
 
@@ -36,6 +37,21 @@ static NSString *const kBRCShowExpiredEventsKey   = @"kBRCShowExpiredEventsKey";
 {
     [self setBool:showEpiredEvents forKey:kBRCShowExpiredEventsKey];
     [self synchronize];
+}
+
+- (void) setRecentLocation:(CLLocation *)recentLocation {
+    NSData *locationData = [NSKeyedArchiver archivedDataWithRootObject:recentLocation];
+    [self setObject:locationData forKey:kBRCRecentLocationKey];
+    [self synchronize];
+}
+
+- (CLLocation*) recentLocation {
+    NSData *locationData = [self objectForKey:kBRCRecentLocationKey];
+    if (!locationData) {
+        return nil;
+    }
+    CLLocation *location = [NSKeyedUnarchiver unarchiveObjectWithData:locationData];
+    return location;
 }
 
 @end

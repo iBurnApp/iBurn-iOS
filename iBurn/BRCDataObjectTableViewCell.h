@@ -20,4 +20,6 @@
 + (NSString*) cellIdentifier;
 + (CGFloat) cellHeight;
 
+- (void) setTitleLabelBold:(BOOL)isBold;
+
 @end

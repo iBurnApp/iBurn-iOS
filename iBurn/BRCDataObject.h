@@ -19,13 +19,6 @@
  */
 @property (nonatomic, readwrite) BOOL isFavorite;
 
-/**
- *  This property is periodically recalculated in the background on significant location change.
- */
-@property (nonatomic, readwrite) CLLocationDistance distanceFromUser;
-@property (nonatomic, readwrite) CLLocation *lastDistanceUpdateLocation;
-
-
 #pragma mark Constant Properties
 
 /**

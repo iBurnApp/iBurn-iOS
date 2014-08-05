@@ -35,6 +35,7 @@
 @property (nonatomic, strong) UIImageView *navBarHairlineImageView;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
+@property (nonatomic, strong) NSMutableArray *itemsFilteredByDistance;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -140,16 +141,20 @@
 
 // Override this in subclasses
 - (void) setupMappingsDictionary {
-    NSMutableArray *viewNames = [NSMutableArray arrayWithCapacity:3];
-    [viewNames addObject:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
-    [viewNames addObject:[BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]];
-    [viewNames addObject:[BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeName]]];
+    NSMutableArray *views = [NSMutableArray arrayWithCapacity:2];
+    YapDatabaseView *distanceView = [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:nil previouslyRegistered:nil];
+    // check for race
+    NSParameterAssert(distanceView.registeredName != nil);
+    [views addObject:distanceView];
+    YapDatabaseFilteredView *favoritesView = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentView:distanceView extensionName:nil previouslyRegistered:nil];
+    NSParameterAssert(favoritesView.registeredName != nil);
+    [views addObject:favoritesView];
     
-    NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
+    NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:views.count];
     
-    [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
-        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
-        [mutableMappingsDictionary setObject:mappings forKey:viewName];
+    [views enumerateObjectsUsingBlock:^(YapDatabaseView *view, NSUInteger idx, BOOL *stop) {
+        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:view.registeredName];
+        [mutableMappingsDictionary setObject:mappings forKey:view.registeredName];
     }];
     self.mappingsDictionary = mutableMappingsDictionary;
 }
@@ -231,16 +236,8 @@
                 return;
             }
             [self unregisterRecentLocationObserver];
-            if ([self shouldRefreshDistanceInformation] && !self.updatingDistanceInformation) {
+            if ([self shouldRefreshDistanceInformation]) {
                 self.updatingDistanceInformation = YES;
-                Class objectClass = self.viewClass;
-                [[BRCLocationManager sharedInstance] updateDistanceForAllObjectsOfClass:objectClass
-                                                                                  group:[self selectedDataObjectGroup]
-                                                                           fromLocation:recentLocation
-                                                                        completionBlock:^{
-                    self.lastDistanceUpdateLocation = recentLocation;
-                    self.updatingDistanceInformation = NO;
-                }];
             }
         }
     }
@@ -255,9 +252,13 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    return @[@[@"Distance", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance]],
-             @[@"Name", [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeName]],
-             @[@"Favorites", [BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeName]]]];
+    YapDatabaseView *distanceView = [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:nil previouslyRegistered:nil];
+    // check for race
+    NSParameterAssert(distanceView.registeredName != nil);
+    YapDatabaseFilteredView *favoritesView = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentView:distanceView extensionName:nil previouslyRegistered:nil];
+    NSParameterAssert(favoritesView.registeredName != nil);
+    return @[@[@"Distance", distanceView.registeredName],
+             @[@"Favorites", favoritesView.registeredName]];
 }
 
 - (void)updateViewConstraints
@@ -304,7 +305,9 @@
 }
 
 - (NSString *) activeFullTextSearchExtensionName {
-    return [BRCDatabaseManager extensionNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeFullTextSearch];
+    YapDatabaseFullTextSearch *fts = [[BRCDatabaseManager sharedInstance] fullTextSearchForClass:self.viewClass withIndexedProperties:@[@"title"] extensionName:nil previouslyRegistered:NULL];
+    NSParameterAssert(fts.registeredName != nil);
+    return fts.registeredName;
 }
 
 - (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
@@ -366,10 +369,14 @@
     // Adding gestures per state basis.
     UIImageView *viewState = [self imageViewForFavoriteStatus:dataObject.isFavorite];
     UIColor *color = [UIColor brc_navBarColor];
-    [cell setSwipeGestureWithView:viewState color:color mode:MCSwipeTableViewCellModeSwitch state:MCSwipeTableViewCellState1 completionBlock:^(MCSwipeTableViewCell *cell, MCSwipeTableViewCellState state, MCSwipeTableViewCellMode mode) {
-        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [cell setSwipeGestureWithView:viewState color:color mode:MCSwipeTableViewCellModeSwitch state:MCSwipeTableViewCellState1 completionBlock:^(MCSwipeTableViewCell *swipeCell, MCSwipeTableViewCellState state, MCSwipeTableViewCellMode mode) {
+        BRCDataObjectTableViewCell *dataCell = (BRCDataObjectTableViewCell*)swipeCell;
+        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             dataObject = [[transaction objectForKey:dataObject.uniqueID inCollection:[[dataObject class] collection]] copy];
-            dataObject.isFavorite = !dataObject.isFavorite;
+        }];
+        dataObject.isFavorite = !dataObject.isFavorite;
+        dataCell.dataObject = dataObject;
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
         } completionBlock:nil];
     }];
@@ -381,9 +388,13 @@
     // We want to switch states to give a hint of the future value
     // is there a way to optimize this further?
     if (percentage >= cell.firstTrigger) {
-        cell.view1 = [self imageViewForFavoriteStatus:!cell.dataObject.isFavorite];
+        BOOL inverseFavorite = !cell.dataObject.isFavorite;
+        cell.view1 = [self imageViewForFavoriteStatus:inverseFavorite];
+        [cell setTitleLabelBold:inverseFavorite];
     } else if (percentage < cell.firstTrigger) {
-        cell.view1 = [self imageViewForFavoriteStatus:cell.dataObject.isFavorite];
+        BOOL isFavorite = cell.dataObject.isFavorite;
+        cell.view1 = [self imageViewForFavoriteStatus:isFavorite];
+        [cell setTitleLabelBold:isFavorite];
     }
 }
 
