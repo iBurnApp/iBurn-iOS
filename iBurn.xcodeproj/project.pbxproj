@@ -35,8 +35,8 @@
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
-		D92562CC1988929A00ED6B50 /* BRCLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CB1988929A00ED6B50 /* BRCLocationManager.m */; };
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
+		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
@@ -109,10 +109,10 @@
 		D92562C4198876C400ED6B50 /* BRCEventObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCEventObjectTableViewCell.xib; sourceTree = "<group>"; };
-		D92562CA1988929A00ED6B50 /* BRCLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocationManager.h; sourceTree = "<group>"; };
-		D92562CB1988929A00ED6B50 /* BRCLocationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocationManager.m; sourceTree = "<group>"; };
 		D92562CD198A20D600ED6B50 /* RMMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RMMapView+iBurn.h"; sourceTree = "<group>"; };
 		D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RMMapView+iBurn.m"; sourceTree = "<group>"; };
+		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
+		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
 		D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+iBurn.h"; sourceTree = "<group>"; };
@@ -377,8 +377,8 @@
 		D994157B1987278400D245C7 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				D92562CA1988929A00ED6B50 /* BRCLocationManager.h */,
-				D92562CB1988929A00ED6B50 /* BRCLocationManager.m */,
+				D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */,
+				D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */,
 				D99415781987277500D245C7 /* BRCDatabaseManager.h */,
 				D99415791987277500D245C7 /* BRCDatabaseManager.m */,
 				D994156F198726F400D245C7 /* BRCDataImporter.h */,
@@ -501,6 +501,7 @@
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
+				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
@@ -513,7 +514,6 @@
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
-				D92562CC1988929A00ED6B50 /* BRCLocationManager.m in Sources */,
 				D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */,
 				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
 				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,

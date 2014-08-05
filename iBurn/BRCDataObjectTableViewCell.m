@@ -9,14 +9,20 @@
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCDataObject.h"
 #import "TTTLocationFormatter+iBurn.h"
-#import "BRCLocationManager.h"
 
 @implementation BRCDataObjectTableViewCell
 
 - (void) setDataObject:(BRCDataObject*)dataObject {
     _dataObject = dataObject;
-    CLLocation *recentLocation = [BRCLocationManager sharedInstance].recentLocation;
-    CLLocation *objectLocation = dataObject.location;
+    
+    self.titleLabel.text = dataObject.title;
+    
+    [self setTitleLabelBold:dataObject.isFavorite];
+}
+
+- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
+    CLLocation *recentLocation = fromLocation;
+    CLLocation *objectLocation = toLocation;
     CLLocationDistance distance = CLLocationDistanceMax;
     if (recentLocation && objectLocation) {
         distance = [objectLocation distanceFromLocation:recentLocation];
@@ -26,11 +32,8 @@
     } else {
         self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }
-    
-    self.titleLabel.text = dataObject.title;
-    
-    [self setTitleLabelBold:dataObject.isFavorite];
 }
+
 
 + (NSString*) cellIdentifier {
     return NSStringFromClass([self class]);

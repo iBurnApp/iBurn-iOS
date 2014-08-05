@@ -11,15 +11,14 @@
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) NSMutableDictionary *mappingsDictionary;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
-@property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
+@property (nonatomic, strong) CLLocationManager *locationManager;
 
-- (void) updateAllMappings;
-- (void) refreshDistanceInformation;
+- (void) updateAllMappingsFromLocation:(CLLocation*)fromLocation;
+- (void) setupMappingsDictionaryFromLocation:(CLLocation*)fromLocation;
+- (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation;
 
-// Override these in subclasses
 - (NSArray *) segmentedControlInfo;
 - (Class) cellClass;
-- (void) setupMappingsDictionary;
 - (NSString*) selectedDataObjectGroup;
 
 @end

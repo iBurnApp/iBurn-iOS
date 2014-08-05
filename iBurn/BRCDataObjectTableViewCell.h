@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MCSwipeTableViewCell.h"
+#import <CoreLocation/CoreLocation.h>
 
 @class BRCDataObject;
 
@@ -21,5 +22,6 @@
 + (CGFloat) cellHeight;
 
 - (void) setTitleLabelBold:(BOOL)isBold;
+- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation;
 
 @end

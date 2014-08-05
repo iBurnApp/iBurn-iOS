@@ -136,12 +136,22 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
     YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager everythingFilteringBlock];
     
-    NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[[BRCDatabaseManager sharedInstance].eventTimeView, [BRCDatabaseManager sharedInstance].eventDistanceView];
+    NSString *timeViewName = nil;
+    [[BRCDatabaseManager sharedInstance] databaseViewForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:nil extensionName:&timeViewName previouslyRegistered:NULL];
+    NSString *filteredTimeViewName = nil;
+    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
+    
+    NSString *distanceViewName = nil;
+    [[BRCDatabaseManager sharedInstance] databaseViewForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:nil extensionName:&distanceViewName previouslyRegistered:NULL];
+    
+    NSString *filteredDistanceViewName = nil;
+    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
+    
+    NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[filteredTimeViewName, filteredDistanceViewName];
     
     [self.databaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [eventsFilteredByExpirationAndTypeViewsArray enumerateObjectsUsingBlock:^(YapDatabaseFilteredView *filteredView, NSUInteger idx, BOOL *stop) {
-            NSParameterAssert(filteredView.registeredName != nil);
-            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredView.registeredName];
+        [eventsFilteredByExpirationAndTypeViewsArray enumerateObjectsUsingBlock:^(NSString *filteredViewName, NSUInteger idx, BOOL *stop) {
+            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredViewName];
             [filteredTransaction setFilteringBlock:filteringBlock
                                 filteringBlockType:filterBlockType
                                         versionTag:[[NSUUID UUID] UUIDString]];

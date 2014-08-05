@@ -14,7 +14,6 @@
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 #import "BRCRecurringEventObject.h"
-#import "BRCLocationManager.h"
 #import "BRCEventObject_Private.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCSecrets.h"
@@ -61,8 +60,6 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
     tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
-    
-    [[BRCLocationManager sharedInstance] updateRecentLocation];
     
     self.window.backgroundColor = [UIColor whiteColor];
     self.window.rootViewController = tabBarController;
