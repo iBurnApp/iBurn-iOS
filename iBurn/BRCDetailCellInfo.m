@@ -167,7 +167,9 @@
         
         // TODO this should be refactored to share a persistent main thread connection
         if ([relationshipUniqueID length] && [relationshipCollection length]) {
-            [[[BRCDatabaseManager sharedInstance].database newConnection] readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            YapDatabaseConnection *connection = [[BRCDatabaseManager sharedInstance].database newConnection];
+            connection.objectPolicy = YapDatabasePolicyShare;
+            [connection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
                 relationshipDetailInfoCell.dataObject = [transaction objectForKey:relationshipUniqueID inCollection:relationshipCollection];
             }];
         }

@@ -129,9 +129,8 @@
 - (void)setupDatabaseConnection
 {
     self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+    self.databaseConnection.objectPolicy = YapDatabasePolicyShare;
     [self.databaseConnection beginLongLivedReadTransaction];
-    
-    
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(yapDatabaseModified:)

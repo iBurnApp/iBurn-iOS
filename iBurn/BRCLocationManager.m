@@ -77,15 +77,17 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
         NSUInteger arraySplitCount = 10;
         NSString *viewName = [BRCDatabaseManager extensionNameForClass:objectClass extensionType:BRCDatabaseViewExtensionTypeDistance];
         YapDatabaseConnection *readOnlyConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        readOnlyConnection.objectPolicy = YapDatabasePolicyShare;
         [readOnlyConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             YapDatabaseViewTransaction *viewTransaction = [transaction ext:viewName];
             allKeysInGroup = [viewTransaction numberOfKeysInGroup:group];
         }];
         NSArray *subarrayRanges = [self subarrayRangesForArrayCount:allKeysInGroup splitCount:arraySplitCount];
-        
         [subarrayRanges enumerateObjectsUsingBlock:^(NSValue *value, NSUInteger idx, BOOL *stop) {
             NSRange range = [value rangeValue];
-            [[[BRCDatabaseManager sharedInstance].database newConnection] readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            YapDatabaseConnection *splitReadConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+            splitReadConnection.objectPolicy = YapDatabasePolicyShare;
+            [splitReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
                 YapDatabaseViewTransaction *viewTransaction = [transaction ext:viewName];
                 NSMutableArray *objectsToBeUpdated = [NSMutableArray arrayWithCapacity:range.length];
                 [viewTransaction enumerateKeysAndObjectsInGroup:group withOptions:0 range:range usingBlock:^(NSString *collection, NSString *key, BRCDataObject *object, NSUInteger index, BOOL *stop) {
@@ -94,6 +96,10 @@ static const CLLocationDistance kBRCMinimumAccuracy = 50.0f;
                     CLLocationDistance distance = CLLocationDistanceMax;
                     if (objectLocation) {
                         distance = [objectLocation distanceFromLocation:location];
+                    }
+                    // Prevent objects with no location showing up at top of list
+                    if (distance == 0) {
+                        distance = CLLocationDistanceMax;
                     }
                     object.distanceFromUser = distance;
                     object.lastDistanceUpdateLocation = location;

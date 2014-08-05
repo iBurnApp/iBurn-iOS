@@ -32,7 +32,9 @@
     if (self = [super init]) {
         self.title = @"Map";
         self.artConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        self.artConnection.objectPolicy = YapDatabasePolicyShare;
         self.eventsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        self.eventsConnection.objectPolicy = YapDatabasePolicyShare;
         [self reloadArtAnnotationsIfNeeded];
         [self reloadEventAnnotationsIfNeeded];
     }
