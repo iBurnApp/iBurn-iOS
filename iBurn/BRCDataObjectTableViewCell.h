@@ -7,20 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SWTableViewCell.h"
+#import "MCSwipeTableViewCell.h"
 
 @class BRCDataObject;
 
-@interface SWTableViewCell()
-@property (nonatomic, assign) SWCellState cellState; // The state of the cell within the scroll view, can be left, right or middle
-@end
-
-@interface BRCDataObjectTableViewCell : SWTableViewCell
+@interface BRCDataObjectTableViewCell : MCSwipeTableViewCell
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *subtitleLabel;
-
-- (void) setDataObject:(BRCDataObject*)dataObject;
+@property (nonatomic, strong) BRCDataObject *dataObject;
 
 + (NSString*) cellIdentifier;
 + (CGFloat) cellHeight;

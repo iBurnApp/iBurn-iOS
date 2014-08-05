@@ -13,6 +13,7 @@
 @implementation BRCDataObjectTableViewCell
 
 - (void) setDataObject:(BRCDataObject*)dataObject {
+    _dataObject = dataObject;
     CLLocationDistance distance = dataObject.distanceFromUser;
     if (distance == CLLocationDistanceMax || distance == 0) {
         self.subtitleLabel.text = @"";
