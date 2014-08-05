@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 #import "YapDatabase.h"
 #import "YapDatabaseFilteredViewTypes.h"
 #import "YapDatabaseFilteredView.h"
@@ -30,15 +31,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteDatabaseConnection;
 
-@property (nonatomic, strong) YapDatabaseFilteredView *eventDistanceView;
-@property (nonatomic, strong) YapDatabaseFilteredView *eventTimeView;
-
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;
 
 + (instancetype) sharedInstance;
 
 + (YapDatabaseViewFilteringBlock)everythingFilteringBlock;
-
 
 /** 
  *  Does not register the view, but checks if it is registered and returns
@@ -47,6 +44,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  */
 - (YapDatabaseView*) databaseViewForClass:(Class)viewClass
                             extensionType:(BRCDatabaseViewExtensionType)extensionType
+                             fromLocation:(CLLocation*)fromLocation
                             extensionName:(NSString**)extensionName
                      previouslyRegistered:(BOOL*)previouslyRegistered;
 
@@ -67,5 +65,4 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                 withIndexedProperties:(NSArray *)properties
                                         extensionName:(NSString**)extensionName
                                  previouslyRegistered:(BOOL*)previouslyRegistered;
-
 @end

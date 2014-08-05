@@ -16,7 +16,6 @@
 #import "YapDatabaseFilteredView.h"
 #import "NSDateFormatter+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
-#import "BRCLocationManager.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -69,56 +68,19 @@
     self.readWriteDatabaseConnection.objectCacheLimit = 200;
     self.readWriteDatabaseConnection.metadataCacheLimit = 200;
     self.readWriteDatabaseConnection.name = @"readOnlyDatabaseConnection";
-        
+    
     NSArray *viewsToRegister = @[[BRCArtObject class],
                                  [BRCCampObject class],
                                  [BRCEventObject class]];
     
     [viewsToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
-        // Registering Distance View and Filtered Subviews
-        NSString *distanceViewName = nil;
-        YapDatabaseView *distanceView = [self databaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeDistance extensionName:&distanceViewName previouslyRegistered:NULL];
-        [self.database asyncRegisterExtension:distanceView withName:distanceViewName completionBlock:^(BOOL ready) {
-            NSLog(@"%@ ready %d", distanceViewName, ready);
-            if (ready && viewClass == [BRCEventObject class]) {
-                NSString *filteredDistanceViewName = nil;
-                YapDatabaseFilteredView *filteredDistanceView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
-                [self.database asyncRegisterExtension:filteredDistanceView withName:filteredDistanceViewName completionBlock:^(BOOL ready) {
-                    NSLog(@"%@ ready %d", filteredDistanceViewName, ready);
-                    self.eventDistanceView = filteredDistanceView;
-                }];
-            }
-        }];
-        
         // full text search
         NSString *ftsName = nil;
         YapDatabaseFullTextSearch *fullTextSearch = [self fullTextSearchForClass:viewClass withIndexedProperties:@[@"title"] extensionName:&ftsName previouslyRegistered:NULL];
         [self.database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
             NSLog(@"%@ ready %d", ftsName, ready);
         }];
-        
-        //events
-        if (viewClass == [BRCEventObject class]) {
-            NSString *timeViewName = nil;
-            YapDatabaseView *timeView = [self databaseViewForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeTime extensionName:&timeViewName previouslyRegistered:NULL];
-            [self.database asyncRegisterExtension:timeView withName:timeViewName completionBlock:^(BOOL ready) {
-                NSLog(@"%@ ready %d", timeViewName, ready);
-                NSString *favoriteTimeViewName = nil;
-                YapDatabaseFilteredView *favoriteTimeView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName extensionName:&favoriteTimeViewName previouslyRegistered:NULL];
-                [self.database asyncRegisterExtension:favoriteTimeView withName:favoriteTimeViewName completionBlock:^(BOOL ready) {
-                    NSLog(@"%@ ready %d", favoriteTimeViewName, ready);
-                }];
-                NSString *filteredTimeViewName = nil;
-                YapDatabaseFilteredView *filteredTimeView = [self filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
-                [self.database asyncRegisterExtension:filteredTimeView withName:filteredTimeViewName completionBlock:^(BOOL ready) {
-                    NSLog(@"%@ ready %d", filteredTimeViewName, ready);
-                    self.eventTimeView = filteredTimeView;
-                }];
-            }];
-        }
     }];
-    
-    
 
     if (self.database) {
         return YES;
@@ -181,8 +143,8 @@
     return sortingBlockType;
 }
 
-- (NSComparisonResult) compareDistanceOfFirstObject:(BRCDataObject*)object1 secondObject:(BRCDataObject*)object2 {
-    CLLocation *currentLocation = [BRCLocationManager sharedInstance].recentLocation;
++ (NSComparisonResult) compareDistanceOfFirstObject:(BRCDataObject*)object1 secondObject:(BRCDataObject*)object2 fromLocation:(CLLocation*)fromLocation {
+    CLLocation *currentLocation = fromLocation;
     if (!currentLocation) {
         return NSOrderedSame;
     }
@@ -200,7 +162,7 @@
     return [@(distance1) compare:@(distance2)];
 }
 
-- (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
++ (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation {
     YapDatabaseViewSortingBlock sortingBlock;
     if (extensionType == BRCDatabaseViewExtensionTypeTime) {
         sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
@@ -218,7 +180,7 @@
                 
                 NSComparisonResult dateComparison = [event1.startDate compare:event2.startDate];
                 if (dateComparison == NSOrderedSame) {
-                    NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2];
+                    NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2 fromLocation:fromLocation];
                     return distanceComparison;
                 } else {
                     return dateComparison;
@@ -232,7 +194,8 @@
             if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
                 BRCDataObject *data1 = (BRCDataObject *)obj1;
                 BRCDataObject *data2 = (BRCDataObject *)obj2;
-                return [self compareDistanceOfFirstObject:data1 secondObject:data2];
+                return [self compareDistanceOfFirstObject:data1 secondObject:data2 fromLocation:fromLocation
+                        ];
             }
             return NSOrderedSame;
         };
@@ -247,6 +210,7 @@
  */
 - (YapDatabaseView*) databaseViewForClass:(Class)viewClass
                             extensionType:(BRCDatabaseViewExtensionType)extensionType
+                             fromLocation:(CLLocation*)fromLocation
                             extensionName:(NSString**)extensionName
                      previouslyRegistered:(BOOL*)previouslyRegistered
 {
@@ -268,16 +232,10 @@
     
     YapDatabaseViewBlockType groupingBlockType = [self groupingBlockTypeForClass:viewClass extensionType:extensionType];
     YapDatabaseViewGroupingBlock groupingBlock = [self groupingBlockForClass:viewClass extensionType:extensionType];
-    
     YapDatabaseViewBlockType sortingBlockType = [self sortingBlockTypeForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewSortingBlock sortingBlock = [self sortingBlockForClass:viewClass extensionType:extensionType];
-    
+    YapDatabaseViewSortingBlock sortingBlock = [[self class] sortingBlockForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
-        options.isPersistent = NO;
-    } else {
-        options.isPersistent = YES;
-    }
+    NSString *versionTag = versionTag = [[NSUUID UUID] UUIDString];
     options.allowedCollections = [NSSet setWithObject:[viewClass collection]];
     
     YapDatabaseView *databaseView =
@@ -285,7 +243,7 @@
                                  groupingBlockType:groupingBlockType
                                       sortingBlock:sortingBlock
                                   sortingBlockType:sortingBlockType
-                                        versionTag:@"1"
+                                        versionTag:versionTag
                                            options:options];
     return databaseView;
 }
