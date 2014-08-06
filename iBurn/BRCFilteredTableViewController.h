@@ -13,7 +13,8 @@
 @property (nonatomic, strong, readonly) UITableView *tableView;
 @property (nonatomic, strong, readonly) UISegmentedControl *segmentedControl;
 
-// Set class of object to display
-@property (nonatomic, strong) Class viewClass;
+@property (nonatomic, strong, readonly) Class viewClass;
+
+- (instancetype) initWithViewClass:(Class)viewClass;
 
 @end
