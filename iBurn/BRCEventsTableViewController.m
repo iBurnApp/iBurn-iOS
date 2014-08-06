@@ -116,7 +116,7 @@
     NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:self.selectedDay];
     self.navigationItem.leftBarButtonItem.title = dayString;
     [self replaceTimeBasedEventMappings];
-    [self updateAllMappingsFromLocation:self.locationManager.location];
+    [self updateAllMappings];
     [self.tableView reloadData];
 }
 
@@ -128,17 +128,10 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    NSString *timeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:nil extensionName:&timeViewName previouslyRegistered:NULL];
-    NSString *filteredTimeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
-    
-    NSString *distanceViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:nil extensionName:&distanceViewName previouslyRegistered:NULL];
-    
-    NSString *filteredDistanceViewName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
-    
+    NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+    NSString *filteredTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];
+    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+    NSString *filteredDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName];
     return @[@[@"Time", filteredTimeViewName],
              @[@"Distance", filteredDistanceViewName],
              @[@"Favorites", [self favoritesExtensionName]]];
@@ -149,17 +142,17 @@
 }
 
 - (void) registerDynamicViewsFromLocation:(CLLocation*)location {
-    NSString *timeViewName = nil;
-    YapDatabaseView *timeView = [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:nil extensionName:&timeViewName previouslyRegistered:NULL];
+    NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+    YapDatabaseView *timeView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:location];
     [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:timeView withName:timeViewName completionBlock:^(BOOL ready) {
         NSLog(@"%@ ready %d", timeViewName, ready);
-        NSString *favoriteTimeViewName = nil;
-        YapDatabaseFilteredView *favoriteTimeView = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName extensionName:&favoriteTimeViewName previouslyRegistered:NULL];
+        NSString *favoriteTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName];
+        YapDatabaseFilteredView *favoriteTimeView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName];
         [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:favoriteTimeView withName:favoriteTimeViewName completionBlock:^(BOOL ready) {
             NSLog(@"%@ ready %d", favoriteTimeViewName, ready);
         }];
-        NSString *filteredTimeViewName = nil;
-        YapDatabaseFilteredView *filteredTimeView = [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
+        NSString *filteredTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];
+        YapDatabaseFilteredView *filteredTimeView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];
         [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:filteredTimeView withName:filteredTimeViewName completionBlock:^(BOOL ready) {
             NSLog(@"%@ ready %d", filteredTimeViewName, ready);
         }];
@@ -167,10 +160,8 @@
 }
 
 - (NSString *) favoritesExtensionName {
-    NSString *timeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:nil extensionName:&timeViewName previouslyRegistered:NULL];
-    NSString *favoritesName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName extensionName:&favoritesName previouslyRegistered:nil];
+    NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+    NSString *favoritesName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:timeViewName];
     return favoritesName;
 }
 
@@ -198,16 +189,12 @@
 }
 
 - (void) replaceTimeBasedEventMappings {
-    NSString *timeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:nil extensionName:&timeViewName previouslyRegistered:NULL];
-    NSString *filteredTimeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
+    NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
+    NSString *filteredTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];
     
-    NSString *distanceViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:nil extensionName:&distanceViewName previouslyRegistered:NULL];
+    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
     
-    NSString *filteredDistanceViewName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
+    NSString *filteredDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName];
 
     NSString *group = [[NSDateFormatter brc_threadSafeGroupDateFormatter] stringFromDate:self.selectedDay];
     NSArray *activeTimeGroup = @[group]; // selected day group

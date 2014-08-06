@@ -13,8 +13,8 @@
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
-- (void) updateAllMappingsFromLocation:(CLLocation*)fromLocation;
-- (void) setupMappingsDictionaryFromLocation:(CLLocation*)fromLocation;
+- (void) updateAllMappings;
+- (void) setupMappingsDictionary;
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation;
 
 - (NSArray *) segmentedControlInfo;

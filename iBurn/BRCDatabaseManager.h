@@ -37,25 +37,24 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (YapDatabaseViewFilteringBlock)everythingFilteringBlock;
 
-/** 
- *  Does not register the view, but checks if it is registered and returns
- *  the registered view if it exists. (Caller should register the view if needed)
- *  @see extensionNameForClass:extensionType:
+/**
+ *  Creates a new databaseView extension that should be registered with the name
+ *  extensionNameForClass:extensionType:
  */
-- (YapDatabaseView*) databaseViewForClass:(Class)viewClass
++ (YapDatabaseView*) databaseViewForClass:(Class)viewClass
                             extensionType:(BRCDatabaseViewExtensionType)extensionType
-                             fromLocation:(CLLocation*)fromLocation
-                            extensionName:(NSString**)extensionName
-                     previouslyRegistered:(BOOL*)previouslyRegistered;
+                             fromLocation:(CLLocation*)fromLocation;
++ (NSString*) databaseViewNameForClass:(Class)viewClass
+                         extensionType:(BRCDatabaseViewExtensionType)extensionType;
 
 /**
- *  Does not register the view, but checks if it is registered and returns
- *  the registered view if it exists. (Caller should register the view if needed)
+ *  Creates a new filteredView extension that should be registered with the name
+ *  filteredExtensionNameForType:parentViewName:
  */
-- (YapDatabaseFilteredView*) filteredDatabaseViewForType:(BRCDatabaseFilteredViewType)filterType
-                                              parentViewName:(NSString*)parentViewName
-                                           extensionName:(NSString**)extensionName
-                                    previouslyRegistered:(BOOL*)previouslyRegistered;
++ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
+                                  parentViewName:(NSString*)parentViewName;
++ (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
+                       parentViewName:(NSString*)parentViewName;
 
 /**
  *  Creates a new FTS extension that should be registered with the name
@@ -63,11 +62,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  */
 + (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
                                 withIndexedProperties:(NSArray *)properties;
-
-/**
- *  Creates a new FTS extension that should be registered with the name
- *  fullTextSearchExtensionNameForClass:withIndexedProperties:
- */
-+ (NSString*) fullTextSearchExtensionNameForClass:(Class)viewClass
++ (NSString*) fullTextSearchNameForClass:(Class)viewClass
                             withIndexedProperties:(NSArray *)properties;
 @end

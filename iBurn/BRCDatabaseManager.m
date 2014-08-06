@@ -88,7 +88,7 @@
     return databaseManager;
 }
 
-- (YapDatabaseViewBlockType)groupingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
++ (YapDatabaseViewBlockType)groupingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
     YapDatabaseViewBlockType groupingBlockType;
     if (viewClass == [BRCEventObject class]) {
         groupingBlockType = YapDatabaseViewBlockTypeWithObject;
@@ -99,7 +99,7 @@
     return groupingBlockType;
 }
 
-- (YapDatabaseViewGroupingBlock)groupingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
++ (YapDatabaseViewGroupingBlock)groupingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
     YapDatabaseViewGroupingBlock groupingBlock;
     
     if (viewClass == [BRCEventObject class]) {
@@ -125,7 +125,7 @@
     return groupingBlock;
 }
 
-- (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
++ (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
     YapDatabaseViewBlockType sortingBlockType = YapDatabaseViewBlockTypeWithObject;
     return sortingBlockType;
 }
@@ -195,31 +195,13 @@
  *  Does not register the view, but checks if it is registered and returns
  *  the registered view if it exists. (Caller should register the view)
  */
-- (YapDatabaseView*) databaseViewForClass:(Class)viewClass
++ (YapDatabaseView*) databaseViewForClass:(Class)viewClass
                             extensionType:(BRCDatabaseViewExtensionType)extensionType
                              fromLocation:(CLLocation*)fromLocation
-                            extensionName:(NSString**)extensionName
-                     previouslyRegistered:(BOOL*)previouslyRegistered
 {
-    NSString *viewName = [[self class] extensionNameForClass:viewClass extensionType:extensionType];
-    if (extensionName) {
-        *extensionName = viewName;
-    }
-    YapDatabaseView *view = [self.database registeredExtension:viewName];
-    if (view) {
-        if (previouslyRegistered) {
-            *previouslyRegistered = YES;
-        }
-        return view;
-    } else {
-        if (previouslyRegistered) {
-            *previouslyRegistered = NO;
-        }
-    }
-    
-    YapDatabaseViewBlockType groupingBlockType = [self groupingBlockTypeForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewGroupingBlock groupingBlock = [self groupingBlockForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewBlockType sortingBlockType = [self sortingBlockTypeForClass:viewClass extensionType:extensionType];
+    YapDatabaseViewBlockType groupingBlockType = [[self class] groupingBlockTypeForClass:viewClass extensionType:extensionType];
+    YapDatabaseViewGroupingBlock groupingBlock = [[self class] groupingBlockForClass:viewClass extensionType:extensionType];
+    YapDatabaseViewBlockType sortingBlockType = [[self class] sortingBlockTypeForClass:viewClass extensionType:extensionType];
     YapDatabaseViewSortingBlock sortingBlock = [[self class] sortingBlockForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
     NSString *versionTag = versionTag = [[NSUUID UUID] UUIDString];
@@ -235,8 +217,8 @@
     return databaseView;
 }
 
-+ (NSString*) fullTextSearchExtensionNameForClass:(Class)viewClass
-                            withIndexedProperties:(NSArray *)properties {
++ (NSString*) fullTextSearchNameForClass:(Class)viewClass
+                   withIndexedProperties:(NSArray *)properties {
     NSMutableString *viewName = [NSMutableString stringWithString:NSStringFromClass(viewClass)];
     [viewName appendString:@"-SearchFilter("];
     [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
@@ -278,27 +260,9 @@
  *  Does not register the view, but checks if it is registered and returns
  *  the registered view if it exists. (Caller should register the view)
  */
-- (YapDatabaseFilteredView*) filteredDatabaseViewForType:(BRCDatabaseFilteredViewType)filterType
-                                              parentViewName:(NSString*)parentViewName
-                                           extensionName:(NSString**)extensionName
-                                           previouslyRegistered:(BOOL*)previouslyRegistered
++ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
+                                  parentViewName:(NSString*)parentViewName
 {
-    NSString *filteredViewName = [[self class] filteredExtensionNameForFilterType:filterType parentName:parentViewName];
-    if (extensionName) {
-        *extensionName = filteredViewName;
-    }
-    YapDatabaseFilteredView *view = [self.database registeredExtension:filteredViewName];
-    if (view) {
-        if (previouslyRegistered) {
-            *previouslyRegistered = YES;
-        }
-        return view;
-    } else {
-        if (previouslyRegistered) {
-            *previouslyRegistered = NO;
-        }
-    }
-    
     YapDatabaseViewBlockType filteringBlockType = YapDatabaseViewBlockTypeWithObject;
     YapDatabaseViewFilteringBlock favoritesFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
     {
@@ -322,8 +286,11 @@
         filteringBlock = everythingFilteringBlock;
         options.isPersistent = NO;
     }
-    YapDatabaseView *parentView = [self.database registeredExtension:parentViewName];
-    options.allowedCollections = parentView.options.allowedCollections;
+    YapDatabaseView *parentView = [[BRCDatabaseManager sharedInstance].database registeredExtension:parentViewName];
+    NSParameterAssert(parentView != nil);
+    if (parentView) {
+        options.allowedCollections = parentView.options.allowedCollections;
+    }
     
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
@@ -363,23 +330,25 @@
     }
 }
 
-+ (NSString*) filteredExtensionNameForFilterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName {
-    NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
-    if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
++ (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
+                       parentViewName:(NSString*)parentViewName {
+    NSParameterAssert(filterType != BRCDatabaseViewExtensionTypeUnknown);
+    if (filterType == BRCDatabaseViewExtensionTypeUnknown) {
         return nil;
     }
-    NSString *extensionString = [self stringForFilteredExtensionType:extensionType];
-    NSParameterAssert(parentName != nil);
+    NSString *extensionString = [self stringForFilteredExtensionType:filterType];
+    NSParameterAssert(parentViewName != nil);
     NSParameterAssert(extensionString != nil);
-    return [NSString stringWithFormat:@"%@-%@Filter", parentName, extensionString];
+    return [NSString stringWithFormat:@"%@-%@Filter", parentViewName, extensionString];
 }
 
-+ (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
++ (NSString*) databaseViewNameForClass:(Class)viewClass
+                         extensionType:(BRCDatabaseViewExtensionType)extensionType {
     NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
     if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
         return nil;
     }
-    NSString *classString = NSStringFromClass(extensionClass);
+    NSString *classString = NSStringFromClass(viewClass);
     NSString *extensionString = [self stringForExtensionType:extensionType];
     NSParameterAssert(extensionString != nil);
     return [NSString stringWithFormat:@"%@%@View", classString, extensionString];
