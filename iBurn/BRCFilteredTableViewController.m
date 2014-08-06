@@ -263,7 +263,8 @@
         NSLog(@"Registering distance view: %@", distanceViewName);
         [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:distanceView withName:distanceViewName completionBlock:^(BOOL ready) {
             NSString *favoritesDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName];
-            YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName];
+            NSSet *allowedCollections = [self allowedCollections];
+            YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName allowedCollections:allowedCollections];
             [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:favoritesDistanceView withName:favoritesDistanceViewName completionBlock:^(BOOL ready) {
                 NSLog(@"%@ ready %d", favoritesDistanceViewName, ready);
                 [self updateAllMappings];
@@ -375,6 +376,11 @@
         viewState = self.notYetFavoriteImageView;
     }
     return viewState;
+}
+
+- (NSSet *) allowedCollections {
+    NSSet *allowedCollections = [NSSet setWithArray:@[[[self viewClass] collection]]];
+    return allowedCollections;
 }
 
 #pragma - mark UITableViewDataSource Methods

@@ -33,6 +33,7 @@
 
 - (NSArray *) segmentedControlInfo;
 - (Class) cellClass;
+- (NSSet *) allowedCollections;
 
 - (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView;
 @end

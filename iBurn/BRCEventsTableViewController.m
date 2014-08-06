@@ -130,6 +130,8 @@
     return [BRCEventObjectTableViewCell class];
 }
 
+
+
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation {
     if (self.updatingDistanceInformation) {
         return;
@@ -145,8 +147,8 @@
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.timeAndDistanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:timeAndDistanceView withName:self.timeAndDistanceViewName];
         NSLog(@"%@ %d", self.timeAndDistanceViewName, success);
-
-        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.timeAndDistanceViewName];
+        NSSet *allowedCollections = [self allowedCollections];
+        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.filteredTimeAndDistanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredTimeAndDistanceView withName:self.filteredTimeAndDistanceViewName];
         NSLog(@"%@ %d", self.filteredTimeAndDistanceViewName, success);
@@ -156,13 +158,12 @@
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.distanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
         NSLog(@"%@ %d", self.distanceViewName, success);
-
-        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.distanceViewName];
+        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.distanceViewName allowedCollections:allowedCollections];
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.filteredDistanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredDistanceView withName:self.filteredDistanceViewName];
         NSLog(@"%@ %d", self.filteredDistanceViewName, success);
         
-        YapDatabaseFilteredView *favoritesView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.timeAndDistanceViewName];
+        YapDatabaseFilteredView *favoritesView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.favoritesViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesView withName:self.favoritesViewName];
         NSLog(@"%@ %d", self.favoritesViewName, success);

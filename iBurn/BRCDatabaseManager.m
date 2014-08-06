@@ -266,6 +266,7 @@
  */
 + (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
                                   parentViewName:(NSString*)parentViewName
+                              allowedCollections:(NSSet*)allowedCollections
 {
     YapDatabaseViewBlockType filteringBlockType = YapDatabaseViewBlockTypeWithObject;
     YapDatabaseViewFilteringBlock favoritesFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
@@ -288,13 +289,9 @@
     } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
         filteringBlock = everythingFilteringBlock;
     }
-    YapDatabaseView *parentView = [[BRCDatabaseManager sharedInstance].database registeredExtension:parentViewName];
-#warning Sometimes this doesn't load properly due to a race condition
-    //NSParameterAssert(parentView != nil);
-    if (parentView) {
-        options.allowedCollections = parentView.options.allowedCollections;
+    if (allowedCollections) {
+        options.allowedCollections = allowedCollections;
     }
-    
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
                                              filteringBlock:filteringBlock

@@ -52,7 +52,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  *  filteredExtensionNameForType:parentViewName:
  */
 + (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
-                                  parentViewName:(NSString*)parentViewName;
+                                  parentViewName:(NSString*)parentViewName
+                              allowedCollections:(NSSet*)allowedCollections;
 + (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
                        parentViewName:(NSString*)parentViewName;
 
