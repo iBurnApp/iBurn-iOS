@@ -281,13 +281,12 @@
 
     if (filterType == BRCDatabaseFilteredViewTypeFavorites) {
         filteringBlock = favoritesFilteringBlock;
-        options.isPersistent = YES;
     } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
         filteringBlock = everythingFilteringBlock;
-        options.isPersistent = NO;
     }
     YapDatabaseView *parentView = [[BRCDatabaseManager sharedInstance].database registeredExtension:parentViewName];
-    NSParameterAssert(parentView != nil);
+#warning Sometimes this doesn't load properly due to a race condition
+    //NSParameterAssert(parentView != nil);
     if (parentView) {
         options.allowedCollections = parentView.options.allowedCollections;
     }
