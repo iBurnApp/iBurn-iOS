@@ -106,7 +106,10 @@ static CGFloat const kMapHeaderHeight = 250.0;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate animated:animated];
+    
+    CGRect rect = self.tableView.tableHeaderView.bounds;
+    rect.origin.y = kMapHeaderOffsetY;
+    [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate inVisibleRect:rect animated:animated];
 }
 
 - (void)updateViewConstraints

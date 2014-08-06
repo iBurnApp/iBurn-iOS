@@ -218,7 +218,7 @@
 - (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
 {
     if ([searchString length]) {
-        searchString = [NSString stringWithFormat:@"%@*",searchString];
+        searchString = [NSString stringWithFormat:@"*%@*",searchString];
         [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             NSMutableArray *tempSearchResults = [NSMutableArray array];
             [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
@@ -249,7 +249,7 @@
     self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
     [self.mapView addAnnotation:self.searchAnnotation];
     [self.searchDisplayController setActive:NO animated:YES];
-    [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate animated:YES];
+    [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
     [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
 }
 
