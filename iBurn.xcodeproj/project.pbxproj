@@ -17,6 +17,7 @@
 		63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228320198AB383009E472B /* RMMarker+iBurn.m */; };
 		63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */; };
 		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
+		6391C26E1992DDCF00AC947A /* iBurn-database in Resources */ = {isa = PBXBuildFile; fileRef = 6391C26D1992DDCF00AC947A /* iBurn-database */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -78,6 +79,7 @@
 		63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventsFilterTableViewController.m; sourceTree = "<group>"; };
 		63228329198C2B48009E472B /* NSUserDefaults+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+iBurn.h"; sourceTree = "<group>"; };
 		6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+iBurn.m"; sourceTree = "<group>"; };
+		6391C26D1992DDCF00AC947A /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-database"; path = "resources/data/iBurn-database"; sourceTree = SOURCE_ROOT; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A571987140F00F65B01 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63CE2A591987140F00F65B01 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -296,6 +298,7 @@
 		D9046EF5198C65F40013CCF4 /* 2014 */ = {
 			isa = PBXGroup;
 			children = (
+				6391C26D1992DDCF00AC947A /* iBurn-database */,
 				D9046F37198C6CDE0013CCF4 /* events.json */,
 				D9046EF6198C65F40013CCF4 /* art.json */,
 				D9046EF7198C65F40013CCF4 /* camps.json */,
@@ -450,6 +453,7 @@
 				D9046F1B198C65F40013CCF4 /* camps.json in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				D9046F1A198C65F40013CCF4 /* art.json in Resources */,
+				6391C26E1992DDCF00AC947A /* iBurn-database in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

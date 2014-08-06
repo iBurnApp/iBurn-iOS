@@ -69,6 +69,8 @@ static CGFloat const kMapHeaderHeight = 250.0;
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStyleGrouped];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
+    
+#warning fix bottom layoutguide
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.backgroundColor = self.tableView.backgroundColor;
     self.tableView.backgroundView = nil;
