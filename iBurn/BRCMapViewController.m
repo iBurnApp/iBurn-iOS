@@ -76,6 +76,7 @@
     self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
     self.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    self.searchBar.backgroundColor = [UIColor colorWithWhite:1.0 alpha:.85];
     self.searchBar.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.searchBar];
 }
@@ -249,6 +250,7 @@
     [self.mapView addAnnotation:self.searchAnnotation];
     [self.searchDisplayController setActive:NO animated:YES];
     [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
+    [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView

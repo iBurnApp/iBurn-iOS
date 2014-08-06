@@ -34,4 +34,5 @@
 - (NSArray *) segmentedControlInfo;
 - (Class) cellClass;
 
+- (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView;
 @end

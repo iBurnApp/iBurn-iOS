@@ -210,8 +210,11 @@
             if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
                 BRCDataObject *data1 = (BRCDataObject *)obj1;
                 BRCDataObject *data2 = (BRCDataObject *)obj2;
-                return [self compareDistanceOfFirstObject:data1 secondObject:data2 fromLocation:fromLocation
-                        ];
+                NSComparisonResult result = [self compareDistanceOfFirstObject:data1 secondObject:data2 fromLocation:fromLocation];
+                if (result == NSOrderedSame) {
+                    result = [data1.title compare:data2.title];
+                }
+                return result;
             }
             return NSOrderedSame;
         };
