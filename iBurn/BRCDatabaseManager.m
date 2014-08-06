@@ -78,6 +78,34 @@
     }
 }
 
+- (BOOL)copyDatabaseFromBundle
+{
+    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"iBurn-database"];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {
+        return NO;
+    }
+    NSString *databaseDirectory = [self yapDatabaseDirectory];
+    /*
+    if (![[NSFileManager defaultManager] fileExistsAtPath:databaseDirectory]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString *databsePath = [self yapDatabasePathWithName:databaseName];
+     */
+    
+    NSError *error = nil;
+    [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databaseDirectory error:&error];
+    if (error) {
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)existsDatabaseWithName:(NSString *)databaseName
+{
+    NSString *databsePath = [self yapDatabasePathWithName:databaseName];
+    return [[NSFileManager defaultManager] fileExistsAtPath:databsePath];
+}
+
 + (instancetype)sharedInstance
 {
     static id databaseManager = nil;

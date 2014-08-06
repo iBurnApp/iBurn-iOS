@@ -30,9 +30,20 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     [[BITHockeyManager sharedHockeyManager] startManager];
     [[BITHockeyManager sharedHockeyManager].authenticator authenticateInstallation];
     
-    [[BRCDatabaseManager sharedInstance] setupDatabaseWithName:@"iBurn.sqlite"];
+    BRCDatabaseManager *databaseManager = [BRCDatabaseManager sharedInstance];
+    NSString *databaseName = @"iBurn.sqlite";
     
-    [self preloadExistingData];
+    
+    if ([databaseManager existsDatabaseWithName:databaseName]) {
+        [databaseManager setupDatabaseWithName:databaseName];
+    }
+    else {
+        BOOL copySuccesful = [databaseManager copyDatabaseFromBundle];
+        [databaseManager setupDatabaseWithName:databaseName];
+        if (!copySuccesful) {
+            [self preloadExistingData];
+        }
+    }
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
@@ -101,12 +112,6 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
                             @[campsDataURL, [BRCCampObject class]],
                             @[eventsDataURL, [BRCRecurringEventObject class]]];
-    
-    BOOL hasLoadedData = [[NSUserDefaults standardUserDefaults] boolForKey:kBRCHasImportedDataKey];
-    if (hasLoadedData) {
-        NSLog(@"Data already imported, skipping...");
-        return;
-    }
     
     NSData *datesInfoData = [NSData dataWithContentsOfURL:datesInfoURL];
     NSDictionary *datesInfoDictionary = [NSJSONSerialization JSONObjectWithData:datesInfoData options:0 error:nil];

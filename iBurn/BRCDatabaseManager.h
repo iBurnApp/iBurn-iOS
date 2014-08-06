@@ -31,7 +31,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteDatabaseConnection;
 
+/** Check to see if a file exists at the correct path */
+- (BOOL)existsDatabaseWithName:(NSString *)databaseName;
+
+/** move pre-polulated database from bundle to correct directory of the same name */
+- (BOOL)copyDatabaseFromBundle;
+
+/** Do all the necessary setup and creates the database if none exists */
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;
+
 
 + (instancetype) sharedInstance;
 
