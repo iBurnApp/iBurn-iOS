@@ -217,7 +217,7 @@
 - (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
 {
     if ([searchString length]) {
-        searchString = [NSString stringWithFormat:@"%@*",searchString];
+        searchString = [NSString stringWithFormat:@"*%@*",searchString];
         [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             NSMutableArray *tempSearchResults = [NSMutableArray array];
             [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
