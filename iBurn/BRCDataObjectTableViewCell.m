@@ -44,13 +44,13 @@
 }
 
 - (void) setTitleLabelBold:(BOOL)isBold {
-    UIFont *font = self.titleLabel.font;
     UIFont *newFont = nil;
     if (isBold) {
-        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
+        newFont = [UIFont boldSystemFontOfSize:18];
     } else {
-        newFont = [UIFont fontWithDescriptor:[[font fontDescriptor] fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
+        newFont = [UIFont systemFontOfSize:18];
     }
+    NSParameterAssert(newFont != nil);
     self.titleLabel.font = newFont;
 }
 

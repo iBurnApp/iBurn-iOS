@@ -40,21 +40,18 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    BRCFilteredTableViewController *artTableVC = [[BRCFilteredTableViewController alloc] init];
+    BRCFilteredTableViewController *artTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
     artTableVC.title = @"Art";
-    artTableVC.viewClass = [BRCArtObject class];
     UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
     artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
     
-    BRCFilteredTableViewController *campTableVC = [[BRCFilteredTableViewController alloc] init];
+    BRCFilteredTableViewController *campTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class]];
     campTableVC.title = @"Camps";
-    campTableVC.viewClass = [BRCCampObject class];
     UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
     campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
-    BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] init];
+    BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class]];
     eventsTableVC.title = @"Events";
-    eventsTableVC.viewClass = [BRCEventObject class];
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     

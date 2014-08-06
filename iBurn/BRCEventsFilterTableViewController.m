@@ -136,16 +136,12 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
     YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager everythingFilteringBlock];
     
-    NSString *timeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTime fromLocation:nil extensionName:&timeViewName previouslyRegistered:NULL];
-    NSString *filteredTimeViewName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName extensionName:&filteredTimeViewName previouslyRegistered:NULL];
+    NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTime];
+    NSString *filteredTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];
     
-    NSString *distanceViewName = nil;
-    [[BRCDatabaseManager sharedInstance] databaseViewForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:nil extensionName:&distanceViewName previouslyRegistered:NULL];
+    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeDistance];
     
-    NSString *filteredDistanceViewName = nil;
-    [[BRCDatabaseManager sharedInstance] filteredDatabaseViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName extensionName:&filteredDistanceViewName previouslyRegistered:NULL];
+    NSString *filteredDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName];
     
     NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[filteredTimeViewName, filteredDistanceViewName];
     

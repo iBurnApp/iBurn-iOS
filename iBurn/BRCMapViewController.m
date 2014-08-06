@@ -14,16 +14,27 @@
 #import "BRCDetailViewController.h"
 #import "BRCCampObject.h"
 #import "RMMarker.h"
+#import "PureLayout.h"
+#import "BRCEventObjectTableViewCell.h"
+#import "CLLocationManager+iBurn.h"
+#import "RMMapView+iBurn.h"
 
-
-@interface BRCMapViewController ()
+@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
+@property (nonatomic, strong) YapDatabaseConnection *readConnection;
 @property (nonatomic) BOOL currentlyAddingArtAnnotations;
 @property (nonatomic) BOOL currentlyAddingEventAnnotations;
 @property (nonatomic, strong) NSArray *artAnnotations;
 @property (nonatomic, strong) NSArray *eventAnnotations;
 @property (nonatomic, strong) NSDate *lastEventAnnotationUpdate;
+@property (nonatomic, strong) UISearchBar *searchBar;
+@property (nonatomic) BOOL didUpdateConstraints;
+@property (nonatomic, strong) NSString *ftsExtensionName;
+@property (nonatomic, strong) UISearchDisplayController *searchController;
+@property (nonatomic, strong) NSArray *searchResults;
+@property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, strong) RMAnnotation *searchAnnotation;
 @end
 
 @implementation BRCMapViewController
@@ -35,10 +46,66 @@
         self.artConnection.objectPolicy = YapDatabasePolicyShare;
         self.eventsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         self.eventsConnection.objectPolicy = YapDatabasePolicyShare;
+        self.readConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         [self reloadArtAnnotationsIfNeeded];
         [self reloadEventAnnotationsIfNeeded];
+        [self setupSearchBar];
+        [self registerFullTextSearchExtension];
+        [self setupSearchController];
+        self.locationManager = [CLLocationManager brc_locationManager];
+        [self.locationManager startUpdatingLocation];
     }
     return self;
+}
+
+- (void) setupSearchController {
+    self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:self];
+    self.searchController.delegate = self;
+    self.searchController.searchResultsDataSource = self;
+    self.searchController.searchResultsDelegate = self;
+    
+    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
+    [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
+        Class cellClass = [self cellClassForDataObjectClass:viewClass];
+        UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
+        [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[cellClass cellIdentifier]];
+    }];
+}
+
+- (void) setupSearchBar {
+    self.searchBar = [[UISearchBar alloc] init];
+    self.searchBar.delegate = self;
+    self.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    self.searchBar.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.searchBar];
+}
+
+- (void) registerFullTextSearchExtension {
+    Class dataClass = [BRCDataObject class];
+    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
+    NSString *ftsName = [BRCDatabaseManager fullTextSearchNameForClass:dataClass withIndexedProperties:indexedProperties];
+    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:dataClass withIndexedProperties:indexedProperties];
+    self.ftsExtensionName = ftsName;
+    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready %d", ftsName, ready);
+    }];
+}
+
+- (void)updateViewConstraints
+{
+    [super updateViewConstraints];
+    if (self.didUpdateConstraints) {
+        return;
+    }
+    [self.searchBar autoPinToTopLayoutGuideOfViewController:self withInset:0];
+    [self.searchBar autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    [self.searchBar autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
+    [self.searchBar autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
+    self.didUpdateConstraints = YES;
+}
+
+- (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
+    return UIBarPositionTopAttached;
 }
 
 - (void) didReceiveMemoryWarning {
@@ -57,6 +124,8 @@
 }
 
 - (void) reloadArtAnnotationsIfNeeded {
+#warning disabled art annotations
+    return;
     if (self.artAnnotations.count || self.currentlyAddingArtAnnotations) {
         return;
     }
@@ -134,6 +203,85 @@
         return mapLayer;
     }
     return nil;
+}
+
+#pragma - mark UISearchBarDelegate Methods
+
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
+{
+    [self.searchDisplayController setActive:YES animated:YES];
+}
+
+#pragma - mark  UISearchDisplayDelegate Methods
+
+- (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
+{
+    if ([searchString length]) {
+        searchString = [NSString stringWithFormat:@"%@*",searchString];
+        [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            NSMutableArray *tempSearchResults = [NSMutableArray array];
+            [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
+                if (object) {
+                    [tempSearchResults addObject:object];
+                }
+            }];
+            self.searchResults = [tempSearchResults copy];
+        }];
+    }
+    else {
+        self.searchResults = nil;
+    }
+    return YES;
+}
+
+- (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
+{
+    return [self.searchResults count];
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    if (self.searchAnnotation) {
+        [self.mapView removeAnnotation:self.searchAnnotation];
+    }
+    self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
+    [self.mapView addAnnotation:self.searchAnnotation];
+    [self.searchDisplayController setActive:NO animated:YES];
+    [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate animated:YES];
+}
+
+- (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
+{
+    BRCDataObject *dataObject = nil;
+    if ([self.searchResults count] > indexPath.row) {
+        dataObject = self.searchResults[indexPath.row];
+    }
+    return dataObject;
+}
+
+- (Class) cellClassForDataObjectClass:(Class)dataObjectClass {
+    if (dataObjectClass == [BRCEventObject class]) {
+        return [BRCEventObjectTableViewCell class];
+    } else {
+        return [BRCDataObjectTableViewCell class];
+    }
+}
+
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    Class cellClass = [self cellClassForDataObjectClass:[dataObject class]];
+    return [cellClass cellHeight];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    Class cellClass = [self cellClassForDataObjectClass:[dataObject class]];
+    BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
+    cell.dataObject = dataObject;
+    [cell updateDistanceLabelFromLocation:self.locationManager.location toLocation:dataObject.location];
+    return cell;
 }
 
 @end

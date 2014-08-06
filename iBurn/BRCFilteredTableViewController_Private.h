@@ -12,13 +12,26 @@
 @property (nonatomic, strong) NSMutableDictionary *mappingsDictionary;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
+@property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 
-- (void) updateAllMappingsFromLocation:(CLLocation*)fromLocation;
-- (void) setupMappingsDictionaryFromLocation:(CLLocation*)fromLocation;
+@property (nonatomic, strong, readwrite) NSString *favoritesViewName;
+@property (nonatomic, strong, readwrite) NSString *distanceViewName;
+
+@property (nonatomic) BOOL updatingDistanceInformation;
+
+/** override this in subclasses */
+- (void) setupViewNames;
+
+- (void) updateAllMappings;
+
+/** override this in subclasses */
+- (void) setupMappingsDictionary;
+
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation;
+- (BOOL) shouldRefreshDistanceInformationForNewLocation:(CLLocation*)newLocation;
 
 - (NSArray *) segmentedControlInfo;
 - (Class) cellClass;
-- (NSString*) selectedDataObjectGroup;
 
 @end
