@@ -57,6 +57,7 @@
                                       objectSanitizer:NULL
                                     metadataSanitizer:NULL
                                               options:options];
+    self.database.defaultObjectPolicy = YapDatabasePolicyShare;
     self.readWriteDatabaseConnection = [self.database newConnection];
     self.readWriteDatabaseConnection.objectPolicy = YapDatabasePolicyShare;
     self.readWriteDatabaseConnection.objectCacheLimit = 200;

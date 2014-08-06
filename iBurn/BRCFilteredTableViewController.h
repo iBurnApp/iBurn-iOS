@@ -10,6 +10,9 @@
 
 @interface BRCFilteredTableViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, UISearchBarDelegate>
 
+@property (nonatomic, strong, readonly) NSString *favoritesViewName;
+@property (nonatomic, strong, readonly) NSString *distanceViewName;
+
 @property (nonatomic, strong, readonly) UITableView *tableView;
 @property (nonatomic, strong, readonly) UISegmentedControl *segmentedControl;
 

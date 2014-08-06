@@ -30,19 +30,21 @@
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL didUpdateConstraints;
-@property (nonatomic) BOOL updatingDistanceInformation;
 @property (nonatomic) UIToolbar *sortControlToolbar;
 @property (nonatomic, strong) UIImageView *navBarHairlineImageView;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 @property (nonatomic, strong) NSMutableArray *itemsFilteredByDistance;
-@property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
 @property (nonatomic, strong) NSString *ftsExtensionName;
-@property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 @property (nonatomic, strong, readwrite) Class viewClass;
 @end
 
 @implementation BRCFilteredTableViewController
+
+- (void) setupViewNames {
+    self.distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+    self.favoritesViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.distanceViewName];
+}
 
 - (instancetype)initWithViewClass:(Class)viewClass
 {
@@ -63,6 +65,7 @@
         [self setupLocationManager];
         [self setupDatabaseConnection];
         [self registerFullTextSearchExtension];
+        [self setupViewNames];
         [self setupMappingsDictionary];
         [self updateAllMappings];
         [self refreshDistanceInformationFromLocation:self.locationManager.location];
@@ -172,15 +175,8 @@
 
 // Override this in subclasses
 - (void) setupMappingsDictionary {
-    NSMutableArray *viewNames = [NSMutableArray arrayWithCapacity:2];
-    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
-    [viewNames addObject:distanceViewName];
-    
-    NSString *favoritesViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName];
-    [viewNames addObject:favoritesViewName];
-    
+    NSArray *viewNames = @[self.distanceViewName, self.favoritesViewName];
     NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
-    
     [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
         YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
         [mutableMappingsDictionary setObject:mappings forKey:viewName];
@@ -276,10 +272,6 @@
             }];
         }];
     }];
-}
-
-- (NSString*) selectedDataObjectGroup {
-    return [[self viewClass] collection];
 }
 
 - (Class) cellClass {
