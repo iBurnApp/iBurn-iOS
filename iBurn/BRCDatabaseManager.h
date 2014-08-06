@@ -58,11 +58,16 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                     previouslyRegistered:(BOOL*)previouslyRegistered;
 
 /**
- *  Does not register the extension, but checks if it is registered and returns
- *  the registered view if it exists. (Caller should register the view if needed)
+ *  Creates a new FTS extension that should be registered with the name
+ *  fullTextSearchExtensionNameForClass:withIndexedProperties:
  */
-- (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
-                                withIndexedProperties:(NSArray *)properties
-                                        extensionName:(NSString**)extensionName
-                                 previouslyRegistered:(BOOL*)previouslyRegistered;
++ (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
+                                withIndexedProperties:(NSArray *)properties;
+
+/**
+ *  Creates a new FTS extension that should be registered with the name
+ *  fullTextSearchExtensionNameForClass:withIndexedProperties:
+ */
++ (NSString*) fullTextSearchExtensionNameForClass:(Class)viewClass
+                            withIndexedProperties:(NSArray *)properties;
 @end

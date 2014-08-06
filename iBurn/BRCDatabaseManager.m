@@ -68,19 +68,6 @@
     self.readWriteDatabaseConnection.objectCacheLimit = 200;
     self.readWriteDatabaseConnection.metadataCacheLimit = 200;
     self.readWriteDatabaseConnection.name = @"readOnlyDatabaseConnection";
-    
-    NSArray *viewsToRegister = @[[BRCArtObject class],
-                                 [BRCCampObject class],
-                                 [BRCEventObject class]];
-    
-    [viewsToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
-        // full text search
-        NSString *ftsName = nil;
-        YapDatabaseFullTextSearch *fullTextSearch = [self fullTextSearchForClass:viewClass withIndexedProperties:@[@"title"] extensionName:&ftsName previouslyRegistered:NULL];
-        [self.database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
-            NSLog(@"%@ ready %d", ftsName, ready);
-        }];
-    }];
 
     if (self.database) {
         return YES;
@@ -248,11 +235,8 @@
     return databaseView;
 }
 
-- (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
-                                withIndexedProperties:(NSArray *)properties
-                                        extensionName:(NSString**)extensionName
-                                 previouslyRegistered:(BOOL*)previouslyRegistered
-{
++ (NSString*) fullTextSearchExtensionNameForClass:(Class)viewClass
+                            withIndexedProperties:(NSArray *)properties {
     NSMutableString *viewName = [NSMutableString stringWithString:NSStringFromClass(viewClass)];
     [viewName appendString:@"-SearchFilter("];
     [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
@@ -262,21 +246,12 @@
         }
     }];
     [viewName appendString:@")"];
-    if (extensionName) {
-        *extensionName = viewName;
-    }
-    YapDatabaseFullTextSearch *view = [self.database registeredExtension:viewName];
-    if (view) {
-        if (previouslyRegistered) {
-            *previouslyRegistered = YES;
-        }
-        return view;
-    } else {
-        if (previouslyRegistered) {
-            *previouslyRegistered = NO;
-        }
-    }
-    
+    return viewName;
+}
+
++ (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
+                                withIndexedProperties:(NSArray *)properties
+{
     YapDatabaseFullTextSearchBlockType blockType = YapDatabaseFullTextSearchBlockTypeWithObject;
     YapDatabaseFullTextSearchWithObjectBlock block = ^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
         

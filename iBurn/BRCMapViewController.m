@@ -41,6 +41,16 @@
     return self;
 }
 
+- (void) registerFullTextSearchExtension {
+    Class dataClass = [BRCDataObject class];
+    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
+    NSString *ftsName = [BRCDatabaseManager fullTextSearchExtensionNameForClass:dataClass withIndexedProperties:indexedProperties];
+    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:dataClass withIndexedProperties:indexedProperties];
+    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready %d", ftsName, ready);
+    }];
+}
+
 - (void) didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     [self.mapView removeAllAnnotations];

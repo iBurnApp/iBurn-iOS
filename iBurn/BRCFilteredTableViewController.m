@@ -37,6 +37,7 @@
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 @property (nonatomic, strong) NSMutableArray *itemsFilteredByDistance;
 @property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
+@property (nonatomic, strong) NSString *ftsExtensionName;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -73,6 +74,7 @@
     [super viewDidLoad];
     [self setupLocationManager];
     [self setupDatabaseConnection];
+    [self registerFullTextSearchExtension];
     [self updateAllMappingsFromLocation:self.locationManager.location];
     self.navBarHairlineImageView = [self findHairlineImageViewUnder:self.navigationController.navigationBar];
     
@@ -142,6 +144,16 @@
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.databaseConnection.database];
+}
+
+- (void) registerFullTextSearchExtension {
+    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
+    NSString *ftsName = [BRCDatabaseManager fullTextSearchExtensionNameForClass:self.viewClass withIndexedProperties:indexedProperties];
+    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:self.viewClass withIndexedProperties:indexedProperties];
+    self.ftsExtensionName = ftsName;
+    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready %d", ftsName, ready);
+    }];
 }
 
 // Override this in subclasses
@@ -325,13 +337,6 @@
     return [infoArray lastObject];
 }
 
-- (NSString *) activeFullTextSearchExtensionName {
-    NSString *ftsName = nil;
-    [[BRCDatabaseManager sharedInstance] fullTextSearchForClass:self.viewClass withIndexedProperties:@[@"title"] extensionName:&ftsName previouslyRegistered:NULL];
-    NSParameterAssert(ftsName != nil);
-    return ftsName;
-}
-
 - (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
 {
     // Mappings have changed
@@ -478,7 +483,7 @@
         searchString = [NSString stringWithFormat:@"%@*",searchString];
         [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             NSMutableArray *tempSearchResults = [NSMutableArray array];
-            [[transaction ext:[self activeFullTextSearchExtensionName]] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
+            [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
                 if (object) {
                     [tempSearchResults addObject:object];
                 }
