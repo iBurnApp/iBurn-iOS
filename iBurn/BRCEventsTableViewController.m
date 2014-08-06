@@ -198,5 +198,17 @@
     }];
 }
 
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    BRCEventObjectTableViewCell *cell = (BRCEventObjectTableViewCell*)[super tableView:tableView cellForRowAtIndexPath:indexPath];
+    if ([self isSearchResultsControllerTableView:tableView]) {
+        cell.eventDayLabel.hidden = NO;
+    } else {
+        cell.eventDayLabel.hidden = YES;
+    }
+    return cell;
+
+}
+
 
 @end

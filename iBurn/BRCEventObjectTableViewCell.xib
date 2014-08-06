@@ -41,22 +41,34 @@
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Monday 8/25" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m4p-nL-AsY">
+                        <rect key="frame" x="158" y="43" width="119" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <constraints>
                     <constraint firstItem="CBZ-lr-1Gs" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="10" id="0Za-qB-Lpz"/>
                     <constraint firstItem="YOL-qx-5uC" firstAttribute="width" secondItem="jJk-MV-Kf7" secondAttribute="width" id="0fc-XT-g2x"/>
                     <constraint firstAttribute="bottom" secondItem="jJk-MV-Kf7" secondAttribute="bottom" constant="10" id="1aM-Rj-65P"/>
+                    <constraint firstItem="YOL-qx-5uC" firstAttribute="leading" secondItem="m4p-nL-AsY" secondAttribute="leading" id="KMa-DO-kbU"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="Lms-gd-wzp"/>
                     <constraint firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="M5Z-ls-LyY"/>
+                    <constraint firstItem="YOL-qx-5uC" firstAttribute="top" secondItem="m4p-nL-AsY" secondAttribute="bottom" constant="10" id="MSh-dL-2bI"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" constant="10" id="PD2-Ft-hpa"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="X3h-Fa-FKh" secondAttribute="leading" id="V0f-Kx-Jpd"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="CBZ-lr-1Gs" secondAttribute="leading" id="Wll-kJ-rAk"/>
+                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="aRq-wm-Ue4"/>
                     <constraint firstAttribute="trailing" secondItem="X3h-Fa-FKh" secondAttribute="trailing" constant="10" id="caZ-cK-Kxw"/>
+                    <constraint firstItem="YOL-qx-5uC" firstAttribute="width" secondItem="m4p-nL-AsY" secondAttribute="width" id="n7g-T9-LRt"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="zEb-wN-cGA"/>
                     <constraint firstAttribute="trailing" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="10" id="zQ9-MO-GXC"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
+                <outlet property="eventDayLabel" destination="m4p-nL-AsY" id="hsS-uX-7JX"/>
                 <outlet property="eventTimeLabel" destination="YOL-qx-5uC" id="RKb-me-IJh"/>
                 <outlet property="eventTypeLabel" destination="CBZ-lr-1Gs" id="Pbc-su-ggi"/>
                 <outlet property="subtitleLabel" destination="jJk-MV-Kf7" id="gli-oO-tJE"/>
