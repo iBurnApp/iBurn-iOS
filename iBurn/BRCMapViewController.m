@@ -248,7 +248,7 @@
     self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
     [self.mapView addAnnotation:self.searchAnnotation];
     [self.searchDisplayController setActive:NO animated:YES];
-    [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate animated:YES];
+    [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
