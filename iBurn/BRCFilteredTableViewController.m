@@ -245,7 +245,7 @@
     }
     CLLocationDistance distanceSinceLastDistanceUpdate = [self.lastDistanceUpdateLocation distanceFromLocation:newLocation];
     
-    CLLocationDistance minimumLocationUpdateDistance = 5; // 5 meters
+    CLLocationDistance minimumLocationUpdateDistance = 10; // 10 meters
     
     if (distanceSinceLastDistanceUpdate > minimumLocationUpdateDistance) {
         return YES;
