@@ -17,6 +17,8 @@
 #import "BRCEventObject_Private.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCSecrets.h"
+#import "BRCEmbargoPasscodeViewController.h"
+#import "BRCEmbargo.h"
 
 static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
 
@@ -48,31 +50,15 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
-    BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
-    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
-    mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
-    
-    BRCFilteredTableViewController *artTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
-    artTableVC.title = @"Art";
-    UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
-    artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
-    
-    BRCFilteredTableViewController *campTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class]];
-    campTableVC.title = @"Camps";
-    UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
-    campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
-    
-    BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class]];
-    eventsTableVC.title = @"Events";
-    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
-    eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
-    
-    UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
+    if ([BRCEmbargo allowEmbargoedData]) {
+        
+        self.window.rootViewController = [self defaultTabBarController];
+    }
+    else {
+        self.window.rootViewController = [self embargoViewController];
+    }
     
     self.window.backgroundColor = [UIColor whiteColor];
-    self.window.rootViewController = tabBarController;
-    
     [self.window makeKeyAndVisible];
     return YES;
 }
@@ -102,6 +88,50 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (void)showTabBarAnimated:(BOOL)animated{
+    
+    [UIView transitionWithView:self.window
+                      duration:0.5
+                       options:UIViewAnimationOptionTransitionFlipFromLeft
+                    animations:^{
+                        self.window.rootViewController = [self defaultTabBarController];
+                    }
+                    completion:nil];
+    
+}
+
+- (UIViewController *)defaultTabBarController
+{
+    BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
+    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
+    mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
+    
+    BRCFilteredTableViewController *artTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
+    artTableVC.title = @"Art";
+    UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
+    artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
+    
+    BRCFilteredTableViewController *campTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class]];
+    campTableVC.title = @"Camps";
+    UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
+    campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
+    
+    BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class]];
+    eventsTableVC.title = @"Events";
+    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
+    eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
+    
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
+    tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
+    
+    return tabBarController;
+}
+
+- (UIViewController *)embargoViewController
+{
+    return [[BRCEmbargoPasscodeViewController alloc] init];
 }
 
 - (void) setupFestivalDates {

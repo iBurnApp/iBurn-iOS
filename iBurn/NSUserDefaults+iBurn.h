@@ -17,6 +17,9 @@
 - (BOOL)showExpiredEvents;
 - (void)setShowExpiredEvents:(BOOL)showEpiredEvents;
 
+- (BOOL)enteredEmbargoPasscode;
+- (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode;
+
 @property (nonatomic, strong, readwrite) CLLocation *recentLocation;
 
 @end

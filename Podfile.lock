@@ -5,6 +5,7 @@ PODS:
   - CocoaLumberjack/Core (1.6.5.1)
   - CocoaLumberjack/Extensions (1.6.5.1):
     - CocoaLumberjack/Core
+  - DAKeyboardControl (2.4.0)
   - FMDB (2.3):
     - FMDB/standard
   - FMDB/common (2.3)
@@ -34,6 +35,7 @@ PODS:
     - YapDatabase/common
 
 DEPENDENCIES:
+  - DAKeyboardControl (~> 2.4)
   - FormatterKit/LocationFormatter (~> 1.6)
   - FormatterKit/TimeIntervalFormatter (~> 1.6)
   - HockeySDK (~> 3.5)
@@ -50,6 +52,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
+  DAKeyboardControl: 45a363c85c48a7df76f21f236d9f85800e001775
   FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
   FormatterKit: 534b21b52b9b822a9ec884a14e2debf92e7a3126
   GRMustache: ab96109b7ba4b9568425bea40d6cd2cdc7582b6c
