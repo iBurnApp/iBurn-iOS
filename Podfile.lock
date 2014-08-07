@@ -41,11 +41,11 @@ DEPENDENCIES:
   - Mapbox-iOS-SDK (~> 1.2)
   - MCSwipeTableViewCell (~> 2.1)
   - PureLayout (~> 1.0)
-  - YapDatabase (from `git@github.com:chrisballinger/YapDatabase.git`, branch `2.5-iburn`)
+  - YapDatabase (from `git@github.com:chrisballinger/YapDatabase.git`, commit `a3778fb0a5917426e75b17a2776f703e34df403f`)
 
 EXTERNAL SOURCES:
   YapDatabase:
-    :branch: 2.5-iburn
+    :commit: a3778fb0a5917426e75b17a2776f703e34df403f
     :git: git@github.com:chrisballinger/YapDatabase.git
 
 SPEC CHECKSUMS:
