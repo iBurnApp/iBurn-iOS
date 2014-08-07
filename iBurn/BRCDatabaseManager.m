@@ -19,7 +19,6 @@
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
-@property (nonatomic, strong) YapDatabaseConnection *readOnlyConnection;
 @property (nonatomic, strong) YapDatabaseConnection *readWriteDatabaseConnection;
 @end
 
@@ -58,18 +57,14 @@
                                     metadataSanitizer:NULL
                                               options:options];
     self.database.defaultObjectPolicy = YapDatabasePolicyShare;
+    self.database.defaultObjectCacheEnabled = YES;
+    self.database.defaultObjectCacheLimit = 10000;
+    self.database.defaultMetadataCacheEnabled = NO;
     self.readWriteDatabaseConnection = [self.database newConnection];
     self.readWriteDatabaseConnection.objectPolicy = YapDatabasePolicyShare;
-    self.readWriteDatabaseConnection.objectCacheLimit = 200;
-    self.readWriteDatabaseConnection.metadataCacheLimit = 200;
     self.readWriteDatabaseConnection.name = @"readWriteDatabaseConnection";
-    
-    self.readOnlyConnection = [self.database newConnection];
-    self.readWriteDatabaseConnection.objectPolicy = YapDatabasePolicyShare;
-    self.readWriteDatabaseConnection.objectCacheLimit = 200;
-    self.readWriteDatabaseConnection.metadataCacheLimit = 200;
-    self.readWriteDatabaseConnection.name = @"readOnlyDatabaseConnection";
 
+    
     if (self.database) {
         return YES;
     }

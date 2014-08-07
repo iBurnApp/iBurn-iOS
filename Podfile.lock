@@ -26,11 +26,11 @@ PODS:
   - MCSwipeTableViewCell (2.1.0)
   - PureLayout (1.0.1)
   - SMCalloutView (2.0)
-  - YapDatabase (2.4.3):
+  - YapDatabase (2.5):
     - YapDatabase/standard
-  - YapDatabase/common (2.4.3):
+  - YapDatabase/common (2.5):
     - CocoaLumberjack (~> 1.6.3)
-  - YapDatabase/standard (2.4.3):
+  - YapDatabase/standard (2.5):
     - YapDatabase/common
 
 DEPENDENCIES:
@@ -41,7 +41,12 @@ DEPENDENCIES:
   - Mapbox-iOS-SDK (~> 1.2)
   - MCSwipeTableViewCell (~> 2.1)
   - PureLayout (~> 1.0)
-  - YapDatabase (~> 2.4)
+  - YapDatabase (from `git@github.com:chrisballinger/YapDatabase.git`, branch `2.5-iburn`)
+
+EXTERNAL SOURCES:
+  YapDatabase:
+    :branch: 2.5-iburn
+    :git: git@github.com:chrisballinger/YapDatabase.git
 
 SPEC CHECKSUMS:
   CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
@@ -55,6 +60,6 @@ SPEC CHECKSUMS:
   MCSwipeTableViewCell: 713086e29ce3c2171a0102fc594bf583fa7dd323
   PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
   SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
-  YapDatabase: 2ec54726596299c88e09e899e8f17c15d7f6b18a
+  YapDatabase: 38ee5e842ed1370f0d258e25b23bd64f6e3c1a67
 
 COCOAPODS: 0.33.1
