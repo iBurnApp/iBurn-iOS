@@ -101,12 +101,15 @@
 }
 
 - (void) setSelectedDay:(NSDate *)selectedDay {
+    if (!selectedDay) {
+        selectedDay = [NSDate date];
+    }
     if ([selectedDay compare:[BRCEventObject festivalStartDate]] == NSOrderedDescending && [selectedDay compare:[BRCEventObject festivalEndDate]] == NSOrderedAscending) {
         _selectedDay = selectedDay;
     } else {
         _selectedDay = [BRCEventObject festivalStartDate];
     }
-    NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:self.selectedDay];
+    NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:_selectedDay];
     self.navigationItem.leftBarButtonItem.title = dayString;
     [self replaceTimeBasedEventMappings];
     [self updateAllMappings];
@@ -115,7 +118,7 @@
 
 - (NSDate*) selectedDay {
     if (!_selectedDay) {
-        self.selectedDay = [NSDate date];
+        _selectedDay = [NSDate date];
     }
     return _selectedDay;
 }
@@ -129,8 +132,6 @@
 - (Class) cellClass {
     return [BRCEventObjectTableViewCell class];
 }
-
-
 
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation {
     if (self.updatingDistanceInformation) {

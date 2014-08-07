@@ -13,6 +13,11 @@
 // http://stackoverflow.com/a/4739650/805882
 + (NSInteger)brc_daysBetweenDate:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
 {
+    NSParameterAssert(fromDateTime != nil);
+    NSParameterAssert(toDateTime != nil);
+    if (!fromDateTime || !toDateTime) {
+        return NSIntegerMax;
+    }
     NSDate *fromDate;
     NSDate *toDate;
     

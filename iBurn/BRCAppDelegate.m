@@ -34,7 +34,7 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     BRCDatabaseManager *databaseManager = [BRCDatabaseManager sharedInstance];
     NSString *databaseName = @"iBurn.sqlite";
     
-    
+    [self setupFestivalDates];
     if ([databaseManager existsDatabaseWithName:databaseName]) {
         [databaseManager setupDatabaseWithName:databaseName];
     }
@@ -104,30 +104,33 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
-- (void) preloadExistingData {
-    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art" withExtension:@"json"];
-    NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camps" withExtension:@"json"];
-    NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"events" withExtension:@"json"];
+- (void) setupFestivalDates {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDateKey]) {
+        return;
+    }
     NSURL *datesInfoURL = [[NSBundle mainBundle] URLForResource:@"dates_info" withExtension:@"json"];
-
-    NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
-                            @[campsDataURL, [BRCCampObject class]],
-                            @[eventsDataURL, [BRCRecurringEventObject class]]];
-    
     NSData *datesInfoData = [NSData dataWithContentsOfURL:datesInfoURL];
     NSDictionary *datesInfoDictionary = [NSJSONSerialization JSONObjectWithData:datesInfoData options:0 error:nil];
-    
     NSDictionary *rangeInfoDictionary = [datesInfoDictionary objectForKey:@"rangeInfo"];
     NSString *startDateString = [rangeInfoDictionary objectForKey:@"startDate"];
     NSDate *startDate = [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:startDateString];
     NSString *endDateString = [rangeInfoDictionary objectForKey:@"endDate"];
     NSDate *endDate = [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:endDateString];
     NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
-    
     [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEventsKey];
     [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDateKey];
     [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDateKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void) preloadExistingData {
+    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art" withExtension:@"json"];
+    NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camps" withExtension:@"json"];
+    NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"events" withExtension:@"json"];
+
+    NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
+                            @[campsDataURL, [BRCCampObject class]],
+                            @[eventsDataURL, [BRCRecurringEventObject class]]];
     
     [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
         NSURL *url = [obj firstObject];
