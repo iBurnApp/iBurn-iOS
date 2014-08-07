@@ -29,6 +29,7 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     [[BITHockeyManager sharedHockeyManager].authenticator setIdentificationType:BITAuthenticatorIdentificationTypeDevice];
     [[BITHockeyManager sharedHockeyManager] startManager];
     [[BITHockeyManager sharedHockeyManager].authenticator authenticateInstallation];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO];
     
     BRCDatabaseManager *databaseManager = [BRCDatabaseManager sharedInstance];
     NSString *databaseName = @"iBurn.sqlite";
