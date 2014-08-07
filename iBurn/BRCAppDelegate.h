@@ -13,4 +13,6 @@
 
 @property (strong, nonatomic) UIWindow *window;
 
+- (void)showTabBarAnimated:(BOOL)animated;
+
 @end

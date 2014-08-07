@@ -8,9 +8,10 @@
 
 #import "NSUserDefaults+iBurn.h"
 
-static NSString *const kBRCSelectedEventsTypesKey = @"kBRCSelectedEventsTypesKey";
-static NSString *const kBRCShowExpiredEventsKey   = @"kBRCShowExpiredEventsKey";
-static NSString *const kBRCRecentLocationKey   = @"kBRCRecentLocationKey";
+static NSString *const kBRCSelectedEventsTypesKey    = @"kBRCSelectedEventsTypesKey";
+static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKey";
+static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
+static NSString *const kBRCEnteredEmbargoPasscodeKey = @"kBRCEnteredEmbargoPasscodeKey";
 
 @implementation NSUserDefaults (iBurn)
 
@@ -52,6 +53,17 @@ static NSString *const kBRCRecentLocationKey   = @"kBRCRecentLocationKey";
     }
     CLLocation *location = [NSKeyedUnarchiver unarchiveObjectWithData:locationData];
     return location;
+}
+
+- (BOOL)enteredEmbargoPasscode
+{
+    return [self boolForKey:kBRCEnteredEmbargoPasscodeKey];
+}
+
+- (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode
+{
+    [self setBool:enteredEmbargoPasscode forKey:kBRCEnteredEmbargoPasscodeKey];
+    [self synchronize];
 }
 
 @end
