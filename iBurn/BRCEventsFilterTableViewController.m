@@ -134,7 +134,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 - (void)updateFilteredViews
 {
     YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
-    YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager everythingFilteringBlock];
+    YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager eventsFilteringBlock];
     
     NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTime];
     NSString *filteredTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];

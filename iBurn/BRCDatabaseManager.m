@@ -283,16 +283,13 @@
     return fullTextSearch;
 }
 
-/**
- *  Does not register the view, but checks if it is registered and returns
- *  the registered view if it exists. (Caller should register the view)
- */
-+ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
-                                  parentViewName:(NSString*)parentViewName
-                              allowedCollections:(NSSet*)allowedCollections
-{
++ (YapDatabaseViewBlockType) filteringBlockType {
     YapDatabaseViewBlockType filteringBlockType = YapDatabaseViewBlockTypeWithObject;
-    YapDatabaseViewFilteringBlock favoritesFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    return filteringBlockType;
+}
+
++ (YapDatabaseViewFilteringBlock) favoritesOnlyFilteringBlock {
+    YapDatabaseViewFilteringBlock favoritesOnlyFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
     {
         if ([object isKindOfClass:[BRCDataObject class]]) {
             BRCDataObject *dataObject = (BRCDataObject*)object;
@@ -300,25 +297,28 @@
         }
         return NO;
     };
+    return favoritesOnlyFilteringBlock;
+}
+
+/**
+ *  Does not register the view, but checks if it is registered and returns
+ *  the registered view if it exists. (Caller should register the view)
+ */
++ (YapDatabaseFilteredView*) everythingFilteredViewForParentViewName:(NSString*)parentViewName
+                              allowedCollections:(NSSet*)allowedCollections
+{
+    YapDatabaseViewBlockType filteringBlockType = [[self class] filteringBlockType];
     
-    YapDatabaseViewFilteringBlock everythingFilteringBlock = [[self class] everythingFilteringBlock];
-    
-    YapDatabaseViewFilteringBlock filteringBlock = nil;
+    YapDatabaseViewFilteringBlock allItemsFilteringBlock = [[self class] allItemsFilteringBlock];
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-
-    if (filterType == BRCDatabaseFilteredViewTypeFavorites) {
-        filteringBlock = favoritesFilteringBlock;
-    } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
-        filteringBlock = everythingFilteringBlock;
-    }
     if (allowedCollections) {
         options.allowedCollections = allowedCollections;
     }
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
-                                             filteringBlock:filteringBlock
-                                         filteringBlockType:filteringBlockType versionTag:nil options:options];
+                                             filteringBlock:allItemsFilteringBlock
+                                         filteringBlockType:filteringBlockType versionTag:@"1" options:options];
     return filteredView;
 }
 
@@ -377,7 +377,15 @@
     return [NSString stringWithFormat:@"%@%@View", classString, extensionString];
 }
 
-+ (YapDatabaseViewFilteringBlock)everythingFilteringBlock
++ (YapDatabaseViewFilteringBlock)allItemsFilteringBlock {
+    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
+    {
+        return YES;
+    };
+    return filteringBlock;
+}
+
++ (YapDatabaseViewFilteringBlock)eventsFilteringBlock
 {
     BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
     

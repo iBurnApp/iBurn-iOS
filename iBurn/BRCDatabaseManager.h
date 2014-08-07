@@ -43,7 +43,16 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (instancetype) sharedInstance;
 
-+ (YapDatabaseViewFilteringBlock)everythingFilteringBlock;
++ (YapDatabaseViewBlockType) filteringBlockType;
++ (YapDatabaseViewFilteringBlock) favoritesOnlyFilteringBlock;
++ (YapDatabaseViewFilteringBlock) eventsFilteringBlock;
++ (YapDatabaseViewFilteringBlock) allItemsFilteringBlock;
+
++ (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
++ (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation;
+
++ (YapDatabaseViewBlockType)groupingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
++ (YapDatabaseViewGroupingBlock)groupingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
 
 /**
  *  Creates a new databaseView extension that should be registered with the name
@@ -59,9 +68,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  *  Creates a new filteredView extension that should be registered with the name
  *  filteredExtensionNameForType:parentViewName:
  */
-+ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
-                                  parentViewName:(NSString*)parentViewName
-                              allowedCollections:(NSSet*)allowedCollections;
++ (YapDatabaseFilteredView*) everythingFilteredViewForParentViewName:(NSString*)parentViewName
+                                                  allowedCollections:(NSSet*)allowedCollections;
 + (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
                        parentViewName:(NSString*)parentViewName;
 
@@ -73,4 +81,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                 withIndexedProperties:(NSArray *)properties;
 + (NSString*) fullTextSearchNameForClass:(Class)viewClass
                             withIndexedProperties:(NSArray *)properties;
+
+
 @end

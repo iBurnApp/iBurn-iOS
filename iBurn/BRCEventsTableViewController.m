@@ -26,18 +26,20 @@
 @property (nonatomic, strong, readwrite) NSString *timeAndDistanceViewName;
 @property (nonatomic, strong, readwrite) NSString *filteredTimeAndDistanceViewName;
 @property (nonatomic, strong, readwrite) NSString *filteredDistanceViewName;
+@property (nonatomic, strong, readwrite) NSString *favoritesFilterForTimeAndDistanceViewName;
+
 @property (nonatomic, strong) BRCStringPickerView *dayPicker;
 @end
 
 @implementation BRCEventsTableViewController
 @synthesize selectedDay = _selectedDay;
 
-- (void) setupViewNames {
-    [super setupViewNames];
+- (void) setupDatabaseExtensionNames {
+    [super setupDatabaseExtensionNames];
     self.timeAndDistanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTime];
     self.filteredTimeAndDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.timeAndDistanceViewName];
     self.filteredDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.distanceViewName];
-    self.favoritesViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.timeAndDistanceViewName];
+    self.favoritesFilterForTimeAndDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.timeAndDistanceViewName];
 }
 
 
@@ -118,8 +120,9 @@
     NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:_selectedDay];
     self.navigationItem.leftBarButtonItem.title = dayString;
     [self replaceTimeBasedEventMappings];
-    [self updateAllMappings];
-    [self.tableView reloadData];
+    [self updateAllMappingsWithCompletionBlock:^{
+        [self.tableView reloadData];
+    }];
 }
 
 - (NSDate*) selectedDay {
@@ -132,7 +135,7 @@
 - (NSArray *) segmentedControlInfo {
     return @[@[@"Time", self.filteredTimeAndDistanceViewName],
              @[@"Distance", self.filteredDistanceViewName],
-             @[@"Favorites", self.favoritesViewName]];
+             @[@"Favorites", self.favoritesFilterForTimeAndDistanceViewName]];
 }
 
 - (Class) cellClass {
@@ -155,7 +158,7 @@
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:timeAndDistanceView withName:self.timeAndDistanceViewName];
         NSLog(@"%@ %d", self.timeAndDistanceViewName, success);
         NSSet *allowedCollections = [self allowedCollections];
-        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
+        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager everythingFilteredViewForParentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.filteredTimeAndDistanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredTimeAndDistanceView withName:self.filteredTimeAndDistanceViewName];
         NSLog(@"%@ %d", self.filteredTimeAndDistanceViewName, success);
@@ -165,17 +168,19 @@
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.distanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
         NSLog(@"%@ %d", self.distanceViewName, success);
-        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.distanceViewName allowedCollections:allowedCollections];
+        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager everythingFilteredViewForParentViewName:self.distanceViewName allowedCollections:allowedCollections];
         [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.filteredDistanceViewName];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredDistanceView withName:self.filteredDistanceViewName];
         NSLog(@"%@ %d", self.filteredDistanceViewName, success);
         
-        YapDatabaseFilteredView *favoritesView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
-        [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.favoritesViewName];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesView withName:self.favoritesViewName];
-        NSLog(@"%@ %d", self.favoritesViewName, success);
+        YapDatabaseFilteredView *favoritesView = [BRCDatabaseManager everythingFilteredViewForParentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
+        [[BRCDatabaseManager sharedInstance].database unregisterExtension:self.favoritesFilterForTimeAndDistanceViewName];
+        success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesView withName:self.favoritesFilterForTimeAndDistanceViewName];
+        NSLog(@"%@ %d", self.favoritesFilterForTimeAndDistanceViewName, success);
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self updateAllMappings];
+            [self updateAllMappingsWithCompletionBlock:^{
+                [self.tableView reloadData];
+            }];
             self.updatingDistanceInformation = NO;
             self.lastDistanceUpdateLocation = fromLocation;
         });
@@ -191,8 +196,8 @@
         [allGroups addObject:group];
     }];
     
-    YapDatabaseViewMappings *favoritesMappings = [[YapDatabaseViewMappings alloc] initWithGroups:allGroups view:self.favoritesViewName];
-    [self.mappingsDictionary setObject:favoritesMappings forKey:self.favoritesViewName];
+    YapDatabaseViewMappings *favoritesMappings = [[YapDatabaseViewMappings alloc] initWithGroups:allGroups view:self.favoritesFilterForTimeAndDistanceViewName];
+    [self.mappingsDictionary setObject:favoritesMappings forKey:self.favoritesFilterForTimeAndDistanceViewName];
     [self replaceTimeBasedEventMappings];
 }
 

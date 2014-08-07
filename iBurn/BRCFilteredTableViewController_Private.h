@@ -15,18 +15,14 @@
 @property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 
-@property (nonatomic, strong, readwrite) NSString *favoritesViewName;
-@property (nonatomic, strong, readwrite) NSString *distanceViewName;
 
 @property (nonatomic) BOOL updatingDistanceInformation;
 
-/** override this in subclasses */
-- (void) setupViewNames;
-
-- (void) updateAllMappings;
-
-/** override this in subclasses */
+/** override these in subclasses */
+- (void) setupDatabaseExtensionNames;
+- (void) registerDatabaseExtensions;
 - (void) setupMappingsDictionary;
+- (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation;
 - (BOOL) shouldRefreshDistanceInformationForNewLocation:(CLLocation*)newLocation;

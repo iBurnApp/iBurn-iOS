@@ -23,6 +23,7 @@
 #import "MCSwipeTableViewCell.h"
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
+#import "YapDatabaseFilteredViewTransaction.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong) UITableView *tableView;
@@ -34,21 +35,49 @@
 @property (nonatomic, strong) UIImageView *navBarHairlineImageView;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
-@property (nonatomic, strong) NSMutableArray *itemsFilteredByDistance;
-@property (nonatomic, strong) NSString *ftsExtensionName;
+
 @property (nonatomic, strong, readwrite) Class viewClass;
+
+@property (nonatomic, strong) NSArray *indexedProperties;
+@property (nonatomic, strong) NSString *ftsExtensionName;
+@property (nonatomic, strong, readwrite) NSString *distanceViewName;
+@property (nonatomic, strong, readwrite) NSString *favoritesFilterForDistanceViewName;
+
 @end
 
 @implementation BRCFilteredTableViewController
 
-- (void) setupViewNames {
+- (void) setupDatabaseExtensionNames {
     self.distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
-    self.favoritesViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.distanceViewName];
+    self.favoritesFilterForDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.distanceViewName];
+    self.indexedProperties = @[NSStringFromSelector(@selector(title))];
+    self.ftsExtensionName = [BRCDatabaseManager fullTextSearchNameForClass:self.viewClass withIndexedProperties:self.indexedProperties];
+}
+
+- (void) registerDatabaseExtensions {
+    [self registerFullTextSearchExtension];
+    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
+    CLLocation *currentLocation = self.locationManager.location;
+    self.updatingDistanceInformation = YES;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:currentLocation];
+        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
+        NSLog(@"Registered %@ %d", self.distanceViewName, success);
+        YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager everythingFilteredViewForParentViewName:distanceViewName allowedCollections:distanceView.options.allowedCollections];
+        success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesDistanceView withName:self.favoritesFilterForDistanceViewName];
+        NSLog(@"Registered %@ %d", self.favoritesFilterForDistanceViewName, success);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"All extensions for %@ registered", NSStringFromClass(self.viewClass));
+            self.updatingDistanceInformation = NO;
+            self.lastDistanceUpdateLocation = currentLocation;
+        });
+    });
 }
 
 - (instancetype)initWithViewClass:(Class)viewClass
 {
     if (self = [super init]) {
+        [self setupLocationManager];
         self.viewClass = viewClass;
         self.segmentedControl = [[UISegmentedControl alloc] init];
         self.segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
@@ -62,12 +91,11 @@
         [self.sortControlToolbar addSubview:self.segmentedControl];
         
         [self setupLoadingIndicatorView];
-        [self setupLocationManager];
         [self setupDatabaseConnection];
-        [self registerFullTextSearchExtension];
-        [self setupViewNames];
+        [self setupDatabaseExtensionNames];
+        [self registerDatabaseExtensions];
         [self setupMappingsDictionary];
-        [self updateAllMappings];
+        [self updateAllMappingsWithCompletionBlock:nil];
         [self refreshDistanceInformationFromLocation:self.locationManager.location];
     }
     return self;
@@ -163,19 +191,17 @@
                                                object:self.databaseConnection.database];
 }
 
+/** Call this from the background in registerDatabaseExtensions */
 - (void) registerFullTextSearchExtension {
-    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
-    NSString *ftsName = [BRCDatabaseManager fullTextSearchNameForClass:self.viewClass withIndexedProperties:indexedProperties];
-    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:self.viewClass withIndexedProperties:indexedProperties];
-    self.ftsExtensionName = ftsName;
-    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
-        NSLog(@"%@ ready %d", ftsName, ready);
+    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:self.viewClass withIndexedProperties:self.indexedProperties];
+    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:self.ftsExtensionName completionBlock:^(BOOL ready) {
+        NSLog(@"%@ ready %d", self.ftsExtensionName, ready);
     }];
 }
 
 // Override this in subclasses
 - (void) setupMappingsDictionary {
-    NSArray *viewNames = @[self.distanceViewName, self.favoritesViewName];
+    NSArray *viewNames = @[self.favoritesFilterForDistanceViewName];
     NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
     [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
         YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
@@ -184,15 +210,12 @@
     self.mappingsDictionary = mutableMappingsDictionary;
 }
 
-- (void) updateAllMappings {
-    [self.databaseConnection beginLongLivedReadTransaction];
+- (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock {
     [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         [self.mappingsDictionary enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *mappings, BOOL *stop) {
             [mappings updateWithTransaction:transaction];
         }];
-    } completionBlock:^{
-        [self.tableView reloadData];
-    }];
+    } completionBlock:completionBlock];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -255,23 +278,27 @@
         return;
     }
     self.updatingDistanceInformation = YES;
-    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
-    NSLog(@"Unregistering distance view: %@", distanceViewName);
-    [[BRCDatabaseManager sharedInstance].database asyncUnregisterExtension:distanceViewName completionBlock:^{
-        NSLog(@"Unregistered distance view: %@", distanceViewName);
-        __block YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:(CLLocation*)fromLocation];
-        NSLog(@"Registering distance view: %@", distanceViewName);
-        [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:distanceView withName:distanceViewName completionBlock:^(BOOL ready) {
-            NSString *favoritesDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName];
-            NSSet *allowedCollections = [self allowedCollections];
-            YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName allowedCollections:allowedCollections];
-            [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:favoritesDistanceView withName:favoritesDistanceViewName completionBlock:^(BOOL ready) {
-                NSLog(@"%@ ready %d", favoritesDistanceViewName, ready);
-                [self updateAllMappings];
-                self.updatingDistanceInformation = NO;
-                self.lastDistanceUpdateLocation = fromLocation;
-            }];
+    
+    // Refresh the distance view sorting block here
+    
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.distanceViewName];
+        if (!viewTransaction) {
+            return;
+        }
+        BRCDatabaseViewExtensionType extensionType = BRCDatabaseViewExtensionTypeDistance;
+        Class viewClass = self.viewClass;
+        YapDatabaseViewGroupingBlock groupingBlock = [BRCDatabaseManager groupingBlockForClass:viewClass extensionType:extensionType];
+        YapDatabaseViewBlockType groupingBlockType = [BRCDatabaseManager groupingBlockTypeForClass:viewClass extensionType:extensionType];
+        YapDatabaseViewSortingBlock sortingBlock = [BRCDatabaseManager sortingBlockForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
+        YapDatabaseViewBlockType sortingBlockType = [BRCDatabaseManager sortingBlockTypeForClass:viewClass extensionType:extensionType];
+        [viewTransaction setGroupingBlock:groupingBlock groupingBlockType:groupingBlockType sortingBlock:sortingBlock sortingBlockType:sortingBlockType versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:^{
+        [self updateAllMappingsWithCompletionBlock:^{
+            [self.tableView reloadData];
         }];
+        self.updatingDistanceInformation = NO;
+        self.lastDistanceUpdateLocation = fromLocation;
     }];
 }
 
@@ -280,10 +307,8 @@
 }
 
 - (NSArray *) segmentedControlInfo {
-    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
-    NSString *favoritesViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:distanceViewName];
-    return @[@[@"Distance", distanceViewName],
-             @[@"Favorites", favoritesViewName]];
+    return @[@[@"Distance", self.favoritesFilterForDistanceViewName],
+             @[@"Favorites", self.favoritesFilterForDistanceViewName]];
 }
 
 - (void)updateViewConstraints
@@ -331,8 +356,31 @@
 
 - (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
 {
-    // Mappings have changed
-    [self.tableView reloadData];
+    BOOL shouldShowOnlyFavorites = NO;
+    // is there a better way to detect favorite other than hardcoding index?
+    if (self.segmentedControl.selectedSegmentIndex == 1) {
+        shouldShowOnlyFavorites = YES;
+    }
+    
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseFilteredViewTransaction *filterTransaction = [transaction ext:self.favoritesFilterForDistanceViewName];
+        if (!filterTransaction) {
+            return;
+        }
+        YapDatabaseViewFilteringBlock filteringBlock = nil;
+        YapDatabaseViewBlockType filteringBlockType = [BRCDatabaseManager filteringBlockType];
+        if (shouldShowOnlyFavorites) {
+            filteringBlock = [BRCDatabaseManager favoritesOnlyFilteringBlock];
+        } else {
+            filteringBlock = [BRCDatabaseManager allItemsFilteringBlock];
+        }
+        [filterTransaction setFilteringBlock:filteringBlock filteringBlockType:filteringBlockType versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:^{
+        NSLog(@"Finished updating favorites filter for %@", NSStringFromClass(self.viewClass));
+        [self updateAllMappingsWithCompletionBlock:^{
+            [self.tableView reloadData];
+        }];
+    }];
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
@@ -511,7 +559,9 @@
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
     
-    [self updateAllMappings];
+    [self updateAllMappingsWithCompletionBlock:^{
+        [self.tableView reloadData];
+    }];
     return;
     
     YapDatabaseViewMappings *activeMappings = self.activeMappings;
@@ -532,7 +582,9 @@
             }];
         }];
     } else {
-        [self updateAllMappings];
+        [self updateAllMappingsWithCompletionBlock:^{
+            [self.tableView reloadData];
+        }];
     }
 
     // No need to update mappings.
