@@ -1,5 +1,4 @@
 PODS:
-  - ActionSheetPicker-3.0 (1.0.13)
   - CocoaLumberjack (1.6.5.1):
     - CocoaLumberjack/Core
     - CocoaLumberjack/Extensions
@@ -35,7 +34,6 @@ PODS:
     - YapDatabase/common
 
 DEPENDENCIES:
-  - ActionSheetPicker-3.0 (~> 1.0)
   - FormatterKit/LocationFormatter (~> 1.6)
   - FormatterKit/TimeIntervalFormatter (~> 1.6)
   - HockeySDK (~> 3.5)
@@ -46,7 +44,6 @@ DEPENDENCIES:
   - YapDatabase (~> 2.4)
 
 SPEC CHECKSUMS:
-  ActionSheetPicker-3.0: bc24c9fd9f8e8a8c7d3c266fd00d20f4a78889eb
   CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
   FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
   FormatterKit: 534b21b52b9b822a9ec884a14e2debf92e7a3126

@@ -16,7 +16,7 @@
 #import "NSDate+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventsFilterTableViewController.h"
-#import "ActionSheetStringPicker.h"
+#import "BRCStringPickerView.h"
 
 @interface BRCEventsTableViewController ()
 @property (nonatomic, strong) NSDate *selectedDay;
@@ -26,6 +26,7 @@
 @property (nonatomic, strong, readwrite) NSString *timeAndDistanceViewName;
 @property (nonatomic, strong, readwrite) NSString *filteredTimeAndDistanceViewName;
 @property (nonatomic, strong, readwrite) NSString *filteredDistanceViewName;
+@property (nonatomic, strong) BRCStringPickerView *dayPicker;
 @end
 
 @implementation BRCEventsTableViewController
@@ -40,14 +41,13 @@
 }
 
 
-- (void) dayButtonPressed:(id)sender {
+- (void) dayButtonPressed:(id)sender {    
     NSInteger currentSelection = [self indexForDay:self.selectedDay];
-    ActionSheetStringPicker *dayPicker = [[ActionSheetStringPicker alloc] initWithTitle:@"Choose a Day" rows:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(ActionSheetStringPicker *picker, NSInteger selectedIndex, id selectedValue) {
-        NSDate *selectedDate = [self dateForIndex:selectedIndex];
-        self.selectedDay = selectedDate;
-        [self refreshDistanceInformationFromLocation:self.locationManager.location];
-    } cancelBlock:nil origin:sender];
-    [dayPicker showActionSheetPicker];
+    self.dayPicker.selectedIndex = currentSelection;
+    
+    if (!self.dayPicker.isVisible) {
+        [self.dayPicker showFromViewController:self];
+    }
 }
 
 - (void) filterButtonPressed:(id)sender {
@@ -98,6 +98,12 @@
         [rowTitles addObject:pickerString];
     }];
     self.dayPickerRowTitles = rowTitles;
+    NSInteger currentSelection = [self indexForDay:self.selectedDay];
+    self.dayPicker = [[BRCStringPickerView alloc] initWithTitle:@"Choose a Day" pickerStrings:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(BRCStringPickerView *picker, NSUInteger selectedIndex, NSString *selectedValue) {
+        NSDate *selectedDate = [self dateForIndex:selectedIndex];
+        self.selectedDay = selectedDate;
+        [self refreshDistanceInformationFromLocation:self.locationManager.location];
+    } cancelBlock:nil];
 }
 
 - (void) setSelectedDay:(NSDate *)selectedDay {

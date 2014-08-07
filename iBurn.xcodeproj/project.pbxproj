@@ -38,6 +38,7 @@
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D972BD2419934037008057DB /* iBurn-database in Resources */ = {isa = PBXBuildFile; fileRef = D972BD2319934037008057DB /* iBurn-database */; };
+		D972BD271993422E008057DB /* BRCStringPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D972BD261993422E008057DB /* BRCStringPickerView.m */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
@@ -115,6 +116,8 @@
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
+		D972BD251993422E008057DB /* BRCStringPickerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCStringPickerView.h; sourceTree = "<group>"; };
+		D972BD261993422E008057DB /* BRCStringPickerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCStringPickerView.m; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
 		D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+iBurn.h"; sourceTree = "<group>"; };
@@ -322,6 +325,19 @@
 			name = Cells;
 			sourceTree = "<group>";
 		};
+		D972BD281993423E008057DB /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				D972BD251993422E008057DB /* BRCStringPickerView.h */,
+				D972BD261993422E008057DB /* BRCStringPickerView.m */,
+				63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */,
+				63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */,
+				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
+				D994156019871E8400D245C7 /* BRCEventsTableViewController.m */,
+			);
+			name = Events;
+			sourceTree = "<group>";
+		};
 		D99395A5198B806800E9ADD2 /* MapViewControllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -339,10 +355,7 @@
 			isa = PBXGroup;
 			children = (
 				D92562C91988772600ED6B50 /* Cells */,
-				63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */,
-				63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */,
-				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
-				D994156019871E8400D245C7 /* BRCEventsTableViewController.m */,
+				D972BD281993423E008057DB /* Events */,
 				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
 				D97D7A29198AD05000CA7828 /* BRCFilteredTableViewController_Private.h */,
 				D994155619871D1500D245C7 /* BRCFilteredTableViewController.m */,
@@ -515,6 +528,7 @@
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				63228312198987D0009E472B /* BRCAnnotation.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
+				D972BD271993422E008057DB /* BRCStringPickerView.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
