@@ -73,9 +73,7 @@ static CGFloat const kMapHeaderHeight = 250.0;
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStyleGrouped];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    
-#warning fix bottom layoutguide
-    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.view.backgroundColor = self.tableView.backgroundColor;
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
@@ -127,15 +125,18 @@ static CGFloat const kMapHeaderHeight = 250.0;
 - (void)updateViewConstraints
 {
     [super updateViewConstraints];
-    if (!self.didSetContraints) {
-        
-        [self.fakeTableViewBackground autoAlignAxisToSuperviewAxis:ALAxisVertical];
-        [self.fakeTableViewBackground autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeTop];
-        [self.fakeTableViewBackground autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.tableView.tableHeaderView];
-        
-        
-        self.didSetContraints = YES;
+    if (self.didSetContraints) {
+        return;
     }
+    
+    [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeBottom];
+    [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
+    
+    [self.fakeTableViewBackground autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    [self.fakeTableViewBackground autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeTop];
+    [self.fakeTableViewBackground autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.tableView.tableHeaderView];
+    
+    self.didSetContraints = YES;
 }
 
 - (UIImage*)imageIfFavorite:(BOOL)isFavorite {
