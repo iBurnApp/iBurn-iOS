@@ -12,6 +12,7 @@
 #import "BRCAnnotation.h"
 #import "BRCDataObject.h"
 #import "RMMarker+iBurn.h"
+#import "BRCEmbargo.h"
 
 @implementation BRCBaseMapViewController
 
@@ -41,8 +42,9 @@
         BRCAnnotation *brcAnnotation = (BRCAnnotation*)annotation;
         BRCDataObject *dataObject = brcAnnotation.dataObject;
         
-        return [RMMarker brc_defaultMarkerForDataObject:dataObject];
-        
+        if ([BRCEmbargo canShowLocaitonForObject:dataObject]) {
+            return [RMMarker brc_defaultMarkerForDataObject:dataObject];
+        }
     }
     return nil;
 }

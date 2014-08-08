@@ -10,6 +10,9 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCSecrets.h"
 #import "BRCEventObject.h"
+#import "BRCCampObject.h"
+#import "BRCEventObject.h"
+
 
 @implementation BRCEmbargo
 
@@ -25,6 +28,16 @@
         return YES;
     }
     return NO;
+}
+
++ (BOOL)canShowLocaitonForObject:(BRCDataObject *)dataObject
+{
+    if (![BRCEmbargo allowEmbargoedData]) {
+        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]]) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 

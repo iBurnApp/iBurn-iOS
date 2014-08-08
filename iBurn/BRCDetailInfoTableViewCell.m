@@ -13,6 +13,7 @@
 #import "TTTLocationFormatter.h"
 #import "TTTTimeIntervalFormatter+iBurn.h"
 #import "TTTLocationFormatter+iBurn.h"
+#import "BRCEmbargo.h"
 
 @implementation BRCDetailInfoTableViewCell
 
@@ -80,7 +81,7 @@
         case BRCDetailCellInfoTypeRelationship: {
             BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
             NSMutableString *textString = [relationshipCellInfo.dataObject.title mutableCopy];
-            if ([relationshipCellInfo.dataObject.playaLocation length]) {
+            if ([relationshipCellInfo.dataObject.playaLocation length] && [BRCEmbargo allowEmbargoedData]) {
                 [textString appendFormat:@"\n%@",relationshipCellInfo.dataObject.playaLocation];
             }
             self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;

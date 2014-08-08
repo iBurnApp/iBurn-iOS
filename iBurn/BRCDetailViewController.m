@@ -19,6 +19,10 @@
 #import "BRCDetailInfoTableViewCell.h"
 #import "BRCDetailMapViewController.h"
 #import "PureLayout.h"
+#import "BRCEmbargo.h"
+#import "BRCCampObject.h"
+#import "BRCEventObject.h"
+#import "BRCLocations.h"
 
 static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyCellIdentifier";
 
@@ -111,7 +115,13 @@ static CGFloat const kMapHeaderHeight = 250.0;
     
     CGRect rect = self.tableView.tableHeaderView.bounds;
     rect.origin.y = kMapHeaderOffsetY;
-    [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate inVisibleRect:rect animated:animated];
+    if ([BRCEmbargo canShowLocaitonForObject:self.dataObject]) {
+        [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate inVisibleRect:rect animated:animated];
+    }
+    else {
+        [self.mapView setZoom:14.0 atCoordinate:[BRCLocations blackRockCityCenter] animated:animated];
+    }
+    
 }
 
 - (void)updateViewConstraints
@@ -195,7 +205,7 @@ static CGFloat const kMapHeaderHeight = 250.0;
 #pragma - mark RMMapviewDelegate Methods
 
 - (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-    if (annotation.isUserLocationAnnotation) { // show default style
+    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocaitonForObject:self.dataObject]) { // show default style
         return nil;
     }
     if ([annotation isKindOfClass:[BRCAnnotation class]]) {

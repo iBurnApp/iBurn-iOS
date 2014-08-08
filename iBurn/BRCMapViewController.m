@@ -18,6 +18,7 @@
 #import "BRCEventObjectTableViewCell.h"
 #import "CLLocationManager+iBurn.h"
 #import "RMMapView+iBurn.h"
+#import "BRCEmbargo.h"
 
 @interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
@@ -246,11 +247,21 @@
     if (self.searchAnnotation) {
         [self.mapView removeAnnotation:self.searchAnnotation];
     }
-    self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
-    [self.mapView addAnnotation:self.searchAnnotation];
-    [self.searchDisplayController setActive:NO animated:YES];
-    [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
-    [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
+    
+    if (![BRCEmbargo canShowLocaitonForObject:dataObject]) {
+        [self.searchDisplayController setActive:NO animated:YES];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Embargo" message:@"Sorry Loaction data for camps and events is only available after the gates open." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alertView show];
+    }
+    else {
+        self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
+        [self.mapView addAnnotation:self.searchAnnotation];
+        [self.searchDisplayController setActive:NO animated:YES];
+        [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
+        [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
+    }
+    
+    
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView

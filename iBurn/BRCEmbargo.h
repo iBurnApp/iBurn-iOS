@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class BRCDataObject;
+
 @interface BRCEmbargo : NSObject
 
 
@@ -15,5 +17,7 @@
 
 /**Checks if the password has been entered or before gates open */
 + (BOOL)allowEmbargoedData;
+
++ (BOOL)canShowLocaitonForObject:(BRCDataObject *)dataObject;
 
 @end

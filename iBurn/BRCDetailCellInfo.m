@@ -14,6 +14,7 @@
 #import "BRCEventObject.h"
 #import "BRCDatabaseManager.h"
 #import "NSDateFormatter+iBurn.h"
+#import "BRCEmbargo.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -45,6 +46,7 @@
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
+    
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistLocation)) displayName:@"Artist Location" cellType:BRCDetailCellInfoTypeText]];
     
@@ -110,8 +112,17 @@
                     }
                 }
                 
-                //add value and dispaly name to array
                 cellInfo.value = cellValue;
+
+                
+                
+                if (![BRCEmbargo canShowLocaitonForObject:object]) {
+                    if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
+                        cellInfo.value = @"Embargoed";
+                    }
+                }
+                
+                //add value and dispaly name to array
                 [finalCellInfoArray addObject:cellInfo];
             }
         }
