@@ -16,21 +16,21 @@
 
 + (instancetype)brc_defaultMarkerForDataObject:(BRCDataObject *)dataObject
 {
-    UIColor *tintColor = nil;
+    UIImage *markerImage = nil;
     Class dataObjectClass = [dataObject class];
     if (dataObjectClass == [BRCArtObject class]) {
-        tintColor = [UIColor blueColor];
+        markerImage = [UIImage imageNamed:@"BRCBluePin"];
     }
     else if (dataObjectClass == [BRCEventObject class]) {
         BRCEventObject *eventObject = (BRCEventObject*)dataObject;
-        tintColor = [eventObject colorForEventStatus];
+        markerImage = [eventObject markerImageForEventStatus];
     }
     else if (dataObjectClass == [BRCCampObject class]) {
-        tintColor = [UIColor purpleColor];
+        markerImage = [UIImage imageNamed:@"BRCPurplePin"];
     }
     
-    if (tintColor) {
-        return [[RMMarker alloc] initWithMapboxMarkerImage:nil tintColor:tintColor];
+    if (markerImage) {
+        return [[RMMarker alloc] initWithUIImage:markerImage];
     }
     return nil;
 }

@@ -87,6 +87,12 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  */
 - (UIColor*) colorForEventStatus;
 
+/**
+ *  Returns Image for event status based on isOngoing
+ *  isEndingSoon, and isStartingSoon.
+ */
+- (UIImage *)markerImageForEventStatus;
+
 /** convert BRCEventType to display string */
 + (NSString *)stringForEventType:(BRCEventType)type;
 
