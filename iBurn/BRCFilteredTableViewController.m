@@ -49,21 +49,23 @@
 
 - (void) setupDatabaseExtensionNames {
     self.distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
-    self.favoritesFilterForDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavorites parentViewName:self.distanceViewName];
+    self.favoritesFilterForDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.distanceViewName];
     self.indexedProperties = @[NSStringFromSelector(@selector(title))];
     self.ftsExtensionName = [BRCDatabaseManager fullTextSearchNameForClass:self.viewClass withIndexedProperties:self.indexedProperties];
 }
 
 - (void) registerDatabaseExtensions {
     [self registerFullTextSearchExtension];
-    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
     CLLocation *currentLocation = self.locationManager.location;
     self.isUpdatingDistanceInformation = YES;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:currentLocation];
         BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
         NSLog(@"Registered %@ %d", self.distanceViewName, success);
-        YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager everythingFilteredViewForParentViewName:distanceViewName allowedCollections:distanceView.options.allowedCollections];
+        
+        // Start with all items because we're using this view for both tabs and just
+        // updating the filtering block
+        YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEverything parentViewName:self.distanceViewName allowedCollections:distanceView.options.allowedCollections];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesDistanceView withName:self.favoritesFilterForDistanceViewName];
         NSLog(@"Registered %@ %d", self.favoritesFilterForDistanceViewName, success);
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -305,9 +307,9 @@
     } completionBlock:^{
         [self updateAllMappingsWithCompletionBlock:^{
             [self.tableView reloadData];
+            self.isUpdatingDistanceInformation = NO;
+            self.lastDistanceUpdateLocation = fromLocation;
         }];
-        self.isUpdatingDistanceInformation = NO;
-        self.lastDistanceUpdateLocation = fromLocation;
     }];
 }
 

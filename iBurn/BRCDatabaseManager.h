@@ -16,12 +16,13 @@
 typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
     BRCDatabaseViewExtensionTypeUnknown,
     BRCDatabaseViewExtensionTypeDistance,
-    BRCDatabaseViewExtensionTypeTime,
+    BRCDatabaseViewExtensionTypeTimeThenDistance,
 };
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
-    BRCDatabaseFilteredViewTypeFavorites,
+    BRCDatabaseFilteredViewTypeEverything,
+    BRCDatabaseFilteredViewTypeFavoritesOnly,
     BRCDatabaseFilteredViewTypeEventExpirationAndType,
     BRCDatabaseFilteredViewTypeFullTextSearch
 };
@@ -68,8 +69,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  *  Creates a new filteredView extension that should be registered with the name
  *  filteredExtensionNameForType:parentViewName:
  */
-+ (YapDatabaseFilteredView*) everythingFilteredViewForParentViewName:(NSString*)parentViewName
-                                                  allowedCollections:(NSSet*)allowedCollections;
++ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
+                                  parentViewName:(NSString*)parentViewName
+                              allowedCollections:(NSSet*)allowedCollections;
 + (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
                        parentViewName:(NSString*)parentViewName;
 

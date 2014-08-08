@@ -18,9 +18,13 @@
 @property (nonatomic) BOOL isUpdatingDistanceInformation;
 @property (nonatomic) BOOL isUpdatingFilters;
 
+/** make sure to call this from registerDatabaseExtensions */
+- (void) registerFullTextSearchExtension;
+
 /** override these in subclasses */
 - (void) setupDatabaseExtensionNames;
 - (void) registerDatabaseExtensions;
+
 - (void) setupMappingsDictionary;
 - (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 

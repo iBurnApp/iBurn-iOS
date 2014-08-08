@@ -175,7 +175,7 @@
 
 + (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation {
     YapDatabaseViewSortingBlock sortingBlock;
-    if (extensionType == BRCDatabaseViewExtensionTypeTime) {
+    if (extensionType == BRCDatabaseViewExtensionTypeTimeThenDistance) {
         sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
@@ -304,12 +304,18 @@
  *  Does not register the view, but checks if it is registered and returns
  *  the registered view if it exists. (Caller should register the view)
  */
-+ (YapDatabaseFilteredView*) everythingFilteredViewForParentViewName:(NSString*)parentViewName
++ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
+                                  parentViewName:(NSString*)parentViewName
                               allowedCollections:(NSSet*)allowedCollections
 {
     YapDatabaseViewBlockType filteringBlockType = [[self class] filteringBlockType];
-    
-    YapDatabaseViewFilteringBlock allItemsFilteringBlock = [[self class] allItemsFilteringBlock];
+
+    YapDatabaseViewFilteringBlock filterBlock = nil;
+    if (filterType == BRCDatabaseFilteredViewTypeEverything) {
+        filterBlock = [[self class] allItemsFilteringBlock];
+    } else if (filterType == BRCDatabaseFilteredViewTypeFavoritesOnly) {
+        filterBlock = [[self class] favoritesOnlyFilteringBlock];
+    }
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
     if (allowedCollections) {
@@ -317,7 +323,7 @@
     }
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
-                                             filteringBlock:allItemsFilteringBlock
+                                             filteringBlock:filterBlock
                                          filteringBlockType:filteringBlockType versionTag:@"1" options:options];
     return filteredView;
 }
@@ -327,8 +333,8 @@
         case BRCDatabaseViewExtensionTypeDistance:
             return @"Distance";
             break;
-        case BRCDatabaseViewExtensionTypeTime:
-            return @"Time";
+        case BRCDatabaseViewExtensionTypeTimeThenDistance:
+            return @"TimeThenDistance";
             break;
         default:
             return nil;
@@ -341,11 +347,14 @@
         case BRCDatabaseFilteredViewTypeEventExpirationAndType:
             return @"EventExpirationAndType";
             break;
-        case BRCDatabaseFilteredViewTypeFavorites:
-            return @"Favorites";
+        case BRCDatabaseFilteredViewTypeFavoritesOnly:
+            return @"FavoritesOnly";
             break;
         case BRCDatabaseFilteredViewTypeFullTextSearch:
             return @"Search";
+            break;
+        case BRCDatabaseFilteredViewTypeEverything:
+            return @"Everything";
             break;
         default:
             return nil;
