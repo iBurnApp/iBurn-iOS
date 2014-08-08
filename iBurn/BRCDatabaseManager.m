@@ -315,6 +315,8 @@
         filterBlock = [[self class] allItemsFilteringBlock];
     } else if (filterType == BRCDatabaseFilteredViewTypeFavoritesOnly) {
         filterBlock = [[self class] favoritesOnlyFilteringBlock];
+    } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
+        filterBlock = [[self class] eventsFilteringBlock];
     }
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
@@ -324,7 +326,9 @@
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
                                              filteringBlock:filterBlock
-                                         filteringBlockType:filteringBlockType versionTag:@"1" options:options];
+                                         filteringBlockType:filteringBlockType
+                                                 versionTag:@"1"
+                                                    options:options];
     return filteredView;
 }
 

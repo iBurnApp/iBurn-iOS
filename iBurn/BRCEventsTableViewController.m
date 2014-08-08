@@ -18,7 +18,7 @@
 #import "BRCEventsFilterTableViewController.h"
 #import "BRCStringPickerView.h"
 
-@interface BRCEventsTableViewController ()
+@interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate>
 @property (nonatomic, strong) NSDate *selectedDay;
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
 @property (nonatomic, strong) NSArray *festivalDates;
@@ -52,14 +52,14 @@
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:timeAndDistanceView withName:self.timeAndDistanceViewName];
         NSLog(@"%@ %d", self.timeAndDistanceViewName, success);
         NSSet *allowedCollections = [self allowedCollections];
-        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEverything parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
+        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredTimeAndDistanceView withName:self.filteredTimeAndDistanceViewName];
         NSLog(@"%@ %d", self.filteredTimeAndDistanceViewName, success);
         
         YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:fromLocation];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
         NSLog(@"%@ %d", self.distanceViewName, success);
-        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEverything parentViewName:self.distanceViewName allowedCollections:allowedCollections];
+        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.distanceViewName allowedCollections:allowedCollections];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredDistanceView withName:self.filteredDistanceViewName];
         NSLog(@"%@ %d", self.filteredDistanceViewName, success);
         
@@ -87,7 +87,7 @@
 }
 
 - (void) filterButtonPressed:(id)sender {
-    BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] init];
+    BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] initWithDelegate:self];;
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:filterViewController];
     [self presentViewController:navigationController animated:YES completion:nil];
 }
@@ -181,8 +181,28 @@
     return [BRCEventObjectTableViewCell class];
 }
 
-- (void) updateFilteredViews {
-
+- (void)updateFilteredViewsCompletion:(void (^)(void))completion
+{
+    YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
+    YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager eventsFilteringBlock];
+    
+    NSString *timeViewName = [BRCDatabaseManager databaseViewNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeTimeThenDistance];
+    NSString *filteredTimeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:timeViewName];
+    
+    NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:[BRCEventObject class] extensionType:BRCDatabaseViewExtensionTypeDistance];
+    
+    NSString *filteredDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:distanceViewName];
+    
+    NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[filteredTimeViewName, filteredDistanceViewName];
+    
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [eventsFilteredByExpirationAndTypeViewsArray enumerateObjectsUsingBlock:^(NSString *filteredViewName, NSUInteger idx, BOOL *stop) {
+            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredViewName];
+            [filteredTransaction setFilteringBlock:filteringBlock
+                                filteringBlockType:filterBlockType
+                                        versionTag:[[NSUUID UUID] UUIDString]];
+        }];
+    } completionBlock:completion];
 }
 
 - (void) setupMappingsDictionary {
@@ -222,5 +242,11 @@
 
 }
 
+ #pragma - mark BRCEventsFilterTableViewControllerDelegate Methods
+
+- (void)didSetNewFilterSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController
+{
+    [self updateFilteredViewsCompletion:nil];
+}
 
 @end
