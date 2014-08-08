@@ -15,8 +15,8 @@
 @property (nonatomic, strong) CLLocation *lastDistanceUpdateLocation;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 
-
-@property (nonatomic) BOOL updatingDistanceInformation;
+@property (nonatomic) BOOL isUpdatingDistanceInformation;
+@property (nonatomic) BOOL isUpdatingFilters;
 
 /** override these in subclasses */
 - (void) setupDatabaseExtensionNames;
@@ -24,6 +24,7 @@
 - (void) setupMappingsDictionary;
 - (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 
+- (void) refreshLoadingIndicatorViewAnimation;
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation;
 - (BOOL) shouldRefreshDistanceInformationForNewLocation:(CLLocation*)newLocation;
 

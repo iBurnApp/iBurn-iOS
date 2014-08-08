@@ -125,6 +125,11 @@
     }];
 }
 
+- (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
+{
+    [self.tableView reloadData];
+}
+
 - (NSDate*) selectedDay {
     if (!_selectedDay) {
         _selectedDay = [NSDate date];
@@ -143,13 +148,13 @@
 }
 
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation {
-    if (self.updatingDistanceInformation) {
+    if (self.isUpdatingDistanceInformation) {
         return;
     }
     if (![self shouldRefreshDistanceInformationForNewLocation:fromLocation]) {
         return;
     }
-    self.updatingDistanceInformation = YES;
+    self.isUpdatingDistanceInformation = YES;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BOOL success = NO;
@@ -181,7 +186,7 @@
             [self updateAllMappingsWithCompletionBlock:^{
                 [self.tableView reloadData];
             }];
-            self.updatingDistanceInformation = NO;
+            self.isUpdatingDistanceInformation = NO;
             self.lastDistanceUpdateLocation = fromLocation;
         });
     });

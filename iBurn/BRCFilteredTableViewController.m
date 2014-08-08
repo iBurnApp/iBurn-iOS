@@ -58,7 +58,7 @@
     [self registerFullTextSearchExtension];
     NSString *distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
     CLLocation *currentLocation = self.locationManager.location;
-    self.updatingDistanceInformation = YES;
+    self.isUpdatingDistanceInformation = YES;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:currentLocation];
         BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
@@ -68,7 +68,7 @@
         NSLog(@"Registered %@ %d", self.favoritesFilterForDistanceViewName, success);
         dispatch_async(dispatch_get_main_queue(), ^{
             NSLog(@"All extensions for %@ registered", NSStringFromClass(self.viewClass));
-            self.updatingDistanceInformation = NO;
+            self.isUpdatingDistanceInformation = NO;
             self.lastDistanceUpdateLocation = currentLocation;
         });
     });
@@ -115,6 +115,14 @@
     self.loadingIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     UIBarButtonItem *loadingButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.loadingIndicatorView];
     self.navigationItem.rightBarButtonItem = loadingButtonItem;
+}
+
+- (void) refreshLoadingIndicatorViewAnimation {
+    if (self.isUpdatingDistanceInformation || self.isUpdatingFilters) {
+        [self.loadingIndicatorView startAnimating];
+    } else {
+        [self.loadingIndicatorView stopAnimating];
+    }
 }
 
 - (void)viewDidLoad
@@ -244,13 +252,14 @@
     [self refreshDistanceInformationFromLocation:recentLocation];
 }
 
-- (void) setUpdatingDistanceInformation:(BOOL)updatingDistanceInformation {
-    _updatingDistanceInformation = updatingDistanceInformation;
-    if (_updatingDistanceInformation) {
-        [self.loadingIndicatorView startAnimating];
-    } else {
-        [self.loadingIndicatorView stopAnimating];
-    }
+- (void) setIsUpdatingDistanceInformation:(BOOL)isUpdatingDistanceInformation {
+    _isUpdatingDistanceInformation = isUpdatingDistanceInformation;
+    [self refreshLoadingIndicatorViewAnimation];
+}
+
+- (void) setIsUpdatingFilters:(BOOL)isUpdatingFilters {
+    _isUpdatingFilters = isUpdatingFilters;
+    [self refreshLoadingIndicatorViewAnimation];
 }
 
 - (BOOL) shouldRefreshDistanceInformationForNewLocation:(CLLocation*)newLocation {
@@ -271,13 +280,13 @@
 }
 
 - (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation {
-    if (self.updatingDistanceInformation) {
+    if (self.isUpdatingDistanceInformation) {
         return;
     }
     if (![self shouldRefreshDistanceInformationForNewLocation:fromLocation]) {
         return;
     }
-    self.updatingDistanceInformation = YES;
+    self.isUpdatingDistanceInformation = YES;
     
     // Refresh the distance view sorting block here
     
@@ -297,7 +306,7 @@
         [self updateAllMappingsWithCompletionBlock:^{
             [self.tableView reloadData];
         }];
-        self.updatingDistanceInformation = NO;
+        self.isUpdatingDistanceInformation = NO;
         self.lastDistanceUpdateLocation = fromLocation;
     }];
 }
@@ -354,8 +363,9 @@
     return [infoArray lastObject];
 }
 
-- (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
-{
+- (void) updateFilteredViews {
+    self.isUpdatingFilters = YES;
+    
     BOOL shouldShowOnlyFavorites = NO;
     // is there a better way to detect favorite other than hardcoding index?
     if (self.segmentedControl.selectedSegmentIndex == 1) {
@@ -376,11 +386,16 @@
         }
         [filterTransaction setFilteringBlock:filteringBlock filteringBlockType:filteringBlockType versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:^{
-        NSLog(@"Finished updating favorites filter for %@", NSStringFromClass(self.viewClass));
         [self updateAllMappingsWithCompletionBlock:^{
+            self.isUpdatingFilters = NO;
             [self.tableView reloadData];
         }];
     }];
+}
+
+- (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
+{
+    [self updateFilteredViews];
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
