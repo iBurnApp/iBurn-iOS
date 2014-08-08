@@ -19,7 +19,7 @@
 
 @property (nonatomic, strong) UIButton *unlockBotton;
 @property (nonatomic, strong) UIButton *noPasscodeButton;
-@property (nonatomic, strong) UITextView *descriptionTextView;
+@property (nonatomic, strong) UILabel *descriptionLabel;
 @property (nonatomic, strong) UITextField *passcodeTextField;
 @property (nonatomic, strong) UIView *containerView;
 @property (nonatomic, strong) UILabel *countdownLabel;
@@ -58,10 +58,10 @@
     self.unlockBotton.titleLabel.font = [UIFont boldSystemFontOfSize:18];
 
     
-    self.descriptionTextView = [[UITextView alloc] initForAutoLayout];
-    self.descriptionTextView.text = @"Camp location data is embargoed until the gates officially open due to BMorg's restrictions. The passcode will be released to the public at 10am on Sunday 8/24.\n\nFollow @iBurnApp on Twitter or Facebook for updates ahead of the event, or ask a Black Rock Ranger or Burning Man Staffer.";
-    self.descriptionTextView.editable = NO;
-    self.descriptionTextView.font = [UIFont systemFontOfSize:15];
+    self.descriptionLabel = [[UILabel alloc] initForAutoLayout];
+    self.descriptionLabel.text = @"Camp location data is embargoed until the gates officially open due to BMorg's restrictions. The passcode will be released to the public at 10am on Sunday 8/24.\n\nFollow @iBurnApp on Twitter or Facebook for updates ahead of the event, or ask a Black Rock Ranger or Burning Man Staffer.";
+    self.descriptionLabel.font = [UIFont systemFontOfSize:15];
+    self.descriptionLabel.numberOfLines = 0;
     
     self.passcodeTextField = [[UITextField alloc] initForAutoLayout];
     self.passcodeTextField.secureTextEntry = YES;
@@ -81,7 +81,7 @@
     [self.countdownTimer fire];
     
     [self.view addSubview:self.containerView];
-    [self.containerView addSubview:self.descriptionTextView];
+    [self.containerView addSubview:self.descriptionLabel];
     [self.containerView addSubview:self.noPasscodeButton];
     [self.containerView addSubview:self.unlockBotton];
     [self.containerView addSubview:self.passcodeTextField];
@@ -99,14 +99,14 @@
         {
             welf.bottomCostraint.constant = -keyboardFrameInView.size.height;
             [UIView animateWithDuration:0.2 animations:^{
-                welf.descriptionTextView.alpha = 0.0f;
+                welf.descriptionLabel.alpha = 0.0f;
             }];
         }
         else if (closing)
         {
             welf.bottomCostraint.constant = 0.0;
             [UIView animateWithDuration:0.5 animations:^{
-                welf.descriptionTextView.alpha = 1.0f;
+                welf.descriptionLabel.alpha = 1.0f;
             }];
         }
     }];
@@ -179,11 +179,10 @@
     [self.containerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(30, 0, 0, 0) excludingEdge:ALEdgeBottom];
     self.bottomCostraint = [self.containerView autoPinEdge:ALEdgeBottom toEdge:ALEdgeBottom ofView:self.view];
     
-    [self.descriptionTextView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(10, 10, 10, 10) excludingEdge:ALEdgeBottom];
-    [self.descriptionTextView autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.passcodeTextField withOffset:0 relation:NSLayoutRelationGreaterThanOrEqual];
+    [self.descriptionLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(10, 10, 10, 0) excludingEdge:ALEdgeBottom];
     
     self.textFieldAxisConstraint = [self.passcodeTextField autoAlignAxis:ALAxisVertical toSameAxisOfView:self.containerView];
-    [self.passcodeTextField autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.descriptionTextView];
+    [self.passcodeTextField autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.descriptionLabel];
     [self.passcodeTextField autoSetDimension:ALDimensionHeight toSize:31.0];
     [self.passcodeTextField autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.noPasscodeButton withOffset:-10 relation:NSLayoutRelationGreaterThanOrEqual];
     
