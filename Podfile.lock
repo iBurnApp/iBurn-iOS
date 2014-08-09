@@ -1,4 +1,5 @@
 PODS:
+  - BButton (4.0.1)
   - CocoaLumberjack (1.6.5.1):
     - CocoaLumberjack/Core
     - CocoaLumberjack/Extensions
@@ -35,6 +36,7 @@ PODS:
     - YapDatabase/common
 
 DEPENDENCIES:
+  - BButton (~> 4.0)
   - DAKeyboardControl (~> 2.4)
   - FormatterKit/LocationFormatter (~> 1.6)
   - FormatterKit/TimeIntervalFormatter (~> 1.6)
@@ -51,6 +53,7 @@ EXTERNAL SOURCES:
     :git: git@github.com:chrisballinger/YapDatabase.git
 
 SPEC CHECKSUMS:
+  BButton: 396a5e59648e3f687b7d8201b88ebdbad6e36b59
   CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
   DAKeyboardControl: 45a363c85c48a7df76f21f236d9f85800e001775
   FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
