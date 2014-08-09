@@ -248,17 +248,23 @@
         [self.mapView removeAnnotation:self.searchAnnotation];
     }
     
-    if (![BRCEmbargo canShowLocaitonForObject:dataObject]) {
+    if (![BRCEmbargo canShowLocationForObject:dataObject]) {
         [self.searchDisplayController setActive:NO animated:YES];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Embargo" message:@"Sorry Loaction data for camps and events is only available after the gates open." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Embargoed" message:@"Sorry, location data for camps and events is only available after the gates open." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alertView show];
     }
     else {
-        self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
-        [self.mapView addAnnotation:self.searchAnnotation];
+        if (dataObject.location) {
+            self.searchAnnotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
+            [self.mapView addAnnotation:self.searchAnnotation];
+            [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
+            [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
+        } else { // no location to show
+            BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+            [self.navigationController pushViewController:detailViewController animated:YES];
+        }
         [self.searchDisplayController setActive:NO animated:YES];
-        [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
-        [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
+
     }
     
     

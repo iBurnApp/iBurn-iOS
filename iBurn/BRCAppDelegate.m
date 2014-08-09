@@ -19,8 +19,7 @@
 #import "BRCSecrets.h"
 #import "BRCEmbargoPasscodeViewController.h"
 #import "BRCEmbargo.h"
-
-static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
+#import "NSUserDefaults+iBurn.h"
 
 @implementation BRCAppDelegate
 
@@ -51,7 +50,6 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
     if ([BRCEmbargo allowEmbargoedData]) {
-        
         self.window.rootViewController = [self defaultTabBarController];
     }
     else {
@@ -60,7 +58,23 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
     
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
     return YES;
+}
+
+- (void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    if ([notification.userInfo objectForKey:kBRCGateUnlockNotificationKey]) {
+        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
+        [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    }
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:notification.alertBody delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+    if (notification.alertAction.length > 0) {
+        [alert addButtonWithTitle:notification.alertAction];
+    } else {
+        [alert addButtonWithTitle:@"OK"];
+    }
+    [alert show];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -170,7 +184,6 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
                 NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
             } else {
                 NSLog(@"Imported %@ data successfully", NSStringFromClass(dataClass));
-                [[NSUserDefaults standardUserDefaults] setObject:@YES forKey:kBRCHasImportedDataKey];
             }
         }];
     }];

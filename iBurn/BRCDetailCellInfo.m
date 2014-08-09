@@ -116,7 +116,7 @@
 
                 
                 
-                if (![BRCEmbargo canShowLocaitonForObject:object]) {
+                if (![BRCEmbargo canShowLocationForObject:object]) {
                     if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
                         cellInfo.value = @"Embargoed";
                     }

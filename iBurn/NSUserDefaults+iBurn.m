@@ -12,8 +12,37 @@ static NSString *const kBRCSelectedEventsTypesKey    = @"kBRCSelectedEventsTypes
 static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKey";
 static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
 static NSString *const kBRCEnteredEmbargoPasscodeKey = @"kBRCEnteredEmbargoPasscodeKey";
+NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey";
+
 
 @implementation NSUserDefaults (iBurn)
+
+- (UILocalNotification*) scheduledLocalNotificationForGateUnlock {
+    NSData *localNotificationData = [self objectForKey:kBRCGateUnlockNotificationKey];
+    if (localNotificationData) {
+        UILocalNotification *localNotification = [NSKeyedUnarchiver unarchiveObjectWithData:localNotificationData];
+        return localNotification;
+    }
+    return nil;
+}
+
+- (void) scheduleLocalNotificationForGateUnlock:(UILocalNotification*)localNotification {
+    UILocalNotification *existingNotification = [self scheduledLocalNotificationForGateUnlock];
+    if (existingNotification) {
+        [[UIApplication sharedApplication] cancelLocalNotification:existingNotification];
+        [self removeObjectForKey:kBRCGateUnlockNotificationKey];
+    }
+    if (localNotification) {
+        [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
+        NSData *localNotificationData = [NSKeyedArchiver archivedDataWithRootObject:localNotification];
+        [self setObject:localNotificationData forKey:kBRCGateUnlockNotificationKey];
+    } else {
+        [self removeObjectForKey:kBRCGateUnlockNotificationKey];
+    }
+    [self synchronize];
+}
+
+
 
 - (NSArray *)selectedEventTypes
 {

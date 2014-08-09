@@ -42,7 +42,7 @@
         BRCAnnotation *brcAnnotation = (BRCAnnotation*)annotation;
         BRCDataObject *dataObject = brcAnnotation.dataObject;
         
-        if ([BRCEmbargo canShowLocaitonForObject:dataObject]) {
+        if ([BRCEmbargo canShowLocationForObject:dataObject]) {
             return [RMMarker brc_defaultMarkerForDataObject:dataObject];
         }
     }

@@ -233,13 +233,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCEventObjectTableViewCell *cell = (BRCEventObjectTableViewCell*)[super tableView:tableView cellForRowAtIndexPath:indexPath];
-    if ([self isSearchResultsControllerTableView:tableView]) {
-        cell.eventDayLabel.hidden = NO;
-    } else {
-        cell.eventDayLabel.hidden = YES;
-    }
+    cell.eventDayLabel.hidden = NO;
     return cell;
-
 }
 
  #pragma - mark BRCEventsFilterTableViewControllerDelegate Methods

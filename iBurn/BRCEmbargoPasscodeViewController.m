@@ -110,6 +110,8 @@
     [self.containerView addSubview:self.twitterButton];
     [self.containerView addSubview:self.githubButton];
     
+    [self setupUnlockNotification];
+    
     UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                                     action:@selector(singleTapPressed:)];
     [self.view addGestureRecognizer:tapRecognizer];
@@ -141,6 +143,28 @@
             }];
         }
     }];
+}
+
+- (void) setupUnlockNotification {
+    NSDate *now = [NSDate date];
+    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
+    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
+    if (timeLeftInterval >= 0) {
+        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
+    } else {
+        UILocalNotification *existingNotification = [[NSUserDefaults standardUserDefaults] scheduledLocalNotificationForGateUnlock];
+        if (existingNotification) {
+            return;
+        }
+        UILocalNotification *unlockNotification = [[UILocalNotification alloc] init];
+        unlockNotification.fireDate = festivalStartDate;
+        unlockNotification.alertBody = @"Gates are open! Embargoed data can now be unlocked.";
+        unlockNotification.soundName = UILocalNotificationDefaultSoundName;
+        unlockNotification.alertAction = @"Unlock Now";
+        unlockNotification.applicationIconBadgeNumber = 1;
+        unlockNotification.userInfo = @{kBRCGateUnlockNotificationKey: @YES};
+        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:unlockNotification];
+    }
 }
 
 - (void) refreshCountdownLabel:(id)sender {

@@ -113,7 +113,7 @@ static CGFloat const kMapHeaderHeight = 250.0;
     
     CGRect rect = self.tableView.tableHeaderView.bounds;
     rect.origin.y = kMapHeaderOffsetY;
-    if ([BRCEmbargo canShowLocaitonForObject:self.dataObject]) {
+    if ([BRCEmbargo canShowLocationForObject:self.dataObject]) {
         [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate inVisibleRect:rect animated:animated];
     }
     else {
@@ -206,7 +206,7 @@ static CGFloat const kMapHeaderHeight = 250.0;
 #pragma - mark RMMapviewDelegate Methods
 
 - (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocaitonForObject:self.dataObject]) { // show default style
+    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocationForObject:self.dataObject]) { // show default style
         return nil;
     }
     if ([annotation isKindOfClass:[BRCAnnotation class]]) {

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 
 @class BRCDataObject;
 
@@ -18,6 +19,6 @@
 /**Checks if the password has been entered or before gates open */
 + (BOOL)allowEmbargoedData;
 
-+ (BOOL)canShowLocaitonForObject:(BRCDataObject *)dataObject;
++ (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject;
 
 @end

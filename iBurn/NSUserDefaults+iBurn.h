@@ -9,7 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+extern NSString *const kBRCGateUnlockNotificationKey;
+
 @interface NSUserDefaults (iBurn)
+
+/** Existing notification */
+- (UILocalNotification*) scheduledLocalNotificationForGateUnlock;
+/** This will automatically schedule the notification too. */
+- (void) scheduleLocalNotificationForGateUnlock:(UILocalNotification*)localNotification;
 
 - (NSArray *)selectedEventTypes;
 - (void)setSelectedEventTypes:(NSArray *)selectedEventTypes;
