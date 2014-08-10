@@ -17,6 +17,9 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 	```obj-c
 	NSString * const kBRCHockeyBetaIdentifier = @"";
 	NSString * const kBRCHockeyLiveIdentifier = @"";
+	// To generate new passcode (without salt):
+	// $ echo -n passcode | sha256sum
+	NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
 
 * Compile and Run!
 
@@ -29,19 +32,13 @@ Fortunately, you can still run and test the app with the previous year's data.
 * load `image_url` for art when internet is available
 * Open in Safari pop up when clicking links
 * Add UILocationNotification on favoriting event
-* Add filtering for event types and date proximity (work in progress...)
 * Onboarding
 * About page / attributions
 * Show data from previous years
-* Optimizations
-* Data Embargo :(
+* Optimizations (only load 1 day of events at a time)
 * Show Favorites on the Map 
-* Favorite items by long-pressing on cell
 * Scroll back to top when switching sort
-* Put Playa location as first item in detail view (e.g. 7:45 & E)
-* Put distance as second item in detail view
-* Put description as third item in detail view
-* Put date on event cell for global search
+* Center Map when pressing "Map" in tab bar
 * Search symbols (.,&,?,...)
 
 ## Contributing
