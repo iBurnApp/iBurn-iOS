@@ -28,6 +28,8 @@ PODS:
   - MCSwipeTableViewCell (2.1.0)
   - PureLayout (1.0.1)
   - SMCalloutView (2.0)
+  - TTTAttributedLabel (1.10.1)
+  - VTAcknowledgementsViewController (0.11)
   - YapDatabase (2.5):
     - YapDatabase/standard
   - YapDatabase/common (2.5):
@@ -45,12 +47,14 @@ DEPENDENCIES:
   - Mapbox-iOS-SDK (~> 1.2)
   - MCSwipeTableViewCell (~> 2.1)
   - PureLayout (~> 1.0)
-  - YapDatabase (from `git@github.com:chrisballinger/YapDatabase.git`, commit `a3778fb0a5917426e75b17a2776f703e34df403f`)
+  - TTTAttributedLabel (~> 1.10)
+  - VTAcknowledgementsViewController (~> 0.11)
+  - YapDatabase (from `https://github.com/chrisballinger/YapDatabase.git`, commit `a3778fb0a5917426e75b17a2776f703e34df403f`)
 
 EXTERNAL SOURCES:
   YapDatabase:
     :commit: a3778fb0a5917426e75b17a2776f703e34df403f
-    :git: git@github.com:chrisballinger/YapDatabase.git
+    :git: https://github.com/chrisballinger/YapDatabase.git
 
 SPEC CHECKSUMS:
   BButton: 396a5e59648e3f687b7d8201b88ebdbad6e36b59
@@ -66,6 +70,8 @@ SPEC CHECKSUMS:
   MCSwipeTableViewCell: 713086e29ce3c2171a0102fc594bf583fa7dd323
   PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
   SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
+  TTTAttributedLabel: 94bb04f1e005616002dd2cee0262a0082e533627
+  VTAcknowledgementsViewController: 6e71652adbe73c68f0a278a73ac9ca1e1fc00b90
   YapDatabase: 38ee5e842ed1370f0d258e25b23bd64f6e3c1a67
 
 COCOAPODS: 0.33.1

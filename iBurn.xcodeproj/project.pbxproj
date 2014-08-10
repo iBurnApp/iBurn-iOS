@@ -59,6 +59,10 @@
 		D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
+		D9B362AE199812AC0093B441 /* Pods-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9B362AD199812AC0093B441 /* Pods-acknowledgements.plist */; };
+		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
+		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
+		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 /* End PBXBuildFile section */
 
@@ -163,6 +167,13 @@
 		D99415791987277500D245C7 /* BRCDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDatabaseManager.m; sourceTree = "<group>"; };
 		D994157D1987399F00D245C7 /* BRCEventTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventTime.h; sourceTree = "<group>"; };
 		D994157E1987399F00D245C7 /* BRCEventTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventTime.m; sourceTree = "<group>"; };
+		D9B362AD199812AC0093B441 /* Pods-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-acknowledgements.plist"; path = "Pods/Pods-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
+		D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAcknowledgementsViewController.h; sourceTree = "<group>"; };
+		D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAcknowledgementsViewController.m; sourceTree = "<group>"; };
+		D9B362B2199821EB0093B441 /* NSURL+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+iBurn.h"; sourceTree = "<group>"; };
+		D9B362B3199821EB0093B441 /* NSURL+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+iBurn.m"; sourceTree = "<group>"; };
+		D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSocialButtonsView.h; sourceTree = "<group>"; };
+		D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSocialButtonsView.m; sourceTree = "<group>"; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
@@ -253,6 +264,10 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9B362B2199821EB0093B441 /* NSURL+iBurn.h */,
+				D9B362B3199821EB0093B441 /* NSURL+iBurn.m */,
+				D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */,
+				D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */,
 				D9071FE51996C4A7005C3639 /* NSData+iBurn.h */,
 				D9071FE61996C4A7005C3639 /* NSData+iBurn.m */,
 				D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */,
@@ -267,6 +282,7 @@
 				6322830C1989836F009E472B /* MapClasses */,
 				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
+				D9B362AD199812AC0093B441 /* Pods-acknowledgements.plist */,
 				63D270FA198716C600204954 /* Resources */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
@@ -287,6 +303,8 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
+				D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */,
 				6322830219881E27009E472B /* DetailViewControllers */,
 				D994155E19871D9000D245C7 /* Filtered Tables */,
 				D99395A5198B806800E9ADD2 /* MapViewControllers */,
@@ -482,6 +500,7 @@
 				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
 				D9046F38198C6CDE0013CCF4 /* events.json in Resources */,
 				D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */,
+				D9B362AE199812AC0093B441 /* Pods-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D9046F1B198C65F40013CCF4 /* camps.json in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
@@ -546,9 +565,11 @@
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
+				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
+				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				63228312198987D0009E472B /* BRCAnnotation.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
@@ -566,6 +587,7 @@
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
+				D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */,
 				D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */,
 				63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,

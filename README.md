@@ -33,13 +33,12 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Open in Safari pop up when clicking links
 * Add UILocationNotification on favoriting event
 * Onboarding
-* About page / attributions
 * Show data from previous years
 * Optimizations (only load 1 day of events at a time)
 * Show Favorites on the Map 
 * Scroll back to top when switching sort
-* Center Map when pressing "Map" in tab bar
 * Search symbols (.,&,?,...)
+* Use fancy animations instead of `reloadData` everywhere
 
 ## Contributing
 

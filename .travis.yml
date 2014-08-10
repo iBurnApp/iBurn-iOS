@@ -17,6 +17,8 @@ install:
   - cp ./Submodules/iBurn-Data/data/2013/art_data.json ./Submodules/iBurn-Data/data/2014/art.json
   - cp ./Submodules/iBurn-Data/data/2013/camp_data.json ./Submodules/iBurn-Data/data/2014/camps.json
   - cp ./Submodules/iBurn-Data/data/2013/event_data.json ./Submodules/iBurn-Data/data/2014/events.json
+  - mkdir ./Submodules/iBurn-Data/data/2014/iBurn-database
+
 
 before_script:
   - gem install cocoapods

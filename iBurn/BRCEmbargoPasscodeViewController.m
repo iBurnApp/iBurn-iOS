@@ -15,6 +15,7 @@
 #import "TTTTimeIntervalFormatter+iBurn.h"
 #import "BRCEventObject.h"
 #import "BButton.h"
+#import "BRCSocialButtonsView.h"
 
 @interface BRCEmbargoPasscodeViewController () <UITextFieldDelegate>
 
@@ -29,10 +30,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *bottomCostraint;
 @property (nonatomic, strong) NSLayoutConstraint *textFieldAxisConstraint;
 @property (nonatomic, strong) TTTTimeIntervalFormatter *timerFormatter;
-@property (nonatomic, strong) BButton *twitterButton;
-@property (nonatomic, strong) BButton *facebookButton;
-@property (nonatomic, strong) BButton *githubButton;
-
+@property (nonatomic, strong) BRCSocialButtonsView *socialButtonsView;
 @end
 
 @implementation BRCEmbargoPasscodeViewController
@@ -61,22 +59,7 @@
     [self.unlockBotton setTitle:@"Unlock" forState:UIControlStateNormal];
     self.unlockBotton.titleLabel.font = [UIFont boldSystemFontOfSize:18];
     
-    UIFont *buttonFont = [UIFont systemFontOfSize:15];
-    self.facebookButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeFacebook style:BButtonStyleBootstrapV3];
-    self.facebookButton.titleLabel.text = @"Facebook";
-    self.facebookButton.titleLabel.font = buttonFont;
-    [self.facebookButton addAwesomeIcon:FAFacebook beforeTitle:YES];
-    [self.facebookButton addTarget:self action:@selector(facebookButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    self.githubButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeDefault style:BButtonStyleBootstrapV3];
-    self.githubButton.titleLabel.text = @"GitHub";
-    self.githubButton.titleLabel.font = buttonFont;
-    [self.githubButton addAwesomeIcon:FAGithub beforeTitle:YES];
-    [self.githubButton addTarget:self action:@selector(githubButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    self.twitterButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeTwitter style:BButtonStyleBootstrapV3];
-    self.twitterButton.titleLabel.text = @"Twitter";
-    self.twitterButton.titleLabel.font = buttonFont;
-    [self.twitterButton addAwesomeIcon:FATwitter beforeTitle:YES];
-    [self.twitterButton addTarget:self action:@selector(twitterButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    self.socialButtonsView = [[BRCSocialButtonsView alloc] initWithFrame:CGRectZero];
     
     self.descriptionLabel = [[UILabel alloc] initForAutoLayout];
     self.descriptionLabel.text = @"Camp locations are embargoed until the gates open due to BMorg restrictions. The passcode will be released to the public at 10am on Sunday 8/24.\n\nFollow @iBurnApp on Twitter or Facebook for this year's passcode, or ask a Black Rock Ranger or Burning Man Staffer.";
@@ -106,9 +89,7 @@
     [self.containerView addSubview:self.unlockBotton];
     [self.containerView addSubview:self.passcodeTextField];
     [self.containerView addSubview:self.countdownLabel];
-    [self.containerView addSubview:self.facebookButton];
-    [self.containerView addSubview:self.twitterButton];
-    [self.containerView addSubview:self.githubButton];
+    [self.containerView addSubview:self.socialButtonsView];
     
     [self setupUnlockNotification];
     
@@ -126,9 +107,7 @@
             [UIView animateWithDuration:0.2 animations:^{
                 CGFloat newAlpha = 0.0f;
                 welf.descriptionLabel.alpha = newAlpha;
-                welf.twitterButton.alpha = newAlpha;
-                welf.facebookButton.alpha = newAlpha;
-                welf.githubButton.alpha = newAlpha;
+                welf.socialButtonsView.alpha = newAlpha;
             }];
         }
         else if (closing)
@@ -137,9 +116,7 @@
             [UIView animateWithDuration:0.5 animations:^{
                 CGFloat newAlpha = 1.0f;
                 welf.descriptionLabel.alpha = newAlpha;
-                welf.twitterButton.alpha = newAlpha;
-                welf.facebookButton.alpha = newAlpha;
-                welf.githubButton.alpha = newAlpha;
+                welf.socialButtonsView.alpha = newAlpha;
             }];
         }
     }];
@@ -230,29 +207,6 @@
     [self.passcodeTextField resignFirstResponder];
 }
 
-- (void) twitterButtonPressed:(id)sender {
-    NSURL *twitterURL = [NSURL URLWithString:@"twitter://user?screen_name=iBurnApp"];
-    if ([[UIApplication sharedApplication] canOpenURL:twitterURL]) {
-        [[UIApplication sharedApplication] openURL:twitterURL];
-    } else {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/iBurnApp"]];
-    }
-}
-
-- (void) facebookButtonPressed:(id)sender {
-    NSURL *facebookURL = [NSURL URLWithString:@"fb://profile/322327871267883"];
-    if ([[UIApplication sharedApplication] canOpenURL:facebookURL]) {
-        [[UIApplication sharedApplication] openURL:facebookURL];
-    } else {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://facebook.com/iBurnApp"]];
-    }
-}
-
-- (void) githubButtonPressed:(id)sender {
-    NSURL *githubURL = [NSURL URLWithString:@"https://github.com/Burning-Man-Earth/iBurn-iOS"];
-    [[UIApplication sharedApplication] openURL:githubURL];
-}
-
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -271,21 +225,10 @@
     
     [self.descriptionLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeBottom];
     
-    [self.facebookButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
-    [self.facebookButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.descriptionLabel withOffset:10];
-    [self.twitterButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
-    [self.twitterButton autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.facebookButton];
-    [self.githubButton autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.facebookButton];
-    [self.githubButton autoAlignAxisToSuperviewAxis:ALAxisVertical];
-    [self.facebookButton autoSetDimension:ALDimensionWidth toSize:93];
-    [self.facebookButton autoSetDimension:ALDimensionHeight toSize:30];
-    [self.facebookButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.githubButton];
-    [self.githubButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.twitterButton];
-    [self.twitterButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.facebookButton];
-    [self.facebookButton autoMatchDimension:ALDimensionHeight toDimension:ALDimensionHeight ofView:self.githubButton];
-    [self.githubButton autoMatchDimension:ALDimensionHeight toDimension:ALDimensionHeight ofView:self.twitterButton];
-    [self.twitterButton autoMatchDimension:ALDimensionHeight toDimension:ALDimensionHeight ofView:self.facebookButton];
-    
+    [self.socialButtonsView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.descriptionLabel withOffset:10];
+    [self.socialButtonsView autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
+    [self.socialButtonsView autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
+    [self.socialButtonsView autoAlignAxisToSuperviewAxis:ALAxisVertical];
     
     self.textFieldAxisConstraint = [self.passcodeTextField autoAlignAxis:ALAxisVertical toSameAxisOfView:self.containerView];
     [self.passcodeTextField autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.descriptionLabel];
