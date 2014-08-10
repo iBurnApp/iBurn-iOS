@@ -40,6 +40,7 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Search symbols (.,&,?,...)
 * Use fancy animations instead of `reloadData` everywhere
 * Show data type for amiguous cells (art, camps) when searching on map
+* Allow user to bring up Unlock screen again when accessing locked data
 
 ## Contributing
 
