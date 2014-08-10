@@ -542,21 +542,22 @@
 - (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
 {
     if ([searchString length]) {
+        NSMutableArray *tempSearchResults = [NSMutableArray array];
         searchString = [NSString stringWithFormat:@"*%@*",searchString];
-        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            NSMutableArray *tempSearchResults = [NSMutableArray array];
+        [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
             [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
                 if (object) {
                     [tempSearchResults addObject:object];
                 }
             }];
-            self.searchResults = [tempSearchResults copy];
+        } completionBlock:^{
+            self.searchResults = tempSearchResults;
+            [controller.searchResultsTableView reloadData];
         }];
-    }
-    else {
+    } else {
         self.searchResults = nil;
     }
-    return YES;
+    return NO;
 }
 
 #pragma - mark YapDatabseModified
