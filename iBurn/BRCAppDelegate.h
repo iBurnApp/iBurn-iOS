@@ -9,9 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "HockeySDK.h"
 
-@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, BITHockeyManagerDelegate>
+@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, BITHockeyManagerDelegate, UITabBarControllerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (nonatomic, strong) UITabBarController *tabBarController;
 
 - (void)showTabBarAnimated:(BOOL)animated;
 

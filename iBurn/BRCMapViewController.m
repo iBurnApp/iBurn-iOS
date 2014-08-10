@@ -20,6 +20,7 @@
 #import "RMMapView+iBurn.h"
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
+#import "BRCLocations.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
@@ -81,7 +82,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
 - (void) setupRegionBasedUnlock {
     NSParameterAssert(self.locationManager != nil);
-    CLLocationCoordinate2D manCoordinate2014 = CLLocationCoordinate2DMake(40.78880, -119.20315);
+    CLLocationCoordinate2D manCoordinate2014 = [BRCLocations blackRockCityCenter];
     CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
     self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
 }
@@ -131,6 +132,16 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     self.lastEventAnnotationUpdate = nil;
 }
 
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    self.isVisible = YES;
+}
+
+- (void) viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    self.isVisible = NO;
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -172,7 +183,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         return;
     }
     self.currentlyAddingEventAnnotations = YES;
-    [self.mapView removeAnnotations:self.eventAnnotations];
+    NSArray *oldAnnotations = [self.eventAnnotations copy];
     
     [self.eventsConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *eventAnnotationsToAdd = [NSMutableArray array];
@@ -193,7 +204,8 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         dispatch_async(dispatch_get_main_queue(), ^{
             self.currentlyAddingEventAnnotations = NO;
             self.eventAnnotations = eventAnnotationsToAdd;
-            [self.mapView addAnnotations:eventAnnotationsToAdd];
+            [self.mapView removeAnnotations:oldAnnotations];
+            [self.mapView addAnnotations:self.eventAnnotations];
         });
     }];
 }
@@ -259,6 +271,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     if (self.searchAnnotation) {
         [self.mapView removeAnnotation:self.searchAnnotation];
+        self.searchAnnotation = nil;
     }
     
     if (![BRCEmbargo canShowLocationForObject:dataObject]) {
@@ -335,6 +348,11 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         [alert show];
         [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
     }
+}
+
+- (void) centerMapAtManCoordinates {
+    [self.mapView brc_zoomToFullTileSourceAnimated:YES];
+    [self.mapView brc_moveToBlackRockCityCenterAnimated:YES];
 }
 
 @end

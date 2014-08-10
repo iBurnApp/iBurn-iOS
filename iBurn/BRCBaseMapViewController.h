@@ -15,4 +15,6 @@
 
 @property (nonatomic, strong) RMMapView *mapView;
 
+- (void) centerMapAtManCoordinatesAnimated:(BOOL)animated;
+
 @end

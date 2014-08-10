@@ -10,4 +10,6 @@
 
 @interface BRCMapViewController : BRCBaseMapViewController
 
+@property (nonatomic) BOOL isVisible;
+
 @end

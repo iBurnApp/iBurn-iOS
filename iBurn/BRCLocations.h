@@ -11,6 +11,7 @@
 
 @interface BRCLocations : NSObject
 
+/** location of the man in 2014 */
 + (CLLocationCoordinate2D)blackRockCityCenter;
 
 @end

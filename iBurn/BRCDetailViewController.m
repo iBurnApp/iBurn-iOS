@@ -113,13 +113,17 @@ static CGFloat const kMapHeaderHeight = 250.0;
     
     CGRect rect = self.tableView.tableHeaderView.bounds;
     rect.origin.y = kMapHeaderOffsetY;
-    if ([BRCEmbargo canShowLocationForObject:self.dataObject]) {
-        [self.mapView brc_zoomToIncludeCoordinate:self.dataObject.location.coordinate andCoordinate:self.mapView.userLocation.location.coordinate inVisibleRect:rect animated:animated];
-    }
-    else {
+    CLLocation *objectLocation = self.dataObject.location;
+    if ([BRCEmbargo canShowLocationForObject:self.dataObject] && objectLocation) {
+        CLLocation *userLocation = self.mapView.userLocation.location;
+        if (userLocation) {
+            [self.mapView brc_zoomToIncludeCoordinate:objectLocation.coordinate andCoordinate:userLocation.coordinate inVisibleRect:rect animated:animated];
+        } else {
+            [self.mapView brc_zoomToIncludeCoordinate:objectLocation.coordinate andCoordinate:objectLocation.coordinate inVisibleRect:rect animated:animated];
+        }
+    } else {
         [self.mapView setZoom:14.0 atCoordinate:[BRCLocations blackRockCityCenter] animated:animated];
     }
-    
 }
 
 - (void)updateViewConstraints

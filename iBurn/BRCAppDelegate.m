@@ -48,12 +48,12 @@
     }
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [self setupDefaultTabBarController];
     
     if ([BRCEmbargo allowEmbargoedData]) {
-        self.window.rootViewController = [self defaultTabBarController];
-    }
-    else {
-        self.window.rootViewController = [self embargoViewController];
+        self.window.rootViewController = self.tabBarController;
+    } else {
+        self.window.rootViewController = [[BRCEmbargoPasscodeViewController alloc] init];
     }
     
     self.window.backgroundColor = [UIColor whiteColor];
@@ -110,13 +110,13 @@
                       duration:0.5
                        options:UIViewAnimationOptionTransitionFlipFromLeft
                     animations:^{
-                        self.window.rootViewController = [self defaultTabBarController];
+                        self.window.rootViewController = self.tabBarController;
                     }
                     completion:nil];
     
 }
 
-- (UIViewController *)defaultTabBarController
+- (void)setupDefaultTabBarController
 {
     BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
@@ -137,15 +137,9 @@
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
-    UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
-    
-    return tabBarController;
-}
-
-- (UIViewController *)embargoViewController
-{
-    return [[BRCEmbargoPasscodeViewController alloc] init];
+    self.tabBarController = [[UITabBarController alloc] init];
+    self.tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
+    self.tabBarController.delegate = self;
 }
 
 - (void) setupFestivalDates {
@@ -196,6 +190,19 @@
         return YES;
     }
     return NO;
+}
+
+- (void) tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
+    if ([viewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *navController = (UINavigationController*)viewController;
+        UIViewController *topViewController = navController.topViewController;
+        if ([topViewController isKindOfClass:[BRCMapViewController class]]) {
+            BRCMapViewController *mapViewController = (BRCMapViewController*)topViewController;
+            if (mapViewController.isVisible) {
+                [mapViewController centerMapAtManCoordinatesAnimated:YES];
+            }
+        }
+    }
 }
 
 @end

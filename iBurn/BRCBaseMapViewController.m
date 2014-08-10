@@ -28,8 +28,7 @@
     RMUserTrackingBarButtonItem *userTrackingBarButtonItem = [[RMUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
     self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
     
-    [self.mapView brc_zoomToFullTileSourceAnimated:NO];
-    [self.mapView brc_moveToBlackRockCityCenterAnimated:NO];
+    [self centerMapAtManCoordinatesAnimated:NO];
 }
 
 #pragma - mark RMMapViewDelegate Methods
@@ -47,6 +46,15 @@
         }
     }
     return nil;
+}
+
+- (void) centerMapAtManCoordinatesAnimated:(BOOL)animated {
+    NSParameterAssert(self.mapView != nil);
+    if (!self.mapView) {
+        return;
+    }
+    [self.mapView brc_zoomToFullTileSourceAnimated:animated];
+    [self.mapView brc_moveToBlackRockCityCenterAnimated:animated];
 }
 
 @end
