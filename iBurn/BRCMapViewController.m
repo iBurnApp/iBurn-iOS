@@ -84,10 +84,6 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     CLLocationCoordinate2D manCoordinate2014 = CLLocationCoordinate2DMake(40.78880, -119.20315);
     CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
     self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
-    if (![CLLocationManager isMonitoringAvailableForClass:[CLCircularRegion class]]) {
-        return;
-    }
-    [self.locationManager startMonitoringForRegion:self.burningManRegion];
 }
 
 - (void) setupSearchBar {
@@ -338,12 +334,6 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The embargoed data is now unlocked." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
         [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-    }
-}
-
-- (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region {
-    if ([region.identifier isEqualToString:kBRCManRegionIdentifier]) {
-        [self enteredBurningManRegion];
     }
 }
 
