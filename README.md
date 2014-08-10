@@ -39,6 +39,7 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Scroll back to top when switching sort
 * Search symbols (.,&,?,...)
 * Use fancy animations instead of `reloadData` everywhere
+* Show data type for amiguous cells (art, camps) when searching on map
 
 ## Contributing
 
