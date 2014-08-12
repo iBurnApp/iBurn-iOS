@@ -22,6 +22,8 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCLocations.h"
 #import "BRCAcknowledgementsViewController.h"
+#import "BButton.h"
+#import "BRCMapPoint.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
@@ -42,6 +44,8 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, strong) RMAnnotation *searchAnnotation;
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
+@property (nonatomic, strong) BButton *addMapPointButton;
+@property (nonatomic, strong) RMAnnotation *editingMapPointAnnotation;
 @end
 
 @implementation BRCMapViewController
@@ -66,6 +70,27 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         [self setupInfoButton];
     }
     return self;
+}
+
+- (void) setupNewMapPointButton {
+    self.addMapPointButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAMapMarker fontSize:20];
+    [self.addMapPointButton addTarget:self action:@selector(newMapPointButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    self.addMapPointButton.alpha = 0.8;
+    [self.view addSubview:self.addMapPointButton];
+}
+
+- (void) newMapPointButtonPressed:(id)sender {
+    // show BRCANnotationEditView
+    // set currentlyEditingAnnotation
+    // drop a pin
+    
+    if (self.editingMapPointAnnotation) {
+        [self.mapView removeAnnotation:self.editingMapPointAnnotation];
+        self.editingMapPointAnnotation = nil;
+    }
+    CLLocationCoordinate2D pinDropCoordinate = self.mapView.centerCoordinate;
+    self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:@"New Point"];
+    [self.mapView addAnnotation:self.editingMapPointAnnotation];
 }
 
 - (void) infoButtonPressed:(id)sender {
@@ -170,6 +195,9 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     [self.searchBar autoAlignAxisToSuperviewAxis:ALAxisVertical];
     [self.searchBar autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
     [self.searchBar autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
+    [self.addMapPointButton autoPinToBottomLayoutGuideOfViewController:self withInset:10];
+    [self.addMapPointButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:10];
+    [self.addMapPointButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
     self.didUpdateConstraints = YES;
 }
 
@@ -190,6 +218,11 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     self.isVisible = YES;
 }
 
+- (void) viewDidLoad {
+    [super viewDidLoad];
+    [self setupNewMapPointButton];
+}
+
 - (void) viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     self.isVisible = NO;
@@ -200,6 +233,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     [super viewWillAppear:animated];
     [self reloadArtAnnotationsIfNeeded];
     [self reloadEventAnnotationsIfNeeded];
+    [self.view bringSubviewToFront:self.addMapPointButton];
 }
 
 - (void) reloadArtAnnotationsIfNeeded {
@@ -273,6 +307,15 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
         [self.navigationController pushViewController:detailViewController animated:YES];
     }
+    if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
+        BRCMapPoint *mapPoint = annotation.userInfo;
+        if (self.editingMapPointAnnotation) {
+            [self.mapView removeAnnotation:self.editingMapPointAnnotation];
+            self.editingMapPointAnnotation = nil;
+        }
+        self.editingMapPointAnnotation = annotation;
+        // show edit screen for mapPoint
+    }
 }
 
 - (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
@@ -282,8 +325,16 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         mapLayer.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         return mapLayer;
     }
-    return nil;
+    RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCPurplePin"]]; // user map points
+    if (![annotation isEqual:self.editingMapPointAnnotation]) {
+        userMapPointMarker.canShowCallout = NO;
+    } else {
+        userMapPointMarker.canShowCallout = YES;
+        userMapPointMarker.rightCalloutAccessoryView = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAPencil fontSize:20];
+    }
+    return userMapPointMarker;
 }
+
 
 #pragma - mark UISearchBarDelegate Methods
 
