@@ -10,7 +10,7 @@
 #import "PureLayout.h"
 #import "BButton.h"
 
-@interface BRCAnnotationEditView ()
+@interface BRCAnnotationEditView () <UITextFieldDelegate>
 
 @property (nonatomic, weak) id<BRCAnnotationEditViewDelegate> delegate;
 @property (nonatomic, strong) UITextField* textField;
@@ -35,8 +35,11 @@
         self.textField = [[UITextField alloc] initForAutoLayout];
         self.textField.borderStyle = UITextBorderStyleRoundedRect;
         self.textField.placeholder = @"Name (home, bike, etc)";
+        self.textField.returnKeyType = UIReturnKeyDone;
+        self.textField.delegate = self;
+        self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
         
-        self.doneButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeDefault style:BButtonStyleBootstrapV3];
+        self.doneButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3];
         self.doneButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
         [self.doneButton addTarget:self action:@selector(doneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -75,21 +78,22 @@
     [self.textField autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(margin, margin, margin, margin) excludingEdge:ALEdgeBottom];
     [self.textField autoSetDimension:ALDimensionHeight toSize:textFieldHeight];
     
-    [self.doneButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:margin];
-    [self.doneButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:margin];
-    [self.doneButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.textField withOffset:margin];
-    [self.doneButton autoPinEdge:ALEdgeRight toEdge:ALEdgeLeft ofView:self.deleteButton withOffset:-margin];
-    [self.doneButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.deleteButton];
-    
     [self.deleteButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:margin];
-    [self.deleteButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:margin];
+    [self.deleteButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:margin];
     [self.deleteButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.textField withOffset:margin];
+    [self.deleteButton autoPinEdge:ALEdgeRight toEdge:ALEdgeLeft ofView:self.doneButton withOffset:-margin];
+    [self.deleteButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.doneButton];
+    
+    [self.doneButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:margin];
+    [self.doneButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:margin];
+    [self.doneButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.textField withOffset:margin];
     
     self.didAddConstraints = YES;
 }
 
 - (void)doneButtonPressed:(id)sender
 {
+    [self.textField resignFirstResponder];
     if ([self.delegate respondsToSelector:@selector(editViewDidSelectDone:text:)]) {
         [self.delegate editViewDidSelectDone:self text:self.textField.text];
     }
@@ -97,9 +101,15 @@
 
 - (void)deleteButtonPressed:(id)sender
 {
+    [self.textField resignFirstResponder];
     if ([self.delegate respondsToSelector:@selector(editViewDidSelectDelete:)]) {
         [self.delegate editViewDidSelectDelete:self];
     }
+}
+
+- (BOOL) textFieldShouldReturn:(UITextField *)textField {
+    [self doneButtonPressed:textField];
+    return NO;
 }
                            
 

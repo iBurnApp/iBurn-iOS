@@ -24,10 +24,11 @@
 #import "BRCAcknowledgementsViewController.h"
 #import "BButton.h"
 #import "BRCMapPoint.h"
+#import "BRCAnnotationEditView.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
-@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate>
+@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate, BRCAnnotationEditViewDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
@@ -46,6 +47,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong) BButton *addMapPointButton;
 @property (nonatomic, strong) RMAnnotation *editingMapPointAnnotation;
+@property (nonatomic, strong) BRCAnnotationEditView *annotationEditView;
 @end
 
 @implementation BRCMapViewController
@@ -90,7 +92,52 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     }
     CLLocationCoordinate2D pinDropCoordinate = self.mapView.centerCoordinate;
     self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:@"New Point"];
+    BRCMapPoint *mapPoint = [[BRCMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate];
+    self.editingMapPointAnnotation.userInfo = mapPoint;
     [self.mapView addAnnotation:self.editingMapPointAnnotation];
+    [self showEditViewForAnnotation:self.editingMapPointAnnotation];
+}
+
+- (void) editViewDidSelectDelete:(BRCAnnotationEditView *)view {
+    [self hideEditView:view animated:YES completionBlock:^{
+        self.annotationEditView = nil;
+    }];
+}
+
+- (void) editViewDidSelectDone:(BRCAnnotationEditView *)view text:(NSString *)text {
+    [self hideEditView:view animated:YES completionBlock:^{
+        self.annotationEditView = nil;
+    }];
+}
+
+- (void) showEditViewForAnnotation:(RMAnnotation*)annotation {
+    if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
+        BRCMapPoint *mapPoint = annotation.userInfo;
+        self.annotationEditView = [[BRCAnnotationEditView alloc] initWithText:mapPoint.title delegate:self];
+        self.annotationEditView.alpha = 0.0f;
+        [self.view addSubview:self.annotationEditView];
+        [self.annotationEditView autoPinToTopLayoutGuideOfViewController:self withInset:0];
+        [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
+        [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
+        [self.annotationEditView autoSetDimension:ALDimensionHeight toSize:90];
+        [self.annotationEditView autoAlignAxisToSuperviewAxis:ALAxisVertical];
+        [UIView animateWithDuration:0.2 animations:^{
+            self.annotationEditView.alpha = 1.0f;
+        } completion:^(BOOL finished) {
+            [self.annotationEditView.textField becomeFirstResponder];
+        }];
+    }
+}
+
+- (void) hideEditView:(BRCAnnotationEditView*)annotationEditView animated:(BOOL)animated completionBlock:(dispatch_block_t)completionBlock {
+    [UIView animateWithDuration:0.5 animations:^{
+        annotationEditView.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        [annotationEditView removeFromSuperview];
+        if (completionBlock) {
+            completionBlock();
+        }
+    }];
 }
 
 - (void) infoButtonPressed:(id)sender {
@@ -236,6 +283,10 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     [self.view bringSubviewToFront:self.addMapPointButton];
 }
 
+- (void) reloadAllUserPoints {
+    // do it later
+}
+
 - (void) reloadArtAnnotationsIfNeeded {
 #warning disabled art annotations
     return;
@@ -326,7 +377,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         return mapLayer;
     }
     RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCPurplePin"]]; // user map points
-    if (![annotation isEqual:self.editingMapPointAnnotation]) {
+    if ([annotation isEqual:self.editingMapPointAnnotation]) {
         userMapPointMarker.canShowCallout = NO;
     } else {
         userMapPointMarker.canShowCallout = YES;
