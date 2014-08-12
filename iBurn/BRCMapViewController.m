@@ -36,6 +36,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 @property (nonatomic) BOOL currentlyAddingEventAnnotations;
 @property (nonatomic, strong) NSArray *artAnnotations;
 @property (nonatomic, strong) NSArray *eventAnnotations;
+@property (nonatomic, strong) NSArray *userMapPinAnnotations;
 @property (nonatomic, strong) NSDate *lastEventAnnotationUpdate;
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic) BOOL didUpdateConstraints;
@@ -91,23 +92,11 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         self.editingMapPointAnnotation = nil;
     }
     CLLocationCoordinate2D pinDropCoordinate = self.mapView.centerCoordinate;
-    self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:@"New Point"];
+    self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:nil];
     BRCMapPoint *mapPoint = [[BRCMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate];
     self.editingMapPointAnnotation.userInfo = mapPoint;
     [self.mapView addAnnotation:self.editingMapPointAnnotation];
     [self showEditViewForAnnotation:self.editingMapPointAnnotation];
-}
-
-- (void) editViewDidSelectDelete:(BRCAnnotationEditView *)view {
-    [self hideEditView:view animated:YES completionBlock:^{
-        self.annotationEditView = nil;
-    }];
-}
-
-- (void) editViewDidSelectDone:(BRCAnnotationEditView *)view text:(NSString *)text {
-    [self hideEditView:view animated:YES completionBlock:^{
-        self.annotationEditView = nil;
-    }];
 }
 
 - (void) showEditViewForAnnotation:(RMAnnotation*)annotation {
@@ -280,11 +269,32 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     [super viewWillAppear:animated];
     [self reloadArtAnnotationsIfNeeded];
     [self reloadEventAnnotationsIfNeeded];
+    [self reloadAllUserPoints];
     [self.view bringSubviewToFront:self.addMapPointButton];
+}
+
+- (RMAnnotation*) newAnnotationForMapPoint:(BRCMapPoint*)mapPoint {
+    RMAnnotation *annotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:mapPoint.coordinate andTitle:mapPoint.title];
+    annotation.userInfo = mapPoint;
+    return annotation;
 }
 
 - (void) reloadAllUserPoints {
     // do it later
+    NSMutableArray *annotationsToAdd = [NSMutableArray array];
+    [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [transaction enumerateKeysAndObjectsInCollection:[BRCMapPoint collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
+            if ([object isKindOfClass:[BRCMapPoint class]]) {
+                BRCMapPoint *mapPoint = (BRCMapPoint*)object;
+                RMAnnotation *annotation = [self newAnnotationForMapPoint:mapPoint];
+                [annotationsToAdd addObject:annotation];
+            }
+        }];
+    } completionBlock:^{
+        [self.mapView removeAnnotations:self.userMapPinAnnotations];
+        self.userMapPinAnnotations = annotationsToAdd;
+        [self.mapView addAnnotations:self.userMapPinAnnotations];
+    }];
 }
 
 - (void) reloadArtAnnotationsIfNeeded {
@@ -350,6 +360,19 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
 #pragma mark RMMapViewDelegate methods
 
+- (BOOL)mapView:(RMMapView *)mapView shouldDragAnnotation:(RMAnnotation *)annotation {
+    return [self.editingMapPointAnnotation isEqual:annotation];
+}
+
+- (void)mapView:(RMMapView *)mapView annotation:(RMAnnotation *)annotation didChangeDragState:(RMMapLayerDragState)newState fromOldState:(RMMapLayerDragState)oldState {
+    if ([self.editingMapPointAnnotation isEqual:annotation]) {
+        if (oldState == RMMapLayerDragStateDragging) {
+            BRCMapPoint *mapPoint = annotation.userInfo;
+            mapPoint.coordinate = annotation.coordinate;
+        }
+    }
+}
+
 - (void)tapOnCalloutAccessoryControl:(UIControl *)control forAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map
 {
     if ([annotation isKindOfClass:[BRCAnnotation class]]) {
@@ -359,13 +382,12 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         [self.navigationController pushViewController:detailViewController animated:YES];
     }
     if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
-        BRCMapPoint *mapPoint = annotation.userInfo;
         if (self.editingMapPointAnnotation) {
             [self.mapView removeAnnotation:self.editingMapPointAnnotation];
             self.editingMapPointAnnotation = nil;
         }
         self.editingMapPointAnnotation = annotation;
-        // show edit screen for mapPoint
+        [self showEditViewForAnnotation:annotation];
     }
 }
 
@@ -386,6 +408,39 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     return userMapPointMarker;
 }
 
+#pragma mark BRCAnnotationEditViewDelegate methods
+
+- (void) editViewDidSelectDelete:(BRCAnnotationEditView *)view {
+    BRCMapPoint *mapPoint = self.editingMapPointAnnotation.userInfo;
+    NSParameterAssert(mapPoint != nil);
+    [self.mapView removeAnnotation:self.editingMapPointAnnotation];
+    self.editingMapPointAnnotation = nil;
+    // delete the actual point here
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction removeObjectForKey:mapPoint.uuid inCollection:[BRCMapPoint collection]];
+    } completionBlock:^{
+        [self reloadAllUserPoints];
+    }];
+    [self hideEditView:view animated:YES completionBlock:^{
+        self.annotationEditView = nil;
+    }];
+}
+
+- (void) editViewDidSelectDone:(BRCAnnotationEditView *)view text:(NSString *)text {
+    BRCMapPoint *mapPoint = self.editingMapPointAnnotation.userInfo;
+    NSParameterAssert(mapPoint != nil);
+    mapPoint.title = text;
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction setObject:mapPoint forKey:mapPoint.uuid inCollection:[BRCMapPoint collection]];
+    } completionBlock:^{
+        [self.mapView removeAnnotation:self.editingMapPointAnnotation];
+        self.editingMapPointAnnotation = nil;
+        [self reloadAllUserPoints];
+    }];
+    [self hideEditView:view animated:YES completionBlock:^{
+        self.annotationEditView = nil;
+    }];
+}
 
 #pragma - mark UISearchBarDelegate Methods
 

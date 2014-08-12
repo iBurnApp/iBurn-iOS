@@ -13,6 +13,7 @@
 
 @property (nonatomic, strong, readonly) NSString *uuid;
 @property (nonatomic, strong, readwrite) NSString *title;
+@property (nonatomic, strong, readonly) NSDate *creationDate;
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
 
 - (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate;
