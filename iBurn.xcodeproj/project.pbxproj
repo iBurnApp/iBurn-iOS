@@ -20,6 +20,7 @@
 		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
 		632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */; };
 		639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */ = {isa = PBXBuildFile; fileRef = 639E638C1994178500B62A92 /* BRCEmbargo.m */; };
+		63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -94,6 +95,8 @@
 		632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEmbargoPasscodeViewController.m; sourceTree = "<group>"; };
 		639E638B1994178500B62A92 /* BRCEmbargo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEmbargo.h; sourceTree = "<group>"; };
 		639E638C1994178500B62A92 /* BRCEmbargo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEmbargo.m; sourceTree = "<group>"; };
+		63CD6909199AB4EE0025C8A1 /* BRCAnnotationEditView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAnnotationEditView.h; sourceTree = "<group>"; };
+		63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAnnotationEditView.m; sourceTree = "<group>"; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CE2A571987140F00F65B01 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63CE2A591987140F00F65B01 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -227,6 +230,8 @@
 				63228311198987D0009E472B /* BRCAnnotation.m */,
 				630861C7199029D100AD7109 /* BRCLocations.h */,
 				630861C8199029D100AD7109 /* BRCLocations.m */,
+				63CD6909199AB4EE0025C8A1 /* BRCAnnotationEditView.h */,
+				63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */,
 			);
 			name = MapClasses;
 			sourceTree = "<group>";
@@ -576,6 +581,7 @@
 				D972BD271993422E008057DB /* BRCStringPickerView.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
+				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
 				D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */,
 				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
