@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		630861C9199029D100AD7109 /* BRCLocations.m in Sources */ = {isa = PBXBuildFile; fileRef = 630861C8199029D100AD7109 /* BRCLocations.m */; };
-		63162F4D19958BCB008D781C /* UIImage+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 63162F4C19958BCB008D781C /* UIImage+iBurn.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
@@ -72,8 +71,6 @@
 		1E93B71A95964EB6AFA26954 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		630861C7199029D100AD7109 /* BRCLocations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocations.h; sourceTree = "<group>"; };
 		630861C8199029D100AD7109 /* BRCLocations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocations.m; sourceTree = "<group>"; };
-		63162F4B19958BCB008D781C /* UIImage+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+iBurn.h"; sourceTree = "<group>"; };
-		63162F4C19958BCB008D781C /* UIImage+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+iBurn.m"; sourceTree = "<group>"; };
 		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
 		6322830019881DDE009E472B /* BRCDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailViewController.m; sourceTree = "<group>"; };
 		6322830319881F41009E472B /* BRCDetailCellInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailCellInfo.h; sourceTree = "<group>"; };
@@ -378,8 +375,6 @@
 				D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */,
 				6322831F198AB383009E472B /* RMMarker+iBurn.h */,
 				63228320198AB383009E472B /* RMMarker+iBurn.m */,
-				63162F4B19958BCB008D781C /* UIImage+iBurn.h */,
-				63162F4C19958BCB008D781C /* UIImage+iBurn.m */,
 				D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */,
 				D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */,
 				D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */,
@@ -570,7 +565,6 @@
 			files = (
 				D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */,
 				D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */,
-				63162F4D19958BCB008D781C /* UIImage+iBurn.m in Sources */,
 				639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */,
 				D979CEC6199AED4C007F0313 /* RMAnnotation+iBurn.m in Sources */,
 				630861C9199029D100AD7109 /* BRCLocations.m in Sources */,

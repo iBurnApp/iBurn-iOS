@@ -46,10 +46,11 @@
     if (self.hasAddedConstraints) {
         return;
     }
-    [self.socialButtonsView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.headerLabel];
     [self.socialButtonsView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 10, 10, 10) excludingEdge:ALEdgeTop];
+    [self.socialButtonsView autoSetDimension:ALDimensionHeight toSize:45];
     [self.socialButtonsView autoAlignAxisToSuperviewAxis:ALAxisVertical];
     [self.headerLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
+    [self.headerLabel autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.socialButtonsView];
     [self.headerLabel autoAlignAxisToSuperviewAxis:ALAxisVertical];
     self.hasAddedConstraints = YES;
 }

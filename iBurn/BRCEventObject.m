@@ -12,7 +12,6 @@
 #import "MTLValueTransformer.h"
 #import "BRCEventObject_Private.h"
 #import "UIColor+iBurn.h"
-#import "UIImage+iBurn.h"
 
 NSString * const kBRCStartDateKey = @"kBRCStartDateKey";
 NSString * const kBRCEndDateKey = @"kBRCEndDateKey";
@@ -154,7 +153,22 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 
 - (UIImage *)markerImageForEventStatus
 {
-    return [[UIImage imageNamed:@"BRCGreyPin"] brc_imageTintedWithColor:[self colorForEventStatus]];
+    if (self.isStartingSoon) {
+        return [UIImage imageNamed:@"BRCLightGreenPin"];
+    }
+    if (!self.hasStarted) {
+        return [UIImage imageNamed:@"BRCPurplePin"];
+    }
+    if (self.isEndingSoon) {
+        return [UIImage imageNamed:@"BRCOrangePin"];
+    }
+    if (self.hasEnded) {
+        return [UIImage imageNamed:@"BRCRedPin"];
+    }
+    if (self.isHappeningRightNow) {
+        return [UIImage imageNamed:@"BRCGreenPin"];
+    }
+    return [UIImage imageNamed:@"BRCPurplePin"];
 }
 
 - (UIColor*) colorForEventStatus {
