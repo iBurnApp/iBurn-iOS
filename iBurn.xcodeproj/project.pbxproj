@@ -28,11 +28,8 @@
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
-		D9046F1A198C65F40013CCF4 /* art.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF6198C65F40013CCF4 /* art.json */; };
-		D9046F1B198C65F40013CCF4 /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF7198C65F40013CCF4 /* camps.json */; };
 		D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF8198C65F40013CCF4 /* dates_info.json */; };
 		D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = D9046F19198C65F40013CCF4 /* iburn.mbtiles */; };
-		D9046F38198C6CDE0013CCF4 /* events.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046F37198C6CDE0013CCF4 /* events.json */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
@@ -46,6 +43,7 @@
 		D979CEC6199AED4C007F0313 /* RMAnnotation+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D979CEC5199AED4C007F0313 /* RMAnnotation+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
+		D988032C199C0599001AC89E /* iBurn-database in Resources */ = {isa = PBXBuildFile; fileRef = D972BD2319934037008057DB /* iBurn-database */; };
 		D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */; };
 		D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395AA198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m */; };
 		D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */; };
@@ -510,13 +508,11 @@
 			files = (
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
-				D9046F38198C6CDE0013CCF4 /* events.json in Resources */,
 				D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */,
 				D9B362AE199812AC0093B441 /* Pods-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
-				D9046F1B198C65F40013CCF4 /* camps.json in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
-				D9046F1A198C65F40013CCF4 /* art.json in Resources */,
+				D988032C199C0599001AC89E /* iBurn-database in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
