@@ -31,7 +31,6 @@ Fortunately, you can still run and test the app with the previous year's data.
 
 * load `image_url` for art when internet is available
 * Open in Safari pop up when clicking links
-* Add UILocationNotification on favoriting event
 * Onboarding
 * Show data from previous years
 * Optimizations (only load 1 day of events at a time)

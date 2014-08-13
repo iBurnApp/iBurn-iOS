@@ -7,6 +7,7 @@
 //
 
 #import "BRCDataObject.h"
+#import "YapDatabaseTransaction.h"
 
 typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeUnknown,
@@ -95,5 +96,13 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 
 /** convert BRCEventType to display string */
 + (NSString *)stringForEventType:(BRCEventType)type;
+
+
+/** eventObject must be isFavorite first */
++ (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction;
+/** eventObject must not be favorite */
++ (void) cancelScheduledNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction;
+/** userInfo contains the event's uniqueID under this key */
++ (NSString*) localNotificationUserInfoKey;
 
 @end

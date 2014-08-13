@@ -502,7 +502,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     Class cellClass = [self cellClassForDataObjectClass:[dataObject class]];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
-    cell.dataObject = dataObject;
+    [cell setStyleFromDataObject:dataObject];
     [cell updateDistanceLabelFromLocation:self.locationManager.location toLocation:dataObject.location];
     return cell;
 }

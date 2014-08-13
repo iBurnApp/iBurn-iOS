@@ -20,6 +20,10 @@
 #import "BRCEmbargoPasscodeViewController.h"
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
+#import "BRCEventObject.h"
+#import "UIAlertView+Blocks.h"
+#import "BRCFilteredTableViewController_Private.h"
+#import "BRCDetailViewController.h"
 
 @implementation BRCAppDelegate
 
@@ -56,6 +60,10 @@
         self.window.rootViewController = [[BRCEmbargoPasscodeViewController alloc] init];
     }
     
+    UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+    if (launchNotification) {
+        [self application:application didReceiveLocalNotification:launchNotification];
+    }
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
@@ -67,12 +75,28 @@
         [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
         [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
     }
-    
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:notification.alertBody delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+    RIButtonItem *cancelItem = [RIButtonItem itemWithLabel:@"Dismiss"];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:notification.alertBody cancelButtonItem:cancelItem otherButtonItems:nil];
     if (notification.alertAction.length > 0) {
-        [alert addButtonWithTitle:notification.alertAction];
-    } else {
-        [alert addButtonWithTitle:@"OK"];
+        NSString *eventKey = [BRCEventObject localNotificationUserInfoKey];
+        NSString *eventUniqueID = [notification.userInfo objectForKey:eventKey];
+        dispatch_block_t actionBlock = nil;
+        if (eventUniqueID) {
+            actionBlock = ^{
+                [self.tabBarController setSelectedViewController:self.eventsViewController.navigationController];
+                __block BRCEventObject *event = nil;
+                [self.eventsViewController.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                    event = [transaction objectForKey:eventUniqueID inCollection:[BRCEventObject collection]];
+                } completionBlock:^{
+                    if (event) {
+                        BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:event];
+                        [self.eventsViewController.navigationController pushViewController:detailVC animated:YES];
+                    }
+                }];
+            };
+        }
+        RIButtonItem *actionItem = [RIButtonItem itemWithLabel:notification.alertAction action:actionBlock];
+        [alert addButtonItem:actionItem];
     }
     [alert show];
 }
@@ -118,23 +142,23 @@
 
 - (void)setupDefaultTabBarController
 {
-    BRCMapViewController *mapViewController = [[BRCMapViewController alloc] init];
-    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
+    self.mapViewController = [[BRCMapViewController alloc] init];
+    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    BRCFilteredTableViewController *artTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
-    artTableVC.title = @"Art";
-    UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:artTableVC];
+    self.artViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
+    self.artViewController.title = @"Art";
+    UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:self.artViewController];
     artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
     
-    BRCFilteredTableViewController *campTableVC = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class]];
-    campTableVC.title = @"Camps";
-    UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:campTableVC];
+    self.campsViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class]];
+    self.campsViewController.title = @"Camps";
+    UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:self.campsViewController];
     campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
-    BRCEventsTableViewController *eventsTableVC = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class]];
-    eventsTableVC.title = @"Events";
-    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:eventsTableVC];
+    self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class]];
+    self.eventsViewController.title = @"Events";
+    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     self.tabBarController = [[UITabBarController alloc] init];

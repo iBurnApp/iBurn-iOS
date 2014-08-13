@@ -12,11 +12,8 @@
 
 @implementation BRCDataObjectTableViewCell
 
-- (void) setDataObject:(BRCDataObject*)dataObject {
-    _dataObject = dataObject;
-    
+- (void) setStyleFromDataObject:(BRCDataObject*)dataObject {
     self.titleLabel.text = dataObject.title;
-    
     [self setTitleLabelBold:dataObject.isFavorite];
 }
 

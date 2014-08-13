@@ -13,8 +13,8 @@
 
 @implementation BRCEventObjectTableViewCell
 
-- (void) setDataObject:(BRCDataObject*)dataObject {
-    [super setDataObject:dataObject];
+- (void) setStyleFromDataObject:(BRCDataObject*)dataObject {
+    [super setStyleFromDataObject:dataObject];
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
     if (eventObject.isAllDay) {
         self.eventTimeLabel.text = @"All Day";

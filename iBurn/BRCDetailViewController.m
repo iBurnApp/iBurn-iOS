@@ -171,6 +171,15 @@ static CGFloat const kMapHeaderHeight = 250.0;
             tempObject = [tempObject copy];
             tempObject.isFavorite = !tempObject.isFavorite;
             [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
+            if ([tempObject isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event = (BRCEventObject*)tempObject;
+                if (event.isFavorite) {
+                    [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
+                } else {
+                    [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
+                }
+                
+            }
         }
     } completionBlock:^{
         self.dataObject = tempObject;

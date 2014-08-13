@@ -454,7 +454,7 @@
 {
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[[self cellClass] cellIdentifier] forIndexPath:indexPath];
     __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
-    cell.dataObject = dataObject;
+    [cell setStyleFromDataObject:dataObject];
     [cell updateDistanceLabelFromLocation:self.locationManager.location toLocation:dataObject.location];
     // Adding gestures per state basis.
     UIImageView *viewState = [self imageViewForFavoriteStatus:dataObject.isFavorite];
@@ -465,8 +465,16 @@
             dataObject = [[transaction objectForKey:dataObject.uniqueID inCollection:[[dataObject class] collection]] copy];
         }];
         dataObject.isFavorite = !dataObject.isFavorite;
-        dataCell.dataObject = dataObject;
+        [dataCell setStyleFromDataObject:dataObject];
         [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event = (BRCEventObject*)dataObject;
+                if (event.isFavorite) {
+                    [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
+                } else {
+                    [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
+                }
+            }
             [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
         } completionBlock:nil];
     }];
@@ -475,14 +483,16 @@
 }
 
 - (void)swipeTableViewCell:(BRCDataObjectTableViewCell *)cell didSwipeWithPercentage:(CGFloat)percentage {
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:self.tableView];
     // We want to switch states to give a hint of the future value
     // is there a way to optimize this further?
     if (percentage >= cell.firstTrigger) {
-        BOOL inverseFavorite = !cell.dataObject.isFavorite;
+        BOOL inverseFavorite = !dataObject.isFavorite;
         cell.view1 = [self imageViewForFavoriteStatus:inverseFavorite];
         [cell setTitleLabelBold:inverseFavorite];
     } else if (percentage < cell.firstTrigger) {
-        BOOL isFavorite = cell.dataObject.isFavorite;
+        BOOL isFavorite = dataObject.isFavorite;
         cell.view1 = [self imageViewForFavoriteStatus:isFavorite];
         [cell setTitleLabelBold:isFavorite];
     }

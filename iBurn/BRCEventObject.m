@@ -12,6 +12,8 @@
 #import "MTLValueTransformer.h"
 #import "BRCEventObject_Private.h"
 #import "UIColor+iBurn.h"
+#import "NSDateFormatter+iBurn.h"
+#import "BRCDatabaseManager.h"
 
 NSString * const kBRCStartDateKey = @"kBRCStartDateKey";
 NSString * const kBRCEndDateKey = @"kBRCEndDateKey";
@@ -226,6 +228,47 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
         default:
             return @"";
             break;
+    }
+}
+
++ (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
+    NSParameterAssert(eventObject.isFavorite);
+    if (!eventObject.scheduledNotification) {
+        // remind us 30 minutes before
+        NSDate *reminderDate = [eventObject.startDate dateByAddingTimeInterval:-30 * 60];
+        //NSDate *testingReminderDate = [[NSDate date] dateByAddingTimeInterval:10];
+        NSString *startTimeString = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
+        NSString *reminderTitle = [NSString stringWithFormat:@"%@ - %@", startTimeString, eventObject.title];
+        UILocalNotification *eventNotification = [[UILocalNotification alloc] init];
+        eventNotification.fireDate = reminderDate;
+        eventNotification.alertBody = reminderTitle;
+        eventNotification.soundName = UILocalNotificationDefaultSoundName;
+        eventNotification.alertAction = @"View Event";
+        eventNotification.applicationIconBadgeNumber = 1;
+        NSString *key = [self localNotificationUserInfoKey];
+        eventNotification.userInfo = @{key: eventObject.uniqueID};
+        eventObject.scheduledNotification = eventNotification;
+        [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[UIApplication sharedApplication] scheduleLocalNotification:eventNotification];
+        });
+    }
+}
+
++ (NSString*) localNotificationUserInfoKey {
+    NSString *key = [NSString stringWithFormat:@"%@-%@", NSStringFromClass([self class]), NSStringFromSelector(@selector(uniqueID))];
+    return key;
+}
+
++ (void) cancelScheduledNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
+    NSParameterAssert(!eventObject.isFavorite);
+    if (eventObject.scheduledNotification) {
+        UILocalNotification *notificationToCancel = eventObject.scheduledNotification;
+        eventObject.scheduledNotification = nil;
+        [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[UIApplication sharedApplication] cancelLocalNotification:notificationToCancel];
+        });
     }
 }
 
