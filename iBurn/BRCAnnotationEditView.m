@@ -8,14 +8,13 @@
 
 #import "BRCAnnotationEditView.h"
 #import "PureLayout.h"
-#import "BButton.h"
 
 @interface BRCAnnotationEditView () <UITextFieldDelegate>
 
 @property (nonatomic, weak) id<BRCAnnotationEditViewDelegate> delegate;
 @property (nonatomic, strong) UITextField* textField;
-@property (nonatomic, strong) UIButton *doneButton;
-@property (nonatomic, strong) UIButton *deleteButton;
+@property (nonatomic, strong) BButton *saveButton;
+@property (nonatomic, strong) BButton *deleteButton;
 
 @property (nonatomic) BOOL didAddConstraints;
 
@@ -26,7 +25,7 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
-        
+        self.translatesAutoresizingMaskIntoConstraints = NO;
         self.didAddConstraints = NO;
         
         self.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.8];
@@ -39,10 +38,10 @@
         self.textField.delegate = self;
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
         
-        self.doneButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3];
-        self.doneButton.translatesAutoresizingMaskIntoConstraints = NO;
-        [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
-        [self.doneButton addTarget:self action:@selector(doneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+        self.saveButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3];
+        self.saveButton.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.saveButton setTitle:@"Save" forState:UIControlStateNormal];
+        [self.saveButton addTarget:self action:@selector(doneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         
         self.deleteButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeDanger style:BButtonStyleBootstrapV3];
         self.deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -50,16 +49,14 @@
         [self.deleteButton addTarget:self action:@selector(deleteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         
         [self addSubview:self.textField];
-        [self addSubview:self.doneButton];
+        [self addSubview:self.saveButton];
         [self addSubview:self.deleteButton];
     }
     return self;
 }
 
-- (instancetype)initWithText:(NSString *)text delegate:(id<BRCAnnotationEditViewDelegate>)delegate
-{
+- (instancetype)initWithDelegate:(id <BRCAnnotationEditViewDelegate>)delegate {
     if (self = [self initWithFrame:CGRectZero]) {
-        self.textField.text = text;
         self.delegate = delegate;
     }
     return self;
@@ -81,36 +78,42 @@
     [self.deleteButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:margin];
     [self.deleteButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:margin];
     [self.deleteButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.textField withOffset:margin];
-    [self.deleteButton autoPinEdge:ALEdgeRight toEdge:ALEdgeLeft ofView:self.doneButton withOffset:-margin];
-    [self.deleteButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.doneButton];
+    [self.deleteButton autoPinEdge:ALEdgeRight toEdge:ALEdgeLeft ofView:self.saveButton withOffset:-margin];
+    [self.deleteButton autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.saveButton];
     
-    [self.doneButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:margin];
-    [self.doneButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:margin];
-    [self.doneButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.textField withOffset:margin];
+    [self.saveButton autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:margin];
+    [self.saveButton autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:margin];
+    [self.saveButton autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.textField withOffset:margin];
     
     self.didAddConstraints = YES;
 }
 
 - (void)doneButtonPressed:(id)sender
 {
+    BRCMapPoint *editedMapPoint = self.mapPoint;
+    editedMapPoint.title = self.textField.text;
+    editedMapPoint.modifiedDate = [NSDate date];
     [self.textField resignFirstResponder];
-    if ([self.delegate respondsToSelector:@selector(editViewDidSelectDone:text:)]) {
-        [self.delegate editViewDidSelectDone:self text:self.textField.text];
-    }
+    [self.delegate editViewDidSelectSave:self editedMapPoint:editedMapPoint];
+    self.mapPoint = nil;
 }
 
 - (void)deleteButtonPressed:(id)sender
 {
+    BRCMapPoint *mapPointToDelete = self.mapPoint;
     [self.textField resignFirstResponder];
-    if ([self.delegate respondsToSelector:@selector(editViewDidSelectDelete:)]) {
-        [self.delegate editViewDidSelectDelete:self];
-    }
+    [self.delegate editViewDidSelectDelete:self mapPointToDelete:mapPointToDelete];
+    self.mapPoint = nil;
 }
 
 - (BOOL) textFieldShouldReturn:(UITextField *)textField {
     [self doneButtonPressed:textField];
     return NO;
 }
-                           
+
+- (void) setMapPoint:(BRCMapPoint *)mapPoint {
+    _mapPoint = [mapPoint copy];
+    self.textField.text = mapPoint.title;
+}
 
 @end

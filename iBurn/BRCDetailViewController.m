@@ -13,7 +13,7 @@
 #import "BRCDatabaseManager.h"
 #import <MessageUI/MessageUI.h>
 #import "RMMapView+iBurn.h"
-#import "BRCAnnotation.h"
+#import "RMAnnotation+iBurn.h"
 #import "RMUserLocation.h"
 #import "RMMarker+iBurn.h"
 #import "BRCDetailInfoTableViewCell.h"
@@ -197,7 +197,7 @@ static CGFloat const kMapHeaderHeight = 250.0;
         self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
         self.mapView.delegate = self;
         self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        BRCAnnotation *annotation = [BRCAnnotation annotationWithMapView:self.mapView dataObject:dataObject];
+        RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
         [self.mapView addAnnotation:annotation];
         self.mapView.draggingEnabled = NO;
         self.mapView.userInteractionEnabled = NO;
@@ -213,9 +213,8 @@ static CGFloat const kMapHeaderHeight = 250.0;
     if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocationForObject:self.dataObject]) { // show default style
         return nil;
     }
-    if ([annotation isKindOfClass:[BRCAnnotation class]]) {
-        BRCAnnotation *brcAnnotation = (BRCAnnotation*)annotation;
-        BRCDataObject *dataObject = brcAnnotation.dataObject;
+    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
+        BRCDataObject *dataObject = annotation.userInfo;
         
         return [RMMarker brc_defaultMarkerForDataObject:dataObject];
         

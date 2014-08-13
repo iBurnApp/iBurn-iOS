@@ -8,6 +8,7 @@
 
 #import "BRCMapPoint.h"
 #import "MTLModel+NSCoding.h"
+#import "RMAnnotation.h"
 
 @interface BRCMapPoint()
 @property (nonatomic, strong, readwrite) NSString *uuid;
@@ -25,6 +26,7 @@
         self.coordinate = coordinate;
         self.uuid = [[NSUUID UUID] UUIDString];
         self.creationDate = [NSDate date];
+        self.modifiedDate = [NSDate date];
     }
     return self;
 }

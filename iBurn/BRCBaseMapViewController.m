@@ -9,7 +9,7 @@
 #import "BRCBaseMapViewController.h"
 #import "RMMapView+iBurn.h"
 #import <Mapbox-iOS-SDK/Mapbox.h>
-#import "BRCAnnotation.h"
+#import "RMAnnotation+iBurn.h"
 #import "BRCDataObject.h"
 #import "RMMarker+iBurn.h"
 #import "BRCEmbargo.h"
@@ -37,9 +37,8 @@
     if (annotation.isUserLocationAnnotation) { // show default style
         return nil;
     }
-    if ([annotation isKindOfClass:[BRCAnnotation class]]) {
-        BRCAnnotation *brcAnnotation = (BRCAnnotation*)annotation;
-        BRCDataObject *dataObject = brcAnnotation.dataObject;
+    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
+        BRCDataObject *dataObject = annotation.userInfo;
         
         if ([BRCEmbargo canShowLocationForObject:dataObject]) {
             return [RMMarker brc_defaultMarkerForDataObject:dataObject];

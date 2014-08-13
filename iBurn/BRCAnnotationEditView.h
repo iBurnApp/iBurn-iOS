@@ -7,23 +7,27 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "BButton.h"
+#import "BRCMapPoint.h"
 
 @class BRCAnnotationEditView;
 
 @protocol BRCAnnotationEditViewDelegate <NSObject>
-
-- (void)editViewDidSelectDelete:(BRCAnnotationEditView *)view;
-- (void)editViewDidSelectDone:(BRCAnnotationEditView *)view text:(NSString *)text;
-
+@required
+- (void)editViewDidSelectDelete:(BRCAnnotationEditView *)editView mapPointToDelete:(BRCMapPoint *)mapPointToDelete;
+- (void)editViewDidSelectSave:(BRCAnnotationEditView *)editView editedMapPoint:(BRCMapPoint *)editedMapPoint;
 @end
 
 @interface BRCAnnotationEditView : UIView
 
-- (instancetype)initWithText:(NSString *)text delegate:(id <BRCAnnotationEditViewDelegate>)delegate;
+- (instancetype)initWithDelegate:(id <BRCAnnotationEditViewDelegate>)delegate;
+
+/** set the mapPoint to change textField title */
+@property (nonatomic, copy) BRCMapPoint *mapPoint;
 
 @property (nonatomic, weak, readonly) id<BRCAnnotationEditViewDelegate> delegate;
 @property (nonatomic, strong, readonly) UITextField* textField;
-@property (nonatomic, strong, readonly) UIButton *doneButton;
-@property (nonatomic, strong, readonly) UIButton *deleteButton;
+@property (nonatomic, strong, readonly) BButton *saveButton;
+@property (nonatomic, strong, readonly) BButton *deleteButton;
 
 @end

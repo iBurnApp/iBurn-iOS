@@ -8,7 +8,7 @@
 
 #import "BRCDetailMapViewController.h"
 #import "BRCDataObject.h"
-#import "BRCAnnotation.h"
+#import "RMAnnotation+iBurn.h"
 @interface BRCDetailMapViewController ()
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
@@ -29,7 +29,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self.mapView addAnnotation:[BRCAnnotation annotationWithMapView:self.mapView dataObject:self.dataObject]];
+    [self.mapView addAnnotation:[RMAnnotation brc_annotationWithMapView:self.mapView dataObject:self.dataObject]];
 }
 
 @end
