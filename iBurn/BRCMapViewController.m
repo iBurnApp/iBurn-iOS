@@ -25,6 +25,8 @@
 #import "BButton.h"
 #import "BRCMapPoint.h"
 #import "BRCAnnotationEditView.h"
+#import "UIAlertView+Blocks.h"
+#import "BRCEmbargoPasscodeViewController.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
@@ -454,7 +456,17 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     
     if (![BRCEmbargo canShowLocationForObject:dataObject]) {
         [self.searchDisplayController setActive:NO animated:YES];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Embargoed" message:@"Sorry, location data for camps and events is only available after the gates open." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        RIButtonItem *dismissItem = [RIButtonItem itemWithLabel:@"Dismiss"];
+        RIButtonItem *unlockItem = [RIButtonItem itemWithLabel:@"Unlock" action:^{
+            BRCEmbargoPasscodeViewController *unlockVC = [[BRCEmbargoPasscodeViewController alloc] init];
+            __weak BRCEmbargoPasscodeViewController *weakUnlock = unlockVC;
+            unlockVC.dismissAction = ^{
+                [weakUnlock dismissViewControllerAnimated:YES completion:nil];
+            };
+            [self presentViewController:unlockVC animated:YES
+                             completion:nil];
+        }];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Restricted" message:@"Sorry, location data for camps and events is only available after the gates open." cancelButtonItem:dismissItem otherButtonItems:unlockItem, nil];
         [alertView show];
     }
     else {

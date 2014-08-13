@@ -10,4 +10,6 @@
 
 @interface BRCEmbargoPasscodeViewController : UIViewController
 
+@property (nonatomic, copy) dispatch_block_t dismissAction;
+
 @end

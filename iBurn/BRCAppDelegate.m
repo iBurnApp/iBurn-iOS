@@ -57,7 +57,17 @@
     if ([BRCEmbargo allowEmbargoedData]) {
         self.window.rootViewController = self.tabBarController;
     } else {
-        self.window.rootViewController = [[BRCEmbargoPasscodeViewController alloc] init];
+        BRCEmbargoPasscodeViewController *embargoVC = [[BRCEmbargoPasscodeViewController alloc] init];
+        embargoVC.dismissAction = ^{
+            [UIView transitionWithView:self.window
+                              duration:0.5
+                               options:UIViewAnimationOptionTransitionFlipFromLeft
+                            animations:^{
+                                self.window.rootViewController = self.tabBarController;
+                            }
+                            completion:nil];
+        };
+        self.window.rootViewController = embargoVC;
     }
     
     UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
@@ -126,18 +136,6 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-}
-
-- (void)showTabBarAnimated:(BOOL)animated{
-    
-    [UIView transitionWithView:self.window
-                      duration:0.5
-                       options:UIViewAnimationOptionTransitionFlipFromLeft
-                    animations:^{
-                        self.window.rootViewController = self.tabBarController;
-                    }
-                    completion:nil];
-    
 }
 
 - (void)setupDefaultTabBarController

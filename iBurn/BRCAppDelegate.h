@@ -22,6 +22,4 @@
 @property (nonatomic, strong) BRCFilteredTableViewController *campsViewController;
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;
 
-- (void)showTabBarAnimated:(BOOL)animated;
-
 @end

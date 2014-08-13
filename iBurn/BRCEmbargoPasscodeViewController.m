@@ -42,6 +42,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor whiteColor];
     self.didAddConstraints = NO;
     
     self.containerView = [[UIView alloc] initForAutoLayout];
@@ -302,7 +303,9 @@
 - (void)showTabBarController
 {
     [self.view removeKeyboardControl];
-    [((BRCAppDelegate *)[UIApplication sharedApplication].delegate) showTabBarAnimated:YES];
+    if (self.dismissAction) {
+        self.dismissAction();
+    }
 }
 
 #pragma - mark UITextfieldDelegate
