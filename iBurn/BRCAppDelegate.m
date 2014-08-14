@@ -26,6 +26,7 @@
 #import "BRCDetailViewController.h"
 #import "CLLocationManager+iBurn.h"
 #import "BRCLocations.h"
+#import "UAAppReviewManager.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
@@ -88,6 +89,10 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     [self setupRegionBasedUnlock];
     self.window.backgroundColor = [UIColor whiteColor];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    [UAAppReviewManager setAppID:@"388169740"];
+    [UAAppReviewManager setDaysUntilPrompt:5];
+    [UAAppReviewManager setUsesUntilPrompt:5];
+    [UAAppReviewManager showPromptIfNecessary];
     [self.window makeKeyAndVisible];
     return YES;
 }
@@ -138,6 +143,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    [UAAppReviewManager showPromptIfNecessary];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
