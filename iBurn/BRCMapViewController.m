@@ -55,6 +55,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 @property (nonatomic, strong) BButton *addMapPointButton;
 @property (nonatomic, strong) RMAnnotation *editingMapPointAnnotation;
 @property (nonatomic, strong) BRCAnnotationEditView *annotationEditView;
+@property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
 @end
 
 @implementation BRCMapViewController
@@ -72,8 +73,15 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         [self registerFullTextSearchExtension];
         [self setupSearchController];
         [self setupInfoButton];
+        [self setupSearchIndicator];
     }
     return self;
+}
+
+- (void) setupSearchIndicator {
+    self.searchActivityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    self.searchActivityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.searchActivityIndicatorView];
 }
 
 - (void) setupAnnotationEditView {
@@ -240,6 +248,9 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
     [self.annotationEditView autoSetDimension:ALDimensionHeight toSize:90];
     [self.annotationEditView autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    
+    [self.searchActivityIndicatorView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+    [self.searchActivityIndicatorView autoCenterInSuperview];
     self.didUpdateConstraints = YES;
 }
 
@@ -558,6 +569,8 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     if ([searchString length]) {
         NSMutableArray *tempSearchResults = [NSMutableArray array];
         searchString = [NSString stringWithFormat:@"*%@*",searchString];
+        [self.searchActivityIndicatorView startAnimating];
+        [self.view bringSubviewToFront:self.searchActivityIndicatorView];
         [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
             [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
                 if (object) {
@@ -566,6 +579,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
             }];
         } completionBlock:^{
             self.searchResults = tempSearchResults;
+            [self.searchActivityIndicatorView stopAnimating];
             [controller.searchResultsTableView reloadData];
         }];
     } else {

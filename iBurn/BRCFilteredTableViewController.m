@@ -42,7 +42,7 @@
 @property (nonatomic, strong) NSString *ftsExtensionName;
 @property (nonatomic, strong, readwrite) NSString *distanceViewName;
 @property (nonatomic, strong, readwrite) NSString *favoritesFilterForDistanceViewName;
-
+@property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -103,6 +103,12 @@
     return self;
 }
 
+- (void) setupSearchIndicator {
+    self.searchActivityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    self.searchActivityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.searchActivityIndicatorView];
+}
+
 - (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
     return UIBarPositionTopAttached;
 }
@@ -151,6 +157,8 @@
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
+    
+    [self setupSearchIndicator];
     
     UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectZero];
     searchBar.delegate = self;
@@ -342,6 +350,10 @@
     [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
     [self.tableView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
     [self.tableView autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    
+    [self.searchActivityIndicatorView autoCenterInSuperview];
+    [self.searchActivityIndicatorView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+    
     self.didUpdateConstraints = YES;
 }
 
@@ -554,6 +566,8 @@
     if ([searchString length]) {
         NSMutableArray *tempSearchResults = [NSMutableArray array];
         searchString = [NSString stringWithFormat:@"*%@*",searchString];
+        [self.searchActivityIndicatorView startAnimating];
+        [self.view bringSubviewToFront:self.searchActivityIndicatorView];
         [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
             [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
                 if (object) {
@@ -562,6 +576,7 @@
             }];
         } completionBlock:^{
             self.searchResults = tempSearchResults;
+            [self.searchActivityIndicatorView stopAnimating];
             [controller.searchResultsTableView reloadData];
         }];
     } else {
