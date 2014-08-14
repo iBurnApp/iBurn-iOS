@@ -494,20 +494,25 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     if (annotation.isUserLocationAnnotation) { // show default style
         return nil;
     }
-    RMMapLayer *mapLayer = [super mapView:mapView layerForAnnotation:annotation];
-    if (mapLayer) {
-        mapLayer.canShowCallout = YES;
-        mapLayer.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
-        return mapLayer;
+    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
+        RMMapLayer *mapLayer = [super mapView:mapView layerForAnnotation:annotation];
+        if (mapLayer) {
+            mapLayer.canShowCallout = YES;
+            mapLayer.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+            return mapLayer;
+        }
     }
-    RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCRedPin"]]; // user map points
-    if ([annotation isEqual:self.editingMapPointAnnotation]) {
-        userMapPointMarker.canShowCallout = NO;
-    } else {
-        userMapPointMarker.canShowCallout = YES;
-        userMapPointMarker.rightCalloutAccessoryView = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAPencil fontSize:20];
+    if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
+        RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCRedPin"]]; // user map points
+        if ([annotation isEqual:self.editingMapPointAnnotation]) {
+            userMapPointMarker.canShowCallout = NO;
+        } else {
+            userMapPointMarker.canShowCallout = YES;
+            userMapPointMarker.rightCalloutAccessoryView = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAPencil fontSize:20];
+        }
+        return userMapPointMarker;
     }
-    return userMapPointMarker;
+    return nil;
 }
 
 #pragma mark BRCAnnotationEditViewDelegate methods
