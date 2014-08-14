@@ -34,7 +34,6 @@
         self.textField = [[UITextField alloc] initForAutoLayout];
         self.textField.borderStyle = UITextBorderStyleRoundedRect;
         self.textField.placeholder = @"Name (home, bike, etc)";
-        self.textField.returnKeyType = UIReturnKeyDone;
         self.textField.delegate = self;
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
         
@@ -107,7 +106,7 @@
 }
 
 - (BOOL) textFieldShouldReturn:(UITextField *)textField {
-    [self doneButtonPressed:textField];
+    [textField resignFirstResponder];
     return NO;
 }
 

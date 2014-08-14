@@ -119,7 +119,6 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
             annotationEditView.alpha = 1.0f;
         } completion:^(BOOL finished) {
             annotationEditView.userInteractionEnabled = YES;
-            [annotationEditView.textField becomeFirstResponder];
         }];
     }
 }
