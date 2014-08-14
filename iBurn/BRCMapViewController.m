@@ -272,6 +272,10 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     [self reloadFavoritesIfNeeded];
     [self reloadAllUserPoints];
     [self.view bringSubviewToFront:self.addMapPointButton];
+    // kludge to fix keyboard appearing at wrong time
+    if (self.annotationEditView.alpha == 0.0f) {
+        [self.annotationEditView.textField resignFirstResponder];
+    }
 }
 
 - (void) reloadFavoritesIfNeeded {
@@ -496,7 +500,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         mapLayer.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         return mapLayer;
     }
-    RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCPurplePin"]]; // user map points
+    RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCRedPin"]]; // user map points
     if ([annotation isEqual:self.editingMapPointAnnotation]) {
         userMapPointMarker.canShowCallout = NO;
     } else {
