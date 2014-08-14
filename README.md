@@ -34,7 +34,6 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Onboarding
 * Show data from previous years
 * Optimizations (only load 1 day of events at a time)
-* Show Favorites on the Map 
 * Scroll back to top when switching sort
 * Search symbols (.,&,?,...)
 * Use fancy animations instead of `reloadData` everywhere
