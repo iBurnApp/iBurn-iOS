@@ -30,10 +30,11 @@
 #import "RMUserLocation.h"
 #import "BRCAppDelegate.h"
 #import "NSDateFormatter+iBurn.h"
+#import "UIColor+iBurn.h"
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 
-@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate, BRCAnnotationEditViewDelegate>
+@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate, BRCAnnotationEditViewDelegate, MCSwipeTableViewCellDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
 @property (nonatomic, strong) YapDatabaseConnection *favoritesConnection;
@@ -56,6 +57,8 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 @property (nonatomic, strong) RMAnnotation *editingMapPointAnnotation;
 @property (nonatomic, strong) BRCAnnotationEditView *annotationEditView;
 @property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
+@property (nonatomic, strong) UIImageView *favoriteImageView;
+@property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 @end
 
 @implementation BRCMapViewController
@@ -263,8 +266,19 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     self.isVisible = YES;
 }
 
+- (UIImageView *)imageViewForFavoriteWithImageName:(NSString *)imageName {
+    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.contentMode = UIViewContentModeCenter;
+    UIColor *tintColor = [[[UIApplication sharedApplication] keyWindow] tintColor];
+    imageView.tintColor = tintColor;
+    return imageView;
+}
+
 - (void) viewDidLoad {
     [super viewDidLoad];
+    self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCDarkStar"];
+    self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCLightStar"];
     [self setupNewMapPointButton];
     [self setupAnnotationEditView];
 }
@@ -660,12 +674,64 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
     [cell setStyleFromDataObject:dataObject];
     [cell updateDistanceLabelFromLocation:self.mapView.userLocation.location toLocation:dataObject.location];
+    // Adding gestures per state basis.
+    UIImageView *viewState = [self imageViewForFavoriteStatus:dataObject.isFavorite];
+    UIColor *color = [UIColor brc_navBarColor];
+    [cell setSwipeGestureWithView:viewState color:color mode:MCSwipeTableViewCellModeSwitch state:MCSwipeTableViewCellState1 completionBlock:^(MCSwipeTableViewCell *swipeCell, MCSwipeTableViewCellState state, MCSwipeTableViewCellMode mode) {
+        BRCDataObjectTableViewCell *dataCell = (BRCDataObjectTableViewCell*)swipeCell;
+        [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            dataObject = [[transaction objectForKey:dataObject.uniqueID inCollection:[[dataObject class] collection]] copy];
+        }];
+        dataObject.isFavorite = !dataObject.isFavorite;
+        [dataCell setStyleFromDataObject:dataObject];
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event = (BRCEventObject*)dataObject;
+                if (event.isFavorite) {
+                    [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
+                } else {
+                    [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
+                }
+            }
+            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+        } completionBlock:^{
+            [self.searchController.searchResultsTableView reloadData];
+        }];
+    }];
+    cell.delegate = self;
+    
     return cell;
+}
+
+- (void)swipeTableViewCell:(BRCDataObjectTableViewCell *)cell didSwipeWithPercentage:(CGFloat)percentage {
+    NSIndexPath *indexPath = [self.searchController.searchResultsTableView indexPathForCell:cell];
+    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:self.searchController.searchResultsTableView];
+    // We want to switch states to give a hint of the future value
+    // is there a way to optimize this further?
+    if (percentage >= cell.firstTrigger) {
+        BOOL inverseFavorite = !dataObject.isFavorite;
+        cell.view1 = [self imageViewForFavoriteStatus:inverseFavorite];
+        [cell setTitleLabelBold:inverseFavorite];
+    } else if (percentage < cell.firstTrigger) {
+        BOOL isFavorite = dataObject.isFavorite;
+        cell.view1 = [self imageViewForFavoriteStatus:isFavorite];
+        [cell setTitleLabelBold:isFavorite];
+    }
 }
 
 - (void) centerMapAtManCoordinates {
     [self.mapView brc_zoomToFullTileSourceAnimated:YES];
     [self.mapView brc_moveToBlackRockCityCenterAnimated:YES];
+}
+
+- (UIImageView *) imageViewForFavoriteStatus:(BOOL)isFavorite {
+    UIImageView *viewState = nil;
+    if (isFavorite) {
+        viewState = self.favoriteImageView;
+    } else {
+        viewState = self.notYetFavoriteImageView;
+    }
+    return viewState;
 }
 
 @end

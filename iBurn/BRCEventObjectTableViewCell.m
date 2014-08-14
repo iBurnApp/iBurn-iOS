@@ -31,7 +31,11 @@
     }
     UIColor *eventStatusColor = [eventObject colorForEventStatus];
     self.eventTimeLabel.textColor = eventStatusColor;
-    self.eventTypeLabel.text = [BRCEventObject stringForEventType:eventObject.eventType];
+    NSString *eventType = [BRCEventObject stringForEventType:eventObject.eventType];
+    if (!eventType.length) {
+        eventType = @"None";
+    }
+    self.eventTypeLabel.text = eventType;
     [self setEventDayLabelFromDate:eventObject.startDate];
 }
 
@@ -41,7 +45,7 @@
 
 - (void) setEventDayLabelFromDate:(NSDate*)eventStartDate {
     if (!eventStartDate) {
-        self.eventDayLabel.text = @"";
+        self.eventDayLabel.text = @"None";
         return;
     }
     NSString *dayOfWeekString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventStartDate];

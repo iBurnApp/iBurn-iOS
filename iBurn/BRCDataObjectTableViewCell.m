@@ -25,7 +25,7 @@
         distance = [objectLocation distanceFromLocation:recentLocation];
     }
     if (distance == CLLocationDistanceMax || distance == 0) {
-        self.subtitleLabel.text = @"";
+        self.subtitleLabel.text = @"No Location";
     } else {
         self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }
