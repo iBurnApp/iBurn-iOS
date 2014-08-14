@@ -33,11 +33,15 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Open in Safari pop up when clicking links
 * Onboarding
 * Show data from previous years
-* Optimizations (only load 1 day of events at a time)
+* Optimizations (only load 1 day of events at a time) 
 * Scroll back to top when switching sort
 * Search symbols (.,&,?,...)
 * Use fancy animations instead of `reloadData` everywhere
 * Show data type for amiguous cells (art, camps) when searching on map
+* Refactor BRCMapViewController and BRCFilteredTableViewController and pull out the common code used for full-text search, and swipe-to-favorite cells.
+* Rewrite FTS search to use YapDatabaseSearchResultsView
+* Show camps on map for high zoom levels
+* Fix the slightly buggy behavior of Events filtering occasionally not working at startup
 
 ## Contributing
 
