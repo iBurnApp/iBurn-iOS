@@ -42,6 +42,7 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Rewrite FTS search to use YapDatabaseSearchResultsView
 * Show camps on map for high zoom levels
 * Fix the slightly buggy behavior of Events filtering occasionally not working at startup
+* Show favorites on map after yapdb view loading is complete instead of waiting until retry on viewWillAppear
 
 ## Contributing
 

@@ -26,6 +26,7 @@ PODS:
     - GRMustache (= 6.8.3)
     - SMCalloutView (= 2.0)
   - MCSwipeTableViewCell (2.1.0)
+  - pop (1.0.6)
   - PureLayout (1.0.1)
   - SMCalloutView (2.0)
   - TTTAttributedLabel (1.10.1)
@@ -49,6 +50,7 @@ DEPENDENCIES:
   - Mantle (~> 1.5)
   - Mapbox-iOS-SDK (~> 1.2)
   - MCSwipeTableViewCell (~> 2.1)
+  - pop (~> 1.0)
   - PureLayout (~> 1.0)
   - TTTAttributedLabel (~> 1.10)
   - UAAppReviewManager (~> 0.2)
@@ -74,6 +76,7 @@ SPEC CHECKSUMS:
   Mantle: c67a7e45e14196ed42b2a7cbb98ff6a9920e6b92
   Mapbox-iOS-SDK: 961de5e8caba54a093d69b89696816b55f4c0254
   MCSwipeTableViewCell: 713086e29ce3c2171a0102fc594bf583fa7dd323
+  pop: e518794da38942c05255eb64b36d894e70cb4f00
   PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
   SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
   TTTAttributedLabel: 94bb04f1e005616002dd2cee0262a0082e533627

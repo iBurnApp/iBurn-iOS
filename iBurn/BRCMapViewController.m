@@ -31,6 +31,8 @@
 #import "BRCAppDelegate.h"
 #import "NSDateFormatter+iBurn.h"
 #import "UIColor+iBurn.h"
+#import <pop/POP.h>
+
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 
@@ -114,7 +116,20 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:nil];
     BRCMapPoint *mapPoint = [[BRCMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate];
     self.editingMapPointAnnotation.userInfo = mapPoint;
+    
+    self.editingMapPointAnnotation.layer.hidden = YES;
     [self.mapView addAnnotation:self.editingMapPointAnnotation];
+    
+    [self.editingMapPointAnnotation.layer pop_removeAllAnimations];
+    // http://stackoverflow.com/a/23921147/805882
+    POPSpringAnimation *anim = [POPSpringAnimation animationWithPropertyNamed:kPOPLayerPositionY];
+    anim.fromValue = @(0);
+    anim.toValue = @(self.mapView.center.y);
+    anim.springSpeed = 8;
+    anim.springBounciness = 4;
+    [self.editingMapPointAnnotation.layer pop_addAnimation:anim forKey:kPOPLayerPositionY];
+    self.editingMapPointAnnotation.layer.hidden = NO;
+    
     [self showEditView:self.annotationEditView forAnnotation:self.editingMapPointAnnotation];
 }
 
