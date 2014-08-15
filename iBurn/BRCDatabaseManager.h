@@ -24,6 +24,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeEverything,
     BRCDatabaseFilteredViewTypeFavoritesOnly,
     BRCDatabaseFilteredViewTypeEventExpirationAndType,
+    BRCDatabaseFilteredViewTypeEventSelectedDayOnly,
     BRCDatabaseFilteredViewTypeFullTextSearch
 };
 
@@ -48,6 +49,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseViewFilteringBlock) favoritesOnlyFilteringBlock;
 + (YapDatabaseViewFilteringBlock) eventsFilteringBlock;
 + (YapDatabaseViewFilteringBlock) allItemsFilteringBlock;
+
++ (YapDatabaseViewBlockType) eventsSelectedDayOnlyFilteringBlockType;
++ (YapDatabaseViewFilteringBlock) eventsSelectedDayOnlyFilteringBlock;
 
 + (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
 + (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation;

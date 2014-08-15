@@ -20,19 +20,19 @@
 
 + (NSValueTransformer *)uniqueIDJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
-        return [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:dateString];
+        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
     }];
 }
 
 + (NSValueTransformer *)startDateJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
-        return [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:dateString];
+        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
     }];
 }
 
 + (NSValueTransformer *)endDateJSONTransformer {
     return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
-        return [[NSDateFormatter brc_threadSafeDateFormatter] dateFromString:dateString];
+        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
     }];
 }
 

@@ -8,38 +8,34 @@
 
 #import "NSDateFormatter+iBurn.h"
 
-static NSString * const kBRCDateFormatterKey = @"kBRCDateFormatterKey";
-static NSString * const kBRCGroupDateFormatterKey = @"kBRCGroupDateFormatterKey";
-
-
 @implementation NSDateFormatter (iBurn)
 
-+ (NSDateFormatter*) brc_threadSafeDateFormatter
-{
-    NSMutableDictionary *currentThreadStorage = [[NSThread currentThread] threadDictionary];
-    NSDateFormatter *sharedDateFormatter = currentThreadStorage[kBRCDateFormatterKey];
-    if (!sharedDateFormatter) {
-        sharedDateFormatter = [NSDateFormatter new];
-        sharedDateFormatter.dateFormat = @"yyyy-MM-dd' 'HH:mm:ss";
-        sharedDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
-        currentThreadStorage[kBRCDateFormatterKey] = sharedDateFormatter;
-    }
-    
-    return sharedDateFormatter;
++ (NSTimeZone*) brc_burningManTimeZone {
+    return [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
 }
 
-+ (NSDateFormatter*) brc_threadSafeGroupDateFormatter
++ (NSDateFormatter*) brc_playaEventsAPIDateFormatter
 {
-    NSMutableDictionary *currentThreadStorage = [[NSThread currentThread] threadDictionary];
-    NSDateFormatter *sharedDateFormatter = currentThreadStorage[kBRCGroupDateFormatterKey];
-    if (!sharedDateFormatter) {
-        sharedDateFormatter = [NSDateFormatter new];
-        sharedDateFormatter.dateFormat = @"yyyy-MM-dd";
-        sharedDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
-        currentThreadStorage[kBRCGroupDateFormatterKey] = sharedDateFormatter;
-    }
-    
-    return sharedDateFormatter;
+    static NSDateFormatter *brc_playaEventsAPIDateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        brc_playaEventsAPIDateFormatter = [NSDateFormatter new];
+        brc_playaEventsAPIDateFormatter.dateFormat = @"yyyy-MM-dd' 'HH:mm:ss";
+        brc_playaEventsAPIDateFormatter.timeZone = [self brc_burningManTimeZone];
+    });
+    return brc_playaEventsAPIDateFormatter;
+}
+
++ (NSDateFormatter*) brc_eventGroupDateFormatter
+{
+    static NSDateFormatter *brc_eventGroupDateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        brc_eventGroupDateFormatter = [NSDateFormatter new];
+        brc_eventGroupDateFormatter.dateFormat = @"yyyy-MM-dd";
+        brc_eventGroupDateFormatter.timeZone = [self brc_burningManTimeZone];
+    });
+    return brc_eventGroupDateFormatter;
 }
 
 + (NSDateFormatter*) brc_timeOnlyDateFormatter {
@@ -48,7 +44,7 @@ static NSString * const kBRCGroupDateFormatterKey = @"kBRCGroupDateFormatterKey"
     dispatch_once(&onceToken, ^{
         brc_timeOnlyDateFormatter = [[NSDateFormatter alloc] init];
         brc_timeOnlyDateFormatter.dateFormat = @"h:mm a";
-        brc_timeOnlyDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+        brc_timeOnlyDateFormatter.timeZone = [self brc_burningManTimeZone];
     });
     return brc_timeOnlyDateFormatter;
 }
@@ -59,7 +55,7 @@ static NSString * const kBRCGroupDateFormatterKey = @"kBRCGroupDateFormatterKey"
     dispatch_once(&onceToken, ^{
         brc_dayOfWeekDateFormatter = [[NSDateFormatter alloc] init];
         brc_dayOfWeekDateFormatter.dateFormat = @"EEEE";
-        brc_dayOfWeekDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+        brc_dayOfWeekDateFormatter.timeZone = [self brc_burningManTimeZone];
     });
     return brc_dayOfWeekDateFormatter;
 }
@@ -70,7 +66,7 @@ static NSString * const kBRCGroupDateFormatterKey = @"kBRCGroupDateFormatterKey"
     dispatch_once(&onceToken, ^{
         brc_shortDateFormatter = [[NSDateFormatter alloc] init];
         brc_shortDateFormatter.dateFormat = @"M/d";
-        brc_shortDateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+        brc_shortDateFormatter.timeZone = [self brc_burningManTimeZone];
     });
     return brc_shortDateFormatter;
 }

@@ -24,6 +24,7 @@
 /** override these in subclasses */
 - (void) setupDatabaseExtensionNames;
 - (void) registerDatabaseExtensions;
+- (void) updateFilteredViews;
 
 - (void) setupMappingsDictionary;
 - (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;

@@ -10,9 +10,9 @@
 
 @interface NSDateFormatter (iBurn)
 
-+ (NSDateFormatter*) brc_threadSafeDateFormatter;
++ (NSDateFormatter*) brc_playaEventsAPIDateFormatter;
 
-+ (NSDateFormatter*) brc_threadSafeGroupDateFormatter;
++ (NSDateFormatter*) brc_eventGroupDateFormatter;
 
 /** e.g. 4:19 AM */
 + (NSDateFormatter*) brc_timeOnlyDateFormatter;

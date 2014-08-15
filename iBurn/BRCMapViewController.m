@@ -355,7 +355,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
                 }
             }
         }];
-        NSDateFormatter *dateFormatter = [NSDateFormatter brc_threadSafeGroupDateFormatter];
+        NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupDateFormatter];
         NSString *groupName = [dateFormatter stringFromDate:[NSDate date]];
         
         [eventsViewTransaction enumerateKeysAndObjectsInGroup:groupName usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {

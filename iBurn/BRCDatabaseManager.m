@@ -16,6 +16,9 @@
 #import "YapDatabaseFilteredView.h"
 #import "NSDateFormatter+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
+#import "YapDatabaseFilteredViewTypes.h"
+#import "BRCAppDelegate.h"
+#import "BRCEventsTableViewController.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -130,7 +133,7 @@
         groupingBlock = ^NSString *(NSString *collection, NSString *key, id object){
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *eventObject = (BRCEventObject*)object;
-                NSDateFormatter *dateFormatter = [NSDateFormatter brc_threadSafeGroupDateFormatter];
+                NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupDateFormatter];
                 NSString *groupName = [dateFormatter stringFromDate:eventObject.startDate];
                 return groupName;
             }
@@ -317,6 +320,9 @@
         filterBlock = [[self class] favoritesOnlyFilteringBlock];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
         filterBlock = [[self class] eventsFilteringBlock];
+    } else if (filterType == BRCDatabaseFilteredViewTypeEventSelectedDayOnly) {
+        filterBlock = [[self class] eventsSelectedDayOnlyFilteringBlock];
+        filteringBlockType = [[self class] eventsSelectedDayOnlyFilteringBlockType];
     }
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
@@ -327,7 +333,7 @@
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
                                              filteringBlock:filterBlock
                                          filteringBlockType:filteringBlockType
-                                                 versionTag:@"1"
+                                                 versionTag:[[NSUUID UUID] UUIDString]
                                                     options:options];
     return filteredView;
 }
@@ -348,6 +354,9 @@
 
 + (NSString*) stringForFilteredExtensionType:(BRCDatabaseFilteredViewType)extensionType {
     switch (extensionType) {
+        case BRCDatabaseFilteredViewTypeEventSelectedDayOnly:
+            return @"SelectedDayOnly";
+            break;
         case BRCDatabaseFilteredViewTypeEventExpirationAndType:
             return @"EventExpirationAndType";
             break;
@@ -395,6 +404,23 @@
     {
         return YES;
     };
+    return filteringBlock;
+}
+
+
++ (YapDatabaseViewBlockType) eventsSelectedDayOnlyFilteringBlockType {
+    return YapDatabaseViewBlockTypeWithKey;
+}
+
++ (YapDatabaseViewFilteringBlock)eventsSelectedDayOnlyFilteringBlock
+{
+    BRCEventsTableViewController *eventsVC = [BRCAppDelegate appDelegate].eventsViewController;
+    NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:eventsVC.selectedDay];
+    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key)
+    {
+        return [group isEqualToString:selectedDayGroup];
+    };
+    
     return filteringBlock;
 }
 
