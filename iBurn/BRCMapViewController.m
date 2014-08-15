@@ -558,7 +558,9 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 
 - (void) editViewDidSelectDelete:(BRCAnnotationEditView *)view mapPointToDelete:(BRCMapPoint *)mapPointToDelete {
     NSParameterAssert(mapPointToDelete != nil);
-    if (mapPointToDelete) {
+    // sometimes the point is removed from the map while youre editing it...
+    NSParameterAssert(self.editingMapPointAnnotation != nil);
+    if (mapPointToDelete && self.editingMapPointAnnotation) {
         [self.mapView removeAnnotation:self.editingMapPointAnnotation];
         self.editingMapPointAnnotation = nil;
         [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
@@ -572,7 +574,8 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 
 - (void) editViewDidSelectSave:(BRCAnnotationEditView *)view editedMapPoint:(BRCMapPoint *)editedMapPoint {
     NSParameterAssert(editedMapPoint != nil);
-    if (editedMapPoint) {
+    NSParameterAssert(self.editingMapPointAnnotation != nil);
+    if (editedMapPoint && self.editingMapPointAnnotation) {
         CLLocationCoordinate2D newCoordinate = self.editingMapPointAnnotation.coordinate;
         editedMapPoint.coordinate = newCoordinate;
         [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
