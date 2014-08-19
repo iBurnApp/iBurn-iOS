@@ -29,8 +29,9 @@
 - (void) setupMappingsDictionary;
 - (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 
+- (BOOL) shouldAnimateLoadingIndicator;
 - (void) refreshLoadingIndicatorViewAnimation;
-- (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation;
+- (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation forceRefresh:(BOOL)forceRefresh;
 - (BOOL) shouldRefreshDistanceInformationForNewLocation:(CLLocation*)newLocation;
 
 - (NSArray *) segmentedControlInfo;

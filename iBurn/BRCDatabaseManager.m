@@ -179,6 +179,7 @@
 + (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation {
     YapDatabaseViewSortingBlock sortingBlock;
     if (extensionType == BRCDatabaseViewExtensionTypeTimeThenDistance) {
+        BOOL shouldSortEventsByStartTime = [[NSUserDefaults standardUserDefaults] shouldSortEventsByStartTime];
         sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
@@ -191,8 +192,12 @@
                 else if (!event1.isAllDay && event2.isAllDay) {
                     return NSOrderedAscending;
                 }
-                
-                NSComparisonResult dateComparison = [event1.endDate compare:event2.endDate];
+                NSComparisonResult dateComparison = NSOrderedSame;
+                if (shouldSortEventsByStartTime) {
+                    dateComparison = [event1.startDate compare:event2.startDate];
+                } else {
+                    dateComparison = [event1.endDate compare:event2.endDate];
+                }
                 if (dateComparison == NSOrderedSame) {
                     NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2 fromLocation:fromLocation];
                     return distanceComparison;

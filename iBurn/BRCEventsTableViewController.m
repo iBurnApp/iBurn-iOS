@@ -29,7 +29,7 @@
 @property (nonatomic, strong, readwrite) NSString *filteredByDayDistanceViewName;
 @property (nonatomic, strong, readwrite) NSString *filteredDistanceViewName;
 @property (nonatomic, strong, readwrite) NSString *favoritesFilterForTimeAndDistanceViewName;
-
+@property (nonatomic) BOOL isRefreshingEventTimeSort;
 @property (nonatomic, strong) BRCStringPickerView *dayPicker;
 @end
 
@@ -153,7 +153,7 @@
     self.dayPicker = [[BRCStringPickerView alloc] initWithTitle:@"Choose a Day" pickerStrings:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(BRCStringPickerView *picker, NSUInteger selectedIndex, NSString *selectedValue) {
         NSDate *selectedDate = [self dateForIndex:selectedIndex];
         self.selectedDay = selectedDate;
-        [self refreshDistanceInformationFromLocation:self.locationManager.location];
+        [self refreshDistanceInformationFromLocation:self.locationManager.location forceRefresh:NO];
     } cancelBlock:nil];
 }
 
@@ -260,6 +260,49 @@
     }];
 }
 
+- (BOOL) shouldAnimateLoadingIndicator {
+    BOOL shouldAnimate = [super shouldAnimateLoadingIndicator];
+    if (shouldAnimate || self.isRefreshingEventTimeSort) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (void) setIsRefreshingEventTimeSort:(BOOL)isRefreshingEventTimeSort {
+    _isRefreshingEventTimeSort = isRefreshingEventTimeSort;
+    [self refreshLoadingIndicatorViewAnimation];
+}
+
+- (void) refreshEventTimeSort {
+    if (self.isRefreshingEventTimeSort) {
+        return;
+    }
+    self.isRefreshingEventTimeSort = YES;
+    
+    // Refresh the distance view sorting block here
+    
+    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.timeAndDistanceViewName];
+        if (!viewTransaction) {
+            return;
+        }
+        BRCDatabaseViewExtensionType extensionType = BRCDatabaseViewExtensionTypeTimeThenDistance;
+        Class viewClass = self.viewClass;
+        YapDatabaseViewGroupingBlock groupingBlock = [BRCDatabaseManager groupingBlockForClass:viewClass extensionType:extensionType];
+        YapDatabaseViewBlockType groupingBlockType = [BRCDatabaseManager groupingBlockTypeForClass:viewClass extensionType:extensionType];
+        YapDatabaseViewSortingBlock sortingBlock = [BRCDatabaseManager sortingBlockForClass:viewClass extensionType:extensionType fromLocation:self.locationManager.location];
+        YapDatabaseViewBlockType sortingBlockType = [BRCDatabaseManager sortingBlockTypeForClass:viewClass extensionType:extensionType];
+        [viewTransaction setGroupingBlock:groupingBlock groupingBlockType:groupingBlockType sortingBlock:sortingBlock sortingBlockType:sortingBlockType versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:^{
+        [self updateAllMappingsWithCompletionBlock:^{
+            [self.tableView reloadData];
+            self.isRefreshingEventTimeSort = NO;
+        }];
+    }];
+}
+
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCEventObjectTableViewCell *cell = (BRCEventObjectTableViewCell*)[super tableView:tableView cellForRowAtIndexPath:indexPath];
@@ -272,6 +315,11 @@
 - (void)didSetNewFilterSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController
 {
     [self updateFilteredViews];
+}
+
+- (void)didSetNewSortSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController
+{
+    [self refreshEventTimeSort];
 }
 
 @end

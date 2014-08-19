@@ -98,7 +98,7 @@
         [self registerDatabaseExtensions];
         [self setupMappingsDictionary];
         [self updateAllMappingsWithCompletionBlock:nil];
-        [self refreshDistanceInformationFromLocation:self.locationManager.location];
+        [self refreshDistanceInformationFromLocation:self.locationManager.location forceRefresh:NO];
     }
     return self;
 }
@@ -125,8 +125,16 @@
     self.navigationItem.rightBarButtonItem = loadingButtonItem;
 }
 
-- (void) refreshLoadingIndicatorViewAnimation {
+- (BOOL) shouldAnimateLoadingIndicator {
     if (self.isUpdatingDistanceInformation || self.isUpdatingFilters) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (void) refreshLoadingIndicatorViewAnimation {
+    if ([self shouldAnimateLoadingIndicator]) {
         [self.loadingIndicatorView startAnimating];
     } else {
         [self.loadingIndicatorView stopAnimating];
@@ -238,7 +246,7 @@
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self refreshDistanceInformationFromLocation:self.locationManager.location];
+    [self refreshDistanceInformationFromLocation:self.locationManager.location forceRefresh:NO];
     self.navBarHairlineImageView.hidden = YES;
 }
 
@@ -259,7 +267,7 @@
     if (!recentLocation) {
         return;
     }
-    [self refreshDistanceInformationFromLocation:recentLocation];
+    [self refreshDistanceInformationFromLocation:recentLocation forceRefresh:NO];
 }
 
 - (void) setIsUpdatingDistanceInformation:(BOOL)isUpdatingDistanceInformation {
@@ -289,11 +297,11 @@
     return NO;
 }
 
-- (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation {
+- (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation forceRefresh:(BOOL)forceRefresh {
     if (self.isUpdatingDistanceInformation) {
         return;
     }
-    if (![self shouldRefreshDistanceInformationForNewLocation:fromLocation]) {
+    if (![self shouldRefreshDistanceInformationForNewLocation:fromLocation] && !forceRefresh) {
         return;
     }
     self.isUpdatingDistanceInformation = YES;

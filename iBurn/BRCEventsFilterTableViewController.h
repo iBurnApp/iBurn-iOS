@@ -11,9 +11,9 @@
 @class BRCEventsFilterTableViewController;
 
 @protocol BRCEventsFilterTableViewControllerDelegate <NSObject>
-
+@required
 - (void)didSetNewFilterSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController;
-
+- (void)didSetNewSortSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController;
 @end
 
 @interface BRCEventsFilterTableViewController : UIViewController

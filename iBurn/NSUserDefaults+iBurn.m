@@ -13,6 +13,7 @@ static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKe
 static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
 static NSString *const kBRCEnteredEmbargoPasscodeKey = @"kBRCEnteredEmbargoPasscodeKey";
 NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey";
+NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 
 
 @implementation NSUserDefaults (iBurn)
@@ -66,6 +67,17 @@ NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey"
 - (void)setShowExpiredEvents:(BOOL)showEpiredEvents
 {
     [self setBool:showEpiredEvents forKey:kBRCShowExpiredEventsKey];
+    [self synchronize];
+}
+
+- (BOOL)shouldSortEventsByStartTime
+{
+    return [self boolForKey:kBRCSortEventsByStartTimeKey];
+}
+
+- (void)setShouldSortEventsByStartTime:(BOOL)shouldSortByStart
+{
+    [self setBool:shouldSortByStart forKey:kBRCSortEventsByStartTimeKey];
     [self synchronize];
 }
 

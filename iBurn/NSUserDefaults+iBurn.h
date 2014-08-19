@@ -21,6 +21,9 @@ extern NSString *const kBRCGateUnlockNotificationKey;
 - (NSArray *)selectedEventTypes;
 - (void)setSelectedEventTypes:(NSArray *)selectedEventTypes;
 
+- (BOOL)shouldSortEventsByStartTime;
+- (void)setShouldSortEventsByStartTime:(BOOL)shouldSortByStart;
+
 - (BOOL)showExpiredEvents;
 - (void)setShowExpiredEvents:(BOOL)showEpiredEvents;
 
