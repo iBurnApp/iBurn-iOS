@@ -1,8 +1,8 @@
 platform :ios, '7.0'
 inhibit_all_warnings!
 
-pod 'Mapbox-iOS-SDK', '~> 1.2'
-pod 'YapDatabase', :git => 'https://github.com/yaptv/YapDatabase.git', :commit => '3a309c82f98a025081f69e5d4919b7791e4ce330' # Latest Commit of v2.5/master as of 8/13/2014
+pod 'Mapbox-iOS-SDK', '~> 1.3'
+pod 'YapDatabase', :git => 'https://github.com/yaptv/YapDatabase.git', :commit => '5e0db923b6fc3d6f20df3252f17c4b03db8c8777' # Latest Commit of v2.5/master as of 8/19/2014
 pod 'Mantle', '~> 1.5'
 pod 'FormatterKit/LocationFormatter', '~> 1.6'
 pod 'FormatterKit/TimeIntervalFormatter', '~> 1.6'
