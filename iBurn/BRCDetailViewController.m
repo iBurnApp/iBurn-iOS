@@ -42,6 +42,12 @@ static CGFloat const kMapHeaderHeight = 250.0;
 
 @implementation BRCDetailViewController
 
+- (void) dealloc {
+    self.mapView.delegate = nil;
+    self.tableView.delegate = nil;
+    self.tableView.dataSource = nil;
+}
+
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject
 {
     if (self = [self init]) {

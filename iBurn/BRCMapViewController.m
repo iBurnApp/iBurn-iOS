@@ -712,9 +712,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
                 }
             }
             [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
-        } completionBlock:^{
-            [self.searchController.searchResultsTableView reloadData];
-        }];
+        } completionBlock:nil]; // don't reload the tableView here
     }];
     cell.delegate = self;
     
