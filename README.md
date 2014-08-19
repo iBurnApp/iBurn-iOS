@@ -40,8 +40,6 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Show data type for amiguous cells (art, camps) when searching on map
 * Refactor BRCMapViewController and BRCFilteredTableViewController and pull out the common code used for full-text search, and swipe-to-favorite cells.
 * Rewrite FTS search to use YapDatabaseSearchResultsView
-* Show camps on map for high zoom levels
-* Fix the slightly buggy behavior of Events filtering occasionally not working at startup
 * Show favorites on map after yapdb view loading is complete instead of waiting until retry on viewWillAppear
 * Refactor BRCMapViewController so annotation-loading code is shared between data types
 
