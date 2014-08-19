@@ -35,18 +35,23 @@
 
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
+static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
+
 
 @interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate, BRCAnnotationEditViewDelegate, MCSwipeTableViewCellDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
+@property (nonatomic, strong) YapDatabaseConnection *campsConnection;
 @property (nonatomic, strong) YapDatabaseConnection *favoritesConnection;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
 @property (nonatomic) BOOL currentlyAddingEventAnnotations;
 @property (nonatomic) BOOL currentlyAddingArtAnnotations;
 @property (nonatomic) BOOL currentlyAddingFavoritesAnnotations;
+@property (nonatomic) BOOL currentlyAddingCampAnnotations;
 @property (nonatomic, strong) NSArray *favoritesAnnotations;
 @property (nonatomic, strong) NSArray *eventAnnotations;
 @property (nonatomic, strong) NSArray *artAnnotations;
+@property (nonatomic, strong) NSArray *campAnnotations;
 @property (nonatomic, strong) NSArray *userMapPinAnnotations;
 @property (nonatomic, strong) NSDate *lastEventAnnotationUpdate;
 @property (nonatomic, strong) UISearchBar *searchBar;
@@ -73,6 +78,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         self.eventsConnection.objectPolicy = YapDatabasePolicyShare;
         self.readConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         self.favoritesConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        self.campsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         [self reloadFavoritesIfNeeded];
         [self setupSearchBar];
         [self registerFullTextSearchExtension];
@@ -308,11 +314,12 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     [super viewWillAppear:animated];
     [self reloadEventAnnotationsIfNeeded];
     [self reloadArtAnnotationsIfNeeded];
+    [self reloadCampAnnotationsIfNeeded];
     [self reloadFavoritesIfNeeded];
     [self reloadAllUserPoints];
     [self.view bringSubviewToFront:self.addMapPointButton];
     // kludge to fix keyboard appearing at wrong time
-    if (self.annotationEditView.alpha == 0.0f) {
+    if (!self.editingMapPointAnnotation) {
         [self.annotationEditView.textField resignFirstResponder];
     }
 }
@@ -379,6 +386,44 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
     }];
 }
 
+- (void) reloadCampAnnotationsIfNeeded {
+    if (![BRCEmbargo allowEmbargoedData]) {
+        return;
+    }
+    if (self.mapView.zoom < kBRCMapViewCampsMinZoomLevel) {
+        if (self.campAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.campAnnotations];
+            self.campAnnotations = nil;
+        }
+        return;
+    }
+    if (self.campAnnotations.count || self.currentlyAddingCampAnnotations) {
+        return;
+    }
+    self.currentlyAddingCampAnnotations = YES;
+    [self.campsConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        NSMutableArray *campAnnotationsToAdd = [NSMutableArray array];
+        [transaction enumerateKeysInCollection:[BRCCampObject collection] usingBlock:^(NSString *key, BOOL *stop) {
+            BRCCampObject *campObject = [transaction objectForKey:key inCollection:[BRCCampObject collection]];
+            RMAnnotation *campAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:campObject];
+            // if campObject doesn't have a valid location, annotationWithMapView will
+            // return nil for the campAnnotation
+            if (campAnnotation) {
+                [campAnnotationsToAdd addObject:campAnnotation];
+            }
+        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.currentlyAddingCampAnnotations = NO;
+            if (self.campAnnotations.count > 0) {
+                [self.mapView removeAnnotations:self.campAnnotations];
+            }
+            self.campAnnotations = campAnnotationsToAdd;
+            [self.mapView addAnnotations:campAnnotationsToAdd];
+        });
+    }];
+}
+
+
 - (void) reloadArtAnnotationsIfNeeded {
     if (self.mapView.zoom < kBRCMapViewArtAndEventsMinZoomLevel) {
         if (self.artAnnotations.count > 0) {
@@ -415,6 +460,7 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 
 - (void) reloadAllUserPoints {
     if (self.editingMapPointAnnotation) {
+        [self hideEditView:self.annotationEditView animated:YES completionBlock:nil];
         [self.mapView removeAnnotation:self.editingMapPointAnnotation];
     }
     self.editingMapPointAnnotation = nil;
@@ -494,6 +540,14 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         if (self.artAnnotations.count > 0) {
             [self.mapView removeAnnotations:self.artAnnotations];
             self.artAnnotations = nil;
+        }
+    }
+    if (map.zoom >= kBRCMapViewCampsMinZoomLevel) {
+        [self reloadCampAnnotationsIfNeeded];
+    } else {
+        if (self.campAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.campAnnotations];
+            self.campAnnotations = nil;
         }
     }
 }
