@@ -42,6 +42,7 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Rewrite FTS search to use YapDatabaseSearchResultsView
 * Show favorites on map after yapdb view loading is complete instead of waiting until retry on viewWillAppear
 * Refactor BRCMapViewController so annotation-loading code is shared between data types
+* Add ability for user to add their own notes to camps, art, events
 
 ## Contributing
 
@@ -66,6 +67,7 @@ Your contributions will need to be licensed to us under the [MPL 2.0](https://ww
 * [Andrew Johnstone](http://architecturalartsguild.com/about/) - Map Data (thank you!!)
 * [Andrew Johnson](http://gaiagps.appspot.com/contact) - iBurn 2009-2013
 * [Icons8](http://icons8.com) - Various icons used throughout the app.
+* [William Keller](http://www.wkeller.net/BRC-GPS/) - Last minute 2014 Map fixes
 
 ## License
 
