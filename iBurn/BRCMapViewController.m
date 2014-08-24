@@ -19,8 +19,11 @@
 #import "CLLocationManager+iBurn.h"
 #import "RMMapView+iBurn.h"
 #import "BRCEmbargo.h"
+#import "NSUserDefaults+iBurn.h"
 
-@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate>
+static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
+
+@interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
@@ -36,6 +39,7 @@
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, strong) RMAnnotation *searchAnnotation;
+@property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @end
 
 @implementation BRCMapViewController
@@ -54,7 +58,9 @@
         [self registerFullTextSearchExtension];
         [self setupSearchController];
         self.locationManager = [CLLocationManager brc_locationManager];
+        self.locationManager.delegate = self;
         [self.locationManager startUpdatingLocation];
+        [self setupRegionBasedUnlock];
     }
     return self;
 }
@@ -71,6 +77,17 @@
         UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
         [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[cellClass cellIdentifier]];
     }];
+}
+
+- (void) setupRegionBasedUnlock {
+    NSParameterAssert(self.locationManager != nil);
+    CLLocationCoordinate2D manCoordinate2014 = CLLocationCoordinate2DMake(40.78880, -119.20315);
+    CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
+    self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
+    if (![CLLocationManager isMonitoringAvailableForClass:[CLCircularRegion class]]) {
+        return;
+    }
+    [self.locationManager startMonitoringForRegion:self.burningManRegion];
 }
 
 - (void) setupSearchBar {
@@ -301,6 +318,33 @@
     cell.dataObject = dataObject;
     [cell updateDistanceLabelFromLocation:self.locationManager.location toLocation:dataObject.location];
     return cell;
+}
+
+- (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
+    CLLocation *lastLocation = [locations lastObject];
+    if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
+        [self enteredBurningManRegion];
+    }
+}
+
+- (void) enteredBurningManRegion {
+    if ([BRCEmbargo allowEmbargoedData]) {
+        return;
+    }
+    NSDate *now = [NSDate date];
+    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
+    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
+    if (timeLeftInterval >= 0) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The embargoed data is now unlocked." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region {
+    if ([region.identifier isEqualToString:kBRCManRegionIdentifier]) {
+        [self enteredBurningManRegion];
+    }
 }
 
 @end
