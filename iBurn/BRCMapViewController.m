@@ -248,13 +248,6 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     return UIBarPositionTopAttached;
 }
 
-- (void) didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    [self.mapView removeAllAnnotations];
-    self.eventAnnotations = nil;
-    self.lastEventAnnotationUpdate = nil;
-}
-
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     self.isVisible = YES;
@@ -389,27 +382,30 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 #pragma mark BRCAnnotationEditViewDelegate methods
 
 - (void) editViewDidSelectDelete:(BRCAnnotationEditView *)view mapPointToDelete:(BRCMapPoint *)mapPointToDelete {
-    BRCMapPoint *mapPoint = mapPointToDelete;
-    NSParameterAssert(mapPoint != nil);
-    [self.mapView removeAnnotation:self.editingMapPointAnnotation];
-    self.editingMapPointAnnotation = nil;
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [transaction removeObjectForKey:mapPoint.uuid inCollection:[BRCMapPoint collection]];
-    } completionBlock:^{
-        [self reloadAllUserPoints];
-    }];
+    NSParameterAssert(mapPointToDelete != nil);
+    if (mapPointToDelete) {
+        [self.mapView removeAnnotation:self.editingMapPointAnnotation];
+        self.editingMapPointAnnotation = nil;
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [transaction removeObjectForKey:mapPointToDelete.uuid inCollection:[BRCMapPoint collection]];
+        } completionBlock:^{
+            [self reloadAllUserPoints];
+        }];
+    }
     [self hideEditView:view animated:YES completionBlock:nil];
 }
 
 - (void) editViewDidSelectSave:(BRCAnnotationEditView *)view editedMapPoint:(BRCMapPoint *)editedMapPoint {
     NSParameterAssert(editedMapPoint != nil);
-    CLLocationCoordinate2D newCoordinate = self.editingMapPointAnnotation.coordinate;
-    editedMapPoint.coordinate = newCoordinate;
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [transaction setObject:editedMapPoint forKey:editedMapPoint.uuid inCollection:[BRCMapPoint collection]];
-    } completionBlock:^{
-        [self reloadAllUserPoints];
-    }];
+    if (editedMapPoint) {
+        CLLocationCoordinate2D newCoordinate = self.editingMapPointAnnotation.coordinate;
+        editedMapPoint.coordinate = newCoordinate;
+        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [transaction setObject:editedMapPoint forKey:editedMapPoint.uuid inCollection:[BRCMapPoint collection]];
+        } completionBlock:^{
+            [self reloadAllUserPoints];
+        }];
+    }
     [self hideEditView:view animated:YES completionBlock:nil];
 }
 
