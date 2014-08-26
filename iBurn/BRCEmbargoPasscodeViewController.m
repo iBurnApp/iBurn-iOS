@@ -51,7 +51,6 @@
     [self.noPasscodeButton addTarget:self action:@selector(nopasscodeButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.noPasscodeButton setTitle:@"Skip" forState:UIControlStateNormal];
     self.noPasscodeButton.titleLabel.font = [UIFont systemFontOfSize:18];
-    self.noPasscodeButton.tintColor = [UIColor grayColor];
 
     self.unlockBotton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     self.unlockBotton.translatesAutoresizingMaskIntoConstraints = NO;

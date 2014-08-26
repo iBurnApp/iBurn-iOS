@@ -156,9 +156,6 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
     if (self.isStartingSoon) {
         return [UIImage imageNamed:@"BRCLightGreenPin"];
     }
-    if (!self.hasStarted) {
-        return [UIImage imageNamed:@"BRCPurplePin"];
-    }
     if (self.isEndingSoon) {
         return [UIImage imageNamed:@"BRCOrangePin"];
     }

@@ -11,7 +11,9 @@
 @implementation RMAnnotation (iBurn)
 
 + (instancetype) brc_annotationWithMapView:(RMMapView*)mapView dataObject:(BRCDataObject*)dataObject {
-    NSParameterAssert(dataObject.location != nil);
+    if (!dataObject.location) {
+        return nil;
+    }
     RMAnnotation *annotation =  [[RMAnnotation alloc] initWithMapView:mapView coordinate:dataObject.location.coordinate andTitle:dataObject.title];
     annotation.userInfo = dataObject;
     return annotation;

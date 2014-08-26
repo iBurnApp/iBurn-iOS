@@ -20,12 +20,10 @@
     Class dataObjectClass = [dataObject class];
     if (dataObjectClass == [BRCArtObject class]) {
         markerImage = [UIImage imageNamed:@"BRCBluePin"];
-    }
-    else if (dataObjectClass == [BRCEventObject class]) {
+    } else if (dataObjectClass == [BRCEventObject class]) {
         BRCEventObject *eventObject = (BRCEventObject*)dataObject;
         markerImage = [eventObject markerImageForEventStatus];
-    }
-    else if (dataObjectClass == [BRCCampObject class]) {
+    } else if (dataObjectClass == [BRCCampObject class]) {
         markerImage = [UIImage imageNamed:@"BRCPurplePin"];
     }
     
