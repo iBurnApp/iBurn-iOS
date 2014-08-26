@@ -27,8 +27,7 @@
 #import "BRCAnnotationEditView.h"
 #import "UIAlertView+Blocks.h"
 #import "BRCEmbargoPasscodeViewController.h"
-
-static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
+#import "RMUserLocation.h"
 
 @interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate, BRCAnnotationEditViewDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
@@ -43,9 +42,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 @property (nonatomic, strong) NSString *ftsExtensionName;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic, strong) NSArray *searchResults;
-@property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, strong) RMAnnotation *searchAnnotation;
-@property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong) BButton *addMapPointButton;
 @property (nonatomic, strong) RMAnnotation *editingMapPointAnnotation;
 @property (nonatomic, strong) BRCAnnotationEditView *annotationEditView;
@@ -64,10 +61,6 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         [self setupSearchBar];
         [self registerFullTextSearchExtension];
         [self setupSearchController];
-        self.locationManager = [CLLocationManager brc_locationManager];
-        self.locationManager.delegate = self;
-        [self.locationManager startUpdatingLocation];
-        [self setupRegionBasedUnlock];
         [self setupInfoButton];
     }
     return self;
@@ -198,12 +191,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     }];
 }
 
-- (void) setupRegionBasedUnlock {
-    NSParameterAssert(self.locationManager != nil);
-    CLLocationCoordinate2D manCoordinate2014 = [BRCLocations blackRockCityCenter];
-    CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
-    self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
-}
+
 
 - (void) setupSearchBar {
     self.searchBar = [[UISearchBar alloc] init];
@@ -473,17 +461,14 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         if (dataObject.location) {
             self.searchAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
             [self.mapView addAnnotation:self.searchAnnotation];
-            [self.mapView brc_zoomToIncludeCoordinate:self.locationManager.location.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
+            [self.mapView brc_zoomToIncludeCoordinate:self.mapView.userLocation.coordinate andCoordinate:dataObject.location.coordinate inVisibleRect:self.mapView.bounds animated:YES];
             [self.mapView selectAnnotation:self.searchAnnotation animated:YES];
         } else { // no location to show
             BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
             [self.navigationController pushViewController:detailViewController animated:YES];
         }
         [self.searchDisplayController setActive:NO animated:YES];
-
     }
-    
-    
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
@@ -515,29 +500,8 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     Class cellClass = [self cellClassForDataObjectClass:[dataObject class]];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
     [cell setStyleFromDataObject:dataObject];
-    [cell updateDistanceLabelFromLocation:self.locationManager.location toLocation:dataObject.location];
+    [cell updateDistanceLabelFromLocation:self.mapView.userLocation.location toLocation:dataObject.location];
     return cell;
-}
-
-- (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
-    CLLocation *lastLocation = [locations lastObject];
-    if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
-        [self enteredBurningManRegion];
-    }
-}
-
-- (void) enteredBurningManRegion {
-    if ([BRCEmbargo allowEmbargoedData]) {
-        return;
-    }
-    NSDate *now = [NSDate date];
-    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The embargoed data is now unlocked." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alert show];
-        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-    }
 }
 
 - (void) centerMapAtManCoordinates {

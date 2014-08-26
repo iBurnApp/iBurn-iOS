@@ -50,6 +50,9 @@
  */
 @property (nonatomic, strong, readonly) NSString *playaLocation;
 
+/** Calculates the distance from the user */
+@property (nonatomic, readonly) CLLocationDistance distanceFromUser;
+
 /**
  *  The YapDatabase collection of this class
  *

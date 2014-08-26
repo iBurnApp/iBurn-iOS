@@ -264,8 +264,7 @@
 - (void)unlockButtonPressed:(id)sender
 {
     if ([BRCEmbargo isEmbargoPasscodeString:self.passcodeTextField.text]) {
-        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-        [self showTabBarController];
+        [self setUnlocked];
     }
     else {
         [self shakeTextField:5];
@@ -321,5 +320,10 @@
     return UIInterfaceOrientationMaskPortrait;
 }
 
+
+- (void) setUnlocked {
+    [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
+    [self showTabBarController];
+}
 
 @end

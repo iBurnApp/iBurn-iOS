@@ -10,6 +10,7 @@
 #import "MTLValueTransformer.h"
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "BRCDataObject_Private.h"
+#import "BRCAppDelegate.h"
 
 @interface BRCDataObject()
 @property (nonatomic, readonly) CLLocationDegrees latitude;
@@ -51,6 +52,17 @@
 + (NSString *)collection
 {
     return NSStringFromClass([self class]);
+}
+
+// this is a bad hack
+- (CLLocationDistance) distanceFromUser {
+    CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
+    CLLocation *objectLocation = self.location;
+    if (!currentLocation || !objectLocation) {
+        return CLLocationDistanceMax;
+    }
+    CLLocationDistance distance = [currentLocation distanceFromLocation:objectLocation];
+    return distance;
 }
 
 @end

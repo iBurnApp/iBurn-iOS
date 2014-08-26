@@ -12,4 +12,7 @@
 
 @property (nonatomic, copy) dispatch_block_t dismissAction;
 
+/** unlocks the world */
+- (void) setUnlocked;
+
 @end

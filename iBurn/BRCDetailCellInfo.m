@@ -42,7 +42,6 @@
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
     
-#warning Distance is broken here
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];

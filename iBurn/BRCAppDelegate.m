@@ -24,6 +24,14 @@
 #import "UIAlertView+Blocks.h"
 #import "BRCFilteredTableViewController_Private.h"
 #import "BRCDetailViewController.h"
+#import "CLLocationManager+iBurn.h"
+#import "BRCLocations.h"
+
+static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
+
+@interface BRCAppDelegate()
+@property (nonatomic, strong) CLCircularRegion *burningManRegion;
+@end
 
 @implementation BRCAppDelegate
 
@@ -74,9 +82,13 @@
     if (launchNotification) {
         [self application:application didReceiveLocalNotification:launchNotification];
     }
+    self.locationManager = [CLLocationManager brc_locationManager];
+    self.locationManager.delegate = self;
+    [self.locationManager startUpdatingLocation];
+    [self setupRegionBasedUnlock];
     self.window.backgroundColor = [UIColor whiteColor];
-    [self.window makeKeyAndVisible];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    [self.window makeKeyAndVisible];
     return YES;
 }
 
@@ -225,6 +237,42 @@
             }
         }
     }
+}
+
+- (void) setupRegionBasedUnlock {
+    NSParameterAssert(self.locationManager != nil);
+    CLLocationCoordinate2D manCoordinate2014 = [BRCLocations blackRockCityCenter];
+    CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
+    self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
+}
+
+- (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
+    CLLocation *lastLocation = [locations lastObject];
+    if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
+        [self enteredBurningManRegion];
+    }
+}
+
+- (void) enteredBurningManRegion {
+    if ([BRCEmbargo allowEmbargoedData]) {
+        return;
+    }
+    NSDate *now = [NSDate date];
+    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
+    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
+    if (timeLeftInterval >= 0) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The restricted data is now unlocked." delegate:nil cancelButtonTitle:@"Sweet!" otherButtonTitles:nil];
+        [alert show];
+        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
+        if ([self.window.rootViewController isKindOfClass:[BRCEmbargoPasscodeViewController class]]) {
+            BRCEmbargoPasscodeViewController *embargoVC = (BRCEmbargoPasscodeViewController*)self.window.rootViewController;
+            [embargoVC setUnlocked];
+        }
+    }
+}
+
++ (instancetype) appDelegate {
+    return (BRCAppDelegate*)[UIApplication sharedApplication].delegate;
 }
 
 @end
