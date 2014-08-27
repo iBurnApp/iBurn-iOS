@@ -147,7 +147,7 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 
 - (UIColor*) colorForEventStatus {
     if (self.isStartingSoon) {
-        return [UIColor brc_greenColor];
+        return [UIColor brc_lightGreenColor];
     }
     if (!self.hasStarted) {
         return [UIColor darkTextColor];
@@ -201,7 +201,7 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
             return @"Food";
             break;
         default:
-            return @"Unkown";
+            return @"";
             break;
     }
 }

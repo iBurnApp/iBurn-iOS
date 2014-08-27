@@ -49,7 +49,7 @@
 
 + (NSAttributedString*) brc_humanizedStringForDistance:(CLLocationDistance)distance {
     NSTimeInterval secondsToWalk = [TTTLocationFormatter brc_timeIntervalForWalkingDistance:distance];
-    NSString *timeString = [[TTTTimeIntervalFormatter brc_walkingTimeFormatter] stringForTimeInterval:secondsToWalk];
+    NSString *timeString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:secondsToWalk];
     if (!timeString) {
         return nil;
     }

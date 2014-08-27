@@ -10,7 +10,7 @@
 
 @implementation TTTTimeIntervalFormatter (iBurn)
 
-+ (instancetype) brc_walkingTimeFormatter {
++ (instancetype) brc_shortRelativeTimeFormatter {
     static TTTTimeIntervalFormatter *timeIntervalFormatter = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

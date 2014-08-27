@@ -11,7 +11,8 @@
 @interface UIColor (iBurn)
 
 + (UIColor*) brc_greenColor;
-+ (UIColor*)brc_orangeColor;
-+ (UIColor*)brc_redColor;
++ (UIColor*) brc_orangeColor;
++ (UIColor*) brc_redColor;
++ (UIColor*) brc_lightGreenColor;
 
 @end

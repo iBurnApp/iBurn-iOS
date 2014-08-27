@@ -14,6 +14,10 @@
     return [UIColor colorWithRed:43/255.0f green:206/255.0f blue:18/255.0f alpha:1.0f];
 }
 
++ (UIColor*) brc_lightGreenColor {
+    return [UIColor colorWithRed:139/255.0f green:249/255.0f blue:122/255.0f alpha:1.0f];
+}
+
 + (UIColor*)brc_orangeColor {
     return [UIColor colorWithRed:249/255.0f green:175/255.0f blue:14/255.0f alpha:1.0f];
 }

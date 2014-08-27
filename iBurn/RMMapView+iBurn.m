@@ -65,10 +65,11 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
 + (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame
 {
     RMMapView *mapView = [[RMMapView alloc] initWithFrame:frame andTilesource:[self brc_defaultTileSource]];
-    mapView.adjustTilesForRetinaDisplay = YES;
     mapView.hideAttribution = YES;
     mapView.showLogoBug = NO;
     mapView.showsUserLocation = YES;
+    mapView.minZoom = 13;
+    mapView.backgroundColor = [UIColor colorWithRed:232/255.0f green:224/255.0f blue:216/255.0f alpha:1.0f];
     //mapView.clusteringEnabled = YES;
     
     return mapView;

@@ -15,7 +15,7 @@
 - (void) setDataObject:(BRCDataObject*)dataObject {
     CLLocationDistance distance = dataObject.distanceFromUser;
     if (distance == CLLocationDistanceMax || distance == 0) {
-        self.subtitleLabel.text = nil;
+        self.subtitleLabel.text = @"";
     } else {
         self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }

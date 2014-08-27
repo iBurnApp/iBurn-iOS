@@ -10,6 +10,6 @@
 
 @interface TTTTimeIntervalFormatter (iBurn)
 
-+ (instancetype) brc_walkingTimeFormatter;
++ (instancetype) brc_shortRelativeTimeFormatter;
 
 @end

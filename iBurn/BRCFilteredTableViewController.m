@@ -296,11 +296,11 @@
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return [BRCDataObjectTableViewCell cellHeight];
+    return [[self cellClass] cellHeight];
 }
 
 - (CGFloat) tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return [BRCDataObjectTableViewCell cellHeight];
+    return [[self cellClass] cellHeight];
 }
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
