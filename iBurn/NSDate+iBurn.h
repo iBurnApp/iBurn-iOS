@@ -11,5 +11,6 @@
 @interface NSDate (iBurn)
 
 + (NSInteger)brc_daysBetweenDate:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime;
+- (NSDate*) brc_nextDay;
 
 @end

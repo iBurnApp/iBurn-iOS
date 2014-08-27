@@ -353,6 +353,9 @@
 }
 
 - (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+    if (annotation.isUserLocationAnnotation) { // show default style
+        return nil;
+    }
     RMMapLayer *mapLayer = [super mapView:mapView layerForAnnotation:annotation];
     if (mapLayer) {
         mapLayer.canShowCallout = YES;

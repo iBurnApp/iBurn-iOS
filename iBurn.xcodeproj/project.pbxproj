@@ -40,7 +40,6 @@
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
-		D972BD2419934037008057DB /* iBurn-database in Resources */ = {isa = PBXBuildFile; fileRef = D972BD2319934037008057DB /* iBurn-database */; };
 		D972BD271993422E008057DB /* BRCStringPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D972BD261993422E008057DB /* BRCStringPickerView.m */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
@@ -518,7 +517,6 @@
 				D9046F1B198C65F40013CCF4 /* camps.json in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				D9046F1A198C65F40013CCF4 /* art.json in Resources */,
-				D972BD2419934037008057DB /* iBurn-database in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

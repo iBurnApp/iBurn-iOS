@@ -1,11 +1,11 @@
 PODS:
   - BButton (4.0.1)
-  - CocoaLumberjack (1.6.5.1):
-    - CocoaLumberjack/Core
+  - CocoaLumberjack (1.9.2):
     - CocoaLumberjack/Extensions
-  - CocoaLumberjack/Core (1.6.5.1)
-  - CocoaLumberjack/Extensions (1.6.5.1):
+  - CocoaLumberjack/Core (1.9.2)
+  - CocoaLumberjack/Extensions (1.9.2):
     - CocoaLumberjack/Core
+  - CupertinoYankee (1.0.0)
   - DAKeyboardControl (2.4.0)
   - FMDB (2.3):
     - FMDB/standard
@@ -29,17 +29,19 @@ PODS:
   - PureLayout (1.0.1)
   - SMCalloutView (2.0)
   - TTTAttributedLabel (1.10.1)
+  - UAAppReviewManager (0.2.6)
   - UIAlertView-Blocks (1.0)
   - VTAcknowledgementsViewController (0.11)
-  - YapDatabase (2.5):
+  - YapDatabase (2.4.3):
     - YapDatabase/standard
-  - YapDatabase/common (2.5):
-    - CocoaLumberjack (~> 1.6.3)
-  - YapDatabase/standard (2.5):
+  - YapDatabase/common (2.4.3):
+    - CocoaLumberjack (~> 1)
+  - YapDatabase/standard (2.4.3):
     - YapDatabase/common
 
 DEPENDENCIES:
   - BButton (~> 4.0)
+  - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - FormatterKit/LocationFormatter (~> 1.6)
   - FormatterKit/TimeIntervalFormatter (~> 1.6)
@@ -49,18 +51,20 @@ DEPENDENCIES:
   - MCSwipeTableViewCell (~> 2.1)
   - PureLayout (~> 1.0)
   - TTTAttributedLabel (~> 1.10)
+  - UAAppReviewManager (~> 0.2)
   - UIAlertView-Blocks (~> 1.0)
   - VTAcknowledgementsViewController (~> 0.11)
-  - YapDatabase (from `https://github.com/chrisballinger/YapDatabase.git`, commit `a3778fb0a5917426e75b17a2776f703e34df403f`)
+  - YapDatabase (from `https://github.com/yaptv/YapDatabase.git`, commit `3a309c82f98a025081f69e5d4919b7791e4ce330`)
 
 EXTERNAL SOURCES:
   YapDatabase:
-    :commit: a3778fb0a5917426e75b17a2776f703e34df403f
-    :git: https://github.com/chrisballinger/YapDatabase.git
+    :commit: 3a309c82f98a025081f69e5d4919b7791e4ce330
+    :git: https://github.com/yaptv/YapDatabase.git
 
 SPEC CHECKSUMS:
   BButton: 396a5e59648e3f687b7d8201b88ebdbad6e36b59
-  CocoaLumberjack: baf4a09a3bcbdfea3363556a90104e026d3504e2
+  CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
+  CupertinoYankee: 21a0000abd35b13c6b67e7697eabb10ef59b857e
   DAKeyboardControl: 45a363c85c48a7df76f21f236d9f85800e001775
   FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
   FormatterKit: 534b21b52b9b822a9ec884a14e2debf92e7a3126
@@ -73,8 +77,9 @@ SPEC CHECKSUMS:
   PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
   SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
   TTTAttributedLabel: 94bb04f1e005616002dd2cee0262a0082e533627
+  UAAppReviewManager: f23428de9c9cd242c2ffd899e218ba3620bd0683
   UIAlertView-Blocks: f3271e84372beb97aea115cd1fb26ae66457f12f
   VTAcknowledgementsViewController: 6e71652adbe73c68f0a278a73ac9ca1e1fc00b90
-  YapDatabase: 38ee5e842ed1370f0d258e25b23bd64f6e3c1a67
+  YapDatabase: e5298fd9f9b94c704dbcd63f725a6e8ca5a7cafb
 
 COCOAPODS: 0.33.1

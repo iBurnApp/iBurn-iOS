@@ -233,6 +233,9 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 
 + (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
     NSParameterAssert(eventObject.isFavorite);
+    if ([eventObject hasEnded]) {
+        return;
+    }
     if (!eventObject.scheduledNotification) {
         // remind us 30 minutes before
         NSDate *reminderDate = [eventObject.startDate dateByAddingTimeInterval:-30 * 60];

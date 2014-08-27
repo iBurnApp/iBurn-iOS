@@ -34,4 +34,12 @@
     return [difference day];
 }
 
+- (NSDate*) brc_nextDay {
+    NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
+    dayComponent.day = 1;
+    NSCalendar *theCalendar = [NSCalendar currentCalendar];
+    NSDate *nextDate = [theCalendar dateByAddingComponents:dayComponent toDate:self options:0];
+    return nextDate;
+}
+
 @end
