@@ -189,7 +189,7 @@
                     return NSOrderedAscending;
                 }
                 
-                NSComparisonResult dateComparison = [event1.startDate compare:event2.startDate];
+                NSComparisonResult dateComparison = [event1.endDate compare:event2.endDate];
                 if (dateComparison == NSOrderedSame) {
                     NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2 fromLocation:fromLocation];
                     return distanceComparison;
