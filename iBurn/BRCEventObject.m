@@ -233,7 +233,7 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 
 + (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
     NSParameterAssert(eventObject.isFavorite);
-    if ([eventObject hasEnded]) {
+    if ([eventObject hasStarted] || [eventObject hasEnded]) {
         return;
     }
     if (!eventObject.scheduledNotification) {

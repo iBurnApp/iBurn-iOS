@@ -41,7 +41,7 @@
             NSLog(@"Duped dates for %@: %@", self.title, self.uniqueID);
             NSDate *newStartDate = eventTime.startDate;
             NSDate *newEndDate = [eventTime.startDate endOfDay];
-            while ([NSDate brc_daysBetweenDate:newStartDate andDate:eventTime.endDate] >= 0) {
+            while ([NSDate brc_daysBetweenDate:newStartDate andDate:eventTime.endDate] >= 0 && ![newStartDate isEqualToDate:newEndDate]) {
                 BRCEventObject *event = [[BRCEventObject alloc] init];
                 [event mergeValuesForKeysFromModel:self];
                 event.startDate = [newStartDate copy];

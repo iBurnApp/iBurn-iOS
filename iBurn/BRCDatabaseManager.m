@@ -408,7 +408,7 @@
     {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *eventObject = (BRCEventObject*)object;
-            BOOL eventHasEnded = eventObject.hasEnded;
+            BOOL eventHasEnded = eventObject.hasEnded || eventObject.isEndingSoon;
             BOOL eventMatchesTypeFilter = [filteredSet containsObject:@(eventObject.eventType)];
             
             if ((eventMatchesTypeFilter || [filteredSet count] == 0)) {

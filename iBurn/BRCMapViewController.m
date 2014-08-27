@@ -275,7 +275,6 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 }
 
 - (void) reloadFavoritesIfNeeded {
-    return;
     if (self.currentlyAddingFavoritesAnnotations) {
         return;
     }
@@ -293,9 +292,11 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         [artViewTransaction enumerateKeysAndObjectsInGroup:[BRCArtObject collection] usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
             if ([object isKindOfClass:[BRCArtObject class]]) {
                 BRCArtObject *artObject = object;
-                RMAnnotation *artAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:artObject];
-                if (artAnnotation) {
-                    [favoritesAnnotationsToAdd addObject:artAnnotation];
+                if (artObject.isFavorite) {
+                    RMAnnotation *artAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:artObject];
+                    if (artAnnotation) {
+                        [favoritesAnnotationsToAdd addObject:artAnnotation];
+                    }
                 }
             }
         }];
@@ -303,9 +304,11 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         [campsViewTransaction enumerateKeysAndObjectsInGroup:[BRCCampObject collection] usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
             if ([object isKindOfClass:[BRCCampObject class]]) {
                 BRCCampObject *campObject = object;
-                RMAnnotation *campAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:campObject];
-                if (campAnnotation) {
-                    [favoritesAnnotationsToAdd addObject:campAnnotation];
+                if (campObject.isFavorite) {
+                    RMAnnotation *campAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:campObject];
+                    if (campAnnotation) {
+                        [favoritesAnnotationsToAdd addObject:campAnnotation];
+                    }
                 }
             }
         }];
@@ -315,9 +318,11 @@ static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
         [eventsViewTransaction enumerateKeysAndObjectsInGroup:groupName usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *eventObject = object;
-                RMAnnotation *eventAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:eventObject];
-                if (eventAnnotation) {
-                    [favoritesAnnotationsToAdd addObject:eventAnnotation];
+                if (eventObject.isFavorite) {
+                    RMAnnotation *eventAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:eventObject];
+                    if (eventAnnotation) {
+                        [favoritesAnnotationsToAdd addObject:eventAnnotation];
+                    }
                 }
             }
         }];

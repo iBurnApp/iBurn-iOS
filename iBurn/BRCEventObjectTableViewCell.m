@@ -24,7 +24,7 @@
     } else if (eventObject.isHappeningRightNow) {
         NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilEndDate];
         self.eventTimeLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
-    } else if (eventObject.hasEnded) {
+    } else if (eventObject.hasEnded && eventObject.hasStarted) {
         self.eventTimeLabel.text = @"Expired";
     } else { // Starts in long time
         self.eventTimeLabel.text = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
