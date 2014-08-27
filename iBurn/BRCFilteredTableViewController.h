@@ -15,6 +15,7 @@
 
 // Shared Database Views with Subclasses
 @property (nonatomic, strong, readonly) NSString *distanceViewName;
+@property (nonatomic, strong, readonly) NSString *favoritesFilterForDistanceViewName;
 
 @property (nonatomic, strong, readonly) Class viewClass;
 

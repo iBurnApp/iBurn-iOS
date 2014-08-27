@@ -10,4 +10,6 @@
 
 @interface BRCEventsTableViewController : BRCFilteredTableViewController
 
+@property (nonatomic, strong, readonly) NSString *favoritesFilterForTimeAndDistanceViewName;
+
 @end

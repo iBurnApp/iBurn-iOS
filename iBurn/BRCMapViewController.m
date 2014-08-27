@@ -28,13 +28,22 @@
 #import "UIAlertView+Blocks.h"
 #import "BRCEmbargoPasscodeViewController.h"
 #import "RMUserLocation.h"
+#import "BRCAppDelegate.h"
+#import "NSDateFormatter+iBurn.h"
+
+static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 
 @interface BRCMapViewController () <UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, UISearchDisplayDelegate, CLLocationManagerDelegate, BRCAnnotationEditViewDelegate>
 @property (nonatomic, strong) YapDatabaseConnection *artConnection;
 @property (nonatomic, strong) YapDatabaseConnection *eventsConnection;
+@property (nonatomic, strong) YapDatabaseConnection *favoritesConnection;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
 @property (nonatomic) BOOL currentlyAddingEventAnnotations;
+@property (nonatomic) BOOL currentlyAddingArtAnnotations;
+@property (nonatomic) BOOL currentlyAddingFavoritesAnnotations;
+@property (nonatomic, strong) NSArray *favoritesAnnotations;
 @property (nonatomic, strong) NSArray *eventAnnotations;
+@property (nonatomic, strong) NSArray *artAnnotations;
 @property (nonatomic, strong) NSArray *userMapPinAnnotations;
 @property (nonatomic, strong) NSDate *lastEventAnnotationUpdate;
 @property (nonatomic, strong) UISearchBar *searchBar;
@@ -57,7 +66,8 @@
         self.eventsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         self.eventsConnection.objectPolicy = YapDatabasePolicyShare;
         self.readConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
-        [self reloadEventAnnotationsIfNeeded];
+        self.favoritesConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        [self reloadFavoritesIfNeeded];
         [self setupSearchBar];
         [self registerFullTextSearchExtension];
         [self setupSearchController];
@@ -258,10 +268,102 @@
 {
     [super viewWillAppear:animated];
     [self reloadEventAnnotationsIfNeeded];
+    [self reloadArtAnnotationsIfNeeded];
+    [self reloadFavoritesIfNeeded];
     [self reloadAllUserPoints];
     [self.view bringSubviewToFront:self.addMapPointButton];
 }
 
+- (void) reloadFavoritesIfNeeded {
+    return;
+    if (self.currentlyAddingFavoritesAnnotations) {
+        return;
+    }
+    self.currentlyAddingFavoritesAnnotations = YES;
+    NSMutableArray *favoritesAnnotationsToAdd = [NSMutableArray array];
+    [self.favoritesConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        NSString *artFavoritesExtensionName = [BRCAppDelegate appDelegate].artViewController.favoritesFilterForDistanceViewName;
+        NSString *campFavoritesExtensionName = [BRCAppDelegate appDelegate].campsViewController.favoritesFilterForDistanceViewName;
+        NSString *eventFavoritesExtensionName = [BRCAppDelegate appDelegate].eventsViewController.favoritesFilterForTimeAndDistanceViewName;
+        
+        YapDatabaseViewTransaction *artViewTransaction = [transaction ext:artFavoritesExtensionName];
+        YapDatabaseViewTransaction *campsViewTransaction = [transaction ext:campFavoritesExtensionName];
+        YapDatabaseViewTransaction *eventsViewTransaction = [transaction ext:eventFavoritesExtensionName];
+        
+        [artViewTransaction enumerateKeysAndObjectsInGroup:[BRCArtObject collection] usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
+            if ([object isKindOfClass:[BRCArtObject class]]) {
+                BRCArtObject *artObject = object;
+                RMAnnotation *artAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:artObject];
+                if (artAnnotation) {
+                    [favoritesAnnotationsToAdd addObject:artAnnotation];
+                }
+            }
+        }];
+        
+        [campsViewTransaction enumerateKeysAndObjectsInGroup:[BRCCampObject collection] usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
+            if ([object isKindOfClass:[BRCCampObject class]]) {
+                BRCCampObject *campObject = object;
+                RMAnnotation *campAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:campObject];
+                if (campAnnotation) {
+                    [favoritesAnnotationsToAdd addObject:campAnnotation];
+                }
+            }
+        }];
+        NSDateFormatter *dateFormatter = [NSDateFormatter brc_threadSafeGroupDateFormatter];
+        NSString *groupName = [dateFormatter stringFromDate:[NSDate date]];
+        
+        [eventsViewTransaction enumerateKeysAndObjectsInGroup:groupName usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
+            if ([object isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *eventObject = object;
+                RMAnnotation *eventAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:eventObject];
+                if (eventAnnotation) {
+                    [favoritesAnnotationsToAdd addObject:eventAnnotation];
+                }
+            }
+        }];
+    } completionBlock:^{
+        self.currentlyAddingFavoritesAnnotations = NO;
+        if (self.favoritesAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.favoritesAnnotations];
+        }
+        self.favoritesAnnotations = favoritesAnnotationsToAdd;
+        [self.mapView addAnnotations:favoritesAnnotationsToAdd];
+    }];
+}
+
+- (void) reloadArtAnnotationsIfNeeded {
+    if (self.mapView.zoom < kBRCMapViewArtAndEventsMinZoomLevel) {
+        if (self.artAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.artAnnotations];
+            self.artAnnotations = nil;
+        }
+        return;
+    }
+    if (self.artAnnotations.count || self.currentlyAddingArtAnnotations) {
+        return;
+    }
+    self.currentlyAddingArtAnnotations = YES;
+    [self.artConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        NSMutableArray *artAnnotationsToAdd = [NSMutableArray array];
+        [transaction enumerateKeysInCollection:[BRCArtObject collection] usingBlock:^(NSString *key, BOOL *stop) {
+            BRCArtObject *artObject = [transaction objectForKey:key inCollection:[BRCArtObject collection]];
+            RMAnnotation *artAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:artObject];
+            // if artObject doesn't have a valid location, annotationWithMapView will
+            // return nil for the artAnnotation
+            if (artAnnotation) {
+                [artAnnotationsToAdd addObject:artAnnotation];
+            }
+        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.currentlyAddingArtAnnotations = NO;
+            if (self.artAnnotations.count > 0) {
+                [self.mapView removeAnnotations:self.artAnnotations];
+            }
+            self.artAnnotations = artAnnotationsToAdd;
+            [self.mapView addAnnotations:artAnnotationsToAdd];
+        });
+    }];
+}
 
 - (void) reloadAllUserPoints {
     if (self.editingMapPointAnnotation) {
@@ -278,7 +380,9 @@
             }
         }];
     } completionBlock:^{
-        [self.mapView removeAnnotations:self.userMapPinAnnotations];
+        if (self.userMapPinAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.userMapPinAnnotations];
+        }
         self.userMapPinAnnotations = annotationsToAdd;
         [self.mapView addAnnotations:self.userMapPinAnnotations];
     }];
@@ -286,6 +390,13 @@
 
 - (void)reloadEventAnnotationsIfNeeded
 {
+    if (self.mapView.zoom < kBRCMapViewArtAndEventsMinZoomLevel) {
+        if (self.eventAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.eventAnnotations];
+            self.eventAnnotations = nil;
+        }
+        return;
+    }
     NSTimeInterval minTimeIntervalForRefresh = 5 * 60; // 5 minutes
     
     if ([[NSDate date] timeIntervalSinceDate:self.lastEventAnnotationUpdate] < minTimeIntervalForRefresh || self.currentlyAddingEventAnnotations) {
@@ -313,13 +424,31 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self.currentlyAddingEventAnnotations = NO;
             self.eventAnnotations = eventAnnotationsToAdd;
-            [self.mapView removeAnnotations:oldAnnotations];
             [self.mapView addAnnotations:self.eventAnnotations];
+            if (oldAnnotations.count > 0) {
+                [self.mapView removeAnnotations:oldAnnotations];
+            }
         });
     }];
 }
 
 #pragma mark RMMapViewDelegate methods
+
+- (void)afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
+    if (map.zoom >= kBRCMapViewArtAndEventsMinZoomLevel) {
+        [self reloadArtAnnotationsIfNeeded];
+        [self reloadEventAnnotationsIfNeeded];
+    } else {
+        if (self.eventAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.eventAnnotations];
+            self.eventAnnotations = nil;
+        }
+        if (self.artAnnotations.count > 0) {
+            [self.mapView removeAnnotations:self.artAnnotations];
+            self.artAnnotations = nil;
+        }
+    }
+}
 
 - (void) singleTapOnMap:(RMMapView *)map at:(CGPoint)point {
     if (self.annotationEditView.mapPoint) {
