@@ -38,6 +38,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (instancetype) sharedInstance;
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
-+ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName;
++ (NSString*) filteredExtensionNameForFilterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName;
 
 @end

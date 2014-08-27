@@ -138,7 +138,7 @@
 }
 
 - (NSString *) favoritesExtensionName {
-    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForClass:[self viewClass] filterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]];
+    NSString *favoritesName = [BRCDatabaseManager filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeFavorites parentName:[BRCDatabaseManager extensionNameForClass:[self viewClass] extensionType:BRCDatabaseViewExtensionTypeTime]];
     return favoritesName;
 }
 

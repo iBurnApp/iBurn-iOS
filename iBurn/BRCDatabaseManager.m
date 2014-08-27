@@ -84,9 +84,9 @@
             [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:distanceViewName];
             [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:timeViewName];
             
-            self.eventNameViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:nameViewName];
-            self.eventDistanceViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:distanceViewName];
-            self.eventTimeViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:timeViewName];
+            self.eventNameViewName = [[self class] filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:nameViewName];
+            self.eventDistanceViewName = [[self class] filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:distanceViewName];
+            self.eventTimeViewName = [[self class] filteredExtensionNameForFilterType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentName:timeViewName];
         }
         else {
             [self registerDatabaseFilteredViewForViewClass:viewClass filteredType:BRCDatabaseFilteredViewTypeFavorites parentName:[[self class] extensionNameForClass:viewClass extensionType:BRCDatabaseViewExtensionTypeName]];
@@ -277,7 +277,7 @@
 
 - (void)registerDatabaseFilteredViewForViewClass:(Class)viewClass filteredType:(BRCDatabaseFilteredViewType)filterType parentName:(NSString *)parentName;
 {
-    NSString *filteredViewName = [[self class] filteredExtensionNameForClass:viewClass filterType:filterType parentName:parentName];
+    NSString *filteredViewName = [[self class] filteredExtensionNameForFilterType:filterType parentName:parentName];
     YapDatabase *view = [self.database registeredExtension:filteredViewName];
     if (view){
         return;
@@ -353,15 +353,14 @@
     }
 }
 
-+ (NSString*) filteredExtensionNameForClass:(Class)extensionClass filterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName {
++ (NSString*) filteredExtensionNameForFilterType:(BRCDatabaseFilteredViewType)extensionType parentName:(NSString *)parentName {
     NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
     if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
         return nil;
     }
-    NSString *classString = NSStringFromClass(extensionClass);
     NSString *extensionString = [self stringForFilteredExtensionType:extensionType];
     NSParameterAssert(extensionString != nil);
-    return [NSString stringWithFormat:@"%@%@%@ExtensionView", classString, parentName, extensionString];
+    return [NSString stringWithFormat:@"%@-%@Filter", parentName, extensionString];
 }
 
 + (NSString*) extensionNameForClass:(Class)extensionClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
@@ -372,7 +371,7 @@
     NSString *classString = NSStringFromClass(extensionClass);
     NSString *extensionString = [self stringForExtensionType:extensionType];
     NSParameterAssert(extensionString != nil);
-    return [NSString stringWithFormat:@"%@%@ExtensionView", classString, extensionString];
+    return [NSString stringWithFormat:@"%@%@View", classString, extensionString];
 }
 
 @end

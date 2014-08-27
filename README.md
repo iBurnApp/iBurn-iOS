@@ -36,6 +36,15 @@ Fortunately, you can still run and test the app with the previous year's data.
 * Retina mbtiles support
 * Optimizations
 * Data Embargo :(
+* Search on the Map for all datatypes
+* Show Favorites on the Map
+* Favorite items by long-pressing on cell
+* Scroll back to top when switching sort
+* Put Playa location as first item in detail view (e.g. 7:45 & E)
+* Put distance as second item in detail view
+* Put description as third item in detail view
+* Make map view on detail screen slightly smaller
+* Show Playa location below camp/art relation link on Events detail view
 
 ## Contributing
 
