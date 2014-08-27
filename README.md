@@ -3,17 +3,9 @@
 ## Installation
 
  * Install Cocoapods
- 
- * Clone the iBurn repo
- 
- * cd to the iBurn repo
- 
+ * `git submodule update --init`
  * pod install
-
- * open iBurn.xcworkspace
-
- * add libProj4.a to the MapBox pod, because of a bug
- 
+ * open iBurn.xcworkspace 
  
  ## Future Plans
  
@@ -25,3 +17,4 @@
  * Onboarding
  * Info view
  * Show data from previous years
+ * Retina Tile mbtiles support

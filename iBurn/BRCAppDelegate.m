@@ -92,11 +92,10 @@ static NSString * const kBRCHasImportedDataKey = @"kBRCHasImportedDataKey";
 }
 
 - (void) preloadExistingData {
-    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art_data" withExtension:@"json"];
-    NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camp_data" withExtension:@"json"];
-    NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"event_data" withExtension:@"json"];
+    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art" withExtension:@"json"];
+    NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camps" withExtension:@"json"];
+    NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"events" withExtension:@"json"];
     NSURL *datesInfoURL = [[NSBundle mainBundle] URLForResource:@"dates_info" withExtension:@"json"];
-
 
     NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
                             @[campsDataURL, [BRCCampObject class]],

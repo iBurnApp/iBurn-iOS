@@ -25,7 +25,11 @@
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		82C658358D864A46A4EEAEE1 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E22C90E6C34438BB9A7F78E /* libPods.a */; };
-		D9046ECC198C60BA0013CCF4 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = D9046ECB198C60BA0013CCF4 /* iburn.mbtiles */; };
+		D9046F1A198C65F40013CCF4 /* art.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF6198C65F40013CCF4 /* art.json */; };
+		D9046F1B198C65F40013CCF4 /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF7198C65F40013CCF4 /* camps.json */; };
+		D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF8198C65F40013CCF4 /* dates_info.json */; };
+		D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = D9046F19198C65F40013CCF4 /* iburn.mbtiles */; };
+		D9046F38198C6CDE0013CCF4 /* events.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046F37198C6CDE0013CCF4 /* events.json */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -33,7 +37,6 @@
 		D92562CC1988929A00ED6B50 /* BRCLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CB1988929A00ED6B50 /* BRCLocationManager.m */; };
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
-		D97D7A2B198AD86400CA7828 /* dates_info.json in Resources */ = {isa = PBXBuildFile; fileRef = D97D7A2A198AD86400CA7828 /* dates_info.json */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
 		D97D7A37198B019A00CA7828 /* BRCActionSheetStringPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A36198B019A00CA7828 /* BRCActionSheetStringPicker.m */; };
@@ -47,9 +50,6 @@
 		D994156B198726B600D245C7 /* BRCCampObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156A198726B600D245C7 /* BRCCampObject.m */; };
 		D994156E198726C100D245C7 /* BRCEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156D198726C100D245C7 /* BRCEventObject.m */; };
 		D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
-		D99415751987272700D245C7 /* art_data.json in Resources */ = {isa = PBXBuildFile; fileRef = D99415721987272700D245C7 /* art_data.json */; };
-		D99415761987272700D245C7 /* camp_data.json in Resources */ = {isa = PBXBuildFile; fileRef = D99415731987272700D245C7 /* camp_data.json */; };
-		D99415771987272700D245C7 /* event_data.json in Resources */ = {isa = PBXBuildFile; fileRef = D99415741987272700D245C7 /* event_data.json */; };
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
@@ -90,7 +90,16 @@
 		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
 		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D9046ECB198C60BA0013CCF4 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; name = iburn.mbtiles; path = "Submodules/iBurn-Data/data/2013/iburn.mbtiles"; sourceTree = SOURCE_ROOT; };
+		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
+		D9046ED4198C65D70013CCF4 /* camp_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = camp_data.json; sourceTree = "<group>"; };
+		D9046ED5198C65D70013CCF4 /* dates_info.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
+		D9046ED6198C65D70013CCF4 /* event_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = event_data.json; sourceTree = "<group>"; };
+		D9046EF4198C65D70013CCF4 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; path = iburn.mbtiles; sourceTree = "<group>"; };
+		D9046EF6198C65F40013CCF4 /* art.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = art.json; sourceTree = "<group>"; };
+		D9046EF7198C65F40013CCF4 /* camps.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = camps.json; sourceTree = "<group>"; };
+		D9046EF8198C65F40013CCF4 /* dates_info.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
+		D9046F19198C65F40013CCF4 /* iburn.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; path = iburn.mbtiles; sourceTree = "<group>"; };
+		D9046F37198C6CDE0013CCF4 /* events.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = events.json; sourceTree = "<group>"; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCDataObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -104,7 +113,6 @@
 		D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+iBurn.h"; sourceTree = "<group>"; };
 		D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+iBurn.m"; sourceTree = "<group>"; };
 		D97D7A29198AD05000CA7828 /* BRCFilteredTableViewController_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCFilteredTableViewController_Private.h; sourceTree = "<group>"; };
-		D97D7A2A198AD86400CA7828 /* dates_info.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = dates_info.json; path = "Submodules/iBurn-Data/data/2013/dates_info.json"; sourceTree = SOURCE_ROOT; };
 		D97D7A2F198ADBE400CA7828 /* NSDateFormatter+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDateFormatter+iBurn.h"; sourceTree = "<group>"; };
 		D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDateFormatter+iBurn.m"; sourceTree = "<group>"; };
 		D97D7A32198AF7BD00CA7828 /* NSDate+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+iBurn.h"; sourceTree = "<group>"; };
@@ -131,9 +139,6 @@
 		D994156D198726C100D245C7 /* BRCEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventObject.m; sourceTree = "<group>"; };
 		D994156F198726F400D245C7 /* BRCDataImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter.h; sourceTree = "<group>"; };
 		D9941570198726F400D245C7 /* BRCDataImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataImporter.m; sourceTree = "<group>"; };
-		D99415721987272700D245C7 /* art_data.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = art_data.json; path = "Submodules/iBurn-Data/data/2013/art_data.json"; sourceTree = SOURCE_ROOT; };
-		D99415731987272700D245C7 /* camp_data.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = camp_data.json; path = "Submodules/iBurn-Data/data/2013/camp_data.json"; sourceTree = SOURCE_ROOT; };
-		D99415741987272700D245C7 /* event_data.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = event_data.json; path = "Submodules/iBurn-Data/data/2013/event_data.json"; sourceTree = SOURCE_ROOT; };
 		D99415781987277500D245C7 /* BRCDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDatabaseManager.h; sourceTree = "<group>"; };
 		D99415791987277500D245C7 /* BRCDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDatabaseManager.m; sourceTree = "<group>"; };
 		D994157D1987399F00D245C7 /* BRCEventTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventTime.h; sourceTree = "<group>"; };
@@ -262,22 +267,37 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				D9046ECD198C60BD0013CCF4 /* 2013 */,
+				D9046EF5198C65F40013CCF4 /* 2014 */,
+				D9046ED2198C65D70013CCF4 /* 2013 */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		D9046ECD198C60BD0013CCF4 /* 2013 */ = {
+		D9046ED2198C65D70013CCF4 /* 2013 */ = {
 			isa = PBXGroup;
 			children = (
-				D9046ECB198C60BA0013CCF4 /* iburn.mbtiles */,
-				D97D7A2A198AD86400CA7828 /* dates_info.json */,
-				D99415721987272700D245C7 /* art_data.json */,
-				D99415731987272700D245C7 /* camp_data.json */,
-				D99415741987272700D245C7 /* event_data.json */,
+				D9046ED3198C65D70013CCF4 /* art_data.json */,
+				D9046ED4198C65D70013CCF4 /* camp_data.json */,
+				D9046ED5198C65D70013CCF4 /* dates_info.json */,
+				D9046ED6198C65D70013CCF4 /* event_data.json */,
+				D9046EF4198C65D70013CCF4 /* iburn.mbtiles */,
 			);
 			name = 2013;
-			sourceTree = "<group>";
+			path = "Submodules/iBurn-Data/data/2013";
+			sourceTree = SOURCE_ROOT;
+		};
+		D9046EF5198C65F40013CCF4 /* 2014 */ = {
+			isa = PBXGroup;
+			children = (
+				D9046F37198C6CDE0013CCF4 /* events.json */,
+				D9046EF6198C65F40013CCF4 /* art.json */,
+				D9046EF7198C65F40013CCF4 /* camps.json */,
+				D9046EF8198C65F40013CCF4 /* dates_info.json */,
+				D9046F19198C65F40013CCF4 /* iburn.mbtiles */,
+			);
+			name = 2014;
+			path = "Submodules/iBurn-Data/data/2014";
+			sourceTree = SOURCE_ROOT;
 		};
 		D92562C91988772600ED6B50 /* Cells */ = {
 			isa = PBXGroup;
@@ -418,14 +438,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
+				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
+				D9046F38198C6CDE0013CCF4 /* events.json in Resources */,
+				D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
-				D9046ECC198C60BA0013CCF4 /* iburn.mbtiles in Resources */,
-				D99415751987272700D245C7 /* art_data.json in Resources */,
-				D97D7A2B198AD86400CA7828 /* dates_info.json in Resources */,
+				D9046F1B198C65F40013CCF4 /* camps.json in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
-				D99415761987272700D245C7 /* camp_data.json in Resources */,
+				D9046F1A198C65F40013CCF4 /* art.json in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
-				D99415771987272700D245C7 /* event_data.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
