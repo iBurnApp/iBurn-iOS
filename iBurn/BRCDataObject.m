@@ -40,8 +40,21 @@
 }
 
 + (NSValueTransformer *)uniqueIDJSONTransformer {
-    return [MTLValueTransformer transformerWithBlock:^NSString*(NSNumber* number) {
-        return number.stringValue;
+    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        *success = NO;
+        if ([value isKindOfClass:[NSNumber class]]) {
+            *success = YES;
+            return ((NSNumber *)value).stringValue;
+        }
+        return nil;
+        
+    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        *success = NO;
+        if ([value isKindOfClass:[NSString class]]) {
+            *success = YES;
+            return @(((NSString *)value).integerValue);
+        }
+        return nil;
     }];
 }
 
