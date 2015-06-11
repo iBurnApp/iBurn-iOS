@@ -29,23 +29,6 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 
 Fortunately, you can still run and test the app with the previous year's data.
 
-## TODO
-
-* load `image_url` for art when internet is available
-* Open in Safari pop up when clicking links
-* Onboarding
-* Show data from previous years
-* Optimizations (only load 1 day of events at a time) 
-* Scroll back to top when switching sort
-* Search symbols (.,&,?,...)
-* Use fancy animations instead of `reloadData` everywhere
-* Show data type for amiguous cells (art, camps) when searching on map
-* Refactor BRCMapViewController and BRCFilteredTableViewController and pull out the common code used for full-text search, and swipe-to-favorite cells.
-* Rewrite FTS search to use YapDatabaseSearchResultsView
-* Show favorites on map after yapdb view loading is complete instead of waiting until retry on viewWillAppear
-* Refactor BRCMapViewController so annotation-loading code is shared between data types
-* Add ability for user to add their own notes to camps, art, events
-
 ## Contributing
 
 Thank you for your interest in contributing to iBurn! Please open up an issue on our tracker before starting work on major interface or functionality changes. Otherwise, feel free to run wild!
