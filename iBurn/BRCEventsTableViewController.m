@@ -56,7 +56,7 @@
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:timeAndDistanceView withName:self.timeAndDistanceViewName];
         NSLog(@"%@ %d", self.timeAndDistanceViewName, success);
         
-        NSSet *allowedCollections = [self allowedCollections];
+        YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[self allowedCollections]];
         
         YapDatabaseFilteredView *filteredByDayTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
         success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayTimeAndDistanceView withName:self.filteredByDayTimeAndDistanceViewName];
@@ -208,26 +208,19 @@
 - (void)updateFilteredViews
 {
     self.isUpdatingFilters = YES;
-    YapDatabaseViewBlockType filterBlockType = YapDatabaseViewBlockTypeWithObject;
-    YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager eventsFilteringBlock];
-    
+    YapDatabaseViewFiltering *filtering = [BRCDatabaseManager eventsFiltering];
     NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[self.filteredDistanceViewName, self.filteredTimeAndDistanceViewName];
     NSArray *eventsFilteredBySelectedDayArray = @[self.filteredByDayDistanceViewName, self.filteredByDayTimeAndDistanceViewName];
     
     [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [eventsFilteredBySelectedDayArray enumerateObjectsUsingBlock:^(NSString *filteredViewName, NSUInteger idx, BOOL *stop) {
-            YapDatabaseViewBlockType filterBlockType = [BRCDatabaseManager eventsSelectedDayOnlyFilteringBlockType];
-            YapDatabaseViewFilteringBlock filteringBlock = [BRCDatabaseManager eventsSelectedDayOnlyFilteringBlock];
+            YapDatabaseViewFiltering *selectedDayFiltering =[BRCDatabaseManager eventsSelectedDayOnlyFiltering];
             YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredViewName];
-            [filteredTransaction setFilteringBlock:filteringBlock
-                                filteringBlockType:filterBlockType
-                                        versionTag:[[NSUUID UUID] UUIDString]];
+            [filteredTransaction setFiltering:selectedDayFiltering versionTag:[[NSUUID UUID] UUIDString]];
         }];
         [eventsFilteredByExpirationAndTypeViewsArray enumerateObjectsUsingBlock:^(NSString *filteredViewName, NSUInteger idx, BOOL *stop) {
             YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredViewName];
-            [filteredTransaction setFilteringBlock:filteringBlock
-                                filteringBlockType:filterBlockType
-                                        versionTag:[[NSUUID UUID] UUIDString]];
+            [filteredTransaction setFiltering:filtering versionTag:[[NSUUID UUID] UUIDString]];
         }];
     } completionBlock:^{
         self.isUpdatingFilters = NO;
@@ -289,11 +282,9 @@
         }
         BRCDatabaseViewExtensionType extensionType = BRCDatabaseViewExtensionTypeTimeThenDistance;
         Class viewClass = self.viewClass;
-        YapDatabaseViewGroupingBlock groupingBlock = [BRCDatabaseManager groupingBlockForClass:viewClass extensionType:extensionType];
-        YapDatabaseViewBlockType groupingBlockType = [BRCDatabaseManager groupingBlockTypeForClass:viewClass extensionType:extensionType];
-        YapDatabaseViewSortingBlock sortingBlock = [BRCDatabaseManager sortingBlockForClass:viewClass extensionType:extensionType fromLocation:self.locationManager.location];
-        YapDatabaseViewBlockType sortingBlockType = [BRCDatabaseManager sortingBlockTypeForClass:viewClass extensionType:extensionType];
-        [viewTransaction setGroupingBlock:groupingBlock groupingBlockType:groupingBlockType sortingBlock:sortingBlock sortingBlockType:sortingBlockType versionTag:[[NSUUID UUID] UUIDString]];
+        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass extensionType:extensionType];
+        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass extensionType:extensionType fromLocation:self.locationManager.location];
+        [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:^{
         [self updateAllMappingsWithCompletionBlock:^{
             [self.tableView reloadData];

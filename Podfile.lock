@@ -1,88 +1,81 @@
 PODS:
-  - BButton (4.0.1)
+  - BButton (4.0.2)
   - CocoaLumberjack (1.9.2):
-    - CocoaLumberjack/Extensions
+    - CocoaLumberjack/Extensions (= 1.9.2)
   - CocoaLumberjack/Core (1.9.2)
   - CocoaLumberjack/Extensions (1.9.2):
     - CocoaLumberjack/Core
-  - CupertinoYankee (1.0.0)
+  - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
   - FMDB (2.3):
-    - FMDB/standard
+    - FMDB/standard (= 2.3)
   - FMDB/common (2.3)
   - FMDB/standard (2.3):
     - FMDB/common
-  - FormatterKit/LocationFormatter (1.6.0)
-  - FormatterKit/TimeIntervalFormatter (1.6.0)
-  - GRMustache (6.8.3):
+  - FormatterKit/LocationFormatter (1.8.0)
+  - FormatterKit/TimeIntervalFormatter (1.8.0)
+  - GRMustache (7.3.0):
     - JRSwizzle (~> 1.0)
-  - HockeySDK (3.5.6)
+  - HockeySDK (3.6.4)
   - JRSwizzle (1.0)
-  - Mantle (1.5):
-    - Mantle/extobjc
-  - Mantle/extobjc (1.5)
-  - Mapbox-iOS-SDK (1.3.0):
+  - Mantle (2.0.2):
+    - Mantle/extobjc (= 2.0.2)
+  - Mantle/extobjc (2.0.2)
+  - Mapbox-iOS-SDK (1.6.0):
     - FMDB (= 2.3)
-    - GRMustache (= 6.8.3)
+    - GRMustache (= 7.3.0)
     - SMCalloutView (= 2.0)
-  - MCSwipeTableViewCell (2.1.0)
-  - pop (1.0.6)
-  - PureLayout (1.0.1)
+  - MCSwipeTableViewCell (2.1.2)
+  - pop (1.0.7)
+  - PureLayout (2.0.6)
   - SMCalloutView (2.0)
-  - TTTAttributedLabel (1.10.1)
+  - TTTAttributedLabel (1.13.3)
   - UAAppReviewManager (0.2.6)
   - UIAlertView-Blocks (1.0)
-  - VTAcknowledgementsViewController (0.11)
-  - YapDatabase (2.5.0):
-    - YapDatabase/standard
-  - YapDatabase/common (2.5.0):
+  - VTAcknowledgementsViewController (0.14)
+  - YapDatabase (2.6.4):
+    - YapDatabase/standard (= 2.6.4)
+  - YapDatabase/standard (2.6.4):
     - CocoaLumberjack (~> 1)
-  - YapDatabase/standard (2.5.0):
-    - YapDatabase/common
 
 DEPENDENCIES:
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
-  - FormatterKit/LocationFormatter (~> 1.6)
-  - FormatterKit/TimeIntervalFormatter (~> 1.6)
-  - HockeySDK (~> 3.5)
-  - Mantle (~> 1.5)
-  - Mapbox-iOS-SDK (~> 1.3)
+  - FormatterKit/LocationFormatter (~> 1.8)
+  - FormatterKit/TimeIntervalFormatter (~> 1.8)
+  - HockeySDK (~> 3.6)
+  - Mantle (~> 2.0)
+  - Mapbox-iOS-SDK (= 1.6.0)
   - MCSwipeTableViewCell (~> 2.1)
   - pop (~> 1.0)
-  - PureLayout (~> 1.0)
-  - TTTAttributedLabel (~> 1.10)
+  - PureLayout (~> 2.0)
+  - TTTAttributedLabel (~> 1.13)
   - UAAppReviewManager (~> 0.2)
   - UIAlertView-Blocks (~> 1.0)
   - VTAcknowledgementsViewController (~> 0.11)
-  - YapDatabase (from `https://github.com/yaptv/YapDatabase.git`, commit `5e0db923b6fc3d6f20df3252f17c4b03db8c8777`)
-
-EXTERNAL SOURCES:
-  YapDatabase:
-    :commit: 5e0db923b6fc3d6f20df3252f17c4b03db8c8777
-    :git: https://github.com/yaptv/YapDatabase.git
+  - YapDatabase (~> 2.6)
 
 SPEC CHECKSUMS:
-  BButton: 396a5e59648e3f687b7d8201b88ebdbad6e36b59
-  CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
-  CupertinoYankee: 21a0000abd35b13c6b67e7697eabb10ef59b857e
-  DAKeyboardControl: 45a363c85c48a7df76f21f236d9f85800e001775
-  FMDB: 31ec26773c7f7b7890a6038235a1f2bbd933a7cb
-  FormatterKit: 534b21b52b9b822a9ec884a14e2debf92e7a3126
-  GRMustache: ab96109b7ba4b9568425bea40d6cd2cdc7582b6c
-  HockeySDK: 27d8b411208f9d3f70c8f6695a8defa2a3465721
-  JRSwizzle: 30da7a2c539a4ebf954b16d15f6dd8221c9f6fa5
-  Mantle: c67a7e45e14196ed42b2a7cbb98ff6a9920e6b92
-  Mapbox-iOS-SDK: 5f250e43ba0dfef983e13bae5eaf6daed5526fec
-  MCSwipeTableViewCell: 713086e29ce3c2171a0102fc594bf583fa7dd323
-  pop: e518794da38942c05255eb64b36d894e70cb4f00
-  PureLayout: 972964b21dbcbc5cc36785aed16aba03176f057d
-  SMCalloutView: c1906604d47c058400ade5c9d52ab98aa77b7e76
-  TTTAttributedLabel: 94bb04f1e005616002dd2cee0262a0082e533627
-  UAAppReviewManager: f23428de9c9cd242c2ffd899e218ba3620bd0683
-  UIAlertView-Blocks: f3271e84372beb97aea115cd1fb26ae66457f12f
-  VTAcknowledgementsViewController: 6e71652adbe73c68f0a278a73ac9ca1e1fc00b90
-  YapDatabase: f321f00dcaeaa52d625f942f93695c665efce32d
+  BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
+  CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
+  CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
+  DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
+  FMDB: 773d79bb74226959b7e2286b1d6e0bd857c88915
+  FormatterKit: bddde83e054edf9d9ee14f9de3b3a5103db256f4
+  GRMustache: 6baee020c5644416c034f5afb1607f6219e7f753
+  HockeySDK: c07cdd580296737edcd0963e292c19885a53f563
+  JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
+  Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
+  Mapbox-iOS-SDK: ee136ca5b7f853456b50dfd7a7f0e243288cf86f
+  MCSwipeTableViewCell: 0fc22bd3635b9b5f4ce08675218b0a7278b6440f
+  pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
+  PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d
+  SMCalloutView: f758edd824b18bf4f42de00df1e299861a2d1950
+  TTTAttributedLabel: 6f3174aef8e738f44dff97c2eb7d8184f6ab6277
+  UAAppReviewManager: 334bdb0085c3f80c7b696f33edc53667eda548e6
+  UIAlertView-Blocks: 7904744fca618afbd2ec646608924f5e69d5acd1
+  VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
+  YapDatabase: f9051e178a38f48d0f3a78562423a5bc969f1ca3
 
-COCOAPODS: 0.33.1
+COCOAPODS: 0.37.2

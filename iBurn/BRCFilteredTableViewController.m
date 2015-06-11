@@ -315,11 +315,11 @@
         }
         BRCDatabaseViewExtensionType extensionType = BRCDatabaseViewExtensionTypeDistance;
         Class viewClass = self.viewClass;
-        YapDatabaseViewGroupingBlock groupingBlock = [BRCDatabaseManager groupingBlockForClass:viewClass extensionType:extensionType];
-        YapDatabaseViewBlockType groupingBlockType = [BRCDatabaseManager groupingBlockTypeForClass:viewClass extensionType:extensionType];
-        YapDatabaseViewSortingBlock sortingBlock = [BRCDatabaseManager sortingBlockForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
-        YapDatabaseViewBlockType sortingBlockType = [BRCDatabaseManager sortingBlockTypeForClass:viewClass extensionType:extensionType];
-        [viewTransaction setGroupingBlock:groupingBlock groupingBlockType:groupingBlockType sortingBlock:sortingBlock sortingBlockType:sortingBlockType versionTag:[[NSUUID UUID] UUIDString]];
+        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass extensionType:extensionType];
+        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
+        [viewTransaction setGrouping:grouping
+                             sorting:sorting
+                          versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:^{
         [self updateAllMappingsWithCompletionBlock:^{
             [self.tableView reloadData];
@@ -399,14 +399,14 @@
         if (!filterTransaction) {
             return;
         }
-        YapDatabaseViewFilteringBlock filteringBlock = nil;
-        YapDatabaseViewBlockType filteringBlockType = [BRCDatabaseManager filteringBlockType];
+        YapDatabaseViewFiltering *filtering = nil;
         if (shouldShowOnlyFavorites) {
-            filteringBlock = [BRCDatabaseManager favoritesOnlyFilteringBlock];
+            filtering = [BRCDatabaseManager favoritesOnlyFiltering];
         } else {
-            filteringBlock = [BRCDatabaseManager allItemsFilteringBlock];
+            filtering = [BRCDatabaseManager allItemsFiltering];
         }
-        [filterTransaction setFilteringBlock:filteringBlock filteringBlockType:filteringBlockType versionTag:[[NSUUID UUID] UUIDString]];
+        [filterTransaction setFiltering:filtering
+                             versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:^{
         [self updateAllMappingsWithCompletionBlock:^{
             self.isUpdatingFilters = NO;

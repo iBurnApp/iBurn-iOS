@@ -55,8 +55,10 @@
 		D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
-		D9AFBDC919AE9CD6005C0EAF /* iBurn-database in Resources */ = {isa = PBXBuildFile; fileRef = D972BD2319934037008057DB /* iBurn-database */; };
-		D9B362AE199812AC0093B441 /* Pods-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9B362AD199812AC0093B441 /* Pods-acknowledgements.plist */; };
+		D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */; };
+		D99A61591B2A1483009CC09E /* events.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046F37198C6CDE0013CCF4 /* events.json */; };
+		D99A615A1B2A1487009CC09E /* art.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF6198C65F40013CCF4 /* art.json */; };
+		D99A615B1B2A148A009CC09E /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF7198C65F40013CCF4 /* camps.json */; };
 		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
@@ -65,7 +67,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1E93B71A95964EB6AFA26954 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		6200215A1BF28D44858F48C4 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		630861C7199029D100AD7109 /* BRCLocations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocations.h; sourceTree = "<group>"; };
 		630861C8199029D100AD7109 /* BRCLocations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocations.m; sourceTree = "<group>"; };
 		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
 		6E22C90E6C34438BB9A7F78E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		749CB956D79E7D284C256EA3 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
 		D9046ED4198C65D70013CCF4 /* camp_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = camp_data.json; sourceTree = "<group>"; };
 		D9046ED5198C65D70013CCF4 /* dates_info.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
@@ -165,7 +168,7 @@
 		D99415791987277500D245C7 /* BRCDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDatabaseManager.m; sourceTree = "<group>"; };
 		D994157D1987399F00D245C7 /* BRCEventTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventTime.h; sourceTree = "<group>"; };
 		D994157E1987399F00D245C7 /* BRCEventTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventTime.m; sourceTree = "<group>"; };
-		D9B362AD199812AC0093B441 /* Pods-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-acknowledgements.plist"; path = "Pods/Pods-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
+		D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-acknowledgements.plist"; path = "Pods/Target Support Files/Pods/Pods-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
 		D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAcknowledgementsViewController.h; sourceTree = "<group>"; };
 		D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAcknowledgementsViewController.m; sourceTree = "<group>"; };
 		D9B362B2199821EB0093B441 /* NSURL+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+iBurn.h"; sourceTree = "<group>"; };
@@ -195,6 +198,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3A796F266B406F6E516F6951 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				749CB956D79E7D284C256EA3 /* Pods.debug.xcconfig */,
+				6200215A1BF28D44858F48C4 /* Pods.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		6322830219881E27009E472B /* DetailViewControllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -225,7 +237,7 @@
 				63CE2A5D1987140F00F65B01 /* iBurn */,
 				63CE2A561987140F00F65B01 /* Frameworks */,
 				63CE2A551987140F00F65B01 /* Products */,
-				1E93B71A95964EB6AFA26954 /* Pods.xcconfig */,
+				3A796F266B406F6E516F6951 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -265,7 +277,7 @@
 				6322830C1989836F009E472B /* MapClasses */,
 				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
-				D9B362AD199812AC0093B441 /* Pods-acknowledgements.plist */,
+				D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */,
 				63D270FA198716C600204954 /* Resources */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
@@ -506,11 +518,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9AFBDC919AE9CD6005C0EAF /* iBurn-database in Resources */,
+				D99A61591B2A1483009CC09E /* events.json in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
+				D99A615A1B2A1487009CC09E /* art.json in Resources */,
 				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
+				D99A615B1B2A148A009CC09E /* camps.json in Resources */,
+				D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */,
 				D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */,
-				D9B362AE199812AC0093B441 /* Pods-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
@@ -532,7 +546,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CB570D6C6EA04E4EA9928285 /* Check Pods Manifest.lock */ = {
@@ -621,8 +635,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -635,7 +647,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_FAST_MATH = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -651,7 +662,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -663,8 +674,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -678,7 +687,6 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_FAST_MATH = YES;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_UNROLL_LOOPS = YES;
@@ -688,7 +696,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LLVM_LTO = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -698,14 +706,14 @@
 		};
 		63CE2A811987140F00F65B01 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1E93B71A95964EB6AFA26954 /* Pods.xcconfig */;
+			baseConfigurationReference = 749CB956D79E7D284C256EA3 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -713,7 +721,7 @@
 		};
 		63CE2A821987140F00F65B01 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1E93B71A95964EB6AFA26954 /* Pods.xcconfig */;
+			baseConfigurationReference = 6200215A1BF28D44858F48C4 /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -721,7 +729,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "47adb392-d519-4674-a3dd-953d41b98451";
 				WRAPPER_EXTENSION = app;

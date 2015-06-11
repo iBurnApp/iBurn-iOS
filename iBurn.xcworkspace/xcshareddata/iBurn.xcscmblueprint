@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "F0DAF2A64627A921A366B16481BCFBEB467F68B6",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "F0DAF2A64627A921A366B16481BCFBEB467F68B6" : 0,
+    "C7308312FB6185A9F6A5C771209FC2DEA9E93C4E" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "7DCC6A07-814A-4151-9FFD-47F96F174A78",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "F0DAF2A64627A921A366B16481BCFBEB467F68B6" : "iBurn-iOS",
+    "C7308312FB6185A9F6A5C771209FC2DEA9E93C4E" : "iBurn-iOS\/Submodules\/iBurn-Data"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "iBurn",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 203,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "iBurn.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/github.com\/Burning-Man-Earth\/iBurn-Data.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C7308312FB6185A9F6A5C771209FC2DEA9E93C4E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/github.com\/Burning-Man-Earth\/iBurn-iOS.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "F0DAF2A64627A921A366B16481BCFBEB467F68B6"
+    }
+  ]
+}

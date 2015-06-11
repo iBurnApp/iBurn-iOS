@@ -19,6 +19,7 @@
 #import "YapDatabaseFilteredViewTypes.h"
 #import "BRCAppDelegate.h"
 #import "BRCEventsTableViewController.h"
+#import "YapDatabase.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -52,12 +53,10 @@
     NSString *databasePath = [self yapDatabasePathWithName:name];
     
     self.database = [[YapDatabase alloc] initWithPath:databasePath
-                                     objectSerializer:NULL
-                                   objectDeserializer:NULL
-                                   metadataSerializer:NULL
-                                 metadataDeserializer:NULL
-                                      objectSanitizer:NULL
-                                    metadataSanitizer:NULL
+                                           serializer:nil
+                                         deserializer:nil
+                                         preSanitizer:nil
+                                        postSanitizer:nil
                                               options:options];
     self.database.defaultObjectPolicy = YapDatabasePolicyShare;
     self.database.defaultObjectCacheEnabled = YES;
@@ -78,20 +77,23 @@
 
 - (BOOL)copyDatabaseFromBundle
 {
-    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"iBurn-database"];
+    NSString *folderName = @"iBurn-database";
+    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     if (![[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {
         return NO;
     }
     NSString *databaseDirectory = [self yapDatabaseDirectory];
-    /*
-    if (![[NSFileManager defaultManager] fileExistsAtPath:databaseDirectory]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectory withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    NSString *databsePath = [self yapDatabasePathWithName:databaseName];
-     */
     
     NSError *error = nil;
-    [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databaseDirectory error:&error];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:databaseDirectory]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectory withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error) {
+            return NO;
+        }
+    }
+    NSString *databasePath = [self yapDatabasePathWithName:folderName];
+    
+    [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databasePath error:&error];
     if (error) {
         return NO;
     }
@@ -126,11 +128,11 @@
     return groupingBlockType;
 }
 
-+ (YapDatabaseViewGroupingBlock)groupingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
-    YapDatabaseViewGroupingBlock groupingBlock;
++ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
+    YapDatabaseViewGrouping *grouping = nil;
     
     if (viewClass == [BRCEventObject class]) {
-        groupingBlock = ^NSString *(NSString *collection, NSString *key, id object){
+        grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object){
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *eventObject = (BRCEventObject*)object;
                 NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupDateFormatter];
@@ -138,23 +140,18 @@
                 return groupName;
             }
             return nil;
-        };
+        }];
     } else {
-        groupingBlock = ^NSString *(NSString *collection, NSString *key){
+        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key){
             if ([collection isEqualToString:[viewClass collection]])
             {
                 return [viewClass collection];
             }
             return nil;
-        };
+        }];
     }
     
-    return groupingBlock;
-}
-
-+ (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
-    YapDatabaseViewBlockType sortingBlockType = YapDatabaseViewBlockTypeWithObject;
-    return sortingBlockType;
+    return grouping;
 }
 
 + (NSComparisonResult) compareDistanceOfFirstObject:(BRCDataObject*)object1 secondObject:(BRCDataObject*)object2 fromLocation:(CLLocation*)fromLocation {
@@ -176,11 +173,11 @@
     return [@(distance1) compare:@(distance2)];
 }
 
-+ (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation {
-    YapDatabaseViewSortingBlock sortingBlock;
++ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation {
+    YapDatabaseViewSorting* sorting = nil;
     if (extensionType == BRCDatabaseViewExtensionTypeTimeThenDistance) {
         BOOL shouldSortEventsByStartTime = [[NSUserDefaults standardUserDefaults] shouldSortEventsByStartTime];
-        sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+        sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event1 = (BRCEventObject *)obj1;
@@ -206,9 +203,9 @@
                 }
             }
             return NSOrderedSame;
-        };
+        }];
     } else if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
-        sortingBlock = ^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+        sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
                 BRCDataObject *data1 = (BRCDataObject *)obj1;
@@ -220,10 +217,9 @@
                 return result;
             }
             return NSOrderedSame;
-        };
+        }];
     }
-    
-    return sortingBlock;
+    return sorting;
 }
 
 /**
@@ -234,21 +230,17 @@
                             extensionType:(BRCDatabaseViewExtensionType)extensionType
                              fromLocation:(CLLocation*)fromLocation
 {
-    YapDatabaseViewBlockType groupingBlockType = [[self class] groupingBlockTypeForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewGroupingBlock groupingBlock = [[self class] groupingBlockForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewBlockType sortingBlockType = [[self class] sortingBlockTypeForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewSortingBlock sortingBlock = [[self class] sortingBlockForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
+    YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass extensionType:extensionType];
+    YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
     NSString *versionTag = versionTag = [[NSUUID UUID] UUIDString];
-    options.allowedCollections = [NSSet setWithObject:[viewClass collection]];
+    options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
     
     YapDatabaseView *databaseView =
-    [[YapDatabaseView alloc] initWithGroupingBlock:groupingBlock
-                                 groupingBlockType:groupingBlockType
-                                      sortingBlock:sortingBlock
-                                  sortingBlockType:sortingBlockType
-                                        versionTag:versionTag
-                                           options:options];
+    [[YapDatabaseView alloc] initWithGrouping:grouping
+                                      sorting:sorting
+                                   versionTag:versionTag
+                                      options:options];
     return databaseView;
 }
 
@@ -269,8 +261,7 @@
 + (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
                                 withIndexedProperties:(NSArray *)properties
 {
-    YapDatabaseFullTextSearchBlockType blockType = YapDatabaseFullTextSearchBlockTypeWithObject;
-    YapDatabaseFullTextSearchWithObjectBlock block = ^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
+    YapDatabaseFullTextSearchHandler *searchHandler = [YapDatabaseFullTextSearchHandler withObjectBlock:^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
         
         [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
             if ([object isKindOfClass:viewClass]) {
@@ -283,29 +274,22 @@
                 }
             }
         }];
-    };
+    }];
     
     YapDatabaseFullTextSearch *fullTextSearch = [[YapDatabaseFullTextSearch alloc] initWithColumnNames:properties
-                                                                                                 block:block
-                                                                                             blockType:blockType];
+                                                                                               handler:searchHandler];
     return fullTextSearch;
 }
 
-+ (YapDatabaseViewBlockType) filteringBlockType {
-    YapDatabaseViewBlockType filteringBlockType = YapDatabaseViewBlockTypeWithObject;
-    return filteringBlockType;
-}
-
-+ (YapDatabaseViewFilteringBlock) favoritesOnlyFilteringBlock {
-    YapDatabaseViewFilteringBlock favoritesOnlyFilteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
++ (YapDatabaseViewFiltering*) favoritesOnlyFiltering {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCDataObject class]]) {
             BRCDataObject *dataObject = (BRCDataObject*)object;
             return dataObject.isFavorite;
         }
         return NO;
-    };
-    return favoritesOnlyFilteringBlock;
+    }];
+    return filtering;
 }
 
 /**
@@ -314,20 +298,18 @@
  */
 + (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
                                   parentViewName:(NSString*)parentViewName
-                              allowedCollections:(NSSet*)allowedCollections
+                              allowedCollections:(YapWhitelistBlacklist*)allowedCollections
 {
-    YapDatabaseViewBlockType filteringBlockType = [[self class] filteringBlockType];
 
-    YapDatabaseViewFilteringBlock filterBlock = nil;
+    YapDatabaseViewFiltering *filtering = nil;
     if (filterType == BRCDatabaseFilteredViewTypeEverything) {
-        filterBlock = [[self class] allItemsFilteringBlock];
+        filtering = [[self class] allItemsFiltering];
     } else if (filterType == BRCDatabaseFilteredViewTypeFavoritesOnly) {
-        filterBlock = [[self class] favoritesOnlyFilteringBlock];
+        filtering = [[self class] favoritesOnlyFiltering];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
-        filterBlock = [[self class] eventsFilteringBlock];
+        filtering = [[self class] eventsFiltering];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventSelectedDayOnly) {
-        filterBlock = [[self class] eventsSelectedDayOnlyFilteringBlock];
-        filteringBlockType = [[self class] eventsSelectedDayOnlyFilteringBlockType];
+        filtering = [[self class] eventsSelectedDayOnlyFiltering];
     }
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
@@ -336,8 +318,7 @@
     }
     YapDatabaseFilteredView *filteredView =
     [[YapDatabaseFilteredView alloc] initWithParentViewName:parentViewName
-                                             filteringBlock:filterBlock
-                                         filteringBlockType:filteringBlockType
+                                                  filtering:filtering
                                                  versionTag:[[NSUUID UUID] UUIDString]
                                                     options:options];
     return filteredView;
@@ -404,39 +385,31 @@
     return [NSString stringWithFormat:@"%@%@View", classString, extensionString];
 }
 
-+ (YapDatabaseViewFilteringBlock)allItemsFilteringBlock {
-    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
++ (YapDatabaseViewFiltering*) allItemsFiltering {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL(NSString *group, NSString *collection, NSString *key) {
         return YES;
-    };
-    return filteringBlock;
+    }];
+    return filtering;
 }
 
 
-+ (YapDatabaseViewBlockType) eventsSelectedDayOnlyFilteringBlockType {
-    return YapDatabaseViewBlockTypeWithKey;
-}
-
-+ (YapDatabaseViewFilteringBlock)eventsSelectedDayOnlyFilteringBlock
++ (YapDatabaseViewFiltering*) eventsSelectedDayOnlyFiltering
 {
     BRCEventsTableViewController *eventsVC = [BRCAppDelegate appDelegate].eventsViewController;
     NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:eventsVC.selectedDay];
-    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key)
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (NSString *group, NSString *collection, NSString *key)
     {
         return [group isEqualToString:selectedDayGroup];
-    };
-    
-    return filteringBlock;
+    }];
+    return filtering;
 }
 
-+ (YapDatabaseViewFilteringBlock)eventsFilteringBlock
-{
++ (YapDatabaseViewFiltering*) eventsFiltering {
     BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
     
     NSSet *filteredSet = [NSSet setWithArray:[[NSUserDefaults standardUserDefaults] selectedEventTypes]];
     
-    YapDatabaseViewFilteringBlock filteringBlock = ^BOOL (NSString *group, NSString *collection, NSString *key, id object)
-    {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *eventObject = (BRCEventObject*)object;
             BOOL eventHasEnded = eventObject.hasEnded || eventObject.isEndingSoon;
@@ -452,9 +425,9 @@
             
         }
         return NO;
-    };
+    }];
     
-    return filteringBlock;
+    return filtering;
 }
 
 @end

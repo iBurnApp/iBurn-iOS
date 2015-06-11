@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "RMAnnotation.h"
+#import "Mapbox.h"
 #import "BRCDataObject.h"
 #import "BRCMapPoint.h"
 

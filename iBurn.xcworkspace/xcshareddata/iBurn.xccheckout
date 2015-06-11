@@ -10,33 +10,33 @@
 	<string>iBurn</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>0D742D41-9518-4C43-A9A0-D48626DD67BF</key>
-		<string>ssh://github.com/Burning-Man-Earth/iBurn-iOS.git</string>
-		<key>898E3C76-22DE-4D3D-B53D-160D703B7524</key>
+		<key>C7308312FB6185A9F6A5C771209FC2DEA9E93C4E</key>
 		<string>ssh://github.com/Burning-Man-Earth/iBurn-Data.git</string>
+		<key>F0DAF2A64627A921A366B16481BCFBEB467F68B6</key>
+		<string>ssh://github.com/Burning-Man-Earth/iBurn-iOS.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>iBurn.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>0D742D41-9518-4C43-A9A0-D48626DD67BF</key>
-		<string>..</string>
-		<key>898E3C76-22DE-4D3D-B53D-160D703B7524</key>
+		<key>C7308312FB6185A9F6A5C771209FC2DEA9E93C4E</key>
 		<string>../Submodules/iBurn-Data</string>
+		<key>F0DAF2A64627A921A366B16481BCFBEB467F68B6</key>
+		<string>..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>ssh://github.com/Burning-Man-Earth/iBurn-iOS.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>0D742D41-9518-4C43-A9A0-D48626DD67BF</string>
+	<string>F0DAF2A64627A921A366B16481BCFBEB467F68B6</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>898E3C76-22DE-4D3D-B53D-160D703B7524</string>
+			<string>C7308312FB6185A9F6A5C771209FC2DEA9E93C4E</string>
 			<key>IDESourceControlWCCName</key>
 			<string>iBurn-Data</string>
 		</dict>
@@ -44,7 +44,7 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>0D742D41-9518-4C43-A9A0-D48626DD67BF</string>
+			<string>F0DAF2A64627A921A366B16481BCFBEB467F68B6</string>
 			<key>IDESourceControlWCCName</key>
 			<string>iBurn-iOS</string>
 		</dict>

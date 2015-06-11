@@ -27,6 +27,7 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCLocations.h"
 #import "UAAppReviewManager.h"
+#import "RMConfiguration.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 
@@ -40,9 +41,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 {
     [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
                                                          liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
-    [[BITHockeyManager sharedHockeyManager].authenticator setIdentificationType:BITAuthenticatorIdentificationTypeDevice];
     [[BITHockeyManager sharedHockeyManager] startManager];
-    [[BITHockeyManager sharedHockeyManager].authenticator authenticateInstallation];
     [[UIApplication sharedApplication] setStatusBarHidden:NO];
     
     BRCDatabaseManager *databaseManager = [BRCDatabaseManager sharedInstance];
@@ -59,6 +58,8 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
             [self preloadExistingData];
         }
     }
+    
+    [RMConfiguration sharedInstance].accessToken = @"";
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [self setupDefaultTabBarController];

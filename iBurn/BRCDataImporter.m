@@ -31,11 +31,17 @@
             [self handleError:error completionBlock:completionBlock];
             return;
         }
-        NSArray *objects = [MTLJSONAdapter modelsOfClass:dataClass fromJSONArray:jsonObjects error:&error];
-        if (error) {
-            [self handleError:error completionBlock:completionBlock];
-            return;
-        }
+        NSMutableArray *objects = [NSMutableArray arrayWithCapacity:jsonObjects.count];
+        [jsonObjects enumerateObjectsUsingBlock:^(NSDictionary *jsonObject, NSUInteger idx, BOOL *stop) {
+            NSError *error = nil;
+            id object = [MTLJSONAdapter modelOfClass:dataClass fromJSONDictionary:jsonObject error:&error];
+            if (object) {
+                [objects addObject:object];
+            } else if (error) {
+#warning There will be missing items to due unicode JSON parsing errors
+                NSLog(@"Error parsing JSON: %@ %@", jsonObject, error);
+            }
+        }];
         [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
                 @autoreleasepool {

@@ -45,19 +45,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (instancetype) sharedInstance;
 
-+ (YapDatabaseViewBlockType) filteringBlockType;
-+ (YapDatabaseViewFilteringBlock) favoritesOnlyFilteringBlock;
-+ (YapDatabaseViewFilteringBlock) eventsFilteringBlock;
-+ (YapDatabaseViewFilteringBlock) allItemsFilteringBlock;
++ (YapDatabaseViewFiltering*) favoritesOnlyFiltering;
++ (YapDatabaseViewFiltering*) eventsFiltering;
++ (YapDatabaseViewFiltering*) allItemsFiltering;
 
-+ (YapDatabaseViewBlockType) eventsSelectedDayOnlyFilteringBlockType;
-+ (YapDatabaseViewFilteringBlock) eventsSelectedDayOnlyFilteringBlock;
++ (YapDatabaseViewFiltering*) eventsSelectedDayOnlyFiltering;
 
-+ (YapDatabaseViewBlockType)sortingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
-+ (YapDatabaseViewSortingBlock)sortingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation;
++ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation;
 
-+ (YapDatabaseViewBlockType)groupingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
-+ (YapDatabaseViewGroupingBlock)groupingBlockForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
++ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
 
 /**
  *  Creates a new databaseView extension that should be registered with the name
@@ -75,7 +71,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  */
 + (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
                                   parentViewName:(NSString*)parentViewName
-                              allowedCollections:(NSSet*)allowedCollections;
+                              allowedCollections:(YapWhitelistBlacklist*)allowedCollections;
 + (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
                        parentViewName:(NSString*)parentViewName;
 
