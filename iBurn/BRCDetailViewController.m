@@ -24,8 +24,6 @@
 #import "BRCEventObject.h"
 #import "BRCLocations.h"
 
-static NSString * const kBRCRowHeightDummyCellIdentifier = @"kBRCRowHeightDummyCellIdentifier";
-
 static CGFloat const kMapHeaderOffsetY = -150.0;
 static CGFloat const kMapHeaderHeight = 250.0;
 
@@ -41,12 +39,6 @@ static CGFloat const kMapHeaderHeight = 250.0;
 @end
 
 @implementation BRCDetailViewController
-
-- (void) dealloc {
-    self.mapView.delegate = nil;
-    self.tableView.delegate = nil;
-    self.tableView.dataSource = nil;
-}
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject
 {
@@ -84,17 +76,17 @@ static CGFloat const kMapHeaderHeight = 250.0;
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundColor = [UIColor clearColor];
+    self.tableView.estimatedRowHeight = 44.0;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
     
     [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
-    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBRCRowHeightDummyCellIdentifier];
     
     [self.view addSubview:self.tableView];
     
     if (self.mapView) {
         CGRect mapFrame = CGRectMake(0.0, 0.0, self.view.bounds.size.width, kMapHeaderHeight);
-        self.fakeTableViewBackground = [[UIView alloc] init];
+        self.fakeTableViewBackground = [[UIView alloc] initForAutoLayout];
         self.fakeTableViewBackground.backgroundColor = self.view.backgroundColor;
-        self.fakeTableViewBackground.translatesAutoresizingMaskIntoConstraints = NO;
         
         self.mapView.frame = CGRectMake(0, kMapHeaderOffsetY, self.view.bounds.size.width, self.view.bounds.size.height + ABS(kMapHeaderOffsetY));
         UIView *tableHeader = [[UIView alloc] initWithFrame: mapFrame];
@@ -139,11 +131,11 @@ static CGFloat const kMapHeaderHeight = 250.0;
         return;
     }
     
-    [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeBottom];
+    [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
     [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
     
     [self.fakeTableViewBackground autoAlignAxisToSuperviewAxis:ALAxisVertical];
-    [self.fakeTableViewBackground autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeTop];
+    [self.fakeTableViewBackground autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
     [self.fakeTableViewBackground autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.tableView.tableHeaderView];
     
     self.didSetContraints = YES;
@@ -270,31 +262,6 @@ static CGFloat const kMapHeaderHeight = 250.0;
         title = cellInfo.displayName;
     }
     return title;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
-    if (cellInfo.cellType == BRCDetailCellInfoTypeText || cellInfo.cellType == BRCDetailCellInfoTypeSchedule) {
-        NSString *cellText = nil;
-        if (cellInfo.cellType == BRCDetailCellInfoTypeText) {
-            cellText = cellInfo.value;
-        } else if (cellInfo.cellType == BRCDetailCellInfoTypeSchedule) {
-            NSAttributedString *attrStr = cellInfo.value;
-            cellText = [attrStr string];
-        }
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBRCRowHeightDummyCellIdentifier];
-        if (!cell) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kBRCRowHeightDummyCellIdentifier];
-        }
-        CGRect labelSize = [cellText boundingRectWithSize:CGSizeMake(tableView.bounds.size.width, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: cell.textLabel.font} context:nil];
-
-#warning Cuts off some multi line text
-        return labelSize.size.height + 20;
-    }
-    
-    return 44.0f;
-    
 }
 
 #pragma - mark UITableViewDelegate Methods
