@@ -19,7 +19,7 @@ before_script:
   - gem install cocoapods
   - pod install
 script:
-  - xctool -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator7.1 ONLY_ACTIVE_ARCH=NO build
+  - xctool -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO build
 
 notifications:
   email: false

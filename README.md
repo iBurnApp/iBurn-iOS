@@ -4,7 +4,8 @@
 
 iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. For the 2014 release it has been rewritten from scratch for iOS 7 on top of some really awesome open source software. We decided to use [YapDatabase](https://github.com/yaptv/YapDatabase)+[Mantle](https://github.com/Mantle/Mantle) instead of Core Data, and [Mapbox](https://github.com/mapbox/mapbox-ios-sdk) instead of MapKit for our [offline map tiles](https://github.com/Burning-Man-Earth/iBurn-Maps). For a more complete list check out our `Podfile`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/Burning-Man-Earth/iBurn-Android).
 
-[![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8)
+[![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8) [![iBurn Google Play Store Link](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.gaiagps.iburn&hl=en)
+
 
 ## Installation
 
@@ -20,6 +21,7 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 	// To generate new passcode (without salt):
 	// $ echo -n passcode | sha256sum
 	NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
+	```
 
 * Compile and Run!
 
@@ -71,7 +73,7 @@ Your contributions will need to be licensed to us under the [MPL 2.0](https://ww
 
 ## License
 
-© 2014 [Chris Ballinger](https://github.com/chrisballinger), [David Chiles](https://github.com/davidchiles)
+© 2015 [Chris Ballinger](https://github.com/chrisballinger), [David Chiles](https://github.com/davidchiles)
 
 Code: [MPL 2.0](https://www.mozilla.org/MPL/2.0/) (similar to the LGPL in terms of [copyleft](https://en.wikipedia.org/wiki/Copyleft) but more compatible with the App Store)
 
