@@ -24,17 +24,14 @@
 #import "BRCEventObject.h"
 #import "BRCLocations.h"
 
-static CGFloat const kMapHeaderOffsetY = -150.0;
-static CGFloat const kMapHeaderHeight = 250.0;
+static CGFloat const kTableViewHeaderHeight = 100;
 
-@interface BRCDetailViewController () <UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate, RMMapViewDelegate>
+@interface BRCDetailViewController () <MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) RMMapView *mapView;
-@property (nonatomic, strong) UIView *fakeTableViewBackground;
-@property (nonatomic) BOOL didSetContraints;
 
 @end
 
@@ -67,35 +64,25 @@ static CGFloat const kMapHeaderHeight = 250.0;
 {
     [super viewDidLoad];
     
-    
-    self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStyleGrouped];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.view.backgroundColor = self.tableView.backgroundColor;
-    self.tableView.backgroundView = nil;
-    self.tableView.backgroundView = [[UIView alloc] init];
-    self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.estimatedRowHeight = 44.0;
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     
     [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
     
-    [self.view addSubview:self.tableView];
-    
     if (self.mapView) {
-        CGRect mapFrame = CGRectMake(0.0, 0.0, self.view.bounds.size.width, kMapHeaderHeight);
-        self.fakeTableViewBackground = [[UIView alloc] initForAutoLayout];
-        self.fakeTableViewBackground.backgroundColor = self.view.backgroundColor;
+        CGRect headerFrame = CGRectMake(0.0, 0.0, CGRectGetWidth(self.view.bounds), kTableViewHeaderHeight);
         
-        self.mapView.frame = CGRectMake(0, kMapHeaderOffsetY, self.view.bounds.size.width, self.view.bounds.size.height + ABS(kMapHeaderOffsetY));
-        UIView *tableHeader = [[UIView alloc] initWithFrame: mapFrame];
-        [tableHeader addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
-        tableHeader.backgroundColor = [UIColor clearColor];
-        self.tableView.tableHeaderView = tableHeader;
+        UIView *clearHeaderView = [[UIView alloc] initWithFrame:headerFrame];
+        clearHeaderView.backgroundColor = [UIColor clearColor];
         
-        [self.view insertSubview:self.mapView belowSubview:self.tableView];
-        [self.view insertSubview:self.fakeTableViewBackground belowSubview:self.tableView];
+        CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
+        
+        self.mapView.frame = CGRectMake(0, -viewHeight+kTableViewHeaderHeight, CGRectGetWidth(self.view.bounds), viewHeight);
+        [clearHeaderView addSubview:self.mapView];
+        
+        [clearHeaderView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
+        
+        self.tableView.tableHeaderView = clearHeaderView;
     }
     
     
@@ -108,9 +95,12 @@ static CGFloat const kMapHeaderHeight = 250.0;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
     CGRect rect = self.tableView.tableHeaderView.bounds;
-    rect.origin.y = kMapHeaderOffsetY;
+    [self updateMapViewInRect:rect animated:NO];
+}
+
+- (void)updateMapViewInRect:(CGRect)rect animated:(BOOL)animated
+{
     CLLocation *objectLocation = self.dataObject.location;
     if ([BRCEmbargo canShowLocationForObject:self.dataObject] && objectLocation) {
         CLLocation *userLocation = self.mapView.userLocation.location;
@@ -122,23 +112,6 @@ static CGFloat const kMapHeaderHeight = 250.0;
     } else {
         [self.mapView setZoom:14.0 atCoordinate:[BRCLocations blackRockCityCenter] animated:animated];
     }
-}
-
-- (void)updateViewConstraints
-{
-    [super updateViewConstraints];
-    if (self.didSetContraints) {
-        return;
-    }
-    
-    [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
-    [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
-    
-    [self.fakeTableViewBackground autoAlignAxisToSuperviewAxis:ALAxisVertical];
-    [self.fakeTableViewBackground autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
-    [self.fakeTableViewBackground autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.tableView.tableHeaderView];
-    
-    self.didSetContraints = YES;
 }
 
 - (UIImage*)imageIfFavorite:(BOOL)isFavorite {
@@ -203,7 +176,7 @@ static CGFloat const kMapHeaderHeight = 250.0;
     if (dataObject.location) {
         self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
         self.mapView.delegate = self;
-        self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
         [self.mapView addAnnotation:annotation];
         self.mapView.draggingEnabled = NO;
@@ -231,7 +204,6 @@ static CGFloat const kMapHeaderHeight = 250.0;
 
 #pragma - mark UITableViewDataSource Methods
 
-////// Required //////
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return 1;
@@ -244,8 +216,6 @@ static CGFloat const kMapHeaderHeight = 250.0;
     [cell setDetailCellInfo:cellInfo];
     return cell;
 }
-
-////// Optional //////
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -265,8 +235,6 @@ static CGFloat const kMapHeaderHeight = 250.0;
 }
 
 #pragma - mark UITableViewDelegate Methods
-
-////// Optional //////
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -311,20 +279,16 @@ static CGFloat const kMapHeaderHeight = 250.0;
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    CGFloat scrollOffset = scrollView.contentOffset.y;
-    CGRect headerFrame = self.mapView.frame;
-    
-    if (scrollOffset < 0)
-    {
-        headerFrame.origin.y = MIN(kMapHeaderOffsetY - ((scrollOffset / 3)), 0);
-        
+    CGFloat navBarY = CGRectGetMaxY(self.navigationController.navigationBar.frame);
+    CGFloat contentOffSetY = scrollView.contentOffset.y;
+    CGFloat headerViewHeight = CGRectGetHeight(self.tableView.tableHeaderView.frame);
+    CGFloat visibelHeight = headerViewHeight - (navBarY + contentOffSetY);
+    CGRect mapRect = CGRectZero;
+    if (visibelHeight > 0) {
+        mapRect = CGRectMake(0, headerViewHeight - visibelHeight, CGRectGetWidth(self.tableView.tableHeaderView.frame), visibelHeight);
     }
-    else //scrolling up
-    {
-        headerFrame.origin.y = kMapHeaderOffsetY - scrollOffset;
-    }
-    
-    self.mapView.frame = headerFrame;
+    self.mapView.frame = mapRect;
+    [self updateMapViewInRect:mapRect animated:NO];
 }
 
 

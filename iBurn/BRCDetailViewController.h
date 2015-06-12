@@ -10,9 +10,7 @@
 
 @class  BRCDataObject;
 
-@interface BRCDetailViewController : UIViewController
-
-@property (nonatomic, strong) UITableView *tableView;
+@interface BRCDetailViewController : UITableViewController
 
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject;
