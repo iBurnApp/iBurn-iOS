@@ -21,7 +21,7 @@ PODS:
   - Mantle (2.0.2):
     - Mantle/extobjc (= 2.0.2)
   - Mantle/extobjc (2.0.2)
-  - Mapbox-iOS-SDK (1.6.0):
+  - Mapbox-iOS-SDK (1.6.1):
     - FMDB (= 2.3)
     - GRMustache (= 7.3.0)
     - SMCalloutView (= 2.0)
@@ -46,7 +46,7 @@ DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - HockeySDK (~> 3.6)
   - Mantle (~> 2.0)
-  - Mapbox-iOS-SDK (= 1.6.0)
+  - Mapbox-iOS-SDK (= 1.6.1)
   - MCSwipeTableViewCell (~> 2.1)
   - pop (~> 1.0)
   - PureLayout (~> 2.0)
@@ -67,7 +67,7 @@ SPEC CHECKSUMS:
   HockeySDK: c07cdd580296737edcd0963e292c19885a53f563
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
   Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
-  Mapbox-iOS-SDK: ee136ca5b7f853456b50dfd7a7f0e243288cf86f
+  Mapbox-iOS-SDK: e05afd622a08015736b007f8adb7a1d8dc1a83da
   MCSwipeTableViewCell: 0fc22bd3635b9b5f4ce08675218b0a7278b6440f
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d

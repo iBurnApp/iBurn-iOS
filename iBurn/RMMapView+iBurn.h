@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "RMMapView.h"
+#import <Mapbox_iOS_SDK/Mapbox.h>
 
 @class RMMBTilesSource;
 

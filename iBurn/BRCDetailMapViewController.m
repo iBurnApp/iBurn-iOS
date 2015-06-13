@@ -9,6 +9,8 @@
 #import "BRCDetailMapViewController.h"
 #import "BRCDataObject.h"
 #import "RMAnnotation+iBurn.h"
+#import <Mapbox_iOS_SDK/Mapbox.h>
+
 @interface BRCDetailMapViewController ()
 
 @property (nonatomic, strong) BRCDataObject *dataObject;

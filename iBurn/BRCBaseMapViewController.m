@@ -8,7 +8,7 @@
 
 #import "BRCBaseMapViewController.h"
 #import "RMMapView+iBurn.h"
-#import <Mapbox-iOS-SDK/Mapbox.h>
+#import <Mapbox_iOS_SDK/Mapbox.h>
 #import "RMAnnotation+iBurn.h"
 #import "BRCDataObject.h"
 #import "RMMarker+iBurn.h"

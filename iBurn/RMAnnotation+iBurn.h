@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "Mapbox.h"
+#import <Mapbox_iOS_SDK/Mapbox.h>
 #import "BRCDataObject.h"
 #import "BRCMapPoint.h"
 

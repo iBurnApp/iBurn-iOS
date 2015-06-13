@@ -1,8 +1,9 @@
 platform :ios, '8.0'
 
-#inhibit_all_warnings!
+inhibit_all_warnings!
+use_frameworks!
 
-pod 'Mapbox-iOS-SDK', '1.6.0' # There is a bug in 1.6.1
+pod 'Mapbox-iOS-SDK', '1.6.1'
 pod 'YapDatabase', '~> 2.6'
 pod 'Mantle', '~> 2.0'
 pod 'FormatterKit/LocationFormatter', '~> 1.8'
