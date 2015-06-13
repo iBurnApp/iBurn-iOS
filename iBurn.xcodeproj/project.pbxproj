@@ -63,6 +63,7 @@
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B9199AB5320093B441 /* BRCMapPoint.m */; };
+		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 /* End PBXBuildFile section */
 
@@ -177,6 +178,7 @@
 		D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSocialButtonsView.m; sourceTree = "<group>"; };
 		D9B362B8199AB5320093B441 /* BRCMapPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapPoint.h; sourceTree = "<group>"; };
 		D9B362B9199AB5320093B441 /* BRCMapPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapPoint.m; sourceTree = "<group>"; };
+		D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = Pods/BButton/BButton/resources/FontAwesome.ttf; sourceTree = SOURCE_ROOT; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 				63D270F61987157900204954 /* ViewControllers */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
 				D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */,
+				D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */,
 				63D270FA198716C600204954 /* Resources */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
@@ -520,6 +523,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D99A61591B2A1483009CC09E /* events.json in Resources */,
+				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D99A615A1B2A1487009CC09E /* art.json in Resources */,
 				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
