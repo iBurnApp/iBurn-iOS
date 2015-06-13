@@ -46,7 +46,7 @@ DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - HockeySDK (~> 3.6)
   - Mantle (~> 2.0)
-  - Mapbox-iOS-SDK (= 1.6.1)
+  - Mapbox-iOS-SDK (from `Podspecs/Mapbox-iOS-SDK.podspec`)
   - MCSwipeTableViewCell (~> 2.1)
   - pop (~> 1.0)
   - PureLayout (~> 2.0)
@@ -55,6 +55,10 @@ DEPENDENCIES:
   - UIAlertView-Blocks (~> 1.0)
   - VTAcknowledgementsViewController (~> 0.11)
   - YapDatabase (~> 2.6)
+
+EXTERNAL SOURCES:
+  Mapbox-iOS-SDK:
+    :podspec: Podspecs/Mapbox-iOS-SDK.podspec
 
 SPEC CHECKSUMS:
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
@@ -67,7 +71,7 @@ SPEC CHECKSUMS:
   HockeySDK: c07cdd580296737edcd0963e292c19885a53f563
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
   Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
-  Mapbox-iOS-SDK: e05afd622a08015736b007f8adb7a1d8dc1a83da
+  Mapbox-iOS-SDK: ee393ce7b55afce51bce39a262bca2ef7cfafae6
   MCSwipeTableViewCell: 0fc22bd3635b9b5f4ce08675218b0a7278b6440f
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d

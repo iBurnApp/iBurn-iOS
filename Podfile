@@ -3,7 +3,7 @@ platform :ios, '8.0'
 inhibit_all_warnings!
 use_frameworks!
 
-pod 'Mapbox-iOS-SDK', '1.6.1'
+pod 'Mapbox-iOS-SDK', :podspec => 'Podspecs/Mapbox-iOS-SDK.podspec' # 1.6.1 pod is broken
 pod 'YapDatabase', '~> 2.6'
 pod 'Mantle', '~> 2.0'
 pod 'FormatterKit/LocationFormatter', '~> 1.8'
