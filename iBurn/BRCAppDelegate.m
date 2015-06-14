@@ -211,10 +211,12 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
                             @[campsDataURL, [BRCCampObject class]],
                             @[eventsDataURL, [BRCRecurringEventObject class]]];
     
+    BRCDataImporter *importer = [[BRCDataImporter alloc] initWithReadWriteConnection:[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection];
+    
     [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
         NSURL *url = [obj firstObject];
         Class dataClass = [obj lastObject];
-        [BRCDataImporter loadDataFromURL:url dataClass:dataClass completionBlock:^(BOOL success, NSError *error) {
+        [importer loadDataFromURL:url dataClass:dataClass completionBlock:^(BOOL success, NSError *error) {
             if (!success) {
                 NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
             } else {

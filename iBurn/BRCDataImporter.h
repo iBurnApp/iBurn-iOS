@@ -7,8 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <YapDatabase/YapDatabase.h>
 
 @interface BRCDataImporter : NSObject
+
+@property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
+
+- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection NS_DESIGNATED_INITIALIZER;
 
 /**
  *  Loads Data 
@@ -17,7 +22,7 @@
  *  @param dataClass       subclass of BRCDataObject
  *  @param completionBlock always called on main thread
  */
-+ (void) loadDataFromURL:(NSURL*)dataURL
+- (void) loadDataFromURL:(NSURL*)dataURL
                dataClass:(Class)dataClass
          completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
 
