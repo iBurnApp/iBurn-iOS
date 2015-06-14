@@ -193,37 +193,37 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 {
     switch (type) {
         case BRCEventTypeWorkshop:
-            return @"Workshop";
+            return @"🔨 Workshop";
             break;
         case BRCEventTypePerformance:
-            return @"Performance";
+            return @"💃 Performance";
             break;
         case BRCEventTypeSupport:
-            return @"Support";
+            return @"🏥 Support";
             break;
         case BRCEventTypeParty:
-            return @"Party";
+            return @"🍺 Party";
             break;
         case BRCEventTypeCeremony:
-            return @"Ceremony";
+            return @"🌜Ceremony";
             break;
         case BRCEventTypeGame:
-            return @"Game";
+            return @"🎲 Game";
             break;
         case BRCEventTypeFire:
-            return @"Fire";
+            return @"🔥 Fire";
             break;
         case BRCEventTypeAdult:
-            return @"Adult";
+            return @"💋 Adult";
             break;
         case BRCEventTypeKid:
-            return @"Kid";
+            return @"👨‍👩‍👧‍👦 Kid";
             break;
         case BRCEventTypeParade:
-            return @"Parade";
+            return @"🎉 Parade";
             break;
         case BRCEventTypeFood:
-            return @"Food";
+            return @"🍔 Food";
             break;
         default:
             return @"";
