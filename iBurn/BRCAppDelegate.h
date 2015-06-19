@@ -20,6 +20,7 @@
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
 @property (nonatomic, strong) BRCMapViewController *mapViewController;
+@property (nonatomic, strong) BRCFilteredTableViewController *favoritesViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *artViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *campsViewController;
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;

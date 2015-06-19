@@ -66,6 +66,8 @@
     self.readWriteDatabaseConnection.objectPolicy = YapDatabasePolicyShare;
     self.readWriteDatabaseConnection.name = @"readWriteDatabaseConnection";
 
+    [self setupViewNames];
+    [self registerExtensions];
     
     if (self.database) {
         return YES;
@@ -115,6 +117,39 @@
     });
     
     return databaseManager;
+}
+
+- (void) setupViewNames {
+    /*
+     2015-06-19 10:48:18.046 iBurn[95510:3255746] Registered BRCArtObjectView 1
+     2015-06-19 10:48:18.350 iBurn[95510:3255746] Registered BRCCampObjectView 1
+     2015-06-19 10:48:20.423 iBurn[95510:3255746] Registered BRCEventObjectView 1
+     2015-06-19 10:48:20.450 iBurn[95510:3255901] BRCEventObjectView-SelectedDayOnlyFilter 1
+     2015-06-19 10:48:20.454 iBurn[95510:3255901] BRCEventObjectView-SelectedDayOnlyFilter-EventExpirationAndTypeFilter 1
+     2015-06-19 10:48:20.466 iBurn[95510:3255746] Attempting to badge the application icon but haven't received permission from the user to badge the application
+     2015-06-19 10:48:20.629 iBurn[95510:3255746] BRCDataObject-SearchFilter(title) ready 1
+     2015-06-19 10:48:20.631 iBurn[95510:3255746] BRCArtObject-SearchFilter(title) ready 1
+     2015-06-19 10:48:20.635 iBurn[95510:3255746] BRCCampObject-SearchFilter(title) ready 1
+     2015-06-19 10:48:20.638 iBurn[95510:3255746] BRCEventObject-SearchFilter(title) ready 1
+*/
+    _artViewName = [[self class] databaseViewNameForClass:[BRCArtObject class]];
+    _campsViewName = [[self class] databaseViewNameForClass:[BRCCampObject class]];
+    _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
+    _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
+}
+
+- (void) registerExtensions {
+    NSArray *viewsInfo = @[@[self.artViewName, [BRCArtObject class]],
+                           @[self.campsViewName, [BRCCampObject class]],
+                           @[self.eventsViewName, [BRCEventObject class]],
+                           @[self.dataObjectsViewName, [BRCDataObject class]]];
+    [viewsInfo enumerateObjectsUsingBlock:^(NSArray *viewInfo, NSUInteger idx, BOOL *stop) {
+        NSString *viewName = [viewInfo firstObject];
+        Class viewClass = [viewInfo lastObject];
+        YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass];
+        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:view withName:viewName];
+        NSLog(@"Registered %@ %d", viewName, success);
+    }];
 }
 
 + (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass {
@@ -214,7 +249,7 @@
     YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
     YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    NSString *versionTag = versionTag = [[NSUUID UUID] UUIDString];
+    NSString *versionTag = @"1";
     options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
     
     YapDatabaseView *databaseView =

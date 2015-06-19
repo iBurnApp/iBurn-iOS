@@ -39,6 +39,17 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (instancetype) sharedInstance;
 
+/** View containing all camp objects */
+@property (nonatomic, strong, readonly) NSString *campsViewName;
+/** View containing all art objects */
+@property (nonatomic, strong, readonly) NSString *artViewName;
+/** View containing all event objects */
+@property (nonatomic, strong, readonly) NSString *eventsViewName;
+/** View containing all BRCDataObjects (art, camps, events) */
+@property (nonatomic, strong, readonly) NSString *dataObjectsViewName;
+
+
+
 + (YapDatabaseViewFiltering*) favoritesOnlyFiltering;
 + (YapDatabaseViewFiltering*) eventsFiltering;
 + (YapDatabaseViewFiltering*) allItemsFiltering;

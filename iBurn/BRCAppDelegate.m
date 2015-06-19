@@ -163,23 +163,23 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    UITableViewController *favoritesVC = [[UITableViewController alloc] init];
-    favoritesVC.title = @"Favorites";
-    UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:favoritesVC];
-    favoritesVC.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
-    favoritesVC.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCDarkStar"];
+    self.favoritesViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCDataObject class] viewName:[BRCDatabaseManager sharedInstance].dataObjectsViewName];
+    self.favoritesViewController.title = @"Favorites";
+    UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
+    favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
+    favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCDarkStar"];
     
-    self.artViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
+    self.artViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class] viewName:[BRCDatabaseManager sharedInstance].artViewName];
     self.artViewController.title = @"Art";
     UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:self.artViewController];
     artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
     
-    self.campsViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class]];
+    self.campsViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class] viewName:[BRCDatabaseManager sharedInstance].campsViewName];
     self.campsViewController.title = @"Camps";
     UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:self.campsViewController];
     campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
-    self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class]];
+    self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class] viewName:[BRCDatabaseManager sharedInstance].eventsViewName];
     self.eventsViewController.title = @"Events";
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];

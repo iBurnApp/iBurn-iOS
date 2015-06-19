@@ -11,9 +11,8 @@
 @interface BRCFilteredTableViewController : UITableViewController <UISearchDisplayDelegate, UISearchBarDelegate>
 
 @property (nonatomic, strong, readonly) NSString *viewName;
-
 @property (nonatomic, strong, readonly) Class viewClass;
 
-- (instancetype) initWithViewClass:(Class)viewClass;
+- (instancetype) initWithViewClass:(Class)viewClass viewName:(NSString*)viewName NS_DESIGNATED_INITIALIZER;
 
 @end

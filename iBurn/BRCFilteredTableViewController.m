@@ -42,22 +42,19 @@
 @implementation BRCFilteredTableViewController
 
 - (void) setupDatabaseExtensionNames {
-    _viewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass];
     self.indexedProperties = @[NSStringFromSelector(@selector(title))];
     self.ftsExtensionName = [BRCDatabaseManager fullTextSearchNameForClass:self.viewClass withIndexedProperties:self.indexedProperties];
 }
 
 - (void) registerDatabaseExtensions {
     [self registerFullTextSearchExtension];
-    YapDatabaseView *dbView = [BRCDatabaseManager databaseViewForClass:self.viewClass];
-    BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:dbView withName:self.viewName];
-    NSLog(@"Registered %@ %d", self.viewName, success);
 }
 
-- (instancetype)initWithViewClass:(Class)viewClass
+- (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName
 {
-    if (self = [super init]) {
+    if (self = [super initWithStyle:UITableViewStylePlain]) {
         _viewClass = viewClass;
+        _viewName = viewName;
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
         [self setupDatabaseExtensionNames];

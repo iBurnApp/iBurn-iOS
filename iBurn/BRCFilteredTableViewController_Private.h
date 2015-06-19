@@ -28,7 +28,6 @@
 - (BOOL) shouldAnimateLoadingIndicator;
 - (void) refreshLoadingIndicatorViewAnimation;
 
-- (NSArray *) segmentedControlInfo;
 - (Class) cellClass;
 - (NSSet *) allowedCollections;
 
