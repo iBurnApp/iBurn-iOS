@@ -31,7 +31,6 @@ PODS:
   - SMCalloutView (2.0)
   - TTTAttributedLabel (1.13.3)
   - UAAppReviewManager (0.2.6)
-  - UIAlertView-Blocks (1.0)
   - VTAcknowledgementsViewController (0.14)
   - YapDatabase (2.6.4):
     - YapDatabase/standard (= 2.6.4)
@@ -52,7 +51,6 @@ DEPENDENCIES:
   - PureLayout (~> 2.0)
   - TTTAttributedLabel (~> 1.13)
   - UAAppReviewManager (~> 0.2)
-  - UIAlertView-Blocks (~> 1.0)
   - VTAcknowledgementsViewController (~> 0.11)
   - YapDatabase (~> 2.6)
 
@@ -78,7 +76,6 @@ SPEC CHECKSUMS:
   SMCalloutView: f758edd824b18bf4f42de00df1e299861a2d1950
   TTTAttributedLabel: 6f3174aef8e738f44dff97c2eb7d8184f6ab6277
   UAAppReviewManager: 334bdb0085c3f80c7b696f33edc53667eda548e6
-  UIAlertView-Blocks: 7904744fca618afbd2ec646608924f5e69d5acd1
   VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
   YapDatabase: f9051e178a38f48d0f3a78562423a5bc969f1ca3
 

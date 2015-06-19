@@ -25,7 +25,6 @@
 #import "BButton.h"
 #import "BRCMapPoint.h"
 #import "BRCAnnotationEditView.h"
-#import "UIAlertView+Blocks.h"
 #import "BRCEmbargoPasscodeViewController.h"
 #import "RMUserLocation.h"
 #import "BRCAppDelegate.h"
@@ -680,8 +679,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     
     if (![BRCEmbargo canShowLocationForObject:dataObject]) {
         [self.searchDisplayController setActive:NO animated:YES];
-        RIButtonItem *dismissItem = [RIButtonItem itemWithLabel:@"Dismiss"];
-        RIButtonItem *unlockItem = [RIButtonItem itemWithLabel:@"Unlock" action:^{
+        UIAlertAction *dismissAction = [UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleCancel handler:nil];
+        UIAlertAction *unlockAction = [UIAlertAction actionWithTitle:@"Unlock" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             BRCEmbargoPasscodeViewController *unlockVC = [[BRCEmbargoPasscodeViewController alloc] init];
             __weak BRCEmbargoPasscodeViewController *weakUnlock = unlockVC;
             unlockVC.dismissAction = ^{
@@ -690,8 +689,10 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             [self presentViewController:unlockVC animated:YES
                              completion:nil];
         }];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Restricted" message:@"Sorry, location data for camps and events is only available after the gates open." cancelButtonItem:dismissItem otherButtonItems:unlockItem, nil];
-        [alertView show];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Restricted" message:@"Sorry, location data for camps and events is only available after the gates open." preferredStyle:UIAlertControllerStyleAlert];
+        [alertController addAction:dismissAction];
+        [alertController addAction:unlockAction];
+        [self presentViewController:alertController animated:YES completion:nil];
     }
     else {
         if (dataObject.location) {

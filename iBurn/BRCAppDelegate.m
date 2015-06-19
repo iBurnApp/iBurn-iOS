@@ -21,7 +21,6 @@
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCEventObject.h"
-#import "UIAlertView+Blocks.h"
 #import "BRCFilteredTableViewController_Private.h"
 #import "BRCDetailViewController.h"
 #import "CLLocationManager+iBurn.h"
@@ -103,30 +102,30 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
         [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
         [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
     }
-    RIButtonItem *cancelItem = [RIButtonItem itemWithLabel:@"Dismiss"];
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:notification.alertBody cancelButtonItem:cancelItem otherButtonItems:nil];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleCancel handler:nil];
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:notification.alertBody preferredStyle:UIAlertControllerStyleAlert];
+    [alertController addAction:cancelAction];
     if (notification.alertAction.length > 0) {
         NSString *eventKey = [BRCEventObject localNotificationUserInfoKey];
         NSString *eventUniqueID = [notification.userInfo objectForKey:eventKey];
-        dispatch_block_t actionBlock = nil;
-        if (eventUniqueID) {
-            actionBlock = ^{
-                [self.tabBarController setSelectedViewController:self.eventsViewController.navigationController];
-                __block BRCEventObject *event = nil;
-                [self.eventsViewController.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-                    event = [transaction objectForKey:eventUniqueID inCollection:[BRCEventObject collection]];
-                } completionBlock:^{
-                    if (event) {
-                        BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:event];
-                        [self.eventsViewController.navigationController pushViewController:detailVC animated:YES];
-                    }
-                }];
-            };
-        }
-        RIButtonItem *actionItem = [RIButtonItem itemWithLabel:notification.alertAction action:actionBlock];
-        [alert addButtonItem:actionItem];
+        UIAlertAction *actionItem = [UIAlertAction actionWithTitle:notification.alertAction style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            if (!eventUniqueID) {
+                return;
+            }
+            [self.tabBarController setSelectedViewController:self.eventsViewController.navigationController];
+            __block BRCEventObject *event = nil;
+            [self.eventsViewController.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                event = [transaction objectForKey:eventUniqueID inCollection:[BRCEventObject collection]];
+            } completionBlock:^{
+                if (event) {
+                    BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:event];
+                    [self.eventsViewController.navigationController pushViewController:detailVC animated:YES];
+                }
+            }];
+        }];
+        [alertController addAction:actionItem];
     }
-    [alert show];
+    [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
