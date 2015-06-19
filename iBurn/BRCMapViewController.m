@@ -56,7 +56,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 @property (nonatomic, strong) NSDate *lastEventAnnotationUpdate;
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic) BOOL didUpdateConstraints;
-@property (nonatomic, strong) NSString *ftsExtensionName;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) RMAnnotation *searchAnnotation;
@@ -70,8 +69,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 @implementation BRCMapViewController
 
-- (instancetype) init {
+- (instancetype) initWithFtsName:(NSString *)ftsName {
     if (self = [super init]) {
+        _ftsName = ftsName;
         self.title = @"Map";
         self.artConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         self.eventsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
@@ -81,7 +81,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         self.campsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
         [self reloadFavoritesIfNeeded];
         [self setupSearchBar];
-        [self registerFullTextSearchExtension];
         [self setupSearchController];
         [self setupInfoButton];
         [self setupSearchIndicator];
@@ -241,17 +240,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.searchBar.backgroundColor = [UIColor colorWithWhite:1.0 alpha:.85];
     self.searchBar.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.searchBar];
-}
-
-- (void) registerFullTextSearchExtension {
-    Class dataClass = [BRCDataObject class];
-    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
-    NSString *ftsName = [BRCDatabaseManager fullTextSearchNameForClass:dataClass withIndexedProperties:indexedProperties];
-    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:dataClass withIndexedProperties:indexedProperties];
-    self.ftsExtensionName = ftsName;
-    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:ftsName completionBlock:^(BOOL ready) {
-        NSLog(@"%@ ready %d", ftsName, ready);
-    }];
 }
 
 - (void)updateViewConstraints
@@ -661,7 +649,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self.searchActivityIndicatorView startAnimating];
         [self.view bringSubviewToFront:self.searchActivityIndicatorView];
         [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
+            [[transaction ext:self.ftsName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
                 if (object) {
                     [tempSearchResults addObject:object];
                 }

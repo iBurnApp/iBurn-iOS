@@ -11,5 +11,14 @@
 @interface BRCEventsTableViewController : BRCFilteredTableViewController
 
 @property (atomic, strong, readonly) NSDate *selectedDay;
+@property (nonatomic, strong, readonly) NSString *filteredByDayViewName;
+@property (nonatomic, strong, readonly) NSString *filteredByDayExpirationAndTypeViewName;
+
+- (instancetype) initWithViewClass:(Class)viewClass
+                          viewName:(NSString*)viewName
+                           ftsName:(NSString*)ftsName
+             filteredByDayViewName:(NSString*)filteredByDayViewName
+filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndTypeViewName;
+
 
 @end

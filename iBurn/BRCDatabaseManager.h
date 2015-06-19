@@ -48,42 +48,26 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 /** View containing all BRCDataObjects (art, camps, events) */
 @property (nonatomic, strong, readonly) NSString *dataObjectsViewName;
 
+/** Camps YapDatabaseFullTextSearch */
+@property (nonatomic, strong, readonly) NSString *ftsCampsName;
+/** Art YapDatabaseFullTextSearch */
+@property (nonatomic, strong, readonly) NSString *ftsArtName;
+/** Events YapDatabaseFullTextSearch */
+@property (nonatomic, strong, readonly) NSString *ftsEventsName;
+/** BRCDataObject (art, camps, events) YapDatabaseFullTextSearch */
+@property (nonatomic, strong, readonly) NSString *ftsDataObjectName;
+
+/** Events filtered by day */
+@property (nonatomic, strong, readonly) NSString *eventsFilteredByDayViewName;
+/** Events filtered by date, expiration, and type */
+@property (nonatomic, strong, readonly) NSString *eventsFilteredByDayExpirationAndTypeViewName;
 
 
-+ (YapDatabaseViewFiltering*) favoritesOnlyFiltering;
 + (YapDatabaseViewFiltering*) eventsFiltering;
-+ (YapDatabaseViewFiltering*) allItemsFiltering;
-
 + (YapDatabaseViewFiltering*) eventsSelectedDayOnlyFiltering;
 
 + (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass;
 + (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass;
-
-/**
- *  Creates a new databaseView extension that should be registered with the name
- *  extensionNameForClass:extensionType:
- */
-+ (YapDatabaseView*) databaseViewForClass:(Class)viewClass;
-+ (NSString*) databaseViewNameForClass:(Class)viewClass;
-
-/**
- *  Creates a new filteredView extension that should be registered with the name
- *  filteredExtensionNameForType:parentViewName:
- */
-+ (YapDatabaseFilteredView*) filteredViewForType:(BRCDatabaseFilteredViewType)filterType
-                                  parentViewName:(NSString*)parentViewName
-                              allowedCollections:(YapWhitelistBlacklist*)allowedCollections;
-+ (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
-                       parentViewName:(NSString*)parentViewName;
-
-/**
- *  Creates a new FTS extension that should be registered with the name
- *  fullTextSearchExtensionNameForClass:withIndexedProperties:
- */
-+ (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
-                                withIndexedProperties:(NSArray *)properties;
-+ (NSString*) fullTextSearchNameForClass:(Class)viewClass
-                            withIndexedProperties:(NSArray *)properties;
 
 
 @end

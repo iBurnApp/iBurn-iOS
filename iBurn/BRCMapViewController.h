@@ -11,5 +11,8 @@
 @interface BRCMapViewController : BRCBaseMapViewController
 
 @property (nonatomic) BOOL isVisible;
+@property (nonatomic, strong, readonly) NSString *ftsName;
+
+- (instancetype) initWithFtsName:(NSString*)ftsName;
 
 @end

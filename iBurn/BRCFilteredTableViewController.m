@@ -33,32 +33,22 @@
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 
-@property (nonatomic, strong) NSArray *indexedProperties;
-@property (nonatomic, strong) NSString *ftsExtensionName;
 @property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
 @property (nonatomic, strong) YapDatabaseViewMappings *mappings;
 @end
 
 @implementation BRCFilteredTableViewController
 
-- (void) setupDatabaseExtensionNames {
-    self.indexedProperties = @[NSStringFromSelector(@selector(title))];
-    self.ftsExtensionName = [BRCDatabaseManager fullTextSearchNameForClass:self.viewClass withIndexedProperties:self.indexedProperties];
-}
 
-- (void) registerDatabaseExtensions {
-    [self registerFullTextSearchExtension];
-}
 
-- (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName
+- (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName ftsName:(NSString *)ftsName
 {
     if (self = [super initWithStyle:UITableViewStylePlain]) {
         _viewClass = viewClass;
         _viewName = viewName;
+        _ftsName = ftsName;
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
-        [self setupDatabaseExtensionNames];
-        [self registerDatabaseExtensions];
         [self setupMappingsDictionary];
         [self updateAllMappingsWithCompletionBlock:nil];
     }
@@ -138,14 +128,6 @@
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.databaseConnection.database];
-}
-
-/** Call this from the background in registerDatabaseExtensions */
-- (void) registerFullTextSearchExtension {
-    YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:self.viewClass withIndexedProperties:self.indexedProperties];
-    [[BRCDatabaseManager sharedInstance].database asyncRegisterExtension:fullTextSearch withName:self.ftsExtensionName completionBlock:^(BOOL ready) {
-        NSLog(@"%@ ready %d", self.ftsExtensionName, ready);
-    }];
 }
 
 // Override this in subclasses
@@ -251,10 +233,6 @@
     return viewState;
 }
 
-- (NSSet *) allowedCollections {
-    NSSet *allowedCollections = [NSSet setWithArray:@[[[self viewClass] collection]]];
-    return allowedCollections;
-}
 
 #pragma - mark UITableViewDataSource Methods
 
@@ -358,7 +336,7 @@
         [self.searchActivityIndicatorView startAnimating];
         [self.view bringSubviewToFront:self.searchActivityIndicatorView];
         [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            [[transaction ext:self.ftsExtensionName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
+            [[transaction ext:self.ftsName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
                 if (object) {
                     [tempSearchResults addObject:object];
                 }

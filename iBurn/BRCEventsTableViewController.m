@@ -19,12 +19,10 @@
 #import "BRCStringPickerView.h"
 
 @interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate>
-@property (atomic, strong, readwrite) NSDate *selectedDay;
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
 @property (nonatomic, strong) NSArray *festivalDates;
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
-@property (nonatomic, strong, readwrite) NSString *filteredByDayViewName;
-@property (nonatomic, strong, readwrite) NSString *filteredByDayExpirationAndTypeViewName;
+
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
 @property (nonatomic, strong) BRCStringPickerView *dayPicker;
 @end
@@ -32,25 +30,22 @@
 @implementation BRCEventsTableViewController
 @synthesize selectedDay = _selectedDay;
 
-- (void) setupDatabaseExtensionNames {
-    [super setupDatabaseExtensionNames];
-    self.filteredByDayViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.viewName];
-    self.filteredByDayExpirationAndTypeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayViewName];
+- (instancetype) initWithViewClass:(Class)viewClass
+                          viewName:(NSString*)viewName
+                           ftsName:(NSString*)ftsName
+             filteredByDayViewName:(NSString*)filteredByDayViewName
+filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndTypeViewName
+{
+    _filteredByDayViewName = filteredByDayViewName;
+    _filteredByDayExpirationAndTypeViewName = filteredByDayExpirationAndTypeViewName;
+    if (self = [super initWithViewClass:viewClass viewName:viewName ftsName:ftsName]) {
+    }
+    return self;
 }
 
 - (void) registerDatabaseExtensions {
-    [super registerDatabaseExtensions];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        BOOL success = NO;
-        YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[self allowedCollections]];
         
-        YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.viewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.filteredByDayViewName];
-        NSLog(@"%@ %d", self.filteredByDayViewName, success);
-        
-        YapDatabaseFilteredView *filteredView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayViewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredView withName:self.filteredByDayExpirationAndTypeViewName];
-        NSLog(@"%@ %d", self.filteredByDayExpirationAndTypeViewName, success);
         dispatch_async(dispatch_get_main_queue(), ^{
             [self updateAllMappingsWithCompletionBlock:^{
                 [self.tableView reloadData];
