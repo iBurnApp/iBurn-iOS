@@ -27,14 +27,11 @@
 #import "BRCAppDelegate.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
-@property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL didUpdateConstraints;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
-
-@property (nonatomic, strong, readwrite) Class viewClass;
 
 @property (nonatomic, strong) NSArray *indexedProperties;
 @property (nonatomic, strong) NSString *ftsExtensionName;
@@ -60,7 +57,7 @@
 - (instancetype)initWithViewClass:(Class)viewClass
 {
     if (self = [super init]) {
-        self.viewClass = viewClass;
+        _viewClass = viewClass;
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
         [self setupDatabaseExtensionNames];
@@ -110,11 +107,6 @@
     self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCDarkStar"];
     self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCLightStar"];
     
-    
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-    self.tableView.dataSource = self;
-    self.tableView.delegate = self;
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
@@ -131,8 +123,6 @@
     self.searchController.searchResultsDelegate = self;
     
     self.tableView.tableHeaderView = searchBar;
-    
-    [self.view addSubview:self.tableView];
     
     [self updateViewConstraints];
     
@@ -201,14 +191,8 @@
     if (self.didUpdateConstraints) {
         return;
     }
-    [self.tableView autoPinToTopLayoutGuideOfViewController:self withInset:0];
-    [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
-    [self.tableView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
-    [self.tableView autoAlignAxisToSuperviewAxis:ALAxisVertical];
-    
     [self.searchActivityIndicatorView autoCenterInSuperview];
     [self.searchActivityIndicatorView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
-    
     self.didUpdateConstraints = YES;
 }
 
