@@ -163,6 +163,12 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
+    UITableViewController *favoritesVC = [[UITableViewController alloc] init];
+    favoritesVC.title = @"Favorites";
+    UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:favoritesVC];
+    favoritesVC.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
+    favoritesVC.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCDarkStar"];
+    
     self.artViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class]];
     self.artViewController.title = @"Art";
     UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:self.artViewController];
@@ -179,7 +185,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     self.tabBarController = [[UITabBarController alloc] init];
-    self.tabBarController.viewControllers = @[mapNavController, artNavController, campNavController, eventsNavController];
+    self.tabBarController.viewControllers = @[mapNavController, favoritesNavController, artNavController, campNavController, eventsNavController];
     self.tabBarController.delegate = self;
 }
 
