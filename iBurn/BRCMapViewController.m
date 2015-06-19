@@ -654,7 +654,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 {
     if ([searchString length]) {
         NSMutableArray *tempSearchResults = [NSMutableArray array];
-        searchString = [NSString stringWithFormat:@"*%@*",searchString];
+        searchString = [NSString stringWithFormat:@"%@*",searchString];
         [self.searchActivityIndicatorView startAnimating];
         [self.view bringSubviewToFront:self.searchActivityIndicatorView];
         [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
