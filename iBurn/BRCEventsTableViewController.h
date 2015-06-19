@@ -10,8 +10,6 @@
 
 @interface BRCEventsTableViewController : BRCFilteredTableViewController
 
-@property (nonatomic, strong, readonly) NSString *favoritesFilterForTimeAndDistanceViewName;
-
 @property (atomic, strong, readonly) NSDate *selectedDay;
 
 @end

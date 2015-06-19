@@ -13,12 +13,6 @@
 #import "YapDatabaseFilteredView.h"
 #import "YapDatabaseFullTextSearch.h"
 
-typedef NS_ENUM(NSUInteger, BRCDatabaseViewExtensionType) {
-    BRCDatabaseViewExtensionTypeUnknown,
-    BRCDatabaseViewExtensionTypeDistance,
-    BRCDatabaseViewExtensionTypeTimeThenDistance,
-};
-
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
     BRCDatabaseFilteredViewTypeEverything,
@@ -51,19 +45,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (YapDatabaseViewFiltering*) eventsSelectedDayOnlyFiltering;
 
-+ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation;
-
-+ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType;
++ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass;
++ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass;
 
 /**
  *  Creates a new databaseView extension that should be registered with the name
  *  extensionNameForClass:extensionType:
  */
-+ (YapDatabaseView*) databaseViewForClass:(Class)viewClass
-                            extensionType:(BRCDatabaseViewExtensionType)extensionType
-                             fromLocation:(CLLocation*)fromLocation;
-+ (NSString*) databaseViewNameForClass:(Class)viewClass
-                         extensionType:(BRCDatabaseViewExtensionType)extensionType;
++ (YapDatabaseView*) databaseViewForClass:(Class)viewClass;
++ (NSString*) databaseViewNameForClass:(Class)viewClass;
 
 /**
  *  Creates a new filteredView extension that should be registered with the name

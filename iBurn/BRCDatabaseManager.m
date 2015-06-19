@@ -117,18 +117,7 @@
     return databaseManager;
 }
 
-+ (YapDatabaseViewBlockType)groupingBlockTypeForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
-    YapDatabaseViewBlockType groupingBlockType;
-    if (viewClass == [BRCEventObject class]) {
-        groupingBlockType = YapDatabaseViewBlockTypeWithObject;
-    } else {
-        groupingBlockType = YapDatabaseViewBlockTypeWithKey;
-    }
-    
-    return groupingBlockType;
-}
-
-+ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType {
++ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass {
     YapDatabaseViewGrouping *grouping = nil;
     
     if (viewClass == [BRCEventObject class]) {
@@ -173,9 +162,9 @@
     return [@(distance1) compare:@(distance2)];
 }
 
-+ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass extensionType:(BRCDatabaseViewExtensionType)extensionType fromLocation:(CLLocation*)fromLocation {
++ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass {
     YapDatabaseViewSorting* sorting = nil;
-    if (extensionType == BRCDatabaseViewExtensionTypeTimeThenDistance) {
+    if (viewClass == [BRCEventObject class]) {
         BOOL shouldSortEventsByStartTime = [[NSUserDefaults standardUserDefaults] shouldSortEventsByStartTime];
         sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
@@ -196,25 +185,19 @@
                     dateComparison = [event1.endDate compare:event2.endDate];
                 }
                 if (dateComparison == NSOrderedSame) {
-                    NSComparisonResult distanceComparison = [self compareDistanceOfFirstObject:event1 secondObject:event2 fromLocation:fromLocation];
-                    return distanceComparison;
-                } else {
-                    return dateComparison;
+                    return [event1.title compare:event2.title];
                 }
+                return dateComparison;
             }
             return NSOrderedSame;
         }];
-    } else if (extensionType == BRCDatabaseViewExtensionTypeDistance) {
+    } else {
         sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
                 BRCDataObject *data1 = (BRCDataObject *)obj1;
                 BRCDataObject *data2 = (BRCDataObject *)obj2;
-                NSComparisonResult result = [self compareDistanceOfFirstObject:data1 secondObject:data2 fromLocation:fromLocation];
-                if (result == NSOrderedSame) {
-                    result = [data1.title compare:data2.title];
-                }
-                return result;
+                return [data1.title compare:data2.title];
             }
             return NSOrderedSame;
         }];
@@ -227,11 +210,9 @@
  *  the registered view if it exists. (Caller should register the view)
  */
 + (YapDatabaseView*) databaseViewForClass:(Class)viewClass
-                            extensionType:(BRCDatabaseViewExtensionType)extensionType
-                             fromLocation:(CLLocation*)fromLocation
 {
-    YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass extensionType:extensionType];
-    YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
+    YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
+    YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
     NSString *versionTag = versionTag = [[NSUUID UUID] UUIDString];
     options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
@@ -324,20 +305,6 @@
     return filteredView;
 }
 
-+ (NSString*) stringForExtensionType:(BRCDatabaseViewExtensionType)extensionType {
-    switch (extensionType) {
-        case BRCDatabaseViewExtensionTypeDistance:
-            return @"Distance";
-            break;
-        case BRCDatabaseViewExtensionTypeTimeThenDistance:
-            return @"TimeThenDistance";
-            break;
-        default:
-            return nil;
-            break;
-    }
-}
-
 + (NSString*) stringForFilteredExtensionType:(BRCDatabaseFilteredViewType)extensionType {
     switch (extensionType) {
         case BRCDatabaseFilteredViewTypeEventSelectedDayOnly:
@@ -363,26 +330,15 @@
 
 + (NSString*) filteredViewNameForType:(BRCDatabaseFilteredViewType)filterType
                        parentViewName:(NSString*)parentViewName {
-    NSParameterAssert(filterType != BRCDatabaseViewExtensionTypeUnknown);
-    if (filterType == BRCDatabaseViewExtensionTypeUnknown) {
-        return nil;
-    }
     NSString *extensionString = [self stringForFilteredExtensionType:filterType];
     NSParameterAssert(parentViewName != nil);
     NSParameterAssert(extensionString != nil);
     return [NSString stringWithFormat:@"%@-%@Filter", parentViewName, extensionString];
 }
 
-+ (NSString*) databaseViewNameForClass:(Class)viewClass
-                         extensionType:(BRCDatabaseViewExtensionType)extensionType {
-    NSParameterAssert(extensionType != BRCDatabaseViewExtensionTypeUnknown);
-    if (extensionType == BRCDatabaseViewExtensionTypeUnknown) {
-        return nil;
-    }
++ (NSString*) databaseViewNameForClass:(Class)viewClass {
     NSString *classString = NSStringFromClass(viewClass);
-    NSString *extensionString = [self stringForExtensionType:extensionType];
-    NSParameterAssert(extensionString != nil);
-    return [NSString stringWithFormat:@"%@%@View", classString, extensionString];
+    return [NSString stringWithFormat:@"%@View", classString];
 }
 
 + (YapDatabaseViewFiltering*) allItemsFiltering {

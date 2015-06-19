@@ -137,7 +137,7 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 }
 
 + (NSArray*) datesOfFestival {
-    NSCalendar *gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSCalendar *gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     NSDate *festivalStartDate = [self festivalStartDate];
     NSUInteger numberOfDays = [self majorEvents].count;
 

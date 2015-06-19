@@ -154,7 +154,7 @@
         [self.countdownTimer invalidate];
     } else {
         // Get conversion to months, days, hours, minutes
-        unsigned int unitFlags = NSHourCalendarUnit | NSMinuteCalendarUnit | NSDayCalendarUnit | NSSecondCalendarUnit;
+        unsigned int unitFlags = NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitDay | NSCalendarUnitSecond;
         
         NSDateComponents *breakdownInfo = [[NSCalendar currentCalendar] components:unitFlags fromDate:now  toDate:festivalStartDate options:0];
         

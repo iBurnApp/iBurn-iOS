@@ -24,15 +24,13 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
 #import "YapDatabaseFilteredViewTransaction.h"
+#import "BRCAppDelegate.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong) UITableView *tableView;
-@property (nonatomic, strong) UISegmentedControl *segmentedControl;
 @property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchDisplayController *searchController;
 @property (nonatomic) BOOL didUpdateConstraints;
-@property (nonatomic) UIToolbar *sortControlToolbar;
-@property (nonatomic, strong) UIImageView *navBarHairlineImageView;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 
@@ -40,65 +38,35 @@
 
 @property (nonatomic, strong) NSArray *indexedProperties;
 @property (nonatomic, strong) NSString *ftsExtensionName;
-@property (nonatomic, strong, readwrite) NSString *distanceViewName;
-@property (nonatomic, strong, readwrite) NSString *favoritesFilterForDistanceViewName;
 @property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
+@property (nonatomic, strong) YapDatabaseViewMappings *mappings;
 @end
 
 @implementation BRCFilteredTableViewController
 
 - (void) setupDatabaseExtensionNames {
-    self.distanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance];
-    self.favoritesFilterForDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.distanceViewName];
+    _viewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass];
     self.indexedProperties = @[NSStringFromSelector(@selector(title))];
     self.ftsExtensionName = [BRCDatabaseManager fullTextSearchNameForClass:self.viewClass withIndexedProperties:self.indexedProperties];
 }
 
 - (void) registerDatabaseExtensions {
     [self registerFullTextSearchExtension];
-    CLLocation *currentLocation = self.locationManager.location;
-    self.isUpdatingDistanceInformation = YES;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:currentLocation];
-        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
-        NSLog(@"Registered %@ %d", self.distanceViewName, success);
-        
-        // Start with all items because we're using this view for both tabs and just
-        // updating the filtering block
-        YapDatabaseFilteredView *favoritesDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEverything parentViewName:self.distanceViewName allowedCollections:distanceView.options.allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesDistanceView withName:self.favoritesFilterForDistanceViewName];
-        NSLog(@"Registered %@ %d", self.favoritesFilterForDistanceViewName, success);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSLog(@"All extensions for %@ registered", NSStringFromClass(self.viewClass));
-            self.isUpdatingDistanceInformation = NO;
-            self.lastDistanceUpdateLocation = currentLocation;
-        });
-    });
+    YapDatabaseView *dbView = [BRCDatabaseManager databaseViewForClass:self.viewClass];
+    BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:dbView withName:self.viewName];
+    NSLog(@"Registered %@ %d", self.viewName, success);
 }
 
 - (instancetype)initWithViewClass:(Class)viewClass
 {
     if (self = [super init]) {
-        [self setupLocationManager];
         self.viewClass = viewClass;
-        self.segmentedControl = [[UISegmentedControl alloc] init];
-        self.segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
-        self.segmentedControl.selectedSegmentIndex = 0;
-        
-        [self.segmentedControl addTarget:self action:@selector(didChangeValueForSegmentedControl:) forControlEvents:UIControlEventValueChanged];
-        
-        self.sortControlToolbar = [[UIToolbar alloc] init];
-        self.sortControlToolbar.delegate = self;
-        self.sortControlToolbar.translatesAutoresizingMaskIntoConstraints = NO;
-        [self.sortControlToolbar addSubview:self.segmentedControl];
-        
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
         [self setupDatabaseExtensionNames];
         [self registerDatabaseExtensions];
         [self setupMappingsDictionary];
         [self updateAllMappingsWithCompletionBlock:nil];
-        [self refreshDistanceInformationFromLocation:self.locationManager.location forceRefresh:NO];
     }
     return self;
 }
@@ -113,12 +81,6 @@
     return UIBarPositionTopAttached;
 }
 
-- (void) setupLocationManager {
-    self.locationManager = [CLLocationManager brc_locationManager];
-    self.locationManager.delegate = self;
-    [self.locationManager startUpdatingLocation];
-}
-
 - (void) setupLoadingIndicatorView {
     self.loadingIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     UIBarButtonItem *loadingButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.loadingIndicatorView];
@@ -126,7 +88,7 @@
 }
 
 - (BOOL) shouldAnimateLoadingIndicator {
-    if (self.isUpdatingDistanceInformation || self.isUpdatingFilters) {
+    if (self.isUpdatingFilters) {
         return YES;
     } else {
         return NO;
@@ -145,17 +107,8 @@
 {
     [super viewDidLoad];
     
-    self.navBarHairlineImageView = [self findHairlineImageViewUnder:self.navigationController.navigationBar];
-    
     self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCDarkStar"];
     self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCLightStar"];
-
-    NSArray *segmentedControlInfo = [self segmentedControlInfo];
-    [segmentedControlInfo enumerateObjectsUsingBlock:^(NSArray *infoArray, NSUInteger idx, BOOL *stop) {
-        NSString *title = [infoArray firstObject];
-        [self.segmentedControl insertSegmentWithTitle:title atIndex:idx animated:NO];
-    }];
-    self.segmentedControl.selectedSegmentIndex = 0;
     
     
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -179,7 +132,6 @@
     
     self.tableView.tableHeaderView = searchBar;
     
-    [self.view addSubview:self.sortControlToolbar];
     [self.view addSubview:self.tableView];
     
     [self updateViewConstraints];
@@ -188,22 +140,6 @@
     [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
 }
-
-// Remove 1px hairline below UINavigationBar
-// http://stackoverflow.com/a/19227158/805882
-- (UIImageView *)findHairlineImageViewUnder:(UIView *)view {
-    if ([view isKindOfClass:UIImageView.class] && view.bounds.size.height <= 1.0) {
-        return (UIImageView *)view;
-    }
-    for (UIView *subview in view.subviews) {
-        UIImageView *imageView = [self findHairlineImageViewUnder:subview];
-        if (imageView) {
-            return imageView;
-        }
-    }
-    return nil;
-}
-
 
 - (void)setupDatabaseConnection
 {
@@ -227,7 +163,7 @@
 
 // Override this in subclasses
 - (void) setupMappingsDictionary {
-    NSArray *viewNames = @[self.favoritesFilterForDistanceViewName];
+    NSArray *viewNames = @[self.viewName];
     NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
     [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
         YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
@@ -244,35 +180,10 @@
     } completionBlock:completionBlock];
 }
 
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self refreshDistanceInformationFromLocation:self.locationManager.location forceRefresh:NO];
-    self.navBarHairlineImageView.hidden = YES;
-}
-
-- (void) viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    self.navBarHairlineImageView.hidden = NO;
-}
-
-
 - (void) locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-    if (status == kCLAuthorizationStatusAuthorized) {
+    if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
         [manager startUpdatingLocation];
     }
-}
-
-- (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
-    CLLocation *recentLocation = [locations lastObject];
-    if (!recentLocation) {
-        return;
-    }
-    [self refreshDistanceInformationFromLocation:recentLocation forceRefresh:NO];
-}
-
-- (void) setIsUpdatingDistanceInformation:(BOOL)isUpdatingDistanceInformation {
-    _isUpdatingDistanceInformation = isUpdatingDistanceInformation;
-    [self refreshLoadingIndicatorViewAnimation];
 }
 
 - (void) setIsUpdatingFilters:(BOOL)isUpdatingFilters {
@@ -280,62 +191,8 @@
     [self refreshLoadingIndicatorViewAnimation];
 }
 
-- (BOOL) shouldRefreshDistanceInformationForNewLocation:(CLLocation*)newLocation {
-    if (!self.lastDistanceUpdateLocation) {
-        return YES;
-    }
-    if (!newLocation) {
-        return YES;
-    }
-    CLLocationDistance distanceSinceLastDistanceUpdate = [self.lastDistanceUpdateLocation distanceFromLocation:newLocation];
-    
-    CLLocationDistance minimumLocationUpdateDistance = self.locationManager.distanceFilter;
-    
-    if (distanceSinceLastDistanceUpdate > minimumLocationUpdateDistance) {
-        return YES;
-    }
-    return NO;
-}
-
-- (void) refreshDistanceInformationFromLocation:(CLLocation*)fromLocation forceRefresh:(BOOL)forceRefresh {
-    if (self.isUpdatingDistanceInformation) {
-        return;
-    }
-    if (![self shouldRefreshDistanceInformationForNewLocation:fromLocation] && !forceRefresh) {
-        return;
-    }
-    self.isUpdatingDistanceInformation = YES;
-    
-    // Refresh the distance view sorting block here
-    
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.distanceViewName];
-        if (!viewTransaction) {
-            return;
-        }
-        BRCDatabaseViewExtensionType extensionType = BRCDatabaseViewExtensionTypeDistance;
-        Class viewClass = self.viewClass;
-        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass extensionType:extensionType];
-        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass extensionType:extensionType fromLocation:fromLocation];
-        [viewTransaction setGrouping:grouping
-                             sorting:sorting
-                          versionTag:[[NSUUID UUID] UUIDString]];
-    } completionBlock:^{
-        [self updateAllMappingsWithCompletionBlock:^{
-            [self.tableView reloadData];
-            self.isUpdatingDistanceInformation = NO;
-            self.lastDistanceUpdateLocation = fromLocation;
-        }];
-    }];
-}
-
 - (Class) cellClass {
     return [BRCDataObjectTableViewCell class];
-}
-
-- (NSArray *) segmentedControlInfo {
-    return @[@[@"Distance", self.favoritesFilterForDistanceViewName],
-             @[@"Favorites", self.favoritesFilterForDistanceViewName]];
 }
 
 - (void)updateViewConstraints
@@ -344,17 +201,7 @@
     if (self.didUpdateConstraints) {
         return;
     }
-    [self.sortControlToolbar autoPinToTopLayoutGuideOfViewController:self withInset:0];
-    [self.sortControlToolbar autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
-    [self.sortControlToolbar autoSetDimension:ALDimensionHeight toSize:40];
-    [self.sortControlToolbar autoAlignAxisToSuperviewAxis:ALAxisVertical];
-    [self.segmentedControl autoCenterInSuperview];
-    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:10.0f];
-    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:10.0f];
-    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeTop withInset:5.0f];
-    [self.segmentedControl autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:5.0f];
-
-    [self.tableView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.sortControlToolbar withOffset:1.0f];
+    [self.tableView autoPinToTopLayoutGuideOfViewController:self withInset:0];
     [self.tableView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
     [self.tableView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
     [self.tableView autoAlignAxisToSuperviewAxis:ALAxisVertical];
@@ -366,13 +213,12 @@
 }
 
 - (YapDatabaseViewMappings*) activeMappings {
-    NSString *activeExtensionName = [self activeExtensionNameForSelectedSegmentIndex];
-    YapDatabaseViewMappings *activeMappings = [self.mappingsDictionary objectForKey:activeExtensionName];
+    YapDatabaseViewMappings *activeMappings = [self.mappingsDictionary objectForKey:self.viewName];
     return activeMappings;
 }
 
 - (NSDictionary*) inactiveMappingsDictionary {
-    NSString *activeMappingsName = [self activeExtensionNameForSelectedSegmentIndex];
+    NSString *activeMappingsName = self.viewName;
     NSMutableDictionary *mutableMappings = [self.mappingsDictionary mutableCopy];
     if (activeMappingsName) {
         [mutableMappings removeObjectForKey:activeMappingsName];
@@ -380,45 +226,6 @@
     return mutableMappings;
 }
 
-- (NSString*) activeExtensionNameForSelectedSegmentIndex {
-    NSArray *infoArray = [[self segmentedControlInfo] objectAtIndex:self.segmentedControl.selectedSegmentIndex];
-    return [infoArray lastObject];
-}
-
-- (void) updateFilteredViews {
-    self.isUpdatingFilters = YES;
-    
-    BOOL shouldShowOnlyFavorites = NO;
-    // is there a better way to detect favorite other than hardcoding index?
-    if (self.segmentedControl.selectedSegmentIndex == 1) {
-        shouldShowOnlyFavorites = YES;
-    }
-    
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        YapDatabaseFilteredViewTransaction *filterTransaction = [transaction ext:self.favoritesFilterForDistanceViewName];
-        if (!filterTransaction) {
-            return;
-        }
-        YapDatabaseViewFiltering *filtering = nil;
-        if (shouldShowOnlyFavorites) {
-            filtering = [BRCDatabaseManager favoritesOnlyFiltering];
-        } else {
-            filtering = [BRCDatabaseManager allItemsFiltering];
-        }
-        [filterTransaction setFiltering:filtering
-                             versionTag:[[NSUUID UUID] UUIDString]];
-    } completionBlock:^{
-        [self updateAllMappingsWithCompletionBlock:^{
-            self.isUpdatingFilters = NO;
-            [self.tableView reloadData];
-        }];
-    }];
-}
-
-- (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
-{
-    [self updateFilteredViews];
-}
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
@@ -428,7 +235,7 @@
     }
     else {
         [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            YapDatabaseViewTransaction *viewTransaction = [transaction extension:[self activeExtensionNameForSelectedSegmentIndex]];
+            YapDatabaseViewTransaction *viewTransaction = [transaction extension:self.viewName];
             dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
         }];
     }
@@ -475,7 +282,8 @@
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[[self cellClass] cellIdentifier] forIndexPath:indexPath];
     __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     [cell setStyleFromDataObject:dataObject];
-    [cell updateDistanceLabelFromLocation:self.locationManager.location toLocation:dataObject.location];
+    CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
+    [cell updateDistanceLabelFromLocation:currentLocation toLocation:dataObject.location];
     // Adding gestures per state basis.
     UIImageView *viewState = [self imageViewForFavoriteStatus:dataObject.isFavorite];
     UIColor *color = [UIColor brc_navBarColor];
@@ -523,7 +331,8 @@
     if ([self isSearchResultsControllerTableView:sender]) {
         return 1;
     }
-    return [self.activeMappings numberOfSections];
+    YapDatabaseViewMappings *mappings = self.activeMappings;
+    return [mappings numberOfSections];
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -556,15 +365,6 @@
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
     [self.searchDisplayController setActive:YES animated:YES];
-}
-
-- (void)searchBarCancelButtonClicked:(UISearchBar *) searchBar;                    // called when cancel button pressed
-{
-    // ugly hack to re-hide the 1px navBarHairlineImageView after search bar disappears
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.navBarHairlineImageView = [self findHairlineImageViewUnder:self.navigationController.navigationBar];
-        self.navBarHairlineImageView.hidden = YES;
-    });
 }
 
 #pragma - mark  UISearchDisplayDelegate Methods
@@ -617,8 +417,7 @@
     
     YapDatabaseViewMappings *activeMappings = self.activeMappings;
     if (activeMappings) {
-        NSString *activeExtensionName = [self activeExtensionNameForSelectedSegmentIndex];
-        YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:activeExtensionName];
+        YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:self.viewName];
         
         // sometimes this takes a long time if there are a LOT of changes and will block
         // the main thread

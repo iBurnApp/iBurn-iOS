@@ -324,7 +324,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }
 }
 
+#warning Map Favorites Disabled
 - (void) reloadFavoritesIfNeeded {
+    /*
     if (self.currentlyAddingFavoritesAnnotations) {
         return;
     }
@@ -384,6 +386,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         self.favoritesAnnotations = favoritesAnnotationsToAdd;
         [self.mapView addAnnotations:favoritesAnnotationsToAdd];
     }];
+     */
 }
 
 - (void) reloadCampAnnotationsIfNeeded {

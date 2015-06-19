@@ -23,12 +23,8 @@
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
 @property (nonatomic, strong) NSArray *festivalDates;
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
-@property (nonatomic, strong, readwrite) NSString *timeAndDistanceViewName;
-@property (nonatomic, strong, readwrite) NSString *filteredByDayTimeAndDistanceViewName;
-@property (nonatomic, strong, readwrite) NSString *filteredTimeAndDistanceViewName;
-@property (nonatomic, strong, readwrite) NSString *filteredByDayDistanceViewName;
-@property (nonatomic, strong, readwrite) NSString *filteredDistanceViewName;
-@property (nonatomic, strong, readwrite) NSString *favoritesFilterForTimeAndDistanceViewName;
+@property (nonatomic, strong, readwrite) NSString *filteredByDayViewName;
+@property (nonatomic, strong, readwrite) NSString *filteredByDayExpirationAndTypeViewName;
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
 @property (nonatomic, strong) BRCStringPickerView *dayPicker;
 @end
@@ -38,53 +34,25 @@
 
 - (void) setupDatabaseExtensionNames {
     [super setupDatabaseExtensionNames];
-    self.timeAndDistanceViewName = [BRCDatabaseManager databaseViewNameForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTimeThenDistance];
-    self.filteredByDayTimeAndDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.timeAndDistanceViewName];
-    self.filteredTimeAndDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayTimeAndDistanceViewName];
-    self.filteredByDayDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.distanceViewName];
-    self.filteredDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayDistanceViewName];
-    self.favoritesFilterForTimeAndDistanceViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.timeAndDistanceViewName];
+    self.filteredByDayViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.viewName];
+    self.filteredByDayExpirationAndTypeViewName = [BRCDatabaseManager filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayViewName];
 }
 
 - (void) registerDatabaseExtensions {
-    [self registerFullTextSearchExtension];
-    CLLocation *fromLocation = self.locationManager.location;
-    self.isUpdatingDistanceInformation = YES;
+    [super registerDatabaseExtensions];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BOOL success = NO;
-        YapDatabaseView *timeAndDistanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeTimeThenDistance fromLocation:fromLocation];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:timeAndDistanceView withName:self.timeAndDistanceViewName];
-        NSLog(@"%@ %d", self.timeAndDistanceViewName, success);
-        
         YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[self allowedCollections]];
         
-        YapDatabaseFilteredView *filteredByDayTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayTimeAndDistanceView withName:self.filteredByDayTimeAndDistanceViewName];
-        NSLog(@"%@ %d", self.filteredByDayTimeAndDistanceViewName, success);
+        YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.viewName allowedCollections:allowedCollections];
+        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.filteredByDayViewName];
+        NSLog(@"%@ %d", self.filteredByDayViewName, success);
         
-        YapDatabaseFilteredView *filteredTimeAndDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayTimeAndDistanceViewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredTimeAndDistanceView withName:self.filteredTimeAndDistanceViewName];
-        NSLog(@"%@ %d", self.filteredTimeAndDistanceViewName, success);
-        
-        YapDatabaseView *distanceView = [BRCDatabaseManager databaseViewForClass:self.viewClass extensionType:BRCDatabaseViewExtensionTypeDistance fromLocation:fromLocation];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:distanceView withName:self.distanceViewName];
-        NSLog(@"%@ %d", self.distanceViewName, success);
-        
-        YapDatabaseFilteredView *filteredByDayDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.distanceViewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayDistanceView withName:self.filteredByDayDistanceViewName];
-        NSLog(@"%@ %d", self.filteredByDayDistanceViewName, success);
-        
-        YapDatabaseFilteredView *filteredDistanceView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayDistanceViewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredDistanceView withName:self.filteredDistanceViewName];
-        NSLog(@"%@ %d", self.filteredDistanceViewName, success);
-        
-        YapDatabaseFilteredView *favoritesView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.timeAndDistanceViewName allowedCollections:allowedCollections];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesView withName:self.favoritesFilterForTimeAndDistanceViewName];
-        NSLog(@"%@ %d", self.favoritesFilterForTimeAndDistanceViewName, success);
+        YapDatabaseFilteredView *filteredView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.filteredByDayViewName allowedCollections:allowedCollections];
+        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredView withName:self.filteredByDayExpirationAndTypeViewName];
+        NSLog(@"%@ %d", self.filteredByDayExpirationAndTypeViewName, success);
         dispatch_async(dispatch_get_main_queue(), ^{
             [self updateAllMappingsWithCompletionBlock:^{
-                self.isUpdatingDistanceInformation = NO;
-                self.lastDistanceUpdateLocation = fromLocation;
                 [self.tableView reloadData];
             }];
         });
@@ -153,7 +121,6 @@
     self.dayPicker = [[BRCStringPickerView alloc] initWithTitle:@"Choose a Day" pickerStrings:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(BRCStringPickerView *picker, NSUInteger selectedIndex, NSString *selectedValue) {
         NSDate *selectedDate = [self dateForIndex:selectedIndex];
         self.selectedDay = selectedDate;
-        [self refreshDistanceInformationFromLocation:self.locationManager.location forceRefresh:NO];
     } cancelBlock:nil];
 }
 
@@ -182,23 +149,12 @@
     }];
 }
 
-- (void)didChangeValueForSegmentedControl:(UISegmentedControl *)sender
-{
-    [self.tableView reloadData];
-}
-
 - (NSDate*) selectedDay {
     if (!_selectedDay) {
         NSDate *selectedDayInFestivalRange = [self selectedDayInFestivalRange:[NSDate date]];
         _selectedDay = selectedDayInFestivalRange;
     }
     return _selectedDay;
-}
-
-- (NSArray *) segmentedControlInfo {
-    return @[@[@"Time", self.filteredTimeAndDistanceViewName],
-             @[@"Distance", self.filteredDistanceViewName],
-             @[@"Favorites", self.favoritesFilterForTimeAndDistanceViewName]];
 }
 
 - (Class) cellClass {
@@ -209,19 +165,12 @@
 {
     self.isUpdatingFilters = YES;
     YapDatabaseViewFiltering *filtering = [BRCDatabaseManager eventsFiltering];
-    NSArray *eventsFilteredByExpirationAndTypeViewsArray = @[self.filteredDistanceViewName, self.filteredTimeAndDistanceViewName];
-    NSArray *eventsFilteredBySelectedDayArray = @[self.filteredByDayDistanceViewName, self.filteredByDayTimeAndDistanceViewName];
-    
     [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [eventsFilteredBySelectedDayArray enumerateObjectsUsingBlock:^(NSString *filteredViewName, NSUInteger idx, BOOL *stop) {
-            YapDatabaseViewFiltering *selectedDayFiltering =[BRCDatabaseManager eventsSelectedDayOnlyFiltering];
-            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredViewName];
-            [filteredTransaction setFiltering:selectedDayFiltering versionTag:[[NSUUID UUID] UUIDString]];
-        }];
-        [eventsFilteredByExpirationAndTypeViewsArray enumerateObjectsUsingBlock:^(NSString *filteredViewName, NSUInteger idx, BOOL *stop) {
-            YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:filteredViewName];
-            [filteredTransaction setFiltering:filtering versionTag:[[NSUUID UUID] UUIDString]];
-        }];
+        YapDatabaseViewFiltering *selectedDayFiltering =[BRCDatabaseManager eventsSelectedDayOnlyFiltering];
+        YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:self.filteredByDayViewName];
+        [filteredTransaction setFiltering:selectedDayFiltering versionTag:[[NSUUID UUID] UUIDString]];
+        filteredTransaction = [transaction ext:self.filteredByDayExpirationAndTypeViewName];
+        [filteredTransaction setFiltering:filtering versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:^{
         self.isUpdatingFilters = NO;
         [self.tableView reloadData];
@@ -238,33 +187,22 @@
         [allGroups addObject:group];
     }];
     
-    YapDatabaseViewMappings *favoritesMappings = [[YapDatabaseViewMappings alloc] initWithGroups:allGroups view:self.favoritesFilterForTimeAndDistanceViewName];
-    [self.mappingsDictionary setObject:favoritesMappings forKey:self.favoritesFilterForTimeAndDistanceViewName];
     [self replaceTimeBasedEventMappings];
+}
+
+- (YapDatabaseViewMappings*) activeMappings {
+    YapDatabaseViewMappings *activeMappings = [self.mappingsDictionary objectForKey:self.filteredByDayExpirationAndTypeViewName];
+    return activeMappings;
 }
 
 - (void) replaceTimeBasedEventMappings {
     NSString *group = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:self.selectedDay];
     NSArray *activeTimeGroup = @[group]; // selected day group
-    NSArray *mappingsToRefresh = @[self.filteredTimeAndDistanceViewName, self.filteredDistanceViewName];
+    NSArray *mappingsToRefresh = @[self.filteredByDayViewName, self.filteredByDayExpirationAndTypeViewName];
     [mappingsToRefresh enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
         YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:viewName];
         [self.mappingsDictionary setObject:mappings forKey:viewName];
     }];
-}
-
-- (BOOL) shouldAnimateLoadingIndicator {
-    BOOL shouldAnimate = [super shouldAnimateLoadingIndicator];
-    if (shouldAnimate || self.isRefreshingEventTimeSort) {
-        return YES;
-    } else {
-        return NO;
-    }
-}
-
-- (void) setIsRefreshingEventTimeSort:(BOOL)isRefreshingEventTimeSort {
-    _isRefreshingEventTimeSort = isRefreshingEventTimeSort;
-    [self refreshLoadingIndicatorViewAnimation];
 }
 
 - (void) refreshEventTimeSort {
@@ -276,14 +214,13 @@
     // Refresh the distance view sorting block here
     
     [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.timeAndDistanceViewName];
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.viewName];
         if (!viewTransaction) {
             return;
         }
-        BRCDatabaseViewExtensionType extensionType = BRCDatabaseViewExtensionTypeTimeThenDistance;
         Class viewClass = self.viewClass;
-        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass extensionType:extensionType];
-        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass extensionType:extensionType fromLocation:self.locationManager.location];
+        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass ];
+        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass];
         [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:^{
         [self updateAllMappingsWithCompletionBlock:^{
@@ -293,6 +230,7 @@
     }];
 }
 
+#pragma mark UITableViewDataSource
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
