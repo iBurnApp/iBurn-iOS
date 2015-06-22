@@ -61,6 +61,18 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 @property (nonatomic, strong, readonly) NSString *eventsFilteredByDayViewName;
 /** Events filtered by date, expiration, and type */
 @property (nonatomic, strong, readonly) NSString *eventsFilteredByDayExpirationAndTypeViewName;
+/** Art, camps and events filtered by favorite */
+@property (nonatomic, strong, readonly) NSString *everythingFilteredByFavorite;
+
+
+/** Search view containing all camp objects */
+@property (nonatomic, strong, readonly) NSString *searchCampsView;
+/** Search view containing all art objects */
+@property (nonatomic, strong, readonly) NSString *searchArtView;
+/** Search view containing all event objects */
+@property (nonatomic, strong, readonly) NSString *searchEventsView;
+/** Search view containing all favorited objects */
+@property (nonatomic, strong, readonly) NSString *searchFavoritesView;
 
 
 + (YapDatabaseViewFiltering*) eventsFiltering;

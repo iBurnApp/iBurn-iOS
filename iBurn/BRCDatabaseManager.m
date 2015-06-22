@@ -20,6 +20,7 @@
 #import "BRCAppDelegate.h"
 #import "BRCEventsTableViewController.h"
 #import "YapDatabase.h"
+#import "YapDatabaseSearchResultsView.h"
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -119,19 +120,8 @@
     return databaseManager;
 }
 
+// Call this before registerExtensions
 - (void) setupViewNames {
-    /*
-     2015-06-19 10:48:18.046 iBurn[95510:3255746] Registered BRCArtObjectView 1
-     2015-06-19 10:48:18.350 iBurn[95510:3255746] Registered BRCCampObjectView 1
-     2015-06-19 10:48:20.423 iBurn[95510:3255746] Registered BRCEventObjectView 1
-     2015-06-19 10:48:20.450 iBurn[95510:3255901] BRCEventObjectView-SelectedDayOnlyFilter 1
-     2015-06-19 10:48:20.454 iBurn[95510:3255901] BRCEventObjectView-SelectedDayOnlyFilter-EventExpirationAndTypeFilter 1
-     2015-06-19 10:48:20.466 iBurn[95510:3255746] Attempting to badge the application icon but haven't received permission from the user to badge the application
-     2015-06-19 10:48:20.629 iBurn[95510:3255746] BRCDataObject-SearchFilter(title) ready 1
-     2015-06-19 10:48:20.631 iBurn[95510:3255746] BRCArtObject-SearchFilter(title) ready 1
-     2015-06-19 10:48:20.635 iBurn[95510:3255746] BRCCampObject-SearchFilter(title) ready 1
-     2015-06-19 10:48:20.638 iBurn[95510:3255746] BRCEventObject-SearchFilter(title) ready 1
-*/
     _artViewName = [[self class] databaseViewNameForClass:[BRCArtObject class]];
     _campsViewName = [[self class] databaseViewNameForClass:[BRCCampObject class]];
     _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
@@ -145,50 +135,107 @@
     
     _eventsFilteredByDayViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName];
     _eventsFilteredByDayExpirationAndTypeViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName];
+    _everythingFilteredByFavorite = [self.dataObjectsViewName stringByAppendingString:@"-FavoritesFilter"];
+    
+    NSString *searchSuffix = @"-SearchView";
+    _searchArtView = [self.ftsArtName stringByAppendingString:searchSuffix];
+    _searchCampsView = [self.ftsCampsName stringByAppendingString:searchSuffix];
+    _searchEventsView = [self.ftsEventsName stringByAppendingString:searchSuffix];
+    _searchFavoritesView = [self.everythingFilteredByFavorite stringByAppendingString:searchSuffix];
 }
+
+#pragma mark Registration
 
 - (void) registerExtensions {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        // Register regular views
-        NSArray *viewsInfo = @[@[self.artViewName, [BRCArtObject class]],
-                               @[self.campsViewName, [BRCCampObject class]],
-                               @[self.eventsViewName, [BRCEventObject class]],
-                               @[self.dataObjectsViewName, [BRCDataObject class]]];
-        [viewsInfo enumerateObjectsUsingBlock:^(NSArray *viewInfo, NSUInteger idx, BOOL *stop) {
-            NSString *viewName = [viewInfo firstObject];
-            Class viewClass = [viewInfo lastObject];
-            YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass];
-            BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:view withName:viewName];
-            NSLog(@"Registered %@ %d", viewName, success);
-        }];
-        
-        // Register full text search
-        NSArray *ftsInfoArray = @[@[self.ftsArtName, [BRCArtObject class]],
-                                  @[self.ftsCampsName, [BRCCampObject class]],
-                                  @[self.ftsEventsName, [BRCEventObject class]],
-                                  @[self.ftsDataObjectName, [BRCDataObject class]]];
-        NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
-        [ftsInfoArray enumerateObjectsUsingBlock:^(NSArray *ftsInfo, NSUInteger idx, BOOL *stop) {
-            NSString *ftsName = [ftsInfo firstObject];
-            Class viewClass = [ftsInfo lastObject];
-            YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:viewClass withIndexedProperties:indexedProperties];
-            BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:fullTextSearch withName:ftsName];
-            NSLog(@"%@ ready %d", ftsName, success);
-        }];
-        
-        // Register event filtered views
-        BOOL success = NO;
-        NSSet *allowedCollections = [NSSet setWithArray:@[[[BRCEventObject class] collection]]];
-        YapWhitelistBlacklist *whitelist = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
-        YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName allowedCollections:whitelist];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
-        NSLog(@"%@ %d", self.eventsFilteredByDayViewName, success);
-        
-        YapDatabaseFilteredView *filteredView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName allowedCollections:whitelist];
-        success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
-        NSLog(@"%@ %d", self.eventsFilteredByDayExpirationAndTypeViewName, success);
+        [self registerRegularViews];
+        [self registerFullTextSearch];
+        [self registerFilteredViews];
+        [self registerSearchViews];
     });
 }
+
+- (void) registerRegularViews {
+    // Register regular views
+    NSArray *viewsInfo = @[@[self.artViewName, [BRCArtObject class]],
+                           @[self.campsViewName, [BRCCampObject class]],
+                           @[self.eventsViewName, [BRCEventObject class]],
+                           @[self.dataObjectsViewName, [BRCDataObject class]]];
+    [viewsInfo enumerateObjectsUsingBlock:^(NSArray *viewInfo, NSUInteger idx, BOOL *stop) {
+        NSString *viewName = [viewInfo firstObject];
+        Class viewClass = [viewInfo lastObject];
+        YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass];
+        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:view withName:viewName];
+        NSLog(@"Registered %@ %d", viewName, success);
+    }];
+}
+
+- (void) registerFullTextSearch {
+    NSArray *ftsInfoArray = @[@[self.ftsArtName, [BRCArtObject class]],
+                              @[self.ftsCampsName, [BRCCampObject class]],
+                              @[self.ftsEventsName, [BRCEventObject class]],
+                              @[self.ftsDataObjectName, [BRCDataObject class]]];
+    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
+    [ftsInfoArray enumerateObjectsUsingBlock:^(NSArray *ftsInfo, NSUInteger idx, BOOL *stop) {
+        NSString *ftsName = [ftsInfo firstObject];
+        Class viewClass = [ftsInfo lastObject];
+        YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:viewClass withIndexedProperties:indexedProperties];
+        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:fullTextSearch withName:ftsName];
+        NSLog(@"%@ ready %d", ftsName, success);
+    }];
+}
+
+- (void) registerFilteredViews {
+    // Register filtered views
+    BOOL success = NO;
+    NSSet *allowedCollections = [NSSet setWithArray:@[[[BRCEventObject class] collection]]];
+    YapWhitelistBlacklist *whitelist = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
+    YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName allowedCollections:whitelist];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
+    NSLog(@"%@ %d", self.eventsFilteredByDayViewName, success);
+    
+    YapDatabaseFilteredView *filteredView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName allowedCollections:whitelist];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
+    NSLog(@"%@ %d", self.eventsFilteredByDayExpirationAndTypeViewName, success);
+    
+    
+    YapDatabaseViewFiltering *favoritesFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
+        // everything in parent view should be a data object
+        NSParameterAssert([object isKindOfClass:[BRCDataObject class]]);
+        BRCDataObject *dataObject = object;
+        return dataObject.isFavorite;
+    }];
+    YapDatabaseFilteredView *favoritesFilteredView = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.dataObjectsViewName filtering:favoritesFiltering];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesFilteredView withName:self.everythingFilteredByFavorite];
+    NSLog(@"%@ %d", self.everythingFilteredByFavorite, success);
+}
+
+- (void) registerSearchViews {
+    // search view name, parent view name, fts name
+    NSArray *searchInfoArrays = @[@[self.searchArtView, self.artViewName, self.ftsArtName],
+                                  @[self.searchCampsView, self.campsViewName, self.ftsCampsName],
+                                  @[self.searchEventsView, self.eventsViewName, self.ftsEventsName],
+                                  @[self.searchFavoritesView, self.everythingFilteredByFavorite, self.ftsDataObjectName]];
+    
+    [searchInfoArrays enumerateObjectsUsingBlock:^(NSArray *searchInfoArray, NSUInteger idx, BOOL *stop) {
+        NSString *searchViewName = searchInfoArray[0];
+        NSString *parentViewName = searchInfoArray[1];
+        NSString *ftsName = searchInfoArray[2];
+        
+        YapDatabaseSearchResultsViewOptions *searchViewOptions = [[YapDatabaseSearchResultsViewOptions alloc] init];
+        searchViewOptions.isPersistent = NO;
+        
+        YapDatabaseSearchResultsView *searchResultsView = [[YapDatabaseSearchResultsView alloc] initWithFullTextSearchName:ftsName
+                                                                                                            parentViewName:parentViewName
+                                                                                                                versionTag:@"1"
+                                                                                                                   options:searchViewOptions];
+        
+        BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
+        NSLog(@"%@ %d", searchViewName, success);
+    }]; 
+}
+
+
 
 + (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass {
     YapDatabaseViewGrouping *grouping = nil;
