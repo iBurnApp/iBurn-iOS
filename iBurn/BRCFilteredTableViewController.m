@@ -135,7 +135,18 @@
     NSArray *viewNames = @[self.viewName];
     NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
     [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
-        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[[self.viewClass collection]] view:viewName];
+        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+            if (self.viewClass == [BRCDataObject class]) {
+                // special case where filtering by all objects
+                return YES;
+            }
+            if ([group isEqualToString:[self.viewClass collection]]) {
+                return YES;
+            }
+            return NO;
+        } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+            return [group1 compare:group2];
+        } view:viewName];
         [mutableMappingsDictionary setObject:mappings forKey:viewName];
     }];
     self.mappingsDictionary = mutableMappingsDictionary;
@@ -304,10 +315,13 @@
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
 {
+    NSInteger count = 0;
     if ([self isSearchResultsControllerTableView:sender]) {
-        return [self.searchResults count];
+        count = [self.searchResults count];
+    } else {
+        count = [self.activeMappings numberOfItemsInSection:section];
     }
-    return [self.activeMappings numberOfItemsInSection:section];
+    return count;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -373,6 +387,8 @@
         [self.tableView reloadData];
     }];
     return;
+    // ^^^^^
+#warning TODO: Fix animations
     
     YapDatabaseViewMappings *activeMappings = self.activeMappings;
     if (activeMappings) {

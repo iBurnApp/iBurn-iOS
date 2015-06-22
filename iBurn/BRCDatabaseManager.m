@@ -159,15 +159,18 @@
     // Register regular views
     NSArray *viewsInfo = @[@[self.artViewName, [BRCArtObject class]],
                            @[self.campsViewName, [BRCCampObject class]],
-                           @[self.eventsViewName, [BRCEventObject class]],
-                           @[self.dataObjectsViewName, [BRCDataObject class]]];
+                           @[self.eventsViewName, [BRCEventObject class]]];
     [viewsInfo enumerateObjectsUsingBlock:^(NSArray *viewInfo, NSUInteger idx, BOOL *stop) {
         NSString *viewName = [viewInfo firstObject];
         Class viewClass = [viewInfo lastObject];
-        YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass];
+        YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
+        YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass allowedCollections:allowedCollections];
         BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:view withName:viewName];
         NSLog(@"Registered %@ %d", viewName, success);
     }];
+    YapDatabaseView *dataObjectsView = [BRCDatabaseManager databaseViewForClass:[BRCDataObject class] allowedCollections:nil];
+    BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:dataObjectsView withName:self.dataObjectsViewName];
+    NSLog(@"Registered %@ %d", self.dataObjectsViewName, success);
 }
 
 - (void) registerFullTextSearch {
@@ -198,15 +201,8 @@
     success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayExpirationAndTypeViewName, success);
     
-    
-    YapDatabaseViewFiltering *favoritesFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
-        // everything in parent view should be a data object
-        NSParameterAssert([object isKindOfClass:[BRCDataObject class]]);
-        BRCDataObject *dataObject = object;
-        return dataObject.isFavorite;
-    }];
-    YapDatabaseFilteredView *favoritesFilteredView = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.dataObjectsViewName filtering:favoritesFiltering];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesFilteredView withName:self.everythingFilteredByFavorite];
+    YapDatabaseFilteredView *favoritesFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesFiltering withName:self.everythingFilteredByFavorite];
     NSLog(@"%@ %d", self.everythingFilteredByFavorite, success);
 }
 
@@ -249,6 +245,10 @@
                 return groupName;
             }
             return nil;
+        }];
+    } else if (viewClass == [BRCDataObject class]) {
+        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key){
+            return collection;
         }];
     } else {
         grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key){
@@ -329,14 +329,15 @@
  *  Does not register the view, but checks if it is registered and returns
  *  the registered view if it exists. (Caller should register the view)
  */
-+ (YapDatabaseView*) databaseViewForClass:(Class)viewClass
++ (YapDatabaseView*) databaseViewForClass:(Class)viewClass allowedCollections:(YapWhitelistBlacklist*)allowedCollections
 {
     YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
     YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    NSString *versionTag = @"1";
-    options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
-    
+    NSString *versionTag = @"2";
+    if (options.allowedCollections) {
+        options.allowedCollections = allowedCollections;
+    }
     YapDatabaseView *databaseView =
     [[YapDatabaseView alloc] initWithGrouping:grouping
                                       sorting:sorting

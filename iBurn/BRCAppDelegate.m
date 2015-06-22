@@ -164,7 +164,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    self.favoritesViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCDataObject class] viewName:dbManager.dataObjectsViewName ftsName:dbManager.ftsDataObjectName];
+    self.favoritesViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCDataObject class] viewName:dbManager.everythingFilteredByFavorite ftsName:dbManager.ftsDataObjectName];
     self.favoritesViewController.title = @"Favorites";
     UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
