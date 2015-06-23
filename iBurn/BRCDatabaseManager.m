@@ -21,6 +21,16 @@
 #import "BRCEventsTableViewController.h"
 #import "YapDatabase.h"
 #import "YapDatabaseSearchResultsView.h"
+#import "NSDate+iBurn.h"
+
+typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
+    BRCDatabaseFilteredViewTypeUnknown,
+    BRCDatabaseFilteredViewTypeEverything,
+    BRCDatabaseFilteredViewTypeFavoritesOnly,
+    BRCDatabaseFilteredViewTypeEventExpirationAndType,
+    BRCDatabaseFilteredViewTypeEventSelectedDayOnly,
+    BRCDatabaseFilteredViewTypeFullTextSearch
+};
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
@@ -197,8 +207,8 @@
     success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayViewName, success);
     
-    YapDatabaseFilteredView *filteredView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName allowedCollections:whitelist];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
+    YapDatabaseFilteredView *filteredByExpiryAndTypeView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName allowedCollections:whitelist];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByExpiryAndTypeView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayExpirationAndTypeViewName, success);
     
     YapDatabaseFilteredView *favoritesFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
@@ -409,9 +419,9 @@
     } else if (filterType == BRCDatabaseFilteredViewTypeFavoritesOnly) {
         filtering = [[self class] favoritesOnlyFiltering];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventExpirationAndType) {
-        filtering = [[self class] eventsFiltering];
+        filtering = [[self class] eventsFilteredByExpirationAndType];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventSelectedDayOnly) {
-        filtering = [[self class] eventsSelectedDayOnlyFiltering];
+        filtering = [[self class] eventsFilteredByToday];
     }
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
@@ -469,11 +479,14 @@
     return filtering;
 }
 
++ (YapDatabaseViewFiltering*) eventsFilteredByToday {
+    NSDate *validDate = [[NSDate date] brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
+    return [self eventsFilteredByDay:validDate];
+}
 
-+ (YapDatabaseViewFiltering*) eventsSelectedDayOnlyFiltering
++ (YapDatabaseViewFiltering*) eventsFilteredByDay:(NSDate*)day
 {
-    BRCEventsTableViewController *eventsVC = [BRCAppDelegate appDelegate].eventsViewController;
-    NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:eventsVC.selectedDay];
+    NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:day];
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (NSString *group, NSString *collection, NSString *key)
     {
         return [group isEqualToString:selectedDayGroup];
@@ -481,19 +494,21 @@
     return filtering;
 }
 
-+ (YapDatabaseViewFiltering*) eventsFiltering {
++ (YapDatabaseViewFiltering*) eventsFilteredByExpirationAndType {
     BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
-    
     NSSet *filteredSet = [NSSet setWithArray:[[NSUserDefaults standardUserDefaults] selectedEventTypes]];
-    
+    return [[self class] eventsFilteredByExpiration:showExpiredEvents eventTypes:filteredSet];
+}
+
++ (YapDatabaseViewFiltering*) eventsFilteredByExpiration:(BOOL)showExpired eventTypes:(NSSet*)eventTypes {
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *eventObject = (BRCEventObject*)object;
             BOOL eventHasEnded = eventObject.hasEnded || eventObject.isEndingSoon;
-            BOOL eventMatchesTypeFilter = [filteredSet containsObject:@(eventObject.eventType)];
+            BOOL eventMatchesTypeFilter = [eventTypes containsObject:@(eventObject.eventType)];
             
-            if ((eventMatchesTypeFilter || [filteredSet count] == 0)) {
-                if (showExpiredEvents) {
+            if ((eventMatchesTypeFilter || [eventTypes count] == 0)) {
+                if (showExpired) {
                     return YES;
                 } else {
                     return !eventHasEnded;
@@ -505,6 +520,33 @@
     }];
     
     return filtering;
+}
+
+/** Updates event filtered views based on newly selected preferences */
+- (void) refreshEventFilteredViewsWithSelectedDay:(NSDate*)selectedDay completionBlock:(dispatch_block_t)completionBlock {
+    [self.readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseViewFiltering *selectedDayFiltering = [BRCDatabaseManager eventsFilteredByDay:selectedDay];
+        YapDatabaseFilteredViewTransaction *filteredDayTransaction = [transaction ext:self.eventsFilteredByDayViewName];
+        [filteredDayTransaction setFiltering:selectedDayFiltering versionTag:[[NSUUID UUID] UUIDString]];
+        
+        YapDatabaseViewFiltering *eventsAndTypesFiltering = [BRCDatabaseManager eventsFilteredByExpirationAndType];
+        YapDatabaseFilteredViewTransaction *filteredExpirationAndTypeTransaction = [transaction ext:self.eventsFilteredByDayExpirationAndTypeViewName];
+        [filteredExpirationAndTypeTransaction setFiltering:eventsAndTypesFiltering versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:completionBlock];
+}
+
+/** Refresh events sorting if selected by expiration/start time */
+- (void) refreshEventsSortingWithCompletionBlock:(dispatch_block_t)completionBlock {
+    [self.readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.eventsViewName];
+        if (!viewTransaction) {
+            return;
+        }
+        Class viewClass = [BRCEventObject class];
+        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass];
+        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass];
+        [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:completionBlock];
 }
 
 @end

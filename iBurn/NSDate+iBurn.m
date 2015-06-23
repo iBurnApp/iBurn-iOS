@@ -42,4 +42,18 @@
     return nextDate;
 }
 
+
+/** Returns self if within range, or startDate if out of range. */
+- (NSDate*) brc_dateWithinStartDate:(NSDate*)startDate
+                            endDate:(NSDate*)endDate {
+    NSDate *dayCandidate = self;
+    NSDate *validDate = nil;
+    if ([dayCandidate compare:startDate] == NSOrderedDescending && [dayCandidate compare:endDate] == NSOrderedAscending) {
+        validDate = dayCandidate;
+    } else {
+        validDate = startDate;
+    }
+    return validDate;
+}
+
 @end

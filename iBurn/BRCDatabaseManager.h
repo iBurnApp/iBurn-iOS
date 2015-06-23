@@ -13,15 +13,6 @@
 #import "YapDatabaseFilteredView.h"
 #import "YapDatabaseFullTextSearch.h"
 
-typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
-    BRCDatabaseFilteredViewTypeUnknown,
-    BRCDatabaseFilteredViewTypeEverything,
-    BRCDatabaseFilteredViewTypeFavoritesOnly,
-    BRCDatabaseFilteredViewTypeEventExpirationAndType,
-    BRCDatabaseFilteredViewTypeEventSelectedDayOnly,
-    BRCDatabaseFilteredViewTypeFullTextSearch
-};
-
 @interface BRCDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;
@@ -35,7 +26,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 /** Do all the necessary setup and creates the database if none exists */
 - (BOOL)setupDatabaseWithName:(NSString*)databaseName;
-
 
 + (instancetype) sharedInstance;
 
@@ -64,7 +54,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 /** Art, camps and events filtered by favorite */
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavorite;
 
-
 /** Search view containing all camp objects */
 @property (nonatomic, strong, readonly) NSString *searchCampsView;
 /** Search view containing all art objects */
@@ -74,12 +63,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 /** Search view containing all favorited objects */
 @property (nonatomic, strong, readonly) NSString *searchFavoritesView;
 
-
-+ (YapDatabaseViewFiltering*) eventsFiltering;
-+ (YapDatabaseViewFiltering*) eventsSelectedDayOnlyFiltering;
-
-+ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass;
-+ (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass;
+/** Updates event filtered views based on newly selected preferences */
+- (void) refreshEventFilteredViewsWithSelectedDay:(NSDate*)selectedDay completionBlock:(dispatch_block_t)completionBlock;
+/** Refresh events sorting if selected by expiration/start time */
+- (void) refreshEventsSortingWithCompletionBlock:(dispatch_block_t)completionBlock;
 
 
 @end

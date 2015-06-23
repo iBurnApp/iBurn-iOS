@@ -180,7 +180,7 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
     UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:self.campsViewController];
     campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
-    self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class] viewName:dbManager.eventsViewName ftsName:dbManager.ftsEventsName filteredByDayViewName:dbManager.eventsFilteredByDayViewName filteredByDayExpirationAndTypeViewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName];
+    self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class] viewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName ftsName:dbManager.ftsEventsName];
     self.eventsViewController.title = @"Events";
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];

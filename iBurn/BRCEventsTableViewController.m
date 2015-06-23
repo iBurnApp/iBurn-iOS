@@ -17,8 +17,10 @@
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventsFilterTableViewController.h"
 #import "BRCStringPickerView.h"
+#import "NSUserDefaults+iBurn.h"
 
 @interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate>
+@property (nonatomic, strong, readonly) NSDate *selectedDay;
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
 @property (nonatomic, strong) NSArray *festivalDates;
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
@@ -30,24 +32,11 @@
 @implementation BRCEventsTableViewController
 @synthesize selectedDay = _selectedDay;
 
-- (instancetype) initWithViewClass:(Class)viewClass
-                          viewName:(NSString*)viewName
-                           ftsName:(NSString*)ftsName
-             filteredByDayViewName:(NSString*)filteredByDayViewName
-filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndTypeViewName
-{
-    _filteredByDayViewName = filteredByDayViewName;
-    _filteredByDayExpirationAndTypeViewName = filteredByDayExpirationAndTypeViewName;
-    if (self = [super initWithViewClass:viewClass viewName:viewName ftsName:ftsName]) {
-    }
-    return self;
-}
-
 - (void) registerDatabaseExtensions {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self updateAllMappingsWithCompletionBlock:^{
+            [self updateMappingsWithCompletionBlock:^{
                 [self.tableView reloadData];
             }];
         });
@@ -120,12 +109,7 @@ filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndType
 }
 
 - (NSDate*) selectedDayInFestivalRange:(NSDate*)dayCandidate {
-    NSDate *validDate = nil;
-    if ([dayCandidate compare:[BRCEventObject festivalStartDate]] == NSOrderedDescending && [dayCandidate compare:[BRCEventObject festivalEndDate]] == NSOrderedAscending) {
-        validDate = dayCandidate;
-    } else {
-        validDate = [BRCEventObject festivalStartDate];
-    }
+    NSDate *validDate = [dayCandidate brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
     return validDate;
 }
 
@@ -139,7 +123,7 @@ filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndType
     self.navigationItem.leftBarButtonItem.title = dayString;
     [self updateFilteredViews];
     [self replaceTimeBasedEventMappings];
-    [self updateAllMappingsWithCompletionBlock:^{
+    [self updateMappingsWithCompletionBlock:^{
         [self.tableView reloadData];
     }];
 }
@@ -159,45 +143,20 @@ filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndType
 - (void)updateFilteredViews
 {
     self.isUpdatingFilters = YES;
-    YapDatabaseViewFiltering *filtering = [BRCDatabaseManager eventsFiltering];
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        YapDatabaseViewFiltering *selectedDayFiltering =[BRCDatabaseManager eventsSelectedDayOnlyFiltering];
-        YapDatabaseFilteredViewTransaction *filteredTransaction = [transaction ext:self.filteredByDayViewName];
-        [filteredTransaction setFiltering:selectedDayFiltering versionTag:[[NSUUID UUID] UUIDString]];
-        filteredTransaction = [transaction ext:self.filteredByDayExpirationAndTypeViewName];
-        [filteredTransaction setFiltering:filtering versionTag:[[NSUUID UUID] UUIDString]];
-    } completionBlock:^{
+    [[BRCDatabaseManager sharedInstance] refreshEventFilteredViewsWithSelectedDay:self.selectedDay completionBlock:^{
         self.isUpdatingFilters = NO;
         [self.tableView reloadData];
     }];
 }
 
-- (void) setupMappingsDictionary {
-    self.mappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:4];
-    
-    NSArray *allFestivalDates = [BRCEventObject datesOfFestival];
-    NSMutableArray *allGroups = [NSMutableArray arrayWithCapacity:allFestivalDates.count];
-    [allFestivalDates enumerateObjectsUsingBlock:^(NSDate *date, NSUInteger idx, BOOL *stop) {
-        NSString *group = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:date];
-        [allGroups addObject:group];
-    }];
-    
+- (void) setupMappings {
     [self replaceTimeBasedEventMappings];
-}
-
-- (YapDatabaseViewMappings*) activeMappings {
-    YapDatabaseViewMappings *activeMappings = [self.mappingsDictionary objectForKey:self.filteredByDayExpirationAndTypeViewName];
-    return activeMappings;
 }
 
 - (void) replaceTimeBasedEventMappings {
     NSString *group = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:self.selectedDay];
     NSArray *activeTimeGroup = @[group]; // selected day group
-    NSArray *mappingsToRefresh = @[self.filteredByDayViewName, self.filteredByDayExpirationAndTypeViewName];
-    [mappingsToRefresh enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
-        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:viewName];
-        [self.mappingsDictionary setObject:mappings forKey:viewName];
-    }];
+    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:self.viewName];
 }
 
 - (void) refreshEventTimeSort {
@@ -205,20 +164,8 @@ filteredByDayExpirationAndTypeViewName:(NSString*)filteredByDayExpirationAndType
         return;
     }
     self.isRefreshingEventTimeSort = YES;
-    
-    // Refresh the distance view sorting block here
-    
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.viewName];
-        if (!viewTransaction) {
-            return;
-        }
-        Class viewClass = self.viewClass;
-        YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass ];
-        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass];
-        [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
-    } completionBlock:^{
-        [self updateAllMappingsWithCompletionBlock:^{
+    [[BRCDatabaseManager sharedInstance] refreshEventsSortingWithCompletionBlock:^{
+        [self updateMappingsWithCompletionBlock:^{
             [self.tableView reloadData];
             self.isRefreshingEventTimeSort = NO;
         }];

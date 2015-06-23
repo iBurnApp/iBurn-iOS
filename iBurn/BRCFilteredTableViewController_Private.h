@@ -9,14 +9,14 @@
 #import "BRCFilteredTableViewController.h"
 
 @interface BRCFilteredTableViewController ()
-@property (nonatomic, strong) NSMutableDictionary *mappingsDictionary;
+@property (nonatomic, strong) YapDatabaseViewMappings *mappings;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 
 @property (nonatomic) BOOL isUpdatingFilters;
 
-- (void) setupMappingsDictionary;
-- (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
+- (void) setupMappings;
+- (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 
 - (BOOL) shouldAnimateLoadingIndicator;
 - (void) refreshLoadingIndicatorViewAnimation;

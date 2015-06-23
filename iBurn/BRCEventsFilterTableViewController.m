@@ -17,9 +17,9 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 @interface BRCEventTypeContainer : NSObject
 
-@property (nonatomic) BRCEventType type;
+@property (nonatomic, readonly) BRCEventType type;
+@property (nonatomic, strong, readonly) NSString *title;
 @property (nonatomic) BOOL isSelected;
-@property (nonatomic, strong) NSString *title;
 
 @end
 
@@ -28,8 +28,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 - (instancetype)initWithType:(BRCEventType)type
 {
     if (self = [self init]) {
-        self.type = type;
-        self.title = [BRCEventObject stringForEventType:self.type];
+        _type = type;
+        _title = [BRCEventObject stringForEventType:self.type];
     }
     return self;
 }
@@ -147,9 +147,10 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (NSArray *)filteredTypes
 {
-    NSArray *filteredArray = [self.eventTypeArray filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isSelected = YES"]];
-    filteredArray = [filteredArray valueForKey:@"type"];
-    return filteredArray;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isSelected = YES"];
+    NSArray *filteredArray = [self.eventTypeArray filteredArrayUsingPredicate:predicate];
+    NSArray *filteredTypes = [filteredArray valueForKey:NSStringFromSelector(@selector(type))];
+    return filteredTypes;
 }
 
 - (void)doneButtonPressed:(id)sender

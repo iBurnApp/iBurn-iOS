@@ -34,7 +34,6 @@
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 
 @property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
-@property (nonatomic, strong) YapDatabaseViewMappings *mappings;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -49,8 +48,8 @@
         _ftsName = ftsName;
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
-        [self setupMappingsDictionary];
-        [self updateAllMappingsWithCompletionBlock:nil];
+        [self setupMappings];
+        [self updateMappingsWithCompletionBlock:nil];
     }
     return self;
 }
@@ -130,33 +129,24 @@
                                                object:self.databaseConnection.database];
 }
 
-// Override this in subclasses
-- (void) setupMappingsDictionary {
-    NSArray *viewNames = @[self.viewName];
-    NSMutableDictionary *mutableMappingsDictionary = [NSMutableDictionary dictionaryWithCapacity:viewNames.count];
-    [viewNames enumerateObjectsUsingBlock:^(NSString *viewName, NSUInteger idx, BOOL *stop) {
-        YapDatabaseViewMappings *mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-            if (self.viewClass == [BRCDataObject class]) {
-                // special case where filtering by all objects
-                return YES;
-            }
-            if ([group isEqualToString:[self.viewClass collection]]) {
-                return YES;
-            }
-            return NO;
-        } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
-            return [group1 compare:group2];
-        } view:viewName];
-        [mutableMappingsDictionary setObject:mappings forKey:viewName];
-    }];
-    self.mappingsDictionary = mutableMappingsDictionary;
+- (void) setupMappings {
+    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+        if (self.viewClass == [BRCDataObject class]) {
+            // special case where filtering by all objects
+            return YES;
+        }
+        if ([group isEqualToString:[self.viewClass collection]]) {
+            return YES;
+        }
+        return NO;
+    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+        return [group1 compare:group2];
+    } view:self.viewName];
 }
 
-- (void) updateAllMappingsWithCompletionBlock:(dispatch_block_t)completionBlock {
+- (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock {
     [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        [self.mappingsDictionary enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *mappings, BOOL *stop) {
-            [mappings updateWithTransaction:transaction];
-        }];
+        [self.mappings updateWithTransaction:transaction];
     } completionBlock:completionBlock];
 }
 
@@ -186,21 +176,6 @@
     self.didUpdateConstraints = YES;
 }
 
-- (YapDatabaseViewMappings*) activeMappings {
-    YapDatabaseViewMappings *activeMappings = [self.mappingsDictionary objectForKey:self.viewName];
-    return activeMappings;
-}
-
-- (NSDictionary*) inactiveMappingsDictionary {
-    NSString *activeMappingsName = self.viewName;
-    NSMutableDictionary *mutableMappings = [self.mappingsDictionary mutableCopy];
-    if (activeMappingsName) {
-        [mutableMappings removeObjectForKey:activeMappingsName];
-    }
-    return mutableMappings;
-}
-
-
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
     __block BRCDataObject *dataObject = nil;
@@ -210,7 +185,7 @@
     else {
         [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             YapDatabaseViewTransaction *viewTransaction = [transaction extension:self.viewName];
-            dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.activeMappings];
+            dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.mappings];
         }];
     }
     
@@ -301,8 +276,7 @@
     if ([self isSearchResultsControllerTableView:sender]) {
         return 1;
     }
-    YapDatabaseViewMappings *mappings = self.activeMappings;
-    return [mappings numberOfSections];
+    return [self.mappings numberOfSections];
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -319,7 +293,7 @@
     if ([self isSearchResultsControllerTableView:sender]) {
         count = [self.searchResults count];
     } else {
-        count = [self.activeMappings numberOfItemsInSection:section];
+        count = [self.mappings numberOfItemsInSection:section];
     }
     return count;
 }
@@ -377,41 +351,32 @@
     
     NSArray *notifications = [self.databaseConnection beginLongLivedReadTransaction];
     
+    [self updateMappingsWithCompletionBlock:^{
+        [self.tableView reloadData];
+    }];
+    return;
+#warning TODO fix animations ^^^
+    
     // Process the notification(s),
     // and get the change-set(s) as applies to my view and mappings configuration.
     
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
     
-    [self updateAllMappingsWithCompletionBlock:^{
-        [self.tableView reloadData];
-    }];
-    return;
-    // ^^^^^
-#warning TODO: Fix animations
-    
-    YapDatabaseViewMappings *activeMappings = self.activeMappings;
-    if (activeMappings) {
-        YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:self.viewName];
-        
-        // sometimes this takes a long time if there are a LOT of changes and will block
-        // the main thread
-        [viewConnection getSectionChanges:&sectionChanges
-                               rowChanges:&rowChanges
-                         forNotifications:notifications
-                             withMappings:activeMappings];
-        NSDictionary *inactiveMappings = [self inactiveMappingsDictionary];
-        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            [inactiveMappings enumerateKeysAndObjectsUsingBlock:^(id key, YapDatabaseViewMappings *inactiveMappings, BOOL *stop) {
-                [inactiveMappings updateWithTransaction:transaction];
-            }];
-        }];
-    } else {
-        [self updateAllMappingsWithCompletionBlock:^{
+    YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:self.viewName];
+    NSUInteger sizeEstimate = [viewConnection numberOfRawChangesForNotifications:notifications];
+    if (sizeEstimate > 150) {
+        [self updateMappingsWithCompletionBlock:^{
             [self.tableView reloadData];
         }];
+        return;
     }
-
+    
+    [viewConnection getSectionChanges:&sectionChanges
+                           rowChanges:&rowChanges
+                     forNotifications:notifications
+                         withMappings:self.mappings];
+    
     // No need to update mappings.
     // The above method did it automatically.
     
