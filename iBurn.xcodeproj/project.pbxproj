@@ -37,7 +37,7 @@
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
-		D972BD271993422E008057DB /* BRCStringPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D972BD261993422E008057DB /* BRCStringPickerView.m */; };
+		D972BD271993422E008057DB /* BRCStringPickerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D972BD261993422E008057DB /* BRCStringPickerViewController.m */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D979CEC6199AED4C007F0313 /* RMAnnotation+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D979CEC5199AED4C007F0313 /* RMAnnotation+iBurn.m */; };
@@ -133,8 +133,8 @@
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
-		D972BD251993422E008057DB /* BRCStringPickerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCStringPickerView.h; sourceTree = "<group>"; };
-		D972BD261993422E008057DB /* BRCStringPickerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCStringPickerView.m; sourceTree = "<group>"; };
+		D972BD251993422E008057DB /* BRCStringPickerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCStringPickerViewController.h; sourceTree = "<group>"; };
+		D972BD261993422E008057DB /* BRCStringPickerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCStringPickerViewController.m; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
 		D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+iBurn.h"; sourceTree = "<group>"; };
@@ -367,8 +367,8 @@
 		D972BD281993423E008057DB /* Events */ = {
 			isa = PBXGroup;
 			children = (
-				D972BD251993422E008057DB /* BRCStringPickerView.h */,
-				D972BD261993422E008057DB /* BRCStringPickerView.m */,
+				D972BD251993422E008057DB /* BRCStringPickerViewController.h */,
+				D972BD261993422E008057DB /* BRCStringPickerViewController.m */,
 				63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */,
 				63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */,
 				D994155F19871E8400D245C7 /* BRCEventsTableViewController.h */,
@@ -617,7 +617,7 @@
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
-				D972BD271993422E008057DB /* BRCStringPickerView.m in Sources */,
+				D972BD271993422E008057DB /* BRCStringPickerViewController.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,

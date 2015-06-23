@@ -16,17 +16,17 @@
 #import "NSDate+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventsFilterTableViewController.h"
-#import "BRCStringPickerView.h"
+#import "BRCStringPickerViewController.h"
 #import "NSUserDefaults+iBurn.h"
 
-@interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate>
+@interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate, UIPopoverPresentationControllerDelegate>
 @property (nonatomic, strong, readonly) NSDate *selectedDay;
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
 @property (nonatomic, strong) NSArray *festivalDates;
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
 
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
-@property (nonatomic, strong) BRCStringPickerView *dayPicker;
+@property (nonatomic, strong) BRCStringPickerViewController *dayPicker;
 @end
 
 @implementation BRCEventsTableViewController
@@ -47,10 +47,17 @@
 - (void) dayButtonPressed:(id)sender {
     NSInteger currentSelection = [self indexForDay:self.selectedDay];
     self.dayPicker.selectedIndex = currentSelection;
+
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:self.dayPicker];
+    nav.modalPresentationStyle = UIModalPresentationPopover;
+    nav.navigationBarHidden = YES;
+
+    self.dayPicker.preferredContentSize = CGSizeMake(280, 200);
     
-    if (!self.dayPicker.isVisible) {
-        [self.dayPicker showFromViewController:self];
-    }
+    UIPopoverPresentationController *popover = nav.popoverPresentationController;
+    popover.delegate = self;
+    popover.barButtonItem = sender;
+    [self presentViewController:nav animated:YES completion:nil];
 }
 
 - (void) filterButtonPressed:(id)sender {
@@ -102,10 +109,10 @@
     }];
     self.dayPickerRowTitles = rowTitles;
     NSInteger currentSelection = [self indexForDay:self.selectedDay];
-    self.dayPicker = [[BRCStringPickerView alloc] initWithTitle:@"Choose a Day" pickerStrings:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(BRCStringPickerView *picker, NSUInteger selectedIndex, NSString *selectedValue) {
+    self.dayPicker = [[BRCStringPickerViewController alloc] initWithPickerStrings:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(BRCStringPickerViewController *picker, NSUInteger selectedIndex, NSString *selectedValue) {
         NSDate *selectedDate = [self dateForIndex:selectedIndex];
         self.selectedDay = selectedDate;
-    } cancelBlock:nil];
+    }];
 }
 
 - (NSDate*) selectedDayInFestivalRange:(NSDate*)dayCandidate {
@@ -191,6 +198,13 @@
 - (void)didSetNewSortSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController
 {
     [self refreshEventTimeSort];
+}
+
+#pragma mark UIAdaptivePresentationControllerDelegate
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
+    // This makes our date picker appear in a popover
+    return UIModalPresentationNone;
 }
 
 @end
