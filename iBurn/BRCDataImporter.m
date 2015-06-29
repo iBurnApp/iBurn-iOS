@@ -10,20 +10,92 @@
 #import "MTLJSONAdapter.h"
 #import "BRCDataObject.h"
 #import "BRCRecurringEventObject.h"
+#import "BRCUpdateInfo.h"
+#import "BRCArtObject.h"
+#import "BRCCampObject.h"
+#import "BRCEventObject.h"
+
+@interface BRCDataImporter()
+@property (nonatomic, strong, readonly) NSURLSession *urlSession;
+@end
 
 @implementation BRCDataImporter
 
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection {
-    if (self = [super init]) {
-        _readWriteConnection = readWriteConection;
+    if (self = [self initWithReadWriteConnection:readWriteConection sessionConfiguration:nil]) {
     }
     return self;
 }
 
+- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection sessionConfiguration:(NSURLSessionConfiguration*)sessionConfiguration {
+    if (self = [super init]) {
+        _readWriteConnection = readWriteConection;
+        _callbackQueue = dispatch_get_main_queue();
+        if (sessionConfiguration) {
+            _sessionConfiguration = sessionConfiguration;
+        } else {
+            _sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        }
+        _urlSession = [NSURLSession sessionWithConfiguration:self.sessionConfiguration];
+    }
+    return self;
+}
+
+- (void) loadUpdatesFromURL:(NSURL*)updateURL
+                lastUpdated:(NSDate*)lastUpdated
+            completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock {
+    NSURLSessionDownloadTask *downloadTask = [self.urlSession downloadTaskWithURL:updateURL completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+        if (error) {
+            [self handleFetchError:error completionBlock:completionBlock];
+            return;
+        }
+        NSData *jsonData = [NSData dataWithContentsOfURL:location];
+        NSDictionary *updateJSON = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        if (error) {
+            [self handleFetchError:error completionBlock:completionBlock];
+            return;
+        }
+        NSMutableArray *updates = [NSMutableArray arrayWithCapacity:4];
+        __block NSError *parseError = nil;
+        [updateJSON enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary *obj, BOOL *stop) {
+            BRCUpdateInfo *updateInfo = [MTLJSONAdapter modelOfClass:[BRCUpdateInfo class]  fromJSONDictionary:obj error:&parseError];
+            if (parseError) {
+                *stop = YES;
+            }
+            updateInfo.type = key;
+            [updates addObject:updateInfo];
+        }];
+        if (parseError) {
+            [self handleFetchError:parseError completionBlock:completionBlock];
+            return;
+        }
+        [updates enumerateObjectsUsingBlock:^(BRCUpdateInfo *obj, NSUInteger idx, BOOL *stop) {
+            if ([obj.type isEqualToString:@"tiles"]) {
+                // TODO: update tiles
+            } else {
+                NSDictionary *classMapping = @{@"art": [BRCArtObject class],
+                                               @"camps": [BRCCampObject class],
+                                               @"events": [BRCEventObject class]};
+                Class objClass = classMapping[obj.type];
+                
+            }
+        }];
+    }];
+    [downloadTask resume];
+}
+
 - (void) handleError:(NSError*)error completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
     if (completionBlock) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(self.callbackQueue, ^{
             completionBlock(NO, error);
+        });
+    }
+};
+
+- (void) handleFetchError:(NSError*)error completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock {
+    if (completionBlock) {
+        dispatch_async(self.callbackQueue, ^{
+            completionBlock(UIBackgroundFetchResultFailed, error);
         });
     }
 };
@@ -71,7 +143,7 @@
             }];
         } completionBlock:^{
             if (completionBlock) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(self.callbackQueue, ^{
                     completionBlock(YES, nil);
                 });
             }

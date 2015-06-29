@@ -12,11 +12,25 @@
 @interface BRCDataImporter : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
+@property (nonatomic, strong, readonly) NSURLSessionConfiguration *sessionConfiguration;
+/** Defaults to main queue */
+@property (nonatomic) dispatch_queue_t callbackQueue;
 
-- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection;
+- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection sessionConfiguration:(NSURLSessionConfiguration*)sessionConfiguration NS_DESIGNATED_INITIALIZER;
 
 /**
- *  Loads Data 
+ *  Load updates from remote events.json file.
+ * 
+ *  @param updateURL url to updates.json file
+ *  @param lastUpdated the last time updates were fetched. pass nil to force fetch
+ *  @param completionBlock fetch result status or error
+ */
+- (void) loadUpdatesFromURL:(NSURL*)updateURL
+                  lastUpdated:(NSDate*)lastUpdated
+              completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock;
+/**
+ *  Loads new data. Use loadUpdatesFromURL: instead.
  *
  *  @param dataURL         local or remote URL to json
  *  @param dataClass       subclass of BRCDataObject
