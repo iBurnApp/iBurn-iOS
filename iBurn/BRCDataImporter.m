@@ -42,8 +42,9 @@
 }
 
 - (void) loadUpdatesFromURL:(NSURL*)updateURL
-                lastUpdated:(NSDate*)lastUpdated
             completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock {
+    NSParameterAssert(updateURL);
+    NSURL *updateFolderURL = [updateURL URLByDeletingLastPathComponent];
     NSURLSessionDownloadTask *downloadTask = [self.urlSession downloadTaskWithURL:updateURL completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
         if (error) {
             [self handleFetchError:error completionBlock:completionBlock];
@@ -62,7 +63,7 @@
             if (parseError) {
                 *stop = YES;
             }
-            updateInfo.type = key;
+            updateInfo.dataType = [BRCUpdateInfo dataTypeFromString:key];
             [updates addObject:updateInfo];
         }];
         if (parseError) {
@@ -70,14 +71,16 @@
             return;
         }
         [updates enumerateObjectsUsingBlock:^(BRCUpdateInfo *obj, NSUInteger idx, BOOL *stop) {
-            if ([obj.type isEqualToString:@"tiles"]) {
+            NSURL *dataURL = [updateFolderURL URLByAppendingPathComponent:obj.fileName];
+            Class objClass = [obj dataObjectClass];
+            // BRC Data object subclass
+            if (objClass && [objClass isSubclassOfClass:[BRCDataObject class]]) {
+                [self loadDataFromURL:dataURL dataClass:objClass completionBlock:^(BOOL success, NSError *error) {
+                    NSLog(@"Fetch %@ %d", NSStringFromClass(objClass), success);
+                }];
+            } else if (obj.dataType == BRCUpdateDataTypeTiles) {
                 // TODO: update tiles
-            } else {
-                NSDictionary *classMapping = @{@"art": [BRCArtObject class],
-                                               @"camps": [BRCCampObject class],
-                                               @"events": [BRCEventObject class]};
-                Class objClass = classMapping[obj.type];
-                
+#warning TODO update tiles
             }
         }];
     }];

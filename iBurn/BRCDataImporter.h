@@ -23,12 +23,10 @@
  *  Load updates from remote events.json file.
  * 
  *  @param updateURL url to updates.json file
- *  @param lastUpdated the last time updates were fetched. pass nil to force fetch
  *  @param completionBlock fetch result status or error
  */
 - (void) loadUpdatesFromURL:(NSURL*)updateURL
-                  lastUpdated:(NSDate*)lastUpdated
-              completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock;
+            completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock;
 /**
  *  Loads new data. Use loadUpdatesFromURL: instead.
  *

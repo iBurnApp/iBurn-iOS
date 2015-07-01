@@ -64,12 +64,12 @@
     NSURL *updatedURL = [NSURL fileURLWithPath:updatedDataPath];
     XCTAssertNotNil(updatedURL);
     
-    [self.importer loadUpdatesFromURL:initialUpdateURL lastUpdated:nil completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+    [self.importer loadUpdatesFromURL:initialUpdateURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
         XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
         XCTAssertNil(error);
         
         NSDate *lastUpdated = [NSDate date];
-        [self.importer loadUpdatesFromURL:updatedURL lastUpdated:lastUpdated completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+        [self.importer loadUpdatesFromURL:updatedURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
             XCTAssertNil(error);
             XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
             [self.expectation fulfill];

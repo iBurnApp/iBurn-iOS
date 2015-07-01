@@ -8,11 +8,33 @@
 
 #import <Mantle/Mantle.h>
 
+typedef NS_ENUM(NSUInteger, BRCUpdateDataType) {
+    BRCUpdateDataTypeUnknown,
+    BRCUpdateDataTypeArt,
+    BRCUpdateDataTypeCamps,
+    BRCUpdateDataTypeEvents,
+    BRCUpdateDataTypeTiles
+};
+
 /** Metadata parsed from update.json */
 @interface BRCUpdateInfo : MTLModel <MTLJSONSerializing>
 
-@property (nonatomic, strong, readonly) NSString *file;
+@property (nonatomic, strong, readonly) NSString *fileName;
 @property (nonatomic, strong, readonly) NSDate *lastUpdated;
-@property (nonatomic, strong) NSString *type;
+@property (nonatomic) BRCUpdateDataType dataType;
+
+/** Returns BRCDataObject subclass for dataType. Not valid for
+ * tiles of course. */
+- (Class) dataObjectClass;
+
+/**
+ *  The YapDatabase collection of this class
+ *
+ *  @return collection for this class
+ */
++ (NSString*) yapCollection;
+
+/** Converts from updates.json keys */
++ (BRCUpdateDataType) dataTypeFromString:(NSString*)dataTypeString;
 
 @end
