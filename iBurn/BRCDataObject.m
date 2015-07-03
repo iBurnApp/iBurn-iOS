@@ -78,4 +78,12 @@
     return distance;
 }
 
+- (void) mergeValueForKey:(NSString *)key fromModel:(id<MTLModel>)model {
+    // Don't overwrite favorites from merged model data
+    if ([key isEqualToString:NSStringFromSelector(@selector(isFavorite))]) {
+        return;
+    }
+    [super mergeValueForKey:key fromModel:model];
+}
+
 @end

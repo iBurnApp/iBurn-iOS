@@ -21,6 +21,16 @@
 
 @implementation BRCDataImporter
 
+- (void) dealloc {
+    [self.urlSession invalidateAndCancel];
+}
+
+- (instancetype) init {
+    if (self = [self initWithReadWriteConnection:nil sessionConfiguration:nil]) {
+    }
+    return self;
+}
+
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection {
     if (self = [self initWithReadWriteConnection:readWriteConection sessionConfiguration:nil]) {
     }
@@ -45,13 +55,13 @@
             completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock {
     NSParameterAssert(updateURL);
     NSURL *updateFolderURL = [updateURL URLByDeletingLastPathComponent];
-    NSURLSessionDownloadTask *downloadTask = [self.urlSession downloadTaskWithURL:updateURL completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+    NSURLSessionDataTask *dataTask = [self.urlSession dataTaskWithURL:updateURL completionHandler:^(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error) {
         if (error) {
             [self handleFetchError:error completionBlock:completionBlock];
             return;
         }
         // parse update JSON
-        NSData *jsonData = [NSData dataWithContentsOfURL:location];
+        NSData *jsonData = data;
         NSDictionary *updateJSON = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
         if (error) {
             [self handleFetchError:error completionBlock:completionBlock];
@@ -124,8 +134,7 @@
             }
         });
     }];
-    
-    [downloadTask resume];
+    [dataTask resume];
 }
 
 - (void) handleError:(NSError*)error completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
@@ -145,54 +154,72 @@
 };
 
 - (void) loadDataFromURL:(NSURL*)dataURL dataClass:(Class)dataClass completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSData *jsonData = [NSData dataWithContentsOfURL:dataURL];
-        NSError *error = nil;
-        NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    if ([dataURL isFileURL]) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSData *jsonData = [NSData dataWithContentsOfURL:dataURL];
+            [self loadDataFromJSONData:jsonData dataClass:dataClass completionBlock:completionBlock];
+        });
+        return;
+    }
+    NSURLSessionDownloadTask *downloadTask = [self.urlSession downloadTaskWithURL:dataURL completionHandler:^(NSURL * __nullable location, NSURLResponse * __nullable response, NSError * __nullable error) {
         if (error) {
             [self handleError:error completionBlock:completionBlock];
             return;
         }
-        NSMutableArray *objects = [NSMutableArray arrayWithCapacity:jsonObjects.count];
-        [jsonObjects enumerateObjectsUsingBlock:^(NSDictionary *jsonObject, NSUInteger idx, BOOL *stop) {
-            NSError *error = nil;
-            id object = [MTLJSONAdapter modelOfClass:dataClass fromJSONDictionary:jsonObject error:&error];
-            if (object) {
-                [objects addObject:object];
-            } else if (error) {
+        [self loadDataFromURL:location dataClass:dataClass completionBlock:completionBlock];
+    }];
+    [downloadTask resume];
+}
+
+- (void) loadDataFromJSONData:(NSData*)jsonData
+               dataClass:(Class)dataClass
+         completionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
+    NSParameterAssert(jsonData != nil);
+    NSError *error = nil;
+    NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    if (error) {
+        [self handleError:error completionBlock:completionBlock];
+        return;
+    }
+    NSMutableArray *objects = [NSMutableArray arrayWithCapacity:jsonObjects.count];
+    [jsonObjects enumerateObjectsUsingBlock:^(NSDictionary *jsonObject, NSUInteger idx, BOOL *stop) {
+        NSError *error = nil;
+        id object = [MTLJSONAdapter modelOfClass:dataClass fromJSONDictionary:jsonObject error:&error];
+        if (object) {
+            [objects addObject:object];
+        } else if (error) {
 #warning There will be missing items to due unicode JSON parsing errors
-                NSLog(@"Error parsing JSON: %@ %@", jsonObject, error);
-            }
-        }];
-        [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
-                @autoreleasepool {
-                    // We need to duplicate the recurring events to make our lives easier later
-                    if ([object isKindOfClass:[BRCRecurringEventObject class]]) {
-                        BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
-                        NSArray *events = [recurringEvent eventObjects];
-                        [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
-                            [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
-                        }];
-                    } else { // Art and Camps
-                        BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
-                        if (existingObject) {
-                            existingObject = [existingObject copy];
-                            [existingObject mergeValuesForKeysFromModel:object];
-                            object = existingObject;
-                        }
-                        [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
+            NSLog(@"Error parsing JSON: %@ %@", jsonObject, error);
+        }
+    }];
+    [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
+            @autoreleasepool {
+                // We need to duplicate the recurring events to make our lives easier later
+                if ([object isKindOfClass:[BRCRecurringEventObject class]]) {
+                    BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
+                    NSArray *events = [recurringEvent eventObjects];
+                    [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
+                        [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
+                    }];
+                } else { // Art and Camps
+                    BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
+                    if (existingObject) {
+                        existingObject = [existingObject copy];
+                        [existingObject mergeValuesForKeysFromModel:object];
+                        object = existingObject;
                     }
+                    [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
                 }
-            }];
-        } completionBlock:^{
-            if (completionBlock) {
-                dispatch_async(self.callbackQueue, ^{
-                    completionBlock(YES, nil);
-                });
             }
         }];
-    });
+    } completionBlock:^{
+        if (completionBlock) {
+            dispatch_async(self.callbackQueue, ^{
+                completionBlock(YES, nil);
+            });
+        }
+    }];
 }
 
 @end

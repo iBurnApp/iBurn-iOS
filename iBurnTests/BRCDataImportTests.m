@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "BRCDataImporter.h"
+#import "BRCCampObject.h"
 
 @interface BRCDataImportTests : XCTestCase
 @property (nonatomic, strong, readonly) BRCDataImporter *importer;
@@ -23,10 +24,6 @@
 
 - (void)setUp {
     [super setUp];
-    // TODO
-    // 1. set up test database
-    // 2. populate db with test data
-    // 3. mock HTTP requests
     NSString *tmpDbPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"db.sqlite"];
     if ([[NSFileManager defaultManager] fileExistsAtPath:tmpDbPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:tmpDbPath error:nil];
@@ -47,11 +44,25 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[NSFileManager defaultManager] removeItemAtPath:self.database.databasePath error:nil];
+    NSString *dbPath = [self.database.databasePath copy];
+    _connection = nil;
+    _database = nil;
+    _importer = nil;
+    [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
     [super tearDown];
 }
 
 #pragma mark Tests
+
+// We don't want to overwrite favorites on data update
+- (void)testOverwriteFavorites {
+    BRCCampObject *camp1 = [[BRCCampObject alloc] init];
+    camp1.isFavorite = YES;
+    BRCCampObject *camp2 = [camp1 copy];
+    camp2.isFavorite = NO;
+    [camp1 mergeValuesForKeysFromModel:camp2];
+    XCTAssertTrue(camp1.isFavorite);
+}
 
 - (void)testLoadUpdates {
     _expectation = [self expectationWithDescription:@"load updates"];
@@ -67,17 +78,22 @@
     [self.importer loadUpdatesFromURL:initialUpdateURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
         XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
         XCTAssertNil(error);
-        NSLog(@"First update...");
+        NSLog(@"**** First update...");
         [self printCollectionInfo];
-        [self.importer loadUpdatesFromURL:updatedURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+        [self.importer loadUpdatesFromURL:initialUpdateURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+            XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
             XCTAssertNil(error);
-            XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
-            NSLog(@"Second update...");
+            NSLog(@"**** Second update (dupe)...");
             [self printCollectionInfo];
-            [self.expectation fulfill];
+            [self.importer loadUpdatesFromURL:updatedURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+                XCTAssertNil(error);
+                XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
+                NSLog(@"**** Third update...");
+                [self printCollectionInfo];
+                [self.expectation fulfill];
+            }];
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         if (error) {
             XCTFail(@"Error: %@", error);

@@ -29,6 +29,7 @@
 #import "RMConfiguration.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
+static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
 @interface BRCAppDelegate()
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
@@ -154,6 +155,20 @@ static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (void)application:(UIApplication *)application
+performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
+    NSURLSessionConfiguration *bgSession = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
+    YapDatabaseConnection *connection = [[BRCDatabaseManager sharedInstance].database newConnection];
+    BRCDataImporter *importer = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSession];
+    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+    [importer loadUpdatesFromURL:updatesURL completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+        completionHandler(fetchResult);
+        if (error) {
+            NSLog(@"Background fetch error: %@", error);
+        }
+    }];
 }
 
 - (void)setupDefaultTabBarController

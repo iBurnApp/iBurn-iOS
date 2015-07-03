@@ -7,3 +7,6 @@ extern NSString * const kBRCHockeyLiveIdentifier;
 // To generate new passcode (without salt):
 // $ echo -n passcode | sha256sum
 extern NSString * const kBRCEmbargoPasscodeSHA256Hash;
+
+/** This URL is secret due to BMorg restrictions on placement data */
+extern NSString * const kBRCUpdatesURLString;
