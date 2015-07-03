@@ -50,13 +50,14 @@
             [self handleFetchError:error completionBlock:completionBlock];
             return;
         }
+        // parse update JSON
         NSData *jsonData = [NSData dataWithContentsOfURL:location];
         NSDictionary *updateJSON = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
         if (error) {
             [self handleFetchError:error completionBlock:completionBlock];
             return;
         }
-        NSMutableArray *updates = [NSMutableArray arrayWithCapacity:4];
+        NSMutableArray *newUpdateInfo = [NSMutableArray arrayWithCapacity:4];
         __block NSError *parseError = nil;
         [updateJSON enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary *obj, BOOL *stop) {
             BRCUpdateInfo *updateInfo = [MTLJSONAdapter modelOfClass:[BRCUpdateInfo class]  fromJSONDictionary:obj error:&parseError];
@@ -64,26 +65,66 @@
                 *stop = YES;
             }
             updateInfo.dataType = [BRCUpdateInfo dataTypeFromString:key];
-            [updates addObject:updateInfo];
+            [newUpdateInfo addObject:updateInfo];
         }];
         if (parseError) {
             [self handleFetchError:parseError completionBlock:completionBlock];
             return;
         }
-        [updates enumerateObjectsUsingBlock:^(BRCUpdateInfo *obj, NSUInteger idx, BOOL *stop) {
-            NSURL *dataURL = [updateFolderURL URLByAppendingPathComponent:obj.fileName];
-            Class objClass = [obj dataObjectClass];
+        // fetch updates if needed
+        // group task completion together
+        __block UIBackgroundFetchResult fetchResult = UIBackgroundFetchResultNoData;
+        __block NSError *fetchError = nil;
+        dispatch_group_t fetchGroup = dispatch_group_create();
+        dispatch_group_enter(fetchGroup);
+        [newUpdateInfo enumerateObjectsUsingBlock:^(BRCUpdateInfo *updateInfo, NSUInteger idx, BOOL *stop) {
+            dispatch_group_enter(fetchGroup);
+            NSString *key = @(updateInfo.dataType).description;
+            __block BRCUpdateInfo *oldUpdateInfo = nil;
+            [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+                oldUpdateInfo = [transaction objectForKey:key inCollection:[BRCUpdateInfo yapCollection]];
+            }];
+            
+            if (oldUpdateInfo) {
+                NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
+                if (intervalSinceLastUpdated <= 0) {
+                    // already updated, skip update
+                    dispatch_group_leave(fetchGroup);
+                    return;
+                }
+            }
+            NSURL *dataURL = [updateFolderURL URLByAppendingPathComponent:updateInfo.fileName];
+            Class objClass = [updateInfo dataObjectClass];
             // BRC Data object subclass
             if (objClass && [objClass isSubclassOfClass:[BRCDataObject class]]) {
                 [self loadDataFromURL:dataURL dataClass:objClass completionBlock:^(BOOL success, NSError *error) {
-                    NSLog(@"Fetch %@ %d", NSStringFromClass(objClass), success);
+                    dispatch_group_leave(fetchGroup);
+                    if (success) {
+                        fetchResult = UIBackgroundFetchResultNewData;
+                        [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
+                            [transaction setObject:updateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
+                        }];
+                    } else {
+                        fetchResult = UIBackgroundFetchResultFailed;
+                        fetchError = error;
+                    }
                 }];
-            } else if (obj.dataType == BRCUpdateDataTypeTiles) {
+            } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
                 // TODO: update tiles
+                dispatch_group_leave(fetchGroup);
 #warning TODO update tiles
             }
         }];
+        dispatch_group_leave(fetchGroup);
+        dispatch_group_notify(fetchGroup, self.callbackQueue, ^{
+            if (fetchError) {
+                completionBlock(UIBackgroundFetchResultFailed, fetchError);
+            } else {
+                completionBlock(fetchResult, nil);
+            }
+        });
     }];
+    
     [downloadTask resume];
 }
 

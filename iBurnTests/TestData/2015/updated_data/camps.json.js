@@ -108,5 +108,16 @@
         },
         "id": 7647,
         "description": "Welcome to Camp Above The Limit's Afterburner Lounge, where you can visit our exotic colorful space to enjoy snow cones, popcorn, water or libations at the bar, games (win a flight on the F-15!), event acculturation, or a nap on the comfy pillows. By night, have a seat by the twin fire cauldrons for warmth, conversation, marshmallows, and s'mores."
+    },
+    {
+        "name": "New Fake Test Update Camp",
+        "url": "http://fake.com/",
+        "contact_email": "fake@fake.com",
+        "year": {
+            "id": 11,
+            "year": "2015"
+        },
+        "id": 12348709345,
+        "description": "Fake!!"
     }
 ]

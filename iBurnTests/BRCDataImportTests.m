@@ -67,11 +67,13 @@
     [self.importer loadUpdatesFromURL:initialUpdateURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
         XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
         XCTAssertNil(error);
-        
-        NSDate *lastUpdated = [NSDate date];
+        NSLog(@"First update...");
+        [self printCollectionInfo];
         [self.importer loadUpdatesFromURL:updatedURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
             XCTAssertNil(error);
             XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
+            NSLog(@"Second update...");
+            [self printCollectionInfo];
             [self.expectation fulfill];
         }];
     }];
@@ -83,5 +85,15 @@
     }];
 }
 
+#pragma mark Utility
+
+- (void) printCollectionInfo {
+    [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+        [transaction enumerateCollectionsUsingBlock:^(NSString * __nonnull collection, BOOL * __nonnull stop) {
+            NSUInteger keyCount = [transaction numberOfKeysInCollection:collection];
+            NSLog(@"%@: %d", collection, (int)keyCount);
+        }];
+    }];
+}
 
 @end
