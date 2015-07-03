@@ -21,6 +21,7 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 	// To generate new passcode (without salt):
 	// $ echo -n passcode | sha256sum
 	NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
+	NSString * const kBRCUpdatesURLString = @"";
 	```
 
 * Compile and Run!

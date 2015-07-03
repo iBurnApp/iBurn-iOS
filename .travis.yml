@@ -14,7 +14,7 @@ before_install:
     - git submodule update --init --recursive
 
 install:
-  - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\n" > ./iBurn/BRCSecrets.m
+  - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
   - gem install cocoapods
