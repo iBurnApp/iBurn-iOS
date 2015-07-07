@@ -136,7 +136,7 @@ static CGFloat const kTableViewHeaderHeight = 100;
     __block BRCDataObject *tempObject = nil;
     UIImage *reverseFavoriteImage = [self imageIfFavorite:!self.dataObject.isFavorite];
     self.favoriteBarButtonItem.image = reverseFavoriteImage;
-    [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         tempObject = [transaction objectForKey:self.dataObject.uniqueID inCollection:[[self.dataObject class] collection]];
         if (tempObject) {
             tempObject = [tempObject copy];
@@ -256,7 +256,7 @@ static CGFloat const kTableViewHeaderHeight = 100;
         // Go to correct camp page
         BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
         __block BRCDataObject *dataObject = nil;
-        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
             dataObject = [transaction objectForKey:relationshipCellInfo.dataObject.uniqueID inCollection:[[relationshipCellInfo.dataObject class]collection]];
             
             

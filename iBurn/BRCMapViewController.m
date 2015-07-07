@@ -607,7 +607,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     if (mapPointToDelete && self.editingMapPointAnnotation) {
         [self.mapView removeAnnotation:self.editingMapPointAnnotation];
         self.editingMapPointAnnotation = nil;
-        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction removeObjectForKey:mapPointToDelete.uuid inCollection:[BRCMapPoint collection]];
         } completionBlock:^{
             [self reloadAllUserPoints];
@@ -622,7 +622,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     if (editedMapPoint && self.editingMapPointAnnotation) {
         CLLocationCoordinate2D newCoordinate = self.editingMapPointAnnotation.coordinate;
         editedMapPoint.coordinate = newCoordinate;
-        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction setObject:editedMapPoint forKey:editedMapPoint.uuid inCollection:[BRCMapPoint collection]];
         } completionBlock:^{
             [self reloadAllUserPoints];
@@ -748,7 +748,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         }];
         dataObject.isFavorite = !dataObject.isFavorite;
         [dataCell setStyleFromDataObject:dataObject];
-        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;
                 if (event.isFavorite) {

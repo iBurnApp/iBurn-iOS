@@ -33,9 +33,11 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 @interface BRCAppDelegate()
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
+@property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
 @end
 
 @implementation BRCAppDelegate
+@synthesize dataImporter = _dataImporter;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -44,20 +46,22 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [[BITHockeyManager sharedHockeyManager] startManager];
     [[UIApplication sharedApplication] setStatusBarHidden:NO];
     
-    BRCDatabaseManager *databaseManager = [BRCDatabaseManager sharedInstance];
-    NSString *databaseName = @"iBurn.sqlite";
+    // Can we set a better interval?
+    [application setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+    
+    
+    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:nil];
+    
     
     [self setupFestivalDates];
-    if ([databaseManager existsDatabaseWithName:databaseName]) {
-        [databaseManager setupDatabaseWithName:databaseName];
-    }
-    else {
-        BOOL copySuccesful = [databaseManager copyDatabaseFromBundle];
-        [databaseManager setupDatabaseWithName:databaseName];
-        if (!copySuccesful) {
+    
+    [[BRCDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+        NSUInteger totalCount = [transaction numberOfKeysInAllCollections];
+        if (totalCount == 0) {
             [self preloadExistingData];
         }
-    }
+    }];
     
     [RMConfiguration sharedInstance].accessToken = @"";
     
@@ -159,16 +163,13 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-    NSURLSessionConfiguration *bgSession = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
-    YapDatabaseConnection *connection = [[BRCDatabaseManager sharedInstance].database newConnection];
-    BRCDataImporter *importer = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSession];
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-    [importer loadUpdatesFromURL:updatesURL completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
-        completionHandler(fetchResult);
-        if (error) {
-            NSLog(@"Background fetch error: %@", error);
-        }
-    }];
+    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:completionHandler];
+}
+
+- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
+{
+    [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
 }
 
 - (void)setupDefaultTabBarController
@@ -233,18 +234,17 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
                             @[campsDataURL, [BRCCampObject class]],
                             @[eventsDataURL, [BRCRecurringEventObject class]]];
     
-    BRCDataImporter *importer = [[BRCDataImporter alloc] initWithReadWriteConnection:[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection];
-    
     [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
         NSURL *url = [obj firstObject];
         Class dataClass = [obj lastObject];
-        [importer loadDataFromURL:url dataClass:dataClass completionBlock:^(BOOL success, NSError *error) {
-            if (!success) {
-                NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
-            } else {
-                NSLog(@"Imported %@ data successfully", NSStringFromClass(dataClass));
-            }
-        }];
+        NSData *data = [[NSData alloc] initWithContentsOfURL:url];
+        NSError *error = nil;
+        BOOL success = [self.dataImporter loadDataFromJSONData:data dataClass:dataClass error:&error];
+        if (!success) {
+            NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
+        } else {
+            NSLog(@"Imported %@ data successfully", NSStringFromClass(dataClass));
+        }
     }];
 }
 
@@ -304,6 +304,17 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 
 + (instancetype) appDelegate {
     return (BRCAppDelegate*)[UIApplication sharedApplication].delegate;
+}
+
+// Lazy load the data importer
+- (BRCDataImporter*) dataImporter {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSURLSessionConfiguration *bgSessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
+        YapDatabaseConnection *connection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        _dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
+    });
+    return _dataImporter;
 }
 
 @end

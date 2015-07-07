@@ -239,7 +239,7 @@
         }];
         dataObject.isFavorite = !dataObject.isFavorite;
         [dataCell setStyleFromDataObject:dataObject];
-        [[BRCDatabaseManager sharedInstance].readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;
                 if (event.isFavorite) {

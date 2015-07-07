@@ -13,20 +13,23 @@
 #import "YapDatabaseFilteredView.h"
 #import "YapDatabaseFullTextSearch.h"
 
+/** iBurn.sqlite */
+extern NSString * const kBRCDatabaseName;
+
 @interface BRCDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;
-@property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteDatabaseConnection;
+@property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
 
 /** Check to see if a file exists at the correct path */
-- (BOOL)existsDatabaseWithName:(NSString *)databaseName;
++ (BOOL)existsDatabaseWithName:(NSString *)databaseName;
 
 /** move pre-polulated database from bundle to correct directory of the same name */
-- (BOOL)copyDatabaseFromBundle;
++ (BOOL)copyDatabaseFromBundle;
 
-/** Do all the necessary setup and creates the database if none exists */
-- (BOOL)setupDatabaseWithName:(NSString*)databaseName;
+- (instancetype) initWithDatabaseName:(NSString*)databaseName;
 
+/** Default database */
 + (instancetype) sharedInstance;
 
 /** View containing all camp objects */

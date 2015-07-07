@@ -56,7 +56,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 - (id)init
 {
     if (self = [super init]) {
-        self.databaseConnection = [BRCDatabaseManager sharedInstance].readWriteDatabaseConnection;
+        self.databaseConnection = [BRCDatabaseManager sharedInstance].readWriteConnection;
     }
     return self;
 }

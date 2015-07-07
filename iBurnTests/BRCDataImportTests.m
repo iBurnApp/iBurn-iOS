@@ -24,7 +24,8 @@
 
 - (void)setUp {
     [super setUp];
-    NSString *tmpDbPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"db.sqlite"];
+    NSString *dbName = [[[NSUUID UUID] UUIDString] stringByAppendingString:@".sqlite"];
+    NSString *tmpDbPath = [NSTemporaryDirectory() stringByAppendingPathComponent:dbName];
     if ([[NSFileManager defaultManager] fileExistsAtPath:tmpDbPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:tmpDbPath error:nil];
     }
@@ -33,6 +34,10 @@
     _connection = [self.database newConnection];
     XCTAssertNotNil(self.connection);
     [self setupDataImporterWithConnection:self.connection sessionConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(yapDatabaseModified:)
+                                                 name:YapDatabaseModifiedNotification
+                                               object:self.database];
 }
 
 - (void) setupDataImporterWithConnection:(YapDatabaseConnection*)connection
@@ -46,9 +51,10 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     NSString *dbPath = [self.database.databasePath copy];
     _connection = nil;
-    _database = nil;
     _importer = nil;
+    _database = nil;
     [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super tearDown];
 }
 
@@ -75,21 +81,15 @@
     NSURL *updatedURL = [NSURL fileURLWithPath:updatedDataPath];
     XCTAssertNotNil(updatedURL);
     
-    [self.importer loadUpdatesFromURL:initialUpdateURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+    [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
         XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
-        XCTAssertNil(error);
         NSLog(@"**** First update...");
-        [self printCollectionInfo];
-        [self.importer loadUpdatesFromURL:initialUpdateURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
+        [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
             XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
-            XCTAssertNil(error);
             NSLog(@"**** Second update (dupe)...");
-            [self printCollectionInfo];
-            [self.importer loadUpdatesFromURL:updatedURL  completionBlock:^(UIBackgroundFetchResult fetchResult, NSError *error) {
-                XCTAssertNil(error);
+            [self.importer loadUpdatesFromURL:updatedURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
                 XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
                 NSLog(@"**** Third update...");
-                [self printCollectionInfo];
                 [self.expectation fulfill];
             }];
         }];
@@ -105,11 +105,18 @@
 
 - (void) printCollectionInfo {
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+        NSUInteger collections = [transaction numberOfCollections];
+        XCTAssert(collections > 0, @"Too few collections");
         [transaction enumerateCollectionsUsingBlock:^(NSString * __nonnull collection, BOOL * __nonnull stop) {
             NSUInteger keyCount = [transaction numberOfKeysInCollection:collection];
             NSLog(@"%@: %d", collection, (int)keyCount);
         }];
     }];
+}
+
+- (void)yapDatabaseModified:(NSNotification *)notification
+{
+    //[self printCollectionInfo];
 }
 
 @end

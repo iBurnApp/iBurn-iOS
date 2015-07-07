@@ -26,16 +26,14 @@
  *  @param completionBlock fetch result status or error
  */
 - (void) loadUpdatesFromURL:(NSURL*)updateURL
-            completionBlock:(void (^)(UIBackgroundFetchResult fetchResult, NSError *error))completionBlock;
-/**
- *  Loads new data. Use loadUpdatesFromURL: instead.
- *
- *  @param dataURL         local or remote URL to json
- *  @param dataClass       subclass of BRCDataObject
- *  @param completionBlock always called on main thread
- */
-- (void) loadDataFromURL:(NSURL*)dataURL
-               dataClass:(Class)dataClass
-         completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
+           fetchResultBlock:(void (^)(UIBackgroundFetchResult result))fetchResultBlock;
+
+/** Synchronously imports data. Do not call from main thread! */
+- (BOOL) loadDataFromJSONData:(NSData*)jsonData
+                    dataClass:(Class)dataClass
+                        error:(NSError**)error;
+
+/** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
+- (void) addBackgroundURLSessionCompletionHandler:(void (^)())completionHandler;
 
 @end

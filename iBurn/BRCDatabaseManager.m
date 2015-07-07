@@ -23,6 +23,8 @@
 #import "YapDatabaseSearchResultsView.h"
 #import "NSDate+iBurn.h"
 
+NSString * const kBRCDatabaseName = @"iBurn.sqlite";
+
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
     BRCDatabaseFilteredViewTypeEverything,
@@ -34,34 +36,51 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 @interface BRCDatabaseManager()
 @property (nonatomic, strong) YapDatabase *database;
-@property (nonatomic, strong) YapDatabaseConnection *readWriteDatabaseConnection;
+@property (nonatomic, strong) YapDatabaseConnection *readWriteConnection;
 @end
 
 @implementation BRCDatabaseManager
 
-- (NSString *)yapDatabaseDirectory {
+- (instancetype) init {
+    if (self = [self initWithDatabaseName:kBRCDatabaseName]) {
+    }
+    return self;
+}
+
++ (NSString *)yapDatabaseDirectory {
     NSString *applicationSupportDirectory = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
     NSString *applicationName = [[[NSBundle mainBundle] infoDictionary] valueForKey:(NSString *)kCFBundleNameKey];
     NSString *directory = [applicationSupportDirectory stringByAppendingPathComponent:applicationName];
     return directory;
 }
 
-- (NSString *)yapDatabasePathWithName:(NSString *)name
++ (NSString *)yapDatabasePathWithName:(NSString *)name
 {
     
     return [[self yapDatabaseDirectory] stringByAppendingPathComponent:name];
 }
 
-- (BOOL)setupDatabaseWithName:(NSString *)name
+- (instancetype) initWithDatabaseName:(NSString *)databaseName
 {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    if (![[self class] existsDatabaseWithName:databaseName]) {
+        BOOL copySuccessful = [[self class] copyDatabaseFromBundle];
+        if (!copySuccessful) {
+            NSLog(@"DB copy from bundle unsuccessful!");
+        }
+    }
+    
     YapDatabaseOptions *options = [[YapDatabaseOptions alloc] init];
     options.corruptAction = YapDatabaseCorruptAction_Fail;
     
-    NSString *databaseDirectory = [self yapDatabaseDirectory];
+    NSString *databaseDirectory = [[self class] yapDatabaseDirectory];
     if (![[NSFileManager defaultManager] fileExistsAtPath:databaseDirectory]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectory withIntermediateDirectories:YES attributes:nil error:nil];
     }
-    NSString *databasePath = [self yapDatabasePathWithName:name];
+    NSString *databasePath = [[self class] yapDatabasePathWithName:databaseName];
     
     self.database = [[YapDatabase alloc] initWithPath:databasePath
                                            serializer:nil
@@ -73,29 +92,28 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     self.database.defaultObjectCacheEnabled = YES;
     self.database.defaultObjectCacheLimit = 10000;
     self.database.defaultMetadataCacheEnabled = NO;
-    self.readWriteDatabaseConnection = [self.database newConnection];
-    self.readWriteDatabaseConnection.objectPolicy = YapDatabasePolicyShare;
-    self.readWriteDatabaseConnection.name = @"readWriteDatabaseConnection";
+    self.readWriteConnection = [self.database newConnection];
+    self.readWriteConnection.objectPolicy = YapDatabasePolicyShare;
+    self.readWriteConnection.name = @"readWriteConnection";
 
     [self setupViewNames];
     [self registerExtensions];
     
     if (self.database) {
-        return YES;
-    }
-    else {
-        return NO;
+        return self;
+    } else {
+        return nil;
     }
 }
 
-- (BOOL)copyDatabaseFromBundle
++ (BOOL)copyDatabaseFromBundle
 {
     NSString *folderName = @"iBurn-database";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     if (![[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {
         return NO;
     }
-    NSString *databaseDirectory = [self yapDatabaseDirectory];
+    NSString *databaseDirectory = [[self class]yapDatabaseDirectory];
     
     NSError *error = nil;
     if (![[NSFileManager defaultManager] fileExistsAtPath:databaseDirectory]) {
@@ -104,7 +122,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             return NO;
         }
     }
-    NSString *databasePath = [self yapDatabasePathWithName:folderName];
+    NSString *databasePath = [[self class] yapDatabasePathWithName:folderName];
     
     [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databasePath error:&error];
     if (error) {
@@ -113,9 +131,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return YES;
 }
 
-- (BOOL)existsDatabaseWithName:(NSString *)databaseName
+ + (BOOL)existsDatabaseWithName:(NSString *)databaseName
 {
-    NSString *databsePath = [self yapDatabasePathWithName:databaseName];
+    NSString *databsePath = [[self class] yapDatabasePathWithName:databaseName];
     return [[NSFileManager defaultManager] fileExistsAtPath:databsePath];
 }
 
@@ -524,7 +542,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 /** Updates event filtered views based on newly selected preferences */
 - (void) refreshEventFilteredViewsWithSelectedDay:(NSDate*)selectedDay completionBlock:(dispatch_block_t)completionBlock {
-    [self.readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         YapDatabaseViewFiltering *selectedDayFiltering = [BRCDatabaseManager eventsFilteredByDay:selectedDay];
         YapDatabaseFilteredViewTransaction *filteredDayTransaction = [transaction ext:self.eventsFilteredByDayViewName];
         [filteredDayTransaction setFiltering:selectedDayFiltering versionTag:[[NSUUID UUID] UUIDString]];
@@ -537,7 +555,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 /** Refresh events sorting if selected by expiration/start time */
 - (void) refreshEventsSortingWithCompletionBlock:(dispatch_block_t)completionBlock {
-    [self.readWriteDatabaseConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.eventsViewName];
         if (!viewTransaction) {
             return;

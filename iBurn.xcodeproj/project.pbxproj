@@ -595,6 +595,13 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Burning Man Earth";
 				TargetAttributes = {
+					63CE2A531987140F00F65B01 = {
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
+					};
 					D980A9091B3F5A6400BE3682 = {
 						CreatedOnToolsVersion = 6.3;
 						TestTargetID = 63CE2A531987140F00F65B01;
