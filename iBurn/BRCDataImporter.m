@@ -61,6 +61,12 @@
 - (void) loadUpdatesFromURL:(NSURL*)updateURL
            fetchResultBlock:(void (^)(UIBackgroundFetchResult result))fetchResultBlock {
     NSParameterAssert(updateURL != nil);
+    NSURL *folderURL = [updateURL URLByDeletingLastPathComponent];
+    if ([updateURL isFileURL]) {
+        NSData *updateData = [[NSData alloc] initWithContentsOfURL:updateURL];
+        [self loadUpdatesFromData:updateData folderURL:folderURL fetchResultBlock:fetchResultBlock];
+        return;
+    }
     NSURLSession *tempSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
     NSURLSessionDataTask *dataTask = [tempSession dataTaskWithRequest:[NSURLRequest requestWithURL:updateURL] completionHandler:^(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error) {
         if (error) {
@@ -70,7 +76,6 @@
             }
             return;
         }
-        NSURL *folderURL = [response.URL URLByDeletingLastPathComponent];
         [self loadUpdatesFromData:data folderURL:folderURL fetchResultBlock:fetchResultBlock];
     }];
     [dataTask resume];
@@ -109,7 +114,7 @@
     // fetch updates if needed
     __block UIBackgroundFetchResult fetchResult = UIBackgroundFetchResultNoData;
     [newUpdateInfo enumerateObjectsUsingBlock:^(BRCUpdateInfo *updateInfo, NSUInteger idx, BOOL *stop) {
-        NSString *key = @(updateInfo.dataType).description;
+        NSString *key = updateInfo.yapKey;
         __block BRCUpdateInfo *oldUpdateInfo = nil;
         [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
             oldUpdateInfo = [transaction objectForKey:key inCollection:[BRCUpdateInfo yapCollection]];
@@ -117,20 +122,26 @@
         
         if (oldUpdateInfo) {
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
-            if (intervalSinceLastUpdated <= 0) {
+            if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete) {
                 // already updated, skip update
                 return;
             }
         }
         // We've got some new data!
-        fetchResult = UIBackgroundFetchResultNewData;
-        NSURL *dataURL = [folderURL URLByAppendingPathComponent:updateInfo.fileName];
-        NSURLSessionDownloadTask *downloadTask = [self.urlSession downloadTaskWithURL:dataURL];
-        [downloadTask resume];
-        
+        updateInfo.fetchStatus = BRCUpdateFetchStatusFetching;
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
             [transaction setObject:updateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
         }];
+        fetchResult = UIBackgroundFetchResultNewData;
+        NSURL *dataURL = [folderURL URLByAppendingPathComponent:updateInfo.fileName];
+        if ([dataURL isFileURL]) {
+            [self loadDataFromLocalURL:dataURL updateInfo:updateInfo];
+        } else {
+            NSURLSessionDownloadTask *downloadTask = [self.urlSession downloadTaskWithURL:dataURL];
+            downloadTask.taskDescription = updateInfo.yapKey;
+            [downloadTask resume];
+        }
+        
     }];
     if (fetchResultBlock) {
         fetchResultBlock(fetchResult);
@@ -140,13 +151,15 @@
 - (BOOL) loadDataFromJSONData:(NSData*)jsonData
                     dataClass:(Class)dataClass
                         error:(NSError**)error {
-    NSAssert([NSThread currentThread] != [NSThread mainThread], @"Do not call from main thread!");
     NSParameterAssert(jsonData != nil);
     NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:error];
     if (*error) {
         return NO;
     }
     NSMutableArray *objects = [NSMutableArray arrayWithCapacity:jsonObjects.count];
+    if (dataClass == [BRCEventObject class]) {
+        dataClass = [BRCRecurringEventObject class];
+    }
     [jsonObjects enumerateObjectsUsingBlock:^(NSDictionary *jsonObject, NSUInteger idx, BOOL *stop) {
         NSError *parseError = nil;
         id object = [MTLJSONAdapter modelOfClass:dataClass fromJSONDictionary:jsonObject error:&parseError];
@@ -157,7 +170,16 @@
             NSLog(@"Error parsing JSON: %@ %@", jsonObject, parseError);
         }
     }];
+    NSLog(@"About to load %d %@ objects.", (int)objects.count, NSStringFromClass(dataClass));
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        // Update Fetch info status
+        NSString *yapKey = [BRCUpdateInfo yapKeyForClass:dataClass];
+        BRCUpdateInfo *updateInfo = [transaction objectForKey:yapKey inCollection:[BRCUpdateInfo yapCollection]];
+        NSParameterAssert(updateInfo != nil);
+        if (!updateInfo) {
+            NSLog(@"Couldn't find updateInfo for %@", yapKey);
+            return;
+        }
         [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
             @autoreleasepool {
                 // We need to duplicate the recurring events to make our lives easier later
@@ -170,6 +192,7 @@
                             existingEvent = [existingEvent copy];
                             [existingEvent mergeValuesForKeysFromModel:event];
                             event = existingEvent;
+                            existingEvent.lastUpdated = updateInfo.lastUpdated;
                         }
                         [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
                     }];
@@ -179,11 +202,16 @@
                         existingObject = [existingObject copy];
                         [existingObject mergeValuesForKeysFromModel:object];
                         object = existingObject;
+                        existingObject.lastUpdated = updateInfo.lastUpdated;
                     }
                     [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
                 }
             }
         }];
+        
+        updateInfo = [updateInfo copy];
+        updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+        [transaction setObject:updateInfo forKey:yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
     return YES;
 }
@@ -191,6 +219,24 @@
 /** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
 - (void) addBackgroundURLSessionCompletionHandler:(void (^)())completionHandler {
     self.urlSessionCompletionHandler = completionHandler;
+}
+
+- (void) loadDataFromLocalURL:(NSURL*)localURL updateInfo:(BRCUpdateInfo*)updateInfo {
+    
+    Class dataClass = updateInfo.dataObjectClass;
+    if (dataClass) {
+        NSData *jsonData = [[NSData alloc] initWithContentsOfURL:localURL];
+        [self.updateQueue addOperationWithBlock:^{
+            NSError *error = nil;
+            BOOL success = [self loadDataFromJSONData:jsonData dataClass:dataClass error:&error];
+            if (!success) {
+                NSLog(@"Error loading JSON for %@: %@", NSStringFromClass(dataClass), error);
+            }
+        }];
+    } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
+        // TODO update tiles!
+#warning TODO update tiles
+    }
 }
 
 #pragma mark NSURLSessionDelegate
@@ -210,31 +256,17 @@
                downloadTask:(NSURLSessionDownloadTask *)downloadTask
   didFinishDownloadingToURL:(NSURL *)location
 {
-    NSString *fileName = [downloadTask.response.URL lastPathComponent];
-    // We should have a better way of detecting the data type
-    Class dataClass = nil;
-    if ([fileName containsString:@"art"]) {
-        dataClass = [BRCArtObject class];
-    } else if ([fileName containsString:@"camps"]) {
-        dataClass = [BRCCampObject class];
-    } else if ([fileName containsString:@"events"]) {
-        dataClass = [BRCEventObject class];
-    } else if ([fileName containsString:@"mbtiles"]) {
-#warning update tiles
-        // TODO update tiles
+    NSString *yapKey = downloadTask.taskDescription;
+    __block BRCUpdateInfo *updateInfo = nil;
+    [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+        updateInfo = [transaction objectForKey:yapKey inCollection:[BRCUpdateInfo yapCollection]];
+    }];
+    NSParameterAssert(updateInfo != nil);
+    if (!updateInfo) {
+        NSLog(@"Couldn't fetch updateInfo from taskDescription!");
+        return;
     }
-    
-    if (dataClass) {
-        NSData *jsonData = [[NSData alloc] initWithContentsOfURL:location];
-        [self.updateQueue addOperationWithBlock:^{
-            NSError *error = nil;
-            BOOL success = [self loadDataFromJSONData:jsonData dataClass:dataClass error:&error];
-            if (!success) {
-                NSLog(@"Error loading JSON for %@: %@", NSStringFromClass(dataClass), error);
-            }
-        }];
-    }
-    
+    [self loadDataFromLocalURL:location updateInfo:updateInfo];
 }
 
 - (void)  URLSession:(NSURLSession *)session

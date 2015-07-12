@@ -25,7 +25,7 @@
 #import "BRCDetailViewController.h"
 #import "CLLocationManager+iBurn.h"
 #import "BRCLocations.h"
-#import "UAAppReviewManager.h"
+#import "Appirater.h"
 #import "RMConfiguration.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
@@ -47,18 +47,20 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [[UIApplication sharedApplication] setStatusBarHidden:NO];
     
     // Can we set a better interval?
-    [application setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
-    
+    NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
+    [application setMinimumBackgroundFetchInterval:dailyInterval];
     
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
     [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:nil];
     
-    
     [self setupFestivalDates];
     
     [[BRCDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
-        NSUInteger totalCount = [transaction numberOfKeysInAllCollections];
-        if (totalCount == 0) {
+        NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject collection]];
+        NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject collection]];
+        NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject collection]];
+        NSLog(@"\n%d Art\n%d Camp\n%d Event", (int)artCount, (int)campCount, (int)eventCount);
+        if (campCount == 0 || artCount == 0 || eventCount == 0) {
             [self preloadExistingData];
         }
     }];
@@ -94,10 +96,15 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [self setupRegionBasedUnlock];
     self.window.backgroundColor = [UIColor whiteColor];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
-    [UAAppReviewManager setAppID:@"388169740"];
-    [UAAppReviewManager setDaysUntilPrompt:5];
-    [UAAppReviewManager setUsesUntilPrompt:5];
-    [UAAppReviewManager showPromptIfNecessary];
+    
+    [Appirater setAppId:@"388169740"];
+    [Appirater setDaysUntilPrompt:5];
+    [Appirater setUsesUntilPrompt:5];
+    [Appirater setSignificantEventsUntilPrompt:-1];
+    [Appirater setTimeBeforeReminding:2];
+    [Appirater setDebug:NO];
+    [Appirater appLaunched:YES];
+    
     [self.window makeKeyAndVisible];
     return YES;
 }
@@ -148,7 +155,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-    [UAAppReviewManager showPromptIfNecessary];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
@@ -207,10 +213,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) setupFestivalDates {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDateKey]) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2015Key]) {
         return;
     }
-    NSURL *datesInfoURL = [[NSBundle mainBundle] URLForResource:@"dates_info" withExtension:@"json"];
+    NSString *folderName = @"2015";
+    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
+    NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
+    NSURL *datesInfoURL = [dataBundle URLForResource:@"dates_info" withExtension:@"json"];
     NSData *datesInfoData = [NSData dataWithContentsOfURL:datesInfoURL];
     NSDictionary *datesInfoDictionary = [NSJSONSerialization JSONObjectWithData:datesInfoData options:0 error:nil];
     NSDictionary *rangeInfoDictionary = [datesInfoDictionary objectForKey:@"rangeInfo"];
@@ -219,33 +228,20 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     NSString *endDateString = [rangeInfoDictionary objectForKey:@"endDate"];
     NSDate *endDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:endDateString];
     NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
-    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEventsKey];
-    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDateKey];
-    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDateKey];
+    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2015Key];
+    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2015Key];
+    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDate2015Key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void) preloadExistingData {
-    NSURL *artDataURL = [[NSBundle mainBundle] URLForResource:@"art" withExtension:@"json"];
-    NSURL *campsDataURL = [[NSBundle mainBundle] URLForResource:@"camps" withExtension:@"json"];
-    NSURL *eventsDataURL = [[NSBundle mainBundle] URLForResource:@"events" withExtension:@"json"];
-
-    NSArray *dataToLoad = @[@[artDataURL, [BRCArtObject class]],
-                            @[campsDataURL, [BRCCampObject class]],
-                            @[eventsDataURL, [BRCRecurringEventObject class]]];
+    NSString *folderName = @"2015";
+    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
+    NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
     
-    [dataToLoad enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
-        NSURL *url = [obj firstObject];
-        Class dataClass = [obj lastObject];
-        NSData *data = [[NSData alloc] initWithContentsOfURL:url];
-        NSError *error = nil;
-        BOOL success = [self.dataImporter loadDataFromJSONData:data dataClass:dataClass error:&error];
-        if (!success) {
-            NSLog(@"Error importing %@ data: %@", NSStringFromClass(dataClass), error);
-        } else {
-            NSLog(@"Imported %@ data successfully", NSStringFromClass(dataClass));
-        }
-    }];
+    NSURL *updateURL = [dataBundle URLForResource:@"update.json" withExtension:@"js"];
+
+    [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:nil];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {

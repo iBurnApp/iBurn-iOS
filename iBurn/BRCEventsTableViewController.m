@@ -32,18 +32,6 @@
 @implementation BRCEventsTableViewController
 @synthesize selectedDay = _selectedDay;
 
-- (void) registerDatabaseExtensions {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self updateMappingsWithCompletionBlock:^{
-                [self.tableView reloadData];
-            }];
-        });
-    });
-}
-
-
 - (void) dayButtonPressed:(id)sender {
     NSInteger currentSelection = [self indexForDay:self.selectedDay];
     self.dayPicker.selectedIndex = currentSelection;

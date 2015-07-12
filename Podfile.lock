@@ -1,4 +1,5 @@
 PODS:
+  - Appirater (2.0.5)
   - BButton (4.0.2)
   - CocoaLumberjack (1.9.2):
     - CocoaLumberjack/Extensions (= 1.9.2)
@@ -7,50 +8,49 @@ PODS:
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
-  - FMDB (2.3):
-    - FMDB/standard (= 2.3)
-  - FMDB/common (2.3)
-  - FMDB/standard (2.3):
+  - FMDB (2.5):
+    - FMDB/standard (= 2.5)
+  - FMDB/common (2.5)
+  - FMDB/standard (2.5):
     - FMDB/common
   - FormatterKit/LocationFormatter (1.8.0)
   - FormatterKit/TimeIntervalFormatter (1.8.0)
-  - GRMustache (7.3.0):
+  - GRMustache (7.3.2):
     - JRSwizzle (~> 1.0)
-  - HockeySDK (3.6.4)
+  - HockeySDK-Source (3.7.1)
   - JRSwizzle (1.0)
   - Mantle (2.0.2):
     - Mantle/extobjc (= 2.0.2)
   - Mantle/extobjc (2.0.2)
   - Mapbox-iOS-SDK (1.6.1):
-    - FMDB (= 2.3)
-    - GRMustache (= 7.3.0)
-    - SMCalloutView (= 2.0)
+    - FMDB (~> 2.5)
+    - GRMustache (~> 7.3)
+    - SMCalloutView (~> 2.1)
   - MCSwipeTableViewCell (2.1.2)
   - pop (1.0.7)
   - PureLayout (2.0.6)
-  - SMCalloutView (2.0)
-  - TTTAttributedLabel (1.13.3)
-  - UAAppReviewManager (0.2.6)
+  - SMCalloutView (2.1.2)
+  - TTTAttributedLabel (1.13.4)
   - VTAcknowledgementsViewController (0.14)
-  - YapDatabase (2.6.4):
-    - YapDatabase/standard (= 2.6.4)
-  - YapDatabase/standard (2.6.4):
+  - YapDatabase (2.6.5):
+    - YapDatabase/standard (= 2.6.5)
+  - YapDatabase/standard (2.6.5):
     - CocoaLumberjack (~> 1)
 
 DEPENDENCIES:
+  - Appirater (~> 2.0)
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
-  - HockeySDK (~> 3.6)
+  - HockeySDK-Source (~> 3.7)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (from `Podspecs/Mapbox-iOS-SDK.podspec`)
   - MCSwipeTableViewCell (~> 2.1)
   - pop (~> 1.0)
   - PureLayout (~> 2.0)
   - TTTAttributedLabel (~> 1.13)
-  - UAAppReviewManager (~> 0.2)
   - VTAcknowledgementsViewController (~> 0.11)
   - YapDatabase (~> 2.6)
 
@@ -59,24 +59,24 @@ EXTERNAL SOURCES:
     :podspec: Podspecs/Mapbox-iOS-SDK.podspec
 
 SPEC CHECKSUMS:
+  Appirater: e7c0a47fb67ee5041ce8479e6ba960927fb40264
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
   CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
-  FMDB: 773d79bb74226959b7e2286b1d6e0bd857c88915
+  FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
   FormatterKit: bddde83e054edf9d9ee14f9de3b3a5103db256f4
-  GRMustache: 6baee020c5644416c034f5afb1607f6219e7f753
-  HockeySDK: c07cdd580296737edcd0963e292c19885a53f563
+  GRMustache: ebe6104fd30a6d22c1f36af131e19e2dbf7cd292
+  HockeySDK-Source: d620f330b23691017c141de6e25e5cdc8c67848c
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
   Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
-  Mapbox-iOS-SDK: ee393ce7b55afce51bce39a262bca2ef7cfafae6
+  Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
   MCSwipeTableViewCell: 0fc22bd3635b9b5f4ce08675218b0a7278b6440f
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d
-  SMCalloutView: f758edd824b18bf4f42de00df1e299861a2d1950
-  TTTAttributedLabel: 6f3174aef8e738f44dff97c2eb7d8184f6ab6277
-  UAAppReviewManager: 334bdb0085c3f80c7b696f33edc53667eda548e6
+  SMCalloutView: 4078d89b847731e514b1a919fed33b383a24a106
+  TTTAttributedLabel: 0a2ac7b2dd726d32a070dafb01446026b11e624f
   VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
-  YapDatabase: f9051e178a38f48d0f3a78562423a5bc969f1ca3
+  YapDatabase: 814f9ff862a95c1e581d93335a4020482b69155b
 
 COCOAPODS: 0.37.2

@@ -27,6 +27,10 @@
     return [MTLValueTransformer transformerWithBlock:^NSArray*(NSArray *occurrenceArray) {
         NSError *error = nil;
         NSArray *eventTimes = [MTLJSONAdapter modelsOfClass:[BRCEventTime class] fromJSONArray:occurrenceArray error:&error];
+        NSParameterAssert(error == nil);
+        if (error) {
+            NSLog(@"Error parsing event time: %@", error);
+        }
         return eventTimes;
     }];
 }
@@ -55,6 +59,8 @@
                 } else {
                     newEndDate = eventTime.endDate;
                 }
+                NSParameterAssert(event.startDate != nil);
+                NSParameterAssert(event.endDate != nil);
             }
         } else {
             BRCEventObject *event = [[BRCEventObject alloc] init];
@@ -62,6 +68,8 @@
             event.startDate = eventTime.startDate;
             event.endDate = eventTime.endDate;
             event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
+            NSParameterAssert(event.startDate != nil);
+            NSParameterAssert(event.endDate != nil);
             [events addObject:event];
             eventCount++;
         }

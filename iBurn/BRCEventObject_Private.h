@@ -10,9 +10,9 @@
 
 // used by data import for NSUserDefaults
 // fetch values using static accessor methods
-extern NSString * const kBRCStartDateKey;
-extern NSString * const kBRCEndDateKey;
-extern NSString * const kBRCMajorEventsKey;
+extern NSString * const kBRCStartDate2015Key;
+extern NSString * const kBRCEndDate2015Key;
+extern NSString * const kBRCMajorEvents2015Key;
 
 @interface BRCEventObject()
 @property (nonatomic, strong, readwrite) NSDate *startDate;

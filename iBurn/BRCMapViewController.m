@@ -167,7 +167,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 - (void) infoButtonPressed:(id)sender {
     CGFloat labelMargin = 10;
-    TTTAttributedLabel *headerLabel = [[TTTAttributedLabel alloc] init];
+    TTTAttributedLabel *headerLabel = [[TTTAttributedLabel alloc] initWithFrame:CGRectZero];
     NSString *chrisballingerString = @"@chrisballinger";
     NSURL *chrisballingerURL = [NSURL URLWithString:@"https://github.com/chrisballinger"];
     NSString *davidchilesString = @"@davidchiles";

@@ -11,6 +11,12 @@
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
+#import "BRCRecurringEventObject.h"
+
+static NSString * const kBRCUpdateTypeCamps = @"camps";
+static NSString * const kBRCUpdateTypeArt = @"art";
+static NSString * const kBRCUpdateTypeEvents = @"events";
+static NSString * const kBRCUpdateTypeTiles = @"tiles";
 
 @implementation BRCUpdateInfo
 
@@ -29,6 +35,11 @@
     return [[self class] classForDataType:self.dataType];
 }
 
+- (NSString*) yapKey {
+    NSString *yapKey = [[self class] yapKeyForDataType:self.dataType];
+    return yapKey;
+}
+
 + (Class) classForDataType:(BRCUpdateDataType)dataType {
     switch (dataType) {
         case BRCUpdateDataTypeArt:
@@ -38,12 +49,23 @@
             return [BRCCampObject class];
             break;
         case BRCUpdateDataTypeEvents:
-            return [BRCEventObject class];
+            return [BRCRecurringEventObject class];
             break;
         default:
             break;
     }
     return nil;
+}
+
++ (BRCUpdateDataType) dataTypeForClass:(Class)dataObjectClass {
+    if (dataObjectClass == [BRCCampObject class]) {
+        return BRCUpdateDataTypeCamps;
+    } else if (dataObjectClass == [BRCArtObject class]) {
+        return BRCUpdateDataTypeArt;
+    } else if (dataObjectClass == [BRCRecurringEventObject class] || dataObjectClass == [BRCEventObject class]) {
+        return BRCUpdateDataTypeEvents;
+    }
+    return BRCUpdateDataTypeUnknown;
 }
 
 + (NSString*) yapCollection {
@@ -55,16 +77,49 @@
     if (!dataTypeString) {
         return BRCUpdateDataTypeUnknown;
     }
-    if ([dataTypeString isEqualToString:@"art"]) {
+    if ([dataTypeString isEqualToString:kBRCUpdateTypeArt]) {
         return BRCUpdateDataTypeArt;
-    } else if ([dataTypeString isEqualToString:@"camps"]) {
+    } else if ([dataTypeString isEqualToString:kBRCUpdateTypeCamps]) {
         return BRCUpdateDataTypeCamps;
-    } else if ([dataTypeString isEqualToString:@"events"]) {
+    } else if ([dataTypeString isEqualToString:kBRCUpdateTypeEvents]) {
         return BRCUpdateDataTypeEvents;
-    } else if ([dataTypeString isEqualToString:@"tiles"]) {
+    } else if ([dataTypeString isEqualToString:kBRCUpdateTypeTiles]) {
         return BRCUpdateDataTypeTiles;
     }
     return BRCUpdateDataTypeUnknown;
+}
+
++ (NSString*) stringFromDataType:(BRCUpdateDataType)dataType {
+    switch (dataType) {
+        case BRCUpdateDataTypeArt:
+            return kBRCUpdateTypeArt;
+            break;
+        case BRCUpdateDataTypeCamps:
+            return kBRCUpdateTypeCamps;
+            break;
+        case BRCUpdateDataTypeEvents:
+            return kBRCUpdateTypeEvents;
+            break;
+        case BRCUpdateDataTypeTiles:
+            return kBRCUpdateTypeTiles;
+            break;
+        default:
+            return nil;
+            break;
+    }
+}
+
+/** Return yapKey for a subclass of BRCDataObject */
++ (NSString*) yapKeyForClass:(Class)dataObjectClass {
+    BRCUpdateDataType dataType = [self dataTypeForClass:dataObjectClass];
+    NSString *yapKey = [self yapKeyForDataType:dataType];
+    return yapKey;
+}
+
++ (NSString*) yapKeyForDataType:(BRCUpdateDataType)dataType {
+    NSString *yapKey = [self stringFromDataType:dataType];
+    NSParameterAssert(yapKey != nil);
+    return yapKey;
 }
 
 @end

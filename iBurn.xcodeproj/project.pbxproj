@@ -29,7 +29,6 @@
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		B0C177C1481EA14DBAA3EFC7 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C8C085A67599EA761E94627 /* Pods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF8198C65F40013CCF4 /* dates_info.json */; };
 		D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = D9046F19198C65F40013CCF4 /* iburn.mbtiles */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
@@ -45,6 +44,7 @@
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
+		D9842A2D1B51C8F90056455D /* 2015 in Resources */ = {isa = PBXBuildFile; fileRef = D9842A2C1B51C8F90056455D /* 2015 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
@@ -61,9 +61,6 @@
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
 		D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */; };
-		D99A61591B2A1483009CC09E /* events.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046F37198C6CDE0013CCF4 /* events.json */; };
-		D99A615A1B2A1487009CC09E /* art.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF6198C65F40013CCF4 /* art.json */; };
-		D99A615B1B2A148A009CC09E /* camps.json in Resources */ = {isa = PBXBuildFile; fileRef = D9046EF7198C65F40013CCF4 /* camps.json */; };
 		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
@@ -164,6 +161,8 @@
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D980A90D1B3F5A6400BE3682 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataImportTests.m; sourceTree = "<group>"; };
+		D9842A2C1B51C8F90056455D /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015"; sourceTree = SOURCE_ROOT; };
+		D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter_Private.h; sourceTree = "<group>"; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/2015/initial_data; sourceTree = "<group>"; };
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/2015/updated_data; sourceTree = "<group>"; };
 		D9914C4F1B40C6EC00F90663 /* YapDatabase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = YapDatabase.framework; path = "Pods/../build/Debug-iphoneos/Pods/YapDatabase.framework"; sourceTree = "<group>"; };
@@ -352,6 +351,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D9842A2B1B51C71C0056455D /* 2015 */,
 				D9046EF5198C65F40013CCF4 /* 2014 */,
 				D9046ED2198C65D70013CCF4 /* 2013 */,
 			);
@@ -460,6 +460,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		D9842A2B1B51C71C0056455D /* 2015 */ = {
+			isa = PBXGroup;
+			children = (
+				D9842A2C1B51C8F90056455D /* 2015 */,
+			);
+			name = 2015;
+			path = "../Submodules/iBurn-Data/data/2014";
+			sourceTree = "<group>";
+		};
 		D9914C4A1B40C52E00F90663 /* TestData */ = {
 			isa = PBXGroup;
 			children = (
@@ -535,6 +544,7 @@
 				D99415781987277500D245C7 /* BRCDatabaseManager.h */,
 				D99415791987277500D245C7 /* BRCDatabaseManager.m */,
 				D994156F198726F400D245C7 /* BRCDataImporter.h */,
+				D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */,
 				D9941570198726F400D245C7 /* BRCDataImporter.m */,
 				D99415651987222F00D245C7 /* Model */,
 			);
@@ -592,7 +602,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = BRC;
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Burning Man Earth";
 				TargetAttributes = {
 					63CE2A531987140F00F65B01 = {
@@ -631,15 +641,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D99A61591B2A1483009CC09E /* events.json in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
+				D9842A2D1B51C8F90056455D /* 2015 in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
-				D99A615A1B2A1487009CC09E /* art.json in Resources */,
 				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
-				D99A615B1B2A148A009CC09E /* camps.json in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */,
-				D9046F1C198C65F40013CCF4 /* dates_info.json in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
@@ -848,6 +855,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_FAST_MATH = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -915,6 +923,7 @@
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -931,6 +940,7 @@
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "47adb392-d519-4674-a3dd-953d41b98451";
 				WRAPPER_EXTENSION = app;
@@ -962,6 +972,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
 			};
@@ -989,6 +1000,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
 			};

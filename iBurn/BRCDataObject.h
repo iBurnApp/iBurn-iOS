@@ -19,6 +19,9 @@
  */
 @property (nonatomic, readwrite) BOOL isFavorite;
 
+/** The last time object was fetched from iBurn API */
+@property (nonatomic, strong, readwrite) NSDate *lastUpdated;
+
 #pragma mark Constant Properties
 
 /**

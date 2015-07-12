@@ -15,9 +15,9 @@
 #import "NSDateFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
 
-NSString * const kBRCStartDateKey = @"kBRCStartDateKey";
-NSString * const kBRCEndDateKey = @"kBRCEndDateKey";
-NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
+NSString * const kBRCStartDate2015Key = @"kBRCStartDate2015Key";
+NSString * const kBRCEndDate2015Key = @"kBRCEndDate2015Key";
+NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
 
 @interface BRCEventObject()
 @end
@@ -126,14 +126,14 @@ NSString * const kBRCMajorEventsKey = @"kBRCMajorEventsKey";
 }
 
 + (NSDate*) festivalStartDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDateKey];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2015Key];
 }
 + (NSDate*) festivalEndDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCEndDateKey];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCEndDate2015Key];
 }
 /** Array of titles of major events, starting with first day of events */
 + (NSArray*) majorEvents {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEventsKey];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEvents2015Key];
 }
 
 + (NSArray*) datesOfFestival {

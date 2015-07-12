@@ -28,11 +28,6 @@
 - (void) loadUpdatesFromURL:(NSURL*)updateURL
            fetchResultBlock:(void (^)(UIBackgroundFetchResult result))fetchResultBlock;
 
-/** Synchronously imports data. Do not call from main thread! */
-- (BOOL) loadDataFromJSONData:(NSData*)jsonData
-                    dataClass:(Class)dataClass
-                        error:(NSError**)error;
-
 /** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
 - (void) addBackgroundURLSessionCompletionHandler:(void (^)())completionHandler;
 

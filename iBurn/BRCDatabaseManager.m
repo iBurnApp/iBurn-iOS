@@ -23,7 +23,7 @@
 #import "YapDatabaseSearchResultsView.h"
 #import "NSDate+iBurn.h"
 
-NSString * const kBRCDatabaseName = @"iBurn.sqlite";
+NSString * const kBRCDatabaseName = @"iBurn-2015.sqlite";
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
