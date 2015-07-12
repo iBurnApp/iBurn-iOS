@@ -86,16 +86,20 @@
     NSURL *updatedURL = [NSURL fileURLWithPath:updatedDataPath];
     XCTAssertNotNil(updatedURL);
     
-    [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
+    [self.importer loadUpdatesFromURL:initialUpdateURL fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
         XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
         NSLog(@"**** First update...");
         [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
-            // XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
+            XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
             NSLog(@"**** Second update (dupe)...");
             [self.importer loadUpdatesFromURL:updatedURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
                 XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
                 NSLog(@"**** Third update...");
-                [self.expectation fulfill];
+                [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
+                    XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
+                    NSLog(@"**** Fourth update...");
+                    [self.expectation fulfill];
+                }];
             }];
         }];
     }];

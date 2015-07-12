@@ -122,7 +122,9 @@
         
         if (oldUpdateInfo) {
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
-            if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete) {
+            if (intervalSinceLastUpdated <= 0 &&
+                (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete ||
+                 oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusFetching)) {
                 // already updated, skip update
                 return;
             }
