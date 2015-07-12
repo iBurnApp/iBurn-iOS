@@ -192,8 +192,8 @@
                             existingEvent = [existingEvent copy];
                             [existingEvent mergeValuesForKeysFromModel:event];
                             event = existingEvent;
-                            existingEvent.lastUpdated = updateInfo.lastUpdated;
                         }
+                        existingEvent.lastUpdated = updateInfo.lastUpdated;
                         [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
                     }];
                 } else { // Art and Camps
@@ -202,8 +202,8 @@
                         existingObject = [existingObject copy];
                         [existingObject mergeValuesForKeysFromModel:object];
                         object = existingObject;
-                        existingObject.lastUpdated = updateInfo.lastUpdated;
                     }
+                    existingObject.lastUpdated = updateInfo.lastUpdated;
                     [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
                 }
             }

@@ -60,10 +60,15 @@
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(url)) displayName:@"URL" cellType:BRCDetailCellInfoTypeURL]];
     
     
-    
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(hometown)) displayName:@"Hometown" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(detailDescription)) displayName:@"Description" cellType:BRCDetailCellInfoTypeText]];
+    
+    // last update from API
+#ifdef DEBUG
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
+#endif
+    
     return defaultArray;
 }
 
@@ -80,28 +85,21 @@
     NSArray *defaultArray = [self defaultInfoArray];
     NSMutableArray *finalCellInfoArray = [NSMutableArray new];
     [defaultArray enumerateObjectsUsingBlock:^(BRCDetailCellInfo *cellInfo, NSUInteger idx, BOOL *stop) {
-        //check if value exists
-        
         if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
             id cellValue = [object valueForKey:cellInfo.key];
             if (cellValue != nil && ![cellValue isEqual:[NSNull null]]) {
-                
                 //if value is a string check that it has an length
                 if ([cellValue isKindOfClass:[NSString class]]) {
                     NSString *valueString = cellValue;
                     if (![valueString length]) {
                         return;
                     }
-                }
-                
-                if ([cellValue isKindOfClass:[NSURL class]]) {
+                } else if ([cellValue isKindOfClass:[NSURL class]]) {
                     NSURL *valueURL = cellValue;
                     if (![[valueURL absoluteString] length]) {
                         return;
                     }
-                }
-                
-                if ([cellValue isKindOfClass:[NSNumber class]]) {
+                } else if ([cellValue isKindOfClass:[NSNumber class]]) {
                     if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromUser))]) {
                         NSNumber *numberValue = cellValue;
                         double doubleValue = numberValue.doubleValue;
@@ -110,10 +108,7 @@
                         }
                     }
                 }
-                
                 cellInfo.value = cellValue;
-
-                
                 
                 if (![BRCEmbargo canShowLocationForObject:object]) {
                     if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {

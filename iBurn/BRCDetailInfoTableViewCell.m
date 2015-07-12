@@ -14,6 +14,7 @@
 #import "TTTTimeIntervalFormatter+iBurn.h"
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCEmbargo.h"
+#import "NSDateFormatter+iBurn.h"
 
 @implementation BRCDetailInfoTableViewCell
 
@@ -88,6 +89,11 @@
             self.textLabel.numberOfLines = 0;
             self.textLabel.text = textString;
             [self setSelectableAppearance];
+            break;
+        }
+        case BRCDetailCellInfoTypeDate: {
+            NSDate *date = cellInfo.value;
+            self.textLabel.text = [[NSDateFormatter brc_playaEventsAPIDateFormatter] stringFromDate:date];
             break;
         }
     }
