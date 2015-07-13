@@ -40,7 +40,7 @@
 }
 
 + (CGFloat) cellHeight {
-    return 100.0f;
+    return 140.0f;
 }
 
 - (void) setEventDayLabelFromDate:(NSDate*)eventStartDate {

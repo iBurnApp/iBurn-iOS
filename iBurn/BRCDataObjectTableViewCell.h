@@ -16,6 +16,8 @@
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *subtitleLabel;
+@property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
+
 
 - (void) setStyleFromDataObject:(BRCDataObject*)dataObject;
 

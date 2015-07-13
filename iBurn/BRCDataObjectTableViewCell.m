@@ -14,6 +14,7 @@
 
 - (void) setStyleFromDataObject:(BRCDataObject*)dataObject {
     self.titleLabel.text = dataObject.title;
+    self.descriptionLabel.text = dataObject.detailDescription;
     [self setTitleLabelBold:dataObject.isFavorite];
 }
 
@@ -37,7 +38,7 @@
 }
 
 + (CGFloat) cellHeight {
-    return 67.0f;
+    return 122.0f;
 }
 
 - (void) setTitleLabelBold:(BOOL)isBold {
