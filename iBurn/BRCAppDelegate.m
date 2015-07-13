@@ -27,6 +27,7 @@
 #import "BRCLocations.h"
 #import "Appirater.h"
 #import "RMConfiguration.h"
+#import <Parse/Parse.h>
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
@@ -44,6 +45,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
                                                          liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
     [[BITHockeyManager sharedHockeyManager] startManager];
+    
+    [Parse setApplicationId:kBRCParseApplicationId
+                  clientKey:kBRCParseClientKey];
+    
     [[UIApplication sharedApplication] setStatusBarHidden:NO];
     
     // Can we set a better interval?
@@ -105,6 +110,16 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Appirater setDebug:NO];
     [Appirater appLaunched:YES];
     
+    // Register for Push Notitications
+    UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                    UIUserNotificationTypeBadge |
+                                                    UIUserNotificationTypeSound);
+    UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                             categories:nil];
+    [application registerUserNotificationSettings:settings];
+    [application registerForRemoteNotifications];
+    [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    
     [self.window makeKeyAndVisible];
     return YES;
 }
@@ -138,6 +153,26 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         [alertController addAction:actionItem];
     }
     [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    // Store the deviceToken in the current installation and save it to Parse.
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    [currentInstallation setDeviceTokenFromData:deviceToken];
+    currentInstallation.channels = @[ @"global", @"updates" ];
+    [currentInstallation saveInBackground];
+}
+
+- (void)application:(UIApplication *)application
+didReceiveRemoteNotification:(NSDictionary *)userInfo
+fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
+    [PFAnalytics trackAppOpenedWithRemoteNotificationPayload:userInfo];
+    if ([userInfo[@"aps"][@"content-available"] boolValue]) {
+        NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+        [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
+    } else {
+        handler(UIBackgroundFetchResultNoData);
+    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

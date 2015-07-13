@@ -159,6 +159,7 @@
         return NO;
     }
     NSMutableArray *objects = [NSMutableArray arrayWithCapacity:jsonObjects.count];
+    // kludge to fix accidental usage of wrong event object type
     if (dataClass == [BRCEventObject class]) {
         dataClass = [BRCRecurringEventObject class];
     }

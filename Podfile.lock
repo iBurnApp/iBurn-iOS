@@ -1,6 +1,7 @@
 PODS:
   - Appirater (2.0.5)
   - BButton (4.0.2)
+  - Bolts/Tasks (1.2.0)
   - CocoaLumberjack (1.9.2):
     - CocoaLumberjack/Extensions (= 1.9.2)
   - CocoaLumberjack/Core (1.9.2)
@@ -27,6 +28,8 @@ PODS:
     - GRMustache (~> 7.3)
     - SMCalloutView (~> 2.1)
   - MCSwipeTableViewCell (2.1.2)
+  - Parse (1.7.5):
+    - Bolts/Tasks (>= 1.2.0)
   - pop (1.0.7)
   - PureLayout (2.0.6)
   - SMCalloutView (2.1.2)
@@ -48,6 +51,7 @@ DEPENDENCIES:
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (from `Podspecs/Mapbox-iOS-SDK.podspec`)
   - MCSwipeTableViewCell (~> 2.1)
+  - Parse (~> 1.7)
   - pop (~> 1.0)
   - PureLayout (~> 2.0)
   - TTTAttributedLabel (~> 1.13)
@@ -61,6 +65,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Appirater: e7c0a47fb67ee5041ce8479e6ba960927fb40264
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
+  Bolts: d176cb1e0012175589e389a9db49b85e27787576
   CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
@@ -72,6 +77,7 @@ SPEC CHECKSUMS:
   Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
   Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
   MCSwipeTableViewCell: 0fc22bd3635b9b5f4ce08675218b0a7278b6440f
+  Parse: 7c0f115eff3e0cea3fac08d50bda47154edb8832
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d
   SMCalloutView: 4078d89b847731e514b1a919fed33b383a24a106

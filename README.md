@@ -22,6 +22,8 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 	// $ echo -n passcode | sha256sum
 	NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
 	NSString * const kBRCUpdatesURLString = @"";
+	NSString * const kBRCParseApplicationId = @"";
+	NSString * const kBRCParseClientKey = @"";
 	```
 
 * Compile and Run!

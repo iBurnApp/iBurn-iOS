@@ -1,5 +1,5 @@
 language: objective-c
-osx_image: beta-xcode6.3
+osx_image: xcode6.4
 
 # Handle git submodules yourself
 # http://stackoverflow.com/a/24600210/805882
@@ -14,7 +14,7 @@ before_install:
     - git submodule update --init --recursive
 
 install:
-  - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n" > ./iBurn/BRCSecrets.m
+  - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
   - gem install cocoapods
