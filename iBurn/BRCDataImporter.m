@@ -101,6 +101,8 @@
         if (parseError) {
             *stop = YES;
         }
+        NSParameterAssert(updateInfo.lastUpdated != nil);
+        NSParameterAssert(updateInfo.fileName != nil);
         updateInfo.dataType = [BRCUpdateInfo dataTypeFromString:key];
         [newUpdateInfo addObject:updateInfo];
     }];
@@ -152,6 +154,7 @@
 
 - (BOOL) loadDataFromJSONData:(NSData*)jsonData
                     dataClass:(Class)dataClass
+                   updateInfo:(BRCUpdateInfo*)updateInfo
                         error:(NSError**)error {
     NSParameterAssert(jsonData != nil);
     NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:error];
@@ -176,11 +179,9 @@
     NSLog(@"About to load %d %@ objects.", (int)objects.count, NSStringFromClass(dataClass));
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // Update Fetch info status
-        NSString *yapKey = [BRCUpdateInfo yapKeyForClass:dataClass];
-        BRCUpdateInfo *updateInfo = [transaction objectForKey:yapKey inCollection:[BRCUpdateInfo yapCollection]];
         NSParameterAssert(updateInfo != nil);
         if (!updateInfo) {
-            NSLog(@"Couldn't find updateInfo for %@", yapKey);
+            NSLog(@"Couldn't find updateInfo for %@", NSStringFromClass(dataClass));
             return;
         }
         [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
@@ -196,7 +197,7 @@
                             [existingEvent mergeValuesForKeysFromModel:event];
                             event = existingEvent;
                         }
-                        existingEvent.lastUpdated = updateInfo.lastUpdated;
+                        event.lastUpdated = updateInfo.lastUpdated;
                         [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
                     }];
                 } else { // Art and Camps
@@ -206,15 +207,13 @@
                         [existingObject mergeValuesForKeysFromModel:object];
                         object = existingObject;
                     }
-                    existingObject.lastUpdated = updateInfo.lastUpdated;
+                    object.lastUpdated = updateInfo.lastUpdated;
                     [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
                 }
             }
         }];
-        
-        updateInfo = [updateInfo copy];
         updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
-        [transaction setObject:updateInfo forKey:yapKey inCollection:[BRCUpdateInfo yapCollection]];
+        [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
     return YES;
 }
@@ -231,7 +230,10 @@
         NSData *jsonData = [[NSData alloc] initWithContentsOfURL:localURL];
         [self.updateQueue addOperationWithBlock:^{
             NSError *error = nil;
-            BOOL success = [self loadDataFromJSONData:jsonData dataClass:dataClass error:&error];
+            BOOL success = [self loadDataFromJSONData:jsonData
+                                            dataClass:dataClass
+                                           updateInfo:updateInfo
+                                                error:&error];
             if (!success) {
                 NSLog(@"Error loading JSON for %@: %@", NSStringFromClass(dataClass), error);
             }

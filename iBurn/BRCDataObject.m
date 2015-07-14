@@ -29,7 +29,7 @@
              NSStringFromSelector(@selector(latitude)): @"latitude",
              NSStringFromSelector(@selector(longitude)): @"longitude",
              NSStringFromSelector(@selector(year)): @"year.year",
-             NSStringFromSelector(@selector(playaLocation)): @"location"};
+             NSStringFromSelector(@selector(playaLocation)): @"location_string"};
 }
 
 - (CLLocation*) location {

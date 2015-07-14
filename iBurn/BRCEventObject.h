@@ -8,6 +8,8 @@
 
 #import "BRCDataObject.h"
 #import "YapDatabaseTransaction.h"
+#import "BRCArtObject.h"
+#import "BRCCampObject.h"
 
 typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeUnknown,
@@ -34,6 +36,10 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 @property (nonatomic, strong, readonly) NSString *hostedByArtUniqueID;
 
 
+- (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
+- (BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
+
+
 @property (nonatomic, readonly) BOOL isAllDay;
 
 @property (nonatomic, strong, readonly) NSDate *startDate;
@@ -46,6 +52,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 
 - (NSTimeInterval)timeIntervalUntilStartDate;
 - (NSTimeInterval)timeIntervalUntilEndDate;
+- (NSTimeInterval)timeIntervalForDuration;
 
 /**
  *  Whether or not the event is still happening *right now*

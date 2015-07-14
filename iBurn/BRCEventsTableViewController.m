@@ -172,7 +172,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCEventObjectTableViewCell *cell = (BRCEventObjectTableViewCell*)[super tableView:tableView cellForRowAtIndexPath:indexPath];
-    cell.eventDayLabel.hidden = NO;
+    cell.locationLabel.hidden = NO;
     return cell;
 }
 

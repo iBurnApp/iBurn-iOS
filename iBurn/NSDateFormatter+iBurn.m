@@ -43,7 +43,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         brc_timeOnlyDateFormatter = [[NSDateFormatter alloc] init];
-        brc_timeOnlyDateFormatter.dateFormat = @"h:mm a";
+        brc_timeOnlyDateFormatter.dateFormat = @"h:mma";
         brc_timeOnlyDateFormatter.timeZone = [self brc_burningManTimeZone];
     });
     return brc_timeOnlyDateFormatter;

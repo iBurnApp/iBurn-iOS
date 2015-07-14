@@ -10,6 +10,7 @@
 #import "BRCEventObject.h"
 #import "NSDateFormatter+iBurn.h"
 #import "TTTTimeIntervalFormatter+iBurn.h"
+#import "BRCDatabaseManager.h"
 
 @implementation BRCEventObjectTableViewCell
 
@@ -19,15 +20,20 @@
     if (eventObject.isAllDay) {
         self.eventTimeLabel.text = @"All Day";
     } else if (eventObject.isStartingSoon) {
+        NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
+        NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
         NSString *minsUntilStartString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilStartDate];
-        self.eventTimeLabel.text = [NSString stringWithFormat:@"Starts %@", minsUntilStartString];
+        self.eventTimeLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
     } else if (eventObject.isHappeningRightNow) {
         NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilEndDate];
         self.eventTimeLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
     } else if (eventObject.hasEnded && eventObject.hasStarted) {
         self.eventTimeLabel.text = @"Expired";
     } else { // Starts in long time
-        self.eventTimeLabel.text = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
+        NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
+        NSString *endTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.endDate];
+        NSString *timeString = [[NSString stringWithFormat:@"%@ - %@", startTime, endTime] lowercaseString];
+        self.eventTimeLabel.text = timeString;
     }
     UIColor *eventStatusColor = [eventObject colorForEventStatus];
     self.eventTimeLabel.textColor = eventStatusColor;
@@ -36,21 +42,39 @@
         eventType = @"None";
     }
     self.eventTypeLabel.text = eventType;
-    [self setEventDayLabelFromDate:eventObject.startDate];
+    [self setupLocationLabelFromEvent:eventObject];
 }
 
 + (CGFloat) cellHeight {
     return 140.0f;
 }
 
-- (void) setEventDayLabelFromDate:(NSDate*)eventStartDate {
-    if (!eventStartDate) {
-        self.eventDayLabel.text = @"None";
-        return;
+- (void) setupLocationLabelFromEvent:(BRCEventObject*)eventObject {
+    NSString *playaLocation = eventObject.playaLocation;
+    NSString *locationName = nil;
+    __block BRCCampObject *camp = nil;
+    __block BRCArtObject *art = nil;
+    // shouldn't be doing this fetch in here... best moved up to the view controller
+    [[BRCDatabaseManager sharedInstance].readConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        camp = [eventObject hostedByCampWithTransaction:transaction];
+        if (camp) {
+            return;
+        }
+        art = [eventObject hostedByArtWithTransaction:transaction];
+    }];
+    if (camp) {
+        locationName = camp.title;
+    } else if (art) {
+        locationName = art.title;
     }
-    NSString *dayOfWeekString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventStartDate];
-    NSString *shortDateString = [[NSDateFormatter brc_shortDateFormatter] stringFromDate:eventStartDate];
-    self.eventDayLabel.text = [NSString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
+    NSString *labelString = nil;
+    if (locationName) {
+        labelString = locationName;
+    }
+    if (playaLocation) {
+        labelString = [labelString stringByAppendingFormat:@" (%@)", playaLocation];
+    }
+    self.locationLabel.text = labelString;
 }
 
 @end

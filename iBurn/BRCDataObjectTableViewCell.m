@@ -9,12 +9,19 @@
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCDataObject.h"
 #import "TTTLocationFormatter+iBurn.h"
+#import "BRCArtObject.h"
 
 @implementation BRCDataObjectTableViewCell
 
 - (void) setStyleFromDataObject:(BRCDataObject*)dataObject {
     self.titleLabel.text = dataObject.title;
-    self.descriptionLabel.text = dataObject.detailDescription;
+    // right now the 2015 API reponses are kind of sparse
+    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
+        BRCArtObject *art = (BRCArtObject*)dataObject;
+        self.descriptionLabel.text = art.artistName;
+    } else {
+        self.descriptionLabel.text = dataObject.detailDescription;
+    }
     [self setTitleLabelBold:dataObject.isFavorite];
 }
 
@@ -26,7 +33,7 @@
         distance = [objectLocation distanceFromLocation:recentLocation];
     }
     if (distance == CLLocationDistanceMax || distance == 0) {
-        self.subtitleLabel.text = @"No Location";
+        self.subtitleLabel.text = @"🚶🏽 ? min   🚴🏽 ? min";
     } else {
         self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }

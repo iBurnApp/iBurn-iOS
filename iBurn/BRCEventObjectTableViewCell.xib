@@ -22,7 +22,7 @@
                         <string key="text">Pinhole Project
 </string>
                         <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
@@ -54,9 +54,9 @@
                         <constraints>
                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="45" id="7ir-fs-bV9"/>
                         </constraints>
-                        <mutableString key="text">The Pinhole Project exposes 30 x 40 inch sheets of light sensitive gelatin silver paper. We work with 12 pinhole cameras, created out of 50-gallon cardboard barrels. This size is uniquely suited for capturing the incredible scale and immense diversity of art and culture at Black Rock City. Under the red safelights of the darkroom, photosensitive paper is inserted into the camera body. Exposures range from 40 to 300 seconds, where concentrated beams of sunlight are funnelled through the pinhole and into the camera, creating a negative image of the recorded subject. We maintain a desert darkroom in a shipping container, where we gather to processes, develop and fix about one hundred photographs each Burning Man. These unique images are then exhibited all over the playa. The pinhole camp has been creating large-scale portraits with festival participants since 1999. The pinhole came about of the desire of four first time participants to contribute in a unique and lasting way to the ephemeral pleasures of the playa. As we have grown, so too has our belief that this device is the reason that we make our annual pilgrimage. As we have evolved, so too has the camera, not only in functional and technical capabilities but also in its role as a seed of meaningful engagement with other participants.</mutableString>
+                        <string key="text">The Pinhole Project exposes 30 x 40 inch sheets of light sensitive gelatin silver paper. We work with 12 pinhole cameras, created out of 50-gallon cardboard barrels. This size is uniquely suited for capturing the incredible scale and immense diversity of art and culture at Black Rock City. Under the red safelights of the darkroom, photosensitive paper is inserted into the camera body. Exposures range from 40 to 300 seconds, where concentrated beams of sunlight are funnelled through the pinhole and into the camera, creating a negative image of the recorded subject. We maintain a desert darkroom in a shipping container, where we gather to processes, develop and fix about one hundred photographs each Burning Man. These unique images are then exhibited all over the playa. The pinhole camp has been creating large-scale portraits with festival participants since 1999. The pinhole came about of the desire of four first time participants to contribute in a unique and lasting way to the ephemeral pleasures of the playa. As we have grown, so too has our belief that this device is the reason that we make our annual pilgrimage. As we have evolved, so too has the camera, not only in functional and technical capabilities but also in its role as a seed of meaningful engagement with other participants.</string>
                         <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
@@ -89,13 +89,13 @@
             </tableViewCellContentView>
             <connections>
                 <outlet property="descriptionLabel" destination="STs-rg-6uh" id="Qc2-tp-J9h"/>
-                <outlet property="eventDayLabel" destination="m4p-nL-AsY" id="hsS-uX-7JX"/>
                 <outlet property="eventTimeLabel" destination="YOL-qx-5uC" id="RKb-me-IJh"/>
                 <outlet property="eventTypeLabel" destination="CBZ-lr-1Gs" id="Pbc-su-ggi"/>
+                <outlet property="locationLabel" destination="m4p-nL-AsY" id="fOR-wb-sca"/>
                 <outlet property="subtitleLabel" destination="jJk-MV-Kf7" id="gli-oO-tJE"/>
                 <outlet property="titleLabel" destination="X3h-Fa-FKh" id="erM-1W-1hN"/>
             </connections>
-            <point key="canvasLocation" x="428" y="324"/>
+            <point key="canvasLocation" x="441" y="325"/>
         </tableViewCell>
     </objects>
 </document>

@@ -39,6 +39,11 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     return DBL_MAX;
 }
 
+- (NSTimeInterval)timeIntervalForDuration {
+    NSTimeInterval duration = [self.endDate timeIntervalSinceDate:self.startDate];
+    return duration;
+}
+
 - (BOOL)isHappeningRightNow
 {
     if ([self hasStarted] && ![self hasEnded]) {
@@ -273,6 +278,22 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
             [[UIApplication sharedApplication] cancelLocalNotification:notificationToCancel];
         });
     }
+}
+
+- (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
+    if (!self.hostedByArtUniqueID) {
+        return nil;
+    }
+    BRCArtObject *artObject = [readTransaction objectForKey:self.hostedByArtUniqueID inCollection:[BRCArtObject collection]];
+    return artObject;
+}
+
+- (BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
+    if (!self.hostedByCampUniqueID) {
+        return nil;
+    }
+    BRCCampObject *campObject = [readTransaction objectForKey:self.hostedByCampUniqueID inCollection:[BRCCampObject collection]];
+    return campObject;
 }
 
 @end

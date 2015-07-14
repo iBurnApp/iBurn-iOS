@@ -20,6 +20,7 @@ extern NSString * const kBRCDatabaseName;
 
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
+@property (nonatomic, strong, readonly) YapDatabaseConnection *readConnection;
 
 /** Check to see if a file exists at the correct path */
 + (BOOL)existsDatabaseWithName:(NSString *)databaseName;

@@ -12,6 +12,6 @@
 
 @property (strong, nonatomic) IBOutlet UILabel *eventTimeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *eventTypeLabel;
-@property (strong, nonatomic) IBOutlet UILabel *eventDayLabel;
+@property (strong, nonatomic) IBOutlet UILabel *locationLabel;
 
 @end
