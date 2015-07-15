@@ -28,7 +28,7 @@
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong) NSArray *searchResults;
-@property (nonatomic, strong) UISearchDisplayController *searchController;
+@property (nonatomic, strong) UISearchController *searchController;
 @property (nonatomic) BOOL didUpdateConstraints;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
@@ -60,10 +60,6 @@
     self.searchActivityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.searchActivityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.searchActivityIndicatorView];
-}
-
-- (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
-    return UIBarPositionTopAttached;
 }
 
 - (void) setupLoadingIndicatorView {
@@ -103,27 +99,43 @@
     
     [self setupSearchIndicator];
     
-    UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectZero];
-    searchBar.delegate = self;
-    searchBar.searchBarStyle = UISearchBarStyleMinimal;
-    
-    self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:searchBar contentsController:self];
-    self.searchController.delegate = self;
-    self.searchController.searchResultsDataSource = self;
-    self.searchController.searchResultsDelegate = self;
-    
-    self.tableView.tableHeaderView = searchBar;
+    [self initializeSearchController];
     
     [self updateViewConstraints];
     
     UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
-    [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
-    [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
+    [self.tableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didChangePreferredContentSize:)
                                                  name:UIContentSizeCategoryDidChangeNotification
                                                object:nil];
+}
+
+// https://github.com/ccabanero/ios-uisearchcontroller-objc/blob/master/ui-searchcontroller-objc/TableViewController.m
+// https://developer.apple.com/library/ios/samplecode/TableSearch_UISearchController/Introduction/Intro.html#//apple_ref/doc/uid/TP40014683-Intro-DontLinkElementID_2
+- (void)initializeSearchController {
+    UITableViewController *searchResultsController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+    UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
+    [searchResultsController.tableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
+
+    searchResultsController.tableView.dataSource = self;
+    searchResultsController.tableView.delegate = self;
+    searchResultsController.tableView.estimatedRowHeight = 120;
+    searchResultsController.tableView.rowHeight = UITableViewAutomaticDimension;
+    
+    self.searchController = [[UISearchController alloc] initWithSearchResultsController:searchResultsController];
+    self.searchController.searchResultsUpdater = self;
+    self.searchController.dimsBackgroundDuringPresentation = NO;
+    //self.searchController.hidesNavigationBarDuringPresentation = NO;
+    
+    self.definesPresentationContext = YES;
+    
+    [self.searchController.searchBar sizeToFit];
+    self.searchController.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    self.searchController.searchBar.delegate = self;
+    
+    self.tableView.tableHeaderView = self.searchController.searchBar;
 }
 
 - (void)setupDatabaseConnection
@@ -203,7 +215,8 @@
 
 - (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView
 {
-    if ([tableView isEqual:self.searchDisplayController.searchResultsTableView]) {
+    UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
+    if ([tableView isEqual:src.tableView]) {
         return YES;
     }
     return NO;
@@ -304,23 +317,16 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
-    
     BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
     [self.navigationController pushViewController:detailVC animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-#pragma - mark UISearchBarDelegate Methods
+#pragma mark - UISearchResultsUpdating
 
-- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
-{
-    [self.searchDisplayController setActive:YES animated:YES];
-}
-
-#pragma - mark  UISearchDisplayDelegate Methods
-
-- (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
-{
+-(void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    NSString *searchString = [self.searchController.searchBar text];
+    UITableViewController *src = (UITableViewController*)searchController.searchResultsController;
     if ([searchString length]) {
         NSMutableArray *tempSearchResults = [NSMutableArray array];
         searchString = [NSString stringWithFormat:@"%@*",searchString];
@@ -335,12 +341,12 @@
         } completionBlock:^{
             self.searchResults = tempSearchResults;
             [self.searchActivityIndicatorView stopAnimating];
-            [controller.searchResultsTableView reloadData];
+            [src.tableView reloadData];
         }];
     } else {
-        self.searchResults = nil;
+        self.searchResults = @[];
+        [src.tableView reloadData];
     }
-    return NO;
 }
 
 #pragma - mark YapDatabseModified

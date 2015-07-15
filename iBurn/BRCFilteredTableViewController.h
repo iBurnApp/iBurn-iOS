@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRCFilteredTableViewController : UITableViewController <UISearchDisplayDelegate, UISearchBarDelegate>
+@interface BRCFilteredTableViewController : UITableViewController <UISearchResultsUpdating, UISearchBarDelegate, UISearchControllerDelegate>
 
 @property (nonatomic, strong, readonly) NSString *viewName;
 @property (nonatomic, strong, readonly) NSString *ftsName;
