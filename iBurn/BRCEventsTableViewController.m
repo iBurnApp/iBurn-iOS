@@ -49,7 +49,7 @@
 }
 
 - (void) filterButtonPressed:(id)sender {
-    BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] initWithDelegate:self];;
+    BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] initWithDelegate:self];
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:filterViewController];
     [self presentViewController:navigationController animated:YES completion:nil];
 }

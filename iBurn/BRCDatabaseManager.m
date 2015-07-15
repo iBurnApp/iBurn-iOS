@@ -156,11 +156,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
     _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
     
-    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
-    _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:indexedProperties];
-    _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:indexedProperties];
-    _ftsEventsName = [[self class] fullTextSearchNameForClass:[BRCEventObject class] withIndexedProperties:indexedProperties];
-    _ftsDataObjectName = [[self class] fullTextSearchNameForClass:[BRCDataObject class] withIndexedProperties:indexedProperties];
+    _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(artistName))]];
+    _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]];
+    _ftsEventsName = [[self class] fullTextSearchNameForClass:[BRCEventObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]];
+    _ftsDataObjectName = [[self class] fullTextSearchNameForClass:[BRCDataObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription)), NSStringFromSelector(@selector(artistName))]];
     
     _eventsFilteredByDayViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName];
     _eventsFilteredByDayExpirationAndTypeViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName];
@@ -203,14 +202,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 - (void) registerFullTextSearch {
-    NSArray *ftsInfoArray = @[@[self.ftsArtName, [BRCArtObject class]],
-                              @[self.ftsCampsName, [BRCCampObject class]],
-                              @[self.ftsEventsName, [BRCEventObject class]],
-                              @[self.ftsDataObjectName, [BRCDataObject class]]];
-    NSArray *indexedProperties = @[NSStringFromSelector(@selector(title))];
+    // the
+    NSArray *ftsInfoArray = @[@[self.ftsArtName, [BRCArtObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(artistName))]],
+                              @[self.ftsCampsName, [BRCCampObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]],
+                              @[self.ftsEventsName, [BRCEventObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]],
+                              @[self.ftsDataObjectName, [BRCDataObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription)), NSStringFromSelector(@selector(artistName))]]];
     [ftsInfoArray enumerateObjectsUsingBlock:^(NSArray *ftsInfo, NSUInteger idx, BOOL *stop) {
-        NSString *ftsName = [ftsInfo firstObject];
-        Class viewClass = [ftsInfo lastObject];
+        NSString *ftsName = ftsInfo[0];
+        Class viewClass = ftsInfo[1];
+        NSArray *indexedProperties = ftsInfo[2];
         YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:viewClass withIndexedProperties:indexedProperties];
         BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:fullTextSearch withName:ftsName];
         NSLog(@"%@ ready %d", ftsName, success);
@@ -380,10 +380,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSMutableString *viewName = [NSMutableString stringWithString:NSStringFromClass(viewClass)];
     [viewName appendString:@"-SearchFilter("];
     [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
-        [viewName appendString:property];
-        if (idx - 1 < properties.count) {
-            [viewName appendString:@","];
-        }
+        [viewName appendFormat:@"%@,", property];
     }];
     [viewName appendString:@")"];
     return viewName;

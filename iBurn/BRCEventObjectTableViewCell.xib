@@ -8,11 +8,11 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="140" id="KGk-i7-Jjw" customClass="BRCEventObjectTableViewCell">
-            <rect key="frame" x="0.0" y="0.0" width="346" height="140"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="145" id="KGk-i7-Jjw" customClass="BRCEventObjectTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="346" height="145"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="313" height="139"/>
+                <rect key="frame" x="0.0" y="0.0" width="313" height="144"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3h-Fa-FKh">
@@ -22,71 +22,73 @@
                         </constraints>
                         <string key="text">Pinhole Project
 </string>
-                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
-                        <rect key="frame" x="10" y="111" width="135" height="18"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <rect key="frame" x="10" y="115" width="96" height="19"/>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="10:00am - 12:00pm" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YOL-qx-5uC">
-                        <rect key="frame" x="168" y="111" width="135" height="18"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <rect key="frame" x="176" y="117" width="127" height="17"/>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="🍺 Party" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CBZ-lr-1Gs">
-                        <rect key="frame" x="10" y="83" width="61" height="18"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="🍺 Party" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CBZ-lr-1Gs">
+                        <rect key="frame" x="10" y="88" width="60" height="17"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="rsd-EY-7rP"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Illumination Village" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m4p-nL-AsY">
-                        <rect key="frame" x="170" y="83" width="135" height="18"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Illumination Village - 6:30 &amp; A" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m4p-nL-AsY">
+                        <rect key="frame" x="113" y="88" width="192" height="17"/>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STs-rg-6uh">
-                        <rect key="frame" x="10" y="32" width="295" height="45"/>
+                        <rect key="frame" x="10" y="34" width="295" height="50"/>
                         <constraints>
-                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="45" id="7ir-fs-bV9"/>
+                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="50" id="7ir-fs-bV9"/>
                         </constraints>
                         <string key="text">The Pinhole Project exposes 30 x 40 inch sheets of light sensitive gelatin silver paper. We work with 12 pinhole cameras, created out of 50-gallon cardboard barrels. This size is uniquely suited for capturing the incredible scale and immense diversity of art and culture at Black Rock City. Under the red safelights of the darkroom, photosensitive paper is inserted into the camera body. Exposures range from 40 to 300 seconds, where concentrated beams of sunlight are funnelled through the pinhole and into the camera, creating a negative image of the recorded subject. We maintain a desert darkroom in a shipping container, where we gather to processes, develop and fix about one hundred photographs each Burning Man. These unique images are then exhibited all over the playa. The pinhole camp has been creating large-scale portraits with festival participants since 1999. The pinhole came about of the desire of four first time participants to contribute in a unique and lasting way to the ephemeral pleasures of the playa. As we have grown, so too has our belief that this device is the reason that we make our annual pilgrimage. As we have evolved, so too has the camera, not only in functional and technical capabilities but also in its role as a seed of meaningful engagement with other participants.</string>
-                        <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="YOL-qx-5uC" firstAttribute="width" secondItem="jJk-MV-Kf7" secondAttribute="width" id="0fc-XT-g2x"/>
                     <constraint firstAttribute="bottom" secondItem="jJk-MV-Kf7" secondAttribute="bottom" constant="10" id="1aM-Rj-65P"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="2zL-74-C6N"/>
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="3iZ-sk-aAC"/>
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="bottom" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" id="4WF-Cb-Kgb"/>
                     <constraint firstAttribute="trailingMargin" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="2" id="69H-fq-zLc"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="2" id="9ND-Cc-oMn"/>
+                    <constraint firstItem="YOL-qx-5uC" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jJk-MV-Kf7" secondAttribute="trailing" constant="2" id="L7V-4y-4pj"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="LhI-HZ-lo9"/>
                     <constraint firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="M5Z-ls-LyY"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" id="Oeh-W3-cJX"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" constant="10" id="PD2-Ft-hpa"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="Q1G-49-T5F"/>
                     <constraint firstAttribute="bottomMargin" secondItem="jJk-MV-Kf7" secondAttribute="bottom" constant="2" id="Qkc-Bp-Vkn"/>
-                    <constraint firstItem="STs-rg-6uh" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="2" id="Qnc-EO-gV8"/>
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="height" secondItem="CBZ-lr-1Gs" secondAttribute="height" id="Saj-bc-jHB"/>
+                    <constraint firstItem="m4p-nL-AsY" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="CBZ-lr-1Gs" secondAttribute="trailing" constant="2" id="TjW-yK-FOC"/>
                     <constraint firstAttribute="bottomMargin" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="2" id="Uvf-QT-ciT"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="CBZ-lr-1Gs" secondAttribute="leading" id="Wll-kJ-rAk"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="XFd-U6-aB4"/>
-                    <constraint firstItem="STs-rg-6uh" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="2" id="Y2z-IN-D9g"/>
-                    <constraint firstItem="m4p-nL-AsY" firstAttribute="width" secondItem="YOL-qx-5uC" secondAttribute="width" id="Yna-dS-4Qm"/>
+                    <constraint firstItem="STs-rg-6uh" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="4" id="Y2z-IN-D9g"/>
                     <constraint firstItem="CBZ-lr-1Gs" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="ZU5-OL-17q"/>
                     <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="aRq-wm-Ue4"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="epn-jb-zCt"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="iko-9N-FV2"/>
-                    <constraint firstItem="m4p-nL-AsY" firstAttribute="top" secondItem="STs-rg-6uh" secondAttribute="bottom" constant="6" id="m78-NX-OvE"/>
+                    <constraint firstItem="m4p-nL-AsY" firstAttribute="top" secondItem="STs-rg-6uh" secondAttribute="bottom" constant="4" id="m78-NX-OvE"/>
                     <constraint firstAttribute="trailingMargin" secondItem="X3h-Fa-FKh" secondAttribute="trailing" constant="2" id="tb0-U3-8yW"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="x5Y-Ab-yc8"/>
                     <constraint firstAttribute="trailing" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="10" id="zQ9-MO-GXC"/>
@@ -100,7 +102,7 @@
                 <outlet property="subtitleLabel" destination="jJk-MV-Kf7" id="gli-oO-tJE"/>
                 <outlet property="titleLabel" destination="X3h-Fa-FKh" id="erM-1W-1hN"/>
             </connections>
-            <point key="canvasLocation" x="441" y="325"/>
+            <point key="canvasLocation" x="441" y="327.5"/>
         </tableViewCell>
     </objects>
 </document>

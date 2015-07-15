@@ -67,8 +67,13 @@
     if (locationName) {
         labelString = locationName;
     }
+#ifdef DEBUG
+    if (!playaLocation) {
+        playaLocation = @"0:00 & ?";
+    }
+#endif
     if (playaLocation) {
-        labelString = [labelString stringByAppendingFormat:@" (%@)", playaLocation];
+        labelString = [labelString stringByAppendingFormat:@" - %@", playaLocation];
     }
     self.locationLabel.text = labelString;
 }

@@ -23,7 +23,6 @@
 
 + (NSString*) cellIdentifier;
 
-- (void) setTitleLabelBold:(BOOL)isBold;
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation;
 
 @end

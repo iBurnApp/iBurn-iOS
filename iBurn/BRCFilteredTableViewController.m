@@ -38,7 +38,9 @@
 
 @implementation BRCFilteredTableViewController
 
-
+- (void) dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 - (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName ftsName:(NSString *)ftsName
 {
@@ -117,6 +119,11 @@
     UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
     [[self tableView] registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(didChangePreferredContentSize:)
+                                                 name:UIContentSizeCategoryDidChangeNotification
+                                               object:nil];
 }
 
 - (void)setupDatabaseConnection
@@ -221,6 +228,10 @@
     return viewState;
 }
 
+- (void) didChangePreferredContentSize:(NSNotification*)notification {
+    // this doens't seem to trigger a re-layout of the cells?
+    [self.tableView reloadData];
+}
 
 #pragma - mark UITableViewDataSource Methods
 
@@ -265,11 +276,9 @@
     if (percentage >= cell.firstTrigger) {
         BOOL inverseFavorite = !dataObject.isFavorite;
         cell.view1 = [self imageViewForFavoriteStatus:inverseFavorite];
-        [cell setTitleLabelBold:inverseFavorite];
     } else if (percentage < cell.firstTrigger) {
         BOOL isFavorite = dataObject.isFavorite;
         cell.view1 = [self imageViewForFavoriteStatus:isFavorite];
-        [cell setTitleLabelBold:isFavorite];
     }
 }
 

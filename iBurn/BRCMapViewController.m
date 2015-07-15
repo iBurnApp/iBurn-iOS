@@ -775,11 +775,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     if (percentage >= cell.firstTrigger) {
         BOOL inverseFavorite = !dataObject.isFavorite;
         cell.view1 = [self imageViewForFavoriteStatus:inverseFavorite];
-        [cell setTitleLabelBold:inverseFavorite];
     } else if (percentage < cell.firstTrigger) {
         BOOL isFavorite = dataObject.isFavorite;
         cell.view1 = [self imageViewForFavoriteStatus:isFavorite];
-        [cell setTitleLabelBold:isFavorite];
     }
 }
 

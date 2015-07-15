@@ -23,7 +23,6 @@
         NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
         self.descriptionLabel.text = detailString;
     }
-    [self setTitleLabelBold:dataObject.isFavorite];
 }
 
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
@@ -43,17 +42,6 @@
 
 + (NSString*) cellIdentifier {
     return NSStringFromClass([self class]);
-}
-
-- (void) setTitleLabelBold:(BOOL)isBold {
-    UIFont *newFont = nil;
-    if (isBold) {
-        newFont = [UIFont boldSystemFontOfSize:18];
-    } else {
-        newFont = [UIFont systemFontOfSize:18];
-    }
-    NSParameterAssert(newFont != nil);
-    self.titleLabel.font = newFont;
 }
 
 @end
