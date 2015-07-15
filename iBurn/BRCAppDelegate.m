@@ -276,7 +276,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     
     NSURL *updateURL = [dataBundle URLForResource:@"update.json" withExtension:@"js"];
 
-    [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:nil];
+    [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:^(UIBackgroundFetchResult result) {
+        NSLog(@"Attempted to load pre-existing data with result %d", (int)result);
+    }];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {

@@ -75,6 +75,7 @@
     self.navigationItem.rightBarButtonItems = @[filterButton, loadingButtonItem];
     self.selectedDay = [NSDate date];
 
+    self.searchController.hidesNavigationBarDuringPresentation = YES;
     [self setupDayPicker];
 }
 
@@ -141,6 +142,12 @@
 }
 
 - (void) setupMappings {
+    // we need to override search mappings for events
+    self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+        return YES;
+    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+        return [group1 compare:group2];
+    } view:self.searchViewName];
     [self replaceTimeBasedEventMappings];
 }
 

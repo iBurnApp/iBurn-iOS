@@ -1,4 +1,4 @@
-//
+ //
 //  BRCFilteredTableViewController.m
 //  iBurn
 //
@@ -29,15 +29,10 @@
 #import "YapDatabaseSearchResultsViewTransaction.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
-@property (nonatomic, strong) UISearchController *searchController;
-@property (nonatomic, strong) YapDatabaseConnection *searchConnection;
-@property (nonatomic, strong) YapDatabaseSearchQueue *searchQueue;
-@property (nonatomic, strong) YapDatabaseViewMappings *searchMappings;
-@property (nonatomic) BOOL didUpdateConstraints;
+@property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
+@property (nonatomic, strong, readonly) YapDatabaseSearchQueue *searchQueue;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
-
-@property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -58,12 +53,6 @@
         [self updateMappingsWithCompletionBlock:nil];
     }
     return self;
-}
-
-- (void) setupSearchIndicator {
-    self.searchActivityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    self.searchActivityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.searchActivityIndicatorView];
 }
 
 - (void) setupLoadingIndicatorView {
@@ -95,14 +84,17 @@
     self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCLightStar"];
     
     [self setupTableView];
-    [self setupSearchIndicator];
     [self setupSearchController];
-    [self updateViewConstraints];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didChangePreferredContentSize:)
                                                  name:UIContentSizeCategoryDidChangeNotification
                                                object:nil];
+    YapDatabase *database = [BRCDatabaseManager sharedInstance].database;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(yapDatabaseModified:)
+                                                 name:YapDatabaseModifiedNotification
+                                               object:database];
 }
 
 - (void) setupTableView {
@@ -138,7 +130,7 @@
     self.searchController = [[UISearchController alloc] initWithSearchResultsController:searchResultsController];
     self.searchController.searchResultsUpdater = self;
     self.searchController.dimsBackgroundDuringPresentation = NO;
-    //self.searchController.hidesNavigationBarDuringPresentation = NO;
+    self.searchController.hidesNavigationBarDuringPresentation = NO;
     
     self.definesPresentationContext = YES;
     
@@ -154,13 +146,8 @@
     YapDatabase *database = [BRCDatabaseManager sharedInstance].database;
     self.databaseConnection = [database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
-    self.searchConnection = [database newConnection];
-    self.searchQueue = [[YapDatabaseSearchQueue alloc] init];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(yapDatabaseModified:)
-                                                 name:YapDatabaseModifiedNotification
-                                               object:database];
+    _searchConnection = [database newConnection];
+    _searchQueue = [[YapDatabaseSearchQueue alloc] init];
 }
 
 - (void) setupMappings {
@@ -178,7 +165,9 @@
         return [group1 compare:group2];
     };
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.viewName];
-    self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.searchViewName];
+    _searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.searchViewName];
+    NSParameterAssert(self.mappings != nil);
+    NSParameterAssert(self.searchMappings != nil);
 }
 
 - (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock {
@@ -199,28 +188,25 @@
     [self refreshLoadingIndicatorViewAnimation];
 }
 
-- (void)updateViewConstraints
-{
-    [super updateViewConstraints];
-    if (self.didUpdateConstraints) {
-        return;
+- (YapDatabaseViewMappings*) mappingsForTableView:(UITableView*)tableView {
+    YapDatabaseViewMappings *mappings = nil;
+    if ([self isSearchResultsControllerTableView:tableView]) {
+        mappings = self.searchMappings;
+    } else {
+        mappings = self.mappings;
     }
-    [self.searchActivityIndicatorView autoCenterInSuperview];
-    [self.searchActivityIndicatorView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
-    self.didUpdateConstraints = YES;
+    NSParameterAssert(mappings != nil);
+    return mappings;
 }
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
     NSString *viewName = nil;
-    YapDatabaseViewMappings *mappings = nil;
+    YapDatabaseViewMappings *mappings = [self mappingsForTableView:tableView];
     if ([self isSearchResultsControllerTableView:tableView]) {
         viewName = self.searchViewName;
-        mappings = self.searchMappings;
-    }
-    else {
+    } else {
         viewName = self.viewName;
-        mappings = self.mappings;
     }
     __block BRCDataObject *dataObject = nil;
     [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
@@ -233,7 +219,7 @@
 - (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView
 {
     UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
-    if ([tableView isEqual:src.tableView]) {
+    if (tableView == src.tableView) {
         return YES;
     }
     return NO;
@@ -316,20 +302,15 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender
 {
-    if ([self isSearchResultsControllerTableView:sender]) {
-        return [self.searchMappings numberOfSections];
-    }
-    return [self.mappings numberOfSections];
+    YapDatabaseViewMappings *mappings = [self mappingsForTableView:sender];
+    NSInteger count = [mappings numberOfSections];
+    return count;
 }
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
 {
-    NSInteger count = 0;
-    if ([self isSearchResultsControllerTableView:sender]) {
-        count = [self.searchMappings numberOfItemsInSection:section];
-    } else {
-        count = [self.mappings numberOfItemsInSection:section];
-    }
+    YapDatabaseViewMappings *mappings = [self mappingsForTableView:sender];
+    NSInteger count = [mappings numberOfItemsInSection:section];
     return count;
 }
 
@@ -345,17 +326,11 @@
 
 -(void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *searchString = [self.searchController.searchBar text];
-    UITableViewController *src = (UITableViewController*)searchController.searchResultsController;
     if ([searchString length]) {
         searchString = [NSString stringWithFormat:@"%@*",searchString];
-        [self.searchActivityIndicatorView startAnimating];
-        [self.view bringSubviewToFront:self.searchActivityIndicatorView];
         [self.searchQueue enqueueQuery:searchString];
         [self.searchConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [[transaction ext:self.searchViewName] performSearchWithQueue:self.searchQueue];
-        } completionBlock:^{
-            [self.searchActivityIndicatorView stopAnimating];
-            [src.tableView reloadData];
         }];
     }
 }
@@ -373,6 +348,8 @@
     
     [self updateMappingsWithCompletionBlock:^{
         [self.tableView reloadData];
+        UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
+        [src.tableView reloadData];
     }];
     return;
 #warning TODO fix animations ^^^

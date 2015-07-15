@@ -9,7 +9,9 @@
 #import "BRCFilteredTableViewController.h"
 
 @interface BRCFilteredTableViewController ()
+@property (nonatomic, strong) UISearchController *searchController;
 @property (nonatomic, strong) YapDatabaseViewMappings *mappings;
+@property (nonatomic, strong) YapDatabaseViewMappings *searchMappings;
 @property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 

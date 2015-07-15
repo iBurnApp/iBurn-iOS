@@ -248,11 +248,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         NSString *ftsName = searchInfoArray[2];
         
         YapDatabaseSearchResultsViewOptions *searchViewOptions = [[YapDatabaseSearchResultsViewOptions alloc] init];
-        searchViewOptions.isPersistent = NO;
         
         YapDatabaseSearchResultsView *searchResultsView = [[YapDatabaseSearchResultsView alloc] initWithFullTextSearchName:ftsName
                                                                                                             parentViewName:parentViewName
-                                                                                                                versionTag:@"1"
+                                                                                                                versionTag:@"2"
                                                                                                                    options:searchViewOptions];
         
         BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
