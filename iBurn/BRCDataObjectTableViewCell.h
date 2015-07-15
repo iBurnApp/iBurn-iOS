@@ -25,4 +25,6 @@
 
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation;
 
++ (Class) cellClassForDataObjectClass:(Class)dataObjectClass;
+
 @end

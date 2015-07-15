@@ -131,10 +131,6 @@
     return _selectedDay;
 }
 
-- (Class) cellClass {
-    return [BRCEventObjectTableViewCell class];
-}
-
 - (void)updateFilteredViews
 {
     self.isUpdatingFilters = YES;

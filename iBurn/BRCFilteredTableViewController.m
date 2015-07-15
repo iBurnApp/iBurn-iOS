@@ -87,24 +87,13 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
     self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCDarkStar"];
     self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCLightStar"];
     
-    self.tableView.backgroundView = nil;
-    self.tableView.backgroundView = [[UIView alloc] init];
-    self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
-    self.tableView.estimatedRowHeight = 120;
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
-    
+    [self setupTableView];
     [self setupSearchIndicator];
-    
-    [self initializeSearchController];
-    
+    [self setupSearchController];
     [self updateViewConstraints];
-    
-    UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
-    [self.tableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didChangePreferredContentSize:)
@@ -112,12 +101,30 @@
                                                object:nil];
 }
 
+- (void) setupTableView {
+    self.tableView.backgroundView = nil;
+    self.tableView.backgroundView = [[UIView alloc] init];
+    self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
+    self.tableView.estimatedRowHeight = 120;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    [self setupCellIdentifiersForTableView:self.tableView];
+}
+
+- (void) setupCellIdentifiersForTableView:(UITableView*)tableView {
+    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
+    [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
+        Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
+        NSString *cellIdentifier = [cellClass cellIdentifier];
+        UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
+        [tableView registerNib:nib forCellReuseIdentifier:cellIdentifier];
+    }];
+}
+
 // https://github.com/ccabanero/ios-uisearchcontroller-objc/blob/master/ui-searchcontroller-objc/TableViewController.m
 // https://developer.apple.com/library/ios/samplecode/TableSearch_UISearchController/Introduction/Intro.html#//apple_ref/doc/uid/TP40014683-Intro-DontLinkElementID_2
-- (void)initializeSearchController {
+- (void) setupSearchController {
     UITableViewController *searchResultsController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    UINib *nib = [UINib nibWithNibName:NSStringFromClass([self cellClass]) bundle:nil];
-    [searchResultsController.tableView registerNib:nib forCellReuseIdentifier:[[self cellClass] cellIdentifier]];
+    [self setupCellIdentifiersForTableView:searchResultsController.tableView];
 
     searchResultsController.tableView.dataSource = self;
     searchResultsController.tableView.delegate = self;
@@ -180,10 +187,6 @@
 - (void) setIsUpdatingFilters:(BOOL)isUpdatingFilters {
     _isUpdatingFilters = isUpdatingFilters;
     [self refreshLoadingIndicatorViewAnimation];
-}
-
-- (Class) cellClass {
-    return [BRCDataObjectTableViewCell class];
 }
 
 - (void)updateViewConstraints
@@ -250,8 +253,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[[self cellClass] cellIdentifier] forIndexPath:indexPath];
     __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:[dataObject class]];
+    NSString *cellIdentifier = [cellClass cellIdentifier];
+    BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     [cell setStyleFromDataObject:dataObject];
     CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation toLocation:dataObject.location];

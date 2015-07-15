@@ -224,7 +224,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     
     NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
     [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
-        Class cellClass = [self cellClassForDataObjectClass:viewClass];
+        Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
         UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
         [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[cellClass cellIdentifier]];
     }];
@@ -717,14 +717,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     return dataObject;
 }
 
-- (Class) cellClassForDataObjectClass:(Class)dataObjectClass {
-    if (dataObjectClass == [BRCEventObject class]) {
-        return [BRCEventObjectTableViewCell class];
-    } else {
-        return [BRCDataObjectTableViewCell class];
-    }
-}
-
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return UITableViewAutomaticDimension;
 }
@@ -736,7 +728,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
-    Class cellClass = [self cellClassForDataObjectClass:[dataObject class]];
+    Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:[dataObject class]];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
     [cell setStyleFromDataObject:dataObject];
     [cell updateDistanceLabelFromLocation:self.mapView.userLocation.location toLocation:dataObject.location];

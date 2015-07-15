@@ -21,7 +21,6 @@
 - (BOOL) shouldAnimateLoadingIndicator;
 - (void) refreshLoadingIndicatorViewAnimation;
 
-- (Class) cellClass;
-
 - (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView;
+
 @end

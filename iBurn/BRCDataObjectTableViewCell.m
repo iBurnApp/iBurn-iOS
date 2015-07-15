@@ -10,6 +10,8 @@
 #import "BRCDataObject.h"
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCArtObject.h"
+#import "BRCEventObject.h"
+#import "BRCEventObjectTableViewCell.h"
 
 @implementation BRCDataObjectTableViewCell
 
@@ -39,9 +41,16 @@
     }
 }
 
-
 + (NSString*) cellIdentifier {
     return NSStringFromClass([self class]);
+}
+
++ (Class) cellClassForDataObjectClass:(Class)dataObjectClass {
+    if (dataObjectClass == [BRCEventObject class]) {
+        return [BRCEventObjectTableViewCell class];
+    } else {
+        return [BRCDataObjectTableViewCell class];
+    }
 }
 
 @end
