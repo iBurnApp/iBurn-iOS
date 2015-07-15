@@ -25,10 +25,14 @@
 #import "BRCEventObject.h"
 #import "YapDatabaseFilteredViewTransaction.h"
 #import "BRCAppDelegate.h"
+#import "YapDatabaseSearchQueue.h"
+#import "YapDatabaseSearchResultsViewTransaction.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
-@property (nonatomic, strong) NSArray *searchResults;
 @property (nonatomic, strong) UISearchController *searchController;
+@property (nonatomic, strong) YapDatabaseConnection *searchConnection;
+@property (nonatomic, strong) YapDatabaseSearchQueue *searchQueue;
+@property (nonatomic, strong) YapDatabaseViewMappings *searchMappings;
 @property (nonatomic) BOOL didUpdateConstraints;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
@@ -42,12 +46,12 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName ftsName:(NSString *)ftsName
+- (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName searchViewName:(NSString *)searchViewName
 {
     if (self = [super initWithStyle:UITableViewStylePlain]) {
         _viewClass = viewClass;
         _viewName = viewName;
-        _ftsName = ftsName;
+        _searchViewName = searchViewName;
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
         [self setupMappings];
@@ -147,18 +151,20 @@
 
 - (void)setupDatabaseConnection
 {
-    self.databaseConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
-    self.databaseConnection.objectPolicy = YapDatabasePolicyShare;
+    YapDatabase *database = [BRCDatabaseManager sharedInstance].database;
+    self.databaseConnection = [database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
+    self.searchConnection = [database newConnection];
+    self.searchQueue = [[YapDatabaseSearchQueue alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
-                                               object:self.databaseConnection.database];
+                                               object:database];
 }
 
 - (void) setupMappings {
-    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+    YapDatabaseViewMappingGroupFilter groupFilter = ^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         if (self.viewClass == [BRCDataObject class]) {
             // special case where filtering by all objects
             return YES;
@@ -167,14 +173,18 @@
             return YES;
         }
         return NO;
-    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+    };
+    YapDatabaseViewMappingGroupSort groupSort = ^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
-    } view:self.viewName];
+    };
+    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.viewName];
+    self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.searchViewName];
 }
 
 - (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock {
     [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         [self.mappings updateWithTransaction:transaction];
+        [self.searchMappings updateWithTransaction:transaction];
     } completionBlock:completionBlock];
 }
 
@@ -202,17 +212,21 @@
 
 - (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
-    __block BRCDataObject *dataObject = nil;
-    if ([self isSearchResultsControllerTableView:tableView] && [self.searchResults count] > indexPath.row) {
-        dataObject = self.searchResults[indexPath.row];
+    NSString *viewName = nil;
+    YapDatabaseViewMappings *mappings = nil;
+    if ([self isSearchResultsControllerTableView:tableView]) {
+        viewName = self.searchViewName;
+        mappings = self.searchMappings;
     }
     else {
-        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            YapDatabaseViewTransaction *viewTransaction = [transaction extension:self.viewName];
-            dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:self.mappings];
-        }];
+        viewName = self.viewName;
+        mappings = self.mappings;
     }
-    
+    __block BRCDataObject *dataObject = nil;
+    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction extension:viewName];
+        dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:mappings];
+    }];
     return dataObject;
 }
 
@@ -303,7 +317,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender
 {
     if ([self isSearchResultsControllerTableView:sender]) {
-        return 1;
+        return [self.searchMappings numberOfSections];
     }
     return [self.mappings numberOfSections];
 }
@@ -312,7 +326,7 @@
 {
     NSInteger count = 0;
     if ([self isSearchResultsControllerTableView:sender]) {
-        count = [self.searchResults count];
+        count = [self.searchMappings numberOfItemsInSection:section];
     } else {
         count = [self.mappings numberOfItemsInSection:section];
     }
@@ -333,24 +347,16 @@
     NSString *searchString = [self.searchController.searchBar text];
     UITableViewController *src = (UITableViewController*)searchController.searchResultsController;
     if ([searchString length]) {
-        NSMutableArray *tempSearchResults = [NSMutableArray array];
         searchString = [NSString stringWithFormat:@"%@*",searchString];
         [self.searchActivityIndicatorView startAnimating];
         [self.view bringSubviewToFront:self.searchActivityIndicatorView];
-        [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            [[transaction ext:self.ftsName] enumerateKeysAndObjectsMatching:searchString usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
-                if (object) {
-                    [tempSearchResults addObject:object];
-                }
-            }];
+        [self.searchQueue enqueueQuery:searchString];
+        [self.searchConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [[transaction ext:self.searchViewName] performSearchWithQueue:self.searchQueue];
         } completionBlock:^{
-            self.searchResults = tempSearchResults;
             [self.searchActivityIndicatorView stopAnimating];
             [src.tableView reloadData];
         }];
-    } else {
-        self.searchResults = @[];
-        [src.tableView reloadData];
     }
 }
 

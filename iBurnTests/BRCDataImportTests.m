@@ -144,7 +144,7 @@
     NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"js"];
     NSData *jsonData = [[NSData alloc] initWithContentsOfURL:dataURL];
     NSError *error = nil;
-    [self.importer loadDataFromJSONData:jsonData dataClass:dataClass error:&error];
+    [self.importer loadDataFromJSONData:jsonData dataClass:dataClass updateInfo:updateInfo error:&error];
     XCTAssertNil(error);
     if (dataClass == [BRCRecurringEventObject class]) {
         dataClass = [BRCEventObject class];

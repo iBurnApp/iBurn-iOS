@@ -7,11 +7,13 @@
 //
 
 #import "BRCDataImporter.h"
+#import "BRCUpdateInfo.h"
 
 @interface BRCDataImporter(Private)
-/** Synchronously imports data. Do not call from main thread! */
+/** Synchronously imports data. Do not call from outside of tests! */
 - (BOOL) loadDataFromJSONData:(NSData*)jsonData
                     dataClass:(Class)dataClass
+                   updateInfo:(BRCUpdateInfo*)updateInfo
                         error:(NSError**)error;
 @end
 
