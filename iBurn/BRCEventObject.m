@@ -81,13 +81,13 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
 }
 
 + (NSValueTransformer *)hostedByCampUniqueIDJSONTransformer {
-    return [MTLValueTransformer transformerWithBlock:^NSString*(NSNumber* number) {
+    return [MTLValueTransformer transformerUsingForwardBlock:^NSString*(NSNumber* number, BOOL *success, NSError *__autoreleasing *error) {
         return number.stringValue;
     }];
 }
 
 + (NSValueTransformer *)hostedByArtUniqueIDJSONTransformer {
-    return [MTLValueTransformer transformerWithBlock:^NSString*(NSNumber* number) {
+    return [MTLValueTransformer transformerUsingForwardBlock:^NSString*(NSNumber* number, BOOL *success, NSError *__autoreleasing *error) {
         return number.stringValue;
     }];
 }

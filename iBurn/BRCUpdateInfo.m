@@ -26,7 +26,7 @@ static NSString * const kBRCUpdateTypeTiles = @"tiles";
 }
 
 + (NSValueTransformer *)lastUpdatedJSONTransformer {
-    return [MTLValueTransformer transformerWithBlock:^NSDate*(NSString* dateString) {
+    return [MTLValueTransformer transformerUsingForwardBlock:^NSDate*(NSString* dateString, BOOL *success, NSError *__autoreleasing *error) {
         return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
     }];
 }

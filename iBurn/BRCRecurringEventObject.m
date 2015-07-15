@@ -24,13 +24,9 @@
 }
 
 + (NSValueTransformer *)eventTimesJSONTransformer {
-    return [MTLValueTransformer transformerWithBlock:^NSArray*(NSArray *occurrenceArray) {
-        NSError *error = nil;
-        NSArray *eventTimes = [MTLJSONAdapter modelsOfClass:[BRCEventTime class] fromJSONArray:occurrenceArray error:&error];
+    return [MTLValueTransformer transformerUsingForwardBlock:^NSArray*(NSArray *occurrenceArray, BOOL *success, NSError *__autoreleasing *error) {
+        NSArray *eventTimes = [MTLJSONAdapter modelsOfClass:[BRCEventTime class] fromJSONArray:occurrenceArray error:error];
         NSParameterAssert(error == nil);
-        if (error) {
-            NSLog(@"Error parsing event time: %@", error);
-        }
         return eventTimes;
     }];
 }
