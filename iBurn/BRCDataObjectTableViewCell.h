@@ -22,7 +22,6 @@
 - (void) setStyleFromDataObject:(BRCDataObject*)dataObject;
 
 + (NSString*) cellIdentifier;
-+ (CGFloat) cellHeight;
 
 - (void) setTitleLabelBold:(BOOL)isBold;
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation;

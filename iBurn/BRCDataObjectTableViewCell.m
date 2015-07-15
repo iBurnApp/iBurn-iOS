@@ -20,7 +20,8 @@
         BRCArtObject *art = (BRCArtObject*)dataObject;
         self.descriptionLabel.text = art.artistName;
     } else {
-        self.descriptionLabel.text = dataObject.detailDescription;
+        NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
+        self.descriptionLabel.text = detailString;
     }
     [self setTitleLabelBold:dataObject.isFavorite];
 }
@@ -42,10 +43,6 @@
 
 + (NSString*) cellIdentifier {
     return NSStringFromClass([self class]);
-}
-
-+ (CGFloat) cellHeight {
-    return 122.0f;
 }
 
 - (void) setTitleLabelBold:(BOOL)isBold {

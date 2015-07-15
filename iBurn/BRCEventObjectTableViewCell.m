@@ -45,10 +45,6 @@
     [self setupLocationLabelFromEvent:eventObject];
 }
 
-+ (CGFloat) cellHeight {
-    return 140.0f;
-}
-
 - (void) setupLocationLabelFromEvent:(BRCEventObject*)eventObject {
     NSString *playaLocation = eventObject.playaLocation;
     NSString *locationName = nil;

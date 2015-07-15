@@ -726,9 +726,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
-    Class cellClass = [self cellClassForDataObjectClass:[dataObject class]];
-    return [cellClass cellHeight];
+    return UITableViewAutomaticDimension;
+}
+
+- (CGFloat) tableView:(nonnull UITableView *)tableView estimatedHeightForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
+    return 120.0f;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath

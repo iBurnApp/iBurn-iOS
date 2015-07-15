@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8152.3" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8124.4"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
@@ -11,7 +12,7 @@
             <rect key="frame" x="0.0" y="0.0" width="346" height="140"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="287" height="99"/>
+                <rect key="frame" x="0.0" y="0.0" width="313" height="139"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3h-Fa-FKh">
@@ -37,7 +38,7 @@
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="🍺 Party" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CBZ-lr-1Gs">
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="🍺 Party" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CBZ-lr-1Gs">
                         <rect key="frame" x="10" y="83" width="61" height="18"/>
                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -49,10 +50,10 @@
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STs-rg-6uh">
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STs-rg-6uh">
                         <rect key="frame" x="10" y="32" width="295" height="45"/>
                         <constraints>
-                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="45" id="7ir-fs-bV9"/>
+                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="45" id="7ir-fs-bV9"/>
                         </constraints>
                         <string key="text">The Pinhole Project exposes 30 x 40 inch sheets of light sensitive gelatin silver paper. We work with 12 pinhole cameras, created out of 50-gallon cardboard barrels. This size is uniquely suited for capturing the incredible scale and immense diversity of art and culture at Black Rock City. Under the red safelights of the darkroom, photosensitive paper is inserted into the camera body. Exposures range from 40 to 300 seconds, where concentrated beams of sunlight are funnelled through the pinhole and into the camera, creating a negative image of the recorded subject. We maintain a desert darkroom in a shipping container, where we gather to processes, develop and fix about one hundred photographs each Burning Man. These unique images are then exhibited all over the playa. The pinhole camp has been creating large-scale portraits with festival participants since 1999. The pinhole came about of the desire of four first time participants to contribute in a unique and lasting way to the ephemeral pleasures of the playa. As we have grown, so too has our belief that this device is the reason that we make our annual pilgrimage. As we have evolved, so too has the camera, not only in functional and technical capabilities but also in its role as a seed of meaningful engagement with other participants.</string>
                         <fontDescription key="fontDescription" type="system" pointSize="11"/>
@@ -68,11 +69,13 @@
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="bottom" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" id="4WF-Cb-Kgb"/>
                     <constraint firstAttribute="trailingMargin" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="2" id="69H-fq-zLc"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="2" id="9ND-Cc-oMn"/>
+                    <constraint firstItem="STs-rg-6uh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="LhI-HZ-lo9"/>
                     <constraint firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="M5Z-ls-LyY"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" id="Oeh-W3-cJX"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" constant="10" id="PD2-Ft-hpa"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="Q1G-49-T5F"/>
                     <constraint firstAttribute="bottomMargin" secondItem="jJk-MV-Kf7" secondAttribute="bottom" constant="2" id="Qkc-Bp-Vkn"/>
+                    <constraint firstItem="STs-rg-6uh" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="2" id="Qnc-EO-gV8"/>
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="height" secondItem="CBZ-lr-1Gs" secondAttribute="height" id="Saj-bc-jHB"/>
                     <constraint firstAttribute="bottomMargin" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="2" id="Uvf-QT-ciT"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="CBZ-lr-1Gs" secondAttribute="leading" id="Wll-kJ-rAk"/>
@@ -83,7 +86,9 @@
                     <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="aRq-wm-Ue4"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="epn-jb-zCt"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="iko-9N-FV2"/>
+                    <constraint firstItem="m4p-nL-AsY" firstAttribute="top" secondItem="STs-rg-6uh" secondAttribute="bottom" constant="6" id="m78-NX-OvE"/>
                     <constraint firstAttribute="trailingMargin" secondItem="X3h-Fa-FKh" secondAttribute="trailing" constant="2" id="tb0-U3-8yW"/>
+                    <constraint firstItem="STs-rg-6uh" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="x5Y-Ab-yc8"/>
                     <constraint firstAttribute="trailing" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="10" id="zQ9-MO-GXC"/>
                 </constraints>
             </tableViewCellContentView>

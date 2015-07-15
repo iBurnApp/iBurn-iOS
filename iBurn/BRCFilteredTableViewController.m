@@ -96,6 +96,8 @@
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
+    self.tableView.estimatedRowHeight = 120;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
     
     [self setupSearchIndicator];
     
@@ -277,14 +279,6 @@
         return 1;
     }
     return [self.mappings numberOfSections];
-}
-
-- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return [[self cellClass] cellHeight];
-}
-
-- (CGFloat) tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return [[self cellClass] cellHeight];
 }
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
