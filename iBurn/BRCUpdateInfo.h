@@ -30,6 +30,7 @@ typedef NS_ENUM(NSUInteger, BRCUpdateFetchStatus) {
 @property (nonatomic, strong, readonly) NSDate *lastUpdated;
 @property (nonatomic) BRCUpdateDataType dataType;
 @property (nonatomic) BRCUpdateFetchStatus fetchStatus;
+@property (nonatomic, strong) NSDate *fetchDate;
 
 /** Returns BRCDataObject subclass for dataType. Not valid for
  * tiles of course. */

@@ -124,15 +124,22 @@
         
         if (oldUpdateInfo) {
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
-            if (intervalSinceLastUpdated <= 0 &&
-                (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete ||
-                 oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusFetching)) {
+            if (intervalSinceLastUpdated <= 0) {
                 // already updated, skip update
-                return;
+                if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete) {
+                    return;
+                } else if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusFetching) {
+                    NSTimeInterval intervalSinceLastFetched = [[NSDate date] timeIntervalSinceDate:updateInfo.fetchDate];
+                    // only re-fetch if fetch takes longer than 5 minutes
+                    if (intervalSinceLastFetched <= 5 * 60) {
+                        return;
+                    }
+                }
             }
         }
         // We've got some new data!
         updateInfo.fetchStatus = BRCUpdateFetchStatusFetching;
+        updateInfo.fetchDate = [NSDate date];
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
             [transaction setObject:updateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
         }];
@@ -236,6 +243,10 @@
                                                 error:&error];
             if (!success) {
                 NSLog(@"Error loading JSON for %@: %@", NSStringFromClass(dataClass), error);
+                updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+                [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
+                    [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
+                }];
             }
         }];
     } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
