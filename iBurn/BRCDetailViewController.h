@@ -12,7 +12,6 @@
 
 @interface BRCDetailViewController : UITableViewController
 
-
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject;
 
 @end

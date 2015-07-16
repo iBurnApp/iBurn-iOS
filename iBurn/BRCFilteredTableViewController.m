@@ -264,6 +264,7 @@
     cell.dataObject = dataObject;
     CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation];
+    [cell setNeedsLayout];
     return cell;
 }
 

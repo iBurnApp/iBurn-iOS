@@ -39,7 +39,7 @@ static CGFloat const kTableViewHeaderHeight = 100;
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject
 {
-    if (self = [self init]) {
+    if (self = [super initWithStyle:UITableViewStyleGrouped]) {
         self.dataObject = dataObject;
     }
     return self;
@@ -85,9 +85,8 @@ static CGFloat const kTableViewHeaderHeight = 100;
         self.tableView.tableHeaderView = clearHeaderView;
     }
     
-    
-    
     self.favoriteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[self currentStarImage] style:UIBarButtonItemStylePlain target:self action:@selector(didTapFavorite:)];
+    self.favoriteBarButtonItem.tintColor = [UIColor colorWithRed: 254./255 green: 110./255 blue: 111./255 alpha: 1.0];
     
     self.navigationItem.rightBarButtonItem = self.favoriteBarButtonItem;
 }
@@ -133,27 +132,22 @@ static CGFloat const kTableViewHeaderHeight = 100;
 
 - (void)didTapFavorite:(id)sender
 {
-    __block BRCDataObject *tempObject = nil;
-    UIImage *reverseFavoriteImage = [self imageIfFavorite:!self.dataObject.isFavorite];
-    self.favoriteBarButtonItem.image = reverseFavoriteImage;
+    if (!self.dataObject) {
+        return;
+    }
+    BRCDataObject *tempObject = [self.dataObject copy];
+    tempObject.isFavorite = !tempObject.isFavorite;
+    self.dataObject = tempObject;
     [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        tempObject = [transaction objectForKey:self.dataObject.uniqueID inCollection:[[self.dataObject class] collection]];
-        if (tempObject) {
-            tempObject = [tempObject copy];
-            tempObject.isFavorite = !tempObject.isFavorite;
-            [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
-            if ([tempObject isKindOfClass:[BRCEventObject class]]) {
-                BRCEventObject *event = (BRCEventObject*)tempObject;
-                if (event.isFavorite) {
-                    [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
-                } else {
-                    [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
-                }
-                
+        [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
+        if ([tempObject isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *event = (BRCEventObject*)tempObject;
+            if (event.isFavorite) {
+                [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
+            } else {
+                [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
             }
         }
-    } completionBlock:^{
-        self.dataObject = tempObject;
     }];
 }
 
@@ -256,13 +250,11 @@ static CGFloat const kTableViewHeaderHeight = 100;
         // Go to correct camp page
         BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
         __block BRCDataObject *dataObject = nil;
-        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [[BRCDatabaseManager sharedInstance].readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             dataObject = [transaction objectForKey:relationshipCellInfo.dataObject.uniqueID inCollection:[[relationshipCellInfo.dataObject class]collection]];
-            
-            
-        } completionBlock:^{
-            [self.navigationController pushViewController:[[BRCDetailViewController alloc] initWithDataObject:dataObject] animated:YES];
         }];
+        BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+        [self.navigationController pushViewController:detailVC animated:YES];
         
     } else if (cellInfo.cellType == BRCDetailCellInfoTypeCoordinates) {
         CLLocation *location = cellInfo.value;
