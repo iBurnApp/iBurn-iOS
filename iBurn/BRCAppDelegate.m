@@ -27,7 +27,10 @@
 #import "BRCLocations.h"
 #import "Appirater.h"
 #import "RMConfiguration.h"
+@import JSQWebViewController;
 #import <Parse/Parse.h>
+#import "TUSafariActivity.h"
+#import <WebKit/WebKit.h>
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
@@ -348,6 +351,25 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
         _dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
     });
     return _dataImporter;
+}
+
++ (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController {
+    if (!url || !viewController) {
+        return;
+    }
+    NSParameterAssert(url);
+    NSParameterAssert(viewController);
+    NSOperatingSystemVersion iosVersion = {.majorVersion = 9};
+    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:iosVersion]) {
+        [[UIApplication sharedApplication] openURL:url];
+    } else {
+        TUSafariActivity *activity = [[TUSafariActivity alloc] init];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
+        WebViewController *wvc = [[WebViewController alloc] initWithUrlRequest:request configuration:configuration activities:@[activity]];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:wvc];
+        [viewController presentViewController:nav animated:YES completion:NULL];
+    }
 }
 
 @end

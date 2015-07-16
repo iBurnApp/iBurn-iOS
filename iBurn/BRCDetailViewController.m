@@ -23,6 +23,7 @@
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
 #import "BRCLocations.h"
+#import "BRCAppDelegate.h"
 
 static CGFloat const kTableViewHeaderHeight = 100;
 
@@ -234,7 +235,8 @@ static CGFloat const kTableViewHeaderHeight = 100;
 {
     BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
     if (cellInfo.cellType == BRCDetailCellInfoTypeURL) {
-        [[UIApplication sharedApplication] openURL:cellInfo.value];
+        NSURL *url = cellInfo.value;
+        [BRCAppDelegate openURL:url fromViewController:self];
     }
     else if (cellInfo.cellType == BRCDetailCellInfoTypeEmail) {
         

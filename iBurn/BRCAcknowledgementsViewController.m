@@ -8,6 +8,7 @@
 
 #import "BRCAcknowledgementsViewController.h"
 #import "PureLayout.h"
+#import "BRCAppDelegate.h"
 
 @interface VTAcknowledgementsViewController()
 // private methods from superclass
@@ -67,7 +68,7 @@
 
 - (void)attributedLabel:(TTTAttributedLabel *)label
    didSelectLinkWithURL:(NSURL *)url {
-    [[UIApplication sharedApplication] openURL:url];
+    [BRCAppDelegate openURL:url fromViewController:self];
 }
 
 

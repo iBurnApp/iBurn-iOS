@@ -9,6 +9,7 @@
 #import "BRCSocialButtonsView.h"
 #import "PureLayout.h"
 #import "NSURL+iBurn.h"
+#import "BRCAppDelegate.h"
 
 static CGFloat kBRCSocialButtonHeight = 30.0f;
 static CGFloat kBRCSocialButtonWidth = 93.0f;
@@ -82,7 +83,7 @@ static CGFloat kBRCSocialTotalWidth = 300.0f;
     if ([[UIApplication sharedApplication] canOpenURL:twitterURL]) {
         [[UIApplication sharedApplication] openURL:twitterURL];
     } else {
-        [[UIApplication sharedApplication] openURL:[NSURL brc_twitterWebURL]];
+        [BRCAppDelegate openURL:[NSURL brc_twitterWebURL] fromViewController:[BRCAppDelegate appDelegate].window.rootViewController];
     }
 }
 
@@ -91,13 +92,13 @@ static CGFloat kBRCSocialTotalWidth = 300.0f;
     if ([[UIApplication sharedApplication] canOpenURL:facebookURL]) {
         [[UIApplication sharedApplication] openURL:facebookURL];
     } else {
-        [[UIApplication sharedApplication] openURL:[NSURL brc_facebookWebURL]];
+        [BRCAppDelegate openURL:[NSURL brc_facebookWebURL] fromViewController:[BRCAppDelegate appDelegate].window.rootViewController];
     }
 }
 
 - (void) githubButtonPressed:(id)sender {
     NSURL *githubURL = [NSURL brc_githubURL];
-    [[UIApplication sharedApplication] openURL:githubURL];
+    [BRCAppDelegate openURL:githubURL fromViewController:[BRCAppDelegate appDelegate].window.rootViewController];
 }
 
 @end

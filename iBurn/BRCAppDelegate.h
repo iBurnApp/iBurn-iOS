@@ -28,4 +28,6 @@
 /** Don't use this unless you really have to... */
 + (instancetype) appDelegate;
 
++ (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController;
+
 @end
