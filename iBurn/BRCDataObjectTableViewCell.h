@@ -7,23 +7,24 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MCSwipeTableViewCell.h"
+@import DOFavoriteButton;
 #import <CoreLocation/CoreLocation.h>
 
 @class BRCDataObject;
 
-@interface BRCDataObjectTableViewCell : MCSwipeTableViewCell
+@interface BRCDataObjectTableViewCell : UITableViewCell
 
+@property (strong, nonatomic) IBOutlet DOFavoriteButton *favoriteButton;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *subtitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *rightSubtitleLabel;
 
-
-- (void) setStyleFromDataObject:(BRCDataObject*)dataObject;
+@property (nonatomic, strong) BRCDataObject *dataObject;
 
 + (NSString*) cellIdentifier;
 
-- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation;
+- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation;
 
 + (Class) cellClassForDataObjectClass:(Class)dataObjectClass;
 

@@ -10,7 +10,6 @@
 
 @interface BRCEventObjectTableViewCell : BRCDataObjectTableViewCell
 
-@property (strong, nonatomic) IBOutlet UILabel *eventTimeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *eventTypeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
 

@@ -9,6 +9,7 @@ PODS:
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
+  - DOFavoriteButton (0.0.1)
   - FMDB (2.5):
     - FMDB/standard (= 2.5)
   - FMDB/common (2.5)
@@ -27,7 +28,6 @@ PODS:
     - FMDB (~> 2.5)
     - GRMustache (~> 7.3)
     - SMCalloutView (~> 2.1)
-  - MCSwipeTableViewCell (2.1.2)
   - Parse (1.7.5):
     - Bolts/Tasks (>= 1.2.0)
   - pop (1.0.7)
@@ -45,12 +45,12 @@ DEPENDENCIES:
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
+  - DOFavoriteButton (from `Submodules/DOFavoriteButton/DOFavoriteButton.podspec`)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - HockeySDK-Source (~> 3.7)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (from `Podspecs/Mapbox-iOS-SDK.podspec`)
-  - MCSwipeTableViewCell (~> 2.1)
   - Parse (~> 1.7)
   - pop (~> 1.0)
   - PureLayout (~> 2.0)
@@ -59,6 +59,8 @@ DEPENDENCIES:
   - YapDatabase (~> 2.6)
 
 EXTERNAL SOURCES:
+  DOFavoriteButton:
+    :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
   Mapbox-iOS-SDK:
     :podspec: Podspecs/Mapbox-iOS-SDK.podspec
 
@@ -69,6 +71,7 @@ SPEC CHECKSUMS:
   CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
+  DOFavoriteButton: 3af4c4420fb2ccc520554436f6feb4b6e482617e
   FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
   FormatterKit: bddde83e054edf9d9ee14f9de3b3a5103db256f4
   GRMustache: ebe6104fd30a6d22c1f36af131e19e2dbf7cd292
@@ -76,7 +79,6 @@ SPEC CHECKSUMS:
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
   Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
   Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
-  MCSwipeTableViewCell: 0fc22bd3635b9b5f4ce08675218b0a7278b6440f
   Parse: 7c0f115eff3e0cea3fac08d50bda47154edb8832
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d

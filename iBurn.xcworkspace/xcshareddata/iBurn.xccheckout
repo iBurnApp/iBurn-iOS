@@ -10,6 +10,8 @@
 	<string>iBurn</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>00C8F6554FA404FC771F59E32BE27BC2793D9BB4</key>
+		<string>https://github.com/chrisballinger/DOFavoriteButton.git</string>
 		<key>C7308312FB6185A9F6A5C771209FC2DEA9E93C4E</key>
 		<string>ssh://github.com/Burning-Man-Earth/iBurn-Data.git</string>
 		<key>F0DAF2A64627A921A366B16481BCFBEB467F68B6</key>
@@ -19,6 +21,8 @@
 	<string>iBurn.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
+		<key>00C8F6554FA404FC771F59E32BE27BC2793D9BB4</key>
+		<string>../Submodules/DOFavoriteButton/</string>
 		<key>C7308312FB6185A9F6A5C771209FC2DEA9E93C4E</key>
 		<string>../Submodules/iBurn-Data</string>
 		<key>F0DAF2A64627A921A366B16481BCFBEB467F68B6</key>
@@ -32,6 +36,14 @@
 	<string>F0DAF2A64627A921A366B16481BCFBEB467F68B6</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>00C8F6554FA404FC771F59E32BE27BC2793D9BB4</string>
+			<key>IDESourceControlWCCName</key>
+			<string>DOFavoriteButton</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>

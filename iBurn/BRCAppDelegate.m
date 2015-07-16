@@ -224,8 +224,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     self.favoritesViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCDataObject class] viewName:dbManager.everythingFilteredByFavorite searchViewName:dbManager.searchFavoritesView];
     self.favoritesViewController.title = @"Favorites";
     UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
-    favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
-    favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCDarkStar"];
+    favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
+    favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
     self.artViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class] viewName:dbManager.artViewName searchViewName:dbManager.searchArtView];
     self.artViewController.title = @"Art";

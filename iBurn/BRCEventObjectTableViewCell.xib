@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8152.3" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8124.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
@@ -15,19 +14,8 @@
                 <rect key="frame" x="0.0" y="0.0" width="313" height="144"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3h-Fa-FKh">
-                        <rect key="frame" x="10" y="10" width="293" height="20"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="20" id="iHU-H0-BdV"/>
-                        </constraints>
-                        <string key="text">Pinhole Project
-</string>
-                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                        <nil key="highlightedColor"/>
-                    </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
-                        <rect key="frame" x="10" y="115" width="96" height="19"/>
+                        <rect key="frame" x="10" y="115" width="95" height="19"/>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
@@ -48,7 +36,7 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Illumination Village - 6:30 &amp; A" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m4p-nL-AsY">
-                        <rect key="frame" x="113" y="88" width="192" height="17"/>
+                        <rect key="frame" x="116" y="88" width="189" height="17"/>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
@@ -63,17 +51,59 @@
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y3I-fG-A5T" customClass="DOFavoriteButton" customModule="DOFavoriteButton">
+                        <rect key="frame" x="0.0" y="2" width="35" height="35"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="35" id="WJf-PJ-gKS"/>
+                            <constraint firstAttribute="height" constant="35" id="sDV-ei-mdg"/>
+                        </constraints>
+                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <state key="normal">
+                            <color key="titleColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="image" keyPath="image" value="BRCHeartCell"/>
+                            <userDefinedRuntimeAttribute type="color" keyPath="imageColorOn">
+                                <color key="value" red="0.99607843139999996" green="0.43137254899999999" blue="0.43529411759999997" alpha="1" colorSpace="calibratedRGB"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="color" keyPath="circleColor">
+                                <color key="value" red="0.99607843139999996" green="0.43137254899999999" blue="0.43529411759999997" alpha="1" colorSpace="calibratedRGB"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="color" keyPath="lineColor">
+                                <color key="value" red="0.8862745098" green="0.37647058820000001" blue="0.37647058820000001" alpha="1" colorSpace="calibratedRGB"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="number" keyPath="duration">
+                                <real key="value" value="0.80000000000000004"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                        <connections>
+                            <action selector="favoriteButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="Tyu-V1-yA8"/>
+                        </connections>
+                    </button>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3h-Fa-FKh">
+                        <rect key="frame" x="33" y="10" width="270" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="20" id="iHU-H0-BdV"/>
+                        </constraints>
+                        <string key="text">Pinhole Project
+</string>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="bottom" secondItem="jJk-MV-Kf7" secondAttribute="bottom" constant="10" id="1aM-Rj-65P"/>
-                    <constraint firstItem="X3h-Fa-FKh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="2zL-74-C6N"/>
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="3iZ-sk-aAC"/>
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="bottom" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" id="4WF-Cb-Kgb"/>
                     <constraint firstAttribute="trailingMargin" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="2" id="69H-fq-zLc"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="2" id="9ND-Cc-oMn"/>
+                    <constraint firstItem="X3h-Fa-FKh" firstAttribute="leading" secondItem="y3I-fG-A5T" secondAttribute="trailing" constant="-2" id="DsX-q1-7kO"/>
                     <constraint firstItem="YOL-qx-5uC" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jJk-MV-Kf7" secondAttribute="trailing" constant="2" id="L7V-4y-4pj"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="LhI-HZ-lo9"/>
                     <constraint firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" constant="10" id="M5Z-ls-LyY"/>
+                    <constraint firstItem="X3h-Fa-FKh" firstAttribute="centerY" secondItem="y3I-fG-A5T" secondAttribute="centerY" id="Mef-jL-jAb"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="YOL-qx-5uC" secondAttribute="bottom" id="Oeh-W3-cJX"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="CBZ-lr-1Gs" secondAttribute="bottom" constant="10" id="PD2-Ft-hpa"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="Q1G-49-T5F"/>
@@ -91,18 +121,23 @@
                     <constraint firstItem="m4p-nL-AsY" firstAttribute="top" secondItem="STs-rg-6uh" secondAttribute="bottom" constant="4" id="m78-NX-OvE"/>
                     <constraint firstAttribute="trailingMargin" secondItem="X3h-Fa-FKh" secondAttribute="trailing" constant="2" id="tb0-U3-8yW"/>
                     <constraint firstItem="STs-rg-6uh" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="x5Y-Ab-yc8"/>
+                    <constraint firstItem="y3I-fG-A5T" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="xgP-bb-VuP"/>
                     <constraint firstAttribute="trailing" secondItem="YOL-qx-5uC" secondAttribute="trailing" constant="10" id="zQ9-MO-GXC"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="descriptionLabel" destination="STs-rg-6uh" id="Qc2-tp-J9h"/>
-                <outlet property="eventTimeLabel" destination="YOL-qx-5uC" id="RKb-me-IJh"/>
                 <outlet property="eventTypeLabel" destination="CBZ-lr-1Gs" id="Pbc-su-ggi"/>
+                <outlet property="favoriteButton" destination="y3I-fG-A5T" id="nSL-EL-ZnS"/>
                 <outlet property="locationLabel" destination="m4p-nL-AsY" id="fOR-wb-sca"/>
+                <outlet property="rightSubtitleLabel" destination="YOL-qx-5uC" id="l9F-Vs-3FS"/>
                 <outlet property="subtitleLabel" destination="jJk-MV-Kf7" id="gli-oO-tJE"/>
                 <outlet property="titleLabel" destination="X3h-Fa-FKh" id="erM-1W-1hN"/>
             </connections>
-            <point key="canvasLocation" x="441" y="327.5"/>
+            <point key="canvasLocation" x="304" y="360.5"/>
         </tableViewCell>
     </objects>
+    <resources>
+        <image name="BRCHeartCell" width="64" height="64"/>
+    </resources>
 </document>

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8152.3" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8124.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <objects>
@@ -16,23 +15,23 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Astral Headwash" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3h-Fa-FKh">
-                        <rect key="frame" x="10" y="10" width="267" height="20"/>
+                        <rect key="frame" x="33" y="10" width="244" height="20"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="20" id="8P0-zX-HZB"/>
                         </constraints>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dIs-6g-Ive">
                         <rect key="frame" x="10" y="34" width="267" height="66"/>
                         <string key="text">Greetings dirty desert dwellers!  We are Astral Headwash and we do the amazing!  We will wash your head for you again this year.  That's right, clean, fresh water warmed in the desert sun with wonderful smelling shampoo and a bit of leave-in condition to send you on your way!  Bring your happy selves to us Monday - Friday noon until 4 pm</string>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
-                        <rect key="frame" x="10" y="104" width="100" height="19"/>
+                        <rect key="frame" x="10" y="104" width="95" height="19"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="19" id="Mat-xS-PR4"/>
                         </constraints>
@@ -40,26 +39,75 @@
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="5:00 &amp; Donut" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mdq-aF-SDa">
+                        <rect key="frame" x="126" y="104" width="155" height="19"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="155" id="si7-Qh-l0C"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xr6-XH-xRR" customClass="DOFavoriteButton" customModule="DOFavoriteButton">
+                        <rect key="frame" x="0.0" y="3" width="35" height="35"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="35" id="4WO-Se-qoY"/>
+                            <constraint firstAttribute="width" constant="35" id="IN0-WS-piN"/>
+                        </constraints>
+                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <state key="normal">
+                            <color key="titleColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="image" keyPath="image" value="BRCHeartCell"/>
+                            <userDefinedRuntimeAttribute type="color" keyPath="imageColorOn">
+                                <color key="value" red="0.99607843137254903" green="0.43137254901960786" blue="0.43529411764705883" alpha="1" colorSpace="calibratedRGB"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="color" keyPath="circleColor">
+                                <color key="value" red="0.99607843137254903" green="0.43137254901960786" blue="0.43529411764705883" alpha="1" colorSpace="calibratedRGB"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="color" keyPath="lineColor">
+                                <color key="value" red="0.88627450980392153" green="0.37647058823529411" blue="0.37647058823529411" alpha="1" colorSpace="calibratedRGB"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="number" keyPath="duration">
+                                <real key="value" value="0.80000000000000004"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                        <connections>
+                            <action selector="favoriteButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="TKa-FB-7yH"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="H2p-sc-9uM" secondAttribute="bottomMargin" constant="2" id="2Jk-96-Lhp"/>
+                    <constraint firstItem="X3h-Fa-FKh" firstAttribute="centerY" secondItem="Xr6-XH-xRR" secondAttribute="centerY" id="Dzp-ML-KL6"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="dIs-6g-Ive" secondAttribute="bottom" constant="4" id="HXu-FU-NY7"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="2" id="LA4-Fc-zcQ"/>
                     <constraint firstItem="dIs-6g-Ive" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="PvR-CP-stz"/>
-                    <constraint firstAttribute="trailingMargin" relation="lessThanOrEqual" secondItem="jJk-MV-Kf7" secondAttribute="trailing" constant="169" id="aMP-Fa-Gac"/>
-                    <constraint firstItem="X3h-Fa-FKh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="cCg-zZ-djd"/>
+                    <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="mdq-aF-SDa" secondAttribute="bottom" id="TvL-hc-4QB"/>
+                    <constraint firstItem="Xr6-XH-xRR" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="WCH-Ev-WPg"/>
+                    <constraint firstItem="mdq-aF-SDa" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jJk-MV-Kf7" secondAttribute="trailing" constant="2" id="gFL-km-HdE"/>
+                    <constraint firstItem="mdq-aF-SDa" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" constant="2" id="lLx-h0-fvl"/>
+                    <constraint firstItem="jJk-MV-Kf7" firstAttribute="height" secondItem="mdq-aF-SDa" secondAttribute="height" id="qJ7-uh-PJh"/>
                     <constraint firstAttribute="trailingMargin" secondItem="dIs-6g-Ive" secondAttribute="trailing" constant="2" id="rZH-Ny-MgQ"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="2" id="u5K-HO-VnV"/>
                     <constraint firstItem="dIs-6g-Ive" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="4" id="wPD-rZ-nt4"/>
+                    <constraint firstItem="X3h-Fa-FKh" firstAttribute="leading" secondItem="Xr6-XH-xRR" secondAttribute="trailing" constant="-2" id="xgj-rP-fEb"/>
                     <constraint firstAttribute="trailingMargin" secondItem="X3h-Fa-FKh" secondAttribute="trailing" constant="2" id="yVt-MT-Q8Z"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="descriptionLabel" destination="dIs-6g-Ive" id="Aat-04-GHn"/>
+                <outlet property="favoriteButton" destination="Xr6-XH-xRR" id="Od0-1a-sHa"/>
+                <outlet property="rightSubtitleLabel" destination="mdq-aF-SDa" id="OHI-LD-Cao"/>
                 <outlet property="subtitleLabel" destination="jJk-MV-Kf7" id="gli-oO-tJE"/>
                 <outlet property="titleLabel" destination="X3h-Fa-FKh" id="erM-1W-1hN"/>
             </connections>
             <point key="canvasLocation" x="373" y="264"/>
         </tableViewCell>
     </objects>
+    <resources>
+        <image name="BRCHeartCell" width="64" height="64"/>
+    </resources>
 </document>

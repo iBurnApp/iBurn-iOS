@@ -14,29 +14,29 @@
 
 @implementation BRCEventObjectTableViewCell
 
-- (void) setStyleFromDataObject:(BRCDataObject*)dataObject {
-    [super setStyleFromDataObject:dataObject];
+- (void) setDataObject:(BRCDataObject*)dataObject {
+    [super setDataObject:dataObject];
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
     if (eventObject.isAllDay) {
-        self.eventTimeLabel.text = @"All Day";
+        self.rightSubtitleLabel.text = @"All Day";
     } else if (eventObject.isStartingSoon) {
         NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
         NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
         NSString *minsUntilStartString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilStartDate];
-        self.eventTimeLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
+        self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
     } else if (eventObject.isHappeningRightNow) {
         NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilEndDate];
-        self.eventTimeLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
+        self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
     } else if (eventObject.hasEnded && eventObject.hasStarted) {
-        self.eventTimeLabel.text = @"Expired";
+        self.rightSubtitleLabel.text = @"Expired";
     } else { // Starts in long time
         NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
         NSString *endTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.endDate];
         NSString *timeString = [[NSString stringWithFormat:@"%@ - %@", startTime, endTime] lowercaseString];
-        self.eventTimeLabel.text = timeString;
+        self.rightSubtitleLabel.text = timeString;
     }
     UIColor *eventStatusColor = [eventObject colorForEventStatus];
-    self.eventTimeLabel.textColor = eventStatusColor;
+    self.rightSubtitleLabel.textColor = eventStatusColor;
     NSString *eventType = [BRCEventObject stringForEventType:eventObject.eventType];
     if (!eventType.length) {
         eventType = @"None";

@@ -12,24 +12,34 @@
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCEventObjectTableViewCell.h"
+#import "BRCDatabaseManager.h"
 
 @implementation BRCDataObjectTableViewCell
+@synthesize dataObject = _dataObject;
 
-- (void) setStyleFromDataObject:(BRCDataObject*)dataObject {
+- (void) setDataObject:(BRCDataObject*)dataObject {
+    _dataObject = [dataObject copy];
     self.titleLabel.text = dataObject.title;
-    // right now the 2015 API reponses are kind of sparse
+    // strip those newlines rull good
+    NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
+    detailString = [detailString stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+    self.descriptionLabel.text = detailString;
     if ([dataObject isKindOfClass:[BRCArtObject class]]) {
         BRCArtObject *art = (BRCArtObject*)dataObject;
-        self.descriptionLabel.text = art.artistName;
+        self.rightSubtitleLabel.text = art.artistName;
     } else {
-        NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
-        self.descriptionLabel.text = detailString;
+        NSString *playaLocation = dataObject.playaLocation;
+#ifdef DEBUG
+        playaLocation = @"0:00 & ?";
+#endif
+        self.rightSubtitleLabel.text = playaLocation;
     }
+    self.favoriteButton.selected = dataObject.isFavorite;
 }
 
-- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
+- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation {
     CLLocation *recentLocation = fromLocation;
-    CLLocation *objectLocation = toLocation;
+    CLLocation *objectLocation = self.dataObject.location;
     CLLocationDistance distance = CLLocationDistanceMax;
     if (recentLocation && objectLocation) {
         distance = [objectLocation distanceFromLocation:recentLocation];
@@ -51,6 +61,20 @@
     } else {
         return [BRCDataObjectTableViewCell class];
     }
+}
+
+- (IBAction)favoriteButtonPressed:(id)sender {
+    if (self.favoriteButton.selected) {
+        [self.favoriteButton deselect];
+    } else {
+        [self.favoriteButton select];
+    }
+    BRCDataObject *dataObject = [self.dataObject copy];
+    dataObject.isFavorite = self.favoriteButton.selected;
+    // not the best place to do this
+    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+        [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+    }];
 }
 
 @end

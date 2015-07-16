@@ -20,7 +20,6 @@
 #import "BRCFilteredTableViewController_Private.h"
 #import "UIColor+iBurn.h"
 #import "PureLayout.h"
-#import "MCSwipeTableViewCell.h"
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
 #import "YapDatabaseFilteredViewTransaction.h"
@@ -28,7 +27,7 @@
 #import "YapDatabaseSearchQueue.h"
 #import "YapDatabaseSearchResultsViewTransaction.h"
 
-@interface BRCFilteredTableViewController () <UIToolbarDelegate, MCSwipeTableViewCellDelegate, CLLocationManagerDelegate>
+@interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
 @property (nonatomic, strong, readonly) YapDatabaseSearchQueue *searchQueue;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
@@ -80,8 +79,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCDarkStar"];
-    self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCLightStar"];
+    self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartFilledIcon"];
+    self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartIcon"];
     
     [self setupTableView];
     [self setupSearchController];
@@ -249,6 +248,11 @@
     [self.tableView reloadData];
 }
 
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.tableView reloadData];
+}
+
 #pragma - mark UITableViewDataSource Methods
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -257,47 +261,10 @@
     Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:[dataObject class]];
     NSString *cellIdentifier = [cellClass cellIdentifier];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
-    [cell setStyleFromDataObject:dataObject];
+    cell.dataObject = dataObject;
     CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
-    [cell updateDistanceLabelFromLocation:currentLocation toLocation:dataObject.location];
-    // Adding gestures per state basis.
-    UIImageView *viewState = [self imageViewForFavoriteStatus:dataObject.isFavorite];
-    UIColor *color = [UIColor brc_navBarColor];
-    [cell setSwipeGestureWithView:viewState color:color mode:MCSwipeTableViewCellModeSwitch state:MCSwipeTableViewCellState1 completionBlock:^(MCSwipeTableViewCell *swipeCell, MCSwipeTableViewCellState state, MCSwipeTableViewCellMode mode) {
-        BRCDataObjectTableViewCell *dataCell = (BRCDataObjectTableViewCell*)swipeCell;
-        [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            dataObject = [[transaction objectForKey:dataObject.uniqueID inCollection:[[dataObject class] collection]] copy];
-        }];
-        dataObject.isFavorite = !dataObject.isFavorite;
-        [dataCell setStyleFromDataObject:dataObject];
-        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            if ([dataObject isKindOfClass:[BRCEventObject class]]) {
-                BRCEventObject *event = (BRCEventObject*)dataObject;
-                if (event.isFavorite) {
-                    [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
-                } else {
-                    [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
-                }
-            }
-            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
-        } completionBlock:nil];
-    }];
-    cell.delegate = self;
+    [cell updateDistanceLabelFromLocation:currentLocation];
     return cell;
-}
-
-- (void)swipeTableViewCell:(BRCDataObjectTableViewCell *)cell didSwipeWithPercentage:(CGFloat)percentage {
-    NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:self.tableView];
-    // We want to switch states to give a hint of the future value
-    // is there a way to optimize this further?
-    if (percentage >= cell.firstTrigger) {
-        BOOL inverseFavorite = !dataObject.isFavorite;
-        cell.view1 = [self imageViewForFavoriteStatus:inverseFavorite];
-    } else if (percentage < cell.firstTrigger) {
-        BOOL isFavorite = dataObject.isFavorite;
-        cell.view1 = [self imageViewForFavoriteStatus:isFavorite];
-    }
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender

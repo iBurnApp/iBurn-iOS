@@ -117,10 +117,10 @@ static CGFloat const kTableViewHeaderHeight = 100;
 - (UIImage*)imageIfFavorite:(BOOL)isFavorite {
     UIImage *starImage = nil;
     if (isFavorite) {
-        starImage = [UIImage imageNamed:@"BRCDarkStar"];
+        starImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     }
     else {
-        starImage = [UIImage imageNamed:@"BRCLightStar"];
+        starImage = [UIImage imageNamed:@"BRCHeartIcon"];
     }
     return starImage;
 }
