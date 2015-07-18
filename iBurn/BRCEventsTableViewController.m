@@ -16,8 +16,10 @@
 #import "NSDate+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventsFilterTableViewController.h"
-#import "BRCStringPickerViewController.h"
 #import "NSUserDefaults+iBurn.h"
+#import "ASDayPicker.h"
+#import "FBKVOController.h"
+#import "PureLayout.h"
 
 @interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate, UIPopoverPresentationControllerDelegate>
 @property (nonatomic, strong, readonly) NSDate *selectedDay;
@@ -26,27 +28,12 @@
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
 
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
-@property (nonatomic, strong) BRCStringPickerViewController *dayPicker;
+@property (nonatomic, strong, readonly) ASDayPicker *dayPicker;
+@property (nonatomic, strong) UIView *tableHeaderView;
 @end
 
 @implementation BRCEventsTableViewController
 @synthesize selectedDay = _selectedDay;
-
-- (void) dayButtonPressed:(id)sender {
-    NSInteger currentSelection = [self indexForDay:self.selectedDay];
-    self.dayPicker.selectedIndex = currentSelection;
-
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:self.dayPicker];
-    nav.modalPresentationStyle = UIModalPresentationPopover;
-    nav.navigationBarHidden = YES;
-
-    self.dayPicker.preferredContentSize = CGSizeMake(280, 200);
-    
-    UIPopoverPresentationController *popover = nav.popoverPresentationController;
-    popover.delegate = self;
-    popover.barButtonItem = sender;
-    [self presentViewController:nav animated:YES completion:nil];
-}
 
 - (void) filterButtonPressed:(id)sender {
     BRCEventsFilterTableViewController *filterViewController = [[BRCEventsFilterTableViewController alloc] initWithDelegate:self];
@@ -67,8 +54,6 @@
 
 - (void) viewDidLoad {
     [super viewDidLoad];
-    UIBarButtonItem *dayButton = [[UIBarButtonItem alloc] initWithTitle:@"Day" style:UIBarButtonItemStylePlain target:self action:@selector(dayButtonPressed:)];
-    self.navigationItem.leftBarButtonItem = dayButton;
     UIBarButtonItem *filterButton = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(filterButtonPressed:)];
     
     UIBarButtonItem *loadingButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.loadingIndicatorView];
@@ -77,30 +62,38 @@
 
     self.searchController.hidesNavigationBarDuringPresentation = YES;
     [self setupDayPicker];
+    [self setupTableHeaderView];
+}
+
+- (void) setupTableHeaderView {
+    NSParameterAssert(self.searchController != nil);
+    NSParameterAssert(self.dayPicker != nil);
+    self.tableHeaderView = [[UIView alloc] initForAutoLayout];
+    self.tableView.tableHeaderView = self.tableHeaderView;
+    [self.tableHeaderView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
+    [self.tableHeaderView autoSetDimension:ALDimensionHeight toSize:100];
+    [self.searchController.searchBar removeFromSuperview];
+    [self.tableHeaderView addSubview:self.searchController.searchBar];
+    [self.tableHeaderView addSubview:self.dayPicker];
+    [self.searchController.searchBar autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
+    [self.dayPicker autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(8, 0, 0, 0) excludingEdge:ALEdgeBottom];
+    [self.searchController.searchBar autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.dayPicker];
+    [self.dayPicker autoSetDimension:ALDimensionHeight toSize:64];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
 }
 
 - (void) setupDayPicker {
-    self.festivalDates = [BRCEventObject datesOfFestival];
-    
-    NSArray *majorEvents = [BRCEventObject majorEvents];
-    
-    NSParameterAssert(self.festivalDates.count == majorEvents.count);
-    NSMutableArray *rowTitles = [NSMutableArray arrayWithCapacity:self.festivalDates.count];
-    [self.festivalDates enumerateObjectsUsingBlock:^(NSDate *date, NSUInteger idx, BOOL *stop) {
-        NSString *dayOfWeekString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:date];
-        NSString *shortDateString = [[NSDateFormatter brc_shortDateFormatter] stringFromDate:date];
-        NSString *majorEvent = [majorEvents objectAtIndex:idx];
-        NSMutableString *pickerString = [NSMutableString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
-        if (majorEvent.length) {
-            [pickerString appendFormat:@" - %@", majorEvent];
-        }
-        [rowTitles addObject:pickerString];
-    }];
-    self.dayPickerRowTitles = rowTitles;
-    NSInteger currentSelection = [self indexForDay:self.selectedDay];
-    self.dayPicker = [[BRCStringPickerViewController alloc] initWithPickerStrings:self.dayPickerRowTitles initialSelection:currentSelection doneBlock:^(BRCStringPickerViewController *picker, NSUInteger selectedIndex, NSString *selectedValue) {
-        NSDate *selectedDate = [self dateForIndex:selectedIndex];
-        self.selectedDay = selectedDate;
+    _dayPicker = [[ASDayPicker alloc] initForAutoLayout];
+    [self.dayPicker setStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
+    [self.dayPicker setWeekdayTitles:[ASDayPicker weekdayTitlesWithLocaleIdentifier:nil length:3 uppercase:YES]];
+    self.dayPicker.selectedDate = self.selectedDay;
+    [self.dayPicker setSelectedDateBackgroundImage:[UIImage imageNamed:@"BRCDateSelection"]];
+    [self.KVOController observe:self.dayPicker keyPath:NSStringFromSelector(@selector(selectedDate)) options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew block:^(id observer, ASDayPicker *dayPicker, NSDictionary *change) {
+        NSDate *newDate = dayPicker.selectedDate;
+        self.selectedDay = newDate;
     }];
 }
 

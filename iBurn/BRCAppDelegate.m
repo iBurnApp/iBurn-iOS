@@ -17,7 +17,6 @@
 #import "BRCEventObject_Private.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCSecrets.h"
-#import "BRCEmbargoPasscodeViewController.h"
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCEventObject.h"
@@ -78,21 +77,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [self setupDefaultTabBarController];
     
-    if ([BRCEmbargo allowEmbargoedData]) {
-        self.window.rootViewController = self.tabBarController;
-    } else {
-        BRCEmbargoPasscodeViewController *embargoVC = [[BRCEmbargoPasscodeViewController alloc] init];
-        embargoVC.dismissAction = ^{
-            [UIView transitionWithView:self.window
-                              duration:0.5
-                               options:UIViewAnimationOptionTransitionFlipFromLeft
-                            animations:^{
-                                self.window.rootViewController = self.tabBarController;
-                            }
-                            completion:nil];
-        };
-        self.window.rootViewController = embargoVC;
-    }
+    self.window.rootViewController = self.tabBarController;
     
     UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     if (launchNotification) {
@@ -331,10 +316,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The restricted data is now unlocked." delegate:nil cancelButtonTitle:@"Sweet!" otherButtonTitles:nil];
         [alert show];
         [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-        if ([self.window.rootViewController isKindOfClass:[BRCEmbargoPasscodeViewController class]]) {
-            BRCEmbargoPasscodeViewController *embargoVC = (BRCEmbargoPasscodeViewController*)self.window.rootViewController;
-            [embargoVC setUnlocked];
-        }
     }
 }
 

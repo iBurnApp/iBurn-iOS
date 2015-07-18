@@ -25,3 +25,4 @@ pod 'DOFavoriteButton', :path => 'Submodules/DOFavoriteButton/DOFavoriteButton.p
 pod 'JSQWebViewController', '~> 1.0'
 pod 'TUSafariActivity', '~> 1.0'
 pod 'ASDayPicker', :path => 'Submodules/ASDayPicker/ASDayPicker.podspec'
+pod 'KVOController', '~> 1.0'
