@@ -264,7 +264,11 @@
     cell.dataObject = dataObject;
     CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation];
-    [cell setNeedsLayout];
+    
+    // We need this to fix Apple's buggy autolayout self-sizing cell behavior
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [cell setNeedsUpdateConstraints];
+    });
     return cell;
 }
 

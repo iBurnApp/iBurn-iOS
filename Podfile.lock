@@ -1,5 +1,6 @@
 PODS:
   - Appirater (2.0.5)
+  - ASDayPicker (1.0.0)
   - BButton (4.0.2)
   - Bolts/Tasks (1.2.0)
   - CocoaLumberjack (1.9.2):
@@ -44,6 +45,7 @@ PODS:
 
 DEPENDENCIES:
   - Appirater (~> 2.0)
+  - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
@@ -63,6 +65,8 @@ DEPENDENCIES:
   - YapDatabase (~> 2.6)
 
 EXTERNAL SOURCES:
+  ASDayPicker:
+    :path: Submodules/ASDayPicker/ASDayPicker.podspec
   DOFavoriteButton:
     :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
   Mapbox-iOS-SDK:
@@ -70,6 +74,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Appirater: e7c0a47fb67ee5041ce8479e6ba960927fb40264
+  ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
   Bolts: d176cb1e0012175589e389a9db49b85e27787576
   CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa

@@ -4,3 +4,6 @@
 [submodule "Submodules/DOFavoriteButton"]
 	path = Submodules/DOFavoriteButton
 	url = git@github.com:chrisballinger/DOFavoriteButton.git
+[submodule "Submodules/ASDayPicker"]
+	path = Submodules/ASDayPicker
+	url = git@github.com:chrisballinger/ASDayPicker.git
