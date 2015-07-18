@@ -156,10 +156,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
     _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
     
-    _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(artistName))]];
-    _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]];
-    _ftsEventsName = [[self class] fullTextSearchNameForClass:[BRCEventObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]];
-    _ftsDataObjectName = [[self class] fullTextSearchNameForClass:[BRCDataObject class] withIndexedProperties:@[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription)), NSStringFromSelector(@selector(artistName))]];
+    _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
+    _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
+    _ftsEventsName = [[self class] fullTextSearchNameForClass:[BRCEventObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
+    _ftsDataObjectName = [[self class] fullTextSearchNameForClass:[BRCDataObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
     
     _eventsFilteredByDayViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName];
     _eventsFilteredByDayExpirationAndTypeViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName];
@@ -202,11 +202,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 - (void) registerFullTextSearch {
-    // the
-    NSArray *ftsInfoArray = @[@[self.ftsArtName, [BRCArtObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(artistName))]],
-                              @[self.ftsCampsName, [BRCCampObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]],
-                              @[self.ftsEventsName, [BRCEventObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription))]],
-                              @[self.ftsDataObjectName, [BRCDataObject class], @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(detailDescription)), NSStringFromSelector(@selector(artistName))]]];
+    NSArray *indexedProperties = [[self class] fullTextSearchIndexProperties];
+    NSArray *ftsInfoArray = @[@[self.ftsArtName, [BRCArtObject class], indexedProperties],
+                              @[self.ftsCampsName, [BRCCampObject class], indexedProperties],
+                              @[self.ftsEventsName, [BRCEventObject class], indexedProperties],
+                              @[self.ftsDataObjectName, [BRCDataObject class], indexedProperties]];
     [ftsInfoArray enumerateObjectsUsingBlock:^(NSArray *ftsInfo, NSUInteger idx, BOOL *stop) {
         NSString *ftsName = ftsInfo[0];
         Class viewClass = ftsInfo[1];
@@ -372,6 +372,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                    versionTag:versionTag
                                       options:options];
     return databaseView;
+}
+
++ (NSArray*) fullTextSearchIndexProperties {
+    return @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(artistName)),NSStringFromSelector(@selector(detailDescription))];
 }
 
 + (NSString*) fullTextSearchNameForClass:(Class)viewClass
