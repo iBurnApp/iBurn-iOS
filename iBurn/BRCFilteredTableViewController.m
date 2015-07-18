@@ -250,7 +250,12 @@
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    
+    // Attempting to fix Apple's buggy self-sizing autolayout cells
     [self.tableView reloadData];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.tableView reloadData];
+    });
 }
 
 #pragma - mark UITableViewDataSource Methods
@@ -265,9 +270,18 @@
     CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation];
     
-    // We need this to fix Apple's buggy autolayout self-sizing cell behavior
-    dispatch_async(dispatch_get_main_queue(), ^{
+    // We need this to fix Apple's buggy autolayout self-sizing cell behavior (WTF)
+    // Also this hack doesn't even work reliably.. booooo Apple
+    dispatch_block_t layoutBlock = ^{
+        [cell setNeedsLayout];
         [cell setNeedsUpdateConstraints];
+        [cell setNeedsDisplay];
+    };
+    dispatch_async(dispatch_get_main_queue(), ^{
+        layoutBlock();
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            layoutBlock();
+        });
     });
     return cell;
 }
