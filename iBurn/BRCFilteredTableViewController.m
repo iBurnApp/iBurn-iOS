@@ -141,6 +141,7 @@
     self.searchController.searchResultsUpdater = self;
     self.searchController.dimsBackgroundDuringPresentation = NO;
     self.searchController.hidesNavigationBarDuringPresentation = NO;
+    self.searchController.delegate = self;
     
     self.definesPresentationContext = YES;
     

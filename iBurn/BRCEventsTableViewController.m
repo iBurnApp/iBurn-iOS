@@ -21,6 +21,8 @@
 #import "FBKVOController.h"
 #import "PureLayout.h"
 
+static const CGFloat kDayPickerHeight = 65.0f;
+
 @interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate, UIPopoverPresentationControllerDelegate>
 @property (nonatomic, strong, readonly) NSDate *selectedDay;
 @property (nonatomic, strong) NSArray *dayPickerRowTitles;
@@ -29,6 +31,7 @@
 
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
 @property (nonatomic, strong, readonly) ASDayPicker *dayPicker;
+@property (nonatomic, strong, readonly) NSLayoutConstraint *dayPickerHeight;
 
 @property (nonatomic, strong, readonly) UIView *tableHeaderView;
 @property (nonatomic, strong, readonly) UIView *searchBarContainerView;
@@ -63,7 +66,6 @@
     self.navigationItem.rightBarButtonItems = @[filterButton, loadingButtonItem];
     self.selectedDay = [NSDate date];
 
-    self.searchController.hidesNavigationBarDuringPresentation = YES;
     [self setupDayPicker];
     [self setupTableHeaderView];
 }
@@ -96,7 +98,7 @@
         NSParameterAssert(self.searchBarContainerView != nil);
         
         // setup table header view constraints
-        [self.dayPicker autoSetDimension:ALDimensionHeight toSize:65.0];
+        _dayPickerHeight = [self.dayPicker autoSetDimension:ALDimensionHeight toSize:kDayPickerHeight];
         [self.searchBarContainerView autoSetDimension:ALDimensionHeight toSize:44.0];
         [self.dayPicker autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
         [self.searchBarContainerView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
@@ -229,5 +231,25 @@
     // This makes our date picker appear in a popover
     return UIModalPresentationNone;
 }
+
+#pragma mark UISearchControllerDelegate
+
+- (void)willPresentSearchController:(UISearchController *)searchController {
+    self.dayPicker.userInteractionEnabled = NO;
+    [UIView animateWithDuration:0.5 animations:^{
+        self.dayPicker.alpha = 0.1;
+    }];
+}
+
+- (void)willDismissSearchController:(UISearchController *)searchController {
+    self.dayPicker.userInteractionEnabled = YES;
+    [UIView animateWithDuration:0.5 animations:^{
+        self.dayPicker.alpha = 1.0;
+    }];
+}
+
+- (void) didDismissSearchController:(UISearchController *)searchController {
+}
+
 
 @end
