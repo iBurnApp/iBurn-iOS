@@ -30,8 +30,6 @@
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
 @property (nonatomic, strong, readonly) YapDatabaseSearchQueue *searchQueue;
-@property (nonatomic, strong) UIImageView *favoriteImageView;
-@property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 @end
 
 @implementation BRCFilteredTableViewController
@@ -42,7 +40,7 @@
 
 - (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName searchViewName:(NSString *)searchViewName
 {
-    if (self = [super initWithStyle:UITableViewStylePlain]) {
+    if (self = [super init]) {
         _viewClass = viewClass;
         _viewName = viewName;
         _searchViewName = searchViewName;
@@ -50,6 +48,7 @@
         [self setupDatabaseConnection];
         [self setupMappings];
         [self updateMappingsWithCompletionBlock:nil];
+        [self view]; //wtf
     }
     return self;
 }
@@ -79,8 +78,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartFilledIcon"];
-    self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartIcon"];
     
     [self setupTableView];
     [self setupSearchController];
@@ -96,13 +93,27 @@
                                                object:database];
 }
 
+- (void) updateViewConstraints {
+    if (!self.hasAddedConstraints) {
+        NSParameterAssert(self.tableView != nil);
+        [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+        self.hasAddedConstraints = YES;
+    }
+    [super updateViewConstraints];
+}
+
 - (void) setupTableView {
+    _tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
     self.tableView.estimatedRowHeight = 120;
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     [self setupCellIdentifiersForTableView:self.tableView];
+    [self.view addSubview:self.tableView];
 }
 
 - (void) setupCellIdentifiersForTableView:(UITableView*)tableView {
@@ -233,16 +244,6 @@
     return imageView;
 }
 
-- (UIImageView *) imageViewForFavoriteStatus:(BOOL)isFavorite {
-    UIImageView *viewState = nil;
-    if (isFavorite) {
-        viewState = self.favoriteImageView;
-    } else {
-        viewState = self.notYetFavoriteImageView;
-    }
-    return viewState;
-}
-
 - (void) didChangePreferredContentSize:(NSNotification*)notification {
     // this doens't seem to trigger a re-layout of the cells?
     [self.tableView reloadData];
@@ -250,6 +251,7 @@
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self updateViewConstraints];
     
     // Attempting to fix Apple's buggy self-sizing autolayout cells
     [self.tableView reloadData];

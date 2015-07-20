@@ -29,7 +29,10 @@
 
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
 @property (nonatomic, strong, readonly) ASDayPicker *dayPicker;
-@property (nonatomic, strong) UIView *tableHeaderView;
+
+@property (nonatomic, strong, readonly) UIView *tableHeaderView;
+@property (nonatomic, strong, readonly) UIView *searchBarContainerView;
+
 @end
 
 @implementation BRCEventsTableViewController
@@ -65,28 +68,64 @@
     [self setupTableHeaderView];
 }
 
+// http://stackoverflow.com/questions/27512738/uisearchbar-subview-of-uitableviewheader
 - (void) setupTableHeaderView {
-    NSParameterAssert(self.searchController != nil);
-    NSParameterAssert(self.dayPicker != nil);
-    self.tableHeaderView = [[UIView alloc] initForAutoLayout];
-    self.tableView.tableHeaderView = self.tableHeaderView;
-    [self.tableHeaderView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
-    [self.tableHeaderView autoSetDimension:ALDimensionHeight toSize:100];
-    [self.searchController.searchBar removeFromSuperview];
-    [self.tableHeaderView addSubview:self.searchController.searchBar];
+    NSParameterAssert(self.tableView != nil);
+    // Configure header view
+    _tableHeaderView = [[UIView alloc] initForAutoLayout];
+    
+    // Create container view for search bar
+    _searchBarContainerView = [[UIView alloc] initForAutoLayout];
+    NSParameterAssert(self.searchController.searchBar != nil);
+    [self.searchBarContainerView addSubview:self.searchController.searchBar];
+    self.searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+    
     [self.tableHeaderView addSubview:self.dayPicker];
-    [self.searchController.searchBar autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
-    [self.dayPicker autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(8, 0, 0, 0) excludingEdge:ALEdgeBottom];
-    [self.searchController.searchBar autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.dayPicker];
-    [self.dayPicker autoSetDimension:ALDimensionHeight toSize:64];
+    [self.tableHeaderView addSubview:self.searchBarContainerView];
+    
+    // Then add header to table view
+    self.tableView.tableHeaderView = self.tableHeaderView;
+    [self.searchController.searchBar sizeToFit];
+}
+
+- (void) updateViewConstraints {
+    if (!self.hasAddedConstraints) {
+        NSParameterAssert(self.tableView != nil);
+        NSParameterAssert(self.dayPicker != nil);
+        NSParameterAssert(self.tableHeaderView != nil);
+        NSParameterAssert(self.searchBarContainerView != nil);
+        
+        // setup table header view constraints
+        [self.dayPicker autoSetDimension:ALDimensionHeight toSize:65.0];
+        [self.searchBarContainerView autoSetDimension:ALDimensionHeight toSize:44.0];
+        [self.dayPicker autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
+        [self.searchBarContainerView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
+        [self.searchBarContainerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
+        [self.dayPicker autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(5, 0, 0, 0) excludingEdge:ALEdgeBottom];
+        [self.dayPicker autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.searchBarContainerView];
+        
+        [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+        self.hasAddedConstraints = YES;
+    }
+    [super updateViewConstraints];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    
+    // the UISearchBar gets removed from searchBarContainerView somehow? Gotta add it back.
+    if (self.searchBarContainerView.subviews.count == 0) {
+        [self.searchBarContainerView addSubview:self.searchController.searchBar];
+        // also gotta fix the frame height
+        CGRect frame = self.searchBarContainerView.frame;
+        frame.size.height = 44.0f;
+        self.searchBarContainerView.frame = frame;
+    }
 }
 
 - (void) setupDayPicker {
     _dayPicker = [[ASDayPicker alloc] initForAutoLayout];
+    self.dayPicker.daysScrollView.scrollEnabled = NO;
     [self.dayPicker setStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
     [self.dayPicker setWeekdayTitles:[ASDayPicker weekdayTitlesWithLocaleIdentifier:nil length:3 uppercase:YES]];
     self.dayPicker.selectedDate = self.selectedDay;

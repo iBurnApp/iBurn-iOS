@@ -17,6 +17,8 @@
 
 @property (nonatomic) BOOL isUpdatingFilters;
 
+@property (nonatomic) BOOL hasAddedConstraints;
+
 - (void) setupMappings;
 - (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 
