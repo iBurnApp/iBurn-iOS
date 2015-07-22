@@ -31,7 +31,7 @@ PODS:
     - FMDB (~> 2.5)
     - GRMustache (~> 7.3)
     - SMCalloutView (~> 2.1)
-  - Parse (1.7.5):
+  - Parse (1.7.5.3):
     - Bolts/Tasks (>= 1.2.0)
   - pop (1.0.7)
   - PureLayout (2.0.6)
@@ -92,7 +92,7 @@ SPEC CHECKSUMS:
   KVOController: 9fd8f0343670994e4b6f9f0b31f5a45663f3e1cf
   Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
   Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
-  Parse: 7c0f115eff3e0cea3fac08d50bda47154edb8832
+  Parse: 373adbb1ad2e34d383542c3b28f678c49ebe4881
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d
   SMCalloutView: 4078d89b847731e514b1a919fed33b383a24a106

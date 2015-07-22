@@ -30,11 +30,10 @@ static const CGFloat kDayPickerHeight = 65.0f;
 @property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
 
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
-@property (nonatomic, strong, readonly) ASDayPicker *dayPicker;
-@property (nonatomic, strong, readonly) NSLayoutConstraint *dayPickerHeight;
-
-@property (nonatomic, strong, readonly) UIView *tableHeaderView;
-@property (nonatomic, strong, readonly) UIView *searchBarContainerView;
+@property (nonatomic, strong) ASDayPicker *dayPicker;
+@property (nonatomic, strong) NSLayoutConstraint *dayPickerHeight;
+@property (nonatomic, strong) NSLayoutConstraint *tableViewHeaderHeight;
+@property (nonatomic, strong) UIView *tableHeaderView;
 
 @end
 
@@ -65,46 +64,59 @@ static const CGFloat kDayPickerHeight = 65.0f;
     UIBarButtonItem *loadingButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.loadingIndicatorView];
     self.navigationItem.rightBarButtonItems = @[filterButton, loadingButtonItem];
     self.selectedDay = [NSDate date];
-
-    [self setupDayPicker];
-    [self setupTableHeaderView];
+    
+    [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
 }
 
 // http://stackoverflow.com/questions/27512738/uisearchbar-subview-of-uitableviewheader
-- (void) setupTableHeaderView {
+- (void) layoutTableHeaderViewWithWidth:(CGFloat)width {
     NSParameterAssert(self.tableView != nil);
     // Configure header view
-    _tableHeaderView = [[UIView alloc] initForAutoLayout];
+    UIView *tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 0)];
+    tableHeaderView.translatesAutoresizingMaskIntoConstraints = NO;
     
     // Create container view for search bar
-    _searchBarContainerView = [[UIView alloc] initForAutoLayout];
+    UIView *searchBarContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 44)];
+    searchBarContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     NSParameterAssert(self.searchController.searchBar != nil);
-    [self.searchBarContainerView addSubview:self.searchController.searchBar];
-    self.searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+    self.searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [searchBarContainerView addSubview:self.searchController.searchBar];
+    [self.searchController.searchBar sizeToFit];
     
-    [self.tableHeaderView addSubview:self.dayPicker];
-    [self.tableHeaderView addSubview:self.searchBarContainerView];
+    [self setupDayPicker];
+    [tableHeaderView addSubview:self.dayPicker];
+    [tableHeaderView addSubview:searchBarContainerView];
+    
+    // setup table header view constraints
+    [searchBarContainerView autoSetDimension:ALDimensionHeight toSize:44.0];
+    [searchBarContainerView autoSetDimension:ALDimensionWidth toSize:width];
+    [searchBarContainerView autoPinEdge:ALEdgeBottom toEdge:ALEdgeBottom ofView:tableHeaderView];
+    _dayPickerHeight = [self.dayPicker autoSetDimension:ALDimensionHeight toSize:kDayPickerHeight];
+    [self.dayPicker autoSetDimension:ALDimensionWidth toSize:width];
+    [self.dayPicker autoPinEdge:ALEdgeTop toEdge:ALEdgeTop ofView:tableHeaderView withOffset:8];
+    [self.dayPicker autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:searchBarContainerView];
+    
+    NSLayoutConstraint *headerWidthConstraint = [NSLayoutConstraint
+                                                 constraintWithItem:tableHeaderView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual
+                                                 toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0f constant:width
+                                                 ];
+    [tableHeaderView addConstraint:headerWidthConstraint];
+    CGFloat height = [tableHeaderView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+    [tableHeaderView removeConstraint:headerWidthConstraint];
+    
+    tableHeaderView.frame = CGRectMake(0, 0, width, height);
+    [tableHeaderView autoSetDimension:ALDimensionWidth toSize:width];
+    self.tableViewHeaderHeight = [tableHeaderView autoSetDimension:ALDimensionHeight toSize:height];
+    //tableHeaderView.translatesAutoresizingMaskIntoConstraints = YES;
     
     // Then add header to table view
-    self.tableView.tableHeaderView = self.tableHeaderView;
-    [self.searchController.searchBar sizeToFit];
+    self.tableView.tableHeaderView = tableHeaderView;
 }
 
 - (void) updateViewConstraints {
     if (!self.hasAddedConstraints) {
         NSParameterAssert(self.tableView != nil);
         NSParameterAssert(self.dayPicker != nil);
-        NSParameterAssert(self.tableHeaderView != nil);
-        NSParameterAssert(self.searchBarContainerView != nil);
-        
-        // setup table header view constraints
-        _dayPickerHeight = [self.dayPicker autoSetDimension:ALDimensionHeight toSize:kDayPickerHeight];
-        [self.searchBarContainerView autoSetDimension:ALDimensionHeight toSize:44.0];
-        [self.dayPicker autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
-        [self.searchBarContainerView autoMatchDimension:ALDimensionWidth toDimension:ALDimensionWidth ofView:self.view];
-        [self.searchBarContainerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeTop];
-        [self.dayPicker autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(5, 0, 0, 0) excludingEdge:ALEdgeBottom];
-        [self.dayPicker autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.searchBarContainerView];
         
         [self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
         self.hasAddedConstraints = YES;
@@ -114,19 +126,18 @@ static const CGFloat kDayPickerHeight = 65.0f;
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
-    // the UISearchBar gets removed from searchBarContainerView somehow? Gotta add it back.
-    if (self.searchBarContainerView.subviews.count == 0) {
-        [self.searchBarContainerView addSubview:self.searchController.searchBar];
-        // also gotta fix the frame height
-        CGRect frame = self.searchBarContainerView.frame;
-        frame.size.height = 44.0f;
-        self.searchBarContainerView.frame = frame;
-    }
+
+    [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
 }
 
 - (void) setupDayPicker {
-    _dayPicker = [[ASDayPicker alloc] initForAutoLayout];
+    self.dayPicker = [[ASDayPicker alloc] initForAutoLayout];
     self.dayPicker.daysScrollView.scrollEnabled = NO;
     [self.dayPicker setStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
     [self.dayPicker setWeekdayTitles:[ASDayPicker weekdayTitlesWithLocaleIdentifier:nil length:3 uppercase:YES]];
@@ -236,19 +247,31 @@ static const CGFloat kDayPickerHeight = 65.0f;
 
 - (void)willPresentSearchController:(UISearchController *)searchController {
     self.dayPicker.userInteractionEnabled = NO;
+    [self.view layoutIfNeeded];
     [UIView animateWithDuration:0.5 animations:^{
-        self.dayPicker.alpha = 0.1;
+        self.dayPicker.alpha = 0.0;
+        [self.dayPicker removeConstraint:self.dayPickerHeight];
+        self.tableViewHeaderHeight.constant = self.tableViewHeaderHeight.constant - kDayPickerHeight;
+        [self.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
     }];
 }
 
 - (void)willDismissSearchController:(UISearchController *)searchController {
     self.dayPicker.userInteractionEnabled = YES;
+    [self.view layoutIfNeeded];
     [UIView animateWithDuration:0.5 animations:^{
         self.dayPicker.alpha = 1.0;
+        //self.dayPickerHeight.constant = kDayPickerHeight;
+        //self.tableViewHeaderHeight.constant = self.tableViewHeaderHeight.constant + kDayPickerHeight;
+        [self.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
     }];
 }
 
 - (void) didDismissSearchController:(UISearchController *)searchController {
+    
 }
 
 
