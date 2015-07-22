@@ -65,6 +65,8 @@ static const CGFloat kDayPickerHeight = 65.0f;
     self.navigationItem.rightBarButtonItems = @[filterButton, loadingButtonItem];
     self.selectedDay = [NSDate date];
     
+    self.searchController.hidesNavigationBarDuringPresentation = YES;
+    
     [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
 }
 
