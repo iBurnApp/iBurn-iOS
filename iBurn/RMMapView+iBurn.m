@@ -9,8 +9,7 @@
 #import "RMMapView+iBurn.h"
 #import "RMMBTilesSource.h"
 #import "BRCLocations.h"
-
-static NSString *const kBRCBundledTileSourceName = @"iburn";
+#import "BRCDataImporter.h"
 
 @implementation RMMapView (iBurn)
 
@@ -130,7 +129,9 @@ static NSString *const kBRCBundledTileSourceName = @"iburn";
 
 + (RMMBTilesSource *)brc_defaultTileSource
 {
-    return [[RMMBTilesSource alloc] initWithTileSetResource:kBRCBundledTileSourceName ofType:@"mbtiles"];
+    RMMBTilesSource *tileSource = [[RMMBTilesSource alloc] initWithTileSetURL:[BRCDataImporter mapTilesURL]];
+    NSParameterAssert(tileSource != nil);
+    return tileSource;
 }
 
 + (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame

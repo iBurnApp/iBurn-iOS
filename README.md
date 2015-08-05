@@ -10,8 +10,15 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 ## Installation
 
 * Install [Cocoapods](http://cocoapods.org) and the most recent version of Xcode.
-* `$ git submodule update --init`
-* `$ pod install`
+* Fetch submodules and install Pods.
+
+    $ git submodule update --init
+    $ pod install
+    
+* Copy dummy camp data from 2014 because 2015 location data is embargoed until the gates open.
+
+    $ cp ./Submodules/iBurn-Data/data/2014/camps.json ./Submodules/iBurn-Data/data/2015/camps.json.js
+
 * open `iBurn.xcworkspace` (**not** the .xcodeproj file!)
 * Create `BRCSecrets.m` and fill it with the following contents:
 
@@ -25,6 +32,10 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 	NSString * const kBRCParseApplicationId = @"";
 	NSString * const kBRCParseClientKey = @"";
 	```
+or run this command:
+
+    $ echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
+
 
 * Compile and Run!
 

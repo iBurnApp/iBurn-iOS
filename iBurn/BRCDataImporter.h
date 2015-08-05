@@ -9,6 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <YapDatabase/YapDatabase.h>
 
+/** this is posted when new map tiles come in. */
+extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
+
 @interface BRCDataImporter : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
@@ -30,5 +33,9 @@
 
 /** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
 - (void) addBackgroundURLSessionCompletionHandler:(void (^)())completionHandler;
+
+
+/** Returns iburn.mbtiles local file URL within Application Support */
++ (NSURL*) mapTilesURL;
 
 @end
