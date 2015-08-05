@@ -268,8 +268,15 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             NSLog(@"Error updating tiles: %@", error);
             updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
         } else {
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": destinationURL}];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": destinationURL}];
+            });
             NSLog(@"Tiles updated: %@", destinationURL);
+            NSError *error = nil;
+            BOOL success = [destinationURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+            if (!success) {
+                NSLog(@"Error excluding %@ from backup %@", destinationURL, error);
+            }
             updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
         }
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
@@ -285,11 +292,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     NSString *fileName = @"iburn.mbtiles";
     NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
     NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
-    NSError *error = nil;
-    BOOL success = [destinationURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
-    if (!success) {
-        NSLog(@"Error excluding %@ from backup %@", destinationURL, error);
-    }
     return destinationURL;
 }
 
@@ -304,11 +306,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             NSLog(@"Error creating containing directory %@", error);
             error = nil;
         }
-    }
-    NSURL *fileURL = [NSURL fileURLWithPath:directory];
-    BOOL success = [fileURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
-    if (!success) {
-        NSLog(@"Error excluding %@ from backup %@", fileURL, error);
     }
     return directory;
 }

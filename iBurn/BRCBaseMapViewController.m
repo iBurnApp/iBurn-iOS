@@ -13,6 +13,7 @@
 #import "BRCDataObject.h"
 #import "RMMarker+iBurn.h"
 #import "BRCEmbargo.h"
+#import "BRCDataImporter.h"
 
 @implementation BRCBaseMapViewController
 
@@ -20,15 +21,29 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self setupMapView];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mapTilesUpdated:) name:BRCDataImporterMapTilesUpdatedNotification object:nil];
+}
+
+- (void) setupMapView {
     self.mapView = [RMMapView brc_defaultMapViewWithFrame:self.view.bounds];
     self.mapView.delegate = self;
     self.mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
     [self.view addSubview:self.mapView];
-    
+    [self.view sendSubviewToBack:self.mapView];
+    [self centerMapAtManCoordinatesAnimated:NO];
     RMUserTrackingBarButtonItem *userTrackingBarButtonItem = [[RMUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
     self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
-    
-    [self centerMapAtManCoordinatesAnimated:NO];
+}
+
+- (void) mapTilesUpdated:(NSNotification*)notification {
+    NSLog(@"Replacing map tiles via notification...");
+    if (self.mapView) {
+        [self.mapView removeFromSuperview];
+        self.mapView = nil;
+    }
+    [self setupMapView];
 }
 
 #pragma - mark RMMapViewDelegate Methods
