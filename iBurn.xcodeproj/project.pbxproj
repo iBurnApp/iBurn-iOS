@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		14A143F68CF8A82404B1C92F /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C8C085A67599EA761E94627 /* Pods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		63010EFC1B72DE89000A847C /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = 63010EFB1B72DE89000A847C /* bundle.js */; };
+		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
+		63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010F001B72E2EA000A847C /* BRCGeocoderTest.m */; };
 		630861C9199029D100AD7109 /* BRCLocations.m in Sources */ = {isa = PBXBuildFile; fileRef = 630861C8199029D100AD7109 /* BRCLocations.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
@@ -87,6 +90,10 @@
 /* Begin PBXFileReference section */
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6200215A1BF28D44858F48C4 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		63010EFB1B72DE89000A847C /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/scripts/2015/reverse-geocoder/bundle.js"; sourceTree = SOURCE_ROOT; };
+		63010EFD1B72DEEA000A847C /* BRCGeocoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCGeocoder.h; sourceTree = "<group>"; };
+		63010EFE1B72DEEA000A847C /* BRCGeocoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoder.m; sourceTree = "<group>"; };
+		63010F001B72E2EA000A847C /* BRCGeocoderTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoderTest.m; sourceTree = "<group>"; };
 		630861C7199029D100AD7109 /* BRCLocations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocations.h; sourceTree = "<group>"; };
 		630861C8199029D100AD7109 /* BRCLocations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocations.m; sourceTree = "<group>"; };
 		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
@@ -272,6 +279,8 @@
 			children = (
 				630861C7199029D100AD7109 /* BRCLocations.h */,
 				630861C8199029D100AD7109 /* BRCLocations.m */,
+				63010EFD1B72DEEA000A847C /* BRCGeocoder.h */,
+				63010EFE1B72DEEA000A847C /* BRCGeocoder.m */,
 			);
 			name = MapClasses;
 			sourceTree = "<group>";
@@ -460,6 +469,7 @@
 			children = (
 				D9914C4A1B40C52E00F90663 /* TestData */,
 				D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */,
+				63010F001B72E2EA000A847C /* BRCGeocoderTest.m */,
 				D980A90C1B3F5A6400BE3682 /* Supporting Files */,
 			);
 			path = iBurnTests;
@@ -476,6 +486,7 @@
 		D9842A2B1B51C71C0056455D /* 2015 */ = {
 			isa = PBXGroup;
 			children = (
+				63010EFB1B72DE89000A847C /* bundle.js */,
 				D9842A2C1B51C8F90056455D /* 2015 */,
 			);
 			name = 2015;
@@ -656,6 +667,7 @@
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D9842A2D1B51C8F90056455D /* 2015 in Resources */,
+				63010EFC1B72DE89000A847C /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
@@ -798,6 +810,7 @@
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
+				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,
@@ -826,6 +839,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */,
+				63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

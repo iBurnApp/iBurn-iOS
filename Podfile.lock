@@ -24,9 +24,9 @@ PODS:
   - JRSwizzle (1.0)
   - JSQWebViewController (1.0.0)
   - KVOController (1.0.3)
-  - Mantle (2.0.2):
-    - Mantle/extobjc (= 2.0.2)
-  - Mantle/extobjc (2.0.2)
+  - Mantle (2.0.3):
+    - Mantle/extobjc (= 2.0.3)
+  - Mantle/extobjc (2.0.3)
   - Mapbox-iOS-SDK (1.6.1):
     - FMDB (~> 2.5)
     - GRMustache (~> 7.3)
@@ -90,7 +90,7 @@ SPEC CHECKSUMS:
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
   JSQWebViewController: f984cd7091b97a5a9e5f346c4eec23cf8440cb5e
   KVOController: 9fd8f0343670994e4b6f9f0b31f5a45663f3e1cf
-  Mantle: 967fd31ea0220890b2e76589198996b534bb3fb1
+  Mantle: 8d6b14979a082a9ed4994463eb7a4ff576c94632
   Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
   Parse: 373adbb1ad2e34d383542c3b28f678c49ebe4881
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
@@ -101,4 +101,4 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
   YapDatabase: 814f9ff862a95c1e581d93335a4020482b69155b
 
-COCOAPODS: 0.38.0
+COCOAPODS: 0.38.2
