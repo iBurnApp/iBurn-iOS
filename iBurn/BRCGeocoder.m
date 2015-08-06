@@ -26,25 +26,15 @@
         
         [self.jsQueue addOperationWithBlock:^{
             __strong typeof(weakSelf)strongSelf = weakSelf;
-            [strongSelf.jsQueue setSuspended:YES];
             NSString *path = [[NSBundle mainBundle] pathForResource:@"bundle" ofType:@"js"];
             
             NSString *string = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
-            
             string = [NSString stringWithFormat:@"var window = this; %@",string];
             
             strongSelf.context = [[JSContext alloc] init];
             
             [strongSelf.context evaluateScript:string];
-            
-            __weak typeof(self)weakSelf1 = strongSelf;
-            strongSelf.context[@"OBJCallback"] = ^(JSValue *coder) {
-                __strong typeof(weakSelf)strongSelf1 = weakSelf1;
-                strongSelf1.context[@"reverseGeocoder"] = coder;
-                [strongSelf1.jsQueue setSuspended:NO];
-            };
-            
-            [strongSelf.context evaluateScript:@"prepare(OBJCallback)"];
+            [strongSelf.context evaluateScript:@"var reverseGeocoder = prepare()"];
         }];
     }
     return self;
