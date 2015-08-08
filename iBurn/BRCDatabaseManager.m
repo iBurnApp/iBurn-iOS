@@ -88,6 +88,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                          preSanitizer:nil
                                         postSanitizer:nil
                                               options:options];
+    
+    NSURL *dbURL = [NSURL fileURLWithPath:databasePath];
+    NSError *error = nil;
+    BOOL success = [dbURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+    if (!success) {
+        NSLog(@"Error excluding %@ from backup %@", dbURL, error);
+    }
+    
     self.database.defaultObjectPolicy = YapDatabasePolicyShare;
     self.database.defaultObjectCacheEnabled = YES;
     self.database.defaultObjectCacheLimit = 10000;

@@ -32,7 +32,6 @@
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		B0C177C1481EA14DBAA3EFC7 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C8C085A67599EA761E94627 /* Pods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = D9046F19198C65F40013CCF4 /* iburn.mbtiles */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
@@ -669,7 +668,6 @@
 				D9842A2D1B51C8F90056455D /* 2015 in Resources */,
 				63010EFC1B72DE89000A847C /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
-				D9046F36198C65F40013CCF4 /* iburn.mbtiles in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,

@@ -15,6 +15,9 @@
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
 
+NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
+
+
 @interface BRCDataImporter() <NSURLSessionDownloadDelegate>
 @property (nonatomic, strong, readonly) NSURLSession *urlSession;
 
@@ -250,9 +253,61 @@
             }
         }];
     } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
-        // TODO update tiles!
-#warning TODO update tiles
+        NSURL *destinationURL = [[self class] mapTilesURL];
+        NSError *error = nil;
+        if ([[NSFileManager defaultManager] fileExistsAtPath:destinationURL.path isDirectory:NULL]) {
+            NSLog(@"Existing files found, deleting...");
+            [[NSFileManager defaultManager] removeItemAtURL:destinationURL error:&error];
+            if (error) {
+                NSLog(@"Error removing item at URL: %@ %@", destinationURL, error);
+                error = nil;
+            }
+        }
+        [[NSFileManager defaultManager] copyItemAtURL:localURL toURL:destinationURL error:&error];
+        if (error) {
+            NSLog(@"Error updating tiles: %@", error);
+            updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": destinationURL}];
+            });
+            NSLog(@"Tiles updated: %@", destinationURL);
+            NSError *error = nil;
+            BOOL success = [destinationURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+            if (!success) {
+                NSLog(@"Error excluding %@ from backup %@", destinationURL, error);
+            }
+            updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+        }
+        [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
+            [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
+        }];
+        
     }
+}
+
+
+/** Returns iburn.mbtiles local file URL within Application Support */
++ (NSURL*) mapTilesURL {
+    NSString *fileName = @"iburn.mbtiles";
+    NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
+    NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
+    return destinationURL;
+}
+
++ (NSString *) mapTilesDirectory {
+    NSString *applicationSupportDirectory = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
+    NSString *applicationName = [[[NSBundle mainBundle] infoDictionary] valueForKey:(NSString *)kCFBundleNameKey];
+    NSString *directory = [applicationSupportDirectory stringByAppendingPathComponent:applicationName];
+    NSError *error = nil;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:directory]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error) {
+            NSLog(@"Error creating containing directory %@", error);
+            error = nil;
+        }
+    }
+    return directory;
 }
 
 #pragma mark NSURLSessionDelegate
