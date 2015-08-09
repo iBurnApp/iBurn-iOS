@@ -321,7 +321,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass {
     YapDatabaseViewSorting* sorting = nil;
     if (viewClass == [BRCEventObject class]) {
-        BOOL shouldSortEventsByStartTime = [[NSUserDefaults standardUserDefaults] shouldSortEventsByStartTime];
         sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
@@ -335,11 +334,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                     return NSOrderedAscending;
                 }
                 NSComparisonResult dateComparison = NSOrderedSame;
-                if (shouldSortEventsByStartTime) {
-                    dateComparison = [event1.startDate compare:event2.startDate];
-                } else {
-                    dateComparison = [event1.endDate compare:event2.endDate];
-                }
+                dateComparison = [event1.startDate compare:event2.startDate];
                 if (dateComparison == NSOrderedSame) {
                     return [event1.title compare:event2.title];
                 }

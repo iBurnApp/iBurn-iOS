@@ -70,17 +70,6 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
     [self synchronize];
 }
 
-- (BOOL)shouldSortEventsByStartTime
-{
-    return [self boolForKey:kBRCSortEventsByStartTimeKey];
-}
-
-- (void)setShouldSortEventsByStartTime:(BOOL)shouldSortByStart
-{
-    [self setBool:shouldSortByStart forKey:kBRCSortEventsByStartTimeKey];
-    [self synchronize];
-}
-
 - (void) setRecentLocation:(CLLocation *)recentLocation {
     NSData *locationData = [NSKeyedArchiver archivedDataWithRootObject:recentLocation];
     [self setObject:locationData forKey:kBRCRecentLocationKey];

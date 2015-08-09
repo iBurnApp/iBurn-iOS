@@ -45,7 +45,6 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 @property (nonatomic, strong) NSArray *eventTypeArray;
 
 @property (nonatomic) BOOL showExpiredEvents;
-@property (nonatomic) BOOL shouldSortEventsByStartTime;
 
 @property (nonatomic, strong) YapDatabaseConnection* databaseConnection;
 
@@ -82,10 +81,9 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilterTableViewCellIdentifier];
     
-    self.timeStrings = @[@"Show Expired Events", @"Sort Events by Start Time"];
+    self.timeStrings = @[@"Show Expired Events"];
     
     self.showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
-    self.shouldSortEventsByStartTime = [[NSUserDefaults standardUserDefaults] shouldSortEventsByStartTime];
     
     //All the event types to select from
     NSArray *eventTypes = @[@(BRCEventTypeWorkshop),
@@ -132,16 +130,6 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
     [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
     
-    BOOL didChangeSort = NO;
-    BOOL oldShouldSortEventsByStartTime = [[NSUserDefaults standardUserDefaults] shouldSortEventsByStartTime];
-    if (self.shouldSortEventsByStartTime != oldShouldSortEventsByStartTime) {
-        didChangeSort = YES;
-    }
-    [[NSUserDefaults standardUserDefaults] setShouldSortEventsByStartTime:self.shouldSortEventsByStartTime];
-    if (didChangeSort) {
-        [self.delegate didSetNewSortSettingsInFilterTableViewController:self];
-    }
-    
     [self.delegate didSetNewFilterSettingsInFilterTableViewController:self];    
 }
 
@@ -181,8 +169,6 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
             showCheckMark = self.showExpiredEvents;
-        } else if (indexPath.row == 1) {
-            showCheckMark = self.shouldSortEventsByStartTime;
         }
         NSString *text = self.timeStrings[indexPath.row];
         cell.textLabel.text = text;
@@ -228,8 +214,6 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
             self.showExpiredEvents = !self.showExpiredEvents;
-        } else if (indexPath.row == 1) {
-            self.shouldSortEventsByStartTime = !self.shouldSortEventsByStartTime;
         }
     }
     else if (indexPath.section == 1) {
