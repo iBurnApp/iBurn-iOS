@@ -90,9 +90,7 @@
     [self.containerView addSubview:self.passcodeTextField];
     [self.containerView addSubview:self.countdownLabel];
     [self.containerView addSubview:self.socialButtonsView];
-    
-    [self setupUnlockNotification];
-    
+        
     UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                                     action:@selector(singleTapPressed:)];
     [self.view addGestureRecognizer:tapRecognizer];
@@ -120,28 +118,6 @@
             }];
         }
     }];
-}
-
-- (void) setupUnlockNotification {
-    NSDate *now = [NSDate date];
-    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
-        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
-    } else {
-        UILocalNotification *existingNotification = [[NSUserDefaults standardUserDefaults] scheduledLocalNotificationForGateUnlock];
-        if (existingNotification) {
-            return;
-        }
-        UILocalNotification *unlockNotification = [[UILocalNotification alloc] init];
-        unlockNotification.fireDate = festivalStartDate;
-        unlockNotification.alertBody = @"Gates are open! Embargoed data can now be unlocked.";
-        unlockNotification.soundName = UILocalNotificationDefaultSoundName;
-        unlockNotification.alertAction = @"Unlock Now";
-        unlockNotification.applicationIconBadgeNumber = 1;
-        unlockNotification.userInfo = @{kBRCGateUnlockNotificationKey: @YES};
-        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:unlockNotification];
-    }
 }
 
 - (void) refreshCountdownLabel:(id)sender {
@@ -219,9 +195,10 @@
     if (self.didAddConstraints) {
         return;
     }
-    CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
-    [self.containerView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(statusBarHeight + 5, 10, 10, 10) excludingEdge:ALEdgeBottom];
-    self.bottomCostraint = [self.containerView autoPinEdge:ALEdgeBottom toEdge:ALEdgeBottom ofView:self.view];
+    [self.containerView autoPinToTopLayoutGuideOfViewController:self withInset:8];
+    self.bottomCostraint = [self.containerView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
+    [self.containerView autoPinEdgeToSuperviewMargin:ALEdgeLeft];
+    [self.containerView autoPinEdgeToSuperviewMargin:ALEdgeRight];
     
     [self.descriptionLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeBottom];
     

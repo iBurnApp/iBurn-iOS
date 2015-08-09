@@ -30,6 +30,9 @@
 #import <Parse/Parse.h>
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
+@import TTTAttributedLabel;
+#import "BRCAcknowledgementsViewController.h"
+#import "BRCEmbargoPasscodeViewController.h"
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
@@ -141,6 +144,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         }];
         [alertController addAction:actionItem];
     }
+    [self setupUnlockNotification];
     [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
 }
 
@@ -210,7 +214,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    UITableViewController *nearbyVC = [[UITableViewController alloc] init];
+    UITableViewController *nearbyVC = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
     nearbyVC.title = @"Nearby";
     UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
@@ -236,10 +240,99 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
+    BRCAcknowledgementsViewController *ackVC = [self acknowledgementsViewController];
+    ackVC.title = @"Open Source";
+    UINavigationController *ackNav = [[UINavigationController alloc] initWithRootViewController:ackVC];
+    ackNav.tabBarItem.image = [UIImage imageNamed:@"BRCGitHubIcon"];
+    
+    BRCEmbargoPasscodeViewController *unlockVC = [[BRCEmbargoPasscodeViewController alloc] init];
+    __weak BRCEmbargoPasscodeViewController *weakUnlock = unlockVC;
+    unlockVC.dismissAction = ^{
+        [weakUnlock.navigationController popViewControllerAnimated:YES];
+    };
+    unlockVC.title = @"Unlock Locations";
+    unlockVC.tabBarItem.image = [UIImage imageNamed:@"BRCLockIcon"];
+    
+    UITableViewController *debugVC = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    debugVC.title = @"Debug";
+    UINavigationController *debugNav = [[UINavigationController alloc] initWithRootViewController:debugVC];
+    debugNav.tabBarItem.image = [UIImage imageNamed:@"BRCDebugIcon"];
+    
+    UITableViewController *creditsVC = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    creditsVC.title = @"Credits";
+    UINavigationController *creditsNav = [[UINavigationController alloc] initWithRootViewController:creditsVC];
+    creditsNav.tabBarItem.image = [UIImage imageNamed:@"BRCCreditsIcon"];
+    
     self.tabBarController = [[UITabBarController alloc] init];
-    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController];
+    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, ackNav, creditsNav, unlockVC, debugNav];
     self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;
+}
+
+- (void) setupUnlockNotification {
+    NSDate *now = [NSDate date];
+    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
+    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
+    if (timeLeftInterval >= 0) {
+        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
+    } else {
+        UILocalNotification *existingNotification = [[NSUserDefaults standardUserDefaults] scheduledLocalNotificationForGateUnlock];
+        if (existingNotification) {
+            return;
+        }
+        UILocalNotification *unlockNotification = [[UILocalNotification alloc] init];
+        unlockNotification.fireDate = festivalStartDate;
+        unlockNotification.alertBody = @"Gates are open! Embargoed data can now be unlocked.";
+        unlockNotification.soundName = UILocalNotificationDefaultSoundName;
+        unlockNotification.alertAction = @"Unlock Now";
+        unlockNotification.applicationIconBadgeNumber = 1;
+        unlockNotification.userInfo = @{kBRCGateUnlockNotificationKey: @YES};
+        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:unlockNotification];
+    }
+}
+
+- (BRCAcknowledgementsViewController*) acknowledgementsViewController {
+    CGFloat labelMargin = 10;
+    TTTAttributedLabel *headerLabel = [[TTTAttributedLabel alloc] initWithFrame:CGRectZero];
+    NSString *chrisballingerString = @"@chrisballinger";
+    NSURL *chrisballingerURL = [NSURL URLWithString:@"https://github.com/chrisballinger"];
+    NSString *davidchilesString = @"@davidchiles";
+    NSURL *davidChilesURL = [NSURL URLWithString:@"https://github.com/davidchiles"];
+    NSString *headerText = [NSString stringWithFormat:@"Crafted with ❤ by %@ & %@.", chrisballingerString, davidchilesString];
+    NSRange chrisRange = [headerText rangeOfString:chrisballingerString];
+    NSRange davidRange = [headerText rangeOfString:davidchilesString];
+    
+    UIFont *font = [UIFont systemFontOfSize:12];
+    CGFloat labelWidth = CGRectGetWidth(self.window.bounds) - 2 * labelMargin;
+    CGFloat labelHeight;
+    
+    NSStringDrawingOptions options = (NSLineBreakByWordWrapping | NSStringDrawingUsesLineFragmentOrigin);
+    CGRect labelBounds = [headerText boundingRectWithSize:CGSizeMake(labelWidth, CGFLOAT_MAX)
+                                                  options:options
+                                               attributes:@{NSFontAttributeName: font}
+                                                  context:nil];
+    labelHeight = CGRectGetHeight(labelBounds) + 5; // emoji hearts are big
+    
+    CGRect labelFrame = CGRectMake(labelMargin, labelMargin*2, labelWidth, labelHeight);
+    
+    NSDictionary *linkAttributes = @{(NSString*)kCTForegroundColorAttributeName:(id)[[UIColor blackColor] CGColor],
+                                     (NSString *)kCTUnderlineStyleAttributeName: @NO};
+    headerLabel.linkAttributes = linkAttributes;
+    
+    headerLabel.frame = labelFrame;
+    headerLabel.font             = font;
+    headerLabel.textColor        = [UIColor grayColor];
+    headerLabel.backgroundColor  = [UIColor clearColor];
+    headerLabel.numberOfLines    = 0;
+    headerLabel.textAlignment    = NSTextAlignmentCenter;
+    headerLabel.autoresizingMask = (UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin);
+    headerLabel.text = headerText;
+    
+    [headerLabel addLinkToURL:chrisballingerURL withRange:chrisRange];
+    [headerLabel addLinkToURL:davidChilesURL withRange:davidRange];
+    
+    BRCAcknowledgementsViewController *viewController = [[BRCAcknowledgementsViewController alloc] initWithHeaderLabel:headerLabel];
+    return viewController;
 }
 
 - (void) setupFestivalDates {

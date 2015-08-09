@@ -83,7 +83,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self reloadFavoritesIfNeeded];
         [self setupSearchBar];
         [self setupSearchController];
-        [self setupInfoButton];
         [self setupSearchIndicator];
     }
     return self;
@@ -165,57 +164,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             completionBlock();
         }
     }];
-}
-
-- (void) infoButtonPressed:(id)sender {
-    CGFloat labelMargin = 10;
-    TTTAttributedLabel *headerLabel = [[TTTAttributedLabel alloc] initWithFrame:CGRectZero];
-    NSString *chrisballingerString = @"@chrisballinger";
-    NSURL *chrisballingerURL = [NSURL URLWithString:@"https://github.com/chrisballinger"];
-    NSString *davidchilesString = @"@davidchiles";
-    NSURL *davidChilesURL = [NSURL URLWithString:@"https://github.com/davidchiles"];
-    NSString *headerText = [NSString stringWithFormat:@"Crafted with ❤ by %@ & %@.", chrisballingerString, davidchilesString];
-    NSRange chrisRange = [headerText rangeOfString:chrisballingerString];
-    NSRange davidRange = [headerText rangeOfString:davidchilesString];
-
-    UIFont *font = [UIFont systemFontOfSize:12];
-    CGFloat labelWidth = CGRectGetWidth(self.view.frame) - 2 * labelMargin;
-    CGFloat labelHeight;
-    
-    NSStringDrawingOptions options = (NSLineBreakByWordWrapping | NSStringDrawingUsesLineFragmentOrigin);
-    CGRect labelBounds = [headerText boundingRectWithSize:CGSizeMake(labelWidth, CGFLOAT_MAX)
-                                                       options:options
-                                                    attributes:@{NSFontAttributeName: font}
-                                                       context:nil];
-    labelHeight = CGRectGetHeight(labelBounds) + 5; // emoji hearts are big
-    
-    CGRect labelFrame = CGRectMake(labelMargin, labelMargin*2, labelWidth, labelHeight);
-    
-    NSDictionary *linkAttributes = @{(NSString*)kCTForegroundColorAttributeName:(id)[[UIColor blackColor] CGColor],
-                                     (NSString *)kCTUnderlineStyleAttributeName: @NO};
-    headerLabel.linkAttributes = linkAttributes;
-    
-    headerLabel.frame = labelFrame;
-    headerLabel.font             = font;
-    headerLabel.textColor        = [UIColor grayColor];
-    headerLabel.backgroundColor  = [UIColor clearColor];
-    headerLabel.numberOfLines    = 0;
-    headerLabel.textAlignment    = NSTextAlignmentCenter;
-    headerLabel.autoresizingMask = (UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin);
-    headerLabel.text = headerText;
-    
-    [headerLabel addLinkToURL:chrisballingerURL withRange:chrisRange];
-    [headerLabel addLinkToURL:davidChilesURL withRange:davidRange];
-    
-    BRCAcknowledgementsViewController *viewController = [[BRCAcknowledgementsViewController alloc] initWithHeaderLabel:headerLabel];
-    [self.navigationController pushViewController:viewController animated:YES];
-}
-
-- (void) setupInfoButton {
-    UIButton* infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
-	[infoButton addTarget:self action:@selector(infoButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-	UIBarButtonItem *modalButton = [[UIBarButtonItem alloc] initWithCustomView:infoButton];
-    self.navigationItem.leftBarButtonItem = modalButton;
 }
 
 - (void) setupSearchController {

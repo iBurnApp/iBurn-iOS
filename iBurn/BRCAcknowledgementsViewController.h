@@ -13,7 +13,6 @@
 @interface BRCAcknowledgementsViewController : VTAcknowledgementsViewController <TTTAttributedLabelDelegate>
 
 @property (nonatomic, strong, readonly) TTTAttributedLabel *headerLabel;
-@property (nonatomic, strong, readonly) BRCSocialButtonsView *socialButtonsView;
 
 - (instancetype) initWithHeaderLabel:(TTTAttributedLabel*)headerLabel;
 

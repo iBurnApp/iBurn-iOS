@@ -18,7 +18,6 @@
 
 @interface BRCAcknowledgementsViewController ()
 @property (nonatomic, strong, readwrite) TTTAttributedLabel *headerLabel;
-@property (nonatomic, strong, readwrite) BRCSocialButtonsView *socialButtonsView;
 @property (nonatomic, strong) UIView *headerView;
 @property (nonatomic) BOOL hasAddedConstraints;
 @end
@@ -36,10 +35,10 @@
 }
 
 - (void) setupHeaderView {
-    CGRect headerFrame = CGRectMake(0, 0, 300, 100);
+    CGRect headerFrame = CGRectMake(0, 0, 300, 37);
     self.headerView = [[UIView alloc] initWithFrame:headerFrame];
     [self.headerView addSubview:self.headerLabel];
-    [self setupSocialButtonsView];
+    self.headerView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 }
 
 - (void) updateViewConstraints {
@@ -47,18 +46,8 @@
     if (self.hasAddedConstraints) {
         return;
     }
-    [self.socialButtonsView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 10, 10, 10) excludingEdge:ALEdgeTop];
-    [self.socialButtonsView autoSetDimension:ALDimensionHeight toSize:45];
-    [self.socialButtonsView autoAlignAxisToSuperviewAxis:ALAxisVertical];
-    [self.headerLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero excludingEdge:ALEdgeBottom];
-    [self.headerLabel autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.socialButtonsView];
-    [self.headerLabel autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    [self.headerLabel autoCenterInSuperviewMargins];
     self.hasAddedConstraints = YES;
-}
-
-- (void) setupSocialButtonsView {
-    self.socialButtonsView = [[BRCSocialButtonsView alloc] initWithFrame:CGRectZero];
-    [self.headerView addSubview:self.socialButtonsView];
 }
 
 // Overriding private method
@@ -70,6 +59,5 @@
    didSelectLinkWithURL:(NSURL *)url {
     [BRCAppDelegate openURL:url fromViewController:self];
 }
-
 
 @end
