@@ -34,7 +34,7 @@
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
-@interface BRCAppDelegate()
+@interface BRCAppDelegate() <UINavigationControllerDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
 @end
@@ -238,6 +238,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     
     self.tabBarController = [[UITabBarController alloc] init];
     self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController];
+    self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;
 }
 
@@ -282,6 +283,16 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
         return YES;
     }
     return NO;
+}
+
+- (void)navigationController:(UINavigationController *)navigationController
+      willShowViewController:(UIViewController *)viewController
+                    animated:(BOOL)animated {
+    
+    UINavigationBar *morenavbar = navigationController.navigationBar;
+    UINavigationItem *morenavitem = morenavbar.topItem;
+    /* We don't need Edit button in More screen. */
+    morenavitem.rightBarButtonItem = nil;
 }
 
 - (void) tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
