@@ -210,6 +210,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
+    UITableViewController *nearbyVC = [[UITableViewController alloc] init];
+    nearbyVC.title = @"Nearby";
+    UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
+    nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
+    
     self.favoritesViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCDataObject class] viewName:dbManager.everythingFilteredByFavorite searchViewName:dbManager.searchFavoritesView];
     self.favoritesViewController.title = @"Favorites";
     UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
@@ -232,7 +237,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     self.tabBarController = [[UITabBarController alloc] init];
-    self.tabBarController.viewControllers = @[mapNavController, favoritesNavController, artNavController, campNavController, eventsNavController];
+    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController];
     self.tabBarController.delegate = self;
 }
 
