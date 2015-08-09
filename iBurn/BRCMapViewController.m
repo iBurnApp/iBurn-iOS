@@ -31,7 +31,8 @@
 #import "NSDateFormatter+iBurn.h"
 #import "UIColor+iBurn.h"
 #import <pop/POP.h>
-
+#import "BRCGeocoder.h"
+@import KVOController;
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
@@ -64,6 +65,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 @property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
+@property (nonatomic, strong) BRCGeocoder *geocoder;
 @end
 
 @implementation BRCMapViewController
@@ -289,6 +291,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartIcon"];
     [self setupNewMapPointButton];
     [self setupAnnotationEditView];
+    self.geocoder = [[BRCGeocoder alloc] init];
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
@@ -596,6 +599,19 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         return userMapPointMarker;
     }
     return nil;
+}
+
+- (void)mapView:(RMMapView *)mapView didUpdateUserLocation:(RMUserLocation *)userLocation {
+    CLLocation *newLocation = userLocation.location;
+    if (newLocation) {
+        [self.geocoder reverseLookup:newLocation.coordinate completionQueue:dispatch_get_main_queue() completion:^(NSString *locationString) {
+            if (locationString.length > 0) {
+                self.navigationItem.title = locationString;
+            } else {
+                self.navigationItem.title = @"Map";
+            }
+        }];
+    }
 }
 
 #pragma mark BRCAnnotationEditViewDelegate methods

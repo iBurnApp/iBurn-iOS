@@ -9,8 +9,8 @@
 #import "BRCLocations.h"
 
 // TODO: don't hardcode this, load from JSON
-static double const blackRockCityCenterLongitude = -119.20315;
-static double const blackRockCityCenterLatitude = 40.78880;
+static double const blackRockCityCenterLongitude = -119.2065;
+static double const blackRockCityCenterLatitude = 40.7864;
 
 @implementation BRCLocations
 

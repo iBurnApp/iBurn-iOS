@@ -85,6 +85,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     }
     self.locationManager = [CLLocationManager brc_locationManager];
     self.locationManager.delegate = self;
+    [self.locationManager requestWhenInUseAuthorization];  // For foreground access
     [self.locationManager startUpdatingLocation];
     [self setupRegionBasedUnlock];
     self.window.backgroundColor = [UIColor whiteColor];
@@ -296,6 +297,17 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     CLLocationCoordinate2D manCoordinate2014 = [BRCLocations blackRockCityCenter];
     CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
     self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
+}
+
+- (void)locationManager:(CLLocationManager *)manager
+didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
+    if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
+        [manager startUpdatingLocation];
+    } else if (status == kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Location Services Unavailable" message:@"Please press your iPhone's Home button and go into Settings -> Privacy -> Location and enable location services for iBurn. The app is way better with GPS.\n\np.s. GPS still works during Airplane Mode on iOS 8.3 and higher. Save that battery!" delegate:nil cancelButtonTitle:@"OK I'll totally enable it!" otherButtonTitles:nil];
+        [alert show];
+
+    }
 }
 
 - (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {

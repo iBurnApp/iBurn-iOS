@@ -67,6 +67,8 @@
     // last update from API
 #ifdef DEBUG
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
+
 #endif
     
     return defaultArray;

@@ -125,9 +125,20 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             oldUpdateInfo = [transaction objectForKey:key inCollection:[BRCUpdateInfo yapCollection]];
         }];
         
+        
         if (oldUpdateInfo) {
+            // check tiles for errors
+            if (oldUpdateInfo.dataType == BRCUpdateDataTypeTiles) {
+                oldUpdateInfo = [oldUpdateInfo copy];
+                NSError *error = nil;
+                BOOL success = [self checkTilesAtURL:[[self class] mapTilesURL] error:&error];
+                if (!success) {
+                    NSLog(@"Look like the tiles are fucked: %@", error);
+                    oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+                }
+            }
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
-            if (intervalSinceLastUpdated <= 0) {
+            if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus != BRCUpdateFetchStatusFailed) {
                 // already updated, skip update
                 if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete) {
                     return;
@@ -233,6 +244,21 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     self.urlSessionCompletionHandler = completionHandler;
 }
 
+/** Verify tiles are OK */
+- (BOOL) checkTilesAtURL:(NSURL*)tilesURL error:(NSError**)error {
+    NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:tilesURL.path error:error];
+    unsigned long long fileSize = [fileAttributes fileSize];
+    if (*error) {
+        return NO;
+    } else if (fileSize == 0) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"tiles fetch error" code:1 userInfo:@{NSLocalizedDescriptionKey: @"tiles fetch error"}];
+        }
+        return NO;
+    }
+    return YES;
+}
+
 - (void) loadDataFromLocalURL:(NSURL*)localURL updateInfo:(BRCUpdateInfo*)updateInfo {
     
     Class dataClass = updateInfo.dataObjectClass;
@@ -253,8 +279,8 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             }
         }];
     } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
-        NSURL *destinationURL = [[self class] mapTilesURL];
         NSError *error = nil;
+        NSURL *destinationURL = [[self class] mapTilesURL];
         if ([[NSFileManager defaultManager] fileExistsAtPath:destinationURL.path isDirectory:NULL]) {
             NSLog(@"Existing files found, deleting...");
             [[NSFileManager defaultManager] removeItemAtURL:destinationURL error:&error];
@@ -263,7 +289,10 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                 error = nil;
             }
         }
-        [[NSFileManager defaultManager] copyItemAtURL:localURL toURL:destinationURL error:&error];
+        BOOL success = [self checkTilesAtURL:localURL error:&error];
+        if (success) {
+            [[NSFileManager defaultManager] copyItemAtURL:localURL toURL:destinationURL error:&error];
+        }
         if (error) {
             NSLog(@"Error updating tiles: %@", error);
             updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
@@ -282,7 +311,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
             [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
         }];
-        
     }
 }
 

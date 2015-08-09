@@ -10,7 +10,7 @@ PODS:
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
-  - DOFavoriteButton (0.0.2)
+  - DOFavoriteButton (0.0.4)
   - FMDB (2.5):
     - FMDB/standard (= 2.5)
   - FMDB/common (2.5)
@@ -50,7 +50,7 @@ DEPENDENCIES:
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
-  - DOFavoriteButton (from `Submodules/DOFavoriteButton/DOFavoriteButton.podspec`)
+  - DOFavoriteButton (~> 0.0)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - HockeySDK-Source (~> 3.7)
@@ -69,8 +69,6 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   ASDayPicker:
     :path: Submodules/ASDayPicker/ASDayPicker.podspec
-  DOFavoriteButton:
-    :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
   Mapbox-iOS-SDK:
     :podspec: Podspecs/Mapbox-iOS-SDK.podspec
 
@@ -82,7 +80,7 @@ SPEC CHECKSUMS:
   CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
-  DOFavoriteButton: d34827428accfb396b036e4d4b8b3606b9f0f431
+  DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
   FormatterKit: bddde83e054edf9d9ee14f9de3b3a5103db256f4
   GRMustache: ebe6104fd30a6d22c1f36af131e19e2dbf7cd292
