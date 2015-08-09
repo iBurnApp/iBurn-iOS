@@ -12,7 +12,7 @@
 @interface BRCGeocoder()
 
 @property (nonatomic, strong) JSContext *context;
-@property (nonatomic, strong) NSOperationQueue *jsQueue;
+@property (nonatomic, strong) dispatch_queue_t internalQueue;
 
 @end
 
@@ -20,11 +20,10 @@
 
 - (instancetype)init{
     if (self = [super init]) {
-        self.jsQueue = [[NSOperationQueue alloc] init];
-        self.jsQueue.maxConcurrentOperationCount = 1;
+        self.internalQueue = dispatch_queue_create("reverse geocoder", 0);
         __weak typeof(self)weakSelf = self;
         
-        [self.jsQueue addOperationWithBlock:^{
+        dispatch_async(self.internalQueue, ^{
             __strong typeof(weakSelf)strongSelf = weakSelf;
             NSString *path = [[NSBundle mainBundle] pathForResource:@"bundle" ofType:@"js"];
             
@@ -35,12 +34,12 @@
             
             [strongSelf.context evaluateScript:string];
             [strongSelf.context evaluateScript:@"var reverseGeocoder = prepare()"];
-        }];
+        });
     }
     return self;
 }
 
-- (void)reverseLookup:(CLLocationCoordinate2D)location completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString *))completion
+- (void)asyncReverseLookup:(CLLocationCoordinate2D)location completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString *))completion
 {
     if (!completion) {
         return;
@@ -50,14 +49,30 @@
         queue = dispatch_get_main_queue();
     }
     
-    [self.jsQueue addOperationWithBlock:^{
-        NSString *format = [NSString stringWithFormat:@"reverseGeocode(reverseGeocoder, %f, %f)", location.latitude, location.longitude];
-        JSValue *result = [self.context evaluateScript:format];
-        NSString *string = [result toString];
+    dispatch_async(self.internalQueue, ^{
+        NSString *result = [self executeReverseLookup:location];
         dispatch_async(queue, ^{
-            completion(string);
+            completion(result);
         });
-    }];
+    });
+}
+
+/** only call from internalQueue! */
+- (NSString*) executeReverseLookup:(CLLocationCoordinate2D)location {
+    NSString *format = [NSString stringWithFormat:@"reverseGeocode(reverseGeocoder, %f, %f)", location.latitude, location.longitude];
+    JSValue *result = [self.context evaluateScript:format];
+    NSString *locationString = [result toString];
+    return locationString;
+}
+
+
+/** Synchronously lookup location. WARNING: This may block for a long time! */
+- (NSString*) reverseLookup:(CLLocationCoordinate2D)location {
+    __block NSString *locationString = nil;
+    dispatch_sync(self.internalQueue, ^{
+        locationString = [self executeReverseLookup:location];
+    });
+    return locationString;
 }
 
 @end

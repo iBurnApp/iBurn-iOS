@@ -604,7 +604,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 - (void)mapView:(RMMapView *)mapView didUpdateUserLocation:(RMUserLocation *)userLocation {
     CLLocation *newLocation = userLocation.location;
     if (newLocation) {
-        [self.geocoder reverseLookup:newLocation.coordinate completionQueue:dispatch_get_main_queue() completion:^(NSString *locationString) {
+        [self.geocoder asyncReverseLookup:newLocation.coordinate completionQueue:dispatch_get_main_queue() completion:^(NSString *locationString) {
             if (locationString.length > 0) {
                 self.navigationItem.title = locationString;
             } else {

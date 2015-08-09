@@ -10,6 +10,27 @@
 #import "TTTTimeIntervalFormatter+iBurn.h"
 #import "UIColor+iBurn.h"
 
+
+static const double kAverageHumanWalkingSpeedFactor = 0.72; // in seconds/meter == 3.1 mph
+static const double kAverageHumanBikingSpeedFactor = 0.232258065; // in seconds/meter == 9.6 mph
+
+/**
+ *  Returns estimated walking time, calculated by distance in meters x 0.72 seconds/meter
+ * for the average human walking speed of 3.1 mph.
+ *
+ *  @param distance meters away
+ *
+ *  @return estimated walking time in seconds
+ */
+static NSTimeInterval BRCTimeIntervalForWalkingDistance(CLLocationDistance distance) {
+    return kAverageHumanWalkingSpeedFactor * distance;
+}
+
+/** For cyclists in Copenhagen, the average cycling speed is 15.5 km/h (9.6 mph) */
+static NSTimeInterval BRCTimeIntervalForBikingDistance(CLLocationDistance distance) {
+    return kAverageHumanBikingSpeedFactor * distance;
+}
+
 @implementation TTTLocationFormatter (iBurn)
 
 + (instancetype) brc_distanceFormatter {
@@ -21,11 +42,6 @@
         distanceFormatter.numberFormatter.formatWidth = 2;
     });
     return distanceFormatter;
-}
-
-+ (NSTimeInterval) brc_timeIntervalForWalkingDistance:(CLLocationDistance)distance {
-    double averageHumanWalkingSpeedFactor = 0.72; // in seconds/meter == 3.1 mph
-    return averageHumanWalkingSpeedFactor * distance;
 }
 
 /**
@@ -47,23 +63,26 @@
     return nil;
 }
 
+// @"🚶🏽 ? min   🚴🏽 ? min"
 + (NSAttributedString*) brc_humanizedStringForDistance:(CLLocationDistance)distance {
-    NSTimeInterval secondsToWalk = [TTTLocationFormatter brc_timeIntervalForWalkingDistance:distance];
-    NSString *timeString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:secondsToWalk];
-    if (!timeString) {
+    NSTimeInterval secondsToWalk = BRCTimeIntervalForWalkingDistance(distance);
+    NSTimeInterval secondsToBike = BRCTimeIntervalForBikingDistance(distance);
+
+    NSString *walkingTimeString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:secondsToWalk];
+    NSString *bikingTimeString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:secondsToBike];
+    if (!walkingTimeString || !bikingTimeString) {
         return nil;
     }
-    NSString *distanceString = [[TTTLocationFormatter brc_distanceFormatter] stringFromDistance:distance];
-    NSMutableString *fullString = [NSMutableString string];
-    [fullString appendFormat:@"%@ ", timeString];
-    if (distanceString) {
-        [fullString appendFormat:@"%@", distanceString];
-    }
-    NSMutableAttributedString *coloredText = [[NSMutableAttributedString alloc] initWithString:fullString];
-    UIColor *timeColor = [self brc_colorForTimeInterval:secondsToWalk];
-    NSRange timeRange = NSMakeRange(0, timeString.length);
-    [coloredText setAttributes:@{NSForegroundColorAttributeName: timeColor}
-                         range:timeRange];
+    NSString *estimatesString = [NSString stringWithFormat:@"🚶🏽 %@   🚴🏽 %@", walkingTimeString, bikingTimeString];
+    NSMutableAttributedString *coloredText = [[NSMutableAttributedString alloc] initWithString:estimatesString];
+    UIColor *walkColor = [self brc_colorForTimeInterval:secondsToWalk];
+    UIColor *bikeColor = [self brc_colorForTimeInterval:secondsToBike];
+    NSRange walkRange = [estimatesString rangeOfString:walkingTimeString];
+    NSRange bikeRange = [estimatesString rangeOfString:bikingTimeString];
+    [coloredText setAttributes:@{NSForegroundColorAttributeName: walkColor}
+                         range:walkRange];
+    [coloredText setAttributes:@{NSForegroundColorAttributeName: bikeColor}
+                         range:bikeRange];
     return coloredText;
 }
 

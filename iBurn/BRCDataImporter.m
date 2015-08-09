@@ -14,6 +14,7 @@
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
+#import "BRCGeocoder.h"
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
 
@@ -198,6 +199,11 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         }
     }];
     NSLog(@"About to load %d %@ objects.", (int)objects.count, NSStringFromClass(dataClass));
+    
+    // Remove me!
+#warning Remove me when playa location data is fixed
+    BRCGeocoder *geocoder = [[BRCGeocoder alloc] init];
+    
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // Update Fetch info status
         NSParameterAssert(updateInfo != nil);
@@ -207,6 +213,16 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         }
         [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
             @autoreleasepool {
+                ////////////////
+#warning Remove me when playa location data is fixed
+                if (object.location && !object.playaLocation) {
+                    NSString *playaLocation = [geocoder reverseLookup:object.location.coordinate];
+                    if (playaLocation.length > 0) {
+                        object.playaLocation = playaLocation;
+                    }
+                }
+                ///////////////
+                
                 // We need to duplicate the recurring events to make our lives easier later
                 if ([object isKindOfClass:[BRCRecurringEventObject class]]) {
                     BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;

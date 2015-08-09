@@ -67,11 +67,15 @@
     if (locationName) {
         labelString = locationName;
     }
-#ifdef DEBUG
+    if (!playaLocation && camp.playaLocation) {
+        playaLocation = camp.playaLocation;
+    }
+    if (!playaLocation && art.playaLocation) {
+        playaLocation = art.playaLocation;
+    }
     if (!playaLocation) {
         playaLocation = @"0:00 & ?";
     }
-#endif
     if (playaLocation) {
         labelString = [labelString stringByAppendingFormat:@" - %@", playaLocation];
     }

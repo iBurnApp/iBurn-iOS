@@ -33,7 +33,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"reverseGeocoder"];
     
-    [geocoder reverseLookup:coordinate completionQueue:nil completion:^(NSString *locationString) {
+    [geocoder asyncReverseLookup:coordinate completionQueue:nil completion:^(NSString *locationString) {
         NSLog(@"coded to location: %@", locationString);
         XCTAssert([locationString length] > 0, @"No location");
         [expectation fulfill];
@@ -52,7 +52,7 @@
     [self measureBlock:^{
         XCTestExpectation *expectation = [self expectationWithDescription:@"reverseGeocoder"];
         
-        [geocoder reverseLookup:coordinate completionQueue:nil completion:^(NSString *locationString) {
+        [geocoder asyncReverseLookup:coordinate completionQueue:nil completion:^(NSString *locationString) {
             NSLog(@"coded to location: %@", locationString);
             XCTAssert([locationString length] > 0, @"No location");
             [expectation fulfill];

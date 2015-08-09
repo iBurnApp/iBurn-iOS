@@ -51,7 +51,7 @@
 /**
  *  Playa Coordinates - currently unused
  */
-@property (nonatomic, strong, readonly) NSString *playaLocation;
+@property (nonatomic, strong) NSString *playaLocation;
 
 /** Calculates the distance from the user */
 @property (nonatomic, readonly) CLLocationDistance distanceFromUser;

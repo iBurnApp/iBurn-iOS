@@ -29,9 +29,9 @@
         self.rightSubtitleLabel.text = art.artistName;
     } else {
         NSString *playaLocation = dataObject.playaLocation;
-#ifdef DEBUG
-        playaLocation = @"0:00 & ?";
-#endif
+        if (!playaLocation) {
+            playaLocation = @"0:00 & ?";
+        }
         self.rightSubtitleLabel.text = playaLocation;
     }
     self.favoriteButton.selected = dataObject.isFavorite;

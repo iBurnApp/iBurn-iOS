@@ -8,19 +8,10 @@
 
 #import "TTTLocationFormatter.h"
 
+
 @interface TTTLocationFormatter (iBurn)
 
 + (instancetype) brc_distanceFormatter;
-
-/**
- *  Returns estimated walking time, calculated by distance in meters x 0.72 seconds/meter
- * for the average human walking speed of 3.1 mph.
- *
- *  @param distance meters away
- *
- *  @return estimated walking time in seconds
- */
-+ (NSTimeInterval) brc_timeIntervalForWalkingDistance:(CLLocationDistance)distance;
 
 /**
  *  How easy it is to walk in color form

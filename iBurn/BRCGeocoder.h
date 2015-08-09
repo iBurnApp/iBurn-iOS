@@ -11,6 +11,11 @@
 
 @interface BRCGeocoder : NSObject
 
-- (void)reverseLookup:(CLLocationCoordinate2D)location completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString *locationString))completion;
+/** Async lookup location */
+- (void)asyncReverseLookup:(CLLocationCoordinate2D)location completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString *locationString))completion;
+
+/** Synchronously lookup location. WARNING: This may block for a long time! */
+- (NSString*) reverseLookup:(CLLocationCoordinate2D)location;
+
 
 @end
