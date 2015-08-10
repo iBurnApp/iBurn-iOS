@@ -6,8 +6,9 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "VTAcknowledgementsViewController.h"
-#import "TTTAttributedLabel.h"
+@import VTAcknowledgementsViewController;
+@import TTTAttributedLabel;
+
 #import "BRCSocialButtonsView.h"
 
 @interface BRCAcknowledgementsViewController : VTAcknowledgementsViewController <TTTAttributedLabelDelegate>

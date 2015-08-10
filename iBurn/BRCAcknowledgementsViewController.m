@@ -7,7 +7,7 @@
 //
 
 #import "BRCAcknowledgementsViewController.h"
-#import "PureLayout.h"
+@import PureLayout;
 #import "BRCAppDelegate.h"
 
 @interface VTAcknowledgementsViewController()

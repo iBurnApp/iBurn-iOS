@@ -66,6 +66,9 @@
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B9199AB5320093B441 /* BRCMapPoint.m */; };
+		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
+		D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */; };
+		D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */; };
@@ -208,6 +211,12 @@
 		D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSocialButtonsView.m; sourceTree = "<group>"; };
 		D9B362B8199AB5320093B441 /* BRCMapPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapPoint.h; sourceTree = "<group>"; };
 		D9B362B9199AB5320093B441 /* BRCMapPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapPoint.m; sourceTree = "<group>"; };
+		D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCCreditsInfo.h; sourceTree = "<group>"; };
+		D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCCreditsInfo.m; sourceTree = "<group>"; };
+		D9BD4C031B78788D00313FB5 /* iBurn-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurn-Bridging-Header.h"; sourceTree = "<group>"; };
+		D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCCreditsViewController.swift; sourceTree = "<group>"; };
+		D9BD4C061B787A4400313FB5 /* NSBundle+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBundle+iBurn.h"; sourceTree = "<group>"; };
+		D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+iBurn.m"; sourceTree = "<group>"; };
 		D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = Pods/BButton/BButton/resources/FontAwesome.ttf; sourceTree = SOURCE_ROOT; };
 		D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -360,6 +369,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */,
 				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
 				D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */,
 				6322830219881E27009E472B /* DetailViewControllers */,
@@ -367,6 +377,7 @@
 				D99395A5198B806800E9ADD2 /* MapViewControllers */,
 				632F77551993FC8100707FAF /* BRCEmbargoPasscodeViewController.h */,
 				632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */,
+				D9BD4C031B78788D00313FB5 /* iBurn-Bridging-Header.h */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -435,6 +446,8 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				D9BD4C061B787A4400313FB5 /* NSBundle+iBurn.h */,
+				D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */,
 				D979CEC4199AED4C007F0313 /* RMAnnotation+iBurn.h */,
 				D979CEC5199AED4C007F0313 /* RMAnnotation+iBurn.m */,
 				D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */,
@@ -557,6 +570,8 @@
 				D99415621987222800D245C7 /* BRCDataObject.h */,
 				D99415631987222800D245C7 /* BRCDataObject.m */,
 				D9914C541B40D7B700F90663 /* iBurn Update API */,
+				D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */,
+				D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -797,8 +812,10 @@
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
 				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
+				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
+				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
@@ -811,6 +828,7 @@
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
+				D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */,
 				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
 				D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */,
@@ -943,10 +961,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Pods/Parse",
@@ -954,6 +974,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "a758f367-2992-4269-9dbd-4bcabc176e9c";
+				SWIFT_OBJC_BRIDGING_HEADER = "iBurn/iBurn-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -964,11 +986,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Chris Ballinger";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Pods/Parse",
@@ -976,6 +1000,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "2448ec58-d0b1-4479-aff3-b56eb864cea6";
+				SWIFT_OBJC_BRIDGING_HEADER = "iBurn/iBurn-Bridging-Header.h";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

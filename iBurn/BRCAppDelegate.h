@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import "HockeySDK.h"
+@import UIKit;
+@import HockeySDK_Source;
 #import "BRCMapViewController.h"
 #import "BRCEventsTableViewController.h"
 

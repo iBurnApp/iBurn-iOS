@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import "RMMapView.h"
+@import UIKit;
+@import Mapbox_iOS_SDK;
 
 @interface BRCBaseMapViewController : UIViewController <RMMapViewDelegate>
 
