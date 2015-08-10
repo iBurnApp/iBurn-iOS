@@ -87,7 +87,7 @@
 
 // this is a bad hack
 - (CLLocationDistance) distanceFromUser {
-    CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
+    CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
     CLLocation *objectLocation = self.location;
     if (!currentLocation || !objectLocation) {
         return CLLocationDistanceMax;

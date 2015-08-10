@@ -83,7 +83,7 @@ static CGFloat kBRCSocialTotalWidth = 300.0f;
     if ([[UIApplication sharedApplication] canOpenURL:twitterURL]) {
         [[UIApplication sharedApplication] openURL:twitterURL];
     } else {
-        [BRCAppDelegate openURL:[NSURL brc_twitterWebURL] fromViewController:[BRCAppDelegate appDelegate].window.rootViewController];
+        [BRCAppDelegate openURL:[NSURL brc_twitterWebURL] fromViewController:[BRCAppDelegate sharedAppDelegate].window.rootViewController];
     }
 }
 
@@ -92,13 +92,13 @@ static CGFloat kBRCSocialTotalWidth = 300.0f;
     if ([[UIApplication sharedApplication] canOpenURL:facebookURL]) {
         [[UIApplication sharedApplication] openURL:facebookURL];
     } else {
-        [BRCAppDelegate openURL:[NSURL brc_facebookWebURL] fromViewController:[BRCAppDelegate appDelegate].window.rootViewController];
+        [BRCAppDelegate openURL:[NSURL brc_facebookWebURL] fromViewController:[BRCAppDelegate sharedAppDelegate].window.rootViewController];
     }
 }
 
 - (void) githubButtonPressed:(id)sender {
     NSURL *githubURL = [NSURL brc_githubURL];
-    [BRCAppDelegate openURL:githubURL fromViewController:[BRCAppDelegate appDelegate].window.rootViewController];
+    [BRCAppDelegate openURL:githubURL fromViewController:[BRCAppDelegate sharedAppDelegate].window.rootViewController];
 }
 
 @end

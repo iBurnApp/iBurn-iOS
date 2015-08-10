@@ -26,7 +26,7 @@
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;
 
 /** Don't use this unless you really have to... */
-+ (instancetype) appDelegate;
++ (instancetype) sharedAppDelegate;
 
 + (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController;
 

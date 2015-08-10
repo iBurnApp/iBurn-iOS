@@ -7,7 +7,7 @@
 //
 
 #import "BRCDataObject.h"
-#import "YapDatabaseTransaction.h"
+@import YapDatabase;
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 

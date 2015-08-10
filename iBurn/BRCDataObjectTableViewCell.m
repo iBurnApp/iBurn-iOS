@@ -69,6 +69,12 @@
     } else {
         [self.favoriteButton select];
     }
+    
+    if (self.favoriteButtonAction) {
+        self.favoriteButtonAction();
+        return;
+    }
+    
     BRCDataObject *dataObject = [self.dataObject copy];
     dataObject.isFavorite = self.favoriteButton.selected;
     // not the best place to do this

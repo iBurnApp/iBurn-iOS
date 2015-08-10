@@ -66,6 +66,7 @@
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B9199AB5320093B441 /* BRCMapPoint.m */; };
+		D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */; };
 		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
 		D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */; };
 		D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */; };
@@ -211,6 +212,7 @@
 		D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSocialButtonsView.m; sourceTree = "<group>"; };
 		D9B362B8199AB5320093B441 /* BRCMapPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapPoint.h; sourceTree = "<group>"; };
 		D9B362B9199AB5320093B441 /* BRCMapPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapPoint.m; sourceTree = "<group>"; };
+		D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCNearbyViewController.swift; sourceTree = "<group>"; };
 		D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCCreditsInfo.h; sourceTree = "<group>"; };
 		D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCCreditsInfo.m; sourceTree = "<group>"; };
 		D9BD4C031B78788D00313FB5 /* iBurn-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurn-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -369,6 +371,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */,
 				D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */,
 				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
 				D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */,
@@ -815,6 +818,7 @@
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
+				D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */,
 				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,

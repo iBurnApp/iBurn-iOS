@@ -7,11 +7,7 @@
 //
 
 #import "BRCFilteredTableViewController.h"
-#import "YapDatabaseViewTransaction.h"
-#import "YapDatabaseViewMappings.h"
-#import "YapDatabaseViewConnection.h"
-#import "YapDatabaseFullTextSearch.h"
-#import "YapDatabase.h"
+@import YapDatabase;
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
 #import "BRCDetailViewController.h"
@@ -19,13 +15,10 @@
 #import "BRCFilteredTableViewController.h"
 #import "BRCFilteredTableViewController_Private.h"
 #import "UIColor+iBurn.h"
-#import "PureLayout.h"
+@import PureLayout;
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
-#import "YapDatabaseFilteredViewTransaction.h"
 #import "BRCAppDelegate.h"
-#import "YapDatabaseSearchQueue.h"
-#import "YapDatabaseSearchResultsViewTransaction.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
@@ -270,7 +263,7 @@
     NSString *cellIdentifier = [cellClass cellIdentifier];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.dataObject = dataObject;
-    CLLocation *currentLocation = [BRCAppDelegate appDelegate].locationManager.location;
+    CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation];
     
     // We need this to fix Apple's buggy autolayout self-sizing cell behavior (WTF)

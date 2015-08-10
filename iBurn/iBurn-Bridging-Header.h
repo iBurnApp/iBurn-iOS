@@ -6,3 +6,7 @@
 #import "BRCCreditsInfo.h"
 #import "BRCAppDelegate.h"
 #import "BRCAcknowledgementsViewController.h"
+#import "BRCDatabaseManager.h"
+#import "BRCDataObject.h"
+#import "BRCEventObject.h"
+#import "BRCDataObjectTableViewCell.h"

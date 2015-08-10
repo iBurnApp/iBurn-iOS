@@ -9,7 +9,7 @@
 #import "BRCEventsTableViewController.h"
 #import "BRCDatabaseManager.h"
 #import "BRCEventObjectTableViewCell.h"
-#import "YapDatabaseViewMappings.h"
+@import YapDatabase;
 #import "BRCDataObject.h"
 #import "BRCFilteredTableViewController_Private.h"
 #import "BRCEventObject.h"

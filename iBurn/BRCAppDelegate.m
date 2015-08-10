@@ -216,7 +216,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    UITableViewController *nearbyVC = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    BRCNearbyViewController *nearbyVC = [[BRCNearbyViewController alloc] initWithStyle:UITableViewStylePlain];
     nearbyVC.title = @"Nearby";
     UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
@@ -389,7 +389,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     }
 }
 
-+ (instancetype) appDelegate {
++ (instancetype) sharedAppDelegate {
     return (BRCAppDelegate*)[UIApplication sharedApplication].delegate;
 }
 

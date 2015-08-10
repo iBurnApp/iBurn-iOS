@@ -6,12 +6,10 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreLocation/CoreLocation.h>
-#import "YapDatabase.h"
-#import "YapDatabaseFilteredViewTypes.h"
-#import "YapDatabaseFilteredView.h"
-#import "YapDatabaseFullTextSearch.h"
+@import Foundation;
+@import CoreLocation;
+@import YapDatabase;
+@import MapKit;
 
 /** iBurn.sqlite */
 extern NSString * const kBRCDatabaseName;
@@ -72,5 +70,15 @@ extern NSString * const kBRCDatabaseName;
 /** Refresh events sorting if selected by expiration/start time */
 - (void) refreshEventsSortingWithCompletionBlock:(dispatch_block_t)completionBlock;
 
+/** R-Tree Index Extension Name */
+@property (nonatomic, strong, readonly) NSString *rTreeIndex;
+
+/** 
+ * Query for objects in bounded region.
+ * @see MKCoordinateRegionMakeWithDistance
+ */
+- (void) queryObjectsInRegion:(MKCoordinateRegion)region
+              completionQueue:(dispatch_queue_t)completionQueue
+                 resultsBlock:(void (^)(NSArray *results))resultsBlock;
 
 @end

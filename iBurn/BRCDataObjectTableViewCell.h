@@ -20,6 +20,9 @@
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *rightSubtitleLabel;
 
+/** If favoriteButtonAction is set, you must save your changes */
+@property (nonatomic, copy) dispatch_block_t favoriteButtonAction;
+
 @property (nonatomic, strong) BRCDataObject *dataObject;
 
 + (NSString*) cellIdentifier;

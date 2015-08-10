@@ -10,8 +10,8 @@
 #import "BRCEventObject.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCDatabaseManager.h"
-#import "YapDatabaseFilteredView.h"
-#import "YapDatabaseFilteredViewTransaction.h"
+@import YapDatabase;
+
 
 NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdentifier";
 

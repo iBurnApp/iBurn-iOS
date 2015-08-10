@@ -7,21 +7,19 @@
 //
 
 #import "BRCDatabaseManager.h"
-#import "YapDatabaseRelationship.h"
-#import "YapDatabaseView.h"
-#import "YapDatabaseFullTextSearch.h"
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
-#import "YapDatabaseFilteredView.h"
 #import "NSDateFormatter+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
-#import "YapDatabaseFilteredViewTypes.h"
 #import "BRCAppDelegate.h"
 #import "BRCEventsTableViewController.h"
-#import "YapDatabase.h"
-#import "YapDatabaseSearchResultsView.h"
 #import "NSDate+iBurn.h"
+
+static NSString * const RTreeMinLat = @"RTreeMinLat";
+static NSString * const RTreeMaxLat = @"RTreeMaxLat";
+static NSString * const RTreeMinLon = @"RTreeMinLon";
+static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
 NSString * const kBRCDatabaseName = @"iBurn-2015.sqlite";
 
@@ -188,6 +186,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self registerFullTextSearch];
         [self registerFilteredViews];
         [self registerSearchViews];
+        [self registerRTreeIndex];
     });
 }
 
@@ -267,6 +266,33 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }]; 
 }
 
+- (void) registerRTreeIndex {
+    _rTreeIndex = @"RTreeIndex";
+    YapDatabaseRTreeIndexSetup *setup = [[YapDatabaseRTreeIndexSetup alloc] init];
+    [setup setColumns:@[RTreeMinLat,
+                        RTreeMaxLat,
+                        RTreeMinLon,
+                        RTreeMaxLon]];
+    YapDatabaseRTreeIndexHandler *handler = [YapDatabaseRTreeIndexHandler withObjectBlock:^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
+        if ([object isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = object;
+            dict[RTreeMinLat] = @(dataObject.coordinate.latitude);
+            dict[RTreeMaxLat] = @(dataObject.coordinate.latitude);
+            dict[RTreeMinLon] = @(dataObject.coordinate.longitude);
+            dict[RTreeMaxLon] = @(dataObject.coordinate.longitude);
+        }
+    }];
+    YapDatabaseRTreeIndexOptions *options = [[YapDatabaseRTreeIndexOptions alloc] init];
+    NSSet *allowedCollections = [NSSet setWithArray:@[
+                                                      [[BRCArtObject class] collection],
+                                                      [[BRCCampObject class] collection],
+                                                      [[BRCEventObject class] collection]]
+                                 ];
+    options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
+    YapDatabaseRTreeIndex *rTree = [[YapDatabaseRTreeIndex alloc] initWithSetup:setup handler:handler versionTag:@"1" options:options];
+    BOOL success = [self.database registerExtension:rTree withName:self.rTreeIndex];
+    NSLog(@"%@ %d", self.rTreeIndex, success);
+}
 
 
 + (YapDatabaseViewGrouping*)groupingForClass:(Class)viewClass {
@@ -573,6 +599,69 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass];
         [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:completionBlock];
+}
+
+/**
+ * Query for objects in bounded region.
+ * @see MKCoordinateRegionMakeWithDistance
+ */
+- (void) queryObjectsInRegion:(MKCoordinateRegion)region
+              completionQueue:(dispatch_queue_t)completionQueue
+                 resultsBlock:(void (^)(NSArray *results))resultsBlock {
+    CLLocationCoordinate2D northWestCorner = kCLLocationCoordinate2DInvalid; // max
+    CLLocationCoordinate2D southEastCorner = kCLLocationCoordinate2DInvalid; // min
+    CLLocationCoordinate2D center = region.center;
+    northWestCorner.latitude  = center.latitude  - (region.span.latitudeDelta  / 2.0);
+    northWestCorner.longitude = center.longitude + (region.span.longitudeDelta / 2.0);
+    southEastCorner.latitude  = center.latitude  + (region.span.latitudeDelta  / 2.0);
+    southEastCorner.longitude = center.longitude - (region.span.longitudeDelta / 2.0);
+    
+    // gotta switch these around for some reason
+    CLLocationCoordinate2D minCoord = CLLocationCoordinate2DMake(northWestCorner.latitude, southEastCorner.longitude);
+    CLLocationCoordinate2D maxCoord = CLLocationCoordinate2DMake(southEastCorner.latitude, northWestCorner.longitude);
+    [self queryObjectsInMinCoord:minCoord maxCoord:maxCoord completionQueue:completionQueue resultsBlock:resultsBlock];
+}
+
+
+- (void) queryObjectsInMinCoord:(CLLocationCoordinate2D)minCoord
+                       maxCoord:(CLLocationCoordinate2D)maxCoord
+                completionQueue:(dispatch_queue_t)completionQueue
+                   resultsBlock:(void (^)(NSArray *results))resultsBlock {
+    if (!resultsBlock) {
+        return;
+    }
+    if (!completionQueue) {
+        completionQueue = dispatch_get_main_queue();
+    }
+    NSMutableArray *results = [NSMutableArray array];
+    NSString *queryString = [NSString stringWithFormat:@"WHERE %@ >= ? AND %@ <= ? AND %@ >= ? AND %@ <= ?",
+                             RTreeMinLon,
+                             RTreeMaxLon,
+                             RTreeMinLat,
+                             RTreeMaxLat];
+    
+    CLLocationDegrees minLat = minCoord.latitude;
+    CLLocationDegrees minLon = minCoord.longitude;
+    CLLocationDegrees maxLat = maxCoord.latitude;
+    CLLocationDegrees maxLon = maxCoord.longitude;
+    
+    // Not sure why the order is different here
+    NSArray *paramters = @[@(minLon),
+                           @(maxLon),
+                           @(minLat),
+                           @(maxLat)];
+    YapDatabaseQuery *query = [YapDatabaseQuery queryWithString:queryString parameters:paramters];
+    
+    [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        YapDatabaseRTreeIndexTransaction *rTree = [transaction ext:self.rTreeIndex];
+        [rTree enumerateKeysAndObjectsMatchingQuery:query usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
+            if ([object isKindOfClass:[BRCDataObject class]]) {
+                [results addObject:object];
+            }
+        }];
+    } completionQueue:completionQueue completionBlock:^{
+        resultsBlock(results);
+    }];
 }
 
 @end
