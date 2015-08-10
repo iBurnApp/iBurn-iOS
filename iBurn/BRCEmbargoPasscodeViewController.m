@@ -125,8 +125,9 @@
     NSDate *now = [NSDate date];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
-        fullLabelString = [[NSMutableAttributedString alloc] initWithString:@"Gates Are Open!"];
+    if (timeLeftInterval >= 0 ||
+        [[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode]) {
+        fullLabelString = [[NSMutableAttributedString alloc] initWithString:@"Location Data Unlocked!"];
         [self.countdownTimer invalidate];
     } else {
         // Get conversion to months, days, hours, minutes
