@@ -250,7 +250,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     unlockVC.dismissAction = ^{
         [weakUnlock.navigationController popViewControllerAnimated:YES];
     };
-    unlockVC.title = @"Unlock Locations";
+    unlockVC.title = @"Unlock Location Data";
     unlockVC.tabBarItem.image = [UIImage imageNamed:@"BRCLockIcon"];
     
     UITableViewController *debugVC = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];

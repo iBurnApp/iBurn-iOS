@@ -6,9 +6,8 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "MTLModel.h"
-#import "MTLJSONAdapter.h"
-#import <CoreLocation/CoreLocation.h>
+@import Mantle;
+@import CoreLocation;
 
 @interface BRCDataObject : MTLModel <MTLJSONSerializing>
 
@@ -25,18 +24,30 @@
 #pragma mark Constant Properties
 
 /**
- *  All of the below properties are from the PlayaEvents API
+ *  Object title (from the PlayaEvents API)
  */
-
 @property (nonatomic, strong, readonly) NSString *title;
+/**
+ *  Object description (from the PlayaEvents API)
+ */
 @property (nonatomic, strong, readonly) NSString *detailDescription;
+/**
+ *  Email (from the PlayaEvents API)
+ */
 @property (nonatomic, strong, readonly) NSString *email;
+
+/**
+ *  Homepage (from the PlayaEvents API)
+ */
 @property (nonatomic, strong, readonly) NSURL *url;
 
 /**
  *  Real GPS location (this property is dynamically generated)
  */
 @property (nonatomic, readonly) CLLocation *location;
+
+/** Same as location */
+@property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
 
 /**
  *  Unique 'id' from PlayaEvents API
@@ -49,7 +60,7 @@
 @property (nonatomic, strong, readonly) NSString *year;
 
 /**
- *  Playa Coordinates - currently unused
+ *  Playa Coordinates
  */
 @property (nonatomic, strong) NSString *playaLocation;
 

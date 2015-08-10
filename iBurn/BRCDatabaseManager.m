@@ -378,7 +378,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (NSArray*) fullTextSearchIndexProperties {
-    return @[NSStringFromSelector(@selector(title)), NSStringFromSelector(@selector(artistName)),NSStringFromSelector(@selector(detailDescription))];
+    return @[NSStringFromSelector(@selector(title)),
+             NSStringFromSelector(@selector(artistName)),
+             NSStringFromSelector(@selector(detailDescription)),
+             NSStringFromSelector(@selector(campName)),
+             NSStringFromSelector(@selector(artName))];
 }
 
 + (NSString*) fullTextSearchNameForClass:(Class)viewClass

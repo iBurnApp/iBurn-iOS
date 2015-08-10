@@ -11,6 +11,7 @@
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "BRCDataObject_Private.h"
 #import "BRCAppDelegate.h"
+@import Mantle;
 
 @interface BRCDataObject()
 @property (nonatomic, readonly) CLLocationDegrees latitude;
@@ -19,6 +20,7 @@
 
 @implementation BRCDataObject
 @dynamic location;
+@dynamic coordinate;
 
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
     return @{NSStringFromSelector(@selector(title)): @"name",
@@ -33,10 +35,26 @@
 }
 
 - (CLLocation*) location {
-    if (self.latitude == 0 || self.longitude == 0) {
+    CLLocationCoordinate2D coordinate = self.coordinate;
+    if (!CLLocationCoordinate2DIsValid(coordinate)) {
         return nil;
     }
-    return [[CLLocation alloc] initWithLatitude:self.latitude longitude:self.longitude];
+    return [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+}
+
+- (CLLocationCoordinate2D) coordinate {
+    if (_latitude == 0 || _longitude == 0) {
+        return kCLLocationCoordinate2DInvalid;
+    }
+    return CLLocationCoordinate2DMake(_latitude, _longitude);
+}
+
+- (void) setCoordinate:(CLLocationCoordinate2D)coordinate {
+    if (!CLLocationCoordinate2DIsValid(coordinate)) {
+        return;
+    }
+    _latitude = coordinate.latitude;
+    _longitude = coordinate.longitude;
 }
 
 + (NSValueTransformer *)uniqueIDJSONTransformer {
@@ -84,6 +102,27 @@
         return;
     }
     [super mergeValueForKey:key fromModel:model];
+}
+
+/// Determines how the +propertyKeys of the class are encoded into an archive.
+/// The values of this dictionary should be boxed MTLModelEncodingBehavior
+/// values.
+///
+/// Any keys not present in the dictionary will be excluded from the archive.
+///
+/// Subclasses overriding this method should combine their values with those of
+/// `super`.
+///
+/// Returns a dictionary mapping the receiver's +propertyKeys to default encoding
+/// behaviors. If a property is an object with `weak` semantics, the default
+/// behavior is MTLModelEncodingBehaviorConditional; otherwise, the default is
+/// MTLModelEncodingBehaviorUnconditional.
++ (NSDictionary *)encodingBehaviorsByPropertyKey {
+    NSMutableDictionary *behaviors = [[super encodingBehaviorsByPropertyKey] mutableCopy];
+    // these properties are dynamically generated
+    [behaviors setObject:@(MTLModelEncodingBehaviorExcluded) forKey:NSStringFromSelector(@selector(coordinate))];
+    [behaviors setObject:@(MTLModelEncodingBehaviorExcluded) forKey:NSStringFromSelector(@selector(location))];
+    return behaviors;
 }
 
 @end

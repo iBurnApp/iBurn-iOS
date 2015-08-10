@@ -31,8 +31,14 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
 
 @property (nonatomic, readonly) BRCEventType eventType;
 
+/** Camp hosting event. (To assist our full-text search indexing) */
+@property (nonatomic, strong) NSString *campName;
+/** Art hosting event. (To assist our full-text search indexing) */
+@property (nonatomic, strong) NSString *artName;
 
+/** PlayaEvents ID of event's camp */
 @property (nonatomic, strong, readonly) NSString *hostedByCampUniqueID;
+/** PlayaEvents ID of event's art */
 @property (nonatomic, strong, readonly) NSString *hostedByArtUniqueID;
 
 

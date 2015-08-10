@@ -252,6 +252,36 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
+    
+#warning Remove me when the source data is fixed?
+    ////////////// Data massaging
+    NSMutableArray *objectsToUpdate = [NSMutableArray array];
+    [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
+            if ([object isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event = [object copy];
+                __block BRCCampObject *camp = nil;
+                __block BRCArtObject *art = nil;
+                camp = [event hostedByCampWithTransaction:transaction];
+                art = [event hostedByArtWithTransaction:transaction];
+                if (camp) {
+                    event.campName = camp.title;
+                    event.coordinate = camp.coordinate;
+                }
+                if (art) {
+                    event.artName = art.title;
+                    event.coordinate = art.coordinate;
+                }
+                [objectsToUpdate addObject:event];
+            }
+        }];
+    }];
+    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+        [objectsToUpdate enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
+            [transaction setObject:object forKey:object.uniqueID inCollection:[[object class] collection]];
+        }];
+    }];
+    ///////////////////////////
     return YES;
 }
 
