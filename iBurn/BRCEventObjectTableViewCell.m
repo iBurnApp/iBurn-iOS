@@ -17,17 +17,20 @@
 - (void) setDataObject:(BRCDataObject*)dataObject {
     [super setDataObject:dataObject];
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
+    NSDate *now = [NSDate date];
     if (eventObject.isAllDay) {
         self.rightSubtitleLabel.text = @"All Day";
-    } else if (eventObject.isStartingSoon) {
+    } else if ([eventObject isStartingSoon:now]) {
         NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
         NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
-        NSString *minsUntilStartString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilStartDate];
+        NSTimeInterval startDuration = [eventObject timeIntervalUntilStart:now];
+        NSString *minsUntilStartString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:startDuration];
         self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
-    } else if (eventObject.isHappeningRightNow) {
-        NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventObject.timeIntervalUntilEndDate];
+    } else if ([eventObject isHappeningRightNow:now]) {
+        NSTimeInterval endDuration = [eventObject timeIntervalUntilEnd:[NSDate date]];
+        NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:endDuration];
         self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
-    } else if (eventObject.hasEnded && eventObject.hasStarted) {
+    } else if ([eventObject hasEnded:now] && [eventObject hasStarted:now]) {
         self.rightSubtitleLabel.text = @"Expired";
     } else { // Starts in long time
         NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
@@ -35,7 +38,7 @@
         NSString *timeString = [[NSString stringWithFormat:@"%@ - %@", startTime, endTime] lowercaseString];
         self.rightSubtitleLabel.text = timeString;
     }
-    UIColor *eventStatusColor = [eventObject colorForEventStatus];
+    UIColor *eventStatusColor = [eventObject colorForEventStatus:now];
     self.rightSubtitleLabel.textColor = eventStatusColor;
     NSString *eventType = [BRCEventObject stringForEventType:eventObject.eventType];
     if (!eventType.length) {

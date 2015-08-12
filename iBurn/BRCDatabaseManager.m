@@ -555,8 +555,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseViewFiltering*) eventsFilteredByExpiration:(BOOL)showExpired eventTypes:(NSSet*)eventTypes {
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
+            NSDate *now = [NSDate date];
             BRCEventObject *eventObject = (BRCEventObject*)object;
-            BOOL eventHasEnded = eventObject.hasEnded || eventObject.isEndingSoon;
+            BOOL eventHasEnded = [eventObject hasEnded:now] || [eventObject isEndingSoon:now];
             BOOL eventMatchesTypeFilter = [eventTypes containsObject:@(eventObject.eventType)];
             
             if ((eventMatchesTypeFilter || [eventTypes count] == 0)) {

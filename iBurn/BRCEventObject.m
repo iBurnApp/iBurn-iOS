@@ -24,17 +24,18 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
 
 @implementation BRCEventObject
 
-- (NSTimeInterval)timeIntervalUntilStartDate
+- (NSTimeInterval)timeIntervalUntilStart:(NSDate*)date
 {
     if (self.startDate) {
-        return [self.startDate timeIntervalSinceDate:[NSDate date]];
+        return [self.startDate timeIntervalSinceDate:date];
     }
     return DBL_MAX;
 }
-- (NSTimeInterval)timeIntervalUntilEndDate
+
+- (NSTimeInterval)timeIntervalUntilEnd:(NSDate*)date
 {
     if (self.endDate) {
-        return [self.endDate timeIntervalSinceDate:[NSDate date]];
+        return [self.endDate timeIntervalSinceDate:date];
     }
     return DBL_MAX;
 }
@@ -44,9 +45,9 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     return duration;
 }
 
-- (BOOL)isHappeningRightNow
+- (BOOL)isHappeningRightNow:(NSDate*)currentDate
 {
-    if ([self hasStarted] && ![self hasEnded]) {
+    if ([self hasStarted:currentDate] && ![self hasEnded:currentDate]) {
         return YES;
     }
     return NO;
@@ -92,10 +93,10 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     }];
 }
 
-- (BOOL) isEndingSoon {
+- (BOOL) isEndingSoon:(NSDate*)currentDate {
     NSTimeInterval endingSoonTimeThreshold = 15 * 60; // 15 minutes
     // event will end soon
-    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEndDate];
+    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEnd:currentDate];
     if (timeIntervalUntilEventEnds < endingSoonTimeThreshold && timeIntervalUntilEventEnds > 0) { // event ending soon
         return YES;
     }
@@ -105,25 +106,25 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
 /**
  *  Whether or not the event starts within the next hour
  */
-- (BOOL)isStartingSoon {
+- (BOOL)isStartingSoon:(NSDate*)currentDate {
     NSTimeInterval startingSoonTimeThreshold = 60 * 60; // one hour
-    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStartDate];
-    if (![self hasStarted] && timeIntervalUntilEventStarts < startingSoonTimeThreshold) { // event starting soon
+    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStart:currentDate];
+    if (![self hasStarted:currentDate] && timeIntervalUntilEventStarts < startingSoonTimeThreshold) { // event starting soon
         return YES;
     }
     return NO;
 }
 
-- (BOOL)hasStarted {
-    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStartDate];
+- (BOOL)hasStarted:(NSDate*)currentDate {
+    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStart:currentDate];
     if (timeIntervalUntilEventStarts < 0) { // event started
         return YES;
     }
     return NO;
 }
 
-- (BOOL)hasEnded {
-    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEndDate];
+- (BOOL)hasEnded:(NSDate*)currentDate {
+    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEnd:currentDate];
     if (timeIntervalUntilEventEnds < 0) { // event ended
         return YES;
     }
@@ -158,37 +159,37 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     return dates;
 }
 
-- (UIImage *)markerImageForEventStatus
+- (UIImage *)markerImageForEventStatus:(NSDate*)currentDate
 {
-    if (self.isStartingSoon) {
+    if ([self isStartingSoon:currentDate]) {
         return [UIImage imageNamed:@"BRCLightGreenPin"];
     }
-    if (self.isEndingSoon) {
+    if ([self isEndingSoon:currentDate]) {
         return [UIImage imageNamed:@"BRCOrangePin"];
     }
-    if (self.hasEnded) {
+    if ([self hasEnded:currentDate]) {
         return [UIImage imageNamed:@"BRCRedPin"];
     }
-    if (self.isHappeningRightNow) {
+    if ([self isHappeningRightNow:currentDate]) {
         return [UIImage imageNamed:@"BRCGreenPin"];
     }
     return [UIImage imageNamed:@"BRCPurplePin"];
 }
 
-- (UIColor*) colorForEventStatus {
-    if (self.isStartingSoon) {
+- (UIColor*) colorForEventStatus:(NSDate*)currentDate {
+    if ([self isStartingSoon:currentDate]) {
         return [UIColor brc_lightGreenColor];
     }
-    if (!self.hasStarted) {
+    if (![self hasStarted:currentDate]) {
         return [UIColor darkTextColor];
     }
-    if (self.isEndingSoon) {
+    if ([self isEndingSoon:currentDate]) {
         return [UIColor brc_orangeColor];
     }
-    if (self.hasEnded) {
+    if ([self hasEnded:currentDate]) {
         return [UIColor brc_redColor];
     }
-    if (self.isHappeningRightNow) {
+    if ([self isHappeningRightNow:currentDate]) {
         return [UIColor brc_greenColor];
     }
     return [UIColor darkTextColor];
@@ -238,7 +239,8 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
 
 + (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
     NSParameterAssert(eventObject.isFavorite);
-    if ([eventObject hasStarted] || [eventObject hasEnded]) {
+    NSDate *now = [NSDate date];
+    if ([eventObject hasStarted:now] || [eventObject hasEnded:now]) {
         return;
     }
     if (!eventObject.scheduledNotification) {

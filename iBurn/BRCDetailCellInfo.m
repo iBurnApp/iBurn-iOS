@@ -111,7 +111,7 @@
                         return;
                     }
                 } else if ([cellValue isKindOfClass:[NSNumber class]]) {
-                    if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromUser))]) {
+                    if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromLocation:))]) {
                         NSNumber *numberValue = cellValue;
                         double doubleValue = numberValue.doubleValue;
                         if (doubleValue == CLLocationDistanceMax || doubleValue == 0) {
@@ -158,7 +158,7 @@
         NSString *dateString = [NSString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
         NSString *fullString = [NSString stringWithFormat:@"%@\n%@", dateString, timeString];
         fullScheduleString = [[NSMutableAttributedString alloc] initWithString:fullString];
-        UIColor *timeColor = [event colorForEventStatus];
+        UIColor *timeColor = [event colorForEventStatus:[NSDate date]];
         NSRange timeRange = NSMakeRange(dateString.length+1, timeString.length);
         [fullScheduleString setAttributes:@{NSForegroundColorAttributeName: timeColor}
                                     range:timeRange];

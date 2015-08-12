@@ -440,13 +440,15 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.currentlyAddingEventAnnotations = YES;
     NSArray *oldAnnotations = [self.eventAnnotations copy];
     
+    NSDate *now = [NSDate date];
+    
     [self.eventsConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *eventAnnotationsToAdd = [NSMutableArray array];
         [transaction enumerateKeysInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, BOOL *stop) {
             BRCEventObject *eventObject = [transaction objectForKey:key inCollection:[BRCEventObject collection]];
             
             //Check if event is currently happening or that the start time is in the next time window
-            if([eventObject isHappeningRightNow] || [eventObject isStartingSoon]) {
+            if([eventObject isHappeningRightNow:now] || [eventObject isStartingSoon:now]) {
                 RMAnnotation *eventAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:eventObject];
                 
                 // if eventObject doesn't have a valid location, annotationWithMapView will

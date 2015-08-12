@@ -56,30 +56,32 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  */
 @property (nonatomic, readonly) BOOL checkLocation;
 
-- (NSTimeInterval)timeIntervalUntilStartDate;
-- (NSTimeInterval)timeIntervalUntilEndDate;
+- (NSTimeInterval)timeIntervalUntilStart:(NSDate*)currentDate;
+- (NSTimeInterval)timeIntervalUntilEnd:(NSDate*)currentDate;
+
+/** How long the event is */
 - (NSTimeInterval)timeIntervalForDuration;
 
 /**
  *  Whether or not the event is still happening *right now*
  */
-- (BOOL)isHappeningRightNow;
+- (BOOL)isHappeningRightNow:(NSDate*)currentDate;
 
 /**
  *  Whether or not the event ends in the next 15 minutes
  */
-- (BOOL)isEndingSoon;
+- (BOOL)isEndingSoon:(NSDate*)currentDate;
 
 /**
  *  Whether or not the event starts within the next hour
  */
-- (BOOL)isStartingSoon;
+- (BOOL)isStartingSoon:(NSDate*)currentDate;
 
 /** Whether or not the event has started yet */
-- (BOOL)hasStarted;
+- (BOOL)hasStarted:(NSDate*)currentDate;
 
 /** Whether or not the event has ended */
-- (BOOL)hasEnded;
+- (BOOL)hasEnded:(NSDate*)currentDate;
 
 
 /** first day of events */
@@ -99,13 +101,13 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
  *  Returns color for event status based on isOngoing
  *  isEndingSoon, and isStartingSoon.
  */
-- (UIColor*) colorForEventStatus;
+- (UIColor*) colorForEventStatus:(NSDate*)currentDate;
 
 /**
  *  Returns Image for event status based on isOngoing
  *  isEndingSoon, and isStartingSoon.
  */
-- (UIImage *)markerImageForEventStatus;
+- (UIImage *)markerImageForEventStatus:(NSDate*)currentDate;
 
 /** convert BRCEventType to display string */
 + (NSString *)stringForEventType:(BRCEventType)type;

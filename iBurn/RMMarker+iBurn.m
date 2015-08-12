@@ -22,7 +22,7 @@
         markerImage = [UIImage imageNamed:@"BRCBluePin"];
     } else if (dataObjectClass == [BRCEventObject class]) {
         BRCEventObject *eventObject = (BRCEventObject*)dataObject;
-        markerImage = [eventObject markerImageForEventStatus];
+        markerImage = [eventObject markerImageForEventStatus:[NSDate date]];
     } else if (dataObjectClass == [BRCCampObject class]) {
         markerImage = [UIImage imageNamed:@"BRCPurplePin"];
     }
