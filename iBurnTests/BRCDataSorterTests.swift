@@ -11,7 +11,7 @@ import XCTest
 import iBurn
 
 class BRCDataSorterTests: BRCDataImportTests {
-
+    
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -39,14 +39,39 @@ class BRCDataSorterTests: BRCDataImportTests {
             XCTAssert(dataObjects.count == 55, "Incorrect object count!")
             
             let options = BRCDataSorterOptions()
+            options.showExpiredEvents = true
+            options.showFutureEvents = true
             BRCDataSorter.sortDataObjects(dataObjects, options: options, completionQueue: nil, callbackBlock: { (events, art, camps) -> (Void) in
-                NSLog("Found %d events", events.count)
-                NSLog("Found %d art", art.count)
-                NSLog("Found %d camps", camps.count)
-                XCTAssert(events.count == 40, "Wrong event count")
-                XCTAssert(camps.count == 11, "Wrong camp count")
-                XCTAssert(art.count == 4, "Wrong art count")
-                self.expectation!.fulfill()
+                let eventCount = events.count
+                let artCount = art.count
+                let campsCount = camps.count
+                NSLog("Found %d events", eventCount)
+                NSLog("Found %d art", artCount)
+                NSLog("Found %d camps", campsCount)
+                XCTAssert(eventCount == 40, "Wrong event count")
+                XCTAssert(campsCount == 11, "Wrong camp count")
+                XCTAssert(artCount == 4, "Wrong art count")
+                
+                let dateFormatter = NSDateFormatter.brc_playaEventsAPIDateFormatter()
+                let now = dateFormatter.dateFromString("2015-09-04 12:59:00")!
+                options.now = now
+                options.showExpiredEvents = false
+                options.showFutureEvents = false
+                BRCDataSorter.sortDataObjects(dataObjects, options: options, completionQueue: nil, callbackBlock: { (events, art, camps) -> (Void) in
+                    let eventCount = events.count
+                    NSLog("Found %d filtered events", eventCount)
+                    XCTAssert(eventCount == 1, "Wrong filered count")
+                    
+                    let now = dateFormatter.dateFromString("2015-09-02 14:25:00")!
+                    options.now = now
+                    options.showFutureEvents = true
+                    BRCDataSorter.sortDataObjects(dataObjects, options: options, completionQueue: nil, callbackBlock: { (events, art, camps) -> (Void) in
+                        let eventCount = events.count
+                        NSLog("Found %d filtered events", eventCount)
+                        XCTAssert(eventCount == 27, "Wrong filered count")
+                        self.expectation!.fulfill()
+                    })
+                })
             })
             
         })
