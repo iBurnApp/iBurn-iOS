@@ -32,6 +32,8 @@
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		B0C177C1481EA14DBAA3EFC7 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C8C085A67599EA761E94627 /* Pods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
+		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
@@ -136,6 +138,10 @@
 		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
 		749CB956D79E7D284C256EA3 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorter.swift; sourceTree = "<group>"; };
+		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
+		D902DF0F1B7B228100057898 /* BRCDataImportTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImportTests.h; sourceTree = "<group>"; };
 		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
 		D9046ED4198C65D70013CCF4 /* camp_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = camp_data.json; sourceTree = "<group>"; };
 		D9046ED5198C65D70013CCF4 /* dates_info.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
@@ -482,10 +488,13 @@
 		D980A90B1B3F5A6400BE3682 /* iBurnTests */ = {
 			isa = PBXGroup;
 			children = (
+				D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */,
 				D9914C4A1B40C52E00F90663 /* TestData */,
 				D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */,
+				D902DF0F1B7B228100057898 /* BRCDataImportTests.h */,
 				63010F001B72E2EA000A847C /* BRCGeocoderTest.m */,
 				D980A90C1B3F5A6400BE3682 /* Supporting Files */,
+				D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */,
 			);
 			path = iBurnTests;
 			sourceTree = "<group>";
@@ -582,6 +591,7 @@
 		D994157B1987278400D245C7 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */,
 				D99415781987277500D245C7 /* BRCDatabaseManager.h */,
 				D99415791987277500D245C7 /* BRCDatabaseManager.m */,
 				D994156F198726F400D245C7 /* BRCDataImporter.h */,
@@ -819,6 +829,7 @@
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */,
+				D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */,
 				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
@@ -858,6 +869,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */,
 				D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */,
 				63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */,
 			);
@@ -1014,6 +1026,7 @@
 			baseConfigurationReference = 749CB956D79E7D284C256EA3 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1030,6 +1043,8 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "iBurnTests/iBurnTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
 			};
 			name = Debug;
@@ -1039,6 +1054,7 @@
 			baseConfigurationReference = 6200215A1BF28D44858F48C4 /* Pods.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1056,6 +1072,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "iBurnTests/iBurnTests-Bridging-Header.h";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
 			};
 			name = Release;

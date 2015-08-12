@@ -428,4 +428,11 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
 {
 }
 
+#pragma mark Testing
+
+/** Do not call outside of tests */
+- (void) waitForDataUpdatesToFinish {
+    [self.updateQueue waitUntilAllOperationsAreFinished];
+}
+
 @end

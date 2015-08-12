@@ -10,6 +10,10 @@
 #import "BRCUpdateInfo.h"
 
 @interface BRCDataImporter(Private)
+
+/** Do not call outside of tests */
+- (void) waitForDataUpdatesToFinish;
+
 /** Synchronously imports data. Do not call from outside of tests! */
 - (BOOL) loadDataFromJSONData:(NSData*)jsonData
                     dataClass:(Class)dataClass

@@ -15,13 +15,7 @@
 #import "BRCRecurringEventObject.h"
 #import "BRCDataImporter_Private.h"
 #import "BRCUpdateInfo.h"
-
-@interface BRCDataImportTests : XCTestCase
-@property (nonatomic, strong, readonly) BRCDataImporter *importer;
-@property (nonatomic, strong, readonly) YapDatabase *database;
-@property (nonatomic, strong, readonly) YapDatabaseConnection *connection;
-@property (nonatomic, strong, readonly) XCTestExpectation *expectation;
-@end
+#import "BRCDataImportTests.h"
 
 @implementation BRCDataImportTests
 
@@ -75,27 +69,43 @@
     XCTAssertTrue(camp1.isFavorite);
 }
 
+/** update.json URL for updated_data */
++ (NSURL*) testDataURL {
+    NSURL *updatedURL = [[self class] testDataURLForDirectory:@"updated_data"];
+    return updatedURL;
+}
+
+/** update.json URL within initial_data or updated_data */
++ (NSURL*) testDataURLForDirectory:(NSString*)directory {
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *initialDataPath = [bundle pathForResource:@"update.json" ofType:@"js" inDirectory:directory];
+    NSURL *initialUpdateURL = [NSURL fileURLWithPath:initialDataPath];
+    return initialUpdateURL;
+}
+
+
 - (void)testLoadUpdates {
     _expectation = [self expectationWithDescription:@"load updates"];
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSString *initialDataPath = [bundle pathForResource:@"update.json" ofType:@"js" inDirectory:@"initial_data"];
-    NSURL *initialUpdateURL = [NSURL fileURLWithPath:initialDataPath];
+    NSURL *initialUpdateURL = [[self class] testDataURLForDirectory:@"initial_data"];
     XCTAssertNotNil(initialUpdateURL);
     
-    NSString *updatedDataPath = [bundle pathForResource:@"update.json" ofType:@"js" inDirectory:@"updated_data"];
-    NSURL *updatedURL = [NSURL fileURLWithPath:updatedDataPath];
+    NSURL *updatedURL = [[self class] testDataURLForDirectory:@"updated_data"];
     XCTAssertNotNil(updatedURL);
     
     [self.importer loadUpdatesFromURL:initialUpdateURL fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
         XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
         NSLog(@"**** First update...");
+        [self.importer waitForDataUpdatesToFinish];
         [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
             XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
             NSLog(@"**** Second update (dupe)...");
+            [self.importer waitForDataUpdatesToFinish];
             [self.importer loadUpdatesFromURL:updatedURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
                 XCTAssert(fetchResult == UIBackgroundFetchResultNewData);
                 NSLog(@"**** Third update...");
+                [self.importer waitForDataUpdatesToFinish];
                 [self.importer loadUpdatesFromURL:initialUpdateURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
+                    [self.importer waitForDataUpdatesToFinish];
                     XCTAssert(fetchResult == UIBackgroundFetchResultNoData);
                     NSLog(@"**** Fourth update...");
                     [self.expectation fulfill];
