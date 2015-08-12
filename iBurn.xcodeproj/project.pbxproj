@@ -38,6 +38,7 @@
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
+		D92B959A1B7B0CC300116781 /* 2015 in Resources */ = {isa = PBXBuildFile; fileRef = D92B95991B7B0CC300116781 /* 2015 */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
@@ -45,7 +46,6 @@
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
-		D9842A2D1B51C8F90056455D /* 2015 in Resources */ = {isa = PBXBuildFile; fileRef = D9842A2C1B51C8F90056455D /* 2015 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
@@ -156,6 +156,7 @@
 		D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCEventObjectTableViewCell.xib; sourceTree = "<group>"; };
 		D92562CD198A20D600ED6B50 /* RMMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RMMapView+iBurn.h"; sourceTree = "<group>"; };
 		D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RMMapView+iBurn.m"; sourceTree = "<group>"; };
+		D92B95991B7B0CC300116781 /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015/2015"; sourceTree = SOURCE_ROOT; };
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
@@ -173,7 +174,6 @@
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D980A90D1B3F5A6400BE3682 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataImportTests.m; sourceTree = "<group>"; };
-		D9842A2C1B51C8F90056455D /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015"; sourceTree = SOURCE_ROOT; };
 		D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter_Private.h; sourceTree = "<group>"; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/2015/initial_data; sourceTree = "<group>"; };
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/2015/updated_data; sourceTree = "<group>"; };
@@ -502,7 +502,7 @@
 			isa = PBXGroup;
 			children = (
 				63010EFB1B72DE89000A847C /* bundle.js */,
-				D9842A2C1B51C8F90056455D /* 2015 */,
+				D92B95991B7B0CC300116781 /* 2015 */,
 			);
 			name = 2015;
 			path = "../Submodules/iBurn-Data/data/2014";
@@ -683,7 +683,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
-				D9842A2D1B51C8F90056455D /* 2015 in Resources */,
+				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
 				63010EFC1B72DE89000A847C /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
