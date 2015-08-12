@@ -56,7 +56,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Parse setApplicationId:kBRCParseApplicationId
                   clientKey:kBRCParseClientKey];
     
-    [[UIApplication sharedApplication] setStatusBarHidden:NO];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [UIApplication sharedApplication].statusBarHidden = NO;
     
     // Can we set a better interval?
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
