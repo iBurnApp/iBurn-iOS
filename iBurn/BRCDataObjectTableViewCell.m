@@ -39,10 +39,9 @@
 
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation {
     CLLocation *recentLocation = fromLocation;
-    CLLocation *objectLocation = self.dataObject.location;
     CLLocationDistance distance = CLLocationDistanceMax;
-    if (recentLocation && objectLocation) {
-        distance = [objectLocation distanceFromLocation:recentLocation];
+    if (recentLocation) {
+        distance = [self.dataObject distanceFromLocation:recentLocation];
     }
     if (distance == CLLocationDistanceMax || distance == 0) {
         self.subtitleLabel.text = @"🚶🏽 ? min   🚴🏽 ? min";

@@ -15,6 +15,7 @@
 #import "BRCDatabaseManager.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEmbargo.h"
+#import "BRCAppDelegate.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -42,7 +43,7 @@
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromUser)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromLocation:)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
     
@@ -88,7 +89,15 @@
     NSMutableArray *finalCellInfoArray = [NSMutableArray new];
     [defaultArray enumerateObjectsUsingBlock:^(BRCDetailCellInfo *cellInfo, NSUInteger idx, BOOL *stop) {
         if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
-            id cellValue = [object valueForKey:cellInfo.key];
+            id cellValue = nil;
+            // Distance is a 'special' case
+            if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromLocation:))]) {
+                CLLocation *userLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
+                CLLocationDistance distance = [object distanceFromLocation:userLocation];
+                cellValue = @(distance);
+            } else {
+                cellValue = [object valueForKey:cellInfo.key];
+            }
             if (cellValue != nil && ![cellValue isEqual:[NSNull null]]) {
                 //if value is a string check that it has an length
                 if ([cellValue isKindOfClass:[NSString class]]) {

@@ -85,14 +85,13 @@
     return NSStringFromClass([self class]);
 }
 
-// this is a bad hack
-- (CLLocationDistance) distanceFromUser {
-    CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
+- (CLLocationDistance) distanceFromLocation:(CLLocation*)location {
+    NSParameterAssert(location);
     CLLocation *objectLocation = self.location;
-    if (!currentLocation || !objectLocation) {
+    if (!location || !objectLocation) {
         return CLLocationDistanceMax;
     }
-    CLLocationDistance distance = [currentLocation distanceFromLocation:objectLocation];
+    CLLocationDistance distance = [location distanceFromLocation:objectLocation];
     return distance;
 }
 
