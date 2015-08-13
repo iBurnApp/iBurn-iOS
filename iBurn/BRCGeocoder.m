@@ -7,6 +7,7 @@
 //
 
 #import "BRCGeocoder.h"
+@import BButton;
 @import JavaScriptCore;
 
 @interface BRCGeocoder()
@@ -17,6 +18,15 @@
 @end
 
 @implementation BRCGeocoder
+
++ (instancetype) sharedInstance {
+    static id sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
+}
 
 - (instancetype)init{
     if (self = [super init]) {
@@ -73,6 +83,18 @@
         locationString = [self executeReverseLookup:location];
     });
     return locationString;
+}
+
+
+/** Add font-awesome crosshairs */
++ (NSAttributedString*) locationStringWithCrosshairs:(NSString*)locationString {
+    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] init];
+    NSAttributedString *crosshairs = [[NSAttributedString alloc] initWithString:[NSString fa_stringForFontAwesomeIcon:FACrosshairs] attributes:@{NSFontAttributeName: [UIFont fontWithName:kFontAwesomeFont size:17]}];
+    [string appendAttributedString:crosshairs];
+    [string appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+    NSAttributedString *location = [[NSAttributedString alloc] initWithString:locationString attributes:@{NSFontAttributeName: [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]}];
+    [string appendAttributedString:location];
+    return string;
 }
 
 @end

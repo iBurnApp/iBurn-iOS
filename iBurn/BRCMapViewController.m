@@ -239,7 +239,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartIcon"];
     [self setupNewMapPointButton];
     [self setupAnnotationEditView];
-    self.geocoder = [[BRCGeocoder alloc] init];
+    self.geocoder = [BRCGeocoder sharedInstance];
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
@@ -556,7 +556,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     if (newLocation) {
         [self.geocoder asyncReverseLookup:newLocation.coordinate completionQueue:dispatch_get_main_queue() completion:^(NSString *locationString) {
             if (locationString.length > 0) {
-                self.navigationItem.title = locationString;
+                NSAttributedString *attrLocString = [BRCGeocoder locationStringWithCrosshairs:locationString];
+                UILabel *label = [[UILabel alloc] init];
+                label.attributedText = attrLocString;
+                [label sizeToFit];
+                self.navigationItem.titleView = label;
             } else {
                 self.navigationItem.title = @"Map";
             }

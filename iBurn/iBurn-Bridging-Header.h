@@ -10,3 +10,5 @@
 #import "BRCDataObject.h"
 #import "BRCEventObject.h"
 #import "BRCDataObjectTableViewCell.h"
+#import "BRCGeocoder.h"
+#import "BRCDetailViewController.h"

@@ -202,7 +202,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     
     // Remove me!
 #warning Remove me when playa location data is fixed
-    BRCGeocoder *geocoder = [[BRCGeocoder alloc] init];
+    BRCGeocoder *geocoder = [BRCGeocoder sharedInstance];
     
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // Update Fetch info status

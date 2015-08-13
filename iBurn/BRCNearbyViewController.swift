@@ -93,6 +93,18 @@ class BRCNearbyViewController: UITableViewController {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         refreshNearbyItems()
+        let location = BRCAppDelegate.sharedAppDelegate().locationManager.location
+        BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
+            if count(locationString) > 0 {
+                let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
+                let label = UILabel()
+                label.attributedText = attrString
+                label.sizeToFit()
+                self.navigationItem.titleView = label
+            } else {
+                self.navigationItem.title = self.title
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -170,4 +182,10 @@ class BRCNearbyViewController: UITableViewController {
         return cell
     }
     
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let dataObject = sections[indexPath.section].objects[indexPath.row]
+        let detailVC = BRCDetailViewController(dataObject: dataObject)
+        navigationController!.pushViewController(detailVC, animated: true)
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    }
 }

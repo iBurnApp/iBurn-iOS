@@ -17,5 +17,9 @@
 /** Synchronously lookup location. WARNING: This may block for a long time! */
 - (NSString*) reverseLookup:(CLLocationCoordinate2D)location;
 
++ (instancetype) sharedInstance;
+
+/** Add font-awesome crosshairs */
++ (NSAttributedString*) locationStringWithCrosshairs:(NSString*)locationString;
 
 @end
