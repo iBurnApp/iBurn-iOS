@@ -36,6 +36,7 @@
     [geocoder asyncReverseLookup:coordinate completionQueue:nil completion:^(NSString *locationString) {
         NSLog(@"coded to location: %@", locationString);
         XCTAssert([locationString length] > 0, @"No location");
+        XCTAssert(![locationString isEqualToString:@"undefined"]);
         [expectation fulfill];
     }];
     
