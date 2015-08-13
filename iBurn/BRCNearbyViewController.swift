@@ -9,9 +9,24 @@
 import UIKit
 import MapKit
 
+private enum TableSection: Int {
+    case Events = 0,
+    Camps,
+    Art
+}
+
+private enum EmptyListLabelText: String {
+    case Loading = "Loading...",
+    Nothing = "Nothing Nearby"
+}
+
 class BRCNearbyViewController: UITableViewController {
 
-    var nearbyObjects: [BRCDataObject] = []
+    var nearbyEvents: [BRCEventObject] = []
+    var nearbyCamps: [BRCCampObject] = []
+    var nearbyArt: [BRCArtObject] = []
+    
+    private var emptyListText = EmptyListLabelText.Loading
     
     // MARK - View cycle 
     
@@ -28,6 +43,7 @@ class BRCNearbyViewController: UITableViewController {
             let reuseIdentifier = cellClass.cellIdentifier()
             self.tableView!.registerNib(nib, forCellReuseIdentifier: reuseIdentifier)
         }
+        self.tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
     
     func getCurrentLocation() -> CLLocation {
@@ -42,10 +58,17 @@ class BRCNearbyViewController: UITableViewController {
         let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, boxSize, boxSize)
         BRCDatabaseManager.sharedInstance().queryObjectsInRegion(region, completionQueue: dispatch_get_main_queue(), resultsBlock: { (results: [AnyObject]!) -> Void in
             // TODO: Filter & sort items
-            self.nearbyObjects = results as! [BRCDataObject]
-            let sortedObjects = self.nearbyObjects.sorted({ $0.title < $1.title })
-            self.nearbyObjects = sortedObjects
-            self.tableView.reloadData()
+            let nearbyObjects = results as! [BRCDataObject]
+            let options = BRCDataSorterOptions()
+            BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
+                self.nearbyArt = art
+                self.nearbyEvents = events
+                self.nearbyCamps = camps
+                if BRCDatabaseManager.sharedInstance().rTreeIndex != nil {
+                    self.emptyListText = EmptyListLabelText.Nothing
+                }
+                self.tableView.reloadData()
+            })
         })
     }
     
@@ -58,27 +81,113 @@ class BRCNearbyViewController: UITableViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    private func hasNearbyObjects() -> Bool {
+        if nearbyArt.count > 0 || nearbyCamps.count > 0 || nearbyEvents.count > 0 {
+            return true
+        }
+        return false
+    }
 
     // MARK: - Table view data source
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+        if !hasNearbyObjects() {
+            return 1
+        }
+        return 3
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.nearbyObjects.count
+        if !hasNearbyObjects() {
+            return 1
+        }
+        let tableSection = TableSection(rawValue: section)!
+        switch tableSection {
+        case TableSection.Events:
+            return nearbyEvents.count
+        case TableSection.Camps:
+            return nearbyCamps.count
+        case TableSection.Art:
+            return nearbyArt.count
+        default:
+            return 0
+        }
+    }
+    
+    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if !hasNearbyObjects() {
+            return nil
+        }
+        let tableSection = TableSection(rawValue: section)!
+        switch tableSection {
+        case TableSection.Events:
+            if nearbyEvents.count == 0 { return nil }
+            return "Events"
+        case TableSection.Camps:
+            if nearbyCamps.count == 0 { return nil }
+            return "Camps"
+        case TableSection.Art:
+            if nearbyArt.count == 0 { return nil }
+            return "Art"
+        default:
+            return nil
+        }
+    }
+    
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        let tableSection = TableSection(rawValue: section)!
+        switch tableSection {
+        case TableSection.Events:
+            if nearbyEvents.count == 0 { return 0 }
+        case TableSection.Camps:
+            if nearbyCamps.count == 0 { return 0 }
+        case TableSection.Art:
+            if nearbyArt.count == 0 { return 0 }
+        }
+        return UITableViewAutomaticDimension
+    }
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        if !hasNearbyObjects() {
+            return 55
+        }
+        return UITableViewAutomaticDimension
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let dataObject = nearbyObjects[indexPath.row]
-        let dataObjectClass = dataObject.dynamicType
+        if !hasNearbyObjects() {
+            let cell = tableView.dequeueReusableCellWithIdentifier(SubtitleCell.kReuseIdentifier, forIndexPath: indexPath) as! SubtitleCell
+            cell.textLabel!.text = emptyListText.rawValue
+            switch emptyListText {
+            case EmptyListLabelText.Nothing:
+                cell.detailTextLabel!.text = "Check back when you're at Burning Man!"
+            case EmptyListLabelText.Loading:
+                cell.detailTextLabel!.text = nil
+            }
+            return cell
+        }
+        
+        var dataObject: BRCDataObject? = nil
+        let tableSection = TableSection(rawValue: indexPath.section)!
+        let row = indexPath.row
+        switch tableSection {
+        case TableSection.Events:
+            dataObject = nearbyEvents[row]
+        case TableSection.Camps:
+            dataObject = nearbyCamps[row]
+        case TableSection.Art:
+            dataObject = nearbyArt[row]
+        }
+        
+        let dataObjectClass = dataObject!.dynamicType
         let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(dataObjectClass)
         let reuseIdentifier = cellClass.cellIdentifier()
         let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! BRCDataObjectTableViewCell
         cell.dataObject = dataObject
         cell.updateDistanceLabelFromLocation(getCurrentLocation())
         cell.favoriteButtonAction = { () -> Void in
-            let dataCopy = dataObject.copy() as! BRCDataObject
+            let dataCopy = dataObject!.copy() as! BRCDataObject
             dataCopy.isFavorite = cell.favoriteButton.selected
             BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWriteWithBlock({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
                 transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: dataCopy.dynamicType.collection())
