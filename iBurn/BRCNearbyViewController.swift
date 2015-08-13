@@ -9,6 +9,7 @@
 import UIKit
 import MapKit
 import Parse
+import PureLayout
 
 private enum EmptyListLabelText: String {
     case Loading = "Loading...",
@@ -38,26 +39,48 @@ class BRCNearbyViewController: UITableViewController {
     private var searchDistance: CLLocationDistance = 500
     
     let tableHeaderLabel: UILabel = UILabel()
+    let distanceStepper: UIStepper = UIStepper()
+    let tableHeaderView: UIView = UIView()
     
-    // MARK - View cycle 
+    // MARK: - View cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.tableView.estimatedRowHeight = 120
-        self.tableView.rowHeight = UITableViewAutomaticDimension
-        self.tableView.tableHeaderView = tableHeaderLabel
-        tableHeaderLabel.contentMode = UIViewContentMode.Top
-        tableHeaderLabel.textAlignment = NSTextAlignment.Center
-        // register table cell classes
-        let classesToRegister = [BRCEventObject.self, BRCDataObject.self]
-        for objClass in classesToRegister {
-            let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(objClass)
-            let nib = UINib(nibName: NSStringFromClass(cellClass), bundle: nil)
-            let reuseIdentifier = cellClass.cellIdentifier()
-            self.tableView!.registerNib(nib, forCellReuseIdentifier: reuseIdentifier)
-        }
-        self.tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
+        setupTableView()
     }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        PFAnalytics.trackEventInBackground("Nearby", block: nil)
+        refreshTableHeaderView()
+        refreshNearbyItems()
+        let location = BRCAppDelegate.sharedAppDelegate().locationManager.location
+        BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
+            if count(locationString) > 0 {
+                let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
+                let label = UILabel()
+                label.attributedText = attrString
+                label.sizeToFit()
+                self.navigationItem.titleView = label
+            } else {
+                self.navigationItem.title = self.title
+            }
+        }
+    }
+    
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+        coordinator.animateAlongsideTransition({ (_) -> Void in
+            self.refreshTableHeaderView()
+        }, completion:nil)
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: - Internal
     
     func getCurrentLocation() -> CLLocation {
         let appDelegate = BRCAppDelegate.sharedAppDelegate()
@@ -69,7 +92,6 @@ class BRCNearbyViewController: UITableViewController {
         let currentLocation = getCurrentLocation()
         let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
         BRCDatabaseManager.sharedInstance().queryObjectsInRegion(region, completionQueue: dispatch_get_main_queue(), resultsBlock: { (results: [AnyObject]!) -> Void in
-            // TODO: Filter & sort items
             let nearbyObjects = results as! [BRCDataObject]
             let options = BRCDataSorterOptions()
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
@@ -103,34 +125,63 @@ class BRCNearbyViewController: UITableViewController {
         labelText.appendAttributedString(TTTLocationFormatter.brc_humanizedStringForDistance(searchDistance))
         tableHeaderLabel.attributedText = labelText
         tableHeaderLabel.sizeToFit()
-        let labelFrame = tableHeaderLabel.frame
-        tableHeaderLabel.frame = CGRectMake(labelFrame.origin.x, labelFrame.origin.y, labelFrame.size.width, labelFrame.size.height + 16)
-        tableView.tableHeaderView = tableHeaderLabel
     }
     
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-        PFAnalytics.trackEventInBackground("Nearby", block: nil)
+    func refreshTableHeaderView() {
         refreshHeaderLabel()
-        refreshNearbyItems()
-        let location = BRCAppDelegate.sharedAppDelegate().locationManager.location
-        BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
-            if count(locationString) > 0 {
-                let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
-                let label = UILabel()
-                label.attributedText = attrString
-                label.sizeToFit()
-                self.navigationItem.titleView = label
-            } else {
-                self.navigationItem.title = self.title
-            }
+        tableHeaderView.frame = CGRectMake(0, 0, self.view.frame.size.width, 45)
+        tableView.tableHeaderView = tableHeaderView
+    }
+    
+    func setupTableView() {
+        tableView.estimatedRowHeight = 120
+        tableView.rowHeight = UITableViewAutomaticDimension
+        setupTableHeaderView()
+        // register table cell classes
+        let classesToRegister = [BRCEventObject.self, BRCDataObject.self]
+        for objClass in classesToRegister {
+            let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(objClass)
+            let nib = UINib(nibName: NSStringFromClass(cellClass), bundle: nil)
+            let reuseIdentifier = cellClass.cellIdentifier()
+            tableView.registerNib(nib, forCellReuseIdentifier: reuseIdentifier)
+        }
+        tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
+    }
+    
+    func setupTableHeaderView() {
+        tableHeaderLabel.textAlignment = NSTextAlignment.Left
+        tableHeaderLabel.setTranslatesAutoresizingMaskIntoConstraints(false)
+        distanceStepper.setTranslatesAutoresizingMaskIntoConstraints(false)
+        setupDistanceStepper()
+        tableHeaderView.addSubview(tableHeaderLabel)
+        tableHeaderView.addSubview(distanceStepper)
+        tableHeaderLabel.autoAlignAxis(ALAxis.Horizontal, toSameAxisOfView: distanceStepper)
+        tableHeaderLabel.autoPinEdge(ALEdge.Right, toEdge: ALEdge.Left, ofView: distanceStepper)
+        tableHeaderLabel.autoPinEdgeToSuperviewMargin(ALEdge.Left)
+        distanceStepper.autoAlignAxisToSuperviewMarginAxis(ALAxis.Horizontal)
+        distanceStepper.autoPinEdgeToSuperviewMargin(ALEdge.Right)
+        tableHeaderView.setTranslatesAutoresizingMaskIntoConstraints(true)
+        tableHeaderView.autoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth
+        refreshTableHeaderView()
+    }
+    
+    func setupDistanceStepper() {
+        // units in CLLocationDistance (meters)
+        distanceStepper.minimumValue = 50
+        distanceStepper.maximumValue = 3200 // approx 2 miles
+        distanceStepper.value = searchDistance
+        distanceStepper.stepValue = 50
+        distanceStepper.addTarget(self, action: Selector("stepperValueChanged:"), forControlEvents: UIControlEvents.ValueChanged)
+    }
+    
+    func stepperValueChanged(sender: AnyObject?) {
+        if let stepper = sender as? UIStepper {
+            searchDistance = stepper.value
+            refreshTableHeaderView()
+            refreshNearbyItems()
         }
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     
     private func hasNearbyObjects() -> Bool {
         if sections.count > 0 {
@@ -209,10 +260,16 @@ class BRCNearbyViewController: UITableViewController {
         return cell
     }
     
+    // MARK: - UITableViewDelegate
+    
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        if !hasNearbyObjects() {
+            return
+        }
         let dataObject = sections[indexPath.section].objects[indexPath.row]
         let detailVC = BRCDetailViewController(dataObject: dataObject)
         navigationController!.pushViewController(detailVC, animated: true)
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
+    
 }
