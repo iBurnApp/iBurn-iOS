@@ -9,22 +9,29 @@
 import UIKit
 import MapKit
 
-private enum TableSection: Int {
-    case Events = 0,
-    Camps,
-    Art
-}
-
 private enum EmptyListLabelText: String {
     case Loading = "Loading...",
     Nothing = "Nothing Nearby"
 }
 
+private enum ObjectType: String {
+    case Events = "Events",
+    Camps = "Camps",
+    Art = "Art"
+}
+
+private class TableViewSection {
+    let objects: [BRCDataObject]
+    let sectionTitle: ObjectType
+    private init(objects: [BRCDataObject], sectionTitle: ObjectType) {
+        self.objects = objects
+        self.sectionTitle = sectionTitle
+    }
+}
+
 class BRCNearbyViewController: UITableViewController {
 
-    var nearbyEvents: [BRCEventObject] = []
-    var nearbyCamps: [BRCCampObject] = []
-    var nearbyArt: [BRCArtObject] = []
+    private var sections: [TableViewSection] = []
     
     private var emptyListText = EmptyListLabelText.Loading
     
@@ -61,9 +68,20 @@ class BRCNearbyViewController: UITableViewController {
             let nearbyObjects = results as! [BRCDataObject]
             let options = BRCDataSorterOptions()
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
-                self.nearbyArt = art
-                self.nearbyEvents = events
-                self.nearbyCamps = camps
+                var sections: [TableViewSection] = []
+                if events.count > 0 {
+                    let eventsSection = TableViewSection(objects: events, sectionTitle: ObjectType.Events)
+                    sections.append(eventsSection)
+                }
+                if art.count > 0 {
+                    let artSection = TableViewSection(objects: art, sectionTitle: ObjectType.Art)
+                    sections.append(artSection)
+                }
+                if camps.count > 0 {
+                    let campsSection = TableViewSection(objects: camps, sectionTitle: ObjectType.Camps)
+                    sections.append(campsSection)
+                }
+                self.sections = sections
                 if BRCDatabaseManager.sharedInstance().rTreeIndex != nil {
                     self.emptyListText = EmptyListLabelText.Nothing
                 }
@@ -83,7 +101,7 @@ class BRCNearbyViewController: UITableViewController {
     }
     
     private func hasNearbyObjects() -> Bool {
-        if nearbyArt.count > 0 || nearbyCamps.count > 0 || nearbyEvents.count > 0 {
+        if sections.count > 0 {
             return true
         }
         return false
@@ -95,57 +113,21 @@ class BRCNearbyViewController: UITableViewController {
         if !hasNearbyObjects() {
             return 1
         }
-        return 3
+        return sections.count
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if !hasNearbyObjects() {
             return 1
         }
-        let tableSection = TableSection(rawValue: section)!
-        switch tableSection {
-        case TableSection.Events:
-            return nearbyEvents.count
-        case TableSection.Camps:
-            return nearbyCamps.count
-        case TableSection.Art:
-            return nearbyArt.count
-        default:
-            return 0
-        }
+        return sections[section].objects.count
     }
     
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if !hasNearbyObjects() {
             return nil
         }
-        let tableSection = TableSection(rawValue: section)!
-        switch tableSection {
-        case TableSection.Events:
-            if nearbyEvents.count == 0 { return nil }
-            return "Events"
-        case TableSection.Camps:
-            if nearbyCamps.count == 0 { return nil }
-            return "Camps"
-        case TableSection.Art:
-            if nearbyArt.count == 0 { return nil }
-            return "Art"
-        default:
-            return nil
-        }
-    }
-    
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let tableSection = TableSection(rawValue: section)!
-        switch tableSection {
-        case TableSection.Events:
-            if nearbyEvents.count == 0 { return 0 }
-        case TableSection.Camps:
-            if nearbyCamps.count == 0 { return 0 }
-        case TableSection.Art:
-            if nearbyArt.count == 0 { return 0 }
-        }
-        return UITableViewAutomaticDimension
+        return sections[section].sectionTitle.rawValue
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -168,26 +150,16 @@ class BRCNearbyViewController: UITableViewController {
             return cell
         }
         
-        var dataObject: BRCDataObject? = nil
-        let tableSection = TableSection(rawValue: indexPath.section)!
-        let row = indexPath.row
-        switch tableSection {
-        case TableSection.Events:
-            dataObject = nearbyEvents[row]
-        case TableSection.Camps:
-            dataObject = nearbyCamps[row]
-        case TableSection.Art:
-            dataObject = nearbyArt[row]
-        }
+        let dataObject = sections[indexPath.section].objects[indexPath.row]
         
-        let dataObjectClass = dataObject!.dynamicType
+        let dataObjectClass = dataObject.dynamicType
         let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(dataObjectClass)
         let reuseIdentifier = cellClass.cellIdentifier()
         let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! BRCDataObjectTableViewCell
         cell.dataObject = dataObject
         cell.updateDistanceLabelFromLocation(getCurrentLocation())
         cell.favoriteButtonAction = { () -> Void in
-            let dataCopy = dataObject!.copy() as! BRCDataObject
+            let dataCopy = dataObject.copy() as! BRCDataObject
             dataCopy.isFavorite = cell.favoriteButton.selected
             BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWriteWithBlock({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
                 transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: dataCopy.dynamicType.collection())
