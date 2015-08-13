@@ -377,6 +377,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
 }
 
 - (void) enteredBurningManRegion {
+    [PFAnalytics trackEventInBackground:@"Entered_Burning_Man" block:nil];
     if ([BRCEmbargo allowEmbargoedData]) {
         return;
     }

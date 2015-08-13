@@ -13,6 +13,7 @@
 #import "BRCEventObject.h"
 #import "BRCEventObjectTableViewCell.h"
 #import "BRCDatabaseManager.h"
+#import "PFAnalytics+iBurn.h"
 
 @implementation BRCDataObjectTableViewCell
 @synthesize dataObject = _dataObject;
@@ -77,6 +78,9 @@
     BRCDataObject *dataObject = [self.dataObject copy];
     dataObject.isFavorite = self.favoriteButton.selected;
     // not the best place to do this
+    if (dataObject.isFavorite) {
+        [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
+    }
     [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
         [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
     }];

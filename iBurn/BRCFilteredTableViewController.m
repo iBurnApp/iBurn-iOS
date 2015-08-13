@@ -19,6 +19,7 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
 #import "BRCAppDelegate.h"
+@import Parse;
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
@@ -246,7 +247,7 @@
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self updateViewConstraints];
-    
+    [PFAnalytics trackEventInBackground:self.title block:nil];
     // Attempting to fix Apple's buggy self-sizing autolayout cells
     [self.tableView reloadData];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

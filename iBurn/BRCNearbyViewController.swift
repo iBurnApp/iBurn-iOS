@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import Parse
 
 private enum EmptyListLabelText: String {
     case Loading = "Loading...",
@@ -109,6 +110,7 @@ class BRCNearbyViewController: UITableViewController {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        PFAnalytics.trackEventInBackground("Nearby", block: nil)
         refreshHeaderLabel()
         refreshNearbyItems()
         let location = BRCAppDelegate.sharedAppDelegate().locationManager.location

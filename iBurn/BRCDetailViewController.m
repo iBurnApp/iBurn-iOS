@@ -24,6 +24,8 @@
 #import "BRCEventObject.h"
 #import "BRCLocations.h"
 #import "BRCAppDelegate.h"
+@import Parse;
+#import "PFAnalytics+iBurn.h"
 
 static CGFloat const kTableViewHeaderHeight = 100;
 
@@ -60,6 +62,10 @@ static CGFloat const kTableViewHeaderHeight = 100;
     self.favoriteBarButtonItem.image = [self currentStarImage];
 }
 
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [PFAnalytics brc_trackEventInBackground:@"Detail" object:self.dataObject];
+}
 
 - (void)viewDidLoad
 {
@@ -139,6 +145,9 @@ static CGFloat const kTableViewHeaderHeight = 100;
     BRCDataObject *tempObject = [self.dataObject copy];
     tempObject.isFavorite = !tempObject.isFavorite;
     self.dataObject = tempObject;
+    if (self.dataObject.isFavorite) {
+        [PFAnalytics brc_trackEventInBackground:@"Favorite" object:self.dataObject];
+    }
     [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {

@@ -33,6 +33,7 @@
 #import <pop/POP.h>
 #import "BRCGeocoder.h"
 @import KVOController;
+@import Parse;
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
@@ -250,6 +251,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    [PFAnalytics trackEventInBackground:@"Map" block:nil];
     [self reloadEventAnnotationsIfNeeded];
     [self reloadArtAnnotationsIfNeeded];
     [self reloadCampAnnotationsIfNeeded];

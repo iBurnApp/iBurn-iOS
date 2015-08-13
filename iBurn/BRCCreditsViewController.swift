@@ -9,6 +9,7 @@
 import UIKit
 import Mantle
 import VTAcknowledgementsViewController
+import Parse
 
 public class SubtitleCell: UITableViewCell {
     static let kReuseIdentifier = "kSubtitleIdentifier"
@@ -48,6 +49,10 @@ class BRCCreditsViewController: UITableViewController {
         
         self.tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
         self.tableView.rowHeight = 55
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        PFAnalytics.trackEventInBackground("Credits", block: nil)
     }
 
     override func didReceiveMemoryWarning() {
