@@ -56,6 +56,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Parse setApplicationId:kBRCParseApplicationId
                   clientKey:kBRCParseClientKey];
     
+    [PFNetworkActivityIndicatorManager sharedManager].enabled = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     [UIApplication sharedApplication].statusBarHidden = NO;
     
@@ -163,12 +164,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
     [PFAnalytics trackAppOpenedWithRemoteNotificationPayload:userInfo];
-    if ([userInfo[@"aps"][@"content-available"] boolValue]) {
-        NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-        [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
-    } else {
-        handler(UIBackgroundFetchResultNoData);
-    }
+    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -261,11 +258,24 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *creditsNav = [[UINavigationController alloc] initWithRootViewController:creditsVC];
     creditsNav.tabBarItem.image = [UIImage imageNamed:@"BRCCreditsIcon"];
     
+    BITFeedbackListViewController *feedbackVC = [[BITHockeyManager sharedHockeyManager].feedbackManager feedbackListViewController:NO];
+    UINavigationController *feedbackNav = [[UINavigationController alloc] initWithRootViewController:feedbackVC];
+    feedbackVC.title = @"Send Feedback";
+    feedbackNav.tabBarItem.image = [UIImage imageNamed:@"BRCMailIcon"];
+    
+    UIViewController *shareVC = [[UIViewController alloc] init];
+    shareVC.title = @"Share iBurn";
+    shareVC.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
+    
+    UIViewController *rateVC = [[UIViewController alloc] init];
+    rateVC.title = @"Rate iBurn";
+    rateVC.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
+    
     self.tabBarController = [[UITabBarController alloc] init];
     if ([BRCEmbargo allowEmbargoedData]) {
-        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, creditsNav, debugNav];
+        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, creditsNav, feedbackNav, shareVC, rateVC];
     } else {
-        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, unlockVC, creditsNav, debugNav];
+        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, unlockVC, creditsNav, feedbackNav, shareVC, rateVC];
     }
     self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;
@@ -330,29 +340,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
         return YES;
     }
     return NO;
-}
-
-- (void)navigationController:(UINavigationController *)navigationController
-      willShowViewController:(UIViewController *)viewController
-                    animated:(BOOL)animated {
-    
-    UINavigationBar *morenavbar = navigationController.navigationBar;
-    UINavigationItem *morenavitem = morenavbar.topItem;
-    /* We don't need Edit button in More screen. */
-    morenavitem.rightBarButtonItem = nil;
-}
-
-- (void) tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
-    if ([viewController isKindOfClass:[UINavigationController class]]) {
-        UINavigationController *navController = (UINavigationController*)viewController;
-        UIViewController *topViewController = navController.topViewController;
-        if ([topViewController isKindOfClass:[BRCMapViewController class]]) {
-            BRCMapViewController *mapViewController = (BRCMapViewController*)topViewController;
-            if (mapViewController.isVisible) {
-                [mapViewController centerMapAtManCoordinatesAnimated:YES];
-            }
-        }
-    }
 }
 
 - (void) setupRegionBasedUnlock {
@@ -427,6 +414,32 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:wvc];
         [viewController presentViewController:nav animated:YES completion:NULL];
     }
+}
+
+#pragma mark UITabBarControllerDelegate
+
+- (void) tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
+    if ([viewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *navController = (UINavigationController*)viewController;
+        UIViewController *topViewController = navController.topViewController;
+        if ([topViewController isKindOfClass:[BRCMapViewController class]]) {
+            BRCMapViewController *mapViewController = (BRCMapViewController*)topViewController;
+            if (mapViewController.isVisible) {
+                [mapViewController centerMapAtManCoordinatesAnimated:YES];
+            }
+        }
+    }
+}
+
+#pragma mark UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController *)navigationController
+      willShowViewController:(UIViewController *)viewController
+                    animated:(BOOL)animated {
+    // Remove "Edit" from More tab
+    UINavigationBar *morenavbar = navigationController.navigationBar;
+    UINavigationItem *morenavitem = morenavbar.topItem;
+    morenavitem.rightBarButtonItem = nil;
 }
 
 @end
