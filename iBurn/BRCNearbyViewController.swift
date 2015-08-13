@@ -34,6 +34,9 @@ class BRCNearbyViewController: UITableViewController {
     private var sections: [TableViewSection] = []
     
     private var emptyListText = EmptyListLabelText.Loading
+    private var searchDistance: CLLocationDistance = 500
+    
+    let tableHeaderLabel: UILabel = UILabel()
     
     // MARK - View cycle 
     
@@ -41,7 +44,9 @@ class BRCNearbyViewController: UITableViewController {
         super.viewDidLoad()
         self.tableView.estimatedRowHeight = 120
         self.tableView.rowHeight = UITableViewAutomaticDimension
-        
+        self.tableView.tableHeaderView = tableHeaderLabel
+        tableHeaderLabel.contentMode = UIViewContentMode.Top
+        tableHeaderLabel.textAlignment = NSTextAlignment.Center
         // register table cell classes
         let classesToRegister = [BRCEventObject.self, BRCDataObject.self]
         for objClass in classesToRegister {
@@ -61,8 +66,7 @@ class BRCNearbyViewController: UITableViewController {
     
     func refreshNearbyItems() {
         let currentLocation = getCurrentLocation()
-        let boxSize: CLLocationDistance = 500
-        let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, boxSize, boxSize)
+        let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
         BRCDatabaseManager.sharedInstance().queryObjectsInRegion(region, completionQueue: dispatch_get_main_queue(), resultsBlock: { (results: [AnyObject]!) -> Void in
             // TODO: Filter & sort items
             let nearbyObjects = results as! [BRCDataObject]
@@ -90,8 +94,22 @@ class BRCNearbyViewController: UITableViewController {
         })
     }
     
+    func refreshHeaderLabel() {
+        let labelText: NSMutableAttributedString = NSMutableAttributedString()
+        let font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
+        let attributes: [String: AnyObject] = [NSFontAttributeName: font]
+        labelText.appendAttributedString(NSAttributedString(string: "Within ", attributes: attributes))
+        labelText.appendAttributedString(TTTLocationFormatter.brc_humanizedStringForDistance(searchDistance))
+        tableHeaderLabel.attributedText = labelText
+        tableHeaderLabel.sizeToFit()
+        let labelFrame = tableHeaderLabel.frame
+        tableHeaderLabel.frame = CGRectMake(labelFrame.origin.x, labelFrame.origin.y, labelFrame.size.width, labelFrame.size.height + 16)
+        tableView.tableHeaderView = tableHeaderLabel
+    }
+    
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        refreshHeaderLabel()
         refreshNearbyItems()
         let location = BRCAppDelegate.sharedAppDelegate().locationManager.location
         BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
@@ -140,6 +158,13 @@ class BRCNearbyViewController: UITableViewController {
             return nil
         }
         return sections[section].sectionTitle.rawValue
+    }
+    
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if !hasNearbyObjects() {
+            return 0
+        }
+        return 25
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {

@@ -12,3 +12,4 @@
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCGeocoder.h"
 #import "BRCDetailViewController.h"
+#import "TTTLocationFormatter+iBurn.h"
