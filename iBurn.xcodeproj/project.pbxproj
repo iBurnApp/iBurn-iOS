@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		14A143F68CF8A82404B1C92F /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C8C085A67599EA761E94627 /* Pods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		63010EFC1B72DE89000A847C /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = 63010EFB1B72DE89000A847C /* bundle.js */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010F001B72E2EA000A847C /* BRCGeocoderTest.m */; };
 		630861C9199029D100AD7109 /* BRCLocations.m in Sources */ = {isa = PBXBuildFile; fileRef = 630861C8199029D100AD7109 /* BRCLocations.m */; };
@@ -22,6 +21,7 @@
 		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
 		632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */; };
 		639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */ = {isa = PBXBuildFile; fileRef = 639E638C1994178500B62A92 /* BRCEmbargo.m */; };
+		63C11EB41B7C580400428FB8 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = 63C11EB31B7C580400428FB8 /* bundle.js */; };
 		63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
@@ -95,7 +95,6 @@
 /* Begin PBXFileReference section */
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6200215A1BF28D44858F48C4 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
-		63010EFB1B72DE89000A847C /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/scripts/2015/reverse-geocoder/bundle.js"; sourceTree = SOURCE_ROOT; };
 		63010EFD1B72DEEA000A847C /* BRCGeocoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCGeocoder.h; sourceTree = "<group>"; };
 		63010EFE1B72DEEA000A847C /* BRCGeocoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoder.m; sourceTree = "<group>"; };
 		63010F001B72E2EA000A847C /* BRCGeocoderTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoderTest.m; sourceTree = "<group>"; };
@@ -121,6 +120,7 @@
 		632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEmbargoPasscodeViewController.m; sourceTree = "<group>"; };
 		639E638B1994178500B62A92 /* BRCEmbargo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEmbargo.h; sourceTree = "<group>"; };
 		639E638C1994178500B62A92 /* BRCEmbargo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEmbargo.m; sourceTree = "<group>"; };
+		63C11EB31B7C580400428FB8 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/scripts/2015/geocoder/bundle.js"; sourceTree = SOURCE_ROOT; };
 		63CD6909199AB4EE0025C8A1 /* BRCAnnotationEditView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAnnotationEditView.h; sourceTree = "<group>"; };
 		63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAnnotationEditView.m; sourceTree = "<group>"; };
 		63CE2A541987140F00F65B01 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -510,7 +510,7 @@
 		D9842A2B1B51C71C0056455D /* 2015 */ = {
 			isa = PBXGroup;
 			children = (
-				63010EFB1B72DE89000A847C /* bundle.js */,
+				63C11EB31B7C580400428FB8 /* bundle.js */,
 				D92B95991B7B0CC300116781 /* 2015 */,
 			);
 			name = 2015;
@@ -694,7 +694,7 @@
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
-				63010EFC1B72DE89000A847C /* bundle.js in Resources */,
+				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */,
