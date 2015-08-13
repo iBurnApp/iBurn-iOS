@@ -262,59 +262,30 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }
 }
 
-#warning Map Favorites Disabled
 - (void) reloadFavoritesIfNeeded {
-    /*
+    
     if (self.currentlyAddingFavoritesAnnotations) {
         return;
     }
     self.currentlyAddingFavoritesAnnotations = YES;
     NSMutableArray *favoritesAnnotationsToAdd = [NSMutableArray array];
-    [self.favoritesConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        NSString *artFavoritesExtensionName = [BRCAppDelegate appDelegate].artViewController.favoritesFilterForDistanceViewName;
-        NSString *campFavoritesExtensionName = [BRCAppDelegate appDelegate].campsViewController.favoritesFilterForDistanceViewName;
-        NSString *eventFavoritesExtensionName = [BRCAppDelegate appDelegate].eventsViewController.favoritesFilterForTimeAndDistanceViewName;
-        
-        YapDatabaseViewTransaction *artViewTransaction = [transaction ext:artFavoritesExtensionName];
-        YapDatabaseViewTransaction *campsViewTransaction = [transaction ext:campFavoritesExtensionName];
-        YapDatabaseViewTransaction *eventsViewTransaction = [transaction ext:eventFavoritesExtensionName];
-        
-        [artViewTransaction enumerateKeysAndObjectsInGroup:[BRCArtObject collection] usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
-            if ([object isKindOfClass:[BRCArtObject class]]) {
-                BRCArtObject *artObject = object;
-                if (artObject.isFavorite) {
-                    RMAnnotation *artAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:artObject];
-                    if (artAnnotation) {
-                        [favoritesAnnotationsToAdd addObject:artAnnotation];
+    [self.favoritesConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+        YapDatabaseViewTransaction *favesTransaction = [transaction ext:[BRCDatabaseManager sharedInstance].everythingFilteredByFavorite];
+        [favesTransaction enumerateGroupsUsingBlock:^(NSString *group, BOOL *stop) {
+            [favesTransaction enumerateKeysAndObjectsInGroup:group usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
+                if ([object isKindOfClass:[BRCDataObject class]]) {
+                    BRCDataObject *dataObject = object;
+                    RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
+                    if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+                        NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupDateFormatter];
+                        NSString *groupName = [dateFormatter stringFromDate:[NSDate date]];
+                        if (![groupName isEqualToString:group]) {
+                            return;
+                        }
                     }
+                    [favoritesAnnotationsToAdd addObject:annotation];
                 }
-            }
-        }];
-        
-        [campsViewTransaction enumerateKeysAndObjectsInGroup:[BRCCampObject collection] usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
-            if ([object isKindOfClass:[BRCCampObject class]]) {
-                BRCCampObject *campObject = object;
-                if (campObject.isFavorite) {
-                    RMAnnotation *campAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:campObject];
-                    if (campAnnotation) {
-                        [favoritesAnnotationsToAdd addObject:campAnnotation];
-                    }
-                }
-            }
-        }];
-        NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupDateFormatter];
-        NSString *groupName = [dateFormatter stringFromDate:[NSDate date]];
-        
-        [eventsViewTransaction enumerateKeysAndObjectsInGroup:groupName usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
-            if ([object isKindOfClass:[BRCEventObject class]]) {
-                BRCEventObject *eventObject = object;
-                if (eventObject.isFavorite) {
-                    RMAnnotation *eventAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:eventObject];
-                    if (eventAnnotation) {
-                        [favoritesAnnotationsToAdd addObject:eventAnnotation];
-                    }
-                }
-            }
+            }];
         }];
     } completionBlock:^{
         self.currentlyAddingFavoritesAnnotations = NO;
@@ -324,7 +295,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         self.favoritesAnnotations = favoritesAnnotationsToAdd;
         [self.mapView addAnnotations:favoritesAnnotationsToAdd];
     }];
-     */
 }
 
 - (void) reloadCampAnnotationsIfNeeded {
