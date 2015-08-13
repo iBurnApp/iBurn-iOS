@@ -59,10 +59,10 @@ public class BRCDataSorter: NSObject {
                 if opt.sortEventsByStartTime {
                     events.sort { $0.startDate.timeIntervalSinceNow > $1.startDate.timeIntervalSinceNow }
                 } else {
-                    events.sort { $0.title > $1.title }
+                    events.sort { $0.title < $1.title }
                 }
-                camps.sort { $0.title > $1.title }
-                art.sort { $0.title > $1.title }
+                camps.sort { $0.title < $1.title }
+                art.sort { $0.title < $1.title }
                 dispatch_async(queue!, { () -> Void in
                     callbackBlock(events: events, art: art, camps: camps)
                 })
