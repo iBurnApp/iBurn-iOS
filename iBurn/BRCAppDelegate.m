@@ -469,10 +469,10 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     }];
     secondPage.movesToNextViewController = YES;
     
-    OnboardingContentViewController *thirdPage = [OnboardingContentViewController contentWithTitle:@"Thank you!" body:@"If you enjoy using iBurn, please spread the word." image:nil buttonText:@"Ok let's go!" action:completionBlock];
+    OnboardingContentViewController *thirdPage = [OnboardingContentViewController contentWithTitle:@"Thank you!" body:@"If you enjoy using iBurn, please spread the word." image:nil buttonText:@"🔥 Ok let's burn!" action:completionBlock];
     
     NSBundle *bundle = [NSBundle mainBundle];
-    NSString *moviePath = [bundle pathForResource:@"onboarding_loop" ofType:@"mp4"];
+    NSString *moviePath = [bundle pathForResource:@"onboarding_loop_final" ofType:@"mp4"];
     NSURL *movieURL = [NSURL fileURLWithPath:moviePath];
     
     OnboardingViewController *onboardingVC = [[OnboardingViewController alloc] initWithBackgroundVideoURL:movieURL contents:@[firstPage, secondPage, thirdPage]];
