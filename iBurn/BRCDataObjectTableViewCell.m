@@ -14,6 +14,7 @@
 #import "BRCEventObjectTableViewCell.h"
 #import "BRCDatabaseManager.h"
 #import "PFAnalytics+iBurn.h"
+#import "BRCEmbargo.h"
 
 @implementation BRCDataObjectTableViewCell
 @synthesize dataObject = _dataObject;
@@ -33,7 +34,11 @@
         if (!playaLocation) {
             playaLocation = @"0:00 & ?";
         }
-        self.rightSubtitleLabel.text = playaLocation;
+        if ([BRCEmbargo canShowLocationForObject:self.dataObject]) {
+            self.rightSubtitleLabel.text = playaLocation;
+        } else {
+            self.rightSubtitleLabel.text = @"Location Restricted";
+        }
     }
     self.favoriteButton.selected = dataObject.isFavorite;
 }

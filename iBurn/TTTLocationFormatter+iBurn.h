@@ -21,8 +21,8 @@
 + (UIColor*) brc_colorForTimeInterval:(NSTimeInterval)timeInterval;
 
 /**
- *  Return a walk-focused string
- *  ex:  8 mins away (0.44 miles)
+ *  Return a walk/bike focused string
+ *  ex:  @"🚶🏽 6 mins   🚴🏽 2 mins"
  */
 + (NSAttributedString*) brc_humanizedStringForDistance:(CLLocationDistance)distance;
 

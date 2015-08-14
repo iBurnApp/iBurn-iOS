@@ -11,6 +11,7 @@
 #import "NSDateFormatter+iBurn.h"
 #import "TTTTimeIntervalFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
+#import "BRCEmbargo.h"
 
 @implementation BRCEventObjectTableViewCell
 
@@ -78,6 +79,9 @@
     }
     if (!playaLocation) {
         playaLocation = @"0:00 & ?";
+    }
+    if (![BRCEmbargo canShowLocationForObject:self.dataObject]) {
+        playaLocation = @"Location Restricted";
     }
     if (playaLocation) {
         labelString = [labelString stringByAppendingFormat:@" - %@", playaLocation];
