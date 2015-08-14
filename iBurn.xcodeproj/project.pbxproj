@@ -83,6 +83,8 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
+		D9EC0E571B7DD57D0042B596 /* onboarding_loop.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9EC0E561B7DD57D0042B596 /* onboarding_loop.mp4 */; };
+		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -243,6 +245,8 @@
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
+		D9EC0E561B7DD57D0042B596 /* onboarding_loop.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop.mp4; path = Media/onboarding_loop.mp4; sourceTree = SOURCE_ROOT; };
+		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -297,17 +301,6 @@
 			name = DetailViewControllers;
 			sourceTree = "<group>";
 		};
-		6322830C1989836F009E472B /* MapClasses */ = {
-			isa = PBXGroup;
-			children = (
-				630861C7199029D100AD7109 /* BRCLocations.h */,
-				630861C8199029D100AD7109 /* BRCLocations.m */,
-				63010EFD1B72DEEA000A847C /* BRCGeocoder.h */,
-				63010EFE1B72DEEA000A847C /* BRCGeocoder.m */,
-			);
-			name = MapClasses;
-			sourceTree = "<group>";
-		};
 		63CE2A4B1987140F00F65B01 = {
 			isa = PBXGroup;
 			children = (
@@ -348,22 +341,13 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
-				D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */,
-				D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */,
+				D9EC0E5B1B7DE0350042B596 /* Utilities */,
+				D9EC0E5A1B7DE02F0042B596 /* Views */,
 				D979CEC7199AF11E007F0313 /* Categories */,
-				D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */,
-				D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */,
 				D994157B1987278400D245C7 /* Data */,
 				63CE2A661987140F00F65B01 /* BRCAppDelegate.h */,
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
-				639E638B1994178500B62A92 /* BRCEmbargo.h */,
-				639E638C1994178500B62A92 /* BRCEmbargo.m */,
-				6322830C1989836F009E472B /* MapClasses */,
 				63D270F61987157900204954 /* ViewControllers */,
-				63CE2A691987140F00F65B01 /* Images.xcassets */,
-				D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */,
-				D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */,
-				D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */,
 				63D270FA198716C600204954 /* Resources */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
@@ -403,6 +387,10 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				63CE2A691987140F00F65B01 /* Images.xcassets */,
+				D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */,
+				D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */,
+				D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */,
 				D9842A2B1B51C71C0056455D /* 2015 */,
 				D9046EF5198C65F40013CCF4 /* 2014 */,
 				D9046ED2198C65D70013CCF4 /* 2013 */,
@@ -521,6 +509,7 @@
 		D9842A2B1B51C71C0056455D /* 2015 */ = {
 			isa = PBXGroup;
 			children = (
+				D9EC0E561B7DD57D0042B596 /* onboarding_loop.mp4 */,
 				63C11EB31B7C580400428FB8 /* bundle.js */,
 				D92B95991B7B0CC300116781 /* 2015 */,
 			);
@@ -611,6 +600,31 @@
 				D99415651987222F00D245C7 /* Model */,
 			);
 			name = Data;
+			sourceTree = "<group>";
+		};
+		D9EC0E5A1B7DE02F0042B596 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */,
+				D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		D9EC0E5B1B7DE0350042B596 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				630861C7199029D100AD7109 /* BRCLocations.h */,
+				630861C8199029D100AD7109 /* BRCLocations.m */,
+				63010EFD1B72DEEA000A847C /* BRCGeocoder.h */,
+				63010EFE1B72DEEA000A847C /* BRCGeocoder.m */,
+				D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */,
+				D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */,
+				639E638B1994178500B62A92 /* BRCEmbargo.h */,
+				639E638C1994178500B62A92 /* BRCEmbargo.m */,
+				D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */,
+			);
+			name = Utilities;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -704,6 +718,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
+				D9EC0E571B7DD57D0042B596 /* onboarding_loop.mp4 in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
 				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
@@ -875,6 +890,7 @@
 				D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */,
 				63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,
+				D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */,
 				6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -18,7 +18,7 @@ enum CellTag: Int {
     Feedback,
     Share,
     Rate,
-    Debug
+    DebugShowOnboarding
 }
 
 class BRCMoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
@@ -82,8 +82,8 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
             showShareSheet()
         case .Rate:
             showRatingsView()
-        case .Debug:
-            pushDebugView()
+        case .DebugShowOnboarding:
+            showOnboardingView()
         }
     }
 
@@ -135,8 +135,17 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
         presentViewController(storeVC, animated: true, completion: nil)
     }
     
+    // MARK: - Debug
     func pushDebugView() {
         // TODO: make debug view
+    }
+    
+    func showOnboardingView() {
+        var onboardingVC: OnboardingViewController? = nil
+        onboardingVC = BRCAppDelegate.onboardingViewControllerWithCompletion { () -> Void in
+            onboardingVC!.dismissViewControllerAnimated(true, completion: nil)
+        }
+        presentViewController(onboardingVC!, animated: true, completion: nil)
     }
     
     // MARK: - SKStoreProductViewControllerDelegate

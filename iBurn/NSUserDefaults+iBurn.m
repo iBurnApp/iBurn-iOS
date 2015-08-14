@@ -12,6 +12,8 @@ static NSString *const kBRCSelectedEventsTypesKey    = @"kBRCSelectedEventsTypes
 static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKey";
 static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
 static NSString *const kBRCEnteredEmbargoPasscodeKey = @"kBRCEnteredEmbargoPasscodeKey";
+static NSString *const kBRCHasViewedOnboardingKey = @"kBRCHasViewedOnboardingKey";
+
 NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey";
 NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 
@@ -93,6 +95,15 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 - (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode
 {
     [self setBool:enteredEmbargoPasscode forKey:kBRCEnteredEmbargoPasscodeKey];
+    [self synchronize];
+}
+
+- (BOOL)hasViewedOnboarding {
+    return [self boolForKey:kBRCHasViewedOnboardingKey];
+}
+
+- (void)setHasViewedOnboarding:(BOOL)hasViewedOnboarding {
+    [self setBool:hasViewedOnboarding forKey:kBRCHasViewedOnboardingKey];
     [self synchronize];
 }
 

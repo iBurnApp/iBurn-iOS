@@ -8,6 +8,7 @@
 
 @import UIKit;
 @import HockeySDK_Source;
+@import Onboard;
 #import "BRCMapViewController.h"
 #import "BRCEventsTableViewController.h"
 
@@ -29,5 +30,17 @@
 + (instancetype) sharedAppDelegate;
 
 + (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController;
+
+#pragma mark Onboarding
+
+/** Returns newly configured onboarding view */
++ (OnboardingViewController *)onboardingViewControllerWithCompletion:(dispatch_block_t)completionBlock;
+
+#pragma mark Permissions
+
+/** Asks for remotification permission */
++ (void) registerForRemoteNotifications;
+/** Asks for location and starts updating */
+- (void) requestLocationPermission;
 
 @end

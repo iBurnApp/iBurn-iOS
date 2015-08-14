@@ -35,6 +35,9 @@
 #import "BRCEmbargoPasscodeViewController.h"
 #import "iBurn-Swift.h"
 #import "NSBundle+iBurn.h"
+#import "NSUserDefaults+iBurn.h"
+@import Onboard;
+@import PermissionScope;
 
 static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
@@ -80,41 +83,49 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     }];
     
     [RMConfiguration sharedInstance].accessToken = @"";
-    
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    [self setupDefaultTabBarController];
-    
-    self.window.rootViewController = self.tabBarController;
+    [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     
     UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     if (launchNotification) {
         [self application:application didReceiveLocalNotification:launchNotification];
     }
+    
     self.locationManager = [CLLocationManager brc_locationManager];
     self.locationManager.delegate = self;
-    [self.locationManager requestWhenInUseAuthorization];  // For foreground access
-    [self.locationManager startUpdatingLocation];
+    
     [self setupRegionBasedUnlock];
-    self.window.backgroundColor = [UIColor whiteColor];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
     
     [Appirater setAppId:@"388169740"];
-    [Appirater setDaysUntilPrompt:5];
+    [Appirater setDaysUntilPrompt:2];
     [Appirater setUsesUntilPrompt:5];
     [Appirater setSignificantEventsUntilPrompt:-1];
     [Appirater setTimeBeforeReminding:2];
+    [Appirater setCustomAlertTitle:@"We Love You"];
+    [Appirater setCustomAlertMessage:@"We put a lot of work into iBurn this year.. so we hope you find it useful! Have a moment to write something nice?"];
     [Appirater setDebug:NO];
+    [Appirater setOpenInAppStore:NO];
     [Appirater appLaunched:YES];
     
-    // Register for Push Notitications
-    UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
-                                                    UIUserNotificationTypeBadge |
-                                                    UIUserNotificationTypeSound);
-    UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
-                                                                             categories:nil];
-    [application registerUserNotificationSettings:settings];
-    [application registerForRemoteNotifications];
-    [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    // Show onboarding.. or not
+    BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
+    if (!hasViewedOnboarding) {
+        OnboardingViewController *onboardingVC = [[self class] onboardingViewControllerWithCompletion:^{
+            [UIView transitionWithView:self.window
+                              duration:1.0
+                               options:UIViewAnimationOptionTransitionCrossDissolve
+                            animations:^{
+                                [self handleOnboardingCompletion];
+                            }
+                            completion:nil];
+        }];
+        self.window.rootViewController = onboardingVC;
+    } else {
+        [self setupNormalRootViewController];
+    }
     
     [self.window makeKeyAndVisible];
     return YES;
@@ -402,6 +413,80 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     UINavigationBar *morenavbar = navigationController.navigationBar;
     UINavigationItem *morenavitem = morenavbar.topItem;
     morenavitem.rightBarButtonItem = nil;
+}
+
+#pragma mark Permissions
+
+/** Asks for remotification permission */
++ (void) registerForRemoteNotifications {
+    // Register for Push Notitications
+    UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                    UIUserNotificationTypeBadge |
+                                                    UIUserNotificationTypeSound);
+    UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                             categories:nil];
+    [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
+}
+
+/** Asks for location and starts updating */
+- (void) requestLocationPermission {
+    [self.locationManager requestWhenInUseAuthorization];  // For foreground access
+    [self.locationManager startUpdatingLocation];
+}
+
+#pragma mark Onboarding
+
+- (void)setupNormalRootViewController {
+    [self setupDefaultTabBarController];
+    self.window.rootViewController = self.tabBarController;
+    
+    // do it again just in case
+    [[self class] registerForRemoteNotifications];
+    [self requestLocationPermission];
+}
+
+- (void)handleOnboardingCompletion {
+    [[NSUserDefaults standardUserDefaults] setHasViewedOnboarding:YES];
+    [self setupNormalRootViewController];
+}
+
+/** Returns newly configured onboarding view */
++ (OnboardingViewController *)onboardingViewControllerWithCompletion:(dispatch_block_t)completionBlock {
+    OnboardingContentViewController *firstPage = [OnboardingContentViewController contentWithTitle:@"Welcome to iBurn" body:@"\nLet's get started!" image:nil buttonText:@"📍 Enable Location Services" action:^{
+        [BRCPermissions promptForLocation:^{
+            NSLog(@"BRCPermissions promptForLocation");
+            //[firstPage.delegate moveNextPage];
+        }];
+    }];
+    firstPage.movesToNextViewController = YES;
+    
+    OnboardingContentViewController *secondPage = [OnboardingContentViewController contentWithTitle:@"Reminders" body:@"When you favorite events we can remind you about them later." image:nil buttonText:@"⏰ Enable Notifications" action:^{
+        [BRCPermissions promptForPush:^{
+            NSLog(@"BRCPermissions promptForPush");
+            //[secondPage.delegate moveNextPage];
+        }];
+    }];
+    secondPage.movesToNextViewController = YES;
+    
+    OnboardingContentViewController *thirdPage = [OnboardingContentViewController contentWithTitle:@"Thank you!" body:@"If you enjoy using iBurn, please spread the word." image:nil buttonText:@"Ok let's go!" action:completionBlock];
+    
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *moviePath = [bundle pathForResource:@"onboarding_loop" ofType:@"mp4"];
+    NSURL *movieURL = [NSURL fileURLWithPath:moviePath];
+    
+    OnboardingViewController *onboardingVC = [[OnboardingViewController alloc] initWithBackgroundVideoURL:movieURL contents:@[firstPage, secondPage, thirdPage]];
+    onboardingVC.shouldFadeTransitions = YES;
+    onboardingVC.fadePageControlOnLastPage = YES;
+    onboardingVC.stopMoviePlayerWhenDisappear = YES;
+    onboardingVC.moviePlayerController.scalingMode = MPMovieScalingModeAspectFill;
+    
+    // If you want to allow skipping the onboarding process, enable skipping and set a block to be executed
+    // when the user hits the skip button.
+    // onboardingVC.allowSkipping = YES;
+    onboardingVC.skipHandler = completionBlock;
+    
+    return onboardingVC;
 }
 
 @end

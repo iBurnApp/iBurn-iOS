@@ -172,6 +172,28 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="Debug" id="CYp-1C-f9K">
+                                <cells>
+                                    <tableViewCell tag="8" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="wKK-2r-3nH" imageView="G2v-cR-qE8" style="IBUITableViewCellStyleDefault" id="tke-BQ-LNb">
+                                        <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tke-BQ-LNb" id="BMh-GJ-cxP">
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Show Onboarding" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="wKK-2r-3nH">
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="BRCDebugIcon" id="G2v-cR-qE8">
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </imageView>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="f28-vZ-tnd" id="ZDP-0O-WvK"/>
@@ -205,6 +227,7 @@
         <image name="BRCArtIcon" width="25" height="25"/>
         <image name="BRCCampIcon" width="25" height="25"/>
         <image name="BRCCreditsIcon" width="25" height="25"/>
+        <image name="BRCDebugIcon" width="25" height="25"/>
         <image name="BRCHeart25" width="25" height="25"/>
         <image name="BRCLightStar" width="25" height="25"/>
         <image name="BRCLockIcon" width="25" height="25"/>

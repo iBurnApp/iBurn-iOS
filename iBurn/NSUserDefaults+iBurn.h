@@ -27,6 +27,9 @@ extern NSString *const kBRCGateUnlockNotificationKey;
 - (BOOL)enteredEmbargoPasscode;
 - (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode;
 
+- (BOOL)hasViewedOnboarding;
+- (void)setHasViewedOnboarding:(BOOL)hasViewedOnboarding;
+
 @property (nonatomic, strong, readwrite) CLLocation *recentLocation;
 
 @end
