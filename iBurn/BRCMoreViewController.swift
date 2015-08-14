@@ -90,8 +90,9 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
             case .DebugShowOnboarding:
                 showOnboardingView()
             case .DebugNightMode:
-                nightModeSwitch.setOn(!nightModeSwitch.on, animated: true)
-                toggleNightMode(nightModeSwitch)
+                // TODO: Fix night mode
+                //nightModeSwitch.setOn(!nightModeSwitch.on, animated: true)
+                //toggleNightMode(nightModeSwitch)
                 break
             }
         }
@@ -168,6 +169,9 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     // MARK: - Night Mode
 
     @IBAction func toggleNightMode(sender: AnyObject) {
+        // TODO: Fix night mode
+        return
+        
         if let nightSwitch = sender as? UISwitch {
             if nightSwitch.on {
                 DKNightVersionManager.nightFalling();
