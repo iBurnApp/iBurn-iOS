@@ -27,4 +27,5 @@ pod 'ASDayPicker', :path => 'Submodules/ASDayPicker/ASDayPicker.podspec'
 pod 'KVOController', '~> 1.0'
 pod 'Onboard', '~> 2.1'
 pod 'PermissionScope', '~> 0.7'
-
+#pod 'DKNightVersion', '~> 0.8'
+pod 'DKNightVersion', :git => 'https://github.com/chrisballinger/DKNightVersion.git', :branch => '0.8.1-ns_enum'

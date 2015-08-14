@@ -10,6 +10,22 @@ PODS:
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
+  - DKNightVersion (0.8.0):
+    - DKNightVersion/Controller (= 0.8.0)
+    - DKNightVersion/Core (= 0.8.0)
+    - DKNightVersion/Generator (= 0.8.0)
+    - DKNightVersion/Helper (= 0.8.0)
+    - DKNightVersion/UIKit (= 0.8.0)
+  - DKNightVersion/Controller (0.8.0):
+    - DKNightVersion/Core
+    - DKNightVersion/UIKit
+  - DKNightVersion/Core (0.8.0)
+  - DKNightVersion/Generator (0.8.0)
+  - DKNightVersion/Helper (0.8.0):
+    - DKNightVersion/Core
+  - DKNightVersion/UIKit (0.8.0):
+    - DKNightVersion/Core
+    - DKNightVersion/Helper
   - DOFavoriteButton (0.0.4)
   - FMDB (2.5):
     - FMDB/standard (= 2.5)
@@ -52,6 +68,8 @@ DEPENDENCIES:
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
+  - DKNightVersion (from `https://github.com/chrisballinger/DKNightVersion.git`, branch
+    `0.8.1-ns_enum`)
   - DOFavoriteButton (~> 0.0)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
@@ -73,8 +91,16 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   ASDayPicker:
     :path: Submodules/ASDayPicker/ASDayPicker.podspec
+  DKNightVersion:
+    :branch: 0.8.1-ns_enum
+    :git: https://github.com/chrisballinger/DKNightVersion.git
   Mapbox-iOS-SDK:
     :podspec: Podspecs/Mapbox-iOS-SDK.podspec
+
+CHECKOUT OPTIONS:
+  DKNightVersion:
+    :commit: 1a6cb6601b6c9aa728b43a2a47336a2667733e86
+    :git: https://github.com/chrisballinger/DKNightVersion.git
 
 SPEC CHECKSUMS:
   Appirater: e7c0a47fb67ee5041ce8479e6ba960927fb40264
@@ -84,6 +110,7 @@ SPEC CHECKSUMS:
   CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
+  DKNightVersion: 78be155ecb00bc7b6d2bc59aa244818b70f33703
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
   FormatterKit: bddde83e054edf9d9ee14f9de3b3a5103db256f4
