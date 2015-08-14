@@ -101,7 +101,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Appirater setUsesUntilPrompt:5];
     [Appirater setSignificantEventsUntilPrompt:-1];
     [Appirater setTimeBeforeReminding:2];
-    [Appirater setCustomAlertTitle:@"We Love You"];
+    [Appirater setCustomAlertTitle:@"We ❤️ You"];
     [Appirater setCustomAlertMessage:@"We put a lot of work into iBurn this year.. so we hope you find it useful! Have a moment to write something nice?"];
     [Appirater setDebug:NO];
     [Appirater setOpenInAppStore:NO];
