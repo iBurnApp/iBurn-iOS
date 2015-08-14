@@ -132,6 +132,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
         let storeVC = SKStoreProductViewController()
         storeVC.delegate = self
         storeVC.loadProductWithParameters([SKStoreProductParameterITunesItemIdentifier : 388169740], completionBlock: nil)
+        presentViewController(storeVC, animated: true, completion: nil)
     }
     
     func pushDebugView() {
