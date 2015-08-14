@@ -114,6 +114,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     func pushCreditsView() {
         let creditsVC = BRCCreditsViewController()
         creditsVC.title = "Credits"
+        creditsVC.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(creditsVC, animated: true)
     }
 

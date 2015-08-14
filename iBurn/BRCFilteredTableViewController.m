@@ -301,6 +301,7 @@
 {
     BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+    detailVC.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:detailVC animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
