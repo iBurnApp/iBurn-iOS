@@ -285,7 +285,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
                             return;
                         }
                     }
-                    [favoritesAnnotationsToAdd addObject:annotation];
+                    if (annotation) {
+                        [favoritesAnnotationsToAdd addObject:annotation];
+                    }
                 }
             }];
         }];
@@ -383,7 +385,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             if ([object isKindOfClass:[BRCMapPoint class]]) {
                 BRCMapPoint *mapPoint = (BRCMapPoint*)object;
                 RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView mapPoint:mapPoint];
-                [annotationsToAdd addObject:annotation];
+                if (annotation) {
+                    [annotationsToAdd addObject:annotation];
+                }
             }
         }];
     } completionBlock:^{
