@@ -75,6 +75,8 @@
 		D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
+		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
+		D9C9D2C11B7D64C0002C95E4 /* BRCMoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */; };
 		D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */; };
 		D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5B1B5AF4EE0048229A /* Accounts.framework */; };
 		D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5D1B5AF4F70048229A /* SystemConfiguration.framework */; };
@@ -230,6 +232,8 @@
 		D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+iBurn.m"; sourceTree = "<group>"; };
 		D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = Pods/BButton/BButton/resources/FontAwesome.ttf; sourceTree = SOURCE_ROOT; };
 		D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
+		D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = More.storyboard; sourceTree = "<group>"; };
+		D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCMoreViewController.swift; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		D9D12F5B1B5AF4EE0048229A /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		D9D12F5D1B5AF4F70048229A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -380,6 +384,8 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */,
+				D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */,
 				D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */,
 				D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */,
 				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
@@ -698,6 +704,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
+				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
 				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
@@ -824,6 +831,7 @@
 				D979CEC6199AED4C007F0313 /* RMAnnotation+iBurn.m in Sources */,
 				630861C9199029D100AD7109 /* BRCLocations.m in Sources */,
 				D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */,
+				D9C9D2C11B7D64C0002C95E4 /* BRCMoreViewController.swift in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
 				632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */,

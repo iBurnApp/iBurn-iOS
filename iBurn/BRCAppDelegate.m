@@ -271,12 +271,14 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     rateVC.title = @"Rate iBurn";
     rateVC.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
     
+    UIViewController *moreVC = [UIStoryboard storyboardWithName:@"More" bundle:[NSBundle mainBundle]].instantiateInitialViewController;
+    moreVC.title = @"More";
+    moreVC.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
+    
     self.tabBarController = [[UITabBarController alloc] init];
-    if ([BRCEmbargo allowEmbargoedData]) {
-        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, creditsNav, feedbackNav, shareVC, rateVC];
-    } else {
-        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, unlockVC, creditsNav, feedbackNav, shareVC, rateVC];
-    }
+    
+    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreVC];
+    
     self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;
 }
