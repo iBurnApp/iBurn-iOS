@@ -49,6 +49,7 @@
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
+		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
@@ -83,7 +84,6 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
-		D9EC0E571B7DD57D0042B596 /* onboarding_loop.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9EC0E561B7DD57D0042B596 /* onboarding_loop.mp4 */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 /* End PBXBuildFile section */
 
@@ -188,6 +188,7 @@
 		D980A90D1B3F5A6400BE3682 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataImportTests.m; sourceTree = "<group>"; };
 		D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter_Private.h; sourceTree = "<group>"; };
+		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/2015/initial_data; sourceTree = "<group>"; };
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/2015/updated_data; sourceTree = "<group>"; };
 		D9914C511B40D61500F90663 /* BRCUpdateInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCUpdateInfo.h; sourceTree = "<group>"; };
@@ -245,7 +246,6 @@
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
-		D9EC0E561B7DD57D0042B596 /* onboarding_loop.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop.mp4; path = Media/onboarding_loop.mp4; sourceTree = SOURCE_ROOT; };
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -509,7 +509,7 @@
 		D9842A2B1B51C71C0056455D /* 2015 */ = {
 			isa = PBXGroup;
 			children = (
-				D9EC0E561B7DD57D0042B596 /* onboarding_loop.mp4 */,
+				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 				63C11EB31B7C580400428FB8 /* bundle.js */,
 				D92B95991B7B0CC300116781 /* 2015 */,
 			);
@@ -718,11 +718,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
-				D9EC0E571B7DD57D0042B596 /* onboarding_loop.mp4 in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
 				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
+				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
