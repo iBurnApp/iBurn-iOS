@@ -15,7 +15,7 @@
                         <sections>
                             <tableViewSection id="zlc-6S-AL4">
                                 <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="OuE-Qh-A4s" imageView="0Ph-r8-1Dz" style="IBUITableViewCellStyleDefault" id="Fhp-cN-wV5">
+                                    <tableViewCell tag="1" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="OuE-Qh-A4s" imageView="0Ph-r8-1Dz" style="IBUITableViewCellStyleDefault" id="Fhp-cN-wV5">
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Fhp-cN-wV5" id="Pmw-HV-1c2">
                                             <autoresizingMask key="autoresizingMask"/>
@@ -32,7 +32,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="IQd-wp-ejA" imageView="AKd-nI-LYK" style="IBUITableViewCellStyleDefault" id="U0W-JQ-qUs">
+                                    <tableViewCell tag="2" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="IQd-wp-ejA" imageView="AKd-nI-LYK" style="IBUITableViewCellStyleDefault" id="U0W-JQ-qUs">
                                         <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="U0W-JQ-qUs" id="2Ob-uk-Cc8">
@@ -52,31 +52,9 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
-                            <tableViewSection id="4ee-qz-ivr">
-                                <cells>
-                                    <tableViewCell tag="420" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="qUf-i1-WoV" imageView="5dI-nA-c7f" style="IBUITableViewCellStyleDefault" id="dQe-0O-2Ss">
-                                        <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dQe-0O-2Ss" id="sz8-fL-0vd">
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Unlock Location Data" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qUf-i1-WoV">
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="BRCLockIcon" id="5dI-nA-c7f">
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                </imageView>
-                                            </subviews>
-                                        </tableViewCellContentView>
-                                    </tableViewCell>
-                                </cells>
-                            </tableViewSection>
                             <tableViewSection id="cgZ-1a-XXa">
                                 <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="uIL-Yd-fUH" imageView="hJj-q2-YBF" style="IBUITableViewCellStyleDefault" id="YCS-3T-bK8">
+                                    <tableViewCell tag="4" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="uIL-Yd-fUH" imageView="hJj-q2-YBF" style="IBUITableViewCellStyleDefault" id="YCS-3T-bK8">
                                         <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="YCS-3T-bK8" id="Q7j-VL-9hO">
@@ -98,7 +76,7 @@
                             </tableViewSection>
                             <tableViewSection id="2Kd-ci-52i">
                                 <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="Nck-F4-3cq" detailTextLabel="T1I-pJ-4ER" imageView="N4a-VJ-2kd" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="d7W-4n-Vdp">
+                                    <tableViewCell tag="5" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="Nck-F4-3cq" detailTextLabel="T1I-pJ-4ER" imageView="N4a-VJ-2kd" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="d7W-4n-Vdp">
                                         <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="d7W-4n-Vdp" id="Osm-ek-XOa">
@@ -122,7 +100,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="ijK-wI-ChD" detailTextLabel="kpg-vs-Mng" imageView="4b3-Cw-6ww" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="MHY-q0-FwH">
+                                    <tableViewCell tag="6" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="ijK-wI-ChD" detailTextLabel="kpg-vs-Mng" imageView="4b3-Cw-6ww" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="MHY-q0-FwH">
                                         <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="MHY-q0-FwH" id="dI8-b2-aeg">
@@ -146,7 +124,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="mYK-Di-hIo" detailTextLabel="ssY-hk-OnG" imageView="gHX-Og-TU9" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="FYg-0U-Wqj">
+                                    <tableViewCell tag="7" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="mYK-Di-hIo" detailTextLabel="ssY-hk-OnG" imageView="gHX-Og-TU9" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="FYg-0U-Wqj">
                                         <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="FYg-0U-Wqj" id="lMH-zN-f4l">
@@ -167,6 +145,28 @@
                                                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                            <tableViewSection id="4ee-qz-ivr">
+                                <cells>
+                                    <tableViewCell tag="3" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="qUf-i1-WoV" imageView="5dI-nA-c7f" style="IBUITableViewCellStyleDefault" id="dQe-0O-2Ss">
+                                        <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dQe-0O-2Ss" id="sz8-fL-0vd">
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Unlock Location Data" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qUf-i1-WoV">
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="BRCLockIcon" id="5dI-nA-c7f">
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </imageView>
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>

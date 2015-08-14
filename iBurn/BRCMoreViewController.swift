@@ -7,11 +7,22 @@
 //
 
 import UIKit
+import HockeySDK_Source
+import StoreKit
 
-class BRCMoreViewController: UITableViewController {
+enum CellTag: Int {
+    case Art = 1,
+    Camps,
+    Unlock,
+    Credits,
+    Feedback,
+    Share,
+    Rate,
+    Debug
+}
+
+class BRCMoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
     
-    static let kUnlockCellTag = 420
-
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
@@ -38,7 +49,7 @@ class BRCMoreViewController: UITableViewController {
             cell.imageView!.image = cellImage.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
         }
         
-        if cell.tag == self.dynamicType.kUnlockCellTag {
+        if cell.tag == CellTag.Unlock.rawValue {
             if BRCEmbargo.allowEmbargoedData() {
                 cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
                 cell.textLabel!.text = "Location Data Unlocked"
@@ -52,16 +63,85 @@ class BRCMoreViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        
+        let cell = tableView.cellForRowAtIndexPath(indexPath)!
+        let cellTag = CellTag(rawValue: cell.tag)!
+        
+        switch cellTag {
+        case .Art:
+            pushArtView()
+        case .Camps:
+            pushCampsView()
+        case .Unlock:
+            showUnlockView()
+        case .Credits:
+            pushCreditsView()
+        case .Feedback:
+            showFeedbackView()
+        case .Share:
+            showShareSheet()
+        case .Rate:
+            showRatingsView()
+        case .Debug:
+            pushDebugView()
+        }
     }
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
+    func pushArtView() {
+        let dbManager = BRCDatabaseManager.sharedInstance()
+        let artVC = BRCFilteredTableViewController(viewClass: BRCArtObject.self, viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
+        artVC.title = "Art"
+        artVC.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(artVC, animated: true)
     }
-    */
+
+    func pushCampsView() {
+        let dbManager = BRCDatabaseManager.sharedInstance()
+        let campsVC = BRCFilteredTableViewController(viewClass: BRCCampObject.self, viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
+        campsVC.title = "Camps"
+        campsVC.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(campsVC, animated: true)
+    }
+
+    func showUnlockView() {
+        let unlockVC = BRCEmbargoPasscodeViewController()
+        unlockVC.dismissAction = {
+            unlockVC.dismissViewControllerAnimated(true, completion: nil)
+        }
+        presentViewController(unlockVC, animated: true, completion: nil)
+    }
+
+    func pushCreditsView() {
+        let creditsVC = BRCCreditsViewController()
+        creditsVC.title = "Credits"
+        navigationController!.pushViewController(creditsVC, animated: true)
+    }
+
+    func showFeedbackView() {
+        BITHockeyManager.sharedHockeyManager().feedbackManager.showFeedbackListView()
+    }
+
+    func showShareSheet() {
+        let url = NSURL(string: "http://iburnapp.com")!
+        let string = "Going to Burning Man? Check out @iBurnApp for offline maps, events and more!"
+        let shareVC = UIActivityViewController(activityItems: [string, url], applicationActivities: nil)
+        presentViewController(shareVC, animated: true, completion: nil)
+    }
+    
+    func showRatingsView() {
+        let storeVC = SKStoreProductViewController()
+        storeVC.delegate = self
+        storeVC.loadProductWithParameters([SKStoreProductParameterITunesItemIdentifier : 388169740], completionBlock: nil)
+    }
+    
+    func pushDebugView() {
+        // TODO: make debug view
+    }
+    
+    // MARK: - SKStoreProductViewControllerDelegate
+    
+    func productViewControllerDidFinish(viewController: SKStoreProductViewController!) {
+        viewController.dismissViewControllerAnimated(true, completion: nil)
+    }
 
 }

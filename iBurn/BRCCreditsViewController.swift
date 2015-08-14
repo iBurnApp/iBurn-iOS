@@ -32,6 +32,18 @@ class BRCCreditsViewController: UITableViewController {
     
     var creditsInfoArray:[BRCCreditsInfo] = []
 
+    init () {
+        super.init(style: UITableViewStyle.Grouped)
+    }
+
+    required init!(coder aDecoder: NSCoder!) {
+        super.init(coder: aDecoder)
+    }
+    
+    private override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: NSBundle!) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -105,6 +117,7 @@ class BRCCreditsViewController: UITableViewController {
     // MARK: - Table view delegate
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
         if indexPath.section == SectionInfo.People.rawValue {
             let creditsInfo = self.creditsInfoArray[indexPath.row]
             let url = creditsInfo.url

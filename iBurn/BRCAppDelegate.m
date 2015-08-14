@@ -225,51 +225,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
-    self.artViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCArtObject class] viewName:dbManager.artViewName searchViewName:dbManager.searchArtView];
-    self.artViewController.title = @"Art";
-    UINavigationController *artNavController = [[UINavigationController alloc] initWithRootViewController:self.artViewController];
-    artNavController.tabBarItem.image = [UIImage imageNamed:@"BRCArtIcon"];
-    
-    self.campsViewController = [[BRCFilteredTableViewController alloc] initWithViewClass:[BRCCampObject class] viewName:dbManager.campsViewName searchViewName:dbManager.searchCampsView];
-    self.campsViewController.title = @"Camps";
-    UINavigationController *campNavController = [[UINavigationController alloc] initWithRootViewController:self.campsViewController];
-    campNavController.tabBarItem.image = [UIImage imageNamed:@"BRCCampIcon"];
     
     self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class] viewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
     self.eventsViewController.title = @"Events";
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
-    
-    BRCEmbargoPasscodeViewController *unlockVC = [[BRCEmbargoPasscodeViewController alloc] init];
-    __weak BRCEmbargoPasscodeViewController *weakUnlock = unlockVC;
-    unlockVC.dismissAction = ^{
-        [weakUnlock.navigationController popViewControllerAnimated:YES];
-    };
-    unlockVC.title = @"Unlock Location Data";
-    unlockVC.tabBarItem.image = [UIImage imageNamed:@"BRCLockIcon"];
-    
-    UITableViewController *debugVC = [[UITableViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    debugVC.title = @"Debug";
-    UINavigationController *debugNav = [[UINavigationController alloc] initWithRootViewController:debugVC];
-    debugNav.tabBarItem.image = [UIImage imageNamed:@"BRCDebugIcon"];
-    
-    BRCCreditsViewController *creditsVC = [[BRCCreditsViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    creditsVC.title = @"Credits";
-    UINavigationController *creditsNav = [[UINavigationController alloc] initWithRootViewController:creditsVC];
-    creditsNav.tabBarItem.image = [UIImage imageNamed:@"BRCCreditsIcon"];
-    
-    BITFeedbackListViewController *feedbackVC = [[BITHockeyManager sharedHockeyManager].feedbackManager feedbackListViewController:NO];
-    UINavigationController *feedbackNav = [[UINavigationController alloc] initWithRootViewController:feedbackVC];
-    feedbackVC.title = @"Send Feedback";
-    feedbackNav.tabBarItem.image = [UIImage imageNamed:@"BRCMailIcon"];
-    
-    UIViewController *shareVC = [[UIViewController alloc] init];
-    shareVC.title = @"Share iBurn";
-    shareVC.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
-    
-    UIViewController *rateVC = [[UIViewController alloc] init];
-    rateVC.title = @"Rate iBurn";
-    rateVC.tabBarItem.image = [UIImage imageNamed:@"BRCLightStar"];
     
     UIViewController *moreVC = [UIStoryboard storyboardWithName:@"More" bundle:[NSBundle mainBundle]].instantiateInitialViewController;
     moreVC.title = @"More";
