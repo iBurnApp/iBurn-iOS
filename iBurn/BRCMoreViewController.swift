@@ -9,7 +9,7 @@
 import UIKit
 import HockeySDK_Source
 import StoreKit
-import DKNightVersion
+// import DKNightVersion
 
 enum CellTag: Int {
     case Art = 1,
@@ -84,7 +84,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
             case .Feedback:
                 showFeedbackView()
             case .Share:
-                showShareSheet()
+                showShareSheet(cell)
             case .Rate:
                 showRatingsView()
             case .DebugShowOnboarding:
@@ -133,10 +133,12 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
         BITHockeyManager.sharedHockeyManager().feedbackManager.showFeedbackListView()
     }
 
-    func showShareSheet() {
+    func showShareSheet(fromView: UIView) {
         let url = NSURL(string: "http://iburnapp.com")!
         let string = "Going to Burning Man? Check out @iBurnApp for offline maps, events and more!"
         let shareVC = UIActivityViewController(activityItems: [string, url], applicationActivities: nil)
+        shareVC.popoverPresentationController!.sourceView = fromView;
+
         presentViewController(shareVC, animated: true, completion: nil)
     }
     
@@ -171,21 +173,24 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     @IBAction func toggleNightMode(sender: AnyObject) {
         // TODO: Fix night mode
         return
-        
+        /*
         if let nightSwitch = sender as? UISwitch {
             if nightSwitch.on {
                 DKNightVersionManager.nightFalling();
             } else {
                 DKNightVersionManager.dawnComing();
             }
-        }
+        }*/
     }
     
     func refreshNightModeSwitch() {
-        if DKNightVersionManager.currentThemeVersion() == DKThemeVersion.Night {
+        // TODO: Fix night mode
+        return
+        
+        /*if DKNightVersionManager.currentThemeVersion() == DKThemeVersion.Night {
             nightModeSwitch.on = true
         } else {
             nightModeSwitch.on = false
-        }
+        }*/
     }
 }
