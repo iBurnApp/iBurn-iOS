@@ -137,7 +137,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
         let url = NSURL(string: "http://iburnapp.com")!
         let string = "Going to Burning Man? Check out @iBurnApp for offline maps, events and more!"
         let shareVC = UIActivityViewController(activityItems: [string, url], applicationActivities: nil)
-        shareVC.popoverPresentationController!.sourceView = fromView;
+        shareVC.popoverPresentationController?.sourceView = fromView;
 
         presentViewController(shareVC, animated: true, completion: nil)
     }

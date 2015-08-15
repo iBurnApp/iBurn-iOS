@@ -8,14 +8,14 @@
 
 #import <UIKit/UIKit.h>
 #import "BButton.h"
-#import "BRCMapPoint.h"
+#import "BRCUserMapPoint.h"
 
 @class BRCAnnotationEditView;
 
 @protocol BRCAnnotationEditViewDelegate <NSObject>
 @required
-- (void)editViewDidSelectDelete:(BRCAnnotationEditView *)editView mapPointToDelete:(BRCMapPoint *)mapPointToDelete;
-- (void)editViewDidSelectSave:(BRCAnnotationEditView *)editView editedMapPoint:(BRCMapPoint *)editedMapPoint;
+- (void)editViewDidSelectDelete:(BRCAnnotationEditView *)editView mapPointToDelete:(BRCUserMapPoint *)mapPointToDelete;
+- (void)editViewDidSelectSave:(BRCAnnotationEditView *)editView editedMapPoint:(BRCUserMapPoint *)editedMapPoint;
 @end
 
 @interface BRCAnnotationEditView : UIView
@@ -23,7 +23,7 @@
 - (instancetype)initWithDelegate:(id <BRCAnnotationEditViewDelegate>)delegate;
 
 /** set the mapPoint to change textField title */
-@property (nonatomic, copy) BRCMapPoint *mapPoint;
+@property (nonatomic, copy) BRCUserMapPoint *mapPoint;
 
 @property (nonatomic, weak, readonly) id<BRCAnnotationEditViewDelegate> delegate;
 @property (nonatomic, strong, readonly) UITextField* textField;

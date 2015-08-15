@@ -13,7 +13,8 @@ typedef NS_ENUM(NSUInteger, BRCUpdateDataType) {
     BRCUpdateDataTypeArt,
     BRCUpdateDataTypeCamps,
     BRCUpdateDataTypeEvents,
-    BRCUpdateDataTypeTiles
+    BRCUpdateDataTypeTiles,
+    BRCUpdateDataTypePoints
 };
 
 typedef NS_ENUM(NSUInteger, BRCUpdateFetchStatus) {

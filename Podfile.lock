@@ -45,7 +45,6 @@ PODS:
     - YapDatabase/standard (= 2.6.5)
   - YapDatabase/standard (2.6.5):
     - CocoaLumberjack (~> 1)
-  - zipzap (8.0.4)
 
 DEPENDENCIES:
   - Appirater (~> 2.0)
@@ -70,7 +69,6 @@ DEPENDENCIES:
   - TUSafariActivity (~> 1.0)
   - VTAcknowledgementsViewController (~> 0.11)
   - YapDatabase (~> 2.6)
-  - zipzap (~> 8.0)
 
 EXTERNAL SOURCES:
   ASDayPicker:
@@ -106,6 +104,5 @@ SPEC CHECKSUMS:
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
   YapDatabase: 814f9ff862a95c1e581d93335a4020482b69155b
-  zipzap: 45be5e182aead61fbb8300ddb4766f8e82a557c4
 
 COCOAPODS: 0.38.2

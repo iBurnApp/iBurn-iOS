@@ -89,7 +89,7 @@
 
 - (void)doneButtonPressed:(id)sender
 {
-    BRCMapPoint *editedMapPoint = self.mapPoint;
+    BRCUserMapPoint *editedMapPoint = self.mapPoint;
     editedMapPoint.title = self.textField.text;
     editedMapPoint.modifiedDate = [NSDate date];
     [self.textField resignFirstResponder];
@@ -99,7 +99,7 @@
 
 - (void)deleteButtonPressed:(id)sender
 {
-    BRCMapPoint *mapPointToDelete = self.mapPoint;
+    BRCUserMapPoint *mapPointToDelete = self.mapPoint;
     [self.textField resignFirstResponder];
     [self.delegate editViewDidSelectDelete:self mapPointToDelete:mapPointToDelete];
     self.mapPoint = nil;
@@ -110,7 +110,7 @@
     return NO;
 }
 
-- (void) setMapPoint:(BRCMapPoint *)mapPoint {
+- (void) setMapPoint:(BRCUserMapPoint *)mapPoint {
     _mapPoint = [mapPoint copy];
     self.textField.text = mapPoint.title;
 }

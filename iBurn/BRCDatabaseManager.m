@@ -115,6 +115,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (BOOL)copyDatabaseFromBundle
 {
+    /// copy database iburn-database.zip -> Application Support -> iBurn -> iBurn-2015.sqlite/-shm/-wal
     NSString *folderName = @"iBurn-database";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     if (![[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {

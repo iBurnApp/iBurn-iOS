@@ -17,6 +17,8 @@ static NSString * const kBRCUpdateTypeCamps = @"camps";
 static NSString * const kBRCUpdateTypeArt = @"art";
 static NSString * const kBRCUpdateTypeEvents = @"events";
 static NSString * const kBRCUpdateTypeTiles = @"tiles";
+static NSString * const kBRCUpdateTypePoints = @"points";
+
 
 @implementation BRCUpdateInfo
 
@@ -85,6 +87,8 @@ static NSString * const kBRCUpdateTypeTiles = @"tiles";
         return BRCUpdateDataTypeEvents;
     } else if ([dataTypeString isEqualToString:kBRCUpdateTypeTiles]) {
         return BRCUpdateDataTypeTiles;
+    } else if ([dataTypeString isEqualToString:kBRCUpdateTypePoints]) {
+        return BRCUpdateDataTypePoints;
     }
     return BRCUpdateDataTypeUnknown;
 }
@@ -102,6 +106,9 @@ static NSString * const kBRCUpdateTypeTiles = @"tiles";
             break;
         case BRCUpdateDataTypeTiles:
             return kBRCUpdateTypeTiles;
+            break;
+        case BRCUpdateDataTypePoints:
+            return kBRCUpdateTypePoints;
             break;
         default:
             return nil;

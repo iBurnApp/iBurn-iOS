@@ -32,6 +32,7 @@
 #import "UIColor+iBurn.h"
 #import <pop/POP.h>
 #import "BRCGeocoder.h"
+#import "BRCUserMapPoint.h"
 @import KVOController;
 @import Parse;
 
@@ -120,7 +121,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }
     CLLocationCoordinate2D pinDropCoordinate = self.mapView.centerCoordinate;
     self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:nil];
-    BRCMapPoint *mapPoint = [[BRCMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate];
+    BRCUserMapPoint *mapPoint = [[BRCUserMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate type:BRCMapPointTypeUserStar];
     self.editingMapPointAnnotation.userInfo = mapPoint;
     
     self.editingMapPointAnnotation.layer.hidden = YES;
@@ -140,8 +141,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 }
 
 - (void) showEditView:(BRCAnnotationEditView*)annotationEditView forAnnotation:(RMAnnotation*)annotation {
-    if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
-        BRCMapPoint *mapPoint = annotation.userInfo;
+    if ([annotation.userInfo isKindOfClass:[BRCUserMapPoint class]]) {
+        BRCUserMapPoint *mapPoint = annotation.userInfo;
         annotationEditView.mapPoint = mapPoint;
         annotationEditView.alpha = 0.0f;
         annotationEditView.userInteractionEnabled = NO;
@@ -384,9 +385,16 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [transaction enumerateKeysAndObjectsInCollection:[BRCMapPoint collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCMapPoint class]]) {
                 BRCMapPoint *mapPoint = (BRCMapPoint*)object;
-                RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView mapPoint:mapPoint];
-                if (annotation) {
-                    [annotationsToAdd addObject:annotation];
+                // only show points added by user
+                if (mapPoint.type == BRCMapPointTypeUserBike ||
+                    mapPoint.type == BRCMapPointTypeUserCamp ||
+                    mapPoint.type == BRCMapPointTypeUserHeart ||
+                    mapPoint.type == BRCMapPointTypeUserHome ||
+                    mapPoint.type == BRCMapPointTypeUserStar) {
+                    RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView mapPoint:mapPoint];
+                    if (annotation) {
+                        [annotationsToAdd addObject:annotation];
+                    }
                 }
             }
         }];
