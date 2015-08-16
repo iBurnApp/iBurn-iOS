@@ -79,6 +79,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 @implementation BRCMapViewController
 
+
+#pragma mark Setup
+
 - (instancetype) initWithFtsName:(NSString *)ftsName {
     if (self = [super init]) {
         _ftsName = ftsName;
@@ -95,6 +98,30 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self setupSearchIndicator];
     }
     return self;
+}
+
+
+- (void) setupSearchController {
+    self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:self];
+    self.searchController.delegate = self;
+    self.searchController.searchResultsDataSource = self;
+    self.searchController.searchResultsDelegate = self;
+    
+    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
+    [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
+        Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
+        UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
+        [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[cellClass cellIdentifier]];
+    }];
+}
+
+- (void) setupSearchBar {
+    self.searchBar = [[UISearchBar alloc] init];
+    self.searchBar.delegate = self;
+    self.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    self.searchBar.backgroundColor = [UIColor colorWithWhite:1.0 alpha:.85];
+    self.searchBar.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.searchBar];
 }
 
 - (void) setupSearchIndicator {
@@ -117,99 +144,21 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self.view addSubview:self.addMapPointButton];
 }
 
-- (void) newMapPointButtonPressed:(id)sender {
-    // show BRCANnotationEditView
-    // set currentlyEditingAnnotation
-    // drop / add a pin
-    
-    if (self.editingMapPointAnnotation) {
-        [self.mapView removeAnnotation:self.editingMapPointAnnotation];
-        self.editingMapPointAnnotation = nil;
-    }
-    
-    // drop pin at user location if possible
-    CLLocationCoordinate2D pinDropCoordinate = kCLLocationCoordinate2DInvalid;
-    if (self.mapView.userLocation.location) {
-        pinDropCoordinate = self.mapView.userLocation.location.coordinate;
-    } else {
-        pinDropCoordinate = self.mapView.centerCoordinate;
-    }
-    // don't drop user-location pins if youre not at BM
-    if (![[BRCLocations burningManRegion] containsCoordinate:pinDropCoordinate]) {
-        pinDropCoordinate = self.mapView.centerCoordinate;
-    }
-    BRCUserMapPoint *mapPoint = [[BRCUserMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate type:BRCMapPointTypeUserStar];
-    self.editingMapPointAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView mapPoint:mapPoint];
-    self.editingMapPointAnnotation.userInfo = mapPoint;
-    
-    self.editingMapPointAnnotation.layer.hidden = YES;
-    [self.mapView addAnnotation:self.editingMapPointAnnotation];
-    
-    [self.editingMapPointAnnotation.layer pop_removeAllAnimations];
-    // http://stackoverflow.com/a/23921147/805882
-    POPSpringAnimation *anim = [POPSpringAnimation animationWithPropertyNamed:kPOPLayerPositionY];
-    anim.fromValue = @(0);
-    anim.toValue = @(self.mapView.center.y);
-    anim.springSpeed = 8;
-    anim.springBounciness = 4;
-    [self.editingMapPointAnnotation.layer pop_addAnimation:anim forKey:kPOPLayerPositionY];
-    self.editingMapPointAnnotation.layer.hidden = NO;
-    
-    [self showEditView:self.annotationEditView forAnnotation:self.editingMapPointAnnotation];
+- (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
+    return UIBarPositionTopAttached;
 }
 
-- (void) showEditView:(BRCAnnotationEditView*)annotationEditView forAnnotation:(RMAnnotation*)annotation {
-    if ([annotation.userInfo isKindOfClass:[BRCUserMapPoint class]]) {
-        BRCUserMapPoint *mapPoint = annotation.userInfo;
-        annotationEditView.mapPoint = mapPoint;
-        annotationEditView.alpha = 0.0f;
-        annotationEditView.userInteractionEnabled = NO;
-        [self.view bringSubviewToFront:annotationEditView];
-        [self.mapView setCenterCoordinate:mapPoint.coordinate animated:YES];
-        [UIView animateWithDuration:0.2 animations:^{
-            annotationEditView.alpha = 1.0f;
-        } completion:^(BOOL finished) {
-            annotationEditView.userInteractionEnabled = YES;
-        }];
-    }
+- (UIImageView *)imageViewForFavoriteWithImageName:(NSString *)imageName {
+    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.contentMode = UIViewContentModeCenter;
+    UIColor *tintColor = [[[UIApplication sharedApplication] keyWindow] tintColor];
+    imageView.tintColor = tintColor;
+    return imageView;
 }
 
-- (void) hideEditView:(BRCAnnotationEditView*)annotationEditView animated:(BOOL)animated completionBlock:(dispatch_block_t)completionBlock {
-    annotationEditView.mapPoint = nil;
-    annotationEditView.userInteractionEnabled = NO;
-    [UIView animateWithDuration:0.5 animations:^{
-        annotationEditView.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        if (completionBlock) {
-            completionBlock();
-        }
-    }];
-}
+#pragma mark View Lifecycle
 
-- (void) setupSearchController {
-    self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:self];
-    self.searchController.delegate = self;
-    self.searchController.searchResultsDataSource = self;
-    self.searchController.searchResultsDelegate = self;
-    
-    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
-    [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
-        Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
-        UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
-        [self.searchController.searchResultsTableView registerNib:nib forCellReuseIdentifier:[cellClass cellIdentifier]];
-    }];
-}
-
-
-
-- (void) setupSearchBar {
-    self.searchBar = [[UISearchBar alloc] init];
-    self.searchBar.delegate = self;
-    self.searchBar.searchBarStyle = UISearchBarStyleMinimal;
-    self.searchBar.backgroundColor = [UIColor colorWithWhite:1.0 alpha:.85];
-    self.searchBar.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.searchBar];
-}
 
 - (void)updateViewConstraints
 {
@@ -234,22 +183,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.didUpdateConstraints = YES;
 }
 
-- (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
-    return UIBarPositionTopAttached;
-}
-
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     self.isVisible = YES;
-}
-
-- (UIImageView *)imageViewForFavoriteWithImageName:(NSString *)imageName {
-    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-    imageView.contentMode = UIViewContentModeCenter;
-    UIColor *tintColor = [[[UIApplication sharedApplication] keyWindow] tintColor];
-    imageView.tintColor = tintColor;
-    return imageView;
 }
 
 - (void) viewDidLoad {
@@ -282,6 +218,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self.annotationEditView.textField resignFirstResponder];
     }
 }
+
+#pragma mark Annotation Loading
 
 - (void) reloadFavoritesIfNeeded {
     
@@ -425,23 +363,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }];
 }
 
-- (void) showGuideFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
-    NSParameterAssert(fromLocation != nil);
-    NSParameterAssert(toLocation != nil);
-    if (!fromLocation || !toLocation) {
-        return;
-    }
-    if (self.guidanceAnnotation) {
-        [self.mapView removeAnnotation:self.guidanceAnnotation];
-        self.guidanceAnnotation = nil;
-    }
-    self.guidanceAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[fromLocation, toLocation]];
-    self.guidanceAnnotation.lineColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.7];
-    self.guidanceAnnotation.lineWidth = 8.0;
-    [self.mapView addAnnotation:self.guidanceAnnotation];
-    self.mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
-}
-
 - (void)reloadEventAnnotationsIfNeeded
 {
     if (self.mapView.zoom < kBRCMapViewArtAndEventsMinZoomLevel) {
@@ -488,6 +409,126 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }];
 }
 
+#pragma mark Dropping / Editing Pins
+
+- (void) newMapPointButtonPressed:(id)sender {
+    // show BRCANnotationEditView
+    // set currentlyEditingAnnotation
+    // drop / add a pin
+    
+    if (self.editingMapPointAnnotation) {
+        [self.mapView removeAnnotation:self.editingMapPointAnnotation];
+        self.editingMapPointAnnotation = nil;
+    }
+    
+    // drop pin at user location if possible
+    CLLocationCoordinate2D pinDropCoordinate = kCLLocationCoordinate2DInvalid;
+    if (self.mapView.userLocation.location) {
+        pinDropCoordinate = self.mapView.userLocation.location.coordinate;
+    } else {
+        pinDropCoordinate = self.mapView.centerCoordinate;
+    }
+    // don't drop user-location pins if youre not at BM
+    if (![[BRCLocations burningManRegion] containsCoordinate:pinDropCoordinate]) {
+        pinDropCoordinate = self.mapView.centerCoordinate;
+    }
+    BRCUserMapPoint *mapPoint = [[BRCUserMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate type:BRCMapPointTypeUserStar];
+    self.editingMapPointAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView mapPoint:mapPoint];
+    self.editingMapPointAnnotation.userInfo = mapPoint;
+    
+    self.editingMapPointAnnotation.layer.hidden = YES;
+    [self.mapView addAnnotation:self.editingMapPointAnnotation];
+    
+    [self.editingMapPointAnnotation.layer pop_removeAllAnimations];
+    // http://stackoverflow.com/a/23921147/805882
+    POPSpringAnimation *anim = [POPSpringAnimation animationWithPropertyNamed:kPOPLayerPositionY];
+    anim.fromValue = @(0);
+    anim.toValue = @(self.mapView.center.y);
+    anim.springSpeed = 8;
+    anim.springBounciness = 4;
+    [self.editingMapPointAnnotation.layer pop_addAnimation:anim forKey:kPOPLayerPositionY];
+    self.editingMapPointAnnotation.layer.hidden = NO;
+    
+    [self showEditView:self.annotationEditView forAnnotation:self.editingMapPointAnnotation];
+}
+
+- (void) showEditView:(BRCAnnotationEditView*)annotationEditView forAnnotation:(RMAnnotation*)annotation {
+    if ([annotation.userInfo isKindOfClass:[BRCUserMapPoint class]]) {
+        BRCUserMapPoint *mapPoint = annotation.userInfo;
+        annotationEditView.mapPoint = mapPoint;
+        annotationEditView.alpha = 0.0f;
+        annotationEditView.userInteractionEnabled = NO;
+        [self.view bringSubviewToFront:annotationEditView];
+        [self.mapView setCenterCoordinate:mapPoint.coordinate animated:YES];
+        [UIView animateWithDuration:0.2 animations:^{
+            annotationEditView.alpha = 1.0f;
+        } completion:^(BOOL finished) {
+            annotationEditView.userInteractionEnabled = YES;
+        }];
+    }
+}
+
+- (void) hideEditView:(BRCAnnotationEditView*)annotationEditView animated:(BOOL)animated completionBlock:(dispatch_block_t)completionBlock {
+    annotationEditView.mapPoint = nil;
+    annotationEditView.userInteractionEnabled = NO;
+    [UIView animateWithDuration:0.5 animations:^{
+        annotationEditView.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        if (completionBlock) {
+            completionBlock();
+        }
+    }];
+}
+
+
+#pragma mark User Guide
+
+- (void) showGuideFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
+    NSParameterAssert(fromLocation != nil);
+    NSParameterAssert(toLocation != nil);
+    if (!fromLocation || !toLocation) {
+        return;
+    }
+    [self updateGuideFromLocation:fromLocation toLocation:toLocation];
+    self.mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
+}
+
+- (void) updateGuideFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
+    if (self.guidanceAnnotation) {
+        [self.mapView removeAnnotation:self.guidanceAnnotation];
+        self.guidanceAnnotation = nil;
+    }
+    self.guidanceAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[fromLocation, toLocation]];
+    self.guidanceAnnotation.lineColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.7];
+    self.guidanceAnnotation.lineWidth = 8.0;
+    [self.mapView addAnnotation:self.guidanceAnnotation];
+    
+    if (!self.distanceView) {
+        self.distanceView = [[BRCDistanceView alloc] initWithFrame:CGRectZero destination:toLocation];
+        self.distanceView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.view addSubview:self.distanceView];
+        [self.view bringSubviewToFront:self.distanceView];
+        [self.distanceView autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.addMapPointButton];
+        [self.distanceView autoAlignAxisToSuperviewAxis:ALAxisVertical];
+    }
+    self.distanceView.destination = toLocation; // just in case
+    [self.distanceView updateDistanceFromLocation:fromLocation];
+}
+
+- (void) hideGuide {
+    if (self.guidanceAnnotation) {
+        [self.mapView removeAnnotation:self.guidanceAnnotation];
+        self.guidanceAnnotation = nil;
+        self.mapView.userTrackingMode = RMUserTrackingModeNone;
+    }
+    if (self.distanceView) {
+        [self.distanceView removeFromSuperview];
+        self.distanceView = nil;
+    }
+}
+
+
+
 #pragma mark RMMapViewDelegate methods
 
 - (void)afterMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction {
@@ -520,11 +561,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             [self reloadAllUserPoints];
         }];
     }
-    if (self.guidanceAnnotation) {
-        [self.mapView removeAnnotation:self.guidanceAnnotation];
-        self.guidanceAnnotation = nil;
-        self.mapView.userTrackingMode = RMUserTrackingModeNone;
-    }
+    [self hideGuide];
 }
 
 - (BOOL)mapView:(RMMapView *)mapView shouldDragAnnotation:(RMAnnotation *)annotation {
@@ -609,6 +646,10 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
                 self.navigationItem.title = @"Map";
             }
         }];
+    }
+    
+    if (self.distanceView) {
+        [self updateGuideFromLocation:newLocation toLocation:self.distanceView.destination];
     }
 }
 

@@ -19,19 +19,18 @@ public class BRCDistanceView: UIView {
         destination = aDestination
         super.init(frame: frame)
         distanceLabel.setTranslatesAutoresizingMaskIntoConstraints(false)
-        distanceLabel.autoPinEdgesToSuperviewEdgesWithInsets(UIEdgeInsetsZero)
         addSubview(distanceLabel)
-        backgroundColor = UIColor(white: 1.0, alpha: 0.9)
+        distanceLabel.autoPinEdgesToSuperviewEdgesWithInsets(UIEdgeInsetsZero)
+        backgroundColor = UIColor.clearColor()
+        distanceLabel.backgroundColor = UIColor.clearColor()
     }
     
     public func updateDistanceFromLocation(fromLocation: CLLocation) {
         let distance = destination.distanceFromLocation(fromLocation)
-        let text = NSMutableAttributedString()
         let distanceString = TTTLocationFormatter.brc_humanizedStringForDistance(distance)
-        text.appendAttributedString(distanceString)
-        text.appendAttributedString(NSAttributedString(string: " Away"))
-        distanceLabel.attributedText = text
-        setNeedsLayout()
+        distanceLabel.attributedText = distanceString
+        distanceLabel.sizeToFit()
+        self.frame = CGRectMake(frame.origin.x, frame.origin.y, distanceLabel.frame.size.width, distanceLabel.frame.size.height)
     }
 
     required public init(coder aDecoder: NSCoder) {
