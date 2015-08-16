@@ -15,3 +15,4 @@
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCEmbargo.h"
 #import "BRCEmbargoPasscodeViewController.h"
+#import "TTTLocationFormatter+iBurn.h"

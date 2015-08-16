@@ -14,4 +14,7 @@
 /** location of the man in 2015 */
 + (CLLocationCoordinate2D)blackRockCityCenter;
 
+/** Within 5 miles of the man */
++ (CLCircularRegion*) burningManRegion;
+
 @end

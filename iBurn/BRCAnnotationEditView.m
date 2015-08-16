@@ -36,6 +36,7 @@
         self.textField.placeholder = @"Name";
         self.textField.delegate = self;
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.textField.clearButtonMode = UITextFieldViewModeWhileEditing;
         self.textField.backgroundColor = [UIColor clearColor];
         
         self.saveButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3 icon:FACheck fontSize:17];

@@ -35,6 +35,7 @@
 #import "BRCUserMapPoint.h"
 @import KVOController;
 @import Parse;
+#import "iBurn-Swift.h"
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
@@ -70,6 +71,10 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 @property (nonatomic, strong) BRCGeocoder *geocoder;
 
 @property (nonatomic, strong) RMPolylineAnnotation *guidanceAnnotation;
+/** same button goes in all annotations */
+@property (nonatomic, strong) BButton *guidanceButton;
+@property (nonatomic, strong) BRCDistanceView *distanceView;
+
 @end
 
 @implementation BRCMapViewController
@@ -115,16 +120,22 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 - (void) newMapPointButtonPressed:(id)sender {
     // show BRCANnotationEditView
     // set currentlyEditingAnnotation
-    // drop a pin
+    // drop / add a pin
     
     if (self.editingMapPointAnnotation) {
         [self.mapView removeAnnotation:self.editingMapPointAnnotation];
         self.editingMapPointAnnotation = nil;
     }
+    
+    // drop pin at user location if possible
     CLLocationCoordinate2D pinDropCoordinate = kCLLocationCoordinate2DInvalid;
     if (self.mapView.userLocation.location) {
         pinDropCoordinate = self.mapView.userLocation.location.coordinate;
     } else {
+        pinDropCoordinate = self.mapView.centerCoordinate;
+    }
+    // don't drop user-location pins if youre not at BM
+    if (![[BRCLocations burningManRegion] containsCoordinate:pinDropCoordinate]) {
         pinDropCoordinate = self.mapView.centerCoordinate;
     }
     BRCUserMapPoint *mapPoint = [[BRCUserMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate type:BRCMapPointTypeUserStar];
@@ -248,6 +259,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self setupNewMapPointButton];
     [self setupAnnotationEditView];
     self.geocoder = [BRCGeocoder sharedInstance];
+    self.guidanceButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FALocationArrow fontSize:20];
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
@@ -424,6 +436,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         self.guidanceAnnotation = nil;
     }
     self.guidanceAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[fromLocation, toLocation]];
+    self.guidanceAnnotation.lineColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.7];
+    self.guidanceAnnotation.lineWidth = 8.0;
     [self.mapView addAnnotation:self.guidanceAnnotation];
     self.mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
 }
@@ -506,6 +520,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             [self reloadAllUserPoints];
         }];
     }
+    if (self.guidanceAnnotation) {
+        [self.mapView removeAnnotation:self.guidanceAnnotation];
+        self.guidanceAnnotation = nil;
+        self.mapView.userTrackingMode = RMUserTrackingModeNone;
+    }
 }
 
 - (BOOL)mapView:(RMMapView *)mapView shouldDragAnnotation:(RMAnnotation *)annotation {
@@ -520,14 +539,27 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 - (void)tapOnCalloutAccessoryControl:(UIControl *)control forAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map
 {
-    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
-        BRCDataObject *dataObject = annotation.userInfo;
-        BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
-        [self.navigationController pushViewController:detailViewController animated:YES];
-    }
-    if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
-        self.editingMapPointAnnotation = annotation;
-        [self showEditView:self.annotationEditView forAnnotation:annotation];
+    if (control == self.guidanceButton) {
+        CLLocation *destination = nil;
+        if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = annotation.userInfo;
+            destination = dataObject.location;
+        } else if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
+            BRCMapPoint *mapPoint = annotation.userInfo;
+            CLLocationCoordinate2D coordinate = mapPoint.coordinate;
+            destination = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+        }
+        [self showGuideFromLocation:self.mapView.userLocation.location toLocation:destination];
+    } else {
+        if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = annotation.userInfo;
+            BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+            [self.navigationController pushViewController:detailViewController animated:YES];
+        }
+        if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
+            self.editingMapPointAnnotation = annotation;
+            [self showEditView:self.annotationEditView forAnnotation:annotation];
+        }
     }
 }
 
@@ -540,6 +572,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         if (mapLayer) {
             mapLayer.canShowCallout = YES;
             mapLayer.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+            mapLayer.leftCalloutAccessoryView = self.guidanceButton;
             return mapLayer;
         }
     }
@@ -556,6 +589,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             userMapPointMarker.canShowCallout = YES;
             userMapPointMarker.rightCalloutAccessoryView = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAPencil fontSize:20];
         }
+        userMapPointMarker.leftCalloutAccessoryView = self.guidanceButton;
         return userMapPointMarker;
     }
     return nil;

@@ -40,7 +40,6 @@
 @import Onboard;
 @import PermissionScope;
 
-static NSString * const kBRCManRegionIdentifier = @"kBRCManRegionIdentifier";
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
 @interface BRCAppDelegate() <UINavigationControllerDelegate>
@@ -318,9 +317,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 
 - (void) setupRegionBasedUnlock {
     NSParameterAssert(self.locationManager != nil);
-    CLLocationCoordinate2D manCoordinate2014 = [BRCLocations blackRockCityCenter];
-    CLLocationDistance radius = 5 * 8046.72; // Within 5 miles of the man
-    self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
+    self.burningManRegion = [BRCLocations burningManRegion];
 }
 
 - (void) enteredBurningManRegion {
