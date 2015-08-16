@@ -28,24 +28,26 @@
         self.translatesAutoresizingMaskIntoConstraints = NO;
         self.didAddConstraints = NO;
         
-        self.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.8];
+        self.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.9];
         self.alpha = 0.995;
         
         self.textField = [[UITextField alloc] initForAutoLayout];
         self.textField.borderStyle = UITextBorderStyleRoundedRect;
-        self.textField.placeholder = @"Point Name (optional)";
+        self.textField.placeholder = @"Name";
         self.textField.delegate = self;
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
         self.textField.backgroundColor = [UIColor clearColor];
         
-        self.saveButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3];
+        self.saveButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3 icon:FACheck fontSize:17];
         self.saveButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.saveButton setTitle:@"Save" forState:UIControlStateNormal];
+        [self.saveButton addAwesomeIcon:FACheck beforeTitle:YES];
         [self.saveButton addTarget:self action:@selector(doneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         
-        self.deleteButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeDanger style:BButtonStyleBootstrapV3];
+        self.deleteButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeDanger style:BButtonStyleBootstrapV3 icon:FATimes fontSize:17];
         self.deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
+        [self.deleteButton addAwesomeIcon:FATimes beforeTitle:YES];
         [self.deleteButton addTarget:self action:@selector(deleteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         
         
@@ -167,7 +169,6 @@
     [self.delegate editViewDidSelectSave:self editedMapPoint:point];
     self.mapPoint = nil;
 }
-
 
 #pragma mark Button Events
 
