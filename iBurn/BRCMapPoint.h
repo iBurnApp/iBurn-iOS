@@ -10,13 +10,13 @@
 @import CoreLocation;
 
 typedef NS_ENUM(NSUInteger, BRCMapPointType) {
-    BRCMapPointTypeUnknown,
+    BRCMapPointTypeUnknown, // turns into -> BRCMapPointTypeUserStar
     BRCMapPointTypeUserBreadcrumb, // for tracking yourself
     BRCMapPointTypeUserHome,
-    BRCMapPointTypeUserCamp,
+    BRCMapPointTypeUserCamp, // unused
     BRCMapPointTypeUserBike,
     BRCMapPointTypeUserStar,
-    BRCMapPointTypeUserHeart,
+    BRCMapPointTypeUserHeart, // unused
     BRCMapPointTypeToilet,
     BRCMapPointTypeMedical,
     BRCMapPointTypeRanger
@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 
 @property (nonatomic, strong, readwrite) NSString *title;
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
-@property (nonatomic, readonly) BRCMapPointType type;
+@property (nonatomic, readwrite) BRCMapPointType type;
 
 
 - (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type;

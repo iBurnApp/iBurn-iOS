@@ -119,9 +119,14 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self.mapView removeAnnotation:self.editingMapPointAnnotation];
         self.editingMapPointAnnotation = nil;
     }
-    CLLocationCoordinate2D pinDropCoordinate = self.mapView.centerCoordinate;
-    self.editingMapPointAnnotation = [[RMAnnotation alloc] initWithMapView:self.mapView coordinate:pinDropCoordinate andTitle:nil];
+    CLLocationCoordinate2D pinDropCoordinate = kCLLocationCoordinate2DInvalid;
+    if (self.mapView.userLocation.location) {
+        pinDropCoordinate = self.mapView.userLocation.location.coordinate;
+    } else {
+        pinDropCoordinate = self.mapView.centerCoordinate;
+    }
     BRCUserMapPoint *mapPoint = [[BRCUserMapPoint alloc] initWithTitle:nil coordinate:pinDropCoordinate type:BRCMapPointTypeUserStar];
+    self.editingMapPointAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView mapPoint:mapPoint];
     self.editingMapPointAnnotation.userInfo = mapPoint;
     
     self.editingMapPointAnnotation.layer.hidden = YES;
@@ -209,7 +214,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self.annotationEditView autoPinToTopLayoutGuideOfViewController:self withInset:0];
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
-    [self.annotationEditView autoSetDimension:ALDimensionHeight toSize:90];
     [self.annotationEditView autoAlignAxisToSuperviewAxis:ALAxisVertical];
     
     [self.searchActivityIndicatorView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
@@ -523,7 +527,12 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         }
     }
     if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
-        RMMarker *userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCRedPin"]]; // user map points
+        RMMarker *userMapPointMarker = nil;
+        if ([annotation.userInfo isKindOfClass:[BRCUserMapPoint class]]) {
+            userMapPointMarker = [[RMMarker alloc] initWithUIImage:annotation.annotationIcon];
+        } else {
+            userMapPointMarker = [[RMMarker alloc] initWithUIImage:[UIImage imageNamed:@"BRCRedPin"]]; // user map point
+        }
         if ([annotation isEqual:self.editingMapPointAnnotation]) {
             userMapPointMarker.canShowCallout = NO;
         } else {

@@ -30,4 +30,7 @@
 @property (nonatomic, strong, readonly) BButton *saveButton;
 @property (nonatomic, strong, readonly) BButton *deleteButton;
 
+/** for different BRCUserMapPoint types */
+@property (nonatomic, strong, readonly) NSArray *typeButtons;
+
 @end
