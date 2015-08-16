@@ -36,6 +36,7 @@
         self.textField.placeholder = @"Point Name (optional)";
         self.textField.delegate = self;
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.textField.backgroundColor = [UIColor clearColor];
         
         self.saveButton = [[BButton alloc] initWithFrame:CGRectZero type:BButtonTypeSuccess style:BButtonStyleBootstrapV3];
         self.saveButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -123,7 +124,7 @@
 
 - (void) setMapPoint:(BRCUserMapPoint *)mapPoint {
     if (!mapPoint) {
-        mapPoint = nil;
+        _mapPoint = nil;
         return;
     }
     _mapPoint = [mapPoint copy];
@@ -167,6 +168,7 @@
     self.mapPoint = nil;
 }
 
+
 #pragma mark Button Events
 
 - (void)doneButtonPressed:(id)sender
@@ -183,23 +185,19 @@
 }
 
 - (void) bikeButtonPressed:(id)sender {
-    if (!self.mapPoint.title.length) {
-        self.mapPoint.title = @"Bike";
-    }
+    self.mapPoint.title = @"Bike";
     [self savePoint:self.mapPoint ofType:BRCMapPointTypeUserBike];
 }
 
 - (void) starButtonPressed:(id)sender {
     if (!self.mapPoint.title.length) {
-        self.mapPoint.title = @"Star";
+        self.mapPoint.title = @"Saved Pin";
     }
     [self savePoint:self.mapPoint ofType:BRCMapPointTypeUserStar];
 }
 
 - (void) homeButtonPressed:(id)sender {
-    if (!self.mapPoint.title.length) {
-        self.mapPoint.title = @"Bike";
-    }
+    self.mapPoint.title = @"Home";
     [self savePoint:self.mapPoint ofType:BRCMapPointTypeUserHome];
 }
 

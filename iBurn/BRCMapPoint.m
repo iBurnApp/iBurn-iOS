@@ -10,12 +10,11 @@
 #import "MTLModel+NSCoding.h"
 #import "RMAnnotation.h"
 #import "BRCUserMapPoint.h"
+#import "BRCBreadcrumbPoint.h"
 
 @interface BRCMapPoint()
-@property (nonatomic, strong, readwrite) NSString *uuid;
 @property (nonatomic) CLLocationDegrees latitude;
 @property (nonatomic) CLLocationDegrees longitude;
-@property (nonatomic, strong, readwrite) NSDate *creationDate;
 @end
 
 @implementation BRCMapPoint
@@ -64,10 +63,10 @@
 
 - (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type {
     if (self = [super init]) {
-        self.title = title;
+        _title = title;
         self.coordinate = coordinate;
-        self.uuid = [[NSUUID UUID] UUIDString];
-        self.creationDate = [NSDate date];
+        _uuid = [[NSUUID UUID] UUIDString];
+        _creationDate = [NSDate date];
         _type = type;
     }
     return self;
@@ -78,12 +77,15 @@
 }
 
 - (CLLocationCoordinate2D) coordinate {
-    return CLLocationCoordinate2DMake(self.latitude, self.longitude);
+    if (_latitude == 0 || _longitude == 0) {
+        return kCLLocationCoordinate2DInvalid;
+    }
+    return CLLocationCoordinate2DMake(_latitude, _longitude);
 }
 
 - (void) setCoordinate:(CLLocationCoordinate2D)coordinate {
-    self.latitude = coordinate.latitude;
-    self.longitude = coordinate.longitude;
+    _latitude = coordinate.latitude;
+    _longitude = coordinate.longitude;
 }
 
 + (NSDictionary *)encodingBehaviorsByPropertyKey {
@@ -97,6 +99,8 @@
 + (Class) classForType:(BRCMapPointType)type {
     switch (type) {
         case BRCMapPointTypeUserBreadcrumb:
+            return [BRCBreadcrumbPoint class];
+            break;
         case BRCMapPointTypeUserBike:
         case BRCMapPointTypeUserCamp:
         case BRCMapPointTypeUserHeart:

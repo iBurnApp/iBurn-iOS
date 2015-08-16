@@ -26,7 +26,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 
 /** yap key */
 @property (nonatomic, strong, readonly) NSString *uuid;
-@property (nonatomic, strong, readonly) NSDate *creationDate;
+@property (nonatomic, strong, readwrite) NSDate *creationDate;
 
 @property (nonatomic, strong, readwrite) NSString *title;
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;

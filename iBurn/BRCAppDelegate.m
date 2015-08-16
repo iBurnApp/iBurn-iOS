@@ -36,6 +36,7 @@
 #import "iBurn-Swift.h"
 #import "NSBundle+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
+#import "BRCBreadcrumbPoint.h"
 @import Onboard;
 @import PermissionScope;
 
@@ -322,24 +323,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     self.burningManRegion = [[CLCircularRegion alloc] initWithCenter:manCoordinate2014 radius:radius identifier:kBRCManRegionIdentifier];
 }
 
-- (void)locationManager:(CLLocationManager *)manager
-didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-    if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
-        [manager startUpdatingLocation];
-    } else if (status == kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Location Services Unavailable" message:@"Please press your iPhone's Home button and go into Settings -> Privacy -> Location and enable location services for iBurn. The app is way better with GPS.\n\np.s. GPS still works during Airplane Mode on iOS 8.3 and higher. Save that battery!" delegate:nil cancelButtonTitle:@"OK I'll totally enable it!" otherButtonTitles:nil];
-        [alert show];
-
-    }
-}
-
-- (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
-    CLLocation *lastLocation = [locations lastObject];
-    if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
-        [self enteredBurningManRegion];
-    }
-}
-
 - (void) enteredBurningManRegion {
     [PFAnalytics trackEventInBackground:@"Entered_Burning_Man" block:nil];
     if ([BRCEmbargo allowEmbargoedData]) {
@@ -387,6 +370,36 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:wvc];
         [viewController presentViewController:nav animated:YES completion:NULL];
     }
+}
+
+#pragma mark CLLocationManagerDelegate
+
+- (void)locationManager:(CLLocationManager *)manager
+didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
+    if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
+        [manager startUpdatingLocation];
+    } else if (status == kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Location Services Unavailable" message:@"Please press your iPhone's Home button and go into Settings -> Privacy -> Location and enable location services for iBurn. The app is way better with GPS.\n\np.s. GPS still works during Airplane Mode on iOS 8.3 and higher. Save that battery!" delegate:nil cancelButtonTitle:@"OK I'll totally enable it!" otherButtonTitles:nil];
+        [alert show];
+        
+    }
+}
+
+- (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
+    CLLocation *lastLocation = [locations lastObject];
+    if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
+        [self enteredBurningManRegion];
+    }
+    
+    // gathering breadcrumbs!
+    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+        [locations enumerateObjectsUsingBlock:^(CLLocation *location, NSUInteger idx, BOOL *stop) {
+            BRCBreadcrumbPoint *point = [[BRCBreadcrumbPoint alloc] initWithLocation:location];
+            if (point) {
+                [transaction setObject:point forKey:point.uuid inCollection:[[point class] collection]];
+            }
+        }];
+    }];
 }
 
 #pragma mark UITabBarControllerDelegate

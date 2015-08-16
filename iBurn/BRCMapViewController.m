@@ -68,6 +68,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 @property (nonatomic, strong) UIImageView *favoriteImageView;
 @property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 @property (nonatomic, strong) BRCGeocoder *geocoder;
+
+@property (nonatomic, strong) RMPolylineAnnotation *guidanceAnnotation;
 @end
 
 @implementation BRCMapViewController
@@ -409,6 +411,21 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         self.userMapPinAnnotations = annotationsToAdd;
         [self.mapView addAnnotations:self.userMapPinAnnotations];
     }];
+}
+
+- (void) showGuideFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
+    NSParameterAssert(fromLocation != nil);
+    NSParameterAssert(toLocation != nil);
+    if (!fromLocation || !toLocation) {
+        return;
+    }
+    if (self.guidanceAnnotation) {
+        [self.mapView removeAnnotation:self.guidanceAnnotation];
+        self.guidanceAnnotation = nil;
+    }
+    self.guidanceAnnotation = [[RMPolylineAnnotation alloc] initWithMapView:self.mapView points:@[fromLocation, toLocation]];
+    [self.mapView addAnnotation:self.guidanceAnnotation];
+    self.mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
 }
 
 - (void)reloadEventAnnotationsIfNeeded
