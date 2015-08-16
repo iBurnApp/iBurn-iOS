@@ -83,6 +83,11 @@
     return CLLocationCoordinate2DMake(_latitude, _longitude);
 }
 
+- (CLLocation*) location {
+    CLLocationCoordinate2D coordinate = self.coordinate;
+    return [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+}
+
 - (void) setCoordinate:(CLLocationCoordinate2D)coordinate {
     _latitude = coordinate.latitude;
     _longitude = coordinate.longitude;

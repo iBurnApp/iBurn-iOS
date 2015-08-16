@@ -66,14 +66,17 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 @property (nonatomic, strong) RMAnnotation *editingMapPointAnnotation;
 @property (nonatomic, strong) BRCAnnotationEditView *annotationEditView;
 @property (nonatomic, strong) UIActivityIndicatorView *searchActivityIndicatorView;
-@property (nonatomic, strong) UIImageView *favoriteImageView;
-@property (nonatomic, strong) UIImageView *notYetFavoriteImageView;
 @property (nonatomic, strong) BRCGeocoder *geocoder;
 
 @property (nonatomic, strong) RMPolylineAnnotation *guidanceAnnotation;
 /** same button goes in all annotations */
 @property (nonatomic, strong) BButton *guidanceButton;
 @property (nonatomic, strong) BRCDistanceView *distanceView;
+
+@property (nonatomic, strong) BButton *pottyFinderButton;
+@property (nonatomic, strong) BButton *bikeFinderButton;
+@property (nonatomic, strong) BButton *homeFinderButton;
+
 
 @end
 
@@ -137,6 +140,37 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self.view addSubview:self.annotationEditView];
 }
 
+#pragma mark Map Side Buttons
+
+- (void) setupSideButtons {
+    [self setupNewMapPointButton];
+    [self setupPottyFinderButton];
+    [self setupBikeFinderButton];
+    [self setupHomeFinderButton];
+}
+
+- (void) setupPottyFinderButton {
+    self.pottyFinderButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAFemale fontSize:20];
+    [self.pottyFinderButton addTarget:self action:@selector(findNearestPotty:) forControlEvents:UIControlEventTouchUpInside];
+    self.pottyFinderButton.alpha = 0.8;
+    self.pottyFinderButton.enabled = NO;
+    [self.view addSubview:self.pottyFinderButton];
+}
+
+- (void) setupBikeFinderButton {
+    self.bikeFinderButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FABicycle fontSize:20];
+    [self.bikeFinderButton addTarget:self action:@selector(findNearestBike:) forControlEvents:UIControlEventTouchUpInside];
+    self.bikeFinderButton.alpha = 0.8;
+    [self.view addSubview:self.bikeFinderButton];
+}
+
+- (void) setupHomeFinderButton {
+    self.homeFinderButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAHome fontSize:20];
+    [self.homeFinderButton addTarget:self action:@selector(findNearestHome:) forControlEvents:UIControlEventTouchUpInside];
+    self.homeFinderButton.alpha = 0.8;
+    [self.view addSubview:self.homeFinderButton];
+}
+
 - (void) setupNewMapPointButton {
     self.addMapPointButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAMapMarker fontSize:20];
     [self.addMapPointButton addTarget:self action:@selector(newMapPointButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -144,21 +178,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self.view addSubview:self.addMapPointButton];
 }
 
+#pragma mark View Lifecycle
+
 - (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar {
     return UIBarPositionTopAttached;
 }
-
-- (UIImageView *)imageViewForFavoriteWithImageName:(NSString *)imageName {
-    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-    imageView.contentMode = UIViewContentModeCenter;
-    UIColor *tintColor = [[[UIApplication sharedApplication] keyWindow] tintColor];
-    imageView.tintColor = tintColor;
-    return imageView;
-}
-
-#pragma mark View Lifecycle
-
 
 - (void)updateViewConstraints
 {
@@ -166,13 +190,31 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     if (self.didUpdateConstraints) {
         return;
     }
+    CGFloat margin = 10;
     [self.searchBar autoPinToTopLayoutGuideOfViewController:self withInset:0];
     [self.searchBar autoAlignAxisToSuperviewAxis:ALAxisVertical];
     [self.searchBar autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
     [self.searchBar autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
-    [self.addMapPointButton autoPinToBottomLayoutGuideOfViewController:self withInset:10];
-    [self.addMapPointButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:10];
+    
+    
+    // side buttons
+    [self.addMapPointButton autoPinToBottomLayoutGuideOfViewController:self withInset:margin];
+    [self.addMapPointButton autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:margin];
     [self.addMapPointButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
+    
+    [self.pottyFinderButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.addMapPointButton];
+    [self.pottyFinderButton autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.addMapPointButton withOffset:-margin];
+    [self.pottyFinderButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
+    
+    [self.bikeFinderButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.addMapPointButton];
+    [self.bikeFinderButton autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.pottyFinderButton withOffset:-margin];
+    [self.bikeFinderButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
+    
+    [self.homeFinderButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.addMapPointButton];
+    [self.homeFinderButton autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.bikeFinderButton withOffset:-margin];
+    [self.homeFinderButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
+    
+    
     [self.annotationEditView autoPinToTopLayoutGuideOfViewController:self withInset:0];
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];
@@ -190,9 +232,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 - (void) viewDidLoad {
     [super viewDidLoad];
-    self.favoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartFilledIcon"];
-    self.notYetFavoriteImageView = [self imageViewForFavoriteWithImageName:@"BRCHeartIcon"];
-    [self setupNewMapPointButton];
+    [self setupSideButtons];
     [self setupAnnotationEditView];
     self.geocoder = [BRCGeocoder sharedInstance];
     self.guidanceButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FALocationArrow fontSize:20];
@@ -338,9 +378,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.editingMapPointAnnotation = nil;
     NSMutableArray *annotationsToAdd = [NSMutableArray array];
     [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        [transaction enumerateKeysAndObjectsInCollection:[BRCMapPoint collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
-            if ([object isKindOfClass:[BRCMapPoint class]]) {
-                BRCMapPoint *mapPoint = (BRCMapPoint*)object;
+        [transaction enumerateKeysAndObjectsInCollection:[BRCUserMapPoint collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
+            if ([object isKindOfClass:[BRCUserMapPoint class]]) {
+                BRCUserMapPoint *mapPoint = (BRCUserMapPoint*)object;
                 // only show points added by user
                 if (mapPoint.type == BRCMapPointTypeUserBike ||
                     mapPoint.type == BRCMapPointTypeUserCamp ||
@@ -412,6 +452,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 #pragma mark Dropping / Editing Pins
 
 - (void) newMapPointButtonPressed:(id)sender {
+    [self hideGuide];
     // show BRCANnotationEditView
     // set currentlyEditingAnnotation
     // drop / add a pin
@@ -483,6 +524,60 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 #pragma mark User Guide
 
+- (void) findNearestPotty:(id)sender {
+    [self findNearestMapPointOfType:BRCMapPointTypeToilet];
+}
+
+- (void) findNearestMedical:(id)sender {
+    [self findNearestMapPointOfType:BRCMapPointTypeMedical];
+}
+
+- (void) findNearestHome:(id)sender {
+    [self findNearestMapPointOfType:BRCMapPointTypeUserHome];
+}
+
+- (void) findNearestBike:(id)sender {
+    [self findNearestMapPointOfType:BRCMapPointTypeUserBike];
+}
+
+- (void) findNearestMapPointOfType:(BRCMapPointType)type {
+    CLLocation *currentLocation = self.mapView.userLocation.location;
+    if (!currentLocation) {
+        return;
+    }
+    currentLocation = [currentLocation copy];
+    Class pointClass = [BRCMapPoint classForType:type];
+    NSString *yapCollection = [pointClass collection];
+    __block BRCMapPoint *closestPoint = nil;
+    [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        NSMutableArray *distances = [NSMutableArray array];
+        [transaction enumerateKeysAndObjectsInCollection:yapCollection usingBlock:^(NSString * key, id object, BOOL * stop) {
+            if ([object isKindOfClass:[BRCMapPoint class]]) {
+                BRCMapPoint *mapPoint = object;
+                if (mapPoint.type == type) {
+                    CLLocationDistance distance = [currentLocation distanceFromLocation:mapPoint.location];
+                    NSDictionary *info = @{@"point": mapPoint,
+                                           @"distance": @(distance)};
+                    [distances addObject:info];
+                }
+            }
+        }];
+        if (distances.count > 0) {
+            [distances sortUsingComparator:^NSComparisonResult(NSDictionary *info1, NSDictionary *info2) {
+                NSNumber *distance1 = info1[@"distance"];
+                NSNumber *distance2 = info2[@"distance"];
+                return [distance1 compare:distance2];
+            }];
+            NSDictionary *firstInfo = [distances firstObject];
+            closestPoint = firstInfo[@"point"];
+        }
+    } completionBlock:^{
+        if (closestPoint) {
+            [self showGuideFromLocation:self.mapView.userLocation.location toLocation:closestPoint.location];
+        }
+    }];
+}
+
 - (void) showGuideFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {
     NSParameterAssert(fromLocation != nil);
     NSParameterAssert(toLocation != nil);
@@ -515,6 +610,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self.distanceView updateDistanceFromLocation:fromLocation];
 }
 
+/** hide the guidance view */
 - (void) hideGuide {
     if (self.guidanceAnnotation) {
         [self.mapView removeAnnotation:self.guidanceAnnotation];
@@ -660,10 +756,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     // sometimes the point is removed from the map while youre editing it...
     NSParameterAssert(self.editingMapPointAnnotation != nil);
     if (mapPointToDelete && self.editingMapPointAnnotation) {
+        NSString *yapCollection = [[mapPointToDelete class] collection];
         [self.mapView removeAnnotation:self.editingMapPointAnnotation];
         self.editingMapPointAnnotation = nil;
         [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [transaction removeObjectForKey:mapPointToDelete.uuid inCollection:[BRCMapPoint collection]];
+            [transaction removeObjectForKey:mapPointToDelete.uuid inCollection:yapCollection];
         } completionBlock:^{
             [self reloadAllUserPoints];
         }];
@@ -675,10 +772,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     NSParameterAssert(editedMapPoint != nil);
     NSParameterAssert(self.editingMapPointAnnotation != nil);
     if (editedMapPoint && self.editingMapPointAnnotation) {
+        NSString *yapCollection = [[editedMapPoint class] collection];
         CLLocationCoordinate2D newCoordinate = self.editingMapPointAnnotation.coordinate;
         editedMapPoint.coordinate = newCoordinate;
         [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [transaction setObject:editedMapPoint forKey:editedMapPoint.uuid inCollection:[BRCMapPoint collection]];
+            [transaction setObject:editedMapPoint forKey:editedMapPoint.uuid inCollection:yapCollection];
         } completionBlock:^{
             [self reloadAllUserPoints];
         }];
@@ -793,16 +891,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 - (void) centerMapAtManCoordinates {
     [self.mapView brc_zoomToFullTileSourceAnimated:YES];
     [self.mapView brc_moveToBlackRockCityCenterAnimated:YES];
-}
-
-- (UIImageView *) imageViewForFavoriteStatus:(BOOL)isFavorite {
-    UIImageView *viewState = nil;
-    if (isFavorite) {
-        viewState = self.favoriteImageView;
-    } else {
-        viewState = self.notYetFavoriteImageView;
-    }
-    return viewState;
 }
 
 @end

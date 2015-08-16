@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
 @property (nonatomic, readwrite) BRCMapPointType type;
 
+- (CLLocation*) location;
 
 - (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type;
 
