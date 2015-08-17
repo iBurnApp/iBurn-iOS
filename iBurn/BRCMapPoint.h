@@ -22,6 +22,42 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
     BRCMapPointTypeRanger
 };
 
+/*
+ {
+ "type": "Feature",
+ "geometry": {
+ "type": "Point",
+ "coordinates": [
+ -119.21001900000002,
+ 40.779943
+ ]
+ },
+ "properties": {
+ "name": "First Aid (Main)",
+ "ref": "EmergencyClinic"
+ }
+ },
+ 
+ ## Types (unsupported):
+ * airport
+ * services
+ * dpw
+ * center
+ * centerCamp
+ * 8entrance
+ * 12entrance
+ * greeters
+ * ice
+ 
+ ## Types (supported):
+ * EmergencyClinic -> BRCMapPointTypeMedical
+ * firstAid -> BRCMapPointTypeMedical
+ * ranger -> BRCMapPointTypeRanger
+ Note there is both "firstAid" and "EmergencyClinic" for medical
+ * toilet -> BRCMapPointTypeToilet
+ 
+ */
+
 @interface BRCMapPoint : MTLModel <MTLJSONSerializing>
 
 /** yap key */

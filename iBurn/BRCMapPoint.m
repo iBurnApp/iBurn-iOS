@@ -19,6 +19,7 @@
 
 @implementation BRCMapPoint
 @dynamic coordinate;
+@synthesize uuid = _uuid;
 
 /*
 {
@@ -58,7 +59,9 @@
 + (NSDictionary*) JSONKeyPathsByPropertyKey {
     return @{NSStringFromSelector(@selector(title)): @"properties.name",
              NSStringFromSelector(@selector(type)): @"properties.ref",
-             NSStringFromSelector(@selector(coordinate)): @"geometry.coordinates"};
+             NSStringFromSelector(@selector(longitude)): @"geometry.coordinates[0]",
+             NSStringFromSelector(@selector(latitude)): @"geometry.coordinates[1]",
+             };
 }
 
 - (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type {
@@ -70,6 +73,13 @@
         _type = type;
     }
     return self;
+}
+
+- (NSString*) uuid {
+    if (!_uuid) {
+        _uuid = [[NSUUID UUID] UUIDString];
+    }
+    return _uuid;
 }
 
 + (NSString*) collection {
@@ -99,6 +109,37 @@
     return behaviors;
 }
 
++ (NSValueTransformer*)typeJSONTransformer {
+    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        NSNumber *typeValue = nil;
+        if ([value isKindOfClass:[NSString class]]) {
+            NSString *refString = value;
+            BRCMapPointType type = BRCMapPointTypeUnknown;
+            if ([refString isEqualToString:@"EmergencyClinic"] ||
+                [refString isEqualToString:@"firstAid"]) {
+                type = BRCMapPointTypeMedical;
+            } else if ([refString isEqualToString:@"ranger"]) {
+                type = BRCMapPointTypeRanger;
+            } else if ([refString isEqualToString:@"toilet"]) {
+                type = BRCMapPointTypeToilet;
+            }
+            typeValue = @(type);
+        }
+        return typeValue;
+    }];
+}
+
+/*
+- (NSValueTransformer*)coordinateJSONTransformer {
+    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        //CLLocationCoordinate2D coordinate
+        if ([value isKindOfClass:[NSArray class]]) {
+            NSArray *coordArray = value;
+            
+        }
+    }];
+}
+*/
 
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type {

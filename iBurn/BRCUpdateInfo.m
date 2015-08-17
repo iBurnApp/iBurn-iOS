@@ -12,6 +12,7 @@
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
 #import "BRCRecurringEventObject.h"
+#import "BRCMapPoint.h"
 
 static NSString * const kBRCUpdateTypeCamps = @"camps";
 static NSString * const kBRCUpdateTypeArt = @"art";
@@ -53,6 +54,9 @@ static NSString * const kBRCUpdateTypePoints = @"points";
         case BRCUpdateDataTypeEvents:
             return [BRCRecurringEventObject class];
             break;
+        case BRCUpdateDataTypePoints:
+            return [BRCMapPoint class];
+            break;
         default:
             break;
     }
@@ -66,6 +70,8 @@ static NSString * const kBRCUpdateTypePoints = @"points";
         return BRCUpdateDataTypeArt;
     } else if (dataObjectClass == [BRCRecurringEventObject class] || dataObjectClass == [BRCEventObject class]) {
         return BRCUpdateDataTypeEvents;
+    } else if (dataObjectClass == [BRCMapPoint class]) {
+        return BRCUpdateDataTypePoints;
     }
     return BRCUpdateDataTypeUnknown;
 }

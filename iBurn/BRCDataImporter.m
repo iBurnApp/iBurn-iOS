@@ -15,6 +15,7 @@
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
 #import "BRCGeocoder.h"
+#import "BRCMapPoint.h"
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
 
@@ -179,26 +180,67 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                    updateInfo:(BRCUpdateInfo*)updateInfo
                         error:(NSError**)error {
     NSParameterAssert(jsonData != nil);
-    NSArray *jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:error];
+    id jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:error];
     if (*error) {
         return NO;
     }
-    NSMutableArray *objects = [NSMutableArray arrayWithCapacity:jsonObjects.count];
-    // kludge to fix accidental usage of wrong event object type
-    if (dataClass == [BRCEventObject class]) {
-        dataClass = [BRCRecurringEventObject class];
-    }
-    [jsonObjects enumerateObjectsUsingBlock:^(NSDictionary *jsonObject, NSUInteger idx, BOOL *stop) {
-        NSError *parseError = nil;
-        id object = [MTLJSONAdapter modelOfClass:dataClass fromJSONDictionary:jsonObject error:&parseError];
-        if (object) {
-            [objects addObject:object];
-        } else if (parseError) {
-#warning There will be missing items to due unicode JSON parsing errors
-            NSLog(@"Error parsing JSON: %@ %@", jsonObject, parseError);
+    NSMutableArray *objects = [NSMutableArray array];
+   
+    void (^parseBlock)(id jsonObject) = ^void(id jsonObject){
+        if ([jsonObject isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *jsonDictionary = jsonObject;
+            NSError *parseError = nil;
+            id object = [MTLJSONAdapter modelOfClass:dataClass fromJSONDictionary:jsonDictionary error:&parseError];
+            if (object) {
+                [objects addObject:object];
+            } else if (parseError) {
+#warning There will be missing items due to JSON parsing errors
+                NSLog(@"Error parsing JSON: %@ %@", jsonDictionary, parseError);
+            }
         }
-    }];
+    };
+    
+    if ([jsonObjects isKindOfClass:[NSArray class]]) {
+        NSArray *jsonArray = jsonObjects;
+        // kludge to fix accidental usage of wrong event object type
+        if (dataClass == [BRCEventObject class]) {
+            dataClass = [BRCRecurringEventObject class];
+        }
+        
+        [jsonArray enumerateObjectsUsingBlock:^(id jsonObject, NSUInteger idx, BOOL *stop) {
+            parseBlock(jsonObject);
+        }];
+    } else if ([jsonObjects isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *jsonDictionary = jsonObjects;
+        // this is GeoJSON for BRCMapPoints
+        NSArray *features = jsonDictionary[@"features"];
+        if (features && [features isKindOfClass:[NSArray class]]) {
+            [features enumerateObjectsUsingBlock:^(id jsonObject, NSUInteger idx, BOOL *features) {
+                parseBlock(jsonObject);
+            }];
+        }
+        [jsonDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            parseBlock(obj);
+        }];
+    }
+    
     NSLog(@"About to load %d %@ objects.", (int)objects.count, NSStringFromClass(dataClass));
+    
+    // We've got some map points, deal with them and return
+    if ([dataClass isSubclassOfClass:[BRCMapPoint class]]) {
+        [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+            [objects enumerateObjectsUsingBlock:^(BRCMapPoint *mapPoint, NSUInteger idx, BOOL *stop) {
+                [transaction setObject:mapPoint forKey:mapPoint.uuid inCollection:[[mapPoint class] collection]];
+                updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+                [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
+            }];
+        }];
+        if (objects.count > 0) {
+            return YES;
+        } else {
+            return NO;
+        }
+    }
     
     // Remove me!
 #warning Remove me when playa location data is fixed
@@ -296,7 +338,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     unsigned long long fileSize = [fileAttributes fileSize];
     if (*error) {
         return NO;
-    } else if (fileSize == 0) {
+    } else if (fileSize < 5) { // test tile is 4 bytes
         if (error) {
             *error = [NSError errorWithDomain:@"tiles fetch error" code:1 userInfo:@{NSLocalizedDescriptionKey: @"tiles fetch error"}];
         }

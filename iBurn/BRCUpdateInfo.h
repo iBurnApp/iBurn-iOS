@@ -33,7 +33,7 @@ typedef NS_ENUM(NSUInteger, BRCUpdateFetchStatus) {
 @property (nonatomic) BRCUpdateFetchStatus fetchStatus;
 @property (nonatomic, strong) NSDate *fetchDate;
 
-/** Returns BRCDataObject subclass for dataType. Not valid for
+/** Returns MTLModel subclass for dataType. Not valid for
  * tiles of course. */
 - (Class) dataObjectClass;
 

@@ -16,6 +16,7 @@
 #import "BRCDataImporter_Private.h"
 #import "BRCUpdateInfo.h"
 #import "BRCDataImportTests.h"
+#import "BRCMapPoint.h"
 
 @implementation BRCDataImportTests
 
@@ -139,6 +140,11 @@
 - (void) testLoadArt {
     Class dataClass = [BRCArtObject class];
     [self loadDataFromFile:@"art.json" dataClass:dataClass];
+}
+
+- (void) testLoadPoints {
+    Class dataClass = [BRCMapPoint class];
+    [self loadDataFromFile:@"points.json" dataClass:dataClass];
 }
 
 - (void) loadDataFromFile:(NSString*)file dataClass:(Class)dataClass {
