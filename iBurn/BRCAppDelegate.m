@@ -463,7 +463,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
 
 /** Returns newly configured onboarding view */
 + (OnboardingViewController *)onboardingViewControllerWithCompletion:(dispatch_block_t)completionBlock {
-    OnboardingContentViewController *firstPage = [OnboardingContentViewController contentWithTitle:@"Welcome to iBurn" body:@"\nLet's get started!" image:nil buttonText:@"📍 Enable Location Services" action:^{
+    OnboardingContentViewController *firstPage = [OnboardingContentViewController contentWithTitle:@"Welcome to iBurn" body:@"\nLet's get started!" image:nil buttonText:@"📍 Enable Location" action:^{
         [BRCPermissions promptForLocation:^{
             NSLog(@"BRCPermissions promptForLocation");
             //[firstPage.delegate moveNextPage];
