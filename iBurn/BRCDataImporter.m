@@ -226,9 +226,11 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     
     NSLog(@"About to load %d %@ objects.", (int)objects.count, NSStringFromClass(dataClass));
     
-    // We've got some map points, deal with them and return
+    // We've got some map points, dump the old map points,
+    // deal with them and return
     if ([dataClass isSubclassOfClass:[BRCMapPoint class]]) {
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+            [transaction removeAllObjectsInCollection:[BRCMapPoint collection]]; // remove non-user generated map points
             [objects enumerateObjectsUsingBlock:^(BRCMapPoint *mapPoint, NSUInteger idx, BOOL *stop) {
                 [transaction setObject:mapPoint forKey:mapPoint.uuid inCollection:[[mapPoint class] collection]];
                 updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;

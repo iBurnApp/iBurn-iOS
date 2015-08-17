@@ -59,8 +59,8 @@
 + (NSDictionary*) JSONKeyPathsByPropertyKey {
     return @{NSStringFromSelector(@selector(title)): @"properties.name",
              NSStringFromSelector(@selector(type)): @"properties.ref",
-             NSStringFromSelector(@selector(longitude)): @"geometry.coordinates[0]",
-             NSStringFromSelector(@selector(latitude)): @"geometry.coordinates[1]",
+             NSStringFromSelector(@selector(longitude)): @"geometry.coordinates",
+             NSStringFromSelector(@selector(latitude)): @"geometry.coordinates",
              };
 }
 
@@ -95,6 +95,9 @@
 
 - (CLLocation*) location {
     CLLocationCoordinate2D coordinate = self.coordinate;
+    if (!CLLocationCoordinate2DIsValid(coordinate)) {
+        return nil;
+    }
     return [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
 }
 
@@ -129,17 +132,28 @@
     }];
 }
 
-/*
-- (NSValueTransformer*)coordinateJSONTransformer {
++ (NSValueTransformer*)latitudeJSONTransformer {
     return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        //CLLocationCoordinate2D coordinate
         if ([value isKindOfClass:[NSArray class]]) {
             NSArray *coordArray = value;
-            
+            NSNumber *latitude = [coordArray lastObject];
+            return latitude;
         }
+        return nil;
     }];
 }
-*/
+
++ (NSValueTransformer*)longitudeJSONTransformer {
+    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        if ([value isKindOfClass:[NSArray class]]) {
+            NSArray *coordArray = value;
+            NSNumber *longitude = [coordArray firstObject];
+            return longitude;
+        }
+        return nil;
+    }];
+}
+
 
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type {

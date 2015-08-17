@@ -76,7 +76,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 @property (nonatomic, strong) BButton *pottyFinderButton;
 @property (nonatomic, strong) BButton *bikeFinderButton;
 @property (nonatomic, strong) BButton *homeFinderButton;
-
+@property (nonatomic, strong) BButton *medicalFinderButton;
 
 @end
 
@@ -147,13 +147,20 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self setupPottyFinderButton];
     [self setupBikeFinderButton];
     [self setupHomeFinderButton];
+    [self setupMedicalFinderButton];
+}
+
+- (void) setupMedicalFinderButton {
+    self.medicalFinderButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAMedkit fontSize:20];
+    [self.medicalFinderButton addTarget:self action:@selector(findNearestMedical:) forControlEvents:UIControlEventTouchUpInside];
+    self.medicalFinderButton.alpha = 0.8;
+    [self.view addSubview:self.medicalFinderButton];
 }
 
 - (void) setupPottyFinderButton {
     self.pottyFinderButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 40, 40) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FAFemale fontSize:20];
     [self.pottyFinderButton addTarget:self action:@selector(findNearestPotty:) forControlEvents:UIControlEventTouchUpInside];
     self.pottyFinderButton.alpha = 0.8;
-    self.pottyFinderButton.enabled = NO;
     [self.view addSubview:self.pottyFinderButton];
 }
 
@@ -214,7 +221,11 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [self.homeFinderButton autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.bikeFinderButton withOffset:-margin];
     [self.homeFinderButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
     
+    [self.medicalFinderButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.addMapPointButton];
+    [self.medicalFinderButton autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.homeFinderButton withOffset:-margin];
+    [self.medicalFinderButton autoSetDimensionsToSize:CGSizeMake(40, 40)];
     
+    // editing annotations
     [self.annotationEditView autoPinToTopLayoutGuideOfViewController:self withInset:0];
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:0];
     [self.annotationEditView autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:0];

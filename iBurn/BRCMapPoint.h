@@ -42,7 +42,6 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
  * airport
  * services
  * dpw
- * center
  * centerCamp
  * 8entrance
  * 12entrance
@@ -55,6 +54,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
  * ranger -> BRCMapPointTypeRanger
  Note there is both "firstAid" and "EmergencyClinic" for medical
  * toilet -> BRCMapPointTypeToilet
+ * center
  
  */
 

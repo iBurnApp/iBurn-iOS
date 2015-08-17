@@ -145,6 +145,13 @@
 - (void) testLoadPoints {
     Class dataClass = [BRCMapPoint class];
     [self loadDataFromFile:@"points.json" dataClass:dataClass];
+    [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        NSUInteger numObjects = [transaction numberOfKeysInCollection:[dataClass collection]];
+        XCTAssert(numObjects == 58);
+        [transaction enumerateKeysAndObjectsInCollection:[dataClass collection] usingBlock:^(NSString *key, BRCMapPoint *mapPoint, BOOL *stop) {
+            XCTAssert(mapPoint.location != nil);
+        }];
+    }];
 }
 
 - (void) loadDataFromFile:(NSString*)file dataClass:(Class)dataClass {
