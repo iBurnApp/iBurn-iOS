@@ -391,9 +391,12 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     // gathering breadcrumbs!
     [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
         [locations enumerateObjectsUsingBlock:^(CLLocation *location, NSUInteger idx, BOOL *stop) {
-            BRCBreadcrumbPoint *point = [[BRCBreadcrumbPoint alloc] initWithLocation:location];
-            if (point) {
-                [transaction setObject:point forKey:point.uuid inCollection:[[point class] collection]];
+            // only track locations within burning man
+            if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
+                BRCBreadcrumbPoint *point = [[BRCBreadcrumbPoint alloc] initWithLocation:location];
+                if (point) {
+                    [transaction setObject:point forKey:point.uuid inCollection:[[point class] collection]];
+                }
             }
         }];
     }];
