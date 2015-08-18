@@ -104,5 +104,15 @@ class BRCNearbyViewController: BRCSortedViewController {
             refreshTableItems()
         }
     }
+    
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if !hasTableItems() {
+            return 0
+        }
+        if section == 0 {
+            return 25
+        }
+        return UITableViewAutomaticDimension
+    }
 
 }

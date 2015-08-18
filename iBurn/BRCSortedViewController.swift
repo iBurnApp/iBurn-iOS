@@ -180,7 +180,11 @@ public class BRCSortedViewController: UITableViewController {
         if !hasTableItems() {
             return 0
         }
-        return 25
+        return UITableViewAutomaticDimension
+    }
+    
+    override public func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 0
     }
     
     override public func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
