@@ -77,6 +77,10 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 /** R-Tree Index Extension Name */
 @property (nonatomic, strong, readonly) NSString *rTreeIndex;
 
+/** YapDatabaseRelationship to link events to their host camps/art */
+@property (nonatomic, strong, readonly) NSString *relationships;
+
+
 /** 
  * Query for objects in bounded region.
  * @see MKCoordinateRegionMakeWithDistance

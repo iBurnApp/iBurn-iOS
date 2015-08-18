@@ -298,4 +298,33 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     return campObject;
 }
 
+#pragma mark YapDatabaseRelationshipNode
+
+// This method gets automatically called when the object is inserted/updated in the database.
+- (NSArray *)yapDatabaseRelationshipEdges
+{
+    NSMutableArray *edges = [NSMutableArray arrayWithCapacity:2];
+    
+    YapDatabaseRelationshipEdge *campEdge =
+    [YapDatabaseRelationshipEdge edgeWithName:@"camp"
+                               destinationKey:self.hostedByCampUniqueID
+                                   collection:[[BRCCampObject class] collection]
+                              nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
+    if (campEdge) {
+        [edges addObject:campEdge];
+    }
+    
+    YapDatabaseRelationshipEdge *artEdge =
+    [YapDatabaseRelationshipEdge edgeWithName:@"art"
+                               destinationKey:self.hostedByArtUniqueID
+                                   collection:[[BRCArtObject class] collection]
+                              nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
+    
+    if (artEdge) {
+        [edges addObject:artEdge];
+    }
+    
+    return edges;
+}
+
 @end

@@ -187,6 +187,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _searchFavoritesView = [self.everythingFilteredByFavorite stringByAppendingString:searchSuffix];
 
     _rTreeIndex = @"RTreeIndex";
+    _relationships = @"relationships";
 }
 
 #pragma mark Registration
@@ -208,7 +209,17 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self registerFilteredViews];
         [self registerSearchViews];
         [self registerRTreeIndex];
+        [self registerRelationships];
     });
+}
+
+- (void) registerRelationships {
+    NSString *viewName = self.relationships;
+    BOOL success = [self.database registerExtension:[YapDatabaseRelationship new] withName:viewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:viewName];
+    }
+    NSLog(@"Registered %@ %d", viewName, success);
 }
 
 - (void) registerRegularViews {

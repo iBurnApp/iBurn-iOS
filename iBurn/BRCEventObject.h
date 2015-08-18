@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeFood
 };
 
-@interface BRCEventObject : BRCDataObject
+@interface BRCEventObject : BRCDataObject <YapDatabaseRelationshipNode>
 
 @property (nonatomic, readonly) BRCEventType eventType;
 
