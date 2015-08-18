@@ -18,7 +18,7 @@
 #import "BRCMapPoint.h"
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
-
+static NSString * const kBRCTilesName =  @"iburn.mbtiles";
 
 @interface BRCDataImporter() <NSURLSessionDownloadDelegate>
 @property (nonatomic, strong, readonly) NSURLSession *urlSession;
@@ -133,10 +133,22 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             if (oldUpdateInfo.dataType == BRCUpdateDataTypeTiles) {
                 oldUpdateInfo = [oldUpdateInfo copy];
                 NSError *error = nil;
-                BOOL success = [self checkTilesAtURL:[[self class] mapTilesURL] error:&error];
+                NSURL *localMapTilesURL = [[self class] mapTilesURL];
+                BOOL success = [self checkTilesAtURL:localMapTilesURL error:&error];
                 if (!success) {
                     NSLog(@"Look like the tiles are fucked: %@", error);
-                    oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+                    error = nil;
+                    // copy bundled tiles to live store on first launch
+                    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"2015"];
+                    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+                    NSURL *bundledTilesURL = [bundle URLForResource:kBRCTilesName withExtension:@"jar"];
+                    success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
+                    if (!success) {
+                        oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+                    } else {
+                        NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
+                        oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+                    }
                 }
             }
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
@@ -407,7 +419,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
 
 /** Returns iburn.mbtiles local file URL within Application Support */
 + (NSURL*) mapTilesURL {
-    NSString *fileName = @"iburn.mbtiles";
+    NSString *fileName = kBRCTilesName;
     NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
     NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
     return destinationURL;

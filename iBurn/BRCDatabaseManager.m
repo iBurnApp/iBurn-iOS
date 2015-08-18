@@ -27,6 +27,7 @@ static NSString * const RTreeMinLon = @"RTreeMinLon";
 static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
 NSString * const kBRCDatabaseName = @"iBurn-2015.sqlite";
+static NSString * const kBRCDatabaseFolderName = @"iBurn-2015";
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
@@ -54,6 +55,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSString *applicationSupportDirectory = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
     NSString *applicationName = [[[NSBundle mainBundle] infoDictionary] valueForKey:(NSString *)kCFBundleNameKey];
     NSString *directory = [applicationSupportDirectory stringByAppendingPathComponent:applicationName];
+    directory = [directory stringByAppendingPathComponent:kBRCDatabaseFolderName];
     return directory;
 }
 
@@ -121,23 +123,24 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (BOOL)copyDatabaseFromBundle
 {
     /// copy database iburn-database.zip -> Application Support -> iBurn -> iBurn-2015.sqlite/-shm/-wal
-    NSString *folderName = @"iBurn-database";
-    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
+    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:kBRCDatabaseFolderName];
     if (![[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {
         return NO;
     }
-    NSString *databaseDirectory = [[self class]yapDatabaseDirectory];
+    
+    NSString *databaseDirectory = [[self class] yapDatabaseDirectory];
+    
+    NSString *containingDirectory = [databaseDirectory stringByDeletingLastPathComponent];
     
     NSError *error = nil;
-    if (![[NSFileManager defaultManager] fileExistsAtPath:databaseDirectory]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectory withIntermediateDirectories:YES attributes:nil error:&error];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:containingDirectory]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:containingDirectory withIntermediateDirectories:YES attributes:nil error:&error];
         if (error) {
             return NO;
         }
     }
-    NSString *databasePath = [[self class] yapDatabasePathWithName:folderName];
     
-    [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databasePath error:&error];
+    [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databaseDirectory error:&error];
     if (error) {
         return NO;
     }
