@@ -225,7 +225,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    BRCNearbyViewController *nearbyVC = [[BRCNearbyViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    BRCNearbyViewController *nearbyVC = [[BRCNearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:[BRCDatabaseManager sharedInstance].rTreeIndex];
     nearbyVC.title = @"Nearby";
     UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
