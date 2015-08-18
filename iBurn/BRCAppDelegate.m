@@ -482,13 +482,17 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     }];
     secondPage.movesToNextViewController = YES;
     
-    OnboardingContentViewController *thirdPage = [OnboardingContentViewController contentWithTitle:@"Thank you!" body:@"If you enjoy using iBurn, please spread the word." image:nil buttonText:@"🔥 Ok let's burn!" action:completionBlock];
+    OnboardingContentViewController *thirdPage = [OnboardingContentViewController contentWithTitle:@"Search" body:@"Find whatever your heart desires.\n\n\n...especially bacon and coffee." image:nil buttonText:nil action:completionBlock];
+    
+    OnboardingContentViewController *fourthPage = [OnboardingContentViewController contentWithTitle:@"Nearby" body:@"Quickly find cool new things going on around you.\n\n\n...or just find the closest toilet." image:nil buttonText:nil action:completionBlock];
+    
+    OnboardingContentViewController *lastPage = [OnboardingContentViewController contentWithTitle:@"Thank you!" body:@"If you enjoy using iBurn, please spread the word." image:nil buttonText:@"🔥 Ok let's burn!" action:completionBlock];
     
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *moviePath = [bundle pathForResource:@"onboarding_loop_final" ofType:@"mp4"];
     NSURL *movieURL = [NSURL fileURLWithPath:moviePath];
     
-    OnboardingViewController *onboardingVC = [[OnboardingViewController alloc] initWithBackgroundVideoURL:movieURL contents:@[firstPage, secondPage, thirdPage]];
+    OnboardingViewController *onboardingVC = [[OnboardingViewController alloc] initWithBackgroundVideoURL:movieURL contents:@[firstPage, secondPage, thirdPage, fourthPage, lastPage]];
     onboardingVC.shouldFadeTransitions = YES;
     onboardingVC.fadePageControlOnLastPage = YES;
     onboardingVC.stopMoviePlayerWhenDisappear = YES;
