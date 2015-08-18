@@ -148,6 +148,11 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                     } else {
                         NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
                         oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+                        NSError *error = nil;
+                        BOOL success = [localMapTilesURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+                        if (!success) {
+                            NSLog(@"Error excluding %@ from backup %@", localMapTilesURL, error);
+                        }
                     }
                 }
             }
