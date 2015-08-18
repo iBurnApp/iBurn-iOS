@@ -18,6 +18,16 @@ class BRCNearbyViewController: BRCSortedViewController {
     let distanceStepper: UIStepper = UIStepper()
     let tableHeaderView: UIView = UIView()
     
+    required init(style: UITableViewStyle, extensionName ext: String) {
+        super.init(style: style, extensionName: ext)
+        emptyDetailText = "Try a bigger search area."
+    }
+    
+    required init!(coder aDecoder: NSCoder!) {
+        super.init(coder: aDecoder)
+    }
+    
+    
     // MARK: - View cycle
     
     override func viewWillAppear(animated: Bool) {

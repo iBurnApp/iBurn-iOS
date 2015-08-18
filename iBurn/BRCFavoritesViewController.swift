@@ -10,6 +10,15 @@ import UIKit
 
 class BRCFavoritesViewController: BRCSortedViewController {
 
+    required init(style: UITableViewStyle, extensionName ext: String) {
+        super.init(style: style, extensionName: ext)
+        emptyDetailText = "Favorite things to see them here."
+    }
+    
+    required init!(coder aDecoder: NSCoder!) {
+        super.init(coder: aDecoder)
+    }
+    
     override func refreshTableItems() {
         var favorites: [BRCDataObject] = []
         BRCDatabaseManager.sharedInstance().readConnection.asyncReadWithBlock({ (transaction: YapDatabaseReadTransaction) -> Void in

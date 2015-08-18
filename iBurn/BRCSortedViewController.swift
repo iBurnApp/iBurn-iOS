@@ -35,6 +35,7 @@ public class BRCSortedViewController: UITableViewController {
     var extensionRegistered: Bool = false
     var extensionName: String = ""
     var emptyListText = EmptyListLabelText.Loading
+    var emptyDetailText: String = ""
     
     public override init(style: UITableViewStyle) {
         super.init(style: style)
@@ -200,7 +201,7 @@ public class BRCSortedViewController: UITableViewController {
             cell.textLabel!.text = emptyListText.rawValue
             switch emptyListText {
             case EmptyListLabelText.Nothing:
-                cell.detailTextLabel!.text = "Check back when you're at Burning Man!"
+                cell.detailTextLabel!.text = emptyDetailText
             case EmptyListLabelText.Loading:
                 cell.detailTextLabel!.text = nil
             }
