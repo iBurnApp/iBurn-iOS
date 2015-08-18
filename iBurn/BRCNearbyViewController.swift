@@ -10,6 +10,7 @@ import UIKit
 import MapKit
 import Parse
 import PureLayout
+import YapDatabase
 
 private enum EmptyListLabelText: String {
     case Loading = "Loading...",
@@ -34,6 +35,7 @@ private class TableViewSection {
 class BRCNearbyViewController: UITableViewController {
 
     private var sections: [TableViewSection] = []
+    private var extensionRegistered: Bool = false
     
     private var emptyListText = EmptyListLabelText.Loading
     private var searchDistance: CLLocationDistance = 500
@@ -47,13 +49,20 @@ class BRCNearbyViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        BRCDatabaseManager.sharedInstance().readConnection.readWithBlock { (transaction: YapDatabaseReadTransaction) -> Void in
+            let extName = BRCDatabaseManager.sharedInstance().rTreeIndex
+            let ext: AnyObject? = transaction.ext(extName)
+            if (ext != nil) {
+                self.extensionRegistered = true
+            }
+        }
         NSNotificationCenter.defaultCenter().addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: BRCDatabaseExtensionRegisteredNotification, object: BRCDatabaseManager.sharedInstance());
     }
     
     func databaseExtensionRegistered(notification: NSNotification) {
         if let extensionName = notification.userInfo?["extensionName"] as? String {
             if extensionName == BRCDatabaseManager.sharedInstance().rTreeIndex {
-                emptyListText = EmptyListLabelText.Nothing
+                extensionRegistered = true
                 refreshNearbyItems()
             }
         }
@@ -101,6 +110,7 @@ class BRCNearbyViewController: UITableViewController {
     func refreshNearbyItems() {
         let currentLocation = getCurrentLocation()
         let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
+        emptyListText = EmptyListLabelText.Loading
         BRCDatabaseManager.sharedInstance().queryObjectsInRegion(region, completionQueue: dispatch_get_main_queue(), resultsBlock: { (results: [AnyObject]!) -> Void in
             let nearbyObjects = results as! [BRCDataObject]
             let options = BRCDataSorterOptions()
@@ -119,6 +129,9 @@ class BRCNearbyViewController: UITableViewController {
                     sections.append(campsSection)
                 }
                 self.sections = sections
+                if count(sections) == 0 && self.extensionRegistered {
+                    self.emptyListText = EmptyListLabelText.Nothing
+                }
                 self.tableView.reloadData()
             })
         })
@@ -177,7 +190,7 @@ class BRCNearbyViewController: UITableViewController {
         distanceStepper.minimumValue = 50
         distanceStepper.maximumValue = 3200 // approx 2 miles
         distanceStepper.value = searchDistance
-        distanceStepper.stepValue = 50
+        distanceStepper.stepValue = 150
         distanceStepper.addTarget(self, action: Selector("stepperValueChanged:"), forControlEvents: UIControlEvents.ValueChanged)
     }
     
