@@ -16,6 +16,11 @@
 #import "BRCEventsTableViewController.h"
 #import "NSDate+iBurn.h"
 
+
+/** this is posted when an extension is ready. The userInfo contains
+ the extension name under the "extensionName" key */
+NSString * const BRCDatabaseExtensionRegisteredNotification = @"BRCDatabaseExtensionRegisteredNotification";
+
 static NSString * const RTreeMinLat = @"RTreeMinLat";
 static NSString * const RTreeMaxLat = @"RTreeMaxLat";
 static NSString * const RTreeMinLon = @"RTreeMinLon";
@@ -177,9 +182,21 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _searchCampsView = [self.ftsCampsName stringByAppendingString:searchSuffix];
     _searchEventsView = [self.ftsEventsName stringByAppendingString:searchSuffix];
     _searchFavoritesView = [self.everythingFilteredByFavorite stringByAppendingString:searchSuffix];
+
+    _rTreeIndex = @"RTreeIndex";
 }
 
 #pragma mark Registration
+
+- (void) postExtensionRegisteredNotification:(NSString*)extensionName {
+    NSParameterAssert(extensionName != nil);
+    if (!extensionName) {
+        return;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRCDatabaseExtensionRegisteredNotification object:self userInfo:@{@"extensionName":extensionName}];
+    });
+}
 
 - (void) registerExtensions {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -202,10 +219,16 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
         YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass allowedCollections:allowedCollections];
         BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:view withName:viewName];
+        if (success) {
+            [self postExtensionRegisteredNotification:viewName];
+        }
         NSLog(@"Registered %@ %d", viewName, success);
     }];
     YapDatabaseView *dataObjectsView = [BRCDatabaseManager databaseViewForClass:[BRCDataObject class] allowedCollections:nil];
     BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:dataObjectsView withName:self.dataObjectsViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.dataObjectsViewName];
+    }
     NSLog(@"Registered %@ %d", self.dataObjectsViewName, success);
 }
 
@@ -221,6 +244,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         NSArray *indexedProperties = ftsInfo[2];
         YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:viewClass withIndexedProperties:indexedProperties];
         BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:fullTextSearch withName:ftsName];
+        if (success) {
+            [self postExtensionRegisteredNotification:ftsName];
+        }
         NSLog(@"%@ ready %d", ftsName, success);
     }];
 }
@@ -233,13 +259,22 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName allowedCollections:whitelist];
     success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayViewName, success);
+    if (success) {
+        [self postExtensionRegisteredNotification: self.eventsFilteredByDayViewName];
+    }
     
     YapDatabaseFilteredView *filteredByExpiryAndTypeView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName allowedCollections:whitelist];
     success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByExpiryAndTypeView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayExpirationAndTypeViewName, success);
+    if (success) {
+        [self postExtensionRegisteredNotification:self.eventsFilteredByDayExpirationAndTypeViewName];
+    }
     
     YapDatabaseFilteredView *favoritesFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
     success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesFiltering withName:self.everythingFilteredByFavorite];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.everythingFilteredByFavorite];
+    }
     NSLog(@"%@ %d", self.everythingFilteredByFavorite, success);
 }
 
@@ -263,12 +298,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                                                                                                    options:searchViewOptions];
         
         BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
+        if (success) {
+            [self postExtensionRegisteredNotification:searchViewName];
+        }
         NSLog(@"%@ %d", searchViewName, success);
     }]; 
 }
 
 - (void) registerRTreeIndex {
-    _rTreeIndex = @"RTreeIndex";
     YapDatabaseRTreeIndexSetup *setup = [[YapDatabaseRTreeIndexSetup alloc] init];
     [setup setColumns:@[RTreeMinLat,
                         RTreeMaxLat,
@@ -292,6 +329,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
     YapDatabaseRTreeIndex *rTree = [[YapDatabaseRTreeIndex alloc] initWithSetup:setup handler:handler versionTag:@"1" options:options];
     BOOL success = [self.database registerExtension:rTree withName:self.rTreeIndex];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.rTreeIndex];
+    }
     NSLog(@"%@ %d", self.rTreeIndex, success);
 }
 

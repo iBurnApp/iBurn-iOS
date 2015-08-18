@@ -42,9 +42,24 @@
         [self setupDatabaseConnection];
         [self setupMappings];
         [self updateMappingsWithCompletionBlock:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
         [self view]; //wtf
     }
     return self;
+}
+
+- (void) databaseExtensionRegistered:(NSNotification*)notification {
+    NSString *extensionName = notification.userInfo[@"extensionName"];
+    if ([extensionName isEqualToString:self.viewName]) {
+        NSLog(@"databaseExtensionRegistered: %@", extensionName);
+        [self.tableView reloadData];
+    } else if ([extensionName isEqualToString:self.searchViewName]) {
+        id src = self.searchController.searchResultsController;
+        if ([src isKindOfClass:[UITableViewController class]]) {
+            UITableViewController *srcTV = src;
+            [srcTV.tableView reloadData];
+        }
+    }
 }
 
 - (void) setupLoadingIndicatorView {

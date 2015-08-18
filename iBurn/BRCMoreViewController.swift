@@ -9,7 +9,6 @@
 import UIKit
 import HockeySDK_Source
 import StoreKit
-// import DKNightVersion
 
 enum CellTag: Int {
     case Art = 1,
@@ -19,13 +18,11 @@ enum CellTag: Int {
     Feedback = 5,
     Share = 6,
     Rate = 7,
-    DebugShowOnboarding = 8,
-    DebugNightMode = 9
+    DebugShowOnboarding = 8
 }
 
 class BRCMoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
     
-    @IBOutlet var nightModeSwitch: UISwitch!
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
@@ -36,7 +33,6 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         tableView.reloadData()
-        refreshNightModeSwitch()
     }
 
     override func didReceiveMemoryWarning() {
@@ -60,8 +56,6 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
                 cell.textLabel!.textColor = UIColor.lightGrayColor()
                 cell.userInteractionEnabled = false
             }
-        } else if cell.tag == CellTag.DebugNightMode.rawValue {
-            //if let
         }
 
         return cell
@@ -89,11 +83,6 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
                 showRatingsView()
             case .DebugShowOnboarding:
                 showOnboardingView()
-            case .DebugNightMode:
-                // TODO: Fix night mode
-                //nightModeSwitch.setOn(!nightModeSwitch.on, animated: true)
-                //toggleNightMode(nightModeSwitch)
-                break
             }
         }
     }
@@ -168,29 +157,4 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
         viewController.dismissViewControllerAnimated(true, completion: nil)
     }
     
-    // MARK: - Night Mode
-
-    @IBAction func toggleNightMode(sender: AnyObject) {
-        // TODO: Fix night mode
-        return
-        /*
-        if let nightSwitch = sender as? UISwitch {
-            if nightSwitch.on {
-                DKNightVersionManager.nightFalling();
-            } else {
-                DKNightVersionManager.dawnComing();
-            }
-        }*/
-    }
-    
-    func refreshNightModeSwitch() {
-        // TODO: Fix night mode
-        return
-        
-        /*if DKNightVersionManager.currentThemeVersion() == DKThemeVersion.Night {
-            nightModeSwitch.on = true
-        } else {
-            nightModeSwitch.on = false
-        }*/
-    }
 }

@@ -14,6 +14,10 @@
 /** iBurn.sqlite */
 extern NSString * const kBRCDatabaseName;
 
+/** this is posted when an extension is ready. The userInfo contains
+ the extension name under the "extensionName" key */
+extern NSString * const BRCDatabaseExtensionRegisteredNotification;
+
 @interface BRCDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;

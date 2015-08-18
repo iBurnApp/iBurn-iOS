@@ -82,6 +82,9 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 @implementation BRCMapViewController
 
+- (void) dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 #pragma mark Setup
 
@@ -99,8 +102,17 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self setupSearchBar];
         [self setupSearchController];
         [self setupSearchIndicator];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
     }
     return self;
+}
+
+- (void) databaseExtensionRegistered:(NSNotification*)notification {
+    NSString *extensionName = notification.userInfo[@"extensionName"];
+    if ([extensionName isEqualToString:[BRCDatabaseManager sharedInstance].everythingFilteredByFavorite]) {
+        [self reloadFavoritesIfNeeded];
+        NSLog(@"databaseExtensionRegistered: %@", extensionName);
+    }
 }
 
 
@@ -258,16 +270,20 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 {
     [super viewWillAppear:animated];
     [PFAnalytics trackEventInBackground:@"Map" block:nil];
-    [self reloadEventAnnotationsIfNeeded];
-    [self reloadArtAnnotationsIfNeeded];
-    [self reloadCampAnnotationsIfNeeded];
-    [self reloadFavoritesIfNeeded];
-    [self reloadAllUserPoints];
+    [self reloadAllAnnotations];
     [self.view bringSubviewToFront:self.addMapPointButton];
     // kludge to fix keyboard appearing at wrong time
     if (!self.editingMapPointAnnotation) {
         [self.annotationEditView.textField resignFirstResponder];
     }
+}
+
+- (void) reloadAllAnnotations {
+    [self reloadEventAnnotationsIfNeeded];
+    [self reloadArtAnnotationsIfNeeded];
+    [self reloadCampAnnotationsIfNeeded];
+    [self reloadFavoritesIfNeeded];
+    [self reloadAllUserPoints];
 }
 
 #pragma mark Annotation Loading

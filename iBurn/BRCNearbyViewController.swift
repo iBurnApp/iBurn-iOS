@@ -47,6 +47,16 @@ class BRCNearbyViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: BRCDatabaseExtensionRegisteredNotification, object: BRCDatabaseManager.sharedInstance());
+    }
+    
+    func databaseExtensionRegistered(notification: NSNotification) {
+        if let extensionName = notification.userInfo?["extensionName"] as? String {
+            if extensionName == BRCDatabaseManager.sharedInstance().rTreeIndex {
+                emptyListText = EmptyListLabelText.Nothing
+                refreshNearbyItems()
+            }
+        }
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -109,9 +119,6 @@ class BRCNearbyViewController: UITableViewController {
                     sections.append(campsSection)
                 }
                 self.sections = sections
-                if BRCDatabaseManager.sharedInstance().rTreeIndex != nil {
-                    self.emptyListText = EmptyListLabelText.Nothing
-                }
                 self.tableView.reloadData()
             })
         })
