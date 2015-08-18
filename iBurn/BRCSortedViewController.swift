@@ -40,7 +40,7 @@ public class BRCSortedViewController: UITableViewController {
         super.init(style: style)
     }
     
-    public init(style: UITableViewStyle, extensionName ext: String) {
+    public required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
         BRCDatabaseManager.sharedInstance().readConnection.readWithBlock { (transaction: YapDatabaseReadTransaction) -> Void in
@@ -122,6 +122,28 @@ public class BRCSortedViewController: UITableViewController {
     
     func refreshTableItems() {
         preconditionFailure("This method must be overridden")
+    }
+    
+    /** processes results of BRCDataSorter */
+    func processSortedData(events: [BRCEventObject], art: [BRCArtObject], camps: [BRCCampObject]) {
+        var sections: [TableViewSection] = []
+        if events.count > 0 {
+            let eventsSection = TableViewSection(objects: events, sectionTitle: ObjectType.Events)
+            sections.append(eventsSection)
+        }
+        if art.count > 0 {
+            let artSection = TableViewSection(objects: art, sectionTitle: ObjectType.Art)
+            sections.append(artSection)
+        }
+        if camps.count > 0 {
+            let campsSection = TableViewSection(objects: camps, sectionTitle: ObjectType.Camps)
+            sections.append(campsSection)
+        }
+        self.sections = sections
+        if count(sections) == 0 && self.extensionRegistered {
+            self.emptyListText = EmptyListLabelText.Nothing
+        }
+        self.tableView.reloadData()
     }
     
     func hasTableItems() -> Bool {

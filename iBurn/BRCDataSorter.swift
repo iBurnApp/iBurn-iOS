@@ -17,7 +17,7 @@ public class BRCDataSorterOptions {
     public init () {
         showExpiredEvents = false
         showFutureEvents = false
-        sortEventsByStartTime = false
+        sortEventsByStartTime = true
         now = NSDate()
     }
 }
@@ -57,7 +57,7 @@ public class BRCDataSorter: NSObject {
                     events = events.filter { $0.isStartingSoon(opt.now) }
                 }
                 if opt.sortEventsByStartTime {
-                    events.sort { $0.startDate.timeIntervalSinceNow > $1.startDate.timeIntervalSinceNow }
+                    events.sort { $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow }
                 } else {
                     events.sort { $0.title < $1.title }
                 }

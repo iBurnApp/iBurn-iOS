@@ -12,6 +12,7 @@
 #import "BRCMapViewController.h"
 #import "BRCEventsTableViewController.h"
 
+@class BRCFavoritesViewController;
 
 @interface BRCAppDelegate : UIResponder <UIApplicationDelegate, BITHockeyManagerDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
 
@@ -21,7 +22,7 @@
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
 @property (nonatomic, strong) BRCMapViewController *mapViewController;
-@property (nonatomic, strong) BRCFilteredTableViewController *favoritesViewController;
+@property (nonatomic, strong) BRCFavoritesViewController *favoritesViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *artViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *campsViewController;
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;

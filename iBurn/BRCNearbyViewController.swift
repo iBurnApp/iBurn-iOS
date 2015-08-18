@@ -45,24 +45,7 @@ class BRCNearbyViewController: BRCSortedViewController {
             let nearbyObjects = results as! [BRCDataObject]
             let options = BRCDataSorterOptions()
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
-                var sections: [TableViewSection] = []
-                if events.count > 0 {
-                    let eventsSection = TableViewSection(objects: events, sectionTitle: ObjectType.Events)
-                    sections.append(eventsSection)
-                }
-                if art.count > 0 {
-                    let artSection = TableViewSection(objects: art, sectionTitle: ObjectType.Art)
-                    sections.append(artSection)
-                }
-                if camps.count > 0 {
-                    let campsSection = TableViewSection(objects: camps, sectionTitle: ObjectType.Camps)
-                    sections.append(campsSection)
-                }
-                self.sections = sections
-                if count(sections) == 0 && self.extensionRegistered {
-                    self.emptyListText = EmptyListLabelText.Nothing
-                }
-                self.tableView.reloadData()
+                self.processSortedData(events, art: art, camps: camps)
             })
         })
     }
