@@ -25,6 +25,7 @@ class BRCFavoritesViewController: BRCSortedViewController {
         }, completionBlock: { () -> Void in
             let options = BRCDataSorterOptions()
             options.showFutureEvents = true
+            options.showExpiredEvents = true
             BRCDataSorter.sortDataObjects(favorites, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
                 self.processSortedData(events, art: art, camps: camps)
             })
