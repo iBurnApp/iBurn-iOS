@@ -14,14 +14,11 @@ before_install:
     - git submodule update --init --recursive
 
 install:
-  - cp ./Submodules/iBurn-Data/data/2014/camps.json ./Submodules/iBurn-Data/data/2015/camps.json.js
+  - curl -o ./Submodules/iBurn-Data/data/2015/2015/camps.json.js http://playaevents.burningman.org/api/0.2/2015/camp/
   - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
-  - gem install cocoapods
+  - gem install cocoapods --no-rdoc --no-ri # Need Cocoapods >= 0.34.1
   - pod install
 script:
   - xctool -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO build
-
-notifications:
-  email: false

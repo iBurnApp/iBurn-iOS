@@ -79,7 +79,6 @@
 		D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */; };
 		D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */; };
-		D9C30F741B83118200CD03CC /* iBurn-2015 in Resources */ = {isa = PBXBuildFile; fileRef = D9C30F731B83118200CD03CC /* iBurn-2015 */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
@@ -766,7 +765,6 @@
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
-				D9C30F741B83118200CD03CC /* iBurn-2015 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
