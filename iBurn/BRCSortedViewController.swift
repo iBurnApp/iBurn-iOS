@@ -98,16 +98,17 @@ public class BRCSortedViewController: UITableViewController {
             PFAnalytics.trackEventInBackground(title, block: nil)
         }
         refreshTableItems()
-        let location = getCurrentLocation()
-        BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
-            if count(locationString) > 0 {
-                let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
-                let label = UILabel()
-                label.attributedText = attrString
-                label.sizeToFit()
-                self.navigationItem.titleView = label
-            } else {
-                self.navigationItem.title = self.title
+        if let location = getCurrentLocation() {
+            BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
+                if count(locationString) > 0 {
+                    let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
+                    let label = UILabel()
+                    label.attributedText = attrString
+                    label.sizeToFit()
+                    self.navigationItem.titleView = label
+                } else {
+                    self.navigationItem.title = self.title
+                }
             }
         }
     }
@@ -115,9 +116,9 @@ public class BRCSortedViewController: UITableViewController {
     
     // MARK: - Internal
     
-    func getCurrentLocation() -> CLLocation {
+    func getCurrentLocation() -> CLLocation? {
         let appDelegate = BRCAppDelegate.sharedAppDelegate()
-        let currentLocation = appDelegate.locationManager.location
+        let currentLocation: CLLocation? = appDelegate.locationManager.location
         return currentLocation
     }
     
