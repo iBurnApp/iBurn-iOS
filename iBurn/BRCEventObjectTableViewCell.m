@@ -35,9 +35,13 @@
         self.rightSubtitleLabel.text = @"Expired";
     } else { // Starts in long time
         NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
-        NSString *endTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.endDate];
-        NSString *timeString = [[NSString stringWithFormat:@"%@ - %@", startTime, endTime] lowercaseString];
-        self.rightSubtitleLabel.text = timeString;
+        NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
+        NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
+        NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventObject.startDate];
+        NSString *firstLetter = [dayOfWeekLetter substringToIndex:3];
+        NSString *timeString = [[NSString stringWithFormat:@"%@ (%@)", startTime, durationString] lowercaseString];
+        NSString *text = [NSString stringWithFormat:@"%@ %@", firstLetter, timeString];
+        self.rightSubtitleLabel.text = text;
     }
     UIColor *eventStatusColor = [eventObject colorForEventStatus:now];
     self.rightSubtitleLabel.textColor = eventStatusColor;

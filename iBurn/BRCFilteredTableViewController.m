@@ -54,6 +54,7 @@
         NSLog(@"databaseExtensionRegistered: %@", extensionName);
         [self.tableView reloadData];
     } else if ([extensionName isEqualToString:self.searchViewName]) {
+        NSLog(@"databaseExtensionRegistered: %@", extensionName);
         id src = self.searchController.searchResultsController;
         if ([src isKindOfClass:[UITableViewController class]]) {
             UITableViewController *srcTV = src;
