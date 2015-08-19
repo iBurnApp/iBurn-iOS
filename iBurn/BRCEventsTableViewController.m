@@ -84,6 +84,9 @@ static const CGFloat kDayPickerHeight = 65.0f;
     self.searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [searchBarContainerView addSubview:self.searchController.searchBar];
     [self.searchController.searchBar sizeToFit];
+    CGRect searchBarFrame = self.searchController.searchBar.frame;
+    searchBarFrame.origin = CGPointMake(0, 0);
+    self.searchController.searchBar.frame = searchBarFrame;
     
     [self setupDayPicker];
     [tableHeaderView addSubview:self.dayPicker];

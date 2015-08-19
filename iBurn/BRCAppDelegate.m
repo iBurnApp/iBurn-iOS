@@ -413,6 +413,9 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
             if (mapViewController.isVisible) {
                 [mapViewController centerMapAtManCoordinatesAnimated:YES];
             }
+        } else if ([topViewController isKindOfClass:[BRCEventsTableViewController class]]) {
+            BRCEventsTableViewController *eventsVC = (BRCEventsTableViewController*)topViewController;
+            [eventsVC didSelectFromTabBar:tabBarController];
         }
     }
 }

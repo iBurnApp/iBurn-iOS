@@ -20,4 +20,8 @@
                           viewName:(NSString*)viewName
                     searchViewName:(NSString*)searchViewName;
 
+
+/** Called from tabBarController:didSelectViewController: */
+- (void) didSelectFromTabBar:(UITabBarController *)tabBarController;
+
 @end
