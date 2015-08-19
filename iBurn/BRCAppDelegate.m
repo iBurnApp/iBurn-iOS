@@ -360,6 +360,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:iosVersion]) {
         [[UIApplication sharedApplication] openURL:url];
     } else {
+        // you're showing a modal ya dingus
+        if ([BRCAppDelegate sharedAppDelegate].window.rootViewController.presentedViewController) {
+            [[UIApplication sharedApplication] openURL:url];
+            return;
+        }
         TUSafariActivity *activity = [[TUSafariActivity alloc] init];
         NSURLRequest *request = [NSURLRequest requestWithURL:url];
         WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
