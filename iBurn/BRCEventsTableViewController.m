@@ -199,9 +199,12 @@ static const CGFloat kDayPickerHeight = 65.0f;
 }
 
 - (void) replaceTimeBasedEventMappings {
-    NSString *group = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:self.selectedDay];
-    NSArray *activeTimeGroup = @[group]; // selected day group
-    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroups:activeTimeGroup view:self.viewName];
+    NSString *selectedDay = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:self.selectedDay];
+    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+        return [group containsString:selectedDay];
+    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+        return [group1 compare:group2];
+    } view:self.viewName];
 }
 
 - (void) refreshEventTimeSort {
@@ -218,6 +221,53 @@ static const CGFloat kDayPickerHeight = 65.0f;
 }
 
 #pragma mark UITableViewDataSource
+
+- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
+{
+    if (![self isSearchResultsControllerTableView:tableView])
+    {
+        NSArray *rawGroups = [self.mappings allGroups];
+        NSMutableArray *groups = [NSMutableArray arrayWithCapacity:rawGroups.count];
+        [rawGroups enumerateObjectsUsingBlock:^(NSString *groupName, NSUInteger idx, BOOL *stop) {
+            NSString *hour = [[groupName componentsSeparatedByString:@" "] lastObject];
+            NSInteger hourNumber = hour.integerValue;
+            hourNumber = hourNumber % 12;
+            if (hourNumber == 0) {
+                hourNumber = 12;
+            }
+            hour = [NSString stringWithFormat:@"%d", (int)hourNumber];
+            [groups addObject:hour];
+        }];
+        [groups insertObject:UITableViewIndexSearch atIndex:0];
+        return groups;
+    }
+    return nil;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
+{
+    if (![self isSearchResultsControllerTableView:tableView])
+    {
+        // https://github.com/kharrison/CodeExamples/blob/master/WorldFacts/WorldFacts/UYLCountryTableViewController.m
+        if (index > 0)
+        {
+            // The index is offset by one to allow for the extra search icon inserted at the front
+            // of the index
+            
+            return index - 1;
+        }
+        else
+        {
+            // if magnifying glass http://stackoverflow.com/questions/19093168/uitableview-section-index-not-able-to-scroll-to-search-bar-index
+            // The first entry in the index is for the search icon so we return section not found
+            // and force the table to scroll to the top.
+            
+            [tableView setContentOffset:CGPointMake(0.0, -tableView.contentInset.top)];
+            return NSNotFound;
+        }
+    }
+    return 0;
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {

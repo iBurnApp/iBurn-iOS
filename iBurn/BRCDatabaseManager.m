@@ -357,7 +357,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object){
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *eventObject = (BRCEventObject*)object;
-                NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupDateFormatter];
+                NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupHourlyDateFormatter];
                 NSString *groupName = [dateFormatter stringFromDate:eventObject.startDate];
                 return groupName;
             }
@@ -461,7 +461,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
     YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    NSString *versionTag = @"3";
+    NSString *versionTag = @"4";
     if (options.allowedCollections) {
         options.allowedCollections = allowedCollections;
     }
@@ -611,7 +611,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:day];
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (NSString *group, NSString *collection, NSString *key)
     {
-        return [group isEqualToString:selectedDayGroup];
+        return [group containsString:selectedDayGroup];
     }];
     return filtering;
 }

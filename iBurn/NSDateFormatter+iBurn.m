@@ -38,6 +38,18 @@
     return brc_eventGroupDateFormatter;
 }
 
+/** e.g. 2015-09-04 11 */
++ (NSDateFormatter*) brc_eventGroupHourlyDateFormatter {
+    static NSDateFormatter *brc_eventGroupDateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        brc_eventGroupDateFormatter = [NSDateFormatter new];
+        brc_eventGroupDateFormatter.dateFormat = @"yyyy-MM-dd' 'HH";
+        brc_eventGroupDateFormatter.timeZone = [self brc_burningManTimeZone];
+    });
+    return brc_eventGroupDateFormatter;
+}
+
 + (NSDateFormatter*) brc_timeOnlyDateFormatter {
     static NSDateFormatter *brc_timeOnlyDateFormatter = nil;
     static dispatch_once_t onceToken;
