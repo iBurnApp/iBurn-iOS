@@ -254,7 +254,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
             @autoreleasepool {
                 ////////////////
 #warning Remove me when playa location data is fixed
-                if (object.location && !object.playaLocation) {
+                if (object.location && object.playaLocation.length == 0) {
                     NSString *playaLocation = [geocoder reverseLookup:object.location.coordinate];
                     if (playaLocation.length > 0) {
                         object.playaLocation = playaLocation;
@@ -310,6 +310,12 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                 if (art) {
                     event.artName = art.title;
                     event.coordinate = art.coordinate;
+                }
+                if (event.location && event.playaLocation.length == 0) {
+                    NSString *playaLocation = [geocoder reverseLookup:event.location.coordinate];
+                    if (playaLocation.length > 0) {
+                        event.playaLocation = playaLocation;
+                    }
                 }
                 [objectsToUpdate addObject:event];
             }
