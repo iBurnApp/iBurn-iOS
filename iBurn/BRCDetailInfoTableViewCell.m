@@ -15,6 +15,7 @@
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCEmbargo.h"
 #import "NSDateFormatter+iBurn.h"
+#import "BRCEventRelationshipDetailInfoCell.h"
 
 @implementation BRCDetailInfoTableViewCell
 
@@ -88,6 +89,13 @@
             self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
             self.textLabel.numberOfLines = 0;
             self.textLabel.text = textString;
+            [self setSelectableAppearance];
+            break;
+        }
+        case BRCDetailCellInfoTypeEventRelationship: {
+            self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+            self.textLabel.numberOfLines = 0;
+            self.textLabel.text = @"Hosted Events";
             [self setSelectableAppearance];
             break;
         }

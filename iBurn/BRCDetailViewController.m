@@ -26,6 +26,8 @@
 #import "BRCAppDelegate.h"
 @import Parse;
 #import "PFAnalytics+iBurn.h"
+#import "BRCEventRelationshipDetailInfoCell.h"
+#import "iBurn-Swift.h"
 
 static CGFloat const kTableViewHeaderHeight = 100;
 
@@ -40,12 +42,27 @@ static CGFloat const kTableViewHeaderHeight = 100;
 
 @implementation BRCDetailViewController
 
+- (void) dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject
 {
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
         self.dataObject = dataObject;
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
+
     }
     return self;
+}
+
+- (void) databaseExtensionRegistered:(NSNotification*)notification {
+    NSString *extensionName = notification.userInfo[@"extensionName"];
+    if ([extensionName isEqualToString:[BRCDatabaseManager sharedInstance].relationships]) {
+        NSLog(@"databaseExtensionRegistered: %@", extensionName);
+        self.dataObject = self.dataObject; // retrigger info array population
+        [self.tableView reloadData];
+    }
 }
 
 - (void)setDataObject:(BRCDataObject *)dataObject
@@ -267,6 +284,13 @@ static CGFloat const kTableViewHeaderHeight = 100;
         }];
         BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
         [self.navigationController pushViewController:detailVC animated:YES];
+        
+    } else if(cellInfo.cellType == BRCDetailCellInfoTypeEventRelationship) {
+        // Shows events
+        BRCEventRelationshipDetailInfoCell *eventRelationshipCellInfo = (BRCEventRelationshipDetailInfoCell *)cellInfo;
+        BRCDataObject *relatedObject = eventRelationshipCellInfo.dataObject;
+        BRCEventsViewController *eventsVC = [[BRCEventsViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:[BRCDatabaseManager sharedInstance].relationships relatedObject:relatedObject];
+        [self.navigationController pushViewController:eventsVC animated:YES];
         
     } else if (cellInfo.cellType == BRCDetailCellInfoTypeCoordinates) {
         CLLocation *location = cellInfo.value;

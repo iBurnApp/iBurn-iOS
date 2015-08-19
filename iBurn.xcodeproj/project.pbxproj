@@ -47,6 +47,9 @@
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
+		D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */; };
+		D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */; };
+		D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0481B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D979CEC6199AED4C007F0313 /* RMAnnotation+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D979CEC5199AED4C007F0313 /* RMAnnotation+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
@@ -185,6 +188,11 @@
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
+		D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCEventsViewController.swift; sourceTree = "<group>"; };
+		D977E0441B83F6E900FFC20F /* BRCDataObject+Relationships.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRCDataObject+Relationships.h"; sourceTree = "<group>"; };
+		D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRCDataObject+Relationships.m"; sourceTree = "<group>"; };
+		D977E0471B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventRelationshipDetailInfoCell.h; sourceTree = "<group>"; };
+		D977E0481B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventRelationshipDetailInfoCell.m; sourceTree = "<group>"; };
 		D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+iBurn.h"; sourceTree = "<group>"; };
 		D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+iBurn.m"; sourceTree = "<group>"; };
 		D979CEC4199AED4C007F0313 /* RMAnnotation+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RMAnnotation+iBurn.h"; sourceTree = "<group>"; };
@@ -302,14 +310,11 @@
 		6322830219881E27009E472B /* DetailViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D977E04A1B84085600FFC20F /* DetailInfo */,
 				632282FF19881DDE009E472B /* BRCDetailViewController.h */,
 				6322830019881DDE009E472B /* BRCDetailViewController.m */,
 				D99395A6198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.h */,
 				D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */,
-				6322830319881F41009E472B /* BRCDetailCellInfo.h */,
-				6322830419881F41009E472B /* BRCDetailCellInfo.m */,
-				6322830919882153009E472B /* BRCRelationshipDetailInfoCell.h */,
-				6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */,
 			);
 			name = DetailViewControllers;
 			sourceTree = "<group>";
@@ -475,6 +480,19 @@
 			name = Events;
 			sourceTree = "<group>";
 		};
+		D977E04A1B84085600FFC20F /* DetailInfo */ = {
+			isa = PBXGroup;
+			children = (
+				D977E0471B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.h */,
+				D977E0481B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m */,
+				6322830319881F41009E472B /* BRCDetailCellInfo.h */,
+				6322830419881F41009E472B /* BRCDetailCellInfo.m */,
+				6322830919882153009E472B /* BRCRelationshipDetailInfoCell.h */,
+				6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */,
+			);
+			name = DetailInfo;
+			sourceTree = "<group>";
+		};
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
@@ -601,6 +619,8 @@
 				D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */,
 				D994156C198726C100D245C7 /* BRCEventObject.h */,
 				D994156D198726C100D245C7 /* BRCEventObject.m */,
+				D977E0441B83F6E900FFC20F /* BRCDataObject+Relationships.h */,
+				D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */,
 				D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */,
 				D994157D1987399F00D245C7 /* BRCEventTime.h */,
 				D994157E1987399F00D245C7 /* BRCEventTime.m */,
@@ -634,6 +654,7 @@
 				D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */,
 				D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */,
 				D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */,
+				D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */,
 			);
 			name = Sorted;
 			sourceTree = "<group>";
@@ -894,6 +915,7 @@
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
+				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */,
 				D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */,
 				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
@@ -906,6 +928,7 @@
 				D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */,
 				D90132071B7C685D007A11B8 /* PFAnalytics+iBurn.m in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
+				D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
@@ -928,6 +951,7 @@
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
 				D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */,
 				D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */,
+				D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */,
 				D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */,
 				63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,

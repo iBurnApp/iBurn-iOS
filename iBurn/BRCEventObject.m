@@ -19,6 +19,10 @@ NSString * const kBRCStartDate2015Key = @"kBRCStartDate2015Key";
 NSString * const kBRCEndDate2015Key = @"kBRCEndDate2015Key";
 NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
 
+NSString * const kBRCEventCampEdgeName = @"camp";
+NSString * const kBRCEventArtEdgeName = @"art";
+
+
 @interface BRCEventObject()
 @end
 
@@ -306,7 +310,7 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     NSMutableArray *edges = [NSMutableArray arrayWithCapacity:2];
     
     YapDatabaseRelationshipEdge *campEdge =
-    [YapDatabaseRelationshipEdge edgeWithName:@"camp"
+    [YapDatabaseRelationshipEdge edgeWithName:kBRCEventCampEdgeName
                                destinationKey:self.hostedByCampUniqueID
                                    collection:[[BRCCampObject class] collection]
                               nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
@@ -315,7 +319,7 @@ NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
     }
     
     YapDatabaseRelationshipEdge *artEdge =
-    [YapDatabaseRelationshipEdge edgeWithName:@"art"
+    [YapDatabaseRelationshipEdge edgeWithName:kBRCEventArtEdgeName
                                destinationKey:self.hostedByArtUniqueID
                                    collection:[[BRCArtObject class] collection]
                               nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];

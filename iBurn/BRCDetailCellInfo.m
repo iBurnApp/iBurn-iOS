@@ -16,6 +16,8 @@
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEmbargo.h"
 #import "BRCAppDelegate.h"
+#import "BRCDataObject+Relationships.h"
+#import "BRCEventRelationshipDetailInfoCell.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -134,6 +136,21 @@
         
     }];
     
+    // Add link to full event schedule for Camp and Art objects
+    if ([object isKindOfClass:[BRCCampObject class]] ||
+        [object isKindOfClass:[BRCArtObject class]]) {
+        __block NSArray *events = @[];
+        [[BRCDatabaseManager sharedInstance].readConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+            events = [object eventsWithTransaction:transaction];
+        }];
+        if (events.count > 0) {
+            BRCEventRelationshipDetailInfoCell *eventsListCell = [[BRCEventRelationshipDetailInfoCell alloc] init];
+            eventsListCell.dataObject = object;
+            eventsListCell.displayName = @"Events";
+            [finalCellInfoArray insertObject:eventsListCell atIndex:0];
+        }
+    }
+    
     // Special cases for Schedule and Camp for events
     if ([object isKindOfClass:[BRCEventObject class]]) {
         BRCEventObject *event = (BRCEventObject *)object;
@@ -169,24 +186,19 @@
         NSString *relationshipCollection = nil;
         if ([event.hostedByCampUniqueID length]) {
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
-            relationshipDetailInfoCell.displayName = @"Camp";
+            relationshipDetailInfoCell.displayName = @"Hosted By Camp";
             relationshipUniqueID = event.hostedByCampUniqueID;
             relationshipCollection = [BRCCampObject collection];
         }
         else if ([event.hostedByArtUniqueID length]) {
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
-            relationshipDetailInfoCell.displayName = @"Art";
+            relationshipDetailInfoCell.displayName = @"Hosted At Art";
             relationshipUniqueID = event.hostedByArtUniqueID;
             relationshipCollection = [BRCArtObject collection];
         }
         
-        
-        
-        // TODO this should be refactored to share a persistent main thread connection
         if ([relationshipUniqueID length] && [relationshipCollection length]) {
-            YapDatabaseConnection *connection = [[BRCDatabaseManager sharedInstance].database newConnection];
-            connection.objectPolicy = YapDatabasePolicyShare;
-            [connection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            [[BRCDatabaseManager sharedInstance].readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
                 relationshipDetailInfoCell.dataObject = [transaction objectForKey:relationshipUniqueID inCollection:relationshipCollection];
             }];
         }
