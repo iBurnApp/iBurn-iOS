@@ -368,10 +368,25 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             return collection;
         }];
     } else {
-        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key){
+        // group art & camp by letter index
+        grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object){
             if ([collection isEqualToString:[viewClass collection]])
             {
-                return [viewClass collection];
+                if ([object isKindOfClass:[BRCDataObject class]]) {
+                    BRCDataObject *dataObject = object;
+                    NSString *groupName = nil;
+                    
+                    NSString *firstLetter = [[dataObject.title substringToIndex:1] uppercaseString];
+                    NSCharacterSet *alphabet = [NSCharacterSet letterCharacterSet];
+                    unichar firstChar = [firstLetter characterAtIndex:0];
+                    // ABCD... is fine
+                    if ([alphabet characterIsMember:firstChar]) {
+                        groupName = firstLetter;
+                    } else { // 123!@#$ goes to the top in "#"
+                        groupName = @"#";
+                    }
+                    return groupName;
+                }
             }
             return nil;
         }];
@@ -446,7 +461,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
     YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    NSString *versionTag = @"2";
+    NSString *versionTag = @"3";
     if (options.allowedCollections) {
         options.allowedCollections = allowedCollections;
     }

@@ -173,14 +173,7 @@
 
 - (void) setupMappings {
     YapDatabaseViewMappingGroupFilter groupFilter = ^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-        if (self.viewClass == [BRCDataObject class]) {
-            // special case where filtering by all objects
-            return YES;
-        }
-        if ([group isEqualToString:[self.viewClass collection]]) {
-            return YES;
-        }
-        return NO;
+        return YES;
     };
     YapDatabaseViewMappingGroupSort groupSort = ^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
@@ -272,6 +265,43 @@
 }
 
 #pragma - mark UITableViewDataSource Methods
+
+- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
+{
+    if (![self isSearchResultsControllerTableView:tableView])
+    {
+        NSMutableArray *groups = [NSMutableArray arrayWithArray:[self.mappings allGroups]];
+        [groups insertObject:UITableViewIndexSearch atIndex:0];
+        return groups;
+    }
+    return nil;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
+{
+    if (![self isSearchResultsControllerTableView:tableView])
+    {
+        // https://github.com/kharrison/CodeExamples/blob/master/WorldFacts/WorldFacts/UYLCountryTableViewController.m
+        if (index > 0)
+        {
+            // The index is offset by one to allow for the extra search icon inserted at the front
+            // of the index
+            
+            return  [self.mappings sectionForGroup:title];
+        }
+        else
+        {
+            // if magnifying glass http://stackoverflow.com/questions/19093168/uitableview-section-index-not-able-to-scroll-to-search-bar-index
+            // The first entry in the index is for the search icon so we return section not found
+            // and force the table to scroll to the top.
+            
+            [tableView setContentOffset:CGPointMake(0.0, -tableView.contentInset.top)];
+            return NSNotFound;
+        }
+    }
+    return 0;
+}
+
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
