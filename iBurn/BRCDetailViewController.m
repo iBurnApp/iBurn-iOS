@@ -29,7 +29,7 @@
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import "iBurn-Swift.h"
 
-static CGFloat const kTableViewHeaderHeight = 100;
+static CGFloat const kTableViewHeaderHeight = 200;
 
 @interface BRCDetailViewController () <MFMailComposeViewControllerDelegate, RMMapViewDelegate>
 
