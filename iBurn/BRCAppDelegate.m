@@ -67,6 +67,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
     
+    [self.dataImporter doubleCheckMapTiles:nil];
+    
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
     [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:nil];
     

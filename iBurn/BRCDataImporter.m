@@ -132,29 +132,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
             // check tiles for errors
             if (oldUpdateInfo.dataType == BRCUpdateDataTypeTiles) {
                 oldUpdateInfo = [oldUpdateInfo copy];
-                NSError *error = nil;
-                NSURL *localMapTilesURL = [[self class] mapTilesURL];
-                BOOL success = [self checkTilesAtURL:localMapTilesURL error:&error];
-                if (!success) {
-                    NSLog(@"Look like the tiles are fucked: %@", error);
-                    error = nil;
-                    // copy bundled tiles to live store on first launch
-                    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"2015"];
-                    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-                    NSURL *bundledTilesURL = [bundle URLForResource:kBRCTilesName withExtension:@"jar"];
-                    success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
-                    if (!success) {
-                        oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
-                    } else {
-                        NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
-                        oldUpdateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
-                        NSError *error = nil;
-                        BOOL success = [localMapTilesURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
-                        if (!success) {
-                            NSLog(@"Error excluding %@ from backup %@", localMapTilesURL, error);
-                        }
-                    }
-                }
+                [self doubleCheckMapTiles:oldUpdateInfo];
             }
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
             if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus != BRCUpdateFetchStatusFailed) {
@@ -443,6 +421,41 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
         }
     }
     return directory;
+}
+
+
+/** Double-checks that the map tiles exist on each launch */
+- (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo {
+    NSError *error = nil;
+    NSURL *localMapTilesURL = [[self class] mapTilesURL];
+    BOOL success = [self checkTilesAtURL:localMapTilesURL error:&error];
+    if (!success) {
+        NSLog(@"Look like the tiles are fucked: %@", error);
+        error = nil;
+        // copy bundled tiles to live store on first launch
+        NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"2015"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSURL *bundledTilesURL = [bundle URLForResource:kBRCTilesName withExtension:@"jar"];
+        success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
+        if (!success) {
+            if (updateInfo) {
+                updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+            }
+        } else {
+            NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
+            if (updateInfo) {
+                updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": localMapTilesURL}];
+            });
+            NSError *error = nil;
+            BOOL success = [localMapTilesURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+            if (!success) {
+                NSLog(@"Error excluding %@ from backup %@", localMapTilesURL, error);
+            }
+        }
+    }
 }
 
 #pragma mark NSURLSessionDelegate

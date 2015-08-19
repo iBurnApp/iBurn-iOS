@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <YapDatabase/YapDatabase.h>
+#import "BRCUpdateInfo.h"
 
 /** this is posted when new map tiles come in. */
 extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
@@ -37,5 +38,8 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 
 /** Returns iburn.mbtiles local file URL within Application Support */
 + (NSURL*) mapTilesURL;
+
+/** Double-checks that the map tiles exist on each launch */
+- (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo;
 
 @end
