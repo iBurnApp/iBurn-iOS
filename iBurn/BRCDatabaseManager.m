@@ -611,7 +611,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:day];
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (NSString *group, NSString *collection, NSString *key)
     {
-        return [group containsString:selectedDayGroup];
+        if (selectedDayGroup) {
+            return [group containsString:selectedDayGroup];
+        }
+        return YES;
     }];
     return filtering;
 }
