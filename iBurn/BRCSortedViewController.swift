@@ -87,7 +87,9 @@ public class BRCSortedViewController: UITableViewController {
             if extensionName == self.extensionName {
                 NSLog("databaseExtensionRegistered: %@", extensionName)
                 extensionRegistered = true
-                refreshTableItems()
+                refreshTableItems({ () -> Void in
+                    self.tableView.reloadData()
+                })
             }
         }
     }
@@ -97,7 +99,17 @@ public class BRCSortedViewController: UITableViewController {
         if let title = self.title {
             PFAnalytics.trackEventInBackground(title, block: nil)
         }
-        refreshTableItems()
+        
+        refreshTableItems { () -> Void in
+            // Attempting to fix Apple's buggy self-sizing autolayout cells
+            self.tableView.reloadData();
+            dispatch_after(dispatch_time(
+                DISPATCH_TIME_NOW,
+                Int64(0.01 * Double(NSEC_PER_SEC))
+                ), dispatch_get_main_queue()) { () -> Void in
+                    self.tableView.reloadData()
+            }
+        }
         if let location = getCurrentLocation() {
             BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
                 if count(locationString) > 0 {
@@ -122,12 +134,12 @@ public class BRCSortedViewController: UITableViewController {
         return currentLocation
     }
     
-    func refreshTableItems() {
+    func refreshTableItems(completion: dispatch_block_t) {
         preconditionFailure("This method must be overridden")
     }
     
     /** processes results of BRCDataSorter */
-    func processSortedData(events: [BRCEventObject], art: [BRCArtObject], camps: [BRCCampObject]) {
+    func processSortedData(events: [BRCEventObject], art: [BRCArtObject], camps: [BRCCampObject], completion: dispatch_block_t) {
         var sections: [TableViewSection] = []
         if events.count > 0 {
             let eventsSection = TableViewSection(objects: events, sectionTitle: ObjectType.Events)
@@ -145,7 +157,7 @@ public class BRCSortedViewController: UITableViewController {
         if count(sections) == 0 && self.extensionRegistered {
             self.emptyListText = EmptyListLabelText.Nothing
         }
-        self.tableView.reloadData()
+        completion()
     }
     
     func hasTableItems() -> Bool {
@@ -223,7 +235,9 @@ public class BRCSortedViewController: UITableViewController {
             BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWriteWithBlock({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
                 transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: dataCopy.dynamicType.collection())
                 }, completionQueue:dispatch_get_main_queue(), completionBlock: { () -> Void in
-                    self.refreshTableItems()
+                    self.refreshTableItems({ () -> Void in
+                        self.tableView.reloadData()
+                    })
             })
         }
         return cell

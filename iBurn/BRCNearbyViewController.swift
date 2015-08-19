@@ -47,7 +47,7 @@ class BRCNearbyViewController: BRCSortedViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    internal override func refreshTableItems() {
+    internal override func refreshTableItems(completion: dispatch_block_t) {
         if let currentLocation = getCurrentLocation() {
             let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
             emptyListText = EmptyListLabelText.Loading
@@ -55,7 +55,7 @@ class BRCNearbyViewController: BRCSortedViewController {
                 let nearbyObjects = results as! [BRCDataObject]
                 let options = BRCDataSorterOptions()
                 BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
-                    self.processSortedData(events, art: art, camps: camps)
+                    self.processSortedData(events, art: art, camps: camps, completion: completion)
                 })
             })
         }
@@ -112,7 +112,9 @@ class BRCNearbyViewController: BRCSortedViewController {
         if let stepper = sender as? UIStepper {
             searchDistance = stepper.value
             refreshTableHeaderView()
-            refreshTableItems()
+            refreshTableItems({ () -> Void in
+                self.tableView.reloadData()
+            })
         }
     }
     

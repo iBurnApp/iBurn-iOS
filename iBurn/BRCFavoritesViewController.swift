@@ -19,7 +19,7 @@ class BRCFavoritesViewController: BRCSortedViewController {
         super.init(coder: aDecoder)
     }
     
-    override func refreshTableItems() {
+    override func refreshTableItems(completion: dispatch_block_t) {
         var favorites: [BRCDataObject] = []
         BRCDatabaseManager.sharedInstance().readConnection.asyncReadWithBlock({ (transaction: YapDatabaseReadTransaction) -> Void in
             if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
@@ -36,7 +36,7 @@ class BRCFavoritesViewController: BRCSortedViewController {
             options.showFutureEvents = true
             options.showExpiredEvents = true
             BRCDataSorter.sortDataObjects(favorites, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
-                self.processSortedData(events, art: art, camps: camps)
+                self.processSortedData(events, art: art, camps: camps, completion: completion)
             })
         })
     }

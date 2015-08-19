@@ -28,7 +28,7 @@ class BRCEventsViewController: BRCSortedViewController {
         super.init(style: style, extensionName: ext)
     }
     
-    internal override func refreshTableItems() {
+    internal override func refreshTableItems(completion: dispatch_block_t) {
         var eventObjects: [BRCEventObject] = []
         BRCDatabaseManager.sharedInstance().readConnection.readWithBlock { (transaction: YapDatabaseReadTransaction) -> Void in
             if let object = self.relatedObject {
@@ -39,7 +39,7 @@ class BRCEventsViewController: BRCSortedViewController {
         options.showFutureEvents = true
         options.showExpiredEvents = true
         BRCDataSorter.sortDataObjects(eventObjects, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
-            self.processSortedData(events, art: art, camps: camps)
+            self.processSortedData(events, art: art, camps: camps, completion: completion)
         })
     }
 }
