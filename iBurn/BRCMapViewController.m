@@ -715,6 +715,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
             BRCDataObject *dataObject = annotation.userInfo;
             BRCDetailViewController *detailViewController = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+            detailViewController.hidesBottomBarWhenPushed = YES;
             [self.navigationController pushViewController:detailViewController animated:YES];
         }
         if ([annotation.userInfo isKindOfClass:[BRCMapPoint class]]) {
