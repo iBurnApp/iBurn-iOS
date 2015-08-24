@@ -6,6 +6,9 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 
 [![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8) [![iBurn Google Play Store Link](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.gaiagps.iburn&hl=en)
 
+## Screenshots
+
+![Screenshot 1](http://i.imgur.com/wmHHgiYl.jpg) ![Screenshot 2](http://i.imgur.com/39IHGN0l.jpg)
 
 ## Installation
 
