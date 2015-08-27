@@ -41,14 +41,14 @@
 + (NSArray *)defaultInfoArray
 {
     NSMutableArray *defaultArray = [NSMutableArray new];
-    //[defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
+    
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromLocation:)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
-    
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistLocation)) displayName:@"Artist Location" cellType:BRCDetailCellInfoTypeText]];
     
@@ -160,7 +160,11 @@
         NSMutableAttributedString *fullScheduleString = nil;
         NSString *timeString = nil;
         if (event.isAllDay) {
-            timeString = [NSString stringWithFormat:@"All Day"];
+            NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:event.startDate];
+            if (dayOfWeekLetter.length >= 3) {
+                NSString *firstLetter = [dayOfWeekLetter substringToIndex:3];
+                timeString = [NSString stringWithFormat:@"%@ (All Day)", firstLetter];
+            }
         }
         else {
             NSDateFormatter *timeOnlyDateFormatter = [NSDateFormatter brc_timeOnlyDateFormatter];
