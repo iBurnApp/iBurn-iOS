@@ -68,8 +68,6 @@
     // Partial 'fix' for autolayout bug #32 https://github.com/Burning-Man-Earth/iBurn-iOS/issues/32
     if (self.searchController.active) {
         self.searchController.active = NO;
-    } else {
-        [self.tableView setContentOffset:CGPointMake(0.0, -self.tableView.contentInset.top) animated:YES];
     }
 }
 
