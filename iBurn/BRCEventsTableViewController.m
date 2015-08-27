@@ -204,7 +204,10 @@ static const CGFloat kDayPickerHeight = 65.0f;
 - (void) replaceTimeBasedEventMappings {
     NSString *selectedDay = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:self.selectedDay];
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-        return [group containsString:selectedDay];
+        if (group && selectedDay) {
+            return [group containsString:selectedDay];
+        }
+        return NO;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     } view:self.viewName];
