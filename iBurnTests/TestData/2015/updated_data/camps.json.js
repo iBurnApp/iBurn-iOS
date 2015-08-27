@@ -1,123 +1,150 @@
 [
     {
-        "name": "&",
-        "url": null,
-        "contact_email": null,
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7996,
-        "description": "None"
+    "time_address": null,
+    "location": "8:45 & Kook",
+    "name": "Calico",
+    "url": null,
+    "contact_email": null,
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "1001 Nights",
-        "url": null,
-        "contact_email": "bdahleh@gmail.com",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7381,
-        "description": "1001 nights is a camp that offers a social setting every night to collect stories from burners reaching 1001 stories in the 7 nights of the burning man experience. the camp also collects stories every morning offering cheese and zaatar manakeesh (dough based pastries with cheese and Thyme) along with refreshing shots. \r\n\r\nFlow artists are welcome to flow in our space with hoops and pois for workshops or to jam on our flow tunes along with world renowned hoopers.\r\n\r\npunch will be made every night.. music will playing for jams and every night for the social setting.."
+    "id": 7229,
+    "description": "Calico brings traditional tap and jazz dancing to the playa. Come join us for instruction and rock out sessions!",
+    "latitude": 40.79527689998483,
+    "longitude": -119.22181194789059
+  },
+  {
+    "time_address": null,
+    "location": "7:30 Portal @ 7:30 Portal",
+    "name": "7 Sirens Cove",
+    "url": "http://7sirenscove.com",
+    "contact_email": "admin@7sirenscove.com",
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "1.21 Gigawatts",
-        "url": null,
-        "contact_email": null,
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7988,
-        "description": "Stop by 1.21 Gigawatts and go on a learning safari that just might change the course of your life! That’s right Marty, we’re going Back to the Future!\r\n\r\n1.21 GW will feature hosted content and one on one guidance sessions from experts. Don’t forget to stop by to write a letter to yourself to be delivered in the future!"
+    "id": 7230,
+    "description": "A pirate bohemia where merrymaking, gypsy lounging, dancing rhythms and mischief run aground.  Beware, it is futile to resist the 7 Siren’s call!  Now also including Fuego Karyoke Bar!",
+    "latitude": 40.7864564999999,
+    "longitude": -119.21706920285013
+  },
+  {
+    "time_address": null,
+    "location": "Esplanade & 8:45",
+    "name": "N-Toxicade",
+    "url": null,
+    "contact_email": null,
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "1 Million Dumplings",
-        "url": null,
-        "contact_email": "stan@loveeatshare.com",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7358,
-        "description": "Hot dumplings, cooking workshops, good music, yoga and chilling zone in \"1 Million Dumplings\" Camp on the Burning Man Festival."
+    "id": 7231,
+    "description": "We are a twisted arcade dedicated to messing with your perception of video games as an art form by either changing how you play the game or even the game itself.  Plus Booze... N-Toxicade!",
+    "latitude": 40.79028019999336,
+    "longitude": -119.21417509575376
+  },
+  {
+    "time_address": null,
+    "location": "8:30 & Esplanade",
+    "name": "Red Lightning",
+    "url": "http://www.redlightning.org",
+    "contact_email": "registration@redlightning.org",
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "404:// Village Not Found",
-        "url": null,
-        "contact_email": null,
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7184,
-        "description": "Void where prohibited."
+    "id": 7232,
+    "description": "Red Lightning- Arrow to Evolution\r\nRed Lightning was born out of a desire to bring balance and healing between the masculine and feminine on Earth as a first step towards a cosmic consciousness.  To learn more about who we are, what we do and what we are bringing to the Playa, visit us at www.redlightning.org\r\nSee you in the Dust!",
+    "latitude": 40.78987959999406,
+    "longitude": -119.21439267554196
+  },
+  {
+    "time_address": null,
+    "location": "5:39 & Carny",
+    "name": "Jerk Church",
+    "url": "http://www.jerkchurch.com/",
+    "contact_email": null,
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "7 Deadly Gins",
-        "url": "https://www.facebook.com/The7DeadlyGins",
-        "contact_email": "7deadlygins@gmail.com",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7626,
-        "description": "We are your ultimate Sundowner! Come enjoy a top-shelf, ice-cold gin & tonic in our famously lush desert oasis bar, chill  down under our misting system, and get your groove on to quality downtempo, soul, funk, disco & house. Plus, you won’t want to miss the Wednesday night Speak Sleazy Gin Tasting of boutique gins! And of course our beloved mascot - Special Ed, the vibrating, girating giraffe – will be souped up to new bone-jarring heights! It’s all happening Monday-Saturday; 3.30-6.30pm."
+    "id": 7233,
+    "description": "We gather at our cathedral to Break Bread, Share a Cup, and a Song. Sometimes we have weddings. Sometimes we run a bar. Sometimes we like to sit quietly and contemplate the true nature of the Jerk. All are welcome.",
+    "latitude": 40.77845830001357,
+    "longitude": -119.21368399946526
+  },
+  {
+    "time_address": null,
+    "location": "3:00 Public Plaza @ 2:45",
+    "name": "Tiki Hammock camp",
+    "url": null,
+    "contact_email": null,
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "7 Sins Lounge",
-        "url": null,
-        "contact_email": "campmaster@pacbell.net",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7131,
-        "description": "Come Embrace the Heat as the Playa's Friendliest Little Slice of Hell returns for the 15th straight year!\r\n\r\nDaytime brings what Sinners need - shade, chill music and slushy drinks.\r\n\r\nBut NIGHT brings what Sinners want - Flaming Libations and the ever popular WHEEL of SINS! Our highly skilled and dedicated staff will happily deliver absolution & encouragement with a FIRM hand! \r\n\r\nSo come earn your \"Get Out of HELL Free\" card and remember: \r\nStart your SINS at 7!"
+    "id": 7234,
+    "description": "Tiki Hammock Camp - Have a drink and relax in our climbable hammock art, meet and visit with other awesome burners!"
+  },
+  {
+    "time_address": null,
+    "location": "3:37 & Ersatz",
+    "name": "Alternative Energy Zone",
+    "url": "http://www.ae-zone.org",
+    "contact_email": "clay@nometer.com",
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "7 Sirens Cove",
-        "url": "http://7sirenscove.com",
-        "contact_email": "admin@7sirenscove.com",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7230,
-        "description": "A pirate bohemia where merrymaking, gypsy lounging, dancing rhythms and mischief run aground.  Beware, it is futile to resist the 7 Siren’s call!  Now also including Fuego Karyoke Bar!"
+    "id": 7235,
+    "description": "The AEZ is a generator free zone. If you like alternative energy, then welcome, you are invited to join our village of friendly folks. You will see and learn about solar panels, wind generators, solar ovens, solar showers, water cleaning,\r\n\r\nand meet people who can show YOU how to do this.",
+    "latitude": 40.776354100017166,
+    "longitude": -119.19982229336806
+  },
+  {
+    "time_address": null,
+    "location": "6:28 & Geek",
+    "name": "South Bay HardCORE Camp",
+    "url": "http://www.southbayburners.org",
+    "contact_email": "southbay@burningman.org",
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "ABC Alphabet Block Camp",
-        "url": "http://www.ccnv.us/abc15",
-        "contact_email": "abc@ccnv.us",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7151,
-        "description": "Manifesting your thoughts to the citizens of Black Rock City, one giant wooden block at a time. We'll help you have a great time on the playa. It's easy as ABC!"
+    "id": 7236,
+    "description": "South Bay HardCORE - the home of the South Bay Burners region.  Join us for our on-playa Meet & Greet and hear how to connect with fellow South Bay Burners year-round!",
+    "latitude": 40.78011960001074,
+    "longitude": -119.22034138323865
+  },
+  {
+    "time_address": null,
+    "location": "Arcade & 4:45",
+    "name": "RhythmWave",
+    "url": "http://www.rhythmwave.org/",
+    "contact_email": "info@rhythmwave.org",
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "Above The Limit",
-        "url": "http://www.campabovethelimit.com/",
-        "contact_email": "info@campabovethelimit.com",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 7647,
-        "description": "Welcome to Camp Above The Limit's Afterburner Lounge, where you can visit our exotic colorful space to enjoy snow cones, popcorn, water or libations at the bar, games (win a flight on the F-15!), event acculturation, or a nap on the comfy pillows. By night, have a seat by the twin fire cauldrons for warmth, conversation, marshmallows, and s'mores."
+    "id": 7237,
+    "description": "Proud to return to Black Rock City for our 9th consecutive year, the RhythmWave theme camp is dedicated to the practice of Conscious Dance as a moving meditation. With no experience necessary and no \"steps\" to learn, Conscious Dance provides a path - the destination is the discovery of ourselves and a return to our center.\r\n\r\nFacilitators from around the globe offer multiple daily sessions of Conscious Dance and movement on our 2,000 sq. ft., fully shaded and easily-accessible bamboo dance floor. RW also hosts morning yoga and meditation, as well as workshops and intention circles throughout the week. All citizens of Black Rock City are invited to bless the bamboo at RhythmWave. Please join us!",
+    "latitude": 40.77843640001361,
+    "longitude": -119.20767689836096
+  },
+  {
+    "time_address": null,
+    "location": "Arcade & 2:15",
+    "name": "Camp Luminoso",
+    "url": null,
+    "contact_email": null,
+    "year": {
+      "id": 11,
+      "year": "2015"
     },
-    {
-        "name": "New Fake Test Update Camp",
-        "url": "http://fake.com/",
-        "contact_email": "fake@fake.com",
-        "year": {
-            "id": 11,
-            "year": "2015"
-        },
-        "id": 12348709345,
-        "description": "Fake!!"
-    }
+    "id": 7238,
+    "description": "Camp Luminoso is a place where you can create your own lanterns.",
+    "latitude": 40.783315655759026,
+    "longitude": -119.19668142562656
+  }
 ]

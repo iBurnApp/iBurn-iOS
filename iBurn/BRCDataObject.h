@@ -46,7 +46,7 @@
  */
 @property (nonatomic, readonly) CLLocation *location;
 
-/** Same as location */
+/** Same as location (this property is dynamically generated) */
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
 
 /**

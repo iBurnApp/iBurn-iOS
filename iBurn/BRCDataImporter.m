@@ -269,9 +269,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                     [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
                         BRCEventObject *existingEvent = [transaction objectForKey:event.uniqueID inCollection:[[event class] collection]];
                         if (existingEvent) {
-                            existingEvent = [existingEvent copy];
-                            [existingEvent mergeValuesForKeysFromModel:event];
-                            event = existingEvent;
+                            event.isFavorite = existingEvent.isFavorite;
                         }
                         event.lastUpdated = updateInfo.lastUpdated;
                         [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
@@ -279,9 +277,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                 } else { // Art and Camps
                     BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
                     if (existingObject) {
-                        existingObject = [existingObject copy];
-                        [existingObject mergeValuesForKeysFromModel:object];
-                        object = existingObject;
+                        object.isFavorite = existingObject.isFavorite;
                     }
                     object.lastUpdated = updateInfo.lastUpdated;
                     [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];

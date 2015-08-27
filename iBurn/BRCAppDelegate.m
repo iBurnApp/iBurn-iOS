@@ -80,7 +80,9 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject collection]];
         NSLog(@"\n%d Art\n%d Camp\n%d Event", (int)artCount, (int)campCount, (int)eventCount);
         if (campCount == 0 || artCount == 0 || eventCount == 0) {
-            [self preloadExistingData];
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                [self preloadExistingData];
+            });
         }
     }];
     

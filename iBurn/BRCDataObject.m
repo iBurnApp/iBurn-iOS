@@ -95,14 +95,6 @@
     return distance;
 }
 
-- (void) mergeValueForKey:(NSString *)key fromModel:(id<MTLModel>)model {
-    // Don't overwrite favorites from merged model data
-    if ([key isEqualToString:NSStringFromSelector(@selector(isFavorite))]) {
-        return;
-    }
-    [super mergeValueForKey:key fromModel:model];
-}
-
 /// Determines how the +propertyKeys of the class are encoded into an archive.
 /// The values of this dictionary should be boxed MTLModelEncodingBehavior
 /// values.

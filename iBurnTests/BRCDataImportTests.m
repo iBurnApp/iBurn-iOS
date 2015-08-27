@@ -17,6 +17,12 @@
 #import "BRCUpdateInfo.h"
 #import "BRCDataImportTests.h"
 #import "BRCMapPoint.h"
+#import "BRCDataObject+Relationships.h"
+
+@interface BRCDataImportTests()
+@property (nonatomic, strong, readonly) NSString *relationshipsName;
+@end
+
 
 @implementation BRCDataImportTests
 
@@ -33,11 +39,23 @@
     XCTAssertNotNil(self.database);
     _connection = [self.database newConnection];
     XCTAssertNotNil(self.connection);
+    
+    BOOL success = [self registerRelationships];
+    
+    XCTAssertTrue(success);
+    
     [self setupDataImporterWithConnection:self.connection sessionConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.database];
+}
+
+- (BOOL) registerRelationships {
+    _relationshipsName = @"relationships";
+    BOOL success = [self.database registerExtension:[YapDatabaseRelationship new] withName:self.relationshipsName];
+    NSLog(@"Registered %@ %d", _relationshipsName, success);
+    return success;
 }
 
 - (void) setupDataImporterWithConnection:(YapDatabaseConnection*)connection
@@ -59,16 +77,6 @@
 }
 
 #pragma mark Tests
-
-// We don't want to overwrite favorites on data update
-- (void)testOverwriteFavorites {
-    BRCCampObject *camp1 = [[BRCCampObject alloc] init];
-    camp1.isFavorite = YES;
-    BRCCampObject *camp2 = [camp1 copy];
-    camp2.isFavorite = NO;
-    [camp1 mergeValuesForKeysFromModel:camp2];
-    XCTAssertTrue(camp1.isFavorite);
-}
 
 /** update.json URL for updated_data */
 + (NSURL*) testDataURL {
@@ -170,14 +178,44 @@
         // find something
         
         __block BRCArtObject *art1 = nil;
+        __block BRCCampObject *camp1 = nil;
+        __block NSArray *events1 = nil;
         
-        [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             art1 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject collection]];
+            camp1 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject collection]];
+            
+            art1.isFavorite = YES;
+            camp1.isFavorite = YES;
+            
+            events1 = [camp1 eventsWithTransaction:transaction];
+            
+            [events1 enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
+                event.isFavorite = YES;
+                [transaction setObject:event forKey:event.uniqueID inCollection:[BRCEventObject collection]];
+            }];
+            
+            [transaction setObject:art1 forKey:art1.uniqueID inCollection:[BRCArtObject collection]];
+            [transaction setObject:camp1 forKey:camp1.uniqueID inCollection:[BRCCampObject collection]];
         }];
         
         XCTAssertNotNil(art1);
+        XCTAssertNotNil(camp1);
         
         XCTAssertNil(art1.location);
+        XCTAssertNil(camp1.location);
+        
+        XCTAssertTrue(art1.isFavorite);
+        XCTAssertTrue(camp1.isFavorite);
+        
+        XCTAssert(events1.count > 0, "No events!");
+        
+        [events1 enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
+            XCTAssertTrue(event.isFavorite);
+            XCTAssertNil(event.location);
+        }];
+        
+        NSLog(@"initial objects: %@\n%@\n%@", art1, camp1, [events1 firstObject]);
         
         [self.importer loadUpdatesFromURL:updatedURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
             NSLog(@"**** Second update...");
@@ -186,14 +224,33 @@
             // see if it was updated
             
             __block BRCArtObject *art2 = nil;
+            __block BRCCampObject *camp2 = nil;
+            __block NSArray *events2 = nil;
             
             [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
                 art2 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject collection]];
+                camp2 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject collection]];
+                events2 = [camp2 eventsWithTransaction:transaction];
             }];
             
             XCTAssertNotNil(art2);
+            XCTAssertNotNil(camp2);
             
             XCTAssertNotNil(art2.location);
+            XCTAssertNotNil(camp2.location);
+            
+            XCTAssertTrue(art2.isFavorite);
+            XCTAssertTrue(camp2.isFavorite);
+            
+            XCTAssert(events2.count > 0, "No events!");
+            
+            [events2 enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
+                XCTAssertTrue(event.isFavorite);
+                XCTAssertNotNil(event.location);
+            }];
+
+            
+            NSLog(@"updated objects: %@\n%@\n%@", art2, camp2, [events2 firstObject]);
             
             [self.expectation fulfill];
         }];

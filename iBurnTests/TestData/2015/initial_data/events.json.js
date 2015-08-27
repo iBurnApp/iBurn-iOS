@@ -779,5 +779,46 @@
             "abbr": "prty",
             "label": "Gathering/Party"
         }
+    },
+    {
+        "hosted_by_camp": {
+            "name": "7 Sirens Cove",
+            "id": 7230
+        },
+        "occurrence_set": [
+            {
+                "start_time": "2015-09-01 14:00:00",
+                "end_time": "2015-09-01 16:00:00"
+            },
+            {
+                "start_time": "2015-09-02 14:00:00",
+                "end_time": "2015-09-02 16:00:00"
+            },
+            {
+                "start_time": "2015-09-03 14:00:00",
+                "end_time": "2015-09-03 16:00:00"
+            },
+            {
+                "start_time": "2015-09-04 14:00:00",
+                "end_time": "2015-09-04 16:00:00"
+            }
+        ],
+        "description": "Daily family friendly fun with the 7 Sirens - Pirate lounging and games, kid-friendly play area and shaded hammock dome, face painting and pirate \"tattoos\", snow cones, drinks for kids and parents too at Fuego bar and KARYOKE! We also plan to have special pirate art car visits :)",
+        "title": "Family time at the Cove",
+        "url": "",
+        "year": {
+            "id": 11,
+            "year": "2015"
+        },
+        "all_day": false,
+        "id": 15270,
+        "print_description": "Daily family friendly fun with the 7 Sirens",
+        "check_location": false,
+        "slug": "family-time-at-the-cove",
+        "other_location": "",
+        "event_type": {
+            "abbr": "kid",
+            "label": "Kid-friendly"
+        }
     }
 ]

@@ -36,6 +36,7 @@
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
+		D9119A4C1B853A5A0070443E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -68,7 +69,6 @@
 		D9941568198726A700D245C7 /* BRCArtObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941567198726A700D245C7 /* BRCArtObject.m */; };
 		D994156B198726B600D245C7 /* BRCCampObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156A198726B600D245C7 /* BRCCampObject.m */; };
 		D994156E198726C100D245C7 /* BRCEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156D198726C100D245C7 /* BRCEventObject.m */; };
-		D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
 		D99A61581B2A0AAD009CC09E /* Pods-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-acknowledgements.plist */; };
@@ -933,6 +933,7 @@
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
+				D9119A4C1B853A5A0070443E /* BRCDataImporter.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */,
@@ -952,7 +953,6 @@
 				D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */,
 				D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */,
 				D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */,
-				D9941571198726F400D245C7 /* BRCDataImporter.m in Sources */,
 				63228321198AB383009E472B /* RMMarker+iBurn.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,
 				D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */,
