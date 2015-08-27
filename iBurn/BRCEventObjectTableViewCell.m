@@ -20,7 +20,13 @@
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
     NSDate *now = [NSDate date];
     if (eventObject.isAllDay) {
-        self.rightSubtitleLabel.text = @"All Day";
+        NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventObject.startDate];
+        NSString *timeString = nil;
+        if (dayOfWeekLetter.length >= 3) {
+            NSString *firstLetter = [dayOfWeekLetter substringToIndex:3];
+            timeString = [NSString stringWithFormat:@"%@ (All Day)", firstLetter];
+        }
+        self.rightSubtitleLabel.text = timeString;
     } else if ([eventObject isStartingSoon:now]) {
         NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
         NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
