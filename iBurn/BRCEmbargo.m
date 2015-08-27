@@ -49,7 +49,8 @@
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject
 {
     if (![BRCEmbargo allowEmbargoedData]) {
-        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]]) {
+        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
+            [dataObject isKindOfClass:[BRCArtObject class]]) {
             return NO;
         }
     }

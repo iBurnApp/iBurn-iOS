@@ -37,6 +37,7 @@
 #import "NSBundle+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
+#import "BRCDataImporter_Private.h"
 @import Onboard;
 @import PermissionScope;
 
@@ -67,24 +68,26 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
     
-    [self.dataImporter doubleCheckMapTiles:nil];
-    
-    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:nil];
-    
     [self setupFestivalDates];
     
-    [[BRCDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+    [self.dataImporter doubleCheckMapTiles:nil];
+    
+    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject collection]];
         NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject collection]];
         NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject collection]];
-        NSLog(@"\n%d Art\n%d Camp\n%d Event", (int)artCount, (int)campCount, (int)eventCount);
-        if (campCount == 0 || artCount == 0 || eventCount == 0) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                [self preloadExistingData];
-            });
-        }
+        NSLog(@"Existing data: \n%d Art\n%d Camp\n%d Event", (int)artCount, (int)campCount, (int)eventCount);
     }];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSLog(@"Loading bundled data...");
+        [self preloadExistingData];
+        NSLog(@"Loading data from internet...");
+        NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+        [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
+            NSLog(@"Fetched data from internet with result: %d", (int)result);
+        }];
+    });
     
     [RMConfiguration sharedInstance].accessToken = @"";
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
@@ -308,6 +311,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:^(UIBackgroundFetchResult result) {
         NSLog(@"Attempted to load pre-existing data with result %d", (int)result);
     }];
+    [self.dataImporter waitForDataUpdatesToFinish];
+    NSLog(@"Finished loading pre-existing data");
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
