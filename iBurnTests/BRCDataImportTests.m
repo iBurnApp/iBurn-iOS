@@ -154,6 +154,59 @@
     }];
 }
 
+/** Tests whether or not the new data is loaded correctly */
+- (void) testUpdateData {
+    _expectation = [self expectationWithDescription:@"update data"];
+    NSURL *initialUpdateURL = [[self class] testDataURLForDirectory:@"initial_data"];
+    XCTAssertNotNil(initialUpdateURL);
+    
+    NSURL *updatedURL = [[self class] testDataURLForDirectory:@"updated_data"];
+    XCTAssertNotNil(updatedURL);
+    
+    [self.importer loadUpdatesFromURL:initialUpdateURL fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
+        NSLog(@"**** First update...");
+        [self.importer waitForDataUpdatesToFinish];
+        
+        // find something
+        
+        __block BRCArtObject *art1 = nil;
+        
+        [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+            art1 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject collection]];
+        }];
+        
+        XCTAssertNotNil(art1);
+        
+        XCTAssertNil(art1.location);
+        
+        [self.importer loadUpdatesFromURL:updatedURL  fetchResultBlock:^(UIBackgroundFetchResult fetchResult) {
+            NSLog(@"**** Second update...");
+            [self.importer waitForDataUpdatesToFinish];
+            
+            // see if it was updated
+            
+            __block BRCArtObject *art2 = nil;
+            
+            [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+                art2 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject collection]];
+            }];
+            
+            XCTAssertNotNil(art2);
+            
+            XCTAssertNotNil(art2.location);
+            
+            [self.expectation fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Error: %@", error);
+        }
+    }];
+}
+
+#pragma mark Utility
+
 - (void) loadDataFromFile:(NSString*)file dataClass:(Class)dataClass {
     BRCUpdateInfo *updateInfo = [[BRCUpdateInfo alloc] init];
     updateInfo.dataType = [BRCUpdateInfo dataTypeForClass:dataClass];
@@ -179,7 +232,6 @@
     }];
 }
 
-#pragma mark Utility
 
 - (void) printCollectionInfo {
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
