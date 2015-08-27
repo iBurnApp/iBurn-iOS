@@ -43,7 +43,6 @@
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
 		D92B959A1B7B0CC300116781 /* 2015 in Resources */ = {isa = PBXBuildFile; fileRef = D92B95991B7B0CC300116781 /* 2015 */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
-		D94D97D41B8FC425008FC86E /* iBurn-2015 in Resources */ = {isa = PBXBuildFile; fileRef = D9C30F731B83118200CD03CC /* iBurn-2015 */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
@@ -787,7 +786,6 @@
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
-				D94D97D41B8FC425008FC86E /* iBurn-2015 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
