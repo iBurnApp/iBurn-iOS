@@ -221,8 +221,11 @@ static const CGFloat kDayPickerHeight = 65.0f;
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    BRCEventObjectTableViewCell *cell = (BRCEventObjectTableViewCell*)[super tableView:tableView cellForRowAtIndexPath:indexPath];
-    cell.locationLabel.hidden = NO;
+    UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
+    if ([cell isKindOfClass:[BRCEventObjectTableViewCell class]]) {
+        BRCEventObjectTableViewCell *eventCell = (BRCEventObjectTableViewCell*)cell;
+        eventCell.locationLabel.hidden = NO;
+    }
     return cell;
 }
 
