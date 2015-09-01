@@ -129,6 +129,9 @@
         [[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode]) {
         fullLabelString = [[NSMutableAttributedString alloc] initWithString:@"Location Data Unlocked!"];
         [self.countdownTimer invalidate];
+        self.passcodeTextField.hidden = YES;
+        self.unlockBotton.hidden = YES;
+        self.noPasscodeButton.hidden = YES;
     } else {
         // Get conversion to months, days, hours, minutes
         unsigned int unitFlags = NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitDay | NSCalendarUnitSecond;

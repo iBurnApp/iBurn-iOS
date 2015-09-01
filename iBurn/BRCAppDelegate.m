@@ -262,7 +262,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     creditsNav.tabBarItem.image = [UIImage imageNamed:@"BRCCreditsIcon"];
     
     self.tabBarController = [[UITabBarController alloc] init];
-    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, unlockVC, creditsNav, debugNav];
+    if ([BRCEmbargo allowEmbargoedData]) {
+        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, creditsNav, debugNav];
+    } else {
+        self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, artNavController, campNavController, unlockVC, creditsNav, debugNav];
+    }
     self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;
 }
