@@ -32,15 +32,10 @@
         NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:endDuration];
         self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
     } else if ([eventObject hasEnded:now] && [eventObject hasStarted:now]) {
-        self.rightSubtitleLabel.text = @"Expired";
+        NSString *text = [self defaultEventText:eventObject];
+        self.rightSubtitleLabel.text = text;
     } else { // Starts in long time
-        NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
-        NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
-        NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
-        NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventObject.startDate];
-        NSString *firstLetter = [dayOfWeekLetter substringToIndex:3];
-        NSString *timeString = [[NSString stringWithFormat:@"%@ (%@)", startTime, durationString] lowercaseString];
-        NSString *text = [NSString stringWithFormat:@"%@ %@", firstLetter, timeString];
+        NSString *text = [self defaultEventText:eventObject];
         self.rightSubtitleLabel.text = text;
     }
     UIColor *eventStatusColor = [eventObject colorForEventStatus:now];
@@ -51,6 +46,17 @@
     }
     self.eventTypeLabel.text = eventType;
     [self setupLocationLabelFromEvent:eventObject];
+}
+
+- (NSString*) defaultEventText:(BRCEventObject*)eventObject {
+    NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
+    NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
+    NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
+    NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventObject.startDate];
+    NSString *firstLetter = [dayOfWeekLetter substringToIndex:3];
+    NSString *timeString = [[NSString stringWithFormat:@"%@ (%@)", startTime, durationString] lowercaseString];
+    NSString *text = [NSString stringWithFormat:@"%@ %@", firstLetter, timeString];
+    return text;
 }
 
 - (void) setupLocationLabelFromEvent:(BRCEventObject*)eventObject {

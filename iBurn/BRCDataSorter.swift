@@ -11,13 +11,13 @@ import UIKit
 public class BRCDataSorterOptions {
     public var showExpiredEvents: Bool
     public var showFutureEvents: Bool
-    /** Otherwise they are sorted by title */
-    public var sortEventsByStartTime: Bool
+    /** Default true. Puts expired events at bottom. */
+    public var sortEventsWithExpiration: Bool
     public var now: NSDate
     public init () {
         showExpiredEvents = false
         showFutureEvents = false
-        sortEventsByStartTime = true
+        sortEventsWithExpiration = true
         now = NSDate()
     }
 }
@@ -56,10 +56,20 @@ public class BRCDataSorter: NSObject {
                 if !opt.showFutureEvents {
                     events = events.filter { $0.isStartingSoon(opt.now) }
                 }
-                if opt.sortEventsByStartTime {
-                    events.sort { $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow }
+                if opt.sortEventsWithExpiration {
+                    var expiredEvents = events.filter { $0.hasEnded(opt.now) }
+                    var nonExpired = events.filter { !$0.hasEnded(opt.now) }
+                    expiredEvents.sort {
+                        $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
+                    }
+                    nonExpired.sort {
+                        $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
+                    }
+                    events = nonExpired + expiredEvents
                 } else {
-                    events.sort { $0.title < $1.title }
+                    events.sort {
+                        $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
+                    }
                 }
                 camps.sort { $0.title < $1.title }
                 art.sort { $0.title < $1.title }
