@@ -22,7 +22,7 @@ PODS:
     - JRSwizzle (~> 1.0)
   - HockeySDK-Source (3.7.1)
   - JRSwizzle (1.0)
-  - JSQWebViewController (1.0.0)
+  - JSQWebViewController (3.0.0)
   - KVOController (1.0.3)
   - Mantle (2.0.3):
     - Mantle/extobjc (= 2.0.3)
@@ -34,7 +34,7 @@ PODS:
   - Onboard (2.1.6)
   - Parse (1.7.5.3):
     - Bolts/Tasks (>= 1.2.0)
-  - PermissionScope (0.7)
+  - PermissionScope (1.0.2)
   - pop (1.0.7)
   - PureLayout (2.0.6)
   - SMCalloutView (2.1.2)
@@ -52,17 +52,17 @@ DEPENDENCIES:
   - BButton (~> 4.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
-  - DOFavoriteButton (~> 0.0)
+  - DOFavoriteButton (from `https://github.com/okmr-d/DOFavoriteButton.git`)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - HockeySDK-Source (~> 3.7)
-  - JSQWebViewController (~> 1.0)
+  - JSQWebViewController (~> 3.0)
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (from `Podspecs/Mapbox-iOS-SDK.podspec`)
   - Onboard (~> 2.1)
   - Parse (~> 1.7)
-  - PermissionScope (~> 0.7)
+  - PermissionScope (~> 1.0)
   - pop (~> 1.0)
   - PureLayout (~> 2.0)
   - TTTAttributedLabel (~> 1.13)
@@ -73,8 +73,15 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   ASDayPicker:
     :path: Submodules/ASDayPicker/ASDayPicker.podspec
+  DOFavoriteButton:
+    :git: https://github.com/okmr-d/DOFavoriteButton.git
   Mapbox-iOS-SDK:
     :podspec: Podspecs/Mapbox-iOS-SDK.podspec
+
+CHECKOUT OPTIONS:
+  DOFavoriteButton:
+    :commit: a77045870c00af4dc7c1808397fdb482caf9775d
+    :git: https://github.com/okmr-d/DOFavoriteButton.git
 
 SPEC CHECKSUMS:
   Appirater: e7c0a47fb67ee5041ce8479e6ba960927fb40264
@@ -90,13 +97,13 @@ SPEC CHECKSUMS:
   GRMustache: ebe6104fd30a6d22c1f36af131e19e2dbf7cd292
   HockeySDK-Source: d620f330b23691017c141de6e25e5cdc8c67848c
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
-  JSQWebViewController: f984cd7091b97a5a9e5f346c4eec23cf8440cb5e
+  JSQWebViewController: eaa6bd68d9e1426ae25ade99c9bbde4c6cdd4120
   KVOController: 9fd8f0343670994e4b6f9f0b31f5a45663f3e1cf
   Mantle: 8d6b14979a082a9ed4994463eb7a4ff576c94632
   Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
   Onboard: 82eb38429c7ab372fbd352be6a16e429d8847d4e
   Parse: 373adbb1ad2e34d383542c3b28f678c49ebe4881
-  PermissionScope: 1d27791185cca10c26f84d1aab905117dde50f39
+  PermissionScope: 860828c5516d349b6f49e5491799cfef33c5ccc7
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d
   SMCalloutView: 4078d89b847731e514b1a919fed33b383a24a106
@@ -105,4 +112,4 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
   YapDatabase: 814f9ff862a95c1e581d93335a4020482b69155b
 
-COCOAPODS: 0.38.2
+COCOAPODS: 0.39.0

@@ -20,7 +20,7 @@ class BRCEventsViewController: BRCSortedViewController {
         emptyDetailText = "Looks like there's no listed events."
     }
     
-    required init!(coder aDecoder: NSCoder!) {
+    required init!(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
 

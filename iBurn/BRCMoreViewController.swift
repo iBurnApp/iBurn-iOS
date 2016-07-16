@@ -153,7 +153,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     
     // MARK: - SKStoreProductViewControllerDelegate
     
-    func productViewControllerDidFinish(viewController: SKStoreProductViewController!) {
+    func productViewControllerDidFinish(viewController: SKStoreProductViewController) {
         viewController.dismissViewControllerAnimated(true, completion: nil)
     }
     

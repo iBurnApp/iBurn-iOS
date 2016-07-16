@@ -17,12 +17,13 @@ public class BRCPermissions: NSObject {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Location"
         pscope.bodyLabel.text = "iBurn is best with location!"
-        pscope.addPermission(PermissionConfig(type: .LocationInUse, demands: .Required, message: "Seriously, it's the way to go."))
-        pscope.show(authChange: { (finished, results) -> Void in
+        
+        pscope.addPermission(LocationWhileInUsePermission(), message: "Seriously, it's the way to go.")
+        pscope.show({ (finished, results) -> Void in
             completion()
-            println("got results \(results)")
+            print("got results \(results)")
         }) { (results) -> Void in
-            println("thing was cancelled")
+            print("thing was cancelled")
         }
     }
     
@@ -31,12 +32,12 @@ public class BRCPermissions: NSObject {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"
-        pscope.addPermission(PermissionConfig(type: .Notifications, demands: .Required, message: "Don't forget to live in the moment."))
-        pscope.show(authChange: { (finished, results) -> Void in
-            println("got results \(results)")
+        pscope.addPermission(NotificationsPermission(), message: "Don't forget to live in the moment.")
+        pscope.show({ (finished, results) -> Void in
+            print("got results \(results)")
             completion()
             }) { (results) -> Void in
-            println("thing was cancelled")
+            print("thing was cancelled")
         }
     }
 }

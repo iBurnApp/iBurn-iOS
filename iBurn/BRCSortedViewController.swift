@@ -57,7 +57,7 @@ public class BRCSortedViewController: UITableViewController {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
 
-    public required init!(coder aDecoder: NSCoder!) {
+    public required init!(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     
@@ -112,7 +112,7 @@ public class BRCSortedViewController: UITableViewController {
         }
         if let location = getCurrentLocation() {
             BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
-                if count(locationString) > 0 {
+                if locationString.characters.count > 0 {
                     let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
                     let label = UILabel()
                     label.attributedText = attrString
@@ -154,7 +154,7 @@ public class BRCSortedViewController: UITableViewController {
             sections.append(campsSection)
         }
         self.sections = sections
-        if count(sections) == 0 && self.extensionRegistered {
+        if sections.count == 0 && self.extensionRegistered {
             self.emptyListText = EmptyListLabelText.Nothing
         }
         completion()

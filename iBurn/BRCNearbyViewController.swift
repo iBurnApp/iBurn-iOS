@@ -23,7 +23,7 @@ class BRCNearbyViewController: BRCSortedViewController {
         emptyDetailText = "Try a bigger search area."
     }
     
-    required init!(coder aDecoder: NSCoder!) {
+    required init!(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     
@@ -84,8 +84,8 @@ class BRCNearbyViewController: BRCSortedViewController {
     
     func setupTableHeaderView() {
         tableHeaderLabel.textAlignment = NSTextAlignment.Left
-        tableHeaderLabel.setTranslatesAutoresizingMaskIntoConstraints(false)
-        distanceStepper.setTranslatesAutoresizingMaskIntoConstraints(false)
+        tableHeaderLabel.translatesAutoresizingMaskIntoConstraints = false
+        distanceStepper.translatesAutoresizingMaskIntoConstraints = false
         setupDistanceStepper()
         tableHeaderView.addSubview(tableHeaderLabel)
         tableHeaderView.addSubview(distanceStepper)
@@ -94,8 +94,8 @@ class BRCNearbyViewController: BRCSortedViewController {
         tableHeaderLabel.autoPinEdgeToSuperviewMargin(ALEdge.Left)
         distanceStepper.autoAlignAxisToSuperviewMarginAxis(ALAxis.Horizontal)
         distanceStepper.autoPinEdgeToSuperviewMargin(ALEdge.Right)
-        tableHeaderView.setTranslatesAutoresizingMaskIntoConstraints(true)
-        tableHeaderView.autoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth
+        tableHeaderView.translatesAutoresizingMaskIntoConstraints = true
+        tableHeaderView.autoresizingMask = [ .FlexibleHeight, .FlexibleWidth ]
         refreshTableHeaderView()
     }
     
@@ -105,7 +105,7 @@ class BRCNearbyViewController: BRCSortedViewController {
         distanceStepper.maximumValue = 3200 // approx 2 miles
         distanceStepper.value = searchDistance
         distanceStepper.stepValue = 150
-        distanceStepper.addTarget(self, action: Selector("stepperValueChanged:"), forControlEvents: UIControlEvents.ValueChanged)
+        distanceStepper.addTarget(self, action: #selector(BRCNearbyViewController.stepperValueChanged(_:)), forControlEvents: UIControlEvents.ValueChanged)
     }
     
     func stepperValueChanged(sender: AnyObject?) {

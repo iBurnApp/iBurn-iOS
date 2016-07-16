@@ -36,7 +36,7 @@ class BRCCreditsViewController: UITableViewController {
         super.init(style: UITableViewStyle.Grouped)
     }
 
-    required init!(coder aDecoder: NSCoder!) {
+    required init!(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     
@@ -50,14 +50,16 @@ class BRCCreditsViewController: UITableViewController {
         let dataBundle = NSBundle.brc_dataBundle()
         let creditsURL = dataBundle.URLForResource("credits", withExtension:"json")
         let creditsData = NSData(contentsOfURL: creditsURL!)
-        var error: NSError? = nil
-        let creditsArray: NSArray = NSJSONSerialization.JSONObjectWithData(creditsData!, options: nil, error: &error) as! NSArray
-        let creditsInfo = MTLJSONAdapter.modelsOfClass(
-            BRCCreditsInfo.self,
-            fromJSONArray: creditsArray as [AnyObject],
-            error: &error)
-        self.creditsInfoArray = creditsInfo as! [BRCCreditsInfo]
-        assert(self.creditsInfoArray.count > 0, "Empty credits info!")
+        do {
+            if let creditsArray = try NSJSONSerialization.JSONObjectWithData(creditsData!, options:NSJSONReadingOptions()) as? NSArray {
+                let creditsInfo = try MTLJSONAdapter.modelsOfClass(BRCCreditsInfo.self,fromJSONArray: creditsArray as [AnyObject])
+                self.creditsInfoArray = creditsInfo as! [BRCCreditsInfo]
+                assert(self.creditsInfoArray.count > 0, "Empty credits info!")
+            }
+        } catch {
+            
+        }
+        
         
         self.tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
         self.tableView.rowHeight = 55
@@ -95,7 +97,7 @@ class BRCCreditsViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(SubtitleCell.kReuseIdentifier, forIndexPath: indexPath) as! UITableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier(SubtitleCell.kReuseIdentifier, forIndexPath: indexPath) 
         // style cell
         cell.textLabel!.font = UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
         cell.detailTextLabel!.font = UIFont.preferredFontForTextStyle(UIFontTextStyleSubheadline)

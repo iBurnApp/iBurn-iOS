@@ -15,7 +15,7 @@ class BRCFavoritesViewController: BRCSortedViewController {
         emptyDetailText = "Favorite things to see them here."
     }
     
-    required init!(coder aDecoder: NSCoder!) {
+    required init!(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     

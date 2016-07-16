@@ -18,7 +18,7 @@ public class BRCDistanceView: UIView {
     public init(frame: CGRect, destination aDestination: CLLocation) {
         destination = aDestination
         super.init(frame: frame)
-        distanceLabel.setTranslatesAutoresizingMaskIntoConstraints(false)
+        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(distanceLabel)
         distanceLabel.autoPinEdgesToSuperviewEdgesWithInsets(UIEdgeInsetsZero)
         backgroundColor = UIColor.clearColor()
@@ -33,7 +33,7 @@ public class BRCDistanceView: UIView {
         self.frame = CGRectMake(frame.origin.x, frame.origin.y, distanceLabel.frame.size.width, distanceLabel.frame.size.height)
     }
 
-    required public init(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         destination = CLLocation()
         super.init(coder: aDecoder)
     }
