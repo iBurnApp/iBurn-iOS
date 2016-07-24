@@ -11,11 +11,9 @@ PODS:
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
   - DOFavoriteButton (0.0.4)
-  - FMDB (2.5):
-    - FMDB/standard (= 2.5)
-  - FMDB/common (2.5)
-  - FMDB/standard (2.5):
-    - FMDB/common
+  - FMDB (2.6.2):
+    - FMDB/standard (= 2.6.2)
+  - FMDB/standard (2.6.2)
   - FormatterKit/LocationFormatter (1.8.0)
   - FormatterKit/TimeIntervalFormatter (1.8.0)
   - GRMustache (7.3.2):
@@ -27,17 +25,17 @@ PODS:
   - Mantle (2.0.3):
     - Mantle/extobjc (= 2.0.3)
   - Mantle/extobjc (2.0.3)
-  - Mapbox-iOS-SDK (1.6.1):
-    - FMDB (~> 2.5)
-    - GRMustache (~> 7.3)
-    - SMCalloutView (~> 2.1)
+  - Mapbox-iOS-SDK (1.6.2):
+    - FMDB (= 2.6.2)
+    - GRMustache (= 7.3.2)
+    - SMCalloutView (= 2.1.5)
   - Onboard (2.1.6)
   - Parse (1.7.5.3):
     - Bolts/Tasks (>= 1.2.0)
   - PermissionScope (1.0.2)
   - pop (1.0.7)
   - PureLayout (2.0.6)
-  - SMCalloutView (2.1.2)
+  - SMCalloutView (2.1.5)
   - TTTAttributedLabel (1.13.4)
   - TUSafariActivity (1.0.4)
   - VTAcknowledgementsViewController (0.14)
@@ -59,7 +57,7 @@ DEPENDENCIES:
   - JSQWebViewController (~> 3.0)
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
-  - Mapbox-iOS-SDK (from `Podspecs/Mapbox-iOS-SDK.podspec`)
+  - Mapbox-iOS-SDK (from `Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec`)
   - Onboard (~> 2.1)
   - Parse (~> 1.7)
   - PermissionScope (~> 1.0)
@@ -76,7 +74,7 @@ EXTERNAL SOURCES:
   DOFavoriteButton:
     :git: https://github.com/okmr-d/DOFavoriteButton.git
   Mapbox-iOS-SDK:
-    :podspec: Podspecs/Mapbox-iOS-SDK.podspec
+    :path: Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec
 
 CHECKOUT OPTIONS:
   DOFavoriteButton:
@@ -92,7 +90,7 @@ SPEC CHECKSUMS:
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
-  FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
+  FMDB: 854a0341b4726e53276f2a8996f06f1b80f9259a
   FormatterKit: bddde83e054edf9d9ee14f9de3b3a5103db256f4
   GRMustache: ebe6104fd30a6d22c1f36af131e19e2dbf7cd292
   HockeySDK-Source: d620f330b23691017c141de6e25e5cdc8c67848c
@@ -100,16 +98,18 @@ SPEC CHECKSUMS:
   JSQWebViewController: eaa6bd68d9e1426ae25ade99c9bbde4c6cdd4120
   KVOController: 9fd8f0343670994e4b6f9f0b31f5a45663f3e1cf
   Mantle: 8d6b14979a082a9ed4994463eb7a4ff576c94632
-  Mapbox-iOS-SDK: a667f0a5d6b9a85c59aa87313d9e582100f2a95c
+  Mapbox-iOS-SDK: 0536357b73e2211a619bb9b5c5a5105da730bfb7
   Onboard: 82eb38429c7ab372fbd352be6a16e429d8847d4e
   Parse: 373adbb1ad2e34d383542c3b28f678c49ebe4881
   PermissionScope: 860828c5516d349b6f49e5491799cfef33c5ccc7
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   PureLayout: f25f0bb904d5ccfe6e31da3cb869185259f02e0d
-  SMCalloutView: 4078d89b847731e514b1a919fed33b383a24a106
+  SMCalloutView: 5c0ee363dc8e7204b2fda17dfad38c93e9e23481
   TTTAttributedLabel: 0a2ac7b2dd726d32a070dafb01446026b11e624f
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   VTAcknowledgementsViewController: 11a869dd69598a852f12699aeaf36e2589d3fc1b
   YapDatabase: 814f9ff862a95c1e581d93335a4020482b69155b
 
-COCOAPODS: 0.39.0
+PODFILE CHECKSUM: 0a2522156889016008444a10435e373886c7683d
+
+COCOAPODS: 1.0.1

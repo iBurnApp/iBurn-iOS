@@ -5,6 +5,7 @@
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
     "C7308312FB6185A9F6A5C771209FC2DEA9E93C4E" : 0,
+    "D2343A3007C64EB665FE967B12B8E23F14C116CD" : 0,
     "F0DAF2A64627A921A366B16481BCFBEB467F68B6" : 0,
     "00C8F6554FA404FC771F59E32BE27BC2793D9BB4" : 0,
     "7C64370163732922C86066115D3D4E6E7428905C" : 0
@@ -12,12 +13,13 @@
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "7DCC6A07-814A-4151-9FFD-47F96F174A78",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
     "C7308312FB6185A9F6A5C771209FC2DEA9E93C4E" : "iBurn-iOS\/Submodules\/iBurn-Data",
+    "D2343A3007C64EB665FE967B12B8E23F14C116CD" : "iBurn-iOS\/Submodules\/mapbox-ios-sdk\/",
     "F0DAF2A64627A921A366B16481BCFBEB467F68B6" : "iBurn-iOS",
     "00C8F6554FA404FC771F59E32BE27BC2793D9BB4" : "iBurn-iOS\/Submodules\/DOFavoriteButton\/",
     "7C64370163732922C86066115D3D4E6E7428905C" : "iBurn-iOS\/Submodules\/ASDayPicker\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "iBurn",
-  "DVTSourceControlWorkspaceBlueprintVersion" : 203,
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
   "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "iBurn.xcworkspace",
   "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
     {
@@ -34,6 +36,11 @@
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/github.com\/Burning-Man-Earth\/iBurn-Data.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C7308312FB6185A9F6A5C771209FC2DEA9E93C4E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:Burning-Man-Earth\/mapbox-ios-sdk.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D2343A3007C64EB665FE967B12B8E23F14C116CD"
     },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/github.com\/Burning-Man-Earth\/iBurn-iOS.git",

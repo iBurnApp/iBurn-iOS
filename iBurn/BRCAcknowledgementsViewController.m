@@ -25,7 +25,8 @@
 @implementation BRCAcknowledgementsViewController
 
 - (instancetype) initWithHeaderLabel:(TTTAttributedLabel*)headerLabel {
-    if (self = [super initWithAcknowledgementsPlistPath:[[self class] defaultAcknowledgementsPlistPath]]) {
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"Pods-iBurnAbstract-iBurn-acknowledgements" ofType:@"plist"];
+    if (self = [super initWithAcknowledgementsPlistPath:path]) {
         self.headerText = headerLabel.text;
         self.headerLabel = headerLabel;
         self.headerLabel.delegate = self;

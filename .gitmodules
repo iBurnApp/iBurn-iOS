@@ -7,3 +7,6 @@
 [submodule "Submodules/ASDayPicker"]
 	path = Submodules/ASDayPicker
 	url = git@github.com:chrisballinger/ASDayPicker.git
+[submodule "Submodules/mapbox-ios-sdk"]
+	path = Submodules/mapbox-ios-sdk
+	url = git@github.com:Burning-Man-Earth/mapbox-ios-sdk.git
