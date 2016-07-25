@@ -40,6 +40,7 @@
 #import "BRCDataImporter_Private.h"
 @import Onboard;
 @import PermissionScope;
+@import AVFoundation;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
@@ -513,7 +514,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     onboardingVC.shouldFadeTransitions = YES;
     onboardingVC.fadePageControlOnLastPage = YES;
     onboardingVC.stopMoviePlayerWhenDisappear = YES;
-    onboardingVC.moviePlayerController.scalingMode = MPMovieScalingModeAspectFill;
+    onboardingVC.moviePlayerController.videoGravity = AVLayerVideoGravityResizeAspect;
     
     // If you want to allow skipping the onboarding process, enable skipping and set a block to be executed
     // when the user hits the skip button.

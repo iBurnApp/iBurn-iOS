@@ -35,6 +35,8 @@
 #import "BRCUserMapPoint.h"
 @import KVOController;
 @import Parse;
+@import YapDatabase.YapDatabaseView;
+@import YapDatabase.YapDatabaseFullTextSearch;
 #import "iBurn-Swift.h"
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;

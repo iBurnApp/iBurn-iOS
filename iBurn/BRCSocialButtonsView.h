@@ -7,7 +7,7 @@
 //
 
 @import UIKit;
-@import BButton;
+@class BButton;
 
 @interface BRCSocialButtonsView : UIView
 

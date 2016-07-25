@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import YapDatabase.YapDatabaseView
 
 class BRCFavoritesViewController: BRCSortedViewController {
 

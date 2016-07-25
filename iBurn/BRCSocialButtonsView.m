@@ -10,6 +10,7 @@
 #import "PureLayout.h"
 #import "NSURL+iBurn.h"
 #import "BRCAppDelegate.h"
+@import BButton;
 
 static CGFloat kBRCSocialButtonHeight = 30.0f;
 static CGFloat kBRCSocialButtonWidth = 93.0f;

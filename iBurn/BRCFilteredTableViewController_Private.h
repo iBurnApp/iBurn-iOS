@@ -7,6 +7,7 @@
 //
 
 #import "BRCFilteredTableViewController.h"
+@import YapDatabase.YapDatabaseView;
 
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UISearchController *searchController;

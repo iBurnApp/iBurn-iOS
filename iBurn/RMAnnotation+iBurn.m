@@ -8,6 +8,7 @@
 
 #import "RMAnnotation+iBurn.h"
 #import "BRCUserMapPoint.h"
+#import <Mapbox_iOS_SDK/Mapbox.h>
 
 @implementation RMAnnotation (iBurn)
 

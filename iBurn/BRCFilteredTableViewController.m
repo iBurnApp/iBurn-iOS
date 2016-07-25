@@ -8,6 +8,7 @@
 
 #import "BRCFilteredTableViewController.h"
 @import YapDatabase;
+@import YapDatabase.YapDatabaseSearchResultsView;
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
 #import "BRCDetailViewController.h"

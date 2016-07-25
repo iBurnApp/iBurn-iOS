@@ -18,7 +18,7 @@
 #import "BRCEventsFilterTableViewController.h"
 #import "NSUserDefaults+iBurn.h"
 #import "ASDayPicker.h"
-#import "FBKVOController.h"
+#import <KVOController/NSObject+FBKVOController.h>
 #import "PureLayout.h"
 
 static const CGFloat kDayPickerHeight = 65.0f;

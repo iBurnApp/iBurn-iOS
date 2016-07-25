@@ -8,6 +8,7 @@
 
 #import "BRCDataObject.h"
 @import YapDatabase;
+@import YapDatabase.YapDatabaseRelationship;
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 

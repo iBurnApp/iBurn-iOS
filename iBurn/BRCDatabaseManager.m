@@ -15,7 +15,11 @@
 #import "BRCAppDelegate.h"
 #import "BRCEventsTableViewController.h"
 #import "NSDate+iBurn.h"
-
+@import YapDatabase.YapDatabaseView;
+@import YapDatabase.YapDatabaseFullTextSearch;
+@import YapDatabase.YapDatabaseRTreeIndex;
+@import YapDatabase.YapDatabaseFilteredView;
+@import YapDatabase.YapDatabaseSearchResultsView;
 
 /** this is posted when an extension is ready. The userInfo contains
  the extension name under the "extensionName" key */
@@ -354,7 +358,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseViewGrouping *grouping = nil;
     
     if (viewClass == [BRCEventObject class]) {
-        grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object){
+        grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(YapDatabaseReadTransaction *transaction, NSString *collection, NSString *key, id object){
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *eventObject = (BRCEventObject*)object;
                 NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupHourlyDateFormatter];
@@ -364,12 +368,12 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             return nil;
         }];
     } else if (viewClass == [BRCDataObject class]) {
-        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key){
+        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(YapDatabaseReadTransaction *transaction, NSString *collection, NSString *key){
             return collection;
         }];
     } else {
         // group art & camp by letter index
-        grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object){
+        grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(YapDatabaseReadTransaction *transaction, NSString *collection, NSString *key, id object){
             if ([collection isEqualToString:[viewClass collection]])
             {
                 if ([object isKindOfClass:[BRCDataObject class]]) {
@@ -417,7 +421,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass {
     YapDatabaseViewSorting* sorting = nil;
     if (viewClass == [BRCEventObject class]) {
-        sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+        sorting = [YapDatabaseViewSorting withObjectBlock:^(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event1 = (BRCEventObject *)obj1;
@@ -439,7 +443,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             return NSOrderedSame;
         }];
     } else {
-        sorting = [YapDatabaseViewSorting withObjectBlock:^(NSString *group, NSString *collection1, NSString *key1, id obj1,
+        sorting = [YapDatabaseViewSorting withObjectBlock:^(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection1, NSString *key1, id obj1,
                          NSString *collection2, NSString *key2, id obj2){
             if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
                 BRCDataObject *data1 = (BRCDataObject *)obj1;
@@ -516,7 +520,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) favoritesOnlyFiltering {
-    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCDataObject class]]) {
             BRCDataObject *dataObject = (BRCDataObject*)object;
             return dataObject.isFavorite;
@@ -595,7 +599,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) allItemsFiltering {
-    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL(NSString *group, NSString *collection, NSString *key) {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key) {
         return YES;
     }];
     return filtering;
@@ -609,7 +613,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseViewFiltering*) eventsFilteredByDay:(NSDate*)day
 {
     NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:day];
-    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (NSString *group, NSString *collection, NSString *key)
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key)
     {
         if (selectedDayGroup) {
             return [group containsString:selectedDayGroup];
@@ -626,7 +630,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) eventsFilteredByExpiration:(BOOL)showExpired eventTypes:(NSSet*)eventTypes {
-    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(NSString *group, NSString *collection, NSString *key, id object) {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             NSDate *now = [NSDate date];
             BRCEventObject *eventObject = (BRCEventObject*)object;
