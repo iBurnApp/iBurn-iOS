@@ -22,7 +22,7 @@ abstract_target 'iBurnAbstract' do
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'
 	pod 'pop', '~> 1.0'
-	pod 'Parse', '~> 1.7'
+	pod 'Parse', '~> 1.0'
 	pod 'DOFavoriteButton', :git => 'https://github.com/okmr-d/DOFavoriteButton.git'
 	pod 'JSQWebViewController', '~> 3.0'
 	pod 'TUSafariActivity', '~> 1.0'
