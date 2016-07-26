@@ -26,7 +26,7 @@
 
 - (instancetype) initWithHeaderLabel:(TTTAttributedLabel*)headerLabel {
     NSString *path = [[NSBundle mainBundle] pathForResource:@"Pods-iBurnAbstract-iBurn-acknowledgements" ofType:@"plist"];
-    if (self = [super initWithAcknowledgementsPlistPath:path]) {
+    if (self = [super initWithPath:path]) {
         self.headerText = headerLabel.text;
         self.headerLabel = headerLabel;
         self.headerLabel.delegate = self;

@@ -120,13 +120,19 @@
     }];
 }
 
+- (BOOL) isDataUnlocked {
+    NSDate *now = [NSDate date];
+    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
+    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
+    return timeLeftInterval >= 0 ||
+    [[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode];
+}
+
 - (void) refreshCountdownLabel:(id)sender {
     NSMutableAttributedString *fullLabelString = nil;
     NSDate *now = [NSDate date];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0 ||
-        [[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode]) {
+    if ([self isDataUnlocked]) {
         fullLabelString = [[NSMutableAttributedString alloc] initWithString:@"Location Data Unlocked!"];
         [self.countdownTimer invalidate];
         self.passcodeTextField.hidden = YES;
@@ -187,9 +193,12 @@
     [self.passcodeTextField resignFirstResponder];
 }
 
-- (void)viewWillAppear:(BOOL)animated
+- (void)viewDidAppear:(BOOL)animated
 {
-    [super viewWillAppear:animated];
+    [super viewDidAppear:animated];
+    if ([self isDataUnlocked]) {
+        [self setUnlocked];
+    }
 }
 
 - (void)updateViewConstraints

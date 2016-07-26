@@ -39,8 +39,15 @@
 
 + (BOOL)allowEmbargoedData
 {
-    //Data is not embargoed after start of festival or if the passcode has been entered
     if ([[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode]) {
+        return YES;
+    }
+    //Data is not embargoed after start of festival or if the passcode has been entered
+    NSDate *now = [NSDate date];
+    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
+    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
+    if (timeLeftInterval >= 0) {
+        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
         return YES;
     }
     return NO;

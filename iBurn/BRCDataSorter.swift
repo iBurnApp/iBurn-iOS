@@ -59,20 +59,20 @@ public class BRCDataSorter: NSObject {
                 if opt.sortEventsWithExpiration {
                     var expiredEvents = events.filter { $0.hasEnded(opt.now) }
                     var nonExpired = events.filter { !$0.hasEnded(opt.now) }
-                    expiredEvents.sort {
+                    expiredEvents.sortInPlace {
                         $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
                     }
-                    nonExpired.sort {
+                    nonExpired.sortInPlace {
                         $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
                     }
                     events = nonExpired + expiredEvents
                 } else {
-                    events.sort {
+                    events.sortInPlace {
                         $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
                     }
                 }
-                camps.sort { $0.title < $1.title }
-                art.sort { $0.title < $1.title }
+                camps.sortInPlace { $0.title < $1.title }
+                art.sortInPlace { $0.title < $1.title }
                 dispatch_async(queue!, { () -> Void in
                     callbackBlock(events: events, art: art, camps: camps)
                 })
