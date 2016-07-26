@@ -31,6 +31,8 @@
 
 - (void) dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    // UISearchController bug http://stackoverflow.com/a/32955784
+    [self.searchController.view removeFromSuperview];
 }
 
 - (instancetype)initWithViewClass:(Class)viewClass viewName:(NSString *)viewName searchViewName:(NSString *)searchViewName
@@ -99,6 +101,13 @@
     [super viewDidLoad];
     
     [self setupTableView];
+    
+    // Apple bug: https://github.com/smileyborg/TableViewCellWithAutoLayoutiOS8/issues/10#issuecomment-69694089
+    [self.tableView reloadData];
+    [self.tableView setNeedsLayout];
+    [self.tableView layoutIfNeeded];
+    [self.tableView reloadData];
+    
     [self setupSearchController];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -266,11 +275,6 @@
     [super viewWillAppear:animated];
     [self updateViewConstraints];
     [PFAnalytics trackEventInBackground:self.title block:nil];
-    // Attempting to fix Apple's buggy self-sizing autolayout cells
-    [self.tableView reloadData];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.tableView reloadData];
-    });
 }
 
 #pragma - mark UITableViewDataSource Methods
@@ -321,20 +325,6 @@
     cell.dataObject = dataObject;
     CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation];
-    
-    // We need this to fix Apple's buggy autolayout self-sizing cell behavior (WTF)
-    // Also this hack doesn't even work reliably.. booooo Apple
-    dispatch_block_t layoutBlock = ^{
-        [cell setNeedsLayout];
-        [cell setNeedsUpdateConstraints];
-        [cell setNeedsDisplay];
-    };
-    dispatch_async(dispatch_get_main_queue(), ^{
-        layoutBlock();
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            layoutBlock();
-        });
-    });
     return cell;
 }
 

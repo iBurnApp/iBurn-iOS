@@ -86,7 +86,6 @@
 }
 
 - (CLLocationDistance) distanceFromLocation:(CLLocation*)location {
-    NSParameterAssert(location);
     CLLocation *objectLocation = self.location;
     if (!location || !objectLocation) {
         return CLLocationDistanceMax;
