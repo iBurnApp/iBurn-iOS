@@ -66,6 +66,11 @@ public class BRCSortedViewController: UITableViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        // Apple bug: https://github.com/smileyborg/TableViewCellWithAutoLayoutiOS8/issues/10#issuecomment-69694089
+        self.tableView.reloadData()
+        self.tableView.setNeedsLayout()
+        self.tableView.layoutIfNeeded()
+        self.tableView.reloadData()
     }
     
     func setupTableView() {
@@ -101,14 +106,7 @@ public class BRCSortedViewController: UITableViewController {
         }
         
         refreshTableItems { () -> Void in
-            // Attempting to fix Apple's buggy self-sizing autolayout cells
             self.tableView.reloadData();
-            dispatch_after(dispatch_time(
-                DISPATCH_TIME_NOW,
-                Int64(0.01 * Double(NSEC_PER_SEC))
-                ), dispatch_get_main_queue()) { () -> Void in
-                    self.tableView.reloadData()
-            }
         }
         if let location = getCurrentLocation() {
             BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
