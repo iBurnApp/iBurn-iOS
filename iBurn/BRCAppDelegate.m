@@ -38,9 +38,8 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
-@import Onboard;
+#import "BRCOnboardingViewController.h"
 @import PermissionScope;
-@import AVFoundation;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
@@ -121,7 +120,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
     if (!hasViewedOnboarding) {
-        OnboardingViewController *onboardingVC = [[self class] onboardingViewControllerWithCompletion:^{
+        OnboardingViewController *onboardingVC = [BRCOnboardingViewController onboardingViewControllerWithCompletion:^{
             [UIView transitionWithView:self.window
                               duration:1.0
                                options:UIViewAnimationOptionTransitionCrossDissolve
@@ -482,46 +481,6 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     [self setupNormalRootViewController];
 }
 
-/** Returns newly configured onboarding view */
-+ (OnboardingViewController *)onboardingViewControllerWithCompletion:(dispatch_block_t)completionBlock {
-    OnboardingContentViewController *firstPage = [OnboardingContentViewController contentWithTitle:@"Welcome to iBurn" body:@"\nLet's get started!" image:nil buttonText:@"📍 Enable Location" action:^{
-        [BRCPermissions promptForLocation:^{
-            NSLog(@"BRCPermissions promptForLocation");
-            //[firstPage.delegate moveNextPage];
-        }];
-    }];
-    firstPage.movesToNextViewController = YES;
-    
-    OnboardingContentViewController *secondPage = [OnboardingContentViewController contentWithTitle:@"Reminders" body:@"When you favorite events we can remind you about them later." image:nil buttonText:@"⏰ Enable Notifications" action:^{
-        [BRCPermissions promptForPush:^{
-            NSLog(@"BRCPermissions promptForPush");
-            //[secondPage.delegate moveNextPage];
-        }];
-    }];
-    secondPage.movesToNextViewController = YES;
-    
-    OnboardingContentViewController *thirdPage = [OnboardingContentViewController contentWithTitle:@"Search" body:@"Find whatever your heart desires.\n\n\n...especially bacon and coffee." image:nil buttonText:nil action:completionBlock];
-    
-    OnboardingContentViewController *fourthPage = [OnboardingContentViewController contentWithTitle:@"Nearby" body:@"Quickly find cool new things going on around you.\n\n\n...or just find the closest toilet." image:nil buttonText:nil action:completionBlock];
-    
-    OnboardingContentViewController *lastPage = [OnboardingContentViewController contentWithTitle:@"Thank you!" body:@"If you enjoy using iBurn, please spread the word." image:nil buttonText:@"🔥 Ok let's burn!" action:completionBlock];
-    
-    NSBundle *bundle = [NSBundle mainBundle];
-    NSString *moviePath = [bundle pathForResource:@"onboarding_loop_final" ofType:@"mp4"];
-    NSURL *movieURL = [NSURL fileURLWithPath:moviePath];
-    
-    OnboardingViewController *onboardingVC = [[OnboardingViewController alloc] initWithBackgroundVideoURL:movieURL contents:@[firstPage, secondPage, thirdPage, fourthPage, lastPage]];
-    onboardingVC.shouldFadeTransitions = YES;
-    onboardingVC.fadePageControlOnLastPage = YES;
-    onboardingVC.stopMoviePlayerWhenDisappear = YES;
-    onboardingVC.moviePlayerController.videoGravity = AVLayerVideoGravityResizeAspect;
-    
-    // If you want to allow skipping the onboarding process, enable skipping and set a block to be executed
-    // when the user hits the skip button.
-    // onboardingVC.allowSkipping = YES;
-    onboardingVC.skipHandler = completionBlock;
-    
-    return onboardingVC;
-}
+
 
 @end

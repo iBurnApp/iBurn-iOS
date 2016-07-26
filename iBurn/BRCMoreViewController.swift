@@ -145,9 +145,9 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     
     func showOnboardingView() {
         var onboardingVC: OnboardingViewController? = nil
-        onboardingVC = BRCAppDelegate.onboardingViewControllerWithCompletion { () -> Void in
+        onboardingVC = BRCOnboardingViewController(completion: { () -> Void in
             onboardingVC!.dismissViewControllerAnimated(true, completion: nil)
-        }
+        })
         presentViewController(onboardingVC!, animated: true, completion: nil)
     }
     

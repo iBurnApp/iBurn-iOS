@@ -92,6 +92,7 @@
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
+		D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */; };
 		F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -271,6 +272,8 @@
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
+		D9EC1BED1D47E29A004A62E6 /* BRCOnboardingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCOnboardingViewController.h; sourceTree = "<group>"; };
+		D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCOnboardingViewController.m; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -394,6 +397,8 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9EC1BED1D47E29A004A62E6 /* BRCOnboardingViewController.h */,
+				D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */,
 				D9C30F711B82EE7100CD03CC /* Sorted */,
 				D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */,
 				D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */,
@@ -938,6 +943,7 @@
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
+				D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,

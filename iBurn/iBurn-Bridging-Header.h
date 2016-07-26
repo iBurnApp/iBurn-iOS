@@ -17,3 +17,4 @@
 #import "BRCEmbargoPasscodeViewController.h"
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCDataObject+Relationships.h"
+#import "BRCOnboardingViewController.h"
