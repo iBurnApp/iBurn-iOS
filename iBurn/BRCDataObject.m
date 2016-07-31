@@ -24,14 +24,14 @@
 
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
     return @{NSStringFromSelector(@selector(title)): @"name",
-             NSStringFromSelector(@selector(uniqueID)): @"id",
+             NSStringFromSelector(@selector(uniqueID)): @"uid",
              NSStringFromSelector(@selector(detailDescription)): @"description",
              NSStringFromSelector(@selector(email)): @"contact_email",
              NSStringFromSelector(@selector(url)): @"url",
-             NSStringFromSelector(@selector(latitude)): @"latitude",
-             NSStringFromSelector(@selector(longitude)): @"longitude",
-             NSStringFromSelector(@selector(year)): @"year.year",
-             NSStringFromSelector(@selector(playaLocation)): @"location"};
+             NSStringFromSelector(@selector(latitude)): @"location.gps_latitude",
+             NSStringFromSelector(@selector(longitude)): @"location.gps_longitude",
+             NSStringFromSelector(@selector(year)): @"year",
+             NSStringFromSelector(@selector(playaLocation)): @"location.string"};
 }
 
 - (CLLocation*) location {
@@ -57,23 +57,14 @@
     _longitude = coordinate.longitude;
 }
 
-+ (NSValueTransformer *)uniqueIDJSONTransformer {
-    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        *success = NO;
-        if ([value isKindOfClass:[NSNumber class]]) {
-            *success = YES;
-            return ((NSNumber *)value).stringValue;
-        }
-        return nil;
-        
-    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        *success = NO;
-        if ([value isKindOfClass:[NSString class]]) {
-            *success = YES;
-            return @(((NSString *)value).integerValue);
-        }
-        return nil;
-    }];
+- (void)setNilValueForKey:(NSString *)key {
+    if (NSStringFromSelector(@selector(latitude))) {
+        _latitude = 0;
+    } else if (NSStringFromSelector(@selector(longitude))) {
+        _longitude = 0;
+    } else {
+        [super setNilValueForKey:key];
+    }
 }
 
 + (NSValueTransformer *)urlJSONTransformer {

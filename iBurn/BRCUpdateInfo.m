@@ -30,7 +30,8 @@ static NSString * const kBRCUpdateTypePoints = @"points";
 
 + (NSValueTransformer *)lastUpdatedJSONTransformer {
     return [MTLValueTransformer transformerUsingForwardBlock:^NSDate*(NSString* dateString, BOOL *success, NSError *__autoreleasing *error) {
-        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
+        NSDate *date = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
+        return date;
     }];
 }
 

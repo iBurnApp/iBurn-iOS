@@ -57,7 +57,7 @@
 /**
  *  Year of data's origin e.g. "2014"
  */
-@property (nonatomic, strong, readonly) NSString *year;
+@property (nonatomic, strong, readonly) NSNumber *year;
 
 /**
  *  Playa Coordinates

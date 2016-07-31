@@ -61,8 +61,8 @@ NSString * const kBRCEventArtEdgeName = @"art";
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(title)): @"title",
                                NSStringFromSelector(@selector(checkLocation)): @"check_location",
-                               NSStringFromSelector(@selector(hostedByCampUniqueID)): @"hosted_by_camp.id",
-                               NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art.id",
+                               NSStringFromSelector(@selector(hostedByCampUniqueID)): @"hosted_by_camp",
+                               NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art",
                                NSStringFromSelector(@selector(eventType)): @"event_type.abbr",
                                NSStringFromSelector(@selector(isAllDay)): @"all_day"};
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:artPaths];
@@ -83,18 +83,6 @@ NSString * const kBRCEventArtEdgeName = @"art";
                                     @"para": @(BRCEventTypeParade),
                                     @"food": @(BRCEventTypeFood)};
     return [NSValueTransformer mtl_valueMappingTransformerWithDictionary:transformDict];
-}
-
-+ (NSValueTransformer *)hostedByCampUniqueIDJSONTransformer {
-    return [MTLValueTransformer transformerUsingForwardBlock:^NSString*(NSNumber* number, BOOL *success, NSError *__autoreleasing *error) {
-        return number.stringValue;
-    }];
-}
-
-+ (NSValueTransformer *)hostedByArtUniqueIDJSONTransformer {
-    return [MTLValueTransformer transformerUsingForwardBlock:^NSString*(NSNumber* number, BOOL *success, NSError *__autoreleasing *error) {
-        return number.stringValue;
-    }];
 }
 
 - (BOOL) isEndingSoon:(NSDate*)currentDate {

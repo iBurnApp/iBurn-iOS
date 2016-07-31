@@ -11,7 +11,8 @@
 @implementation NSDateFormatter (iBurn)
 
 + (NSTimeZone*) brc_burningManTimeZone {
-    return [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+    NSTimeZone *tz = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
+    return tz;
 }
 
 + (NSDateFormatter*) brc_playaEventsAPIDateFormatter
@@ -20,7 +21,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         brc_playaEventsAPIDateFormatter = [NSDateFormatter new];
-        brc_playaEventsAPIDateFormatter.dateFormat = @"yyyy-MM-dd' 'HH:mm:ss";
+        brc_playaEventsAPIDateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZZZZZ";
         brc_playaEventsAPIDateFormatter.timeZone = [self brc_burningManTimeZone];
     });
     return brc_playaEventsAPIDateFormatter;

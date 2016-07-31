@@ -294,8 +294,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     NSDictionary *rangeInfoDictionary = [datesInfoDictionary objectForKey:@"rangeInfo"];
     NSString *startDateString = [rangeInfoDictionary objectForKey:@"startDate"];
     NSDate *startDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:startDateString];
+    NSParameterAssert(startDate);
     NSString *endDateString = [rangeInfoDictionary objectForKey:@"endDate"];
     NSDate *endDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:endDateString];
+    NSParameterAssert(endDate);
     NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
     [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2015Key];
     [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2015Key];
