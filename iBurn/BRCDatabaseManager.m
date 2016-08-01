@@ -213,7 +213,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self registerFilteredViews];
         [self registerSearchViews];
         [self registerRTreeIndex];
-        [self registerRelationships];
+        //[self registerRelationships];
     });
 }
 
