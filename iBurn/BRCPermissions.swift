@@ -27,12 +27,26 @@ public class BRCPermissions: NSObject {
         }
     }
     
+    public static func promptForEvents(completion: dispatch_block_t) {
+        let pscope = PermissionScope()
+        pscope.headerLabel.text = "Reminders"
+        pscope.bodyLabel.text = "Don't you want reminders?"
+        pscope.addPermission(EventsPermission(), message: "You can see your favorited events in the Calendar app.")
+        pscope.show({ (finished, results) -> Void in
+            print("got results \(results)")
+            completion()
+        }) { (results) -> Void in
+            print("thing was cancelled")
+        }
+    }
+    
     /** Show notification permissions prompt */
     public static func promptForPush(completion: dispatch_block_t) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"
         pscope.addPermission(NotificationsPermission(), message: "Don't forget to live in the moment.")
+        pscope.addPermission(EventsPermission(), message: "You can see your favorited events in the Calendar app.")
         pscope.show({ (finished, results) -> Void in
             print("got results \(results)")
             completion()

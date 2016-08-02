@@ -14,6 +14,8 @@
 #import "UIColor+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
+#import "iBurn-Swift.h"
+@import EventKit;
 
 NSString * const kBRCStartDate2015Key = @"kBRCStartDate2015Key";
 NSString * const kBRCEndDate2015Key = @"kBRCEndDate2015Key";
@@ -229,32 +231,74 @@ NSString * const kBRCEventArtEdgeName = @"art";
     }
 }
 
++ (EKEventStore*)eventStore {
+    EKEventStore *store = [[EKEventStore alloc] init];
+    EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
+    if (status != EKAuthorizationStatusAuthorized) {
+        NSLog(@"Not authorized to modify calendar");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [BRCPermissions promptForEvents:^{
+                
+            }];
+        });
+        return nil;
+    }
+    return store;
+}
+
+- (BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
+    BRCDataObject *host = [self hostedByCampWithTransaction:readTransaction];
+    if (!host) {
+        host = [self hostedByArtWithTransaction:readTransaction];
+    }
+    return host;
+}
+
+
 + (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
     NSParameterAssert(eventObject.isFavorite);
-    NSDate *now = [NSDate date];
-    if ([eventObject hasStarted:now] || [eventObject hasEnded:now]) {
+    EKEventStore *store = [self eventStore];
+    if (!store) {
         return;
     }
-    if (!eventObject.scheduledNotification) {
-        // remind us 30 minutes before
-        NSDate *reminderDate = [eventObject.startDate dateByAddingTimeInterval:-30 * 60];
-        //NSDate *testingReminderDate = [[NSDate date] dateByAddingTimeInterval:10];
-        NSString *startTimeString = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
-        NSString *reminderTitle = [NSString stringWithFormat:@"%@ - %@", startTimeString, eventObject.title];
-        UILocalNotification *eventNotification = [[UILocalNotification alloc] init];
-        eventNotification.fireDate = reminderDate;
-        eventNotification.alertBody = reminderTitle;
-        eventNotification.soundName = UILocalNotificationDefaultSoundName;
-        eventNotification.alertAction = @"View Event";
-        eventNotification.applicationIconBadgeNumber = 1;
-        NSString *key = [self localNotificationUserInfoKey];
-        eventNotification.userInfo = @{key: eventObject.uniqueID};
-        eventObject.scheduledNotification = eventNotification;
-        [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[UIApplication sharedApplication] scheduleLocalNotification:eventNotification];
-        });
+    if (eventObject.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:eventObject.calendarEventIdentifier];
+        if (existingEvent) {
+            NSLog(@"Event already exists in calendar: %@ %@", eventObject, existingEvent);
+            return;
+        }
     }
+    BRCDataObject *host = [eventObject hostWithTransaction:transaction];
+    NSMutableString *locationString = [NSMutableString string];
+    if (host.playaLocation) {
+        [locationString appendFormat:@"%@ - ", host.playaLocation];
+    }
+    if (host.title) {
+        [locationString appendFormat:@"%@", host.title];
+    }
+    EKCalendar *calendar = [store defaultCalendarForNewEvents];
+    EKEvent *calendarEvent = [EKEvent eventWithEventStore:store];
+    calendarEvent.calendar = calendar;
+    calendarEvent.title = eventObject.title;
+    calendarEvent.location = locationString;
+    calendarEvent.timeZone = [NSTimeZone brc_burningManTimeZone];
+    calendarEvent.startDate = eventObject.startDate;
+    calendarEvent.endDate = eventObject.endDate;
+    calendarEvent.allDay = eventObject.isAllDay;
+    calendarEvent.URL = eventObject.url;
+    calendarEvent.notes = eventObject.detailDescription;
+    // Remind 1.5 hrs in advance
+    EKAlarm *alarm = [EKAlarm alarmWithRelativeOffset:-90 * 60];
+    [calendarEvent addAlarm:alarm];
+    
+    NSError *error = nil;
+    BOOL success = [store saveEvent:calendarEvent span:EKSpanThisEvent error:&error];
+    if (!success) {
+        NSLog(@"Couldn't save event: %@ %@ %@", eventObject, calendarEvent, error);
+        return;
+    }
+    eventObject.calendarEventIdentifier = calendarEvent.eventIdentifier;
+    [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
 }
 
 + (NSString*) localNotificationUserInfoKey {
@@ -264,14 +308,22 @@ NSString * const kBRCEventArtEdgeName = @"art";
 
 + (void) cancelScheduledNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
     NSParameterAssert(!eventObject.isFavorite);
-    if (eventObject.scheduledNotification) {
-        UILocalNotification *notificationToCancel = eventObject.scheduledNotification;
-        eventObject.scheduledNotification = nil;
-        [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[UIApplication sharedApplication] cancelLocalNotification:notificationToCancel];
-        });
+    EKEventStore *store = [self eventStore];
+    if (!store) {
+        return;
     }
+    if (eventObject.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:eventObject.calendarEventIdentifier];
+        if (existingEvent) {
+            NSError *error = nil;
+            BOOL success = [store removeEvent:existingEvent span:EKSpanThisEvent error:&error];
+            if (!success) {
+                NSLog(@"Couldn't remove event: %@ %@ %@", eventObject, existingEvent, error);
+            }
+        }
+    }
+    eventObject.calendarEventIdentifier = nil;
+    [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
 }
 
 - (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction {

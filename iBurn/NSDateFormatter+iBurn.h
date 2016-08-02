@@ -8,6 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@interface NSTimeZone (iBurn)
+
+/** PST */
++ (NSTimeZone*) brc_burningManTimeZone;
+
+@end
+
 @interface NSDateFormatter (iBurn)
 
 /** e.g. 2015-09-04 11:00:00 */

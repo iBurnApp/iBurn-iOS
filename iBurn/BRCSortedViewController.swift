@@ -232,6 +232,13 @@ public class BRCSortedViewController: UITableViewController {
             dataCopy.isFavorite = cell.favoriteButton.selected
             BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWriteWithBlock({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
                 transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: dataCopy.dynamicType.collection())
+                if let event = dataObject as? BRCEventObject {
+                    if event.isFavorite {
+                        BRCEventObject.scheduleNotificationForEvent(event, transaction: transaction)
+                    } else {
+                        BRCEventObject.cancelScheduledNotificationForEvent(event, transaction: transaction)
+                    }
+                }
                 }, completionQueue:dispatch_get_main_queue(), completionBlock: { () -> Void in
                     self.refreshTableItems({ () -> Void in
                         self.tableView.reloadData()

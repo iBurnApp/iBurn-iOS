@@ -8,12 +8,18 @@
 
 #import "NSDateFormatter+iBurn.h"
 
-@implementation NSDateFormatter (iBurn)
+@implementation NSTimeZone (iBurn)
 
 + (NSTimeZone*) brc_burningManTimeZone {
     NSTimeZone *tz = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
     return tz;
 }
+
+@end
+
+@implementation NSDateFormatter (iBurn)
+
+
 
 + (NSDateFormatter*) brc_playaEventsAPIDateFormatter
 {
@@ -22,7 +28,7 @@
     dispatch_once(&onceToken, ^{
         brc_playaEventsAPIDateFormatter = [NSDateFormatter new];
         brc_playaEventsAPIDateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZZZZZ";
-        brc_playaEventsAPIDateFormatter.timeZone = [self brc_burningManTimeZone];
+        brc_playaEventsAPIDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
     });
     return brc_playaEventsAPIDateFormatter;
 }
@@ -34,7 +40,7 @@
     dispatch_once(&onceToken, ^{
         brc_eventGroupDateFormatter = [NSDateFormatter new];
         brc_eventGroupDateFormatter.dateFormat = @"yyyy-MM-dd";
-        brc_eventGroupDateFormatter.timeZone = [self brc_burningManTimeZone];
+        brc_eventGroupDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
     });
     return brc_eventGroupDateFormatter;
 }
@@ -46,7 +52,7 @@
     dispatch_once(&onceToken, ^{
         brc_eventGroupDateFormatter = [NSDateFormatter new];
         brc_eventGroupDateFormatter.dateFormat = @"yyyy-MM-dd' 'HH";
-        brc_eventGroupDateFormatter.timeZone = [self brc_burningManTimeZone];
+        brc_eventGroupDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
     });
     return brc_eventGroupDateFormatter;
 }
@@ -57,7 +63,7 @@
     dispatch_once(&onceToken, ^{
         brc_timeOnlyDateFormatter = [[NSDateFormatter alloc] init];
         brc_timeOnlyDateFormatter.dateFormat = @"h:mma";
-        brc_timeOnlyDateFormatter.timeZone = [self brc_burningManTimeZone];
+        brc_timeOnlyDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
     });
     return brc_timeOnlyDateFormatter;
 }
@@ -68,7 +74,7 @@
     dispatch_once(&onceToken, ^{
         brc_dayOfWeekDateFormatter = [[NSDateFormatter alloc] init];
         brc_dayOfWeekDateFormatter.dateFormat = @"EEEE";
-        brc_dayOfWeekDateFormatter.timeZone = [self brc_burningManTimeZone];
+        brc_dayOfWeekDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
     });
     return brc_dayOfWeekDateFormatter;
 }
@@ -79,7 +85,7 @@
     dispatch_once(&onceToken, ^{
         brc_shortDateFormatter = [[NSDateFormatter alloc] init];
         brc_shortDateFormatter.dateFormat = @"M/d";
-        brc_shortDateFormatter.timeZone = [self brc_burningManTimeZone];
+        brc_shortDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
     });
     return brc_shortDateFormatter;
 }

@@ -88,6 +88,14 @@
     }
     [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
         [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+        if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *event = (BRCEventObject*)dataObject;
+            if (event.isFavorite) {
+                [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
+            } else {
+                [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
+            }
+        }
     }];
 }
 

@@ -48,7 +48,8 @@ extern NSString * const kBRCEventArtEdgeName;
 
 - (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
 - (BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
-
+/** Returns either camp or art */
+- (BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
 
 @property (nonatomic, readonly) BOOL isAllDay;
 
@@ -98,8 +99,8 @@ extern NSString * const kBRCEventArtEdgeName;
 /** All the dates for the festival. @see majorEvents */
 + (NSArray*) datesOfFestival;
 
-/** to be used when unsetting isFavorite */
-@property (nonatomic, strong) UILocalNotification *scheduledNotification;
+/** EKEvent calendar eventIdentifier to be used when unsetting isFavorite */
+@property (nonatomic, strong) NSString *calendarEventIdentifier;
 
 /** 
  *  Returns color for event status based on isOngoing
