@@ -17,9 +17,9 @@
 #import "iBurn-Swift.h"
 @import EventKit;
 
-NSString * const kBRCStartDate2015Key = @"kBRCStartDate2015Key";
-NSString * const kBRCEndDate2015Key = @"kBRCEndDate2015Key";
-NSString * const kBRCMajorEvents2015Key = @"kBRCMajorEvents2015Key";
+NSString * const kBRCStartDate2016Key = @"kBRCStartDate2016Key";
+NSString * const kBRCEndDate2016Key = @"kBRCEndDate2016Key";
+NSString * const kBRCMajorEvents2016Key = @"kBRCMajorEvents2016Key";
 
 NSString * const kBRCEventCampEdgeName = @"camp";
 NSString * const kBRCEventArtEdgeName = @"art";
@@ -126,14 +126,14 @@ NSString * const kBRCEventArtEdgeName = @"art";
 }
 
 + (NSDate*) festivalStartDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2015Key];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2016Key];
 }
 + (NSDate*) festivalEndDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCEndDate2015Key];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCEndDate2016Key];
 }
 /** Array of titles of major events, starting with first day of events */
 + (NSArray*) majorEvents {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEvents2015Key];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEvents2016Key];
 }
 
 + (NSArray*) datesOfFestival {

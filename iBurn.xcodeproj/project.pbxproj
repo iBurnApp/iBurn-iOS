@@ -79,6 +79,8 @@
 		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
 		D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */; };
 		D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */; };
+		D9BF9A671D515FF7004AA63B /* 2016 in Resources */ = {isa = PBXBuildFile; fileRef = D9BF9A661D515FF7004AA63B /* 2016 */; };
+		D9BF9A6A1D52A86A004AA63B /* BRCAudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* BRCAudioTourViewController.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
@@ -255,6 +257,8 @@
 		D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCCreditsViewController.swift; sourceTree = "<group>"; };
 		D9BD4C061B787A4400313FB5 /* NSBundle+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBundle+iBurn.h"; sourceTree = "<group>"; };
 		D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+iBurn.m"; sourceTree = "<group>"; };
+		D9BF9A661D515FF7004AA63B /* 2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2016; path = "Submodules/iBurn-Data/data/2016/2016"; sourceTree = SOURCE_ROOT; };
+		D9BF9A691D52A86A004AA63B /* BRCAudioTourViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioTourViewController.swift; sourceTree = "<group>"; };
 		D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCFavoritesViewController.swift; sourceTree = "<group>"; };
 		D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCSortedViewController.swift; sourceTree = "<group>"; };
 		D9C30F731B83118200CD03CC /* iBurn-2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2015"; path = "Submodules/iBurn-Data/data/2015/iBurn-2015"; sourceTree = SOURCE_ROOT; };
@@ -401,6 +405,7 @@
 				D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */,
 				D9C30F711B82EE7100CD03CC /* Sorted */,
 				D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */,
+				D9BF9A691D52A86A004AA63B /* BRCAudioTourViewController.swift */,
 				D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */,
 				D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */,
 				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
@@ -418,6 +423,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D9BF9A651D515FC2004AA63B /* 2016 */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
 				D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */,
 				D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */,
@@ -567,7 +573,6 @@
 			isa = PBXGroup;
 			children = (
 				D9C30F731B83118200CD03CC /* iBurn-2015 */,
-				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 				63C11EB31B7C580400428FB8 /* bundle.js */,
 				D92B95991B7B0CC300116781 /* 2015 */,
 			);
@@ -659,6 +664,15 @@
 				D99415651987222F00D245C7 /* Model */,
 			);
 			name = Data;
+			sourceTree = "<group>";
+		};
+		D9BF9A651D515FC2004AA63B /* 2016 */ = {
+			isa = PBXGroup;
+			children = (
+				D9BF9A661D515FF7004AA63B /* 2016 */,
+				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
+			);
+			name = 2016;
 			sourceTree = "<group>";
 		};
 		D9C30F711B82EE7100CD03CC /* Sorted */ = {
@@ -797,6 +811,7 @@
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
+				D9BF9A671D515FF7004AA63B /* 2016 in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 			);
@@ -935,6 +950,7 @@
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
+				D9BF9A6A1D52A86A004AA63B /* BRCAudioTourViewController.swift in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,

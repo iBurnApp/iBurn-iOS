@@ -18,7 +18,8 @@ enum CellTag: Int {
     Feedback = 5,
     Share = 6,
     Rate = 7,
-    DebugShowOnboarding = 8
+    DebugShowOnboarding = 8,
+    AudioTour = 9
 }
 
 class BRCMoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
@@ -83,6 +84,8 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
                 showRatingsView()
             case .DebugShowOnboarding:
                 showOnboardingView()
+            case .AudioTour:
+                showAudioTour()
             }
         }
     }
@@ -149,6 +152,13 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
             onboardingVC!.dismissViewControllerAnimated(true, completion: nil)
         })
         presentViewController(onboardingVC!, animated: true, completion: nil)
+    }
+    
+    func showAudioTour() {
+        let audioTour = BRCAudioTourViewController(style: UITableViewStyle.Grouped, extensionName: BRCDatabaseManager.sharedInstance().audioTourViewName)
+        audioTour.title = "Audio Tour"
+        audioTour.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(audioTour, animated: true)
     }
     
     // MARK: - SKStoreProductViewControllerDelegate

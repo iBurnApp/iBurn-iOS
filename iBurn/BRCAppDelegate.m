@@ -284,7 +284,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) setupFestivalDates {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2015Key]) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2016Key]) {
         return;
     }
     NSBundle *dataBundle = [NSBundle brc_dataBundle];
@@ -299,9 +299,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     NSDate *endDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:endDateString];
     NSParameterAssert(endDate);
     NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
-    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2015Key];
-    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2015Key];
-    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDate2015Key];
+    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2016Key];
+    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2016Key];
+    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDate2016Key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 

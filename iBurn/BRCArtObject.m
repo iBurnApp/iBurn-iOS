@@ -16,8 +16,22 @@
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(artistName)): @"artist",
              NSStringFromSelector(@selector(artistLocation)): @"hometown",
-             NSStringFromSelector(@selector(imageURLs)): @"images"};
+             NSStringFromSelector(@selector(imageURLs)): @"images",
+                               NSStringFromSelector(@selector(remoteAudioURL)): @"audio_tour_url"};
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:artPaths];
 }
+
++ (NSValueTransformer *)remoteAudioURLJSONTransformer {
+    return [NSValueTransformer valueTransformerForName:MTLURLValueTransformerName];
+}
+
+- (NSURL*) audioURL {
+    if (self.localAudioURL) {
+        return self.localAudioURL;
+    } else {
+        return self.remoteAudioURL;
+    }
+}
+
 
 @end

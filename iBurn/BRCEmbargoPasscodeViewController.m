@@ -62,7 +62,7 @@
     self.socialButtonsView = [[BRCSocialButtonsView alloc] initWithFrame:CGRectZero];
     
     self.descriptionLabel = [[UILabel alloc] initForAutoLayout];
-    self.descriptionLabel.text = @"Camp locations are restricted until the gates open due to BMan regulations. The passcode will be released to the public at 10am on Sunday 8/30. Don't worry too much, the app should also automatically unlock itself once you're there.\n\nFollow @iBurnApp on Twitter or Facebook for this year's passcode, or ask a Black Rock Ranger, Playa Info or Burning Man Staffer.";
+    self.descriptionLabel.text = @"Camp locations are restricted until the gates open due to BMan regulations. The passcode will be released to the public at 12am on Sunday 8/28. Don't worry too much, the app should also automatically unlock itself once you're there.\n\nFollow @iBurnApp on Twitter or Facebook for this year's passcode, or ask a Black Rock Ranger, Playa Info or Burning Man Staffer.";
     self.descriptionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:16];
     self.descriptionLabel.numberOfLines = 0;
     

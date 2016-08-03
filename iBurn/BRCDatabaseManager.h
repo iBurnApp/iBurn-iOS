@@ -60,6 +60,9 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 /** Art, camps and events filtered by favorite */
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavorite;
 
+/** Audio Tour */
+@property (nonatomic, strong, readonly) NSString *audioTourViewName;
+
 /** Search view containing all camp objects */
 @property (nonatomic, strong, readonly) NSString *searchCampsView;
 /** Search view containing all art objects */

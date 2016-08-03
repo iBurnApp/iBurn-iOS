@@ -30,8 +30,8 @@ static NSString * const RTreeMaxLat = @"RTreeMaxLat";
 static NSString * const RTreeMinLon = @"RTreeMinLon";
 static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
-NSString * const kBRCDatabaseName = @"iBurn-2015.sqlite";
-static NSString * const kBRCDatabaseFolderName = @"iBurn-2015";
+NSString * const kBRCDatabaseName = @"iBurn-2016.sqlite";
+static NSString * const kBRCDatabaseFolderName = @"iBurn-2016";
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
@@ -174,6 +174,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _campsViewName = [[self class] databaseViewNameForClass:[BRCCampObject class]];
     _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
     _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
+    _audioTourViewName = @"AudioTour";
     
     _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
     _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
@@ -294,6 +295,22 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.everythingFilteredByFavorite];
     }
     NSLog(@"%@ %d", self.everythingFilteredByFavorite, success);
+    
+    YapDatabaseViewFiltering *audioTourFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        if ([object isKindOfClass:[BRCArtObject class]]) {
+            BRCArtObject *art = (BRCArtObject*)object;
+            if (art.remoteAudioURL) {
+                return YES;
+            }
+        }
+        return NO;
+    }];
+    YapDatabaseFilteredView *audioTour = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:audioTourFiltering versionTag:@"1"];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:audioTour withName:self.audioTourViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.audioTourViewName];
+    }
+    NSLog(@"%@ %d", self.audioTourViewName, success);
 }
 
 - (void) registerSearchViews {
