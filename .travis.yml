@@ -14,7 +14,7 @@ before_install:
     - git submodule update --init --recursive
 
 install:
-  - curl -o ./Submodules/iBurn-Data/data/2015/2015/camps.json.js https://iburn-data.iburnapp.com/2015/17cc5fdfba790d986ebe0806233563c0e32ba485b5d587aa220a7f32665238e2/camps.json.js
+  - mkdir Submodules/iBurn-Data/data/2016/2016
   - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
