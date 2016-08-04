@@ -34,12 +34,14 @@ PODS:
   - Mapbox-iOS-SDK (1.6.2):
     - FMDB (= 2.6.2)
     - GRMustache (= 7.3.2)
+    - proj4 (= 4.9.2)
     - SMCalloutView (= 2.1.5)
   - Onboard (2.2.1)
   - Parse (1.14.2):
     - Bolts/Tasks (~> 1.8)
   - PermissionScope (1.0.2)
   - pop (1.0.9)
+  - proj4 (4.9.2)
   - PureLayout (3.0.2)
   - Reachability (3.2)
   - SMCalloutView (2.1.5)
@@ -112,9 +114,10 @@ DEPENDENCIES:
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (from `Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec`)
   - Onboard (~> 2.1)
-  - Parse (~> 1.7)
+  - Parse (~> 1.0)
   - PermissionScope (~> 1.0)
   - pop (~> 1.0)
+  - proj4 (from `https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec`)
   - PureLayout (~> 3.0)
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
@@ -128,6 +131,8 @@ EXTERNAL SOURCES:
     :git: https://github.com/okmr-d/DOFavoriteButton.git
   Mapbox-iOS-SDK:
     :path: Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec
+  proj4:
+    :podspec: https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec
 
 CHECKOUT OPTIONS:
   DOFavoriteButton:
@@ -151,11 +156,12 @@ SPEC CHECKSUMS:
   JSQWebViewController: eaa6bd68d9e1426ae25ade99c9bbde4c6cdd4120
   KVOController: 321b5fc59300fcaabd42c0f679baa7a27efbb2fd
   Mantle: bc40bb061d8c2c6fb48d5083e04d928c3b7f73d9
-  Mapbox-iOS-SDK: 0536357b73e2211a619bb9b5c5a5105da730bfb7
+  Mapbox-iOS-SDK: 49dab3c85d35872f815d3bdcb7d7b38994830961
   Onboard: 75731d0b265f5b5bab0b4bceff1778d7f6e839af
   Parse: 4335d65f40cb3d43190d723144bbe1afb9c38230
   PermissionScope: 860828c5516d349b6f49e5491799cfef33c5ccc7
   pop: f667631a5108a2e60d9e8797c9b32ddaf2080bce
+  proj4: 9e8dbd3bb75eec9311ee3740f62f36923d129b20
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   SMCalloutView: 5c0ee363dc8e7204b2fda17dfad38c93e9e23481
@@ -164,6 +170,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 44da49d57a1dbf414e653688793a130d24af151e
   YapDatabase: 713d4018cfacbd6e77dd430710ca84730e450980
 
-PODFILE CHECKSUM: 8275a12c7edf3de479de496750504e407f1f6432
+PODFILE CHECKSUM: 314595c6204b1b575486c9d658241346461a1d04
 
 COCOAPODS: 1.0.1

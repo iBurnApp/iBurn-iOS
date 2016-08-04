@@ -34,4 +34,5 @@ abstract_target 'iBurnAbstract' do
 	#pod 'DKNightVersion', :git => 'https://github.com/chrisballinger/DKNightVersion.git', :branch => '0.8.1-ns_enum'
 	#pod 'zipzap', '~> 8.0'
 	#pod 'PDKTZipArchive', '~> 0.3'
+	pod 'proj4', :podspec => 'https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec'
 end

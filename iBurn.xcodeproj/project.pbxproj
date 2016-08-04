@@ -1115,7 +1115,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "a758f367-2992-4269-9dbd-4bcabc176e9c";
+				PROVISIONING_PROFILE = "db372c65-b46d-4798-a995-4f032c960ee9";
 				SWIFT_OBJC_BRIDGING_HEADER = "iBurn/iBurn-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				WRAPPER_EXTENSION = app;
@@ -1141,7 +1141,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "cba9e892-1d01-4bc6-b16c-45d3a24f4c51";
+				PROVISIONING_PROFILE = "db372c65-b46d-4798-a995-4f032c960ee9";
 				SWIFT_OBJC_BRIDGING_HEADER = "iBurn/iBurn-Bridging-Header.h";
 				WRAPPER_EXTENSION = app;
 			};
