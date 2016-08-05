@@ -95,6 +95,8 @@
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */; };
+		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
+		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
 		F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -278,6 +280,9 @@
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
 		D9EC1BED1D47E29A004A62E6 /* BRCOnboardingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCOnboardingViewController.h; sourceTree = "<group>"; };
 		D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCOnboardingViewController.m; sourceTree = "<group>"; };
+		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
+		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
+		D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCArtObjectTableViewCell.xib; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -465,6 +470,9 @@
 		D92562C91988772600ED6B50 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
+				D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */,
+				D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */,
+				D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */,
 				D92562C4198876C400ED6B50 /* BRCEventObjectTableViewCell.h */,
 				D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */,
 				D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */,
@@ -803,6 +811,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
+				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
 				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
@@ -941,6 +950,7 @@
 				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
+				D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,

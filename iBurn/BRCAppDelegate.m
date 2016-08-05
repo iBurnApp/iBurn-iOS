@@ -113,6 +113,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Appirater setDebug:NO];
     [Appirater setOpenInAppStore:NO];
     [Appirater appLaunched:YES];
+    [self setupUnlockNotification];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
@@ -146,27 +147,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleCancel handler:nil];
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:notification.alertBody preferredStyle:UIAlertControllerStyleAlert];
     [alertController addAction:cancelAction];
-    if (notification.alertAction.length > 0) {
-        NSString *eventKey = [BRCEventObject localNotificationUserInfoKey];
-        NSString *eventUniqueID = [notification.userInfo objectForKey:eventKey];
-        UIAlertAction *actionItem = [UIAlertAction actionWithTitle:notification.alertAction style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            if (!eventUniqueID) {
-                return;
-            }
-            [self.tabBarController setSelectedViewController:self.eventsViewController.navigationController];
-            __block BRCEventObject *event = nil;
-            [self.eventsViewController.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-                event = [transaction objectForKey:eventUniqueID inCollection:[BRCEventObject collection]];
-            } completionBlock:^{
-                if (event) {
-                    BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:event];
-                    [self.eventsViewController.navigationController pushViewController:detailVC animated:YES];
-                }
-            }];
-        }];
-        [alertController addAction:actionItem];
-    }
-    [self setupUnlockNotification];
+    
     [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
 }
 

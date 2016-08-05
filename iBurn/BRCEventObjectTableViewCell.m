@@ -96,7 +96,7 @@
     if (!playaLocation) {
         playaLocation = @"0:00 & ?";
     }
-    if (![BRCEmbargo canShowLocationForObject:self.dataObject]) {
+    if (![BRCEmbargo canShowLocationForObject:eventObject]) {
         playaLocation = @"Location Restricted";
     }
     if (playaLocation) {

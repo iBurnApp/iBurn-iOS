@@ -20,7 +20,9 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
 #import "BRCAppDelegate.h"
-@import Parse;
+#import <Parse/Parse.h>
+#import "PFAnalytics+iBurn.h"
+#import "BRCArtObjectTableViewCell.h"
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
@@ -145,7 +147,7 @@
 }
 
 - (void) setupCellIdentifiersForTableView:(UITableView*)tableView {
-    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
+    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class], [BRCArtObject class]];
     [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
         Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
         NSString *cellIdentifier = [cellClass cellIdentifier];
@@ -324,7 +326,33 @@
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.dataObject = dataObject;
     CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
-    [cell updateDistanceLabelFromLocation:currentLocation];
+    [cell updateDistanceLabelFromLocation:currentLocation dataObject:dataObject];
+    [cell setFavoriteButtonAction:^(BRCDataObjectTableViewCell *sender) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:self.tableView];
+        dataObject.isFavorite = sender.favoriteButton.selected;
+        // not the best place to do this
+        if (dataObject.isFavorite) {
+            [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
+        }
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+            if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event = (BRCEventObject*)dataObject;
+                [event refreshCalendarEntry:transaction];
+            }
+        }];
+    }];
+    if ([cell isKindOfClass:[BRCArtObjectTableViewCell class]]) {
+        BRCArtObjectTableViewCell *artCell = (BRCArtObjectTableViewCell*)cell;
+        [artCell setPlayPauseBlock:^(BRCArtObjectTableViewCell *sender) {
+            if (sender.isPlayingAudio) {
+                NSLog(@"Playing audio");
+            } else {
+                NSLog(@"Stopping audio");
+            }
+        }];
+    }
     return cell;
 }
 

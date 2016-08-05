@@ -23,6 +23,7 @@ class BRCAudioTourViewController: BRCSortedViewController {
                 })
             }
             }, completionBlock: { () -> Void in
+                NSLog("Audio Tour count: %d", art.count)
                 BRCDataSorter.sortDataObjects(art, options: nil, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
                     self.processSortedData(events, art: art, camps: camps, completion: completion)
                 })

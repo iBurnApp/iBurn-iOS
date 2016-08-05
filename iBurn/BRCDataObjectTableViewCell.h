@@ -21,13 +21,15 @@
 @property (strong, nonatomic) IBOutlet UILabel *rightSubtitleLabel;
 
 /** If favoriteButtonAction is set, you must save your changes */
-@property (nonatomic, copy) dispatch_block_t favoriteButtonAction;
+@property (nonatomic, copy) void (^favoriteButtonAction)(BRCDataObjectTableViewCell *sender);
 
-@property (nonatomic, strong) BRCDataObject *dataObject;
+
+- (void) setDataObject:(BRCDataObject*)dataObject;
+
 
 + (NSString*) cellIdentifier;
 
-- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation;
+- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation dataObject:(BRCDataObject*)dataObject;
 
 + (Class) cellClassForDataObjectClass:(Class)dataObjectClass;
 

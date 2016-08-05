@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Burning Man Earth. All rights reserved.
 //
 
-@import Parse;
+#import <Parse/Parse.h>
 #import "BRCDataObject.h"
 
 @interface PFAnalytics (iBurn)

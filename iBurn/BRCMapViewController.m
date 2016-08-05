@@ -915,7 +915,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:[dataObject class]];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
     cell.dataObject = dataObject;
-    [cell updateDistanceLabelFromLocation:self.mapView.userLocation.location];
+    [cell updateDistanceLabelFromLocation:self.mapView.userLocation.location dataObject:dataObject];
     return cell;
 }
 

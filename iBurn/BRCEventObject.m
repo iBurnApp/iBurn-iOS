@@ -254,21 +254,31 @@ NSString * const kBRCEventArtEdgeName = @"art";
     return host;
 }
 
+/** Updates calendar entry */
+- (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction {
+    NSParameterAssert(transaction);
+    if (!transaction) { return; }
+    if (self.isFavorite) {
+        [self scheduleNotification:transaction];
+    } else {
+        [self cancelNotification:transaction];
+    }
+}
 
-+ (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
-    NSParameterAssert(eventObject.isFavorite);
-    EKEventStore *store = [self eventStore];
+- (void) scheduleNotification:(YapDatabaseReadWriteTransaction*)transaction {
+    NSParameterAssert(self.isFavorite);
+    EKEventStore *store = [[self class] eventStore];
     if (!store) {
         return;
     }
-    if (eventObject.calendarEventIdentifier) {
-        EKEvent *existingEvent = [store eventWithIdentifier:eventObject.calendarEventIdentifier];
+    if (self.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:self.calendarEventIdentifier];
         if (existingEvent) {
-            NSLog(@"Event already exists in calendar: %@ %@", eventObject, existingEvent);
+            NSLog(@"Event already exists in calendar: %@ %@", self, existingEvent);
             return;
         }
     }
-    BRCDataObject *host = [eventObject hostWithTransaction:transaction];
+    BRCDataObject *host = [self hostWithTransaction:transaction];
     NSMutableString *locationString = [NSMutableString string];
     if (host.playaLocation) {
         [locationString appendFormat:@"%@ - ", host.playaLocation];
@@ -279,14 +289,14 @@ NSString * const kBRCEventArtEdgeName = @"art";
     EKCalendar *calendar = [store defaultCalendarForNewEvents];
     EKEvent *calendarEvent = [EKEvent eventWithEventStore:store];
     calendarEvent.calendar = calendar;
-    calendarEvent.title = eventObject.title;
+    calendarEvent.title = self.title;
     calendarEvent.location = locationString;
     calendarEvent.timeZone = [NSTimeZone brc_burningManTimeZone];
-    calendarEvent.startDate = eventObject.startDate;
-    calendarEvent.endDate = eventObject.endDate;
-    calendarEvent.allDay = eventObject.isAllDay;
-    calendarEvent.URL = eventObject.url;
-    calendarEvent.notes = eventObject.detailDescription;
+    calendarEvent.startDate = self.startDate;
+    calendarEvent.endDate = self.endDate;
+    calendarEvent.allDay = self.isAllDay;
+    calendarEvent.URL = self.url;
+    calendarEvent.notes = self.detailDescription;
     // Remind 1.5 hrs in advance
     EKAlarm *alarm = [EKAlarm alarmWithRelativeOffset:-90 * 60];
     [calendarEvent addAlarm:alarm];
@@ -294,36 +304,33 @@ NSString * const kBRCEventArtEdgeName = @"art";
     NSError *error = nil;
     BOOL success = [store saveEvent:calendarEvent span:EKSpanThisEvent error:&error];
     if (!success) {
-        NSLog(@"Couldn't save event: %@ %@ %@", eventObject, calendarEvent, error);
+        NSLog(@"Couldn't save event: %@ %@ %@", self, calendarEvent, error);
         return;
     }
-    eventObject.calendarEventIdentifier = calendarEvent.eventIdentifier;
-    [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
+    BRCEventObject *newEvent = [self copy];
+    newEvent.calendarEventIdentifier = calendarEvent.eventIdentifier;
+    [transaction setObject:newEvent forKey:self.uniqueID inCollection:[BRCEventObject collection]];
 }
 
-+ (NSString*) localNotificationUserInfoKey {
-    NSString *key = [NSString stringWithFormat:@"%@-%@", NSStringFromClass([self class]), NSStringFromSelector(@selector(uniqueID))];
-    return key;
-}
-
-+ (void) cancelScheduledNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction {
-    NSParameterAssert(!eventObject.isFavorite);
-    EKEventStore *store = [self eventStore];
+- (void) cancelNotification:(YapDatabaseReadWriteTransaction*)transaction {
+    NSParameterAssert(!self.isFavorite);
+    EKEventStore *store = [[self class] eventStore];
     if (!store) {
         return;
     }
-    if (eventObject.calendarEventIdentifier) {
-        EKEvent *existingEvent = [store eventWithIdentifier:eventObject.calendarEventIdentifier];
+    if (self.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:self.calendarEventIdentifier];
         if (existingEvent) {
             NSError *error = nil;
             BOOL success = [store removeEvent:existingEvent span:EKSpanThisEvent error:&error];
             if (!success) {
-                NSLog(@"Couldn't remove event: %@ %@ %@", eventObject, existingEvent, error);
+                NSLog(@"Couldn't remove event: %@ %@ %@", self, existingEvent, error);
             }
         }
     }
-    eventObject.calendarEventIdentifier = nil;
-    [transaction setObject:eventObject forKey:eventObject.uniqueID inCollection:[BRCEventObject collection]];
+    BRCEventObject *newEvent = [self copy];
+    newEvent.calendarEventIdentifier = nil;
+    [transaction setObject:newEvent forKey:self.uniqueID inCollection:[BRCEventObject collection]];
 }
 
 - (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction {

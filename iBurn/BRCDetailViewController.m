@@ -24,7 +24,7 @@
 #import "BRCEventObject.h"
 #import "BRCLocations.h"
 #import "BRCAppDelegate.h"
-@import Parse;
+#import <Parse/Parse.h>
 #import "PFAnalytics+iBurn.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import "iBurn-Swift.h"
@@ -169,11 +169,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *event = (BRCEventObject*)tempObject;
-            if (event.isFavorite) {
-                [BRCEventObject scheduleNotificationForEvent:event transaction:transaction];
-            } else {
-                [BRCEventObject cancelScheduledNotificationForEvent:event transaction:transaction];
-            }
+            [event refreshCalendarEntry:transaction];
         }
     }];
 }

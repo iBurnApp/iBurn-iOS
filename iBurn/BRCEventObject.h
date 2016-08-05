@@ -118,11 +118,7 @@ extern NSString * const kBRCEventArtEdgeName;
 + (NSString *)stringForEventType:(BRCEventType)type;
 
 
-/** eventObject must be isFavorite first */
-+ (void) scheduleNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction;
-/** eventObject must not be favorite */
-+ (void) cancelScheduledNotificationForEvent:(BRCEventObject*)eventObject transaction:(YapDatabaseReadWriteTransaction*)transaction;
-/** userInfo contains the event's uniqueID under this key */
-+ (NSString*) localNotificationUserInfoKey;
+/** Updates calendar entry. Note: this will also re-save the object. */
+- (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction;
 
 @end

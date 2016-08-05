@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-@import Mantle;
+#import <Mantle/Mantle.h>
 @import CoreLocation;
 
 @interface BRCDataObject : MTLModel <MTLJSONSerializing>

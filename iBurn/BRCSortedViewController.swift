@@ -77,7 +77,7 @@ public class BRCSortedViewController: UITableViewController {
         tableView.estimatedRowHeight = 120
         tableView.rowHeight = UITableViewAutomaticDimension
         // register table cell classes
-        let classesToRegister = [BRCEventObject.self, BRCDataObject.self]
+        let classesToRegister = [BRCEventObject.self, BRCDataObject.self, BRCArtObject.self]
         for objClass in classesToRegister {
             let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(objClass)
             let nib = UINib(nibName: NSStringFromClass(cellClass), bundle: nil)
@@ -225,25 +225,30 @@ public class BRCSortedViewController: UITableViewController {
         let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(dataObjectClass)
         let reuseIdentifier = cellClass.cellIdentifier()
         let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! BRCDataObjectTableViewCell
-        cell.dataObject = dataObject
-        cell.updateDistanceLabelFromLocation(getCurrentLocation())
-        cell.favoriteButtonAction = { () -> Void in
+        cell.setDataObject(dataObject)
+        cell.updateDistanceLabelFromLocation(getCurrentLocation(), dataObject: dataObject)
+        cell.favoriteButtonAction = { (sender) -> Void in
             let dataCopy = dataObject.copy() as! BRCDataObject
             dataCopy.isFavorite = cell.favoriteButton.selected
             BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWriteWithBlock({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
                 transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: dataCopy.dynamicType.collection())
                 if let event = dataObject as? BRCEventObject {
-                    if event.isFavorite {
-                        BRCEventObject.scheduleNotificationForEvent(event, transaction: transaction)
-                    } else {
-                        BRCEventObject.cancelScheduledNotificationForEvent(event, transaction: transaction)
-                    }
+                    event.refreshCalendarEntry(transaction)
                 }
                 }, completionQueue:dispatch_get_main_queue(), completionBlock: { () -> Void in
                     self.refreshTableItems({ () -> Void in
                         self.tableView.reloadData()
                     })
             })
+        }
+        if let artCell = cell as? BRCArtObjectTableViewCell {
+            artCell.playPauseBlock = { (sender) -> Void in
+                if sender.isPlayingAudio {
+                    NSLog("Playing audio")
+                } else {
+                    NSLog("Stopping audio")
+                }
+            }
         }
         return cell
     }
