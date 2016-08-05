@@ -23,6 +23,8 @@
 #import <Parse/Parse.h>
 #import "PFAnalytics+iBurn.h"
 #import "BRCArtObjectTableViewCell.h"
+#import "iBurn-Swift.h"
+@import AVFoundation;
 
 @interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
@@ -48,6 +50,7 @@
         [self setupMappings];
         [self updateMappingsWithCompletionBlock:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioPlayerChangedNotification:) name:BRCAudioPlayer.BRCAudioPlayerChangeNotification object:BRCAudioPlayer.sharedInstance];
         [self view]; //wtf
     }
     return self;
@@ -279,6 +282,9 @@
     [PFAnalytics trackEventInBackground:self.title block:nil];
 }
 
+- (void) audioPlayerChangedNotification:(NSNotification*)notification {
+    [self.tableView reloadData];
+}
 #pragma - mark UITableViewDataSource Methods
 
 - (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView
@@ -345,11 +351,16 @@
     }];
     if ([cell isKindOfClass:[BRCArtObjectTableViewCell class]]) {
         BRCArtObjectTableViewCell *artCell = (BRCArtObjectTableViewCell*)cell;
+        if ([[BRCAudioPlayer sharedInstance] isPlaying:(BRCArtObject*)dataObject]) {
+            artCell.isPlayingAudio = YES;
+        } else {
+            artCell.isPlayingAudio = NO;
+        }
         [artCell setPlayPauseBlock:^(BRCArtObjectTableViewCell *sender) {
             if (sender.isPlayingAudio) {
-                NSLog(@"Playing audio");
+                [[BRCAudioPlayer sharedInstance] playAudioTour:(BRCArtObject*)dataObject];
             } else {
-                NSLog(@"Stopping audio");
+                [[BRCAudioPlayer sharedInstance].player pause];
             }
         }];
     }

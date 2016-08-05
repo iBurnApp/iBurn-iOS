@@ -33,11 +33,15 @@
 #import <pop/POP.h>
 #import "BRCGeocoder.h"
 #import "BRCUserMapPoint.h"
-@import KVOController;
-@import Parse;
+#import <KVOController/NSObject+FBKVOController.h>
+#import <Parse/Parse.h>
+#import "PFAnalytics+iBurn.h"
 @import YapDatabase.YapDatabaseView;
 @import YapDatabase.YapDatabaseFullTextSearch;
 #import "iBurn-Swift.h"
+#import "BRCArtObject.h"
+#import "BRCArtObjectTableViewCell.h"
+@import AVFoundation;
 
 static const float kBRCMapViewArtAndEventsMinZoomLevel = 16.0f;
 static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
@@ -105,6 +109,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         [self setupSearchController];
         [self setupSearchIndicator];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioPlayerChangedNotification:) name:BRCAudioPlayer.BRCAudioPlayerChangeNotification object:BRCAudioPlayer.sharedInstance];
     }
     return self;
 }
@@ -124,7 +129,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.searchController.searchResultsDataSource = self;
     self.searchController.searchResultsDelegate = self;
     
-    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class]];
+    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class], [BRCArtObject class]];
     [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
         Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
         UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
@@ -916,7 +921,45 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[cellClass cellIdentifier] forIndexPath:indexPath];
     cell.dataObject = dataObject;
     [cell updateDistanceLabelFromLocation:self.mapView.userLocation.location dataObject:dataObject];
+    
+    [cell setFavoriteButtonAction:^(BRCDataObjectTableViewCell *sender) {
+        NSIndexPath *indexPath = [tableView indexPathForCell:sender];
+        BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+        dataObject.isFavorite = sender.favoriteButton.selected;
+        // not the best place to do this
+        if (dataObject.isFavorite) {
+            [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
+        }
+        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+            if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *event = (BRCEventObject*)dataObject;
+                [event refreshCalendarEntry:transaction];
+            }
+        }];
+    }];
+    
+    if ([cell isKindOfClass:[BRCArtObjectTableViewCell class]]) {
+        BRCArtObjectTableViewCell *artCell = (BRCArtObjectTableViewCell*)cell;
+        if ([[BRCAudioPlayer sharedInstance] isPlaying:(BRCArtObject*)dataObject]) {
+            artCell.isPlayingAudio = YES;
+        } else {
+            artCell.isPlayingAudio = NO;
+        }
+        [artCell setPlayPauseBlock:^(BRCArtObjectTableViewCell *sender) {
+            if (sender.isPlayingAudio) {
+                [[BRCAudioPlayer sharedInstance] playAudioTour:(BRCArtObject*)dataObject];
+            } else {
+                [[BRCAudioPlayer sharedInstance].player pause];
+            }
+        }];
+    }
+    
     return cell;
+}
+
+- (void) audioPlayerChangedNotification:(NSNotification*)notification {
+    [self.searchController.searchResultsTableView reloadData];
 }
 
 - (void) centerMapAtManCoordinates {

@@ -51,6 +51,7 @@ public class BRCSortedViewController: UITableViewController {
             }
         }
         NSNotificationCenter.defaultCenter().addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: BRCDatabaseExtensionRegisteredNotification, object: BRCDatabaseManager.sharedInstance());
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(audioPlayerChangeNotification(_:)), name: BRCAudioPlayer.BRCAudioPlayerChangeNotification, object: BRCAudioPlayer.sharedInstance)
     }
     
     private override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: NSBundle!) {
@@ -97,6 +98,10 @@ public class BRCSortedViewController: UITableViewController {
                 })
             }
         }
+    }
+    
+    func audioPlayerChangeNotification(notification: NSNotification) {
+        self.tableView.reloadData()
     }
     
     public override func viewWillAppear(animated: Bool) {
@@ -242,11 +247,16 @@ public class BRCSortedViewController: UITableViewController {
             })
         }
         if let artCell = cell as? BRCArtObjectTableViewCell {
+            if BRCAudioPlayer.sharedInstance.isPlaying(dataObject as! BRCArtObject) {
+                artCell.isPlayingAudio = true
+            } else {
+                artCell.isPlayingAudio = false
+            }
             artCell.playPauseBlock = { (sender) -> Void in
                 if sender.isPlayingAudio {
-                    NSLog("Playing audio")
+                    BRCAudioPlayer.sharedInstance.playAudioTour(dataObject as! BRCArtObject)
                 } else {
-                    NSLog("Stopping audio")
+                    BRCAudioPlayer.sharedInstance.player?.pause()
                 }
             }
         }

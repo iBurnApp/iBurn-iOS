@@ -29,19 +29,5 @@ class BRCAudioTourViewController: BRCSortedViewController {
                 })
         })
     }
-    
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if !hasTableItems() {
-            return
-        }
-        guard let artObject = sections[indexPath.section].objects[indexPath.row] as? BRCArtObject else {
-            return
-        }
-        let url = artObject.audioURL
-        if (url != nil) {
-            let player = MPMoviePlayerViewController(contentURL: url)
-            presentViewController(player, animated: true, completion: nil)
-        }
-    }
 
 }
