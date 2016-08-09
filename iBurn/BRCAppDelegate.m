@@ -46,6 +46,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 @interface BRCAppDelegate() <UINavigationControllerDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
+@property (nonatomic, strong, readonly) BRCAudioDownloader *audioDownloader;
 @end
 
 @implementation BRCAppDelegate
@@ -117,6 +118,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
+    _audioDownloader = [[BRCAudioDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].audioTourViewName];
+    [self.audioDownloader downloadAudio];
     
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
@@ -202,7 +205,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
 {
-    [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
+    if ([identifier isEqualToString:kBRCBackgroundFetchIdentifier]) {
+        [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
+    } else if ([identifier isEqualToString:BRCAudioDownloader.backgroundSessionIdentifier]) {
+        self.audioDownloader.backgroundCompletion = completionHandler;
+    }
 }
 
 - (void)setupDefaultTabBarController

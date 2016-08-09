@@ -9,6 +9,7 @@
 #import "BRCArtObject.h"
 #import "NSDictionary+MTLManipulationAdditions.h"
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
+#import "iBurn-Swift.h"
 
 @implementation BRCArtObject
 
@@ -33,5 +34,12 @@
     }
 }
 
+- (NSURL*) localAudioURL {
+    NSURL *url = [BRCAudioDownloader localAudioURL:self];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
+        return url;
+    }
+    return nil;
+}
 
 @end
