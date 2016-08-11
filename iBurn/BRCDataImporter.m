@@ -289,6 +289,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                 }
                 ///////////////
                 
+                
                 // We need to duplicate the recurring events to make our lives easier later
                 if ([object isKindOfClass:[BRCRecurringEventObject class]]) {
                     BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
@@ -297,6 +298,8 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                         BRCEventObject *existingEvent = [transaction objectForKey:event.uniqueID inCollection:[[event class] collection]];
                         if (existingEvent) {
                             event.isFavorite = existingEvent.isFavorite;
+                            event.userNotes = existingEvent.userNotes;
+                            event.calendarEventIdentifier = existingEvent.calendarEventIdentifier;
                         }
                         event.lastUpdated = updateInfo.lastUpdated;
                         [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
@@ -305,12 +308,31 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                     BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
                     if (existingObject) {
                         object.isFavorite = existingObject.isFavorite;
+                        object.userNotes = existingObject.userNotes;
                     }
                     object.lastUpdated = updateInfo.lastUpdated;
                     [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
                 }
+                
+                
             }
         }];
+        
+        // This is the worst way of removing outdated data
+        NSMutableArray<BRCDataObject*> *objectsToRemove = [NSMutableArray array];
+        [transaction enumerateKeysAndObjectsInCollection:[dataClass collection] usingBlock:^(NSString * _Nonnull key, id  _Nonnull object, BOOL * _Nonnull stop) {
+            if ([object isKindOfClass:[BRCDataObject class]]) {
+                BRCDataObject *dataObject = object;
+                if (![dataObject.lastUpdated isEqualToDate:updateInfo.lastUpdated]) {
+                    [objectsToRemove addObject:dataObject];
+                    NSLog(@"Outdated object found: %@", dataObject);
+                }
+            }
+        }];
+        [objectsToRemove enumerateObjectsUsingBlock:^(BRCDataObject * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [transaction removeObjectForKey:obj.uniqueID inCollection:[[obj class] collection]];
+        }];
+        
         updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
@@ -497,10 +519,12 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
 - (void)URLSessionDidFinishEventsForBackgroundURLSession:(NSURLSession *)session
 {
     [self.updateQueue waitUntilAllOperationsAreFinished];
-    if (self.urlSessionCompletionHandler) {
-        self.urlSessionCompletionHandler();
-        self.urlSessionCompletionHandler = nil;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.urlSessionCompletionHandler) {
+            self.urlSessionCompletionHandler();
+            self.urlSessionCompletionHandler = nil;
+        }
+    });
 }
 
 #pragma mark NSURLSessionDownloadDelegate

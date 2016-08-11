@@ -18,6 +18,9 @@
  */
 @property (nonatomic, readwrite) BOOL isFavorite;
 
+/** Any notes added by the user */
+@property (nonatomic, strong) NSString *userNotes;
+
 /** The last time object was fetched from iBurn API */
 @property (nonatomic, strong, readwrite) NSDate *lastUpdated;
 
