@@ -100,7 +100,7 @@ public class BRCSortedViewController: UITableViewController {
         }
     }
     
-    func audioPlayerChangeNotification(notification: NSNotification) {
+    public func audioPlayerChangeNotification(notification: NSNotification) {
         self.tableView.reloadData()
     }
     
@@ -247,18 +247,7 @@ public class BRCSortedViewController: UITableViewController {
             })
         }
         if let artCell = cell as? BRCArtObjectTableViewCell {
-            if BRCAudioPlayer.sharedInstance.isPlaying(dataObject as! BRCArtObject) {
-                artCell.isPlayingAudio = true
-            } else {
-                artCell.isPlayingAudio = false
-            }
-            artCell.playPauseBlock = { (sender) -> Void in
-                if sender.isPlayingAudio {
-                    BRCAudioPlayer.sharedInstance.playAudioTour(dataObject as! BRCArtObject)
-                } else {
-                    BRCAudioPlayer.sharedInstance.player?.pause()
-                }
-            }
+            artCell.configurePlayPauseButton(dataObject as! BRCArtObject)
         }
         return cell
     }

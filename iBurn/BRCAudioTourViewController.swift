@@ -8,7 +8,55 @@
 
 import UIKit
 
+enum AudioButtonState: String {
+    case PlayAll = "Play All"
+    case Resume = "Resume"
+    case Pause = "Pause"
+}
+
 class BRCAudioTourViewController: BRCSortedViewController {
+    
+    let playAllItemsButton = UIBarButtonItem()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupPlayAllItemsButton()
+    }
+    
+    func setupPlayAllItemsButton() {
+        refreshButtonState()
+        playAllItemsButton.action = #selector(BRCAudioTourViewController.playAllItems(_:))
+        playAllItemsButton.target = self
+        self.navigationItem.rightBarButtonItem = playAllItemsButton
+    }
+    
+    func refreshButtonState() {
+        if let player = BRCAudioPlayer.sharedInstance.player {
+            if player.rate > 0 {
+                playAllItemsButton.title = AudioButtonState.Pause.rawValue
+            } else {
+                playAllItemsButton.title = AudioButtonState.Resume.rawValue
+            }
+        } else {
+            playAllItemsButton.title = AudioButtonState.PlayAll.rawValue
+        }
+    }
+    
+    internal override func audioPlayerChangeNotification(notification: NSNotification) {
+        super.audioPlayerChangeNotification(notification)
+        refreshButtonState()
+    }
+    
+    func playAllItems(sender: AnyObject?) {
+        if BRCAudioPlayer.sharedInstance.player != nil {
+            BRCAudioPlayer.sharedInstance.togglePlayPause()
+        } else {
+            if let objects = self.sections.first?.objects {
+                BRCAudioPlayer.sharedInstance.playAudioTour(objects as! [BRCArtObject])
+            }
+        }
+        refreshButtonState()
+    }
 
     override func refreshTableItems(completion: dispatch_block_t) {
         var art: [BRCArtObject] = []

@@ -9,6 +9,8 @@
 #import "BRCArtObjectTableViewCell.h"
 #import <Mantle/Mantle.h>
 #import "BRCArtObject.h"
+#import "iBurn-Swift.h"
+@import AVFoundation;
 
 @implementation BRCArtObjectTableViewCell
 
@@ -50,6 +52,21 @@
     if (self.playPauseBlock) {
         self.playPauseBlock(self);
     }
+}
+
+- (void) configurePlayPauseButton:(BRCArtObject *)artObject {
+    if ([[BRCAudioPlayer sharedInstance] isPlaying:artObject]) {
+        self.isPlayingAudio = YES;
+    } else {
+        self.isPlayingAudio = NO;
+    }
+    [self setPlayPauseBlock:^(BRCArtObjectTableViewCell *sender) {
+        if (sender.isPlayingAudio) {
+            [[BRCAudioPlayer sharedInstance] playAudioTour:@[artObject]];
+        } else {
+            [[BRCAudioPlayer sharedInstance] togglePlayPause];
+        }
+    }];
 }
 
 @end

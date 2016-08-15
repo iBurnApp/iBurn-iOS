@@ -941,18 +941,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     
     if ([cell isKindOfClass:[BRCArtObjectTableViewCell class]]) {
         BRCArtObjectTableViewCell *artCell = (BRCArtObjectTableViewCell*)cell;
-        if ([[BRCAudioPlayer sharedInstance] isPlaying:(BRCArtObject*)dataObject]) {
-            artCell.isPlayingAudio = YES;
-        } else {
-            artCell.isPlayingAudio = NO;
-        }
-        [artCell setPlayPauseBlock:^(BRCArtObjectTableViewCell *sender) {
-            if (sender.isPlayingAudio) {
-                [[BRCAudioPlayer sharedInstance] playAudioTour:(BRCArtObject*)dataObject];
-            } else {
-                [[BRCAudioPlayer sharedInstance].player pause];
-            }
-        }];
+        [artCell configurePlayPauseButton:(BRCArtObject*)dataObject];
     }
     
     return cell;
