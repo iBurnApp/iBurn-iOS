@@ -17,7 +17,7 @@
 
 @interface NSDateFormatter (iBurn)
 
-/** e.g. 2015-09-04 11:00:00 */
+/** e.g. 2015-09-04T11:00:00-07:00 */
 + (NSDateFormatter*) brc_playaEventsAPIDateFormatter;
 
 /** e.g. 2015-09-04 11 */

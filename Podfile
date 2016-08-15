@@ -7,6 +7,9 @@ abstract_target 'iBurnAbstract' do
 	target 'iBurn'
 	target 'iBurnTests'
 
+	# Debugging
+	pod 'Swizzlean'
+
 	# Gotta use fork now because it's deprecated
 	pod 'Mapbox-iOS-SDK', :path => 'Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec'
 	pod 'YapDatabase', '~> 2.6'

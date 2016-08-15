@@ -45,6 +45,7 @@ PODS:
   - PureLayout (3.0.2)
   - Reachability (3.2)
   - SMCalloutView (2.1.5)
+  - Swizzlean (0.2.0)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
   - VTAcknowledgementsViewController (1.1)
@@ -119,6 +120,7 @@ DEPENDENCIES:
   - pop (~> 1.0)
   - proj4 (from `https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec`)
   - PureLayout (~> 3.0)
+  - Swizzlean
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
   - VTAcknowledgementsViewController (~> 1.0)
@@ -165,11 +167,12 @@ SPEC CHECKSUMS:
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   SMCalloutView: 5c0ee363dc8e7204b2fda17dfad38c93e9e23481
+  Swizzlean: 6ef3e5a33063b7cd99dc39f8c55164dc55d9a021
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   VTAcknowledgementsViewController: 44da49d57a1dbf414e653688793a130d24af151e
   YapDatabase: 713d4018cfacbd6e77dd430710ca84730e450980
 
-PODFILE CHECKSUM: 314595c6204b1b575486c9d658241346461a1d04
+PODFILE CHECKSUM: 825d66c480596bb22e08d4fba5ce249bfb8cb288
 
 COCOAPODS: 1.0.1

@@ -39,6 +39,7 @@
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
 #import "BRCOnboardingViewController.h"
+#import <Swizzlean/Swizzlean.h>
 @import PermissionScope;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
@@ -47,6 +48,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
 @property (nonatomic, strong, readonly) BRCAudioDownloader *audioDownloader;
+
+#if DEBUG
+@property (nonatomic, strong) Swizzlean *swizzle;
+#endif
 @end
 
 @implementation BRCAppDelegate
@@ -54,6 +59,17 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+#if DEBUG
+    self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
+    [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
+        NSDateFormatter *df = [NSDateFormatter brc_playaEventsAPIDateFormatter];
+        NSString *testDateString = @"2016-09-01T11:00:00-07:00";
+        NSDate *date = [df dateFromString:testDateString];
+        NSParameterAssert(date);
+        return date;
+    }];
+#endif
+    
     [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
                                                          liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
     [[BITHockeyManager sharedHockeyManager] startManager];
