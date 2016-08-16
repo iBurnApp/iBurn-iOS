@@ -62,6 +62,9 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 
 /** Audio Tour */
 @property (nonatomic, strong, readonly) NSString *audioTourViewName;
+/** Art that has images */
+@property (nonatomic, strong, readonly) NSString *artImagesViewName;
+
 
 /** Search view containing all camp objects */
 @property (nonatomic, strong, readonly) NSString *searchCampsView;

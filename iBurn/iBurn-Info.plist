@@ -33,6 +33,17 @@
 	<string>19</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>galleries.burningman.org</key>
+			<dict>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>iBurn only uses your location within the app itself to help you navigate the playa and discover fun things happening near you.</string>
 	<key>UIAppFonts</key>

@@ -47,7 +47,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 @interface BRCAppDelegate() <UINavigationControllerDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
-@property (nonatomic, strong, readonly) BRCAudioDownloader *audioDownloader;
+@property (nonatomic, strong, readonly) BRCMediaDownloader *audioDownloader;
+@property (nonatomic, strong, readonly) BRCMediaDownloader *imageDownloader;
 
 #if DEBUG
 @property (nonatomic, strong) Swizzlean *swizzle;
@@ -134,8 +135,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
-    _audioDownloader = [[BRCAudioDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].audioTourViewName];
-    [self.audioDownloader downloadAudio];
+    _audioDownloader = [[BRCMediaDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].audioTourViewName downloadType:BRCMediaDownloadTypeAudio];
+    [self.audioDownloader downloadUncachedMedia];
+    _imageDownloader = [[BRCMediaDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].artImagesViewName downloadType:BRCMediaDownloadTypeImage];
+    [self.imageDownloader downloadUncachedMedia];
     
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
@@ -223,8 +226,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 {
     if ([identifier isEqualToString:kBRCBackgroundFetchIdentifier]) {
         [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
-    } else if ([identifier isEqualToString:BRCAudioDownloader.backgroundSessionIdentifier]) {
+    } else if ([identifier isEqualToString:self.audioDownloader.backgroundSessionIdentifier]) {
         self.audioDownloader.backgroundCompletion = completionHandler;
+    } else if ([identifier isEqualToString:self.imageDownloader.backgroundSessionIdentifier]) {
+        self.imageDownloader.backgroundCompletion = completionHandler;
     }
 }
 

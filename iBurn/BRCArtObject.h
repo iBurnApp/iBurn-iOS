@@ -12,8 +12,14 @@
 
 @property (nonatomic, strong, readonly) NSString *artistName;
 @property (nonatomic, strong, readonly) NSString *artistLocation;
+
 /** use thumbnail_url key in dict */
 @property (nonatomic, strong, readonly) NSArray<NSDictionary*> *imageURLs;
+/** Returns local URL if present, otherwise remote */
+@property (nonatomic, strong, readonly) NSURL *thumbnailURL;
+@property (nonatomic, strong, readonly) NSURL *remoteThumbnailURL;
+@property (nonatomic, strong, readonly) NSURL *localThumbnailURL;
+
 
 /** Returns local URL if present, otherwise remote */
 @property (nonatomic, strong, readonly) NSURL *audioURL;

@@ -26,6 +26,50 @@
     return [NSValueTransformer valueTransformerForName:MTLURLValueTransformerName];
 }
 
+/*
+ "images": [
+    {
+        "gallery_ref": 82828,
+        "thumbnail_url": "http://galleries.burningman.org/include/../filestore/tmp/api_resource_cache/82828_bbe3408f7c71e6bcc6dc11bb9c5e3695.jpg"
+    }
+],
+ */
+
+- (NSURL*) remoteThumbnailURL {
+    NSString *urlString = self.imageURLs.firstObject[@"thumbnail_url"];
+    return [NSURL URLWithString:urlString];
+}
+
+- (NSURL*) localThumbnailURL {
+    return [self localMediaURLForType:BRCMediaDownloadTypeImage];
+}
+
+- (NSURL*) localMediaURLForType:(BRCMediaDownloadType)type {
+    NSString *fileName = [BRCMediaDownloader fileName:self type:type];
+    NSURL *url = [BRCMediaDownloader localMediaURL:fileName];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
+        return url;
+    }
+    return nil;
+}
+
+- (NSURL*) remoteMediaURLForType:(BRCMediaDownloadType)type {
+    if (type == BRCMediaDownloadTypeAudio) {
+        return self.remoteAudioURL;
+    } else if (type == BRCMediaDownloadTypeImage) {
+        return self.remoteThumbnailURL;
+    }
+    return nil;
+}
+
+- (NSURL*) thumbnailURL {
+    if (self.localThumbnailURL) {
+        return self.localThumbnailURL;
+    } else {
+        return self.remoteThumbnailURL;
+    }
+}
+
 - (NSURL*) audioURL {
     if (self.localAudioURL) {
         return self.localAudioURL;
@@ -35,11 +79,7 @@
 }
 
 - (NSURL*) localAudioURL {
-    NSURL *url = [BRCAudioDownloader localAudioURL:self];
-    if ([[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
-        return url;
-    }
-    return nil;
+    return [self localMediaURLForType:BRCMediaDownloadTypeAudio];
 }
 
 @end

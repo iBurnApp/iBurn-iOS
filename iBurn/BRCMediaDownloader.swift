@@ -1,5 +1,5 @@
 //
-//  BRCAudioDownloader.swift
+//  BRCMediaDownloader.swift
 //  iBurn
 //
 //  Created by Chris Ballinger on 8/8/16.
@@ -9,14 +9,25 @@
 import Foundation
 import YapDatabase
 
-public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDownloadDelegate {
+@objc
+public enum BRCMediaDownloadType: Int
+{
+    case Unknown = 0
+    case Audio
+    case Image
+}
+
+public class BRCMediaDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDownloadDelegate {
     
     let viewName: String
     let connection: YapDatabaseConnection
     var session: NSURLSession!
-    public static let backgroundSessionIdentifier = "BRCAudioDownloaderSession"
+    
+    let downloadType: BRCMediaDownloadType
+    public let backgroundSessionIdentifier: String
     var observer: NSObjectProtocol?
     public var backgroundCompletion: dispatch_block_t?
+    let delegateQueue = NSOperationQueue()
     
     deinit {
         if let observer = observer {
@@ -24,17 +35,19 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
         }
     }
     
-    public init(connection: YapDatabaseConnection, viewName: String) {
+    public init(connection: YapDatabaseConnection, viewName: String, downloadType: BRCMediaDownloadType) {
+        self.downloadType = downloadType
         self.connection = connection
         self.viewName = viewName
-        let config = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(BRCAudioDownloader.backgroundSessionIdentifier)
+        self.backgroundSessionIdentifier = "BRCMediaDownloaderSession" + viewName
+        let config = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(backgroundSessionIdentifier)
         super.init()
-        self.session = NSURLSession(configuration: config, delegate: self, delegateQueue: NSOperationQueue.mainQueue())
+        self.session = NSURLSession(configuration: config, delegate: self, delegateQueue: delegateQueue)
         observer = NSNotificationCenter.defaultCenter().addObserverForName(BRCDatabaseExtensionRegisteredNotification, object: BRCDatabaseManager.sharedInstance(), queue: NSOperationQueue.mainQueue()) { (notification) in
             if let extensionName = notification.userInfo?["extensionName"] as? String {
                 if extensionName == self.viewName {
-                    NSLog("BRCAudioDownloader databaseExtensionRegistered: %@", extensionName)
-                    self.downloadAudio()
+                    NSLog("BRCMediaDownloader databaseExtensionRegistered: %@", extensionName)
+                    self.downloadUncachedMedia()
                 }
             }
         }
@@ -42,7 +55,7 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
     
     public static func downloadPath() -> String {
         let documentsPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as NSString
-        let folderName = "AudioFiles"
+        let folderName = "MediaFiles"
         let path = documentsPath.stringByAppendingPathComponent(folderName)
         if !NSFileManager.defaultManager().fileExistsAtPath(path) {
             do {
@@ -52,16 +65,32 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
         return path
     }
     
-    public static func localAudioURL(art: BRCArtObject) -> NSURL {
+    public static func localMediaURL(fileName: String) -> NSURL {
         let downloadPath = self.downloadPath() as NSString
-        let fileName = art.uniqueID + ".mp3"
         let path = downloadPath.stringByAppendingPathComponent(fileName)
         let url = NSURL(fileURLWithPath: path)
         return url
     }
     
-    /** This will cache un-downloaded audio tracks */
-    public func downloadAudio() {
+    public static func fileName(art: BRCArtObject, type: BRCMediaDownloadType) -> String {
+        let fileType = extensionForDownloadType(type)
+        let fileName = (art.uniqueID as NSString).stringByAppendingPathExtension(fileType)!
+        return fileName
+    }
+    
+    private static func extensionForDownloadType(type: BRCMediaDownloadType) -> String {
+        switch type {
+        case .Image:
+            return "jpg"
+        case .Audio:
+            return "mp3"
+        default:
+            return ""
+        }
+    }
+    
+    /** This will cache un-downloaded media */
+    public func downloadUncachedMedia() {
         connection.asyncReadWithBlock { (transaction) in
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
                 return
@@ -70,12 +99,32 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
             viewTransaction.enumerateGroupsUsingBlock({ (group: String!, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
                 viewTransaction.enumerateKeysAndObjectsInGroup(group, usingBlock: { (collection: String!, key: String!, object: AnyObject!, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
                     if let dataObject = object as? BRCArtObject {
+                        
                         // Only add files that haven't been downloaded
-                        if dataObject.remoteAudioURL != nil && dataObject.localAudioURL == nil {
-                            NSLog("Downloading audio for %@", dataObject.remoteAudioURL)
-                            art[dataObject.remoteAudioURL] = dataObject
+                        var remoteURL: NSURL? = nil
+                        var localURL: NSURL? = nil
+                        switch self.downloadType {
+                        case .Image:
+                            remoteURL = dataObject.remoteThumbnailURL
+                            localURL = dataObject.localThumbnailURL
+                            break
+                        case .Audio:
+                            remoteURL = dataObject.remoteAudioURL
+                            localURL = dataObject.localAudioURL
+                            break
+                        default:
+                            break
+                        }
+                        
+                        if localURL == nil && remoteURL == nil {
+                            return
+                        }
+                        
+                        if remoteURL != nil && localURL == nil {
+                            NSLog("Downloading media for %@", remoteURL!)
+                            art[remoteURL!] = dataObject
                         } else {
-                            NSLog("Already downloaded audio for %@", dataObject.remoteAudioURL)
+                            //NSLog("Already downloaded media for %@", remoteURL!)
                         }
                     }
                 })
@@ -85,22 +134,34 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
                 for download in downloads {
                     if let url = download.originalRequest?.URL {
                         if let exists = art[url] {
-                            NSLog("Existing download for %@", exists.remoteAudioURL)
+                            NSLog("Existing download for %@", exists.url)
                             art.removeValueForKey(url)
                         }
                     }
                 }
                 self.downloadFiles(Array(art.values))
-                
             })
+        }
+    }
+    
+    private func remoteURL(file: BRCArtObject) -> NSURL {
+        switch downloadType {
+        case .Audio:
+            return file.remoteAudioURL
+        case .Image:
+            return file.remoteThumbnailURL
+        default:
+            return NSURL()
         }
     }
     
     private func downloadFiles(files: [BRCArtObject]) {
         for file in files {
-            let task = self.session.downloadTaskWithURL(file.remoteAudioURL)
-            task.taskDescription = file.uniqueID
-            NSLog("Downloading file: %@", file.remoteAudioURL)
+            let remoteURL = self.remoteURL(file)
+            let task = self.session.downloadTaskWithURL(remoteURL)
+            let fileName = self.dynamicType.fileName(file, type: downloadType)
+            task.taskDescription = fileName
+            NSLog("Downloading file: %@", remoteURL)
             task.resume()
         }
     }
@@ -116,19 +177,11 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
     //MARK: NSURLSessionDownloadDelegate
     
     public func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {
-        guard let key = downloadTask.taskDescription else {
+        guard let fileName = downloadTask.taskDescription else {
             NSLog("taskDescription is nil!")
             return
         }
-        var object: AnyObject?
-        self.connection.readWithBlock { (transaction) in
-            object = transaction.objectForKey(key, inCollection: BRCArtObject.collection())
-        }
-        guard let artObject = object as? BRCArtObject else {
-            NSLog("no artObject found!")
-            return
-        }
-        let destURL = self.dynamicType.localAudioURL(artObject)
+        let destURL = self.dynamicType.localMediaURL(fileName)
         do {
             try NSFileManager.defaultManager().moveItemAtURL(location, toURL: destURL)
             try destURL.setResourceValue(true, forKey: NSURLIsExcludedFromBackupKey)
@@ -136,7 +189,7 @@ public class BRCAudioDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
             NSLog("Error moving file: %@", error)
             return
         }
-        NSLog("Audio file cached: %@", destURL)
+        NSLog("Media file cached: %@", destURL)
     }
     
 }

@@ -175,6 +175,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
     _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
     _audioTourViewName = @"AudioTour";
+    _artImagesViewName = @"ArtWithImages";
     
     _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
     _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
@@ -312,6 +313,23 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.audioTourViewName];
     }
     NSLog(@"%@ %d", self.audioTourViewName, success);
+    
+    // Art with images
+    YapDatabaseViewFiltering *artWithImagesFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        if ([object isKindOfClass:[BRCArtObject class]]) {
+            BRCArtObject *art = (BRCArtObject*)object;
+            if (art.remoteThumbnailURL) {
+                return YES;
+            }
+        }
+        return NO;
+    }];
+    YapDatabaseFilteredView *artWithImages = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:artWithImagesFiltering versionTag:@"2"];
+    success = [[BRCDatabaseManager sharedInstance].database registerExtension:artWithImages withName:self.artImagesViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.artImagesViewName];
+    }
+    NSLog(@"%@ %d", self.artImagesViewName, success);
 }
 
 - (void) registerSearchViews {
