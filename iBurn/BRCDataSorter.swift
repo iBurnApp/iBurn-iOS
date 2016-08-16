@@ -19,6 +19,9 @@ public class BRCDataSorterOptions {
         showFutureEvents = false
         sortEventsWithExpiration = true
         now = NSDate()
+        #if DEBUG
+        now = NSDate.brc_testDate()
+        #endif
     }
 }
 

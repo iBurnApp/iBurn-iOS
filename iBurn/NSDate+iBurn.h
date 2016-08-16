@@ -17,4 +17,9 @@
 - (NSDate*) brc_dateWithinStartDate:(NSDate*)startDate
                             endDate:(NSDate*)endDate;
 
+#if DEBUG
+/** Used for testing events */
++ (NSDate*) brc_testDate;
+#endif
+
 @end

@@ -7,6 +7,7 @@
 //
 
 #import "NSDate+iBurn.h"
+#import "NSDateFormatter+iBurn.h"
 
 @implementation NSDate (iBurn)
 
@@ -54,6 +55,14 @@
         validDate = startDate;
     }
     return validDate;
+}
+
++ (NSDate*) brc_testDate {
+    NSDateFormatter *df = [NSDateFormatter brc_playaEventsAPIDateFormatter];
+    NSString *testDateString = @"2016-09-01T11:00:00-07:00";
+    NSDate *date = [df dateFromString:testDateString];
+    NSParameterAssert(date);
+    return date;
 }
 
 @end

@@ -15,6 +15,7 @@
 #import "BRCAppDelegate.h"
 #import "BRCEventsTableViewController.h"
 #import "NSDate+iBurn.h"
+#import "BRCUpdateInfo.h"
 @import YapDatabase.YapDatabaseView;
 @import YapDatabase.YapDatabaseFullTextSearch;
 @import YapDatabase.YapDatabaseRTreeIndex;
@@ -386,7 +387,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     if (success) {
         [self postExtensionRegisteredNotification:self.rTreeIndex];
     }
-    NSLog(@"%@ %d", self.rTreeIndex, success);
+    NSLog(@"%@ with version tag %d", self.rTreeIndex, success);
 }
 
 

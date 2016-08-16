@@ -32,6 +32,9 @@
         NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
         NSTimeInterval startDuration = [eventObject timeIntervalUntilStart:now];
         NSString *minsUntilStartString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:startDuration];
+        if (!minsUntilStartString.length && startDuration == 0) {
+            minsUntilStartString = @"now!";
+        }
         self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
     } else if ([eventObject isHappeningRightNow:now]) {
         NSTimeInterval endDuration = [eventObject timeIntervalUntilEnd:[NSDate date]];

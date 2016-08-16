@@ -16,6 +16,7 @@
 #import "BRCEventObject.h"
 #import "BRCGeocoder.h"
 #import "BRCMapPoint.h"
+#import "BRCDatabaseManager.h"
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
 static NSString * const kBRCTilesName =  @"iburn.mbtiles";
@@ -337,15 +338,13 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
     
-#warning Remove me when the source data is fixed?
     ////////////// Data massaging
-    NSMutableArray *objectsToUpdate = [NSMutableArray array];
-    [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
         [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = [object copy];
-                __block BRCCampObject *camp = nil;
-                __block BRCArtObject *art = nil;
+                BRCCampObject *camp = nil;
+                BRCArtObject *art = nil;
                 camp = [event hostedByCampWithTransaction:transaction];
                 art = [event hostedByArtWithTransaction:transaction];
                 if (camp) {
@@ -362,13 +361,8 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                         event.playaLocation = playaLocation;
                     }
                 }
-                [objectsToUpdate addObject:event];
+                [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
             }
-        }];
-    }];
-    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-        [objectsToUpdate enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
-            [transaction setObject:object forKey:object.uniqueID inCollection:[[object class] collection]];
         }];
     }];
     ///////////////////////////
