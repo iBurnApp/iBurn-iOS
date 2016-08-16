@@ -27,6 +27,7 @@ PODS:
   - HockeySDK-Source (3.8.6)
   - JRSwizzle (1.0)
   - JSQWebViewController (3.0.0)
+  - JTSImageViewController (1.5.1)
   - KVOController (1.1.0)
   - Mantle (2.0.7):
     - Mantle/extobjc (= 2.0.7)
@@ -111,6 +112,7 @@ DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - HockeySDK-Source (~> 3.7)
   - JSQWebViewController (~> 3.0)
+  - JTSImageViewController
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (from `Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec`)
@@ -156,6 +158,7 @@ SPEC CHECKSUMS:
   HockeySDK-Source: c6c66ea12e59f0d756fe9989cbc45eda017fc41c
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
   JSQWebViewController: eaa6bd68d9e1426ae25ade99c9bbde4c6cdd4120
+  JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: 321b5fc59300fcaabd42c0f679baa7a27efbb2fd
   Mantle: bc40bb061d8c2c6fb48d5083e04d928c3b7f73d9
   Mapbox-iOS-SDK: 49dab3c85d35872f815d3bdcb7d7b38994830961
@@ -173,6 +176,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 44da49d57a1dbf414e653688793a130d24af151e
   YapDatabase: 713d4018cfacbd6e77dd430710ca84730e450980
 
-PODFILE CHECKSUM: 825d66c480596bb22e08d4fba5ce249bfb8cb288
+PODFILE CHECKSUM: 2a11f92115850c30f3ba6c7ff24df3c1fb8eae9b
 
 COCOAPODS: 1.0.1

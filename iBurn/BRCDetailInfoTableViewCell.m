@@ -16,8 +16,20 @@
 #import "BRCEmbargo.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
+#import <PureLayout/PureLayout.h>
 
 @implementation BRCDetailInfoTableViewCell
+
+- (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        _artImageView = [[UIImageView alloc] init];
+        self.artImageView.contentMode = UIViewContentModeScaleAspectFill;
+        [self.contentView addSubview:self.artImageView];
+        self.artImageView.clipsToBounds = YES;
+        [self.artImageView autoPinEdgesToSuperviewEdges];
+    }
+    return self;
+}
 
 - (void) setSelectableAppearance {
     self.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -33,6 +45,8 @@
     if (!cellInfo) {
         return;
     }
+    self.artImageView.image = nil;
+    self.artImageView.hidden = YES;
     switch (cellInfo.cellType) {
         case BRCDetailCellInfoTypeDistanceFromHomeCamp:
         case BRCDetailCellInfoTypeDistanceFromCurrentLocation: {
@@ -102,6 +116,14 @@
         case BRCDetailCellInfoTypeDate: {
             NSDate *date = cellInfo.value;
             self.textLabel.text = [[NSDateFormatter brc_playaEventsAPIDateFormatter] stringFromDate:date];
+            break;
+        }
+        case BRCDetailCellInfoTypeImage: {
+            NSURL *imageURL = cellInfo.value;
+            self.textLabel.text = nil;
+            UIImage *image = [UIImage imageWithContentsOfFile:imageURL.path];
+            self.artImageView.image = image;
+            self.artImageView.hidden = NO;
             break;
         }
     }

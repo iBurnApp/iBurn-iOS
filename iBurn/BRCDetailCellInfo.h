@@ -19,6 +19,7 @@ typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
     BRCDetailCellInfoTypeSchedule,
     BRCDetailCellInfoTypeDate,
     BRCDetailCellInfoTypeEventRelationship, // for getting events hosted at art/camp
+    BRCDetailCellInfoTypeImage
 };
 
 @class BRCDataObject;

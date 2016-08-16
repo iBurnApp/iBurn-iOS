@@ -42,6 +42,8 @@
 {
     NSMutableArray *defaultArray = [NSMutableArray new];
     
+    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(localThumbnailURL)) displayName:@"Image" cellType:BRCDetailCellInfoTypeImage]];
+    
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
@@ -51,12 +53,6 @@
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistLocation)) displayName:@"Artist Location" cellType:BRCDetailCellInfoTypeText]];
-    
-    /*
-     For when we support images
-     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(imageURL)) displayName:@"Image" cellType:BRCDetailCellInfoTypeText]];
-    */
     
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(email)) displayName:@"Email" cellType:BRCDetailCellInfoTypeEmail]];
     
@@ -72,7 +68,9 @@
     }
     
     // last update from API
+#if DEBUG
     [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
+#endif
     
     return defaultArray;
 }
@@ -150,6 +148,8 @@
             [finalCellInfoArray insertObject:eventsListCell atIndex:0];
         }
     }
+    
+    
     
     // Special cases for Schedule and Camp for events
     if ([object isKindOfClass:[BRCEventObject class]]) {

@@ -12,6 +12,8 @@
 
 @interface BRCDetailInfoTableViewCell : UITableViewCell
 
+@property (nonatomic, strong) UIImageView *artImageView;
+
 - (void) setDetailCellInfo:(BRCDetailCellInfo*)cellInfo;
 
 + (NSString*)cellIdentifier;

@@ -33,9 +33,7 @@ abstract_target 'iBurnAbstract' do
 	pod 'KVOController', '~> 1.0'
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', '~> 1.0'
-	#pod 'DKNightVersion', '~> 0.8'
-	#pod 'DKNightVersion', :git => 'https://github.com/chrisballinger/DKNightVersion.git', :branch => '0.8.1-ns_enum'
-	#pod 'zipzap', '~> 8.0'
-	#pod 'PDKTZipArchive', '~> 0.3'
+	pod 'JTSImageViewController'
 	pod 'proj4', :podspec => 'https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec'
+
 end

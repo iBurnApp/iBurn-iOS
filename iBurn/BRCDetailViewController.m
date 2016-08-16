@@ -16,6 +16,7 @@
 #import "RMAnnotation+iBurn.h"
 #import "RMUserLocation.h"
 #import "RMMarker+iBurn.h"
+#import <Mapbox_iOS_SDK/Mapbox.h>
 #import "BRCDetailInfoTableViewCell.h"
 #import "BRCDetailMapViewController.h"
 #import "PureLayout.h"
@@ -28,6 +29,7 @@
 #import "PFAnalytics+iBurn.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import "iBurn-Swift.h"
+@import JTSImageViewController;
 
 static CGFloat const kTableViewHeaderHeight = 200;
 
@@ -227,6 +229,14 @@ static CGFloat const kTableViewHeaderHeight = 200;
     return 1;
 }
 
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
+    if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
+        return 200;
+    }
+    return [super tableView:tableView heightForRowAtIndexPath:indexPath];
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCDetailInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[BRCDetailInfoTableViewCell cellIdentifier] forIndexPath:indexPath];
@@ -294,6 +304,27 @@ static CGFloat const kTableViewHeaderHeight = 200;
         UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
                                                             initWithActivityItems:@[coordinatesString] applicationActivities:nil];
         [self presentViewController:activityViewController animated:YES completion:nil];
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
+        NSURL *imageURL = cellInfo.value;
+        UIImage *image = [UIImage imageWithContentsOfFile:imageURL.path];
+        if (image) {
+            UITableViewCell *cell = [self tableView:tableView cellForRowAtIndexPath:indexPath];
+            // Create image info
+            JTSImageInfo *imageInfo = [[JTSImageInfo alloc] init];
+            imageInfo.image = image;
+            imageInfo.referenceRect = cell.frame;
+            imageInfo.referenceView = cell.superview;
+            
+            // Setup view controller
+            JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
+                                                   initWithImageInfo:imageInfo
+                                                   mode:JTSImageViewControllerMode_Image
+                                                   backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
+            
+            // Present the view controller.
+            [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
+        }
+        
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
