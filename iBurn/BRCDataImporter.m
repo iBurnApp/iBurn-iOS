@@ -339,12 +339,13 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
     }];
     
     ////////////// Data massaging
-    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+    NSMutableArray *objectsToUpdate = [NSMutableArray array];
+    [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
         [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = [object copy];
-                BRCCampObject *camp = nil;
-                BRCArtObject *art = nil;
+                __block BRCCampObject *camp = nil;
+                __block BRCArtObject *art = nil;
                 camp = [event hostedByCampWithTransaction:transaction];
                 art = [event hostedByArtWithTransaction:transaction];
                 if (camp) {
@@ -361,8 +362,13 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                         event.playaLocation = playaLocation;
                     }
                 }
-                [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
+                [objectsToUpdate addObject:event];
             }
+        }];
+    }];
+    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+        [objectsToUpdate enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
+            [transaction setObject:object forKey:object.uniqueID inCollection:[[object class] collection]];
         }];
     }];
     ///////////////////////////
