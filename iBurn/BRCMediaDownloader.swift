@@ -28,6 +28,7 @@ public class BRCMediaDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
     var observer: NSObjectProtocol?
     public var backgroundCompletion: dispatch_block_t?
     let delegateQueue = NSOperationQueue()
+    var backgroundTask: UIBackgroundTaskIdentifier
     
     deinit {
         if let observer = observer {
@@ -39,8 +40,12 @@ public class BRCMediaDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
         self.downloadType = downloadType
         self.connection = connection
         self.viewName = viewName
-        self.backgroundSessionIdentifier = "BRCMediaDownloaderSession" + viewName
+        let backgroundSessionIdentifier = "BRCMediaDownloaderSession" + viewName
+        self.backgroundSessionIdentifier = backgroundSessionIdentifier
         let config = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(backgroundSessionIdentifier)
+        backgroundTask = UIApplication.sharedApplication().beginBackgroundTaskWithName(backgroundSessionIdentifier, expirationHandler: { 
+            NSLog("%@ task expired", backgroundSessionIdentifier)
+        })
         super.init()
         self.session = NSURLSession(configuration: config, delegate: self, delegateQueue: delegateQueue)
         observer = NSNotificationCenter.defaultCenter().addObserverForName(BRCDatabaseExtensionRegisteredNotification, object: BRCDatabaseManager.sharedInstance(), queue: NSOperationQueue.mainQueue()) { (notification) in
@@ -132,12 +137,8 @@ public class BRCMediaDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
             self.session.getTasksWithCompletionHandler({ (_, _, downloads) in
                 // Remove things already being downloaded
                 for download in downloads {
-                    if let url = download.originalRequest?.URL {
-                        if let exists = art[url] {
-                            NSLog("Existing download for %@", exists.url)
-                            art.removeValueForKey(url)
-                        }
-                    }
+                    NSLog("canceling existing download: %@", download)
+                    download.cancel()
                 }
                 self.downloadFiles(Array(art.values))
             })
@@ -190,6 +191,15 @@ public class BRCMediaDownloader: NSObject, NSURLSessionDelegate, NSURLSessionDow
             return
         }
         NSLog("Media file cached: %@", destURL)
+        self.session.getTasksWithCompletionHandler({ (_, _, downloads) in
+            if downloads.count == 0 {
+                if self.backgroundTask != UIBackgroundTaskInvalid {
+                    UIApplication.sharedApplication().endBackgroundTask(self.backgroundTask)
+                    self.backgroundTask = UIBackgroundTaskInvalid
+                }
+                
+            }
+        })
     }
     
 }

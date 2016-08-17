@@ -23,6 +23,12 @@ class BRCAudioTourViewController: BRCSortedViewController {
         setupPlayAllItemsButton()
     }
     
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tableView.reloadData()
+        self.refreshButtonState()
+    }
+    
     func setupPlayAllItemsButton() {
         refreshButtonState()
         playAllItemsButton.action = #selector(BRCAudioTourViewController.playAllItems(_:))

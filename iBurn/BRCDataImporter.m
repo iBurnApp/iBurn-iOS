@@ -39,11 +39,17 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
 
 - (void) dealloc {
     [self.urlSession invalidateAndCancel];
+    if (self.backgroundTask != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
+        self.backgroundTask = UIBackgroundTaskInvalid;
+    }
 }
 
 - (instancetype) init {
     if (self = [self initWithReadWriteConnection:nil sessionConfiguration:nil]) {
-        self.backgroundTask = UIBackgroundTaskInvalid;
+        self.backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithName:@"begin background task loadUpdatesFromURL" expirationHandler:^{
+            NSLog(@"Ran out of background time!");
+        }];
     }
     return self;
 }
@@ -57,6 +63,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection sessionConfiguration:(NSURLSessionConfiguration*)sessionConfiguration {
     if (self = [super init]) {
         _updateQueue = [[NSOperationQueue alloc] init];
+        self.updateQueue.maxConcurrentOperationCount = 1;
         _readWriteConnection = readWriteConection;
         _callbackQueue = dispatch_get_main_queue();
         if (sessionConfiguration) {
@@ -77,9 +84,6 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
         return;
     }
     self.isUpdating = YES;
-    self.backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithName:@"begin background task loadUpdatesFromURL" expirationHandler:^{
-        NSLog(@"Ran out of background time!");
-    }];
     NSParameterAssert(updateURL != nil);
     NSURL *folderURL = [updateURL URLByDeletingLastPathComponent];
     if ([updateURL isFileURL]) {
@@ -189,6 +193,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
         }
         
     }];
+    
     if (fetchResultBlock) {
         if (fetchResult == UIBackgroundFetchResultFailed ||
             fetchResult == UIBackgroundFetchResultNoData) {
@@ -378,10 +383,6 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
     }];
     ///////////////////////////
     
-    self.isUpdating = NO;
-    [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
-    self.backgroundTask = UIBackgroundTaskInvalid;
-    
     return YES;
 }
 
@@ -423,6 +424,20 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                     [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
                 }];
             }
+        }];
+        [self.updateQueue addOperationWithBlock:^{
+            NSUInteger queueCount = self.updateQueue.operationCount;
+            [self.urlSession getAllTasksWithCompletionHandler:^(NSArray<__kindof NSURLSessionTask *> * _Nonnull tasks) {
+                NSUInteger taskCount = tasks.count;
+                NSLog(@"taskCount %d queueCount %d", (int)taskCount, (int)queueCount);
+                if (queueCount == 1 && taskCount == 0) {
+                    self.isUpdating = NO;
+                    if (self.backgroundTask != UIBackgroundTaskInvalid) {
+                        [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
+                        self.backgroundTask = UIBackgroundTaskInvalid;
+                    }
+                }
+            }];
         }];
     } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
         NSError *error = nil;
