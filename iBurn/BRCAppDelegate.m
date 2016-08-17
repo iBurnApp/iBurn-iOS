@@ -42,6 +42,7 @@
 #import <Swizzlean/Swizzlean.h>
 @import PermissionScope;
 #import "NSDate+iBurn.h"
+@import AVFoundation;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
@@ -61,6 +62,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    /* DATE TESTING
 #if DEBUG
     self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
     
@@ -68,6 +70,9 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         return [NSDate brc_testDate];
     }];
 #endif
+     */
+    
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
     
     [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
                                                          liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
@@ -134,9 +139,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
     _audioDownloader = [[BRCMediaDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].audioTourViewName downloadType:BRCMediaDownloadTypeAudio];
-    [self.audioDownloader downloadUncachedMedia];
     _imageDownloader = [[BRCMediaDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].artImagesViewName downloadType:BRCMediaDownloadTypeImage];
-    [self.imageDownloader downloadUncachedMedia];
     
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
