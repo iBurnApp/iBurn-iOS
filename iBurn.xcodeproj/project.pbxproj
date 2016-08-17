@@ -35,12 +35,12 @@
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
+		D91392E01D6519300090E093 /* iBurn-2016 in Resources */ = {isa = PBXBuildFile; fileRef = D91392DF1D6519300090E093 /* iBurn-2016 */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* RMMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* RMMapView+iBurn.m */; };
-		D92B959A1B7B0CC300116781 /* 2015 in Resources */ = {isa = PBXBuildFile; fileRef = D92B95991B7B0CC300116781 /* 2015 */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
@@ -179,6 +179,7 @@
 		D9046F37198C6CDE0013CCF4 /* events.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = events.json; sourceTree = "<group>"; };
 		D9071FE51996C4A7005C3639 /* NSData+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+iBurn.h"; sourceTree = "<group>"; };
 		D9071FE61996C4A7005C3639 /* NSData+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+iBurn.m"; sourceTree = "<group>"; };
+		D91392DF1D6519300090E093 /* iBurn-2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2016"; path = "Submodules/iBurn-Data/data/2016/iBurn-2016"; sourceTree = SOURCE_ROOT; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCDataObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -681,6 +682,7 @@
 		D9BF9A651D515FC2004AA63B /* 2016 */ = {
 			isa = PBXGroup;
 			children = (
+				D91392DF1D6519300090E093 /* iBurn-2016 */,
 				D9BF9A661D515FF7004AA63B /* 2016 */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 			);
@@ -816,10 +818,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D91392E01D6519300090E093 /* iBurn-2016 in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
-				D92B959A1B7B0CC300116781 /* 2015 in Resources */,
 				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,

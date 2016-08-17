@@ -17,6 +17,7 @@
 #import "BRCGeocoder.h"
 #import "BRCMapPoint.h"
 #import "BRCDatabaseManager.h"
+#import "NSBundle+iBurn.h"
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
 static NSString * const kBRCTilesName =  @"iburn.mbtiles";
@@ -509,8 +510,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
         NSLog(@"Look like the tiles are fucked: %@", error);
         error = nil;
         // copy bundled tiles to live store on first launch
-        NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"2015"];
-        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSBundle *bundle = [NSBundle brc_dataBundle];
         NSURL *bundledTilesURL = [bundle URLForResource:kBRCTilesName withExtension:@"jar"];
         success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
         if (!success) {
