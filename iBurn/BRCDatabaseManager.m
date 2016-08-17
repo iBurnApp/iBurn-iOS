@@ -216,13 +216,17 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self registerFilteredViews];
         [self registerSearchViews];
         [self registerRTreeIndex];
-        //[self registerRelationships];
+        [self registerRelationships];
     });
 }
 
 - (void) registerRelationships {
     NSString *viewName = self.relationships;
-    BOOL success = [self.database registerExtension:[YapDatabaseRelationship new] withName:viewName];
+    YapDatabaseRelationshipOptions *options = [[YapDatabaseRelationshipOptions alloc] init];
+    NSSet *allowedCollections = [NSSet setWithArray:@[[[BRCEventObject class] collection]]];
+    options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
+    YapDatabaseRelationship *relationship = [[YapDatabaseRelationship alloc] initWithVersionTag:@"2" options:options];
+    BOOL success = [self.database registerExtension:relationship withName:viewName];
     if (success) {
         [self postExtensionRegisteredNotification:viewName];
     }

@@ -356,24 +356,33 @@ NSString * const kBRCEventArtEdgeName = @"art";
 {
     NSMutableArray *edges = [NSMutableArray arrayWithCapacity:2];
     
-    YapDatabaseRelationshipEdge *campEdge =
-    [YapDatabaseRelationshipEdge edgeWithName:kBRCEventCampEdgeName
-                               destinationKey:self.hostedByCampUniqueID
-                                   collection:[[BRCCampObject class] collection]
-                              nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
-    if (campEdge) {
-        [edges addObject:campEdge];
+    if (self.hostedByCampUniqueID.length > 0) {
+        YapDatabaseRelationshipEdge *campEdge =
+        [YapDatabaseRelationshipEdge edgeWithName:kBRCEventCampEdgeName
+                                   destinationKey:self.hostedByCampUniqueID
+                                       collection:[[BRCCampObject class] collection]
+                                  nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
+        if (campEdge) {
+            [edges addObject:campEdge];
+        }
+    }
+
+    if (self.hostedByArtUniqueID.length > 0) {
+        YapDatabaseRelationshipEdge *artEdge =
+        [YapDatabaseRelationshipEdge edgeWithName:kBRCEventArtEdgeName
+                                   destinationKey:self.hostedByArtUniqueID
+                                       collection:[[BRCArtObject class] collection]
+                                  nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
+        
+        if (artEdge) {
+            [edges addObject:artEdge];
+        }
     }
     
-    YapDatabaseRelationshipEdge *artEdge =
-    [YapDatabaseRelationshipEdge edgeWithName:kBRCEventArtEdgeName
-                               destinationKey:self.hostedByArtUniqueID
-                                   collection:[[BRCArtObject class] collection]
-                              nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
-    
-    if (artEdge) {
-        [edges addObject:artEdge];
+    if (edges.count == 0) {
+        return nil;
     }
+    
     
     return edges;
 }

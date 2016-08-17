@@ -41,9 +41,9 @@ extern NSString * const kBRCEventArtEdgeName;
 @property (nonatomic, strong) NSString *artName;
 
 /** PlayaEvents ID of event's camp */
-@property (nonatomic, strong, readonly) NSString *hostedByCampUniqueID;
+@property (nonatomic, strong) NSString *hostedByCampUniqueID;
 /** PlayaEvents ID of event's art */
-@property (nonatomic, strong, readonly) NSString *hostedByArtUniqueID;
+@property (nonatomic, strong) NSString *hostedByArtUniqueID;
 
 
 - (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction;

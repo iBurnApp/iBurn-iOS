@@ -351,10 +351,15 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
                 if (camp) {
                     event.campName = camp.title;
                     event.coordinate = camp.coordinate;
+                } else if (event.hostedByCampUniqueID) {
+                    // the API JSON is bunk and references non-existent camps
+                    event.hostedByCampUniqueID = nil;
                 }
                 if (art) {
                     event.artName = art.title;
                     event.coordinate = art.coordinate;
+                } else if (event.hostedByArtUniqueID) {
+                    event.hostedByArtUniqueID = nil;
                 }
                 if (event.location && event.playaLocation.length == 0) {
                     NSString *playaLocation = [geocoder reverseLookup:event.location.coordinate];
