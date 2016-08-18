@@ -20,7 +20,9 @@
 #import "NSBundle+iBurn.h"
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
-static NSString * const kBRCTilesName =  @"iburn.mbtiles";
+static NSString * const kBRCRemoteTilesName =  @"iburn.mbtiles";
+static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
+
 
 @interface BRCDataImporter() <NSURLSessionDownloadDelegate>
 @property (nonatomic, strong, readonly) NSURLSession *urlSession;
@@ -479,7 +481,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
 
 /** Returns iburn.mbtiles local file URL within Application Support */
 + (NSURL*) mapTilesURL {
-    NSString *fileName = kBRCTilesName;
+    NSString *fileName = kBRCLocalTilesName;
     NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
     NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
     return destinationURL;
@@ -511,7 +513,7 @@ static NSString * const kBRCTilesName =  @"iburn.mbtiles";
         error = nil;
         // copy bundled tiles to live store on first launch
         NSBundle *bundle = [NSBundle brc_dataBundle];
-        NSURL *bundledTilesURL = [bundle URLForResource:kBRCTilesName withExtension:@"jar"];
+        NSURL *bundledTilesURL = [bundle URLForResource:kBRCRemoteTilesName withExtension:@"jar"];
         success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
         if (!success) {
             if (updateInfo) {
