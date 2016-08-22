@@ -21,7 +21,6 @@
 		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
 		632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */; };
 		639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */ = {isa = PBXBuildFile; fileRef = 639E638C1994178500B62A92 /* BRCEmbargo.m */; };
-		63C11EB41B7C580400428FB8 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = 63C11EB31B7C580400428FB8 /* bundle.js */; };
 		63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
@@ -35,7 +34,6 @@
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
-		D91392E01D6519300090E093 /* iBurn-2016 in Resources */ = {isa = PBXBuildFile; fileRef = D91392DF1D6519300090E093 /* iBurn-2016 */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -71,6 +69,8 @@
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
 		D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */; };
+		D9ADBF5F1D6BA9A7003A71DF /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D9ADBF5E1D6BA9A6003A71DF /* bundle.js */; };
+		D9ADBF601D6BAEB1003A71DF /* iBurn-2016 in Resources */ = {isa = PBXBuildFile; fileRef = D91392DF1D6519300090E093 /* iBurn-2016 */; };
 		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
@@ -247,6 +247,7 @@
 		D994157D1987399F00D245C7 /* BRCEventTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventTime.h; sourceTree = "<group>"; };
 		D994157E1987399F00D245C7 /* BRCEventTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventTime.m; sourceTree = "<group>"; };
 		D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-iBurnAbstract-iBurn-acknowledgements.plist"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
+		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAcknowledgementsViewController.h; sourceTree = "<group>"; };
 		D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAcknowledgementsViewController.m; sourceTree = "<group>"; };
 		D9B362B2199821EB0093B441 /* NSURL+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+iBurn.h"; sourceTree = "<group>"; };
@@ -682,6 +683,7 @@
 		D9BF9A651D515FC2004AA63B /* 2016 */ = {
 			isa = PBXGroup;
 			children = (
+				D9ADBF5E1D6BA9A6003A71DF /* bundle.js */,
 				D91392DF1D6519300090E093 /* iBurn-2016 */,
 				D9BF9A661D515FF7004AA63B /* 2016 */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
@@ -818,16 +820,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D91392E01D6519300090E093 /* iBurn-2016 in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
+				D9ADBF5F1D6BA9A7003A71DF /* bundle.js in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
-				63C11EB41B7C580400428FB8 /* bundle.js in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
+				D9ADBF601D6BAEB1003A71DF /* iBurn-2016 in Resources */,
 				D9BF9A671D515FF7004AA63B /* 2016 in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
