@@ -334,8 +334,8 @@
     CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation dataObject:dataObject];
     [cell setFavoriteButtonAction:^(BRCDataObjectTableViewCell *sender) {
-        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:self.tableView];
+        NSIndexPath *indexPath = [tableView indexPathForCell:sender];
+        BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
         dataObject.isFavorite = sender.favoriteButton.selected;
         // not the best place to do this
         if (dataObject.isFavorite) {
