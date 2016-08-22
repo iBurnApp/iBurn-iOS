@@ -18,6 +18,7 @@
 #import "BRCMapPoint.h"
 #import "BRCDatabaseManager.h"
 #import "NSBundle+iBurn.h"
+@import CoreLocation;
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
 static NSString * const kBRCRemoteTilesName =  @"iburn.mbtiles";
@@ -342,13 +343,8 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
             [transaction removeObjectForKey:obj.uniqueID inCollection:[[obj class] collection]];
         }];
         
-        updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
-        [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
-    }];
-    
-    ////////////// Data massaging
-    NSMutableArray *objectsToUpdate = [NSMutableArray array];
-    [self.readWriteConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        ////////////// Data massaging
+        NSMutableArray *objectsToUpdate = [NSMutableArray array];
         [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = [object copy];
@@ -358,14 +354,18 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
                 art = [event hostedByArtWithTransaction:transaction];
                 if (camp) {
                     event.campName = camp.title;
-                    event.coordinate = camp.coordinate;
+                    if (camp.location) {
+                        event.coordinate = camp.coordinate;
+                    }
                 } else if (event.hostedByCampUniqueID) {
                     // the API JSON is bunk and references non-existent camps
                     event.hostedByCampUniqueID = nil;
                 }
                 if (art) {
                     event.artName = art.title;
-                    event.coordinate = art.coordinate;
+                    if (art.location) {
+                        event.coordinate = art.coordinate;
+                    }
                 } else if (event.hostedByArtUniqueID) {
                     event.hostedByArtUniqueID = nil;
                 }
@@ -378,11 +378,11 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
                 [objectsToUpdate addObject:event];
             }
         }];
-    }];
-    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
         [objectsToUpdate enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
             [transaction setObject:object forKey:object.uniqueID inCollection:[[object class] collection]];
         }];
+        updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+        [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
     ///////////////////////////
     
