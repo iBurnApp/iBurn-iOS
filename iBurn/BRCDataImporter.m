@@ -7,7 +7,7 @@
 //
 
 #import "BRCDataImporter.h"
-#import "MTLJSONAdapter.h"
+@import Mantle;
 #import "BRCDataObject.h"
 #import "BRCRecurringEventObject.h"
 #import "BRCUpdateInfo.h"

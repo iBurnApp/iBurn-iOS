@@ -23,9 +23,9 @@ class BRCDataSorterTests: BRCDataImportTests {
     }
 
     func testSortData() {
-        expectation = expectationWithDescription("sort data")
+        expectation = expectation(withDescription: "sort data")
         
-        importer.loadUpdatesFromURL(self.dynamicType.testDataURL(), fetchResultBlock: { (fetchResult: UIBackgroundFetchResult) -> Void in
+        importer.loadUpdates(from: type(of: self).testDataURL(), fetchResultBlock: { (fetchResult: UIBackgroundFetchResult) -> Void in
             self.importer.waitForDataUpdatesToFinish()
             var dataObjects: [BRCDataObject] = []
             self.connection!.readWithBlock { (transaction: YapDatabaseReadTransaction) -> Void in
@@ -76,11 +76,11 @@ class BRCDataSorterTests: BRCDataImportTests {
             
         })
         
-        waitForExpectationsWithTimeout(30, handler: { (error: NSError?) -> Void in
+        waitForExpectations(timeout: 30, handler: { (error: NSError?) -> Void in
             if (error != nil) {
                 NSLog("Error sorting data %@", error!)
             }
-        })
+        } as! XCWaitCompletionHandler)
     }
 
     /*

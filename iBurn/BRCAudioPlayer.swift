@@ -8,26 +8,50 @@
 
 import Foundation
 import AVFoundation
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 /** Make sure to listen for BRCAudioPlayerChangeNotification and refresh your views */
-public class BRCAudioPlayer: NSObject {
+open class BRCAudioPlayer: NSObject {
     /** This is fired if track is changed, or stops playing */
-    public static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
-    public static let sharedInstance = BRCAudioPlayer()
+    open static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
+    open static let sharedInstance = BRCAudioPlayer()
     var player: AVQueuePlayer?
-    private var nowPlaying: BRCArtObject?
-    private var queuedObjects: [BRCArtObject] = []
+    fileprivate var nowPlaying: BRCArtObject?
+    fileprivate var queuedObjects: [BRCArtObject] = []
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: AVPlayerItemDidPlayToEndTimeNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
     public override init() {
         super.init()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(BRCAudioPlayer.didFinishPlaying(_:)), name: AVPlayerItemDidPlayToEndTimeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(BRCAudioPlayer.didFinishPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
-    public func isPlaying(item: BRCArtObject) -> Bool {
+    open func isPlaying(_ item: BRCArtObject) -> Bool {
         if nowPlaying?.uniqueID == item.uniqueID && player?.rate > 0 {
             return true
         }
@@ -35,7 +59,7 @@ public class BRCAudioPlayer: NSObject {
     }
     
     /** Plays audio tour for items, if they are the same it will pause */
-    public func playAudioTour(items: [BRCArtObject]) {
+    open func playAudioTour(_ items: [BRCArtObject]) {
         // this should never happen
         if items.count == 0 {
             reset()
@@ -54,7 +78,7 @@ public class BRCAudioPlayer: NSObject {
         var playerItems: [AVPlayerItem] = []
         for item in items {
             if let url = item.audioURL {
-                let playerItem = AVPlayerItem(URL: url)
+                let playerItem = AVPlayerItem(url: url)
                 playerItems.append(playerItem)
             }
         }
@@ -68,7 +92,7 @@ public class BRCAudioPlayer: NSObject {
         fireChangeNotification()
     }
     
-    public func togglePlayPause() {
+    open func togglePlayPause() {
         if ((player?.currentItem) == nil) {
             reset()
         } else {
@@ -81,20 +105,20 @@ public class BRCAudioPlayer: NSObject {
         fireChangeNotification()
     }
     
-    private func fireChangeNotification() {
-        dispatch_async(dispatch_get_main_queue()) {
-            NSNotificationCenter.defaultCenter().postNotificationName(BRCAudioPlayer.BRCAudioPlayerChangeNotification, object: self)
+    fileprivate func fireChangeNotification() {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: Notification.Name(rawValue: BRCAudioPlayer.BRCAudioPlayerChangeNotification), object: self)
         }
     }
     
-    private func reset() {
+    fileprivate func reset() {
         nowPlaying = nil
         queuedObjects = []
         player?.removeAllItems()
         player = nil
     }
     
-    func didFinishPlaying(notification: NSNotification) {
+    func didFinishPlaying(_ notification: Notification) {
         let endedItem = notification.object as? AVPlayerItem
                 
         if (player?.items().count == 0) {
@@ -109,7 +133,7 @@ public class BRCAudioPlayer: NSObject {
             // Not the best way to find nowPlaying..
             if let asset = player?.items()[1].asset as? AVURLAsset {
                 for object in queuedObjects {
-                    if object.audioURL == asset.URL {
+                    if object.audioURL == asset.url {
                         nowPlaying = object
                         break
                     }

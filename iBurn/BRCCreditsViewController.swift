@@ -11,11 +11,11 @@ import Mantle
 import VTAcknowledgementsViewController
 import Parse
 
-public class SubtitleCell: UITableViewCell {
+open class SubtitleCell: UITableViewCell {
     static let kReuseIdentifier = "kSubtitleIdentifier"
 
     public override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: UITableViewCellStyle.Subtitle, reuseIdentifier: SubtitleCell.kReuseIdentifier)
+        super.init(style: UITableViewCellStyle.subtitle, reuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
 
     public required init(coder aDecoder: NSCoder) {
@@ -24,8 +24,8 @@ public class SubtitleCell: UITableViewCell {
 }
 
 private enum SectionInfo: Int {
-    case People = 0
-    case Licenses
+    case people = 0
+    case licenses
 }
 
 class BRCCreditsViewController: UITableViewController {
@@ -33,26 +33,26 @@ class BRCCreditsViewController: UITableViewController {
     var creditsInfoArray:[BRCCreditsInfo] = []
 
     init () {
-        super.init(style: UITableViewStyle.Grouped)
+        super.init(style: UITableViewStyle.grouped)
     }
 
     required init!(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     
-    private override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: NSBundle!) {
+    fileprivate override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: Bundle!) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let dataBundle = NSBundle.brc_dataBundle()
-        let creditsURL = dataBundle.URLForResource("credits", withExtension:"json")
-        let creditsData = NSData(contentsOfURL: creditsURL!)
+        let dataBundle = Bundle.brc_data()
+        let creditsURL = dataBundle.url(forResource: "credits", withExtension:"json")
+        let creditsData = try? Data(contentsOf: creditsURL!)
         do {
-            if let creditsArray = try NSJSONSerialization.JSONObjectWithData(creditsData!, options:NSJSONReadingOptions()) as? NSArray {
-                let creditsInfo = try MTLJSONAdapter.modelsOfClass(BRCCreditsInfo.self,fromJSONArray: creditsArray as [AnyObject])
+            if let creditsArray = try JSONSerialization.jsonObject(with: creditsData!, options:JSONSerialization.ReadingOptions()) as? NSArray {
+                let creditsInfo = try MTLJSONAdapter.models(of: BRCCreditsInfo.self,fromJSONArray: creditsArray as [AnyObject])
                 self.creditsInfoArray = creditsInfo as! [BRCCreditsInfo]
                 assert(self.creditsInfoArray.count > 0, "Empty credits info!")
             }
@@ -61,12 +61,12 @@ class BRCCreditsViewController: UITableViewController {
         }
         
         
-        self.tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
+        self.tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
         self.tableView.rowHeight = 55
     }
     
-    override func viewWillAppear(animated: Bool) {
-        PFAnalytics.trackEventInBackground("Credits", block: nil)
+    override func viewWillAppear(_ animated: Bool) {
+        PFAnalytics.trackEvent(inBackground: "Credits", block: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -76,40 +76,40 @@ class BRCCreditsViewController: UITableViewController {
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == SectionInfo.People.rawValue {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == SectionInfo.people.rawValue {
             return self.creditsInfoArray.count
-        } else if section == SectionInfo.Licenses.rawValue {
+        } else if section == SectionInfo.licenses.rawValue {
             return 1
         }
         return 0
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if section == SectionInfo.People.rawValue {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section == SectionInfo.people.rawValue {
             return "Thank you!"
         }
         return nil
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(SubtitleCell.kReuseIdentifier, forIndexPath: indexPath) 
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: SubtitleCell.kReuseIdentifier, for: indexPath) 
         // style cell
-        cell.textLabel!.font = UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
-        cell.detailTextLabel!.font = UIFont.preferredFontForTextStyle(UIFontTextStyleSubheadline)
-        cell.detailTextLabel!.textColor = UIColor.lightGrayColor()
-        cell.accessoryType = UITableViewCellAccessoryType.DisclosureIndicator
+        cell.textLabel!.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.headline)
+        cell.detailTextLabel!.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.subheadline)
+        cell.detailTextLabel!.textColor = UIColor.lightGray
+        cell.accessoryType = UITableViewCellAccessoryType.disclosureIndicator
         // set body
-        if indexPath.section == SectionInfo.People.rawValue {
+        if indexPath.section == SectionInfo.people.rawValue {
             let creditsInfo = self.creditsInfoArray[indexPath.row]
             cell.textLabel!.text = creditsInfo.name
             cell.detailTextLabel!.text = creditsInfo.blurb
             
-        } else if indexPath.section == SectionInfo.Licenses.rawValue {
+        } else if indexPath.section == SectionInfo.licenses.rawValue {
             cell.textLabel!.text = "Open Source Licenses"
             cell.detailTextLabel!.text = nil
         }
@@ -118,15 +118,15 @@ class BRCCreditsViewController: UITableViewController {
     
     // MARK: - Table view delegate
 
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        if indexPath.section == SectionInfo.People.rawValue {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        if indexPath.section == SectionInfo.people.rawValue {
             let creditsInfo = self.creditsInfoArray[indexPath.row]
             let url = creditsInfo.url
-            BRCAppDelegate.openURL(url, fromViewController: self)
-        } else if indexPath.section == SectionInfo.Licenses.rawValue {
+            BRCAppDelegate.open(url, from: self)
+        } else if indexPath.section == SectionInfo.licenses.rawValue {
             let ackVC = BRCAcknowledgementsViewController(headerLabel: nil)
-            self.navigationController!.pushViewController(ackVC, animated: true)
+            self.navigationController!.pushViewController(ackVC!, animated: true)
         }
     }
 

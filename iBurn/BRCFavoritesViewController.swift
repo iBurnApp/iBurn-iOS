@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import YapDatabase.YapDatabaseView
+import YapDatabase
 
 class BRCFavoritesViewController: BRCSortedViewController {
 
@@ -20,12 +20,12 @@ class BRCFavoritesViewController: BRCSortedViewController {
         super.init(coder: aDecoder)
     }
     
-    override func refreshTableItems(completion: dispatch_block_t) {
+    override func refreshTableItems(_ completion: @escaping ()->()) {
         var favorites: [BRCDataObject] = []
-        BRCDatabaseManager.sharedInstance().readConnection.asyncReadWithBlock({ (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.sharedInstance().readConnection.asyncRead({ (transaction) -> Void in
             if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
-                viewTransaction.enumerateGroupsUsingBlock({ (group: String!, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
-                    viewTransaction.enumerateKeysAndObjectsInGroup(group, usingBlock: { (collection: String!, key: String!, object: AnyObject!, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+                viewTransaction.enumerateGroups({ (group, stop) -> Void in
+                    viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in
                         if let dataObject = object as? BRCDataObject {
                             favorites.append(dataObject)
                         }
@@ -36,7 +36,7 @@ class BRCFavoritesViewController: BRCSortedViewController {
             let options = BRCDataSorterOptions()
             options.showFutureEvents = true
             options.showExpiredEvents = true
-            BRCDataSorter.sortDataObjects(favorites, options: options, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
+            BRCDataSorter.sortDataObjects(favorites, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
                 self.processSortedData(events, art: art, camps: camps, completion: completion)
             })
         })

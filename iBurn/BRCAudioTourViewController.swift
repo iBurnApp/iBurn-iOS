@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import YapDatabase
 
 enum AudioButtonState: String {
     case PlayAll = "Play All"
@@ -23,7 +24,7 @@ class BRCAudioTourViewController: BRCSortedViewController {
         setupPlayAllItemsButton()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tableView.reloadData()
         self.refreshButtonState()
@@ -48,12 +49,12 @@ class BRCAudioTourViewController: BRCSortedViewController {
         }
     }
     
-    internal override func audioPlayerChangeNotification(notification: NSNotification) {
+    internal override func audioPlayerChangeNotification(_ notification: Notification) {
         super.audioPlayerChangeNotification(notification)
         refreshButtonState()
     }
     
-    func playAllItems(sender: AnyObject?) {
+    func playAllItems(_ sender: AnyObject?) {
         if BRCAudioPlayer.sharedInstance.player != nil {
             BRCAudioPlayer.sharedInstance.togglePlayPause()
         } else {
@@ -64,12 +65,12 @@ class BRCAudioTourViewController: BRCSortedViewController {
         refreshButtonState()
     }
 
-    override func refreshTableItems(completion: dispatch_block_t) {
+    override func refreshTableItems(_ completion: @escaping ()->()) {
         var art: [BRCArtObject] = []
-        BRCDatabaseManager.sharedInstance().readConnection.asyncReadWithBlock({ (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.sharedInstance().readConnection.asyncRead({ (transaction: YapDatabaseReadTransaction) -> Void in
             if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
-                viewTransaction.enumerateGroupsUsingBlock({ (group: String!, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
-                    viewTransaction.enumerateKeysAndObjectsInGroup(group, usingBlock: { (collection: String!, key: String!, object: AnyObject!, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
+                viewTransaction.enumerateGroups({ (group, stop) -> Void in
+                    viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in
                         if let dataObject = object as? BRCArtObject {
                             art.append(dataObject)
                         }
@@ -78,7 +79,7 @@ class BRCAudioTourViewController: BRCSortedViewController {
             }
             }, completionBlock: { () -> Void in
                 NSLog("Audio Tour count: %d", art.count)
-                BRCDataSorter.sortDataObjects(art, options: nil, completionQueue: dispatch_get_main_queue(), callbackBlock: { (events, art, camps) -> (Void) in
+                BRCDataSorter.sortDataObjects(art, options: nil, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
                     self.processSortedData(events, art: art, camps: camps, completion: completion)
                 })
         })

@@ -1,15 +1,15 @@
 PODS:
-  - Appirater (2.0.5)
+  - Appirater (2.1.2)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
   - Bolts/Tasks (1.8.4)
-  - CocoaLumberjack (2.3.0):
-    - CocoaLumberjack/Default (= 2.3.0)
-    - CocoaLumberjack/Extensions (= 2.3.0)
-  - CocoaLumberjack/Core (2.3.0)
-  - CocoaLumberjack/Default (2.3.0):
-    - CocoaLumberjack/Core
-  - CocoaLumberjack/Extensions (2.3.0):
+  - CocoaLumberjack (3.1.0):
+    - CocoaLumberjack/Default (= 3.1.0)
+    - CocoaLumberjack/Extensions (= 3.1.0)
+  - CocoaLumberjack/Default (3.1.0)
+  - CocoaLumberjack/Extensions (3.1.0):
+    - CocoaLumberjack/Default
+  - CocoaLumberjack/Swift (3.1.0):
     - CocoaLumberjack/Default
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
@@ -17,101 +17,100 @@ PODS:
   - FMDB (2.6.2):
     - FMDB/standard (= 2.6.2)
   - FMDB/standard (2.6.2)
-  - FormatterKit/LocationFormatter (1.8.1):
+  - FormatterKit/LocationFormatter (1.8.2):
     - FormatterKit/Resources
-  - FormatterKit/Resources (1.8.1)
-  - FormatterKit/TimeIntervalFormatter (1.8.1):
+  - FormatterKit/Resources (1.8.2)
+  - FormatterKit/TimeIntervalFormatter (1.8.2):
     - FormatterKit/Resources
   - GRMustache (7.3.2):
     - JRSwizzle (~> 1.0)
-  - HockeySDK-Source (3.8.6)
+  - HockeySDK-Source (4.1.4)
   - JRSwizzle (1.0)
-  - JSQWebViewController (3.0.0)
+  - JSQWebViewController (5.0.0)
   - JTSImageViewController (1.5.1)
-  - KVOController (1.1.0)
-  - Mantle (2.0.7):
-    - Mantle/extobjc (= 2.0.7)
-  - Mantle/extobjc (2.0.7)
+  - KVOController (1.2.0)
+  - Mantle (2.1.0):
+    - Mantle/extobjc (= 2.1.0)
+  - Mantle/extobjc (2.1.0)
   - Mapbox-iOS-SDK (1.6.2):
     - FMDB (= 2.6.2)
     - GRMustache (= 7.3.2)
     - proj4 (= 4.9.2)
     - SMCalloutView (= 2.1.5)
-  - Onboard (2.2.1)
-  - Parse (1.14.2):
+  - Onboard (2.3.1)
+  - Parse (1.14.4):
     - Bolts/Tasks (~> 1.8)
-  - PermissionScope (1.0.2)
+  - PermissionScope (1.1.1)
   - pop (1.0.9)
   - proj4 (4.9.2)
   - PureLayout (3.0.2)
-  - Reachability (3.2)
   - SMCalloutView (2.1.5)
-  - Swizzlean (0.2.0)
+  - Swizzlean (1.0.0)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
-  - VTAcknowledgementsViewController (1.1)
-  - YapDatabase (2.9.1):
-    - YapDatabase/Standard (= 2.9.1)
-  - YapDatabase/Standard (2.9.1):
-    - YapDatabase/Standard/Core (= 2.9.1)
-    - YapDatabase/Standard/Extensions (= 2.9.1)
-  - YapDatabase/Standard/Core (2.9.1):
-    - CocoaLumberjack (~> 2)
-  - YapDatabase/Standard/Extensions (2.9.1):
+  - VTAcknowledgementsViewController (1.2.1)
+  - YapDatabase (2.9.3):
+    - YapDatabase/Standard (= 2.9.3)
+  - YapDatabase/Standard (2.9.3):
+    - YapDatabase/Standard/Core (= 2.9.3)
+    - YapDatabase/Standard/Extensions (= 2.9.3)
+  - YapDatabase/Standard/Core (2.9.3):
+    - CocoaLumberjack
+  - YapDatabase/Standard/Extensions (2.9.3):
     - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/ActionManager (= 2.9.1)
-    - YapDatabase/Standard/Extensions/CloudKit (= 2.9.1)
-    - YapDatabase/Standard/Extensions/ConnectionProxy (= 2.9.1)
-    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 2.9.1)
-    - YapDatabase/Standard/Extensions/FilteredViews (= 2.9.1)
-    - YapDatabase/Standard/Extensions/FullTextSearch (= 2.9.1)
-    - YapDatabase/Standard/Extensions/Hooks (= 2.9.1)
-    - YapDatabase/Standard/Extensions/Relationships (= 2.9.1)
-    - YapDatabase/Standard/Extensions/RTreeIndex (= 2.9.1)
-    - YapDatabase/Standard/Extensions/SearchResults (= 2.9.1)
-    - YapDatabase/Standard/Extensions/SecondaryIndex (= 2.9.1)
-    - YapDatabase/Standard/Extensions/Views (= 2.9.1)
-  - YapDatabase/Standard/Extensions/ActionManager (2.9.1):
-    - Reachability (~> 3)
-    - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/Views
-  - YapDatabase/Standard/Extensions/CloudKit (2.9.1):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ConnectionProxy (2.9.1):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CrossProcessNotification (2.9.1):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/FilteredViews (2.9.1):
+    - YapDatabase/Standard/Extensions/ActionManager (= 2.9.3)
+    - YapDatabase/Standard/Extensions/CloudKit (= 2.9.3)
+    - YapDatabase/Standard/Extensions/ConnectionProxy (= 2.9.3)
+    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 2.9.3)
+    - YapDatabase/Standard/Extensions/FilteredViews (= 2.9.3)
+    - YapDatabase/Standard/Extensions/FullTextSearch (= 2.9.3)
+    - YapDatabase/Standard/Extensions/Hooks (= 2.9.3)
+    - YapDatabase/Standard/Extensions/Relationships (= 2.9.3)
+    - YapDatabase/Standard/Extensions/RTreeIndex (= 2.9.3)
+    - YapDatabase/Standard/Extensions/SearchResults (= 2.9.3)
+    - YapDatabase/Standard/Extensions/SecondaryIndex (= 2.9.3)
+    - YapDatabase/Standard/Extensions/Views (= 2.9.3)
+  - YapDatabase/Standard/Extensions/ActionManager (2.9.3):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/Views
-  - YapDatabase/Standard/Extensions/FullTextSearch (2.9.1):
+  - YapDatabase/Standard/Extensions/CloudKit (2.9.3):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/Hooks (2.9.1):
+  - YapDatabase/Standard/Extensions/ConnectionProxy (2.9.3):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/Relationships (2.9.1):
+  - YapDatabase/Standard/Extensions/CrossProcessNotification (2.9.3):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/RTreeIndex (2.9.1):
+  - YapDatabase/Standard/Extensions/FilteredViews (2.9.3):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/SearchResults (2.9.1):
+    - YapDatabase/Standard/Extensions/Views
+  - YapDatabase/Standard/Extensions/FullTextSearch (2.9.3):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/Hooks (2.9.3):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/Relationships (2.9.3):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/RTreeIndex (2.9.3):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/SearchResults (2.9.3):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/FullTextSearch
     - YapDatabase/Standard/Extensions/Views
-  - YapDatabase/Standard/Extensions/SecondaryIndex (2.9.1):
+  - YapDatabase/Standard/Extensions/SecondaryIndex (2.9.3):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/Views (2.9.1):
+  - YapDatabase/Standard/Extensions/Views (2.9.3):
     - YapDatabase/Standard/Core
 
 DEPENDENCIES:
   - Appirater (~> 2.0)
   - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
+  - CocoaLumberjack/Swift (~> 3.1.0)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - DOFavoriteButton (from `https://github.com/okmr-d/DOFavoriteButton.git`)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
-  - HockeySDK-Source (~> 3.7)
-  - JSQWebViewController (~> 3.0)
+  - HockeySDK-Source (~> 4.1.4)
+  - JSQWebViewController (~> 5.0)
   - JTSImageViewController
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
@@ -126,7 +125,7 @@ DEPENDENCIES:
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
   - VTAcknowledgementsViewController (~> 1.0)
-  - YapDatabase (~> 2.6)
+  - YapDatabase (from `https://github.com/ChatSecure/YapDatabase.git`, branch `cocoalumberjack3`)
 
 EXTERNAL SOURCES:
   ASDayPicker:
@@ -137,45 +136,50 @@ EXTERNAL SOURCES:
     :path: Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec
   proj4:
     :podspec: https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec
+  YapDatabase:
+    :branch: cocoalumberjack3
+    :git: https://github.com/ChatSecure/YapDatabase.git
 
 CHECKOUT OPTIONS:
   DOFavoriteButton:
-    :commit: a77045870c00af4dc7c1808397fdb482caf9775d
+    :commit: 43c65253d4c14e596a511354ca0e0aac0ec2bd5c
     :git: https://github.com/okmr-d/DOFavoriteButton.git
+  YapDatabase:
+    :commit: c25684304549d5f81908cdb15bbf944922f10e21
+    :git: https://github.com/ChatSecure/YapDatabase.git
 
 SPEC CHECKSUMS:
-  Appirater: e7c0a47fb67ee5041ce8479e6ba960927fb40264
+  Appirater: f1c9e53e8b612193e6256144f6a0fd2e31f4340d
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
-  CocoaLumberjack: 97fab7ee5f507fe54445cca7ea80f926729cfd15
+  CocoaLumberjack: 8311463ddf9ee86a06ef92a071dd656c89244500
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FMDB: 854a0341b4726e53276f2a8996f06f1b80f9259a
-  FormatterKit: 11ad17b983200629246a5a466f6f1bfa2df823cb
+  FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
   GRMustache: ebe6104fd30a6d22c1f36af131e19e2dbf7cd292
-  HockeySDK-Source: c6c66ea12e59f0d756fe9989cbc45eda017fc41c
+  HockeySDK-Source: 5bdf74ccf516d9751f04b755464bfd83f0d3be32
   JRSwizzle: dd5ead5d913a0f29e7f558200165849f006bb1e3
-  JSQWebViewController: eaa6bd68d9e1426ae25ade99c9bbde4c6cdd4120
+  JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
-  KVOController: 321b5fc59300fcaabd42c0f679baa7a27efbb2fd
-  Mantle: bc40bb061d8c2c6fb48d5083e04d928c3b7f73d9
+  KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
+  Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
   Mapbox-iOS-SDK: 49dab3c85d35872f815d3bdcb7d7b38994830961
-  Onboard: 75731d0b265f5b5bab0b4bceff1778d7f6e839af
-  Parse: 4335d65f40cb3d43190d723144bbe1afb9c38230
-  PermissionScope: 860828c5516d349b6f49e5491799cfef33c5ccc7
+  Onboard: b6871f25ac753175b2ab9a362fb2feb26a81a311
+  Parse: b0aa91d2c435e53d4a9af26e741e014c9b35c42e
+  PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
   pop: f667631a5108a2e60d9e8797c9b32ddaf2080bce
   proj4: 9e8dbd3bb75eec9311ee3740f62f36923d129b20
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
-  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   SMCalloutView: 5c0ee363dc8e7204b2fda17dfad38c93e9e23481
-  Swizzlean: 6ef3e5a33063b7cd99dc39f8c55164dc55d9a021
+  Swizzlean: 628e6747d925655be3dbbb943bc8a8e8b29e6852
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
-  VTAcknowledgementsViewController: 44da49d57a1dbf414e653688793a130d24af151e
-  YapDatabase: 713d4018cfacbd6e77dd430710ca84730e450980
+  VTAcknowledgementsViewController: e1de80f2c0ce31cc7e1c6f1c8aaeec2770371f09
+  YapDatabase: e011309c2f6a50a8115ee22e8e9eb31db08cae5a
 
-PODFILE CHECKSUM: 2a11f92115850c30f3ba6c7ff24df3c1fb8eae9b
+PODFILE CHECKSUM: 919736a4a571881d8668046ce82db7faefb13a82
 
-COCOAPODS: 1.0.1
+COCOAPODS: 1.2.1

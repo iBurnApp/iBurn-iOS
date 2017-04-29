@@ -20,7 +20,7 @@ public enum ObjectType: String {
     Art = "Art"
 }
 
-public class TableViewSection {
+open class TableViewSection {
     let objects: [BRCDataObject]
     let sectionTitle: ObjectType
     public init(objects: [BRCDataObject], sectionTitle: ObjectType) {
@@ -29,7 +29,7 @@ public class TableViewSection {
     }
 }
 
-public class BRCSortedViewController: UITableViewController {
+open class BRCSortedViewController: UITableViewController {
 
     var sections: [TableViewSection] = []
     var extensionRegistered: Bool = false
@@ -44,17 +44,17 @@ public class BRCSortedViewController: UITableViewController {
     public required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
-        BRCDatabaseManager.sharedInstance().readConnection.readWithBlock { (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.sharedInstance().readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
             let ext: AnyObject? = transaction.ext(self.extensionName)
             if (ext != nil) {
                 self.extensionRegistered = true
             }
         }
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: BRCDatabaseExtensionRegisteredNotification, object: BRCDatabaseManager.sharedInstance());
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(audioPlayerChangeNotification(_:)), name: BRCAudioPlayer.BRCAudioPlayerChangeNotification, object: BRCAudioPlayer.sharedInstance)
+        NotificationCenter.default.addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: NSNotification.Name.BRCDatabaseExtensionRegistered, object: BRCDatabaseManager.sharedInstance());
+        NotificationCenter.default.addObserver(self, selector: #selector(audioPlayerChangeNotification(_:)), name: NSNotification.Name(rawValue: BRCAudioPlayer.BRCAudioPlayerChangeNotification), object: BRCAudioPlayer.sharedInstance)
     }
     
-    private override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: NSBundle!) {
+    fileprivate override init(nibName nibNameOrNil: String!, bundle nibBundleOrNil: Bundle!) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
 
@@ -64,7 +64,7 @@ public class BRCSortedViewController: UITableViewController {
     
     // MARK: - View cycle
     
-    public override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
         // Apple bug: https://github.com/smileyborg/TableViewCellWithAutoLayoutiOS8/issues/10#issuecomment-69694089
@@ -80,15 +80,15 @@ public class BRCSortedViewController: UITableViewController {
         // register table cell classes
         let classesToRegister = [BRCEventObject.self, BRCDataObject.self, BRCArtObject.self]
         for objClass in classesToRegister {
-            let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(objClass)
+            let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: objClass)
             let nib = UINib(nibName: NSStringFromClass(cellClass), bundle: nil)
             let reuseIdentifier = cellClass.cellIdentifier()
-            tableView.registerNib(nib, forCellReuseIdentifier: reuseIdentifier)
+            tableView.register(nib, forCellReuseIdentifier: reuseIdentifier!)
         }
-        tableView.registerClass(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
+        tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
     
-    func databaseExtensionRegistered(notification: NSNotification) {
+    func databaseExtensionRegistered(_ notification: Notification) {
         if let extensionName = notification.userInfo?["extensionName"] as? String {
             if extensionName == self.extensionName {
                 NSLog("databaseExtensionRegistered: %@", extensionName)
@@ -100,23 +100,23 @@ public class BRCSortedViewController: UITableViewController {
         }
     }
     
-    public func audioPlayerChangeNotification(notification: NSNotification) {
+    open func audioPlayerChangeNotification(_ notification: Notification) {
         self.tableView.reloadData()
     }
     
-    public override func viewWillAppear(animated: Bool) {
+    open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if let title = self.title {
-            PFAnalytics.trackEventInBackground(title, block: nil)
+            PFAnalytics.trackEvent(inBackground: title, block: nil)
         }
         
         refreshTableItems { () -> Void in
             self.tableView.reloadData();
         }
         if let location = getCurrentLocation() {
-            BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: dispatch_get_main_queue()) { (locationString: String!) -> Void in
+            BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { (locationString: String!) -> Void in
                 if locationString.characters.count > 0 {
-                    let attrString = BRCGeocoder.locationStringWithCrosshairs(locationString)
+                    let attrString = BRCGeocoder.locationString(withCrosshairs: locationString)
                     let label = UILabel()
                     label.attributedText = attrString
                     label.sizeToFit()
@@ -132,17 +132,17 @@ public class BRCSortedViewController: UITableViewController {
     // MARK: - Internal
     
     func getCurrentLocation() -> CLLocation? {
-        let appDelegate = BRCAppDelegate.sharedAppDelegate()
-        let currentLocation: CLLocation? = appDelegate.locationManager.location
+        let appDelegate = BRCAppDelegate.shared()
+        let currentLocation: CLLocation? = appDelegate?.locationManager.location
         return currentLocation
     }
     
-    func refreshTableItems(completion: dispatch_block_t) {
+    func refreshTableItems(_ completion: @escaping ()->()) {
         preconditionFailure("This method must be overridden")
     }
     
     /** processes results of BRCDataSorter */
-    func processSortedData(events: [BRCEventObject], art: [BRCArtObject], camps: [BRCCampObject], completion: dispatch_block_t) {
+    func processSortedData(_ events: [BRCEventObject], art: [BRCArtObject], camps: [BRCCampObject], completion: ()->()) {
         var sections: [TableViewSection] = []
         if events.count > 0 {
             let eventsSection = TableViewSection(objects: events, sectionTitle: ObjectType.Events)
@@ -172,48 +172,48 @@ public class BRCSortedViewController: UITableViewController {
     
     // MARK: - Table view data source
     
-    override public func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override open func numberOfSections(in tableView: UITableView) -> Int {
         if !hasTableItems() {
             return 1
         }
         return sections.count
     }
     
-    override public func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if !hasTableItems() {
             return 1
         }
         return sections[section].objects.count
     }
     
-    override public func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override open func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if !hasTableItems() {
             return nil
         }
         return sections[section].sectionTitle.rawValue
     }
     
-    override public func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override open func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if !hasTableItems() {
             return 0
         }
         return UITableViewAutomaticDimension
     }
     
-    override public func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    override open func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 0
     }
     
-    override public func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override open func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if !hasTableItems() {
             return 55
         }
         return UITableViewAutomaticDimension
     }
     
-    override public func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if !hasTableItems() {
-            let cell = tableView.dequeueReusableCellWithIdentifier(SubtitleCell.kReuseIdentifier, forIndexPath: indexPath) as! SubtitleCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: SubtitleCell.kReuseIdentifier, for: indexPath) as! SubtitleCell
             cell.textLabel!.text = emptyListText.rawValue
             switch emptyListText {
             case EmptyListLabelText.Nothing:
@@ -226,21 +226,21 @@ public class BRCSortedViewController: UITableViewController {
         
         let dataObject = sections[indexPath.section].objects[indexPath.row]
         
-        let dataObjectClass = dataObject.dynamicType
-        let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClassForDataObjectClass(dataObjectClass)
+        let dataObjectClass = type(of: dataObject)
+        let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: dataObjectClass)
         let reuseIdentifier = cellClass.cellIdentifier()
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! BRCDataObjectTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier!, for: indexPath) as! BRCDataObjectTableViewCell
         cell.setDataObject(dataObject)
-        cell.updateDistanceLabelFromLocation(getCurrentLocation(), dataObject: dataObject)
+        cell.updateDistanceLabel(from: getCurrentLocation(), dataObject: dataObject)
         cell.favoriteButtonAction = { (sender) -> Void in
             let dataCopy = dataObject.copy() as! BRCDataObject
-            dataCopy.isFavorite = cell.favoriteButton.selected
-            BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWriteWithBlock({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
-                transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: dataCopy.dynamicType.collection())
+            dataCopy.isFavorite = cell.favoriteButton.isSelected
+            BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWrite({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
+                transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: type(of: dataCopy).collection())
                 if let event = dataCopy as? BRCEventObject {
                     event.refreshCalendarEntry(transaction)
                 }
-                }, completionQueue:dispatch_get_main_queue(), completionBlock: { () -> Void in
+                }, completionQueue:DispatchQueue.main, completionBlock: { () -> Void in
                     self.refreshTableItems({ () -> Void in
                         self.tableView.reloadData()
                     })
@@ -254,14 +254,14 @@ public class BRCSortedViewController: UITableViewController {
     
     // MARK: - UITableViewDelegate
     
-    override public func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !hasTableItems() {
             return
         }
         let dataObject = sections[indexPath.section].objects[indexPath.row]
         let detailVC = BRCDetailViewController(dataObject: dataObject)
-        detailVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(detailVC, animated: true)
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        detailVC?.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(detailVC!, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }

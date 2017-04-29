@@ -1,4 +1,4 @@
-osx_image: xcode7.3
+osx_image: xcode8.3
 language: objective-c
 
 # Handle git submodules yourself
@@ -8,18 +8,23 @@ git:
 
 # Use sed to replace the SSH URL with the public URL, then initialize submodules
 before_install:
-    # https://help.github.com/articles/what-are-github-s-ssh-key-fingerprints
-    - echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> ~/.ssh/known_hosts
-    - sed -i -e 's/git@github.com:/git:\/\/github.com\//' .gitmodules
-    - git submodule update --init --recursive
+  # https://help.github.com/articles/what-are-github-s-ssh-key-fingerprints
+  - echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> ~/.ssh/known_hosts
+  - sed -i -e 's/git@github.com:/git:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
+  # Fix Travis  xcodebuild exited with 65 https://github.com/travis-ci/travis-ci/issues/6675#issuecomment-257964767
+  - export IOS_SIMULATOR_UDID=`instruments -s devices | grep -m 1 "iPhone 7 (10.3" | awk -F '[ ]' '{print $4}' | awk -F '[\[]' '{print $2}' | sed 's/.$//'`
+  - echo $IOS_SIMULATOR_UDID
+  - open -a "simulator" --args -CurrentDeviceUDID $IOS_SIMULATOR_UDID
 
 install:
   - mkdir Submodules/iBurn-Data/data/2016/2016
   - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
-  - gem install cocoapods --no-rdoc --no-ri # Need Cocoapods >= 0.34.1
-  - pod repo update --silent
-  - pod install
+  - bundle install
+  - bundle exec pod repo update --silent
+  - bundle exec pod install
 script:
-  - xctool -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator -arch x86_64 build
+  - set -o pipefail
+  - travis_retry xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator -destination "id=$IOS_SIMULATOR_UDID" build | xcpretty -c

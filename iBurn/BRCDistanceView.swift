@@ -10,7 +10,7 @@ import UIKit
 import BButton
 import PureLayout
 
-public class BRCDistanceView: UIView {
+open class BRCDistanceView: UIView {
     
     let distanceLabel: UILabel = UILabel()
     var destination: CLLocation
@@ -20,17 +20,17 @@ public class BRCDistanceView: UIView {
         super.init(frame: frame)
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(distanceLabel)
-        distanceLabel.autoPinEdgesToSuperviewEdgesWithInsets(UIEdgeInsetsZero)
-        backgroundColor = UIColor.clearColor()
-        distanceLabel.backgroundColor = UIColor.clearColor()
+        distanceLabel.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets.zero)
+        backgroundColor = UIColor.clear
+        distanceLabel.backgroundColor = UIColor.clear
     }
     
-    public func updateDistanceFromLocation(fromLocation: CLLocation) {
-        let distance = destination.distanceFromLocation(fromLocation)
-        let distanceString = TTTLocationFormatter.brc_humanizedStringForDistance(distance)
+    open func updateDistanceFromLocation(_ fromLocation: CLLocation) {
+        let distance = destination.distance(from: fromLocation)
+        let distanceString = TTTLocationFormatter.brc_humanizedString(forDistance: distance)
         distanceLabel.attributedText = distanceString
         distanceLabel.sizeToFit()
-        self.frame = CGRectMake(frame.origin.x, frame.origin.y, distanceLabel.frame.size.width, distanceLabel.frame.size.height)
+        self.frame = CGRect(x: frame.origin.x, y: frame.origin.y, width: distanceLabel.frame.size.width, height: distanceLabel.frame.size.height)
     }
 
     required public init?(coder aDecoder: NSCoder) {

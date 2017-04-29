@@ -10,10 +10,10 @@ import UIKit
 import PermissionScope
 
 /** Wrapper around swift-only PermissionScope */
-public class BRCPermissions: NSObject {
+open class BRCPermissions: NSObject {
     
     /** Show location permissions prompt */
-    public static func promptForLocation(completion: dispatch_block_t) {
+    open static func promptForLocation(_ completion: @escaping ()->()) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Location"
         pscope.bodyLabel.text = "iBurn is best with location!"
@@ -27,7 +27,7 @@ public class BRCPermissions: NSObject {
         }
     }
     
-    public static func promptForEvents(completion: dispatch_block_t) {
+    open static func promptForEvents(_ completion: @escaping ()->()) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"
@@ -41,7 +41,7 @@ public class BRCPermissions: NSObject {
     }
     
     /** Show notification permissions prompt */
-    public static func promptForPush(completion: dispatch_block_t) {
+    open static func promptForPush(_ completion: @escaping ()->()) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"

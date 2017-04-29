@@ -11,15 +11,15 @@ import HockeySDK_Source
 import StoreKit
 
 enum CellTag: Int {
-    case Art = 1,
-    Camps = 2,
-    Unlock = 3,
-    Credits = 4,
-    Feedback = 5,
-    Share = 6,
-    Rate = 7,
-    DebugShowOnboarding = 8,
-    AudioTour = 9
+    case art = 1,
+    camps = 2,
+    unlock = 3,
+    credits = 4,
+    feedback = 5,
+    share = 6,
+    rate = 7,
+    debugShowOnboarding = 8,
+    audioTour = 9
 }
 
 class BRCMoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
@@ -31,7 +31,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
         self.title = "More"
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.reloadData()
     }
@@ -43,48 +43,48 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     
     // MARK: - UITableViewDelegate & DataSource
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let cellImage = cell.imageView?.image {
-            cell.imageView!.image = cellImage.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+            cell.imageView!.image = cellImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
         }
         
-        if cell.tag == CellTag.Unlock.rawValue {
+        if cell.tag == CellTag.unlock.rawValue {
             if BRCEmbargo.allowEmbargoedData() {
-                cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+                cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
                 cell.textLabel!.text = "Location Data Unlocked"
-                cell.textLabel!.textColor = UIColor.lightGrayColor()
-                cell.userInteractionEnabled = false
+                cell.textLabel!.textColor = UIColor.lightGray
+                cell.isUserInteractionEnabled = false
             }
         }
 
         return cell
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         
-        let cell = tableView.cellForRowAtIndexPath(indexPath)!
+        let cell = tableView.cellForRow(at: indexPath)!
         if let cellTag = CellTag(rawValue: cell.tag) {
             switch cellTag {
-            case .Art:
+            case .art:
                 pushArtView()
-            case .Camps:
+            case .camps:
                 pushCampsView()
-            case .Unlock:
+            case .unlock:
                 showUnlockView()
-            case .Credits:
+            case .credits:
                 pushCreditsView()
-            case .Feedback:
+            case .feedback:
                 showFeedbackView()
-            case .Share:
+            case .share:
                 showShareSheet(cell)
-            case .Rate:
+            case .rate:
                 showRatingsView()
-            case .DebugShowOnboarding:
+            case .debugShowOnboarding:
                 showOnboardingView()
-            case .AudioTour:
+            case .audioTour:
                 showAudioTour()
             }
         }
@@ -92,26 +92,26 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
 
     func pushArtView() {
         let dbManager = BRCDatabaseManager.sharedInstance()
-        let artVC = BRCFilteredTableViewController(viewClass: BRCArtObject.self, viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
-        artVC.title = "Art"
-        artVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(artVC, animated: true)
+        let artVC = BRCFilteredTableViewController(viewClass: BRCArtObject.self, viewName: dbManager?.artViewName, searchViewName: dbManager?.searchArtView)
+        artVC?.title = "Art"
+        artVC?.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(artVC!, animated: true)
     }
 
     func pushCampsView() {
         let dbManager = BRCDatabaseManager.sharedInstance()
-        let campsVC = BRCFilteredTableViewController(viewClass: BRCCampObject.self, viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
-        campsVC.title = "Camps"
-        campsVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(campsVC, animated: true)
+        let campsVC = BRCFilteredTableViewController(viewClass: BRCCampObject.self, viewName: dbManager?.campsViewName, searchViewName: dbManager?.searchCampsView)
+        campsVC?.title = "Camps"
+        campsVC?.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(campsVC!, animated: true)
     }
 
     func showUnlockView() {
         let unlockVC = BRCEmbargoPasscodeViewController()
         unlockVC.dismissAction = {
-            unlockVC.dismissViewControllerAnimated(true, completion: nil)
+            unlockVC.dismiss(animated: true, completion: nil)
         }
-        presentViewController(unlockVC, animated: true, completion: nil)
+        present(unlockVC, animated: true, completion: nil)
     }
 
     func pushCreditsView() {
@@ -122,23 +122,23 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     }
 
     func showFeedbackView() {
-        BITHockeyManager.sharedHockeyManager().feedbackManager.showFeedbackListView()
+        BITHockeyManager.shared().feedbackManager.showFeedbackListView()
     }
 
-    func showShareSheet(fromView: UIView) {
-        let url = NSURL(string: "http://iburnapp.com")!
+    func showShareSheet(_ fromView: UIView) {
+        let url = URL(string: "http://iburnapp.com")!
         let string = "Going to Burning Man? Check out @iBurnApp for offline maps, events and more!"
         let shareVC = UIActivityViewController(activityItems: [string, url], applicationActivities: nil)
         shareVC.popoverPresentationController?.sourceView = fromView;
 
-        presentViewController(shareVC, animated: true, completion: nil)
+        present(shareVC, animated: true, completion: nil)
     }
     
     func showRatingsView() {
         let storeVC = SKStoreProductViewController()
         storeVC.delegate = self
-        storeVC.loadProductWithParameters([SKStoreProductParameterITunesItemIdentifier : 388169740], completionBlock: nil)
-        presentViewController(storeVC, animated: true, completion: nil)
+        storeVC.loadProduct(withParameters: [SKStoreProductParameterITunesItemIdentifier : 388169740], completionBlock: nil)
+        present(storeVC, animated: true, completion: nil)
     }
     
     // MARK: - Debug
@@ -149,13 +149,13 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     func showOnboardingView() {
         var onboardingVC: OnboardingViewController? = nil
         onboardingVC = BRCOnboardingViewController(completion: { () -> Void in
-            onboardingVC!.dismissViewControllerAnimated(true, completion: nil)
+            onboardingVC!.dismiss(animated: true, completion: nil)
         })
-        presentViewController(onboardingVC!, animated: true, completion: nil)
+        present(onboardingVC!, animated: true, completion: nil)
     }
     
     func showAudioTour() {
-        let audioTour = BRCAudioTourViewController(style: UITableViewStyle.Grouped, extensionName: BRCDatabaseManager.sharedInstance().audioTourViewName)
+        let audioTour = BRCAudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.sharedInstance().audioTourViewName)
         audioTour.title = "Audio Tour"
         audioTour.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(audioTour, animated: true)
@@ -163,8 +163,8 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     
     // MARK: - SKStoreProductViewControllerDelegate
     
-    func productViewControllerDidFinish(viewController: SKStoreProductViewController) {
-        viewController.dismissViewControllerAnimated(true, completion: nil)
+    func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
+        viewController.dismiss(animated: true, completion: nil)
     }
     
 }
