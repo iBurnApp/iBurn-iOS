@@ -18,7 +18,7 @@ before_install:
   - open -a "simulator" --args -CurrentDeviceUDID $IOS_SIMULATOR_UDID
 
 install:
-  - mkdir Submodules/iBurn-Data/data/2016/2016
+#  - mkdir Submodules/iBurn-Data/data/2016/2016
   - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
