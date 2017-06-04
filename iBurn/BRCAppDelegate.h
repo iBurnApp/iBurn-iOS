@@ -9,6 +9,7 @@
 @import UIKit;
 @import HockeySDK_Source;
 @import Onboard;
+@import CoreLocation;
 #import "BRCMapViewController.h"
 #import "BRCEventsTableViewController.h"
 

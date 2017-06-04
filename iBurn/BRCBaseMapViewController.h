@@ -7,13 +7,13 @@
 //
 
 @import UIKit;
-@import Mapbox_iOS_SDK;
+@import Mapbox;
 
-@interface BRCBaseMapViewController : UIViewController <RMMapViewDelegate>
+@interface BRCBaseMapViewController : UIViewController <MGLMapViewDelegate>
 
 //This viewController is the base for the main map viewController as well as the detail mapViewController
 
-@property (nonatomic, strong) RMMapView *mapView;
+@property (nonatomic, strong) MGLMapView *mapView;
 
 - (void) centerMapAtManCoordinatesAnimated:(BOOL)animated;
 

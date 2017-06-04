@@ -8,8 +8,9 @@
 
 #import <Mantle/Mantle.h>
 @import CoreLocation;
+@import Mapbox;
 
-@interface BRCDataObject : MTLModel <MTLJSONSerializing>
+@interface BRCDataObject : MTLModel <MTLJSONSerializing, MGLAnnotation>
 
 #pragma mark Mutable Properties
 
@@ -77,6 +78,8 @@
  */
 + (NSString*) collection;
 
+@end
 
-
+@interface BRCDataObject (MarkerImage)
+@property (nonatomic, strong, readonly) UIImage *markerImage;
 @end

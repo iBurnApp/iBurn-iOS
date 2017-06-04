@@ -12,11 +12,8 @@
 #import "BRCDataObject.h"
 #import "BRCDatabaseManager.h"
 #import <MessageUI/MessageUI.h>
-#import "RMMapView+iBurn.h"
-#import "RMAnnotation+iBurn.h"
-#import "RMUserLocation.h"
-#import "RMMarker+iBurn.h"
-#import <Mapbox_iOS_SDK/Mapbox.h>
+#import "MGLMapView+iBurn.h"
+@import Mapbox;
 #import "BRCDetailInfoTableViewCell.h"
 #import "BRCDetailMapViewController.h"
 #import "PureLayout.h"
@@ -33,12 +30,12 @@
 
 static CGFloat const kTableViewHeaderHeight = 200;
 
-@interface BRCDetailViewController () <MFMailComposeViewControllerDelegate, RMMapViewDelegate>
+@interface BRCDetailViewController () <MFMailComposeViewControllerDelegate, MGLMapViewDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
-@property (nonatomic, strong) RMMapView *mapView;
+@property (nonatomic, strong) MGLMapView *mapView;
 
 @end
 
@@ -135,7 +132,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
             [self.mapView brc_zoomToIncludeCoordinate:objectLocation.coordinate andCoordinate:objectLocation.coordinate inVisibleRect:rect animated:animated];
         }
     } else {
-        [self.mapView setZoom:14.0 atCoordinate:[BRCLocations blackRockCityCenter] animated:animated];
+        [self.mapView setCenterCoordinate:[BRCLocations blackRockCityCenter] zoomLevel:14.0 animated:YES];
     }
 }
 
@@ -194,12 +191,12 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
     if (dataObject.location) {
-        self.mapView = [RMMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
+        self.mapView = [MGLMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
         self.mapView.delegate = self;
         self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
-        [self.mapView addAnnotation:annotation];
-        self.mapView.draggingEnabled = NO;
+//        RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
+//        [self.mapView addAnnotation:annotation];
+//        self.mapView.draggingEnabled = NO;
         self.mapView.userInteractionEnabled = NO;
     }
     else {
@@ -209,18 +206,18 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 #pragma - mark RMMapviewDelegate Methods
 
-- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocationForObject:self.dataObject]) { // show default style
-        return nil;
-    }
-    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
-        BRCDataObject *dataObject = annotation.userInfo;
-        
-        return [RMMarker brc_defaultMarkerForDataObject:dataObject];
-        
-    }
-    return nil;
-}
+//- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
+//    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocationForObject:self.dataObject]) { // show default style
+//        return nil;
+//    }
+//    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
+//        BRCDataObject *dataObject = annotation.userInfo;
+//        
+//        return [RMMarker brc_defaultMarkerForDataObject:dataObject];
+//        
+//    }
+//    return nil;
+//}
 
 #pragma - mark UITableViewDataSource Methods
 

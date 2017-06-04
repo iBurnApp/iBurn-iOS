@@ -78,4 +78,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type;
 
+/** Image for type. */
+@property (nonatomic, strong, readonly) UIImage *image;
+
 @end

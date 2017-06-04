@@ -25,7 +25,6 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCLocations.h"
 #import "Appirater.h"
-#import "RMConfiguration.h"
 @import JSQWebViewController;
 #import <Parse/Parse.h>
 #import "TUSafariActivity.h"
@@ -110,7 +109,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         }];
     });
     
-    [RMConfiguration sharedInstance].accessToken = @"";
+    //[RMConfiguration sharedInstance].accessToken = @"";
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     
     UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];

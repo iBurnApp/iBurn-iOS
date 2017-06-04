@@ -11,6 +11,9 @@
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "BRCDataObject_Private.h"
 #import "BRCAppDelegate.h"
+#import "BRCArtObject.h"
+#import "BRCEventObject.h"
+#import "BRCCampObject.h"
 @import Mantle;
 
 @interface BRCDataObject()
@@ -104,6 +107,26 @@
     [behaviors setObject:@(MTLModelEncodingBehaviorExcluded) forKey:NSStringFromSelector(@selector(coordinate))];
     [behaviors setObject:@(MTLModelEncodingBehaviorExcluded) forKey:NSStringFromSelector(@selector(location))];
     return behaviors;
+}
+
+@end
+
+@implementation BRCDataObject (MarkerImage)
+
+- (UIImage*) markerImage {
+    UIImage *markerImage = nil;
+    Class dataObjectClass = [self class];
+    if (dataObjectClass == [BRCArtObject class]) {
+        markerImage = [UIImage imageNamed:@"BRCBluePin"];
+    } else if (dataObjectClass == [BRCEventObject class]) {
+        BRCEventObject *eventObject = (BRCEventObject*)self;
+        markerImage = [eventObject markerImageForEventStatus:[NSDate date]];
+    } else if (dataObjectClass == [BRCCampObject class]) {
+        markerImage = [UIImage imageNamed:@"BRCPurplePin"];
+    } else {
+        markerImage = [UIImage imageNamed:@"BRCPurplePin"];
+    }
+    return markerImage;
 }
 
 @end

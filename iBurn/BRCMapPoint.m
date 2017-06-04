@@ -8,7 +8,6 @@
 
 #import "BRCMapPoint.h"
 #import "MTLModel+NSCoding.h"
-#import "RMAnnotation.h"
 #import "BRCUserMapPoint.h"
 #import "BRCBreadcrumbPoint.h"
 
@@ -178,5 +177,19 @@
             break;
     }
 }
+
+- (UIImage*) image {
+    switch (self.type) {
+        case BRCMapPointTypeUserBike:
+            return [UIImage imageNamed:@"BRCUserPinBike"];
+        case BRCMapPointTypeUserHome:
+            return [UIImage imageNamed:@"BRCUserPinHome"];
+        case BRCMapPointTypeUserStar:
+            return [UIImage imageNamed:@"BRCUserPinStar"];
+        default:
+            return [UIImage imageNamed:@"BRCUserPinStar"];
+    }
+}
+
 
 @end

@@ -11,10 +11,11 @@ abstract_target 'iBurnAbstract' do
 	pod 'Swizzlean'
 
 	# Gotta use fork now because it's deprecated
-	pod 'Mapbox-iOS-SDK', :path => 'Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec'
-	# pod 'YapDatabase', '~> 2.6'
-	pod 'CocoaLumberjack/Swift', '~> 3.1.0'
-	pod 'YapDatabase', :git => 'https://github.com/ChatSecure/YapDatabase.git', :branch => 'cocoalumberjack3'
+	pod 'Mapbox-iOS-SDK', '~> 3.5'
+	# pod 'Mapbox-iOS-SDK', :path => 'Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec'
+	pod 'YapDatabase', '~> 3.0'
+	pod 'CocoaLumberjack/Swift', '~> 3.2.0'
+	# pod 'YapDatabase', :git => 'https://github.com/ChatSecure/YapDatabase.git', :branch => 'cocoalumberjack3'
 	pod 'Mantle', '~> 2.0'
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
@@ -36,6 +37,6 @@ abstract_target 'iBurnAbstract' do
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', '~> 1.0'
 	pod 'JTSImageViewController'
-	pod 'proj4', :podspec => 'https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec'
+	# pod 'proj4', :podspec => 'https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec'
 
 end

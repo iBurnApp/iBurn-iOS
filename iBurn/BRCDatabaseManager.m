@@ -510,8 +510,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     if (options.allowedCollections) {
         options.allowedCollections = allowedCollections;
     }
-    YapDatabaseView *databaseView =
-    [[YapDatabaseView alloc] initWithGrouping:grouping
+    YapDatabaseAutoView *databaseView =
+    [[YapDatabaseAutoView alloc] initWithGrouping:grouping
                                       sorting:sorting
                                    versionTag:versionTag
                                       options:options];
@@ -709,7 +709,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 /** Refresh events sorting if selected by expiration/start time */
 - (void) refreshEventsSortingWithCompletionBlock:(dispatch_block_t)completionBlock {
     [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction ext:self.eventsViewName];
+        YapDatabaseAutoViewTransaction *viewTransaction = [transaction ext:self.eventsViewName];
         if (!viewTransaction) {
             return;
         }

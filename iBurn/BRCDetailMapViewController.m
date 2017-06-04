@@ -8,8 +8,7 @@
 
 #import "BRCDetailMapViewController.h"
 #import "BRCDataObject.h"
-#import "RMAnnotation+iBurn.h"
-#import <Mapbox_iOS_SDK/Mapbox.h>
+@import Mapbox;
 
 @interface BRCDetailMapViewController ()
 
@@ -31,7 +30,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self.mapView addAnnotation:[RMAnnotation brc_annotationWithMapView:self.mapView dataObject:self.dataObject]];
+    //[self.mapView addAnnotation:[RMAnnotation brc_annotationWithMapView:self.mapView dataObject:self.dataObject]];
 }
 
 @end
