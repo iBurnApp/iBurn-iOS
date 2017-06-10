@@ -9,6 +9,7 @@
 #import "MGLMapView+iBurn.h"
 #import "BRCLocations.h"
 #import "BRCDataImporter.h"
+#import "BRCSecrets.h"
 
 @implementation MGLMapView (iBurn)
 
@@ -128,6 +129,7 @@
 + (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame
 {
     MGLMapView *mapView = [[MGLMapView alloc] initWithFrame:frame];
+    mapView.styleURL = [NSURL URLWithString:kBRCMapBoxStyleURL];
     //mapView.hideAttribution = YES;
     //mapView.showLogoBug = NO;
     mapView.showsUserLocation = YES;

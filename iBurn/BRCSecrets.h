@@ -1,3 +1,4 @@
+NS_ASSUME_NONNULL_BEGIN
 extern NSString * const kBRCHockeyBetaIdentifier;
 extern NSString * const kBRCHockeyLiveIdentifier;
 
@@ -13,3 +14,7 @@ extern NSString * const kBRCUpdatesURLString;
 
 extern NSString * const kBRCParseApplicationId;
 extern NSString * const kBRCParseClientKey;
+
+extern NSString * const kBRCMapBoxAccessToken;
+extern NSString * const kBRCMapBoxStyleURL;
+NS_ASSUME_NONNULL_END

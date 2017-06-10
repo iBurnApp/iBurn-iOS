@@ -73,12 +73,14 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
     
-    [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
-                                                         liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
-    [[BITHockeyManager sharedHockeyManager] startManager];
+//    [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
+//                                                         liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
+//    [[BITHockeyManager sharedHockeyManager] startManager];
     
     [Parse setApplicationId:kBRCParseApplicationId
                   clientKey:kBRCParseClientKey];
+    
+    [MGLAccountManager setAccessToken:kBRCMapBoxAccessToken];
     
     [PFNetworkActivityIndicatorManager sharedManager].enabled = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -324,15 +326,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     }];
     [self.dataImporter waitForDataUpdatesToFinish];
     NSLog(@"Finished loading pre-existing data");
-}
-
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    if([[BITHockeyManager sharedHockeyManager].authenticator handleOpenURL:url
-                                                          sourceApplication:sourceApplication
-                                                                 annotation:annotation]) {
-        return YES;
-    }
-    return NO;
 }
 
 - (void) setupRegionBasedUnlock {

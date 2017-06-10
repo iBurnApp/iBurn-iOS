@@ -7,7 +7,7 @@
 //
 
 @import UIKit;
-@import HockeySDK_Source;
+@import KSCrash;
 @import Onboard;
 @import CoreLocation;
 #import "BRCMapViewController.h"
@@ -15,7 +15,7 @@
 
 @class BRCFavoritesViewController;
 
-@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, BITHockeyManagerDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
+@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic, strong) UITabBarController *tabBarController;

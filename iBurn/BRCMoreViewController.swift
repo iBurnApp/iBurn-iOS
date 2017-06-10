@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import HockeySDK_Source
 import StoreKit
 
 enum CellTag: Int {
@@ -122,7 +121,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     }
 
     func showFeedbackView() {
-        BITHockeyManager.shared().feedbackManager.showFeedbackListView()
+        //BITHockeyManager.shared().feedbackManager.showFeedbackListView()
     }
 
     func showShareSheet(_ fromView: UIView) {

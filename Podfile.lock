@@ -19,9 +19,71 @@ PODS:
   - FormatterKit/Resources (1.8.2)
   - FormatterKit/TimeIntervalFormatter (1.8.2):
     - FormatterKit/Resources
-  - HockeySDK-Source (4.1.5)
   - JSQWebViewController (5.0.0)
   - JTSImageViewController (1.5.1)
+  - KSCrash (1.15.9):
+    - KSCrash/Installations (= 1.15.9)
+  - KSCrash/Installations (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting
+  - KSCrash/Recording (1.15.9):
+    - KSCrash/Recording/Tools (= 1.15.9)
+  - KSCrash/Recording/Tools (1.15.9)
+  - KSCrash/Reporting (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters (= 1.15.9)
+    - KSCrash/Reporting/MessageUI (= 1.15.9)
+    - KSCrash/Reporting/Sinks (= 1.15.9)
+    - KSCrash/Reporting/Tools (= 1.15.9)
+  - KSCrash/Reporting/Filters (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Alert (= 1.15.9)
+    - KSCrash/Reporting/Filters/AppleFmt (= 1.15.9)
+    - KSCrash/Reporting/Filters/Base (= 1.15.9)
+    - KSCrash/Reporting/Filters/Basic (= 1.15.9)
+    - KSCrash/Reporting/Filters/GZip (= 1.15.9)
+    - KSCrash/Reporting/Filters/JSON (= 1.15.9)
+    - KSCrash/Reporting/Filters/Sets (= 1.15.9)
+    - KSCrash/Reporting/Filters/Stringify (= 1.15.9)
+    - KSCrash/Reporting/Filters/Tools (= 1.15.9)
+  - KSCrash/Reporting/Filters/Alert (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/AppleFmt (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Base (1.15.9):
+    - KSCrash/Recording
+  - KSCrash/Reporting/Filters/Basic (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/GZip (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/JSON (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Sets (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/AppleFmt
+    - KSCrash/Reporting/Filters/Base
+    - KSCrash/Reporting/Filters/Basic
+    - KSCrash/Reporting/Filters/GZip
+    - KSCrash/Reporting/Filters/JSON
+    - KSCrash/Reporting/Filters/Stringify
+  - KSCrash/Reporting/Filters/Stringify (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Tools (1.15.9):
+    - KSCrash/Recording
+  - KSCrash/Reporting/MessageUI (1.15.9):
+    - KSCrash/Recording
+  - KSCrash/Reporting/Sinks (1.15.9):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters
+    - KSCrash/Reporting/Tools
+  - KSCrash/Reporting/Tools (1.15.9):
+    - KSCrash/Recording
   - KVOController (1.2.0)
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
@@ -108,9 +170,9 @@ DEPENDENCIES:
   - DOFavoriteButton (from `https://github.com/okmr-d/DOFavoriteButton.git`)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
-  - HockeySDK-Source (~> 4.1.4)
   - JSQWebViewController (~> 5.0)
   - JTSImageViewController
+  - KSCrash (~> 1.15.9)
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (~> 3.5)
@@ -146,9 +208,9 @@ SPEC CHECKSUMS:
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
-  HockeySDK-Source: ab4eef2ac5c07c45db5844ae724bf6f06199b214
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
+  KSCrash: d3e2bfd20728b8772a796809bbc5bf7ed040fa94
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
   Mapbox-iOS-SDK: 81197829dcf4c4ed9a593b7a95462881b5f1309a
@@ -163,6 +225,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: e1de80f2c0ce31cc7e1c6f1c8aaeec2770371f09
   YapDatabase: 0cef6c79948169c924ae325d430ffcfa8a5231c2
 
-PODFILE CHECKSUM: 4a19be1246910e32e8df71ae75acd23638267cb8
+PODFILE CHECKSUM: bf3a804b6da57aa959cb610db3e5e8a86bdc535e
 
 COCOAPODS: 1.2.1
