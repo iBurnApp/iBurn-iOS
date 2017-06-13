@@ -8,6 +8,7 @@
 
 @import Mantle;
 @import CoreLocation;
+@import Mapbox;
 
 typedef NS_ENUM(NSUInteger, BRCMapPointType) {
     BRCMapPointTypeUnknown, // turns into -> BRCMapPointTypeUserStar
@@ -58,7 +59,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
  
  */
 
-@interface BRCMapPoint : MTLModel <MTLJSONSerializing>
+@interface BRCMapPoint : MTLModel <MTLJSONSerializing, MGLAnnotation>
 
 /** yap key */
 @property (nonatomic, strong, readonly) NSString *uuid;

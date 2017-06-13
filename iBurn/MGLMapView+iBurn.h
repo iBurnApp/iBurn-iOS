@@ -11,6 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface MGLMapView (iBurn)
 
+- (void)brc_showDestination:(id<MGLAnnotation>)destination animated:(BOOL)animated;
+
 - (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated;
 - (void)brc_moveToBlackRockCityCenterAnimated:(BOOL)animated;
 

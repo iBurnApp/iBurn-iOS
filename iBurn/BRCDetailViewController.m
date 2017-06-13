@@ -117,31 +117,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    CGRect rect = self.tableView.tableHeaderView.bounds;
-    [self updateMapViewInRect:rect animated:NO];
-}
-
-- (void)updateMapViewInRect:(CGRect)rect animated:(BOOL)animated
-{
-    CLLocation *objectLocation = self.dataObject.location;
-    if ([BRCEmbargo canShowLocationForObject:self.dataObject] && objectLocation) {
-        CLLocation *userLocation = self.mapView.userLocation.location;
-        CLLocationCoordinate2D *coordinates = malloc(sizeof(CLLocationCoordinate2D) * 2);
-        coordinates[0] = objectLocation.coordinate;
-        NSUInteger coordinatesCount = 1;
-        if (userLocation) {
-            coordinates[1] = userLocation.coordinate;
-            coordinatesCount++;
-            [self.mapView setCenterCoordinate:userLocation.coordinate animated:YES];
-        } else {
-            [self.mapView setCenterCoordinate:objectLocation.coordinate animated:YES];
-        }
-        [self.mapView setTargetCoordinate:objectLocation.coordinate animated:YES];
-        [self.mapView setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:UIEdgeInsetsMake(45, 45, 45, 45) animated:YES];
-        free(coordinates);
-    } else {
-        [self.mapView setCenterCoordinate:[BRCLocations blackRockCityCenter] zoomLevel:14.0 animated:YES];
-    }
+    [self.mapView brc_showDestination:self.dataObject animated:animated];
 }
 
 - (UIImage*)imageIfFavorite:(BOOL)isFavorite {
@@ -362,7 +338,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         mapRect = CGRectMake(0, headerViewHeight - visibelHeight, CGRectGetWidth(self.tableView.tableHeaderView.frame), visibelHeight);
     }
     self.mapView.frame = mapRect;
-    [self updateMapViewInRect:mapRect animated:NO];
+    [self.mapView brc_showDestination:self.dataObject animated:NO];
 }
 
 
