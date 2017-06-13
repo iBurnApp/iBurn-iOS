@@ -260,8 +260,8 @@ open class BRCSortedViewController: UITableViewController {
         }
         let dataObject = sections[indexPath.section].objects[indexPath.row]
         let detailVC = BRCDetailViewController(dataObject: dataObject)
-        detailVC?.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(detailVC!, animated: true)
+        detailVC.hidesBottomBarWhenPushed = true
+        navigationController!.pushViewController(detailVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

@@ -10,8 +10,10 @@
 
 @class  BRCDataObject;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailViewController : UITableViewController
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject;
 
 @end
+NS_ASSUME_NONNULL_END

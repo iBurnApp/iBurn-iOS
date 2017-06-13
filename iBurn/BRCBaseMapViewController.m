@@ -12,27 +12,32 @@
 #import "BRCDataObject.h"
 #import "BRCEmbargo.h"
 #import "BRCDataImporter.h"
+#import "iBurn-Swift.h"
+#import "BRCUserTrackingBarButtonItem.h"
+
+@interface BRCBaseMapViewController()
+@property (nonatomic, strong, readonly) ImageAnnotationDelegate *annotationDelegate;
+@end
 
 @implementation BRCBaseMapViewController
-
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     [self setupMapView];
-    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mapTilesUpdated:) name:BRCDataImporterMapTilesUpdatedNotification object:nil];
 }
 
 - (void) setupMapView {
     self.mapView = [MGLMapView brc_defaultMapViewWithFrame:self.view.bounds];
-    self.mapView.delegate = self;
+    _annotationDelegate = [[ImageAnnotationDelegate alloc] init];
+    self.mapView.delegate = self.annotationDelegate;
     self.mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
     [self.view addSubview:self.mapView];
     [self.view sendSubviewToBack:self.mapView];
     [self centerMapAtManCoordinatesAnimated:NO];
-    //RMUserTrackingBarButtonItem *userTrackingBarButtonItem = [[RMUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
-    //self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
+    BRCUserTrackingBarButtonItem *userTrackingBarButtonItem = [[BRCUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];
+    self.navigationItem.rightBarButtonItem = userTrackingBarButtonItem;
 }
 
 - (void) mapTilesUpdated:(NSNotification*)notification {
@@ -43,26 +48,6 @@
     }
     [self setupMapView];
 }
-
-#pragma - mark RMMapViewDelegate Methods
-
-- (nullable MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id <MGLAnnotation>)annotation {
-    return [MGLAnnotationImage annotationImageWithImage:[UIImage imageNamed:@"BRCPurplePin"] reuseIdentifier:@"Purple"];
-}
-
-//- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-//    if (annotation.isUserLocationAnnotation) { // show default style
-//        return nil;
-//    }
-//    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
-//        BRCDataObject *dataObject = annotation.userInfo;
-//        
-//        if ([BRCEmbargo canShowLocationForObject:dataObject]) {
-//            return [RMMarker brc_defaultMarkerForDataObject:dataObject];
-//        }
-//    }
-//    return nil;
-//}
 
 - (void) centerMapAtManCoordinatesAnimated:(BOOL)animated {
     NSParameterAssert(self.mapView != nil);

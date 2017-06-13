@@ -72,7 +72,6 @@
     mapView.showsUserLocation = YES;
     mapView.minimumZoomLevel = 13;
     mapView.backgroundColor = UIColor.brc_mapBackgroundColor;
-    
     return mapView;
 }
 

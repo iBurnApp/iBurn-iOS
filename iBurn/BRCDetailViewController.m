@@ -30,13 +30,13 @@
 
 static CGFloat const kTableViewHeaderHeight = 200;
 
-@interface BRCDetailViewController () <MFMailComposeViewControllerDelegate, MGLMapViewDelegate>
+@interface BRCDetailViewController () <MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
-
+@property (nonatomic, strong) ImageAnnotationDelegate *annotationDelegate;
 @end
 
 @implementation BRCDetailViewController
@@ -47,6 +47,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject
 {
+    NSParameterAssert(dataObject);
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
         self.dataObject = dataObject;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
@@ -176,7 +177,8 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     if (dataObject.location) {
         self.mapView = [MGLMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
-        self.mapView.delegate = self;
+        self.annotationDelegate = [[ImageAnnotationDelegate alloc] init];
+        self.mapView.delegate = self.annotationDelegate;
         self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self.mapView addAnnotation:self.dataObject];
         self.mapView.userInteractionEnabled = NO;
@@ -186,36 +188,24 @@ static CGFloat const kTableViewHeaderHeight = 200;
     }
 }
 
-#pragma - mark RMMapviewDelegate Methods
-
-- (nullable MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id <MGLAnnotation>)annotation {
-    NSString *reuseIdentifier = @"Pin";
-    MGLAnnotationImage *annotationImage = [mapView dequeueReusableAnnotationImageWithIdentifier:reuseIdentifier];
-    UIImage *image = [UIImage imageNamed:@"BRCPurplePin"];
-    if ([annotation isKindOfClass:[BRCDataObject class]]) {
-        BRCDataObject *dataObject = (BRCDataObject*)annotation;
-        image = dataObject.markerImage;
-    }
-    if (!annotationImage) {
-        annotationImage = [MGLAnnotationImage annotationImageWithImage:image reuseIdentifier:reuseIdentifier];
-    } else {
-        annotationImage.image = image;
-    }
-    return annotationImage;
-}
-
-//- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
-//    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocationForObject:self.dataObject]) { // show default style
-//        return nil;
+//#pragma - mark RMMapviewDelegate Methods
+//
+//- (nullable MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id <MGLAnnotation>)annotation {
+//    NSString *reuseIdentifier = @"Pin";
+//    MGLAnnotationImage *annotationImage = [mapView dequeueReusableAnnotationImageWithIdentifier:reuseIdentifier];
+//    UIImage *image = [UIImage imageNamed:@"BRCPurplePin"];
+//    if ([annotation isKindOfClass:[BRCDataObject class]]) {
+//        BRCDataObject *dataObject = (BRCDataObject*)annotation;
+//        image = dataObject.markerImage;
 //    }
-//    if ([annotation.userInfo isKindOfClass:[BRCDataObject class]]) {
-//        BRCDataObject *dataObject = annotation.userInfo;
-//        
-//        return [RMMarker brc_defaultMarkerForDataObject:dataObject];
-//        
+//    if (!annotationImage) {
+//        annotationImage = [MGLAnnotationImage annotationImageWithImage:image reuseIdentifier:reuseIdentifier];
+//    } else {
+//        annotationImage.image = image;
 //    }
-//    return nil;
+//    return annotationImage;
 //}
+
 
 #pragma - mark UITableViewDataSource Methods
 

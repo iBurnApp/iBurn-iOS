@@ -33,6 +33,10 @@
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
+		D90FFA371EEFAC10005127D0 /* AnnotationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* AnnotationDelegate.swift */; };
+		D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */; };
+		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
+		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -175,6 +179,11 @@
 		D9046F37198C6CDE0013CCF4 /* events.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = events.json; sourceTree = "<group>"; };
 		D9071FE51996C4A7005C3639 /* NSData+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+iBurn.h"; sourceTree = "<group>"; };
 		D9071FE61996C4A7005C3639 /* NSData+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+iBurn.m"; sourceTree = "<group>"; };
+		D90FFA361EEFAC10005127D0 /* AnnotationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationDelegate.swift; sourceTree = "<group>"; };
+		D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCAnnotationView.swift; sourceTree = "<group>"; };
+		D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCUserTrackingBarButtonItem.h; sourceTree = "<group>"; };
+		D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCUserTrackingBarButtonItem.m; sourceTree = "<group>"; };
+		D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = UserTracking.xcassets; sourceTree = "<group>"; };
 		D91392DF1D6519300090E093 /* iBurn-2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2016"; path = "Submodules/iBurn-Data/data/2016/iBurn-2016"; sourceTree = SOURCE_ROOT; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
@@ -428,6 +437,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */,
 				D9BF9A651D515FC2004AA63B /* 2016 */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
 				D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */,
@@ -605,6 +615,10 @@
 		D99395A5198B806800E9ADD2 /* MapViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */,
+				D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */,
+				D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */,
+				D90FFA361EEFAC10005127D0 /* AnnotationDelegate.swift */,
 				63CD6909199AB4EE0025C8A1 /* BRCAnnotationEditView.h */,
 				63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */,
 				63D270F71987159A00204954 /* BRCMapViewController.h */,
@@ -825,6 +839,7 @@
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D9ADBF601D6BAEB1003A71DF /* iBurn-2016 in Resources */,
 				D9BF9A671D515FF7004AA63B /* 2016 in Resources */,
+				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 			);
@@ -947,6 +962,7 @@
 				D9C9D2C11B7D64C0002C95E4 /* BRCMoreViewController.swift in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
+				D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */,
 				632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */,
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
 				D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */,
@@ -980,6 +996,7 @@
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
+				D90FFA371EEFAC10005127D0 /* AnnotationDelegate.swift in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */,
 				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,
@@ -993,6 +1010,7 @@
 				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
+				D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */,
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
 				D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */,

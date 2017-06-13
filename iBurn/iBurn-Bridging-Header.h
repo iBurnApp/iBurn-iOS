@@ -20,3 +20,4 @@
 #import "BRCOnboardingViewController.h"
 #import "BRCArtObjectTableViewCell.h"
 #import "NSDate+iBurn.h"
+#import "BRCMapPoint.h"
