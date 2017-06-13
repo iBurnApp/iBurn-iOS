@@ -8,12 +8,16 @@
 
 @import Mapbox;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface MGLMapView (iBurn)
 
 - (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated;
 - (void)brc_moveToBlackRockCityCenterAnimated:(BOOL)animated;
-- (void)brc_zoomToIncludeCoordinate:(CLLocationCoordinate2D)coordinate1 andCoordinate:(CLLocationCoordinate2D)coordinate2 inVisibleRect:(CGRect)visibleRect animated:(BOOL)animated;
 
 + (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame;
 
+/** The bounding box of the black rock desert */
+@property (nonatomic, class, readonly) MGLCoordinateBounds brc_bounds;
+
 @end
+NS_ASSUME_NONNULL_END

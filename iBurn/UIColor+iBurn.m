@@ -34,4 +34,8 @@
     return [UIColor colorWithRed:247/255.0f green:247/255.0 blue:247/255.0f alpha:1.0f];
 }
 
++ (UIColor*)brc_mapBackgroundColor {
+    return [UIColor colorWithRed:232/255.0f green:224/255.0f blue:216/255.0f alpha:1.0f];
+}
+
 @end

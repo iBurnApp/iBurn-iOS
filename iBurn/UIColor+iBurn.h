@@ -8,13 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
 @interface UIColor (iBurn)
 
-+ (UIColor*) brc_greenColor;
-+ (UIColor*) brc_orangeColor;
-+ (UIColor*) brc_redColor;
-+ (UIColor*) brc_lightGreenColor;
+@property (class, nonatomic, readonly) UIColor *brc_greenColor;
+@property (class, nonatomic, readonly) UIColor *brc_orangeColor;
+@property (class, nonatomic, readonly) UIColor *brc_redColor;
+@property (class, nonatomic, readonly) UIColor *brc_lightGreenColor;
 
-+ (UIColor*) brc_navBarColor;
+@property (class, nonatomic, readonly) UIColor *brc_navBarColor;
+@property (class, nonatomic, readonly) UIColor *brc_mapBackgroundColor;
 
 @end
+NS_ASSUME_NONNULL_END

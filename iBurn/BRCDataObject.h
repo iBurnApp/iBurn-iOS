@@ -30,7 +30,7 @@
 /**
  *  Object title (from the PlayaEvents API)
  */
-@property (nonatomic, strong, readonly) NSString *title;
+@property (nonatomic, copy, readonly) NSString *title;
 /**
  *  Object description (from the PlayaEvents API)
  */

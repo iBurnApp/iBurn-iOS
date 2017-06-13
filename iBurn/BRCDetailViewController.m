@@ -126,11 +126,19 @@ static CGFloat const kTableViewHeaderHeight = 200;
     CLLocation *objectLocation = self.dataObject.location;
     if ([BRCEmbargo canShowLocationForObject:self.dataObject] && objectLocation) {
         CLLocation *userLocation = self.mapView.userLocation.location;
+        CLLocationCoordinate2D *coordinates = malloc(sizeof(CLLocationCoordinate2D) * 2);
+        coordinates[0] = objectLocation.coordinate;
+        NSUInteger coordinatesCount = 1;
         if (userLocation) {
-            [self.mapView brc_zoomToIncludeCoordinate:objectLocation.coordinate andCoordinate:userLocation.coordinate inVisibleRect:rect animated:animated];
+            coordinates[1] = userLocation.coordinate;
+            coordinatesCount++;
+            [self.mapView setCenterCoordinate:userLocation.coordinate animated:YES];
         } else {
-            [self.mapView brc_zoomToIncludeCoordinate:objectLocation.coordinate andCoordinate:objectLocation.coordinate inVisibleRect:rect animated:animated];
+            [self.mapView setCenterCoordinate:objectLocation.coordinate animated:YES];
         }
+        [self.mapView setTargetCoordinate:objectLocation.coordinate animated:YES];
+        [self.mapView setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:UIEdgeInsetsMake(45, 45, 45, 45) animated:YES];
+        free(coordinates);
     } else {
         [self.mapView setCenterCoordinate:[BRCLocations blackRockCityCenter] zoomLevel:14.0 animated:YES];
     }
@@ -194,9 +202,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         self.mapView = [MGLMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
         self.mapView.delegate = self;
         self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-//        RMAnnotation *annotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:dataObject];
-//        [self.mapView addAnnotation:annotation];
-//        self.mapView.draggingEnabled = NO;
+        [self.mapView addAnnotation:self.dataObject];
         self.mapView.userInteractionEnabled = NO;
     }
     else {
@@ -205,6 +211,22 @@ static CGFloat const kTableViewHeaderHeight = 200;
 }
 
 #pragma - mark RMMapviewDelegate Methods
+
+- (nullable MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id <MGLAnnotation>)annotation {
+    NSString *reuseIdentifier = @"Pin";
+    MGLAnnotationImage *annotationImage = [mapView dequeueReusableAnnotationImageWithIdentifier:reuseIdentifier];
+    UIImage *image = [UIImage imageNamed:@"BRCPurplePin"];
+    if ([annotation isKindOfClass:[BRCDataObject class]]) {
+        BRCDataObject *dataObject = (BRCDataObject*)annotation;
+        image = dataObject.markerImage;
+    }
+    if (!annotationImage) {
+        annotationImage = [MGLAnnotationImage annotationImageWithImage:image reuseIdentifier:reuseIdentifier];
+    } else {
+        annotationImage.image = image;
+    }
+    return annotationImage;
+}
 
 //- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
 //    if (annotation.isUserLocationAnnotation || ![BRCEmbargo canShowLocationForObject:self.dataObject]) { // show default style

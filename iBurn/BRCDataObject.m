@@ -7,14 +7,11 @@
 //
 
 #import "BRCDataObject.h"
-#import "MTLValueTransformer.h"
-#import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "BRCDataObject_Private.h"
 #import "BRCAppDelegate.h"
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
-@import Mantle;
 
 @interface BRCDataObject()
 @property (nonatomic, readonly) CLLocationDegrees latitude;

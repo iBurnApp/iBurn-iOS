@@ -617,7 +617,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }
     [self updateGuideFromLocation:fromLocation toLocation:toLocation];
     //self.mapView.userTrackingMode = RMUserTrackingModeFollowWithHeading;
-    [self.mapView brc_zoomToIncludeCoordinate:fromLocation.coordinate andCoordinate:toLocation.coordinate inVisibleRect:self.view.bounds animated:YES];
+    [self.mapView setTargetCoordinate:toLocation.coordinate animated:YES];
+    //[self.mapView brc_zoomToIncludeCoordinate:fromLocation.coordinate andCoordinate:toLocation.coordinate inVisibleRect:self.view.bounds animated:YES];
 }
 
 - (void) updateGuideFromLocation:(CLLocation*)fromLocation toLocation:(CLLocation*)toLocation {

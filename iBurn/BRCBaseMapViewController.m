@@ -46,6 +46,10 @@
 
 #pragma - mark RMMapViewDelegate Methods
 
+- (nullable MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id <MGLAnnotation>)annotation {
+    return [MGLAnnotationImage annotationImageWithImage:[UIImage imageNamed:@"BRCPurplePin"] reuseIdentifier:@"Purple"];
+}
+
 //- (RMMapLayer*) mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation {
 //    if (annotation.isUserLocationAnnotation) { // show default style
 //        return nil;
