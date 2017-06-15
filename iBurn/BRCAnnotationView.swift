@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PureLayout
 
 class BRCAnnotationView: MGLAnnotationView {
     
@@ -22,8 +23,9 @@ class BRCAnnotationView: MGLAnnotationView {
     
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
-        imageView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
+        imageView.autoPinEdgesToSuperviewEdges()
     }
     
     required init?(coder aDecoder: NSCoder) {

@@ -21,3 +21,8 @@
 #import "BRCArtObjectTableViewCell.h"
 #import "NSDate+iBurn.h"
 #import "BRCMapPoint.h"
+#import "BRCSecrets.h"
+#import "UIColor+iBurn.h"
+#import "MGLMapView+iBurn.h"
+#import "BRCDataImporter.h"
+#import "BRCUserTrackingBarButtonItem.h"

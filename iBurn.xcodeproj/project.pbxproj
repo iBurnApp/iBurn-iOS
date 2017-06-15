@@ -48,6 +48,9 @@
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
+		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
+		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
+		D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8631EF23994007766A9 /* MapDetailViewController.swift */; };
 		D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */; };
 		D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */; };
 		D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0481B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m */; };
@@ -204,6 +207,9 @@
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
+		D977C85F1EF23036007766A9 /* BaseMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMapViewController.swift; sourceTree = "<group>"; };
+		D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MGLMapView+iBurn.swift"; sourceTree = "<group>"; };
+		D977C8631EF23994007766A9 /* MapDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDetailViewController.swift; sourceTree = "<group>"; };
 		D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCEventsViewController.swift; sourceTree = "<group>"; };
 		D977E0441B83F6E900FFC20F /* BRCDataObject+Relationships.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRCDataObject+Relationships.h"; sourceTree = "<group>"; };
 		D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRCDataObject+Relationships.m"; sourceTree = "<group>"; };
@@ -615,6 +621,9 @@
 		D99395A5198B806800E9ADD2 /* MapViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D977C8631EF23994007766A9 /* MapDetailViewController.swift */,
+				D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */,
+				D977C85F1EF23036007766A9 /* BaseMapViewController.swift */,
 				D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */,
 				D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */,
 				D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */,
@@ -979,12 +988,14 @@
 				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
+				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9BF9A6A1D52A86A004AA63B /* BRCAudioTourViewController.swift in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */,
+				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
 				D90132071B7C685D007A11B8 /* PFAnalytics+iBurn.m in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */,
@@ -1009,6 +1020,7 @@
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
 				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
+				D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
 				D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */,
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,

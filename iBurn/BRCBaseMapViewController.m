@@ -14,9 +14,10 @@
 #import "BRCDataImporter.h"
 #import "iBurn-Swift.h"
 #import "BRCUserTrackingBarButtonItem.h"
+@import PureLayout;
 
 @interface BRCBaseMapViewController()
-@property (nonatomic, strong, readonly) ImageAnnotationDelegate *annotationDelegate;
+@property (nonatomic, strong, readonly) id<MGLMapViewDelegate> annotationDelegate;
 @end
 
 @implementation BRCBaseMapViewController
@@ -29,11 +30,12 @@
 }
 
 - (void) setupMapView {
-    self.mapView = [MGLMapView brc_defaultMapViewWithFrame:self.view.bounds];
-    _annotationDelegate = [[ImageAnnotationDelegate alloc] init];
+    self.mapView = [[MGLMapView alloc] init];
+    [self.mapView brc_setDefaults];
+    _annotationDelegate = [[MapViewDelegate alloc] init];
     self.mapView.delegate = self.annotationDelegate;
-    self.mapView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
     [self.view addSubview:self.mapView];
+    [self.mapView autoPinEdgesToSuperviewEdges];
     [self.view sendSubviewToBack:self.mapView];
     [self centerMapAtManCoordinatesAnimated:NO];
     BRCUserTrackingBarButtonItem *userTrackingBarButtonItem = [[BRCUserTrackingBarButtonItem alloc] initWithMapView:self.mapView];

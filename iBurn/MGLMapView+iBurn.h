@@ -1,5 +1,5 @@
 //
-//  RMMapView+iBurn.h
+//  MGLMapView+iBurn.h
 //  iBurn
 //
 //  Created by Christopher Ballinger on 7/30/14.
@@ -15,8 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated;
 - (void)brc_moveToBlackRockCityCenterAnimated:(BOOL)animated;
-
-+ (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame;
 
 /** The bounding box of the black rock desert */
 @property (nonatomic, class, readonly) MGLCoordinateBounds brc_bounds;

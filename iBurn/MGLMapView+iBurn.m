@@ -65,14 +65,4 @@
     [self setCenterCoordinate:blackRockCityCenter animated:animated];
 }
 
-+ (instancetype)brc_defaultMapViewWithFrame:(CGRect)frame
-{
-    MGLMapView *mapView = [[MGLMapView alloc] initWithFrame:frame];
-    mapView.styleURL = [NSURL URLWithString:kBRCMapBoxStyleURL];
-    mapView.showsUserLocation = YES;
-    mapView.minimumZoomLevel = 13;
-    mapView.backgroundColor = UIColor.brc_mapBackgroundColor;
-    return mapView;
-}
-
 @end

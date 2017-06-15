@@ -15,7 +15,6 @@
 #import "MGLMapView+iBurn.h"
 @import Mapbox;
 #import "BRCDetailInfoTableViewCell.h"
-#import "BRCDetailMapViewController.h"
 #import "PureLayout.h"
 #import "BRCEmbargo.h"
 #import "BRCCampObject.h"
@@ -36,7 +35,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
-@property (nonatomic, strong) ImageAnnotationDelegate *annotationDelegate;
+@property (nonatomic, strong) MapViewDelegate *mapViewDelegate;
 @end
 
 @implementation BRCDetailViewController
@@ -103,6 +102,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         
         self.mapView.frame = CGRectMake(0, -viewHeight+kTableViewHeaderHeight, CGRectGetWidth(self.view.bounds), viewHeight);
         [clearHeaderView addSubview:self.mapView];
+        [self.mapView autoPinEdgesToSuperviewEdges];
         
         [clearHeaderView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
         
@@ -160,7 +160,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void)didTapMapContainerview:(id)sender
 {
-    BRCDetailMapViewController *mapViewController = [[BRCDetailMapViewController alloc] initWithDataObject:self.dataObject];
+    MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject];
     mapViewController.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:mapViewController animated:YES];
 }
@@ -176,10 +176,10 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
     if (dataObject.location) {
-        self.mapView = [MGLMapView brc_defaultMapViewWithFrame:CGRectMake(0, 0, 10, 150)];
-        self.annotationDelegate = [[ImageAnnotationDelegate alloc] init];
-        self.mapView.delegate = self.annotationDelegate;
-        self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.mapView = [[MGLMapView alloc] init];
+        [self.mapView brc_setDefaults];
+        self.mapViewDelegate = [[MapViewDelegate alloc] init];
+        self.mapView.delegate = self.mapViewDelegate;
         [self.mapView addAnnotation:self.dataObject];
         self.mapView.userInteractionEnabled = NO;
     }

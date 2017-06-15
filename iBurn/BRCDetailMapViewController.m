@@ -8,6 +8,7 @@
 
 #import "BRCDetailMapViewController.h"
 #import "BRCDataObject.h"
+#import "MGLMapView+iBurn.h"
 @import Mapbox;
 
 @interface BRCDetailMapViewController ()
@@ -27,9 +28,12 @@
     return self;
 }
 
+
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self.mapView brc_showDestination:self.dataObject animated:NO];
     //[self.mapView addAnnotation:[RMAnnotation brc_annotationWithMapView:self.mapView dataObject:self.dataObject]];
 }
 

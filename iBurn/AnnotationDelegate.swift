@@ -21,30 +21,38 @@ extension MGLAnnotation {
     }
 }
 
-public class ImageAnnotationDelegate: NSObject, MGLMapViewDelegate {
-    let annotationIdentifier = "ImageIdentifier"
+public class MapViewDelegate: NSObject, MGLMapViewDelegate {
     
-    public func mapView(_ mapView: MGLMapView, imageFor annotation: MGLAnnotation) -> MGLAnnotationImage? {
-        guard let image = annotation.markerImage else {
-            return nil
-        }
-        let annotationImage = mapView.dequeueReusableAnnotationImage(withIdentifier: annotationIdentifier) ?? MGLAnnotationImage(image: image, reuseIdentifier: annotationIdentifier)
-        annotationImage.image = image
-        return annotationImage
-    }
-}
-
-public class AnnotationDelegate: NSObject, MGLMapViewDelegate {
-    let annotationIdentifier = "Identifier"
+//    public func mapView(_ mapView: MGLMapView, imageFor annotation: MGLAnnotation) -> MGLAnnotationImage? {
+//        guard let image = annotation.markerImage else {
+//            return nil
+//        }
+//        let reuseIdentifier = "\(annotation.coordinate.longitude)"
+//        let annotationImage = mapView.dequeueReusableAnnotationImage(withIdentifier: reuseIdentifier) ?? MGLAnnotationImage(image: image, reuseIdentifier: reuseIdentifier)
+//        annotationImage.image = image
+//        return annotationImage
+//    }
     
     public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
         guard let image = annotation.markerImage else {
             return nil
         }
-        let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: annotationIdentifier) as? BRCAnnotationView ?? BRCAnnotationView(reuseIdentifier: annotationIdentifier)
+        let reuseIdentifier = "\(annotation.coordinate.longitude)"
+        var brcAnnotationView: BRCAnnotationView? = mapView.dequeueReusableAnnotationView(withIdentifier: reuseIdentifier) as? BRCAnnotationView
+        if brcAnnotationView == nil {
+            brcAnnotationView = BRCAnnotationView(reuseIdentifier: reuseIdentifier)
+        }
+        guard let annotationView = brcAnnotationView else {
+            return nil
+        }
+        let imageFrame = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
         annotationView.imageView.image = image
-        annotationView.imageView.sizeToFit()
-        annotationView.sizeToFit()
+        annotationView.imageView.frame = imageFrame
+        annotationView.frame = imageFrame
         return annotationView
+    }
+    
+    public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+        return true
     }
 }

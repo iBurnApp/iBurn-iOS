@@ -8,8 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <YapDatabase/YapDatabase.h>
-#import "BRCUpdateInfo.h"
 
+@class BRCUpdateInfo;
+
+NS_ASSUME_NONNULL_BEGIN
 /** this is posted when new map tiles come in. */
 extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 
@@ -21,7 +23,7 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 @property (nonatomic) dispatch_queue_t callbackQueue;
 
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection;
-- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection sessionConfiguration:(NSURLSessionConfiguration*)sessionConfiguration NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection sessionConfiguration:(nullable NSURLSessionConfiguration*)sessionConfiguration NS_DESIGNATED_INITIALIZER;
 
 /**
  *  Load updates from remote events.json file.
@@ -33,7 +35,7 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
            fetchResultBlock:(void (^)(UIBackgroundFetchResult result))fetchResultBlock;
 
 /** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
-- (void) addBackgroundURLSessionCompletionHandler:(void (^)())completionHandler;
+- (void) addBackgroundURLSessionCompletionHandler:(void (^)(void))completionHandler;
 
 
 /** Returns iburn.mbtiles local file URL within Application Support */
@@ -43,3 +45,4 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 - (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo;
 
 @end
+NS_ASSUME_NONNULL_END
