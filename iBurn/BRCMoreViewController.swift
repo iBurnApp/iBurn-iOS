@@ -90,16 +90,16 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     }
 
     func pushArtView() {
-        let dbManager = BRCDatabaseManager.sharedInstance()
-        let artVC = BRCFilteredTableViewController(viewClass: BRCArtObject.self, viewName: dbManager?.artViewName, searchViewName: dbManager?.searchArtView)
+        let dbManager = BRCDatabaseManager.shared
+        let artVC = BRCFilteredTableViewController(viewClass: BRCArtObject.self, viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
         artVC?.title = "Art"
         artVC?.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(artVC!, animated: true)
     }
 
     func pushCampsView() {
-        let dbManager = BRCDatabaseManager.sharedInstance()
-        let campsVC = BRCFilteredTableViewController(viewClass: BRCCampObject.self, viewName: dbManager?.campsViewName, searchViewName: dbManager?.searchCampsView)
+        let dbManager = BRCDatabaseManager.shared
+        let campsVC = BRCFilteredTableViewController(viewClass: BRCCampObject.self, viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
         campsVC?.title = "Camps"
         campsVC?.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(campsVC!, animated: true)

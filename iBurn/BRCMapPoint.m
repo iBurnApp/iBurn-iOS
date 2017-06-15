@@ -172,10 +172,12 @@
         case BRCMapPointTypeRanger:
         case BRCMapPointTypeToilet:
             return [BRCMapPoint class];
-        default:
-            return nil;
-            break;
     }
+}
+
++ (NSString*) yapCollectionForType:(BRCMapPointType)type {
+    NSString *collection = [[self classForType:type] collection];
+    return collection;
 }
 
 - (UIImage*) image {

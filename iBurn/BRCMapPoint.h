@@ -10,6 +10,8 @@
 @import CoreLocation;
 @import Mapbox;
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSUInteger, BRCMapPointType) {
     BRCMapPointTypeUnknown, // turns into -> BRCMapPointTypeUserStar
     BRCMapPointTypeUserBreadcrumb, // for tracking yourself
@@ -65,21 +67,24 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 @property (nonatomic, strong, readonly) NSString *uuid;
 @property (nonatomic, strong, readwrite) NSDate *creationDate;
 
-@property (nonatomic, strong, readwrite) NSString *title;
+@property (nonatomic, strong, nullable, readwrite) NSString *title;
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
 @property (nonatomic, readwrite) BRCMapPointType type;
 
-- (CLLocation*) location;
+- (nullable CLLocation*) location;
 
-- (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type;
+- (instancetype) initWithTitle:(nullable NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type;
 
 /** yap collection */
 + (NSString*) collection;
 
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type;
++ (NSString*) yapCollectionForType:(BRCMapPointType)type;
 
 /** Image for type. */
 @property (nonatomic, strong, readonly) UIImage *image;
 
 @end
+
+NS_ASSUME_NONNULL_END

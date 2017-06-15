@@ -11,6 +11,8 @@
 @import YapDatabase;
 @import MapKit;
 
+NS_ASSUME_NONNULL_BEGIN
+
 /** iBurn.sqlite */
 extern NSString * const kBRCDatabaseName;
 
@@ -33,6 +35,7 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 - (instancetype) initWithDatabaseName:(NSString*)databaseName;
 
 /** Default database */
+@property (nonatomic, class, readonly) BRCDatabaseManager *shared;
 + (instancetype) sharedInstance;
 
 /** View containing all camp objects */
@@ -96,3 +99,5 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
                  resultsBlock:(void (^)(NSArray *results))resultsBlock;
 
 @end
+
+NS_ASSUME_NONNULL_END

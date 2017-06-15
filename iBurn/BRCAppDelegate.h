@@ -10,10 +10,10 @@
 @import KSCrash;
 @import Onboard;
 @import CoreLocation;
-#import "BRCMapViewController.h"
 #import "BRCEventsTableViewController.h"
 
 @class BRCFavoritesViewController;
+@class MapViewController;
 
 @interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
 
@@ -22,7 +22,7 @@
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
-@property (nonatomic, strong) BRCMapViewController *mapViewController;
+@property (nonatomic, strong) MapViewController *mapViewController;
 @property (nonatomic, strong) BRCFavoritesViewController *favoritesViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *artViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *campsViewController;

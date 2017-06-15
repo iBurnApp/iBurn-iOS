@@ -42,6 +42,7 @@
 @import PermissionScope;
 #import "NSDate+iBurn.h"
 @import AVFoundation;
+@import CocoaLumberjack;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
@@ -61,6 +62,14 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+#if DEBUG
+    [DDLog addLogger:[DDTTYLogger sharedInstance]];
+//
+//    DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
+//    fileLogger.rollingFrequency = 0;
+//    fileLogger.maximumFileSize = 0;
+//    [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
+#endif
     /* DATE TESTING
 #if DEBUG
     self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
@@ -239,7 +248,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 {
     BRCDatabaseManager *dbManager = [BRCDatabaseManager sharedInstance];
 
-    self.mapViewController = [[BRCMapViewController alloc] initWithFtsName:dbManager.ftsDataObjectName];
+    self.mapViewController = [[MapViewController alloc] init];
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     

@@ -235,7 +235,7 @@ open class BRCSortedViewController: UITableViewController {
         cell.favoriteButtonAction = { (sender) -> Void in
             let dataCopy = dataObject.copy() as! BRCDataObject
             dataCopy.isFavorite = cell.favoriteButton.isSelected
-            BRCDatabaseManager.sharedInstance().readWriteConnection!.asyncReadWrite({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
+            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
                 transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: type(of: dataCopy).collection())
                 if let event = dataCopy as? BRCEventObject {
                     event.refreshCalendarEntry(transaction)

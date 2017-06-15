@@ -158,6 +158,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return [[NSFileManager defaultManager] fileExistsAtPath:databsePath];
 }
 
++ (BRCDatabaseManager*) shared {
+    return [self sharedInstance];
+}
+
 + (instancetype)sharedInstance
 {
     static id databaseManager = nil;
