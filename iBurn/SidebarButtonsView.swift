@@ -65,7 +65,7 @@ class SidebarButtonsView: UIView {
             views.append(button)
             buttons[button] = type
         }
-        let stackView = UIStackView(arrangedSubviews: views)
+        let stackView = UIStackView(arrangedSubviews: views.reversed())
         stackView.axis = .vertical
         stackView.distribution = .equalCentering
         stackView.translatesAutoresizingMaskIntoConstraints = false

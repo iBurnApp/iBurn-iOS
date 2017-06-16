@@ -9,17 +9,22 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface NSString (BRCGeocoder)
+/** Add font-awesome crosshairs */
+@property (nonatomic, readonly) NSAttributedString *brc_attributedLocationStringWithCrosshairs;
+@end
+
 @interface BRCGeocoder : NSObject
 
 /** Async lookup location */
-- (void)asyncReverseLookup:(CLLocationCoordinate2D)location completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString *locationString))completion;
+- (void)asyncReverseLookup:(CLLocationCoordinate2D)coordinate completionQueue:(nullable dispatch_queue_t)queue completion:(void (^)(NSString * _Nullable locationString))completion;
 
 /** Synchronously lookup location. WARNING: This may block for a long time! */
-- (NSString*) reverseLookup:(CLLocationCoordinate2D)location;
+- (nullable NSString*) reverseLookup:(CLLocationCoordinate2D)location;
 
-+ (instancetype) sharedInstance;
-
-/** Add font-awesome crosshairs */
-+ (NSAttributedString*) locationStringWithCrosshairs:(NSString*)locationString;
+@property (nonatomic, class, readonly) BRCGeocoder *shared;
 
 @end
+NS_ASSUME_NONNULL_END

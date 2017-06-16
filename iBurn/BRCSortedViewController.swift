@@ -114,9 +114,9 @@ open class BRCSortedViewController: UITableViewController {
             self.tableView.reloadData();
         }
         if let location = getCurrentLocation() {
-            BRCGeocoder.sharedInstance().asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { (locationString: String!) -> Void in
+            BRCGeocoder.shared.asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { (locationString: String!) -> Void in
                 if locationString.characters.count > 0 {
-                    let attrString = BRCGeocoder.locationString(withCrosshairs: locationString)
+                    let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
                     let label = UILabel()
                     label.attributedText = attrString
                     label.sizeToFit()

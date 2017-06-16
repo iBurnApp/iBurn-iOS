@@ -12,68 +12,31 @@ import CoreLocation
 import BButton
 import CocoaLumberjack
 
-class UserGuide {
-    
-    struct DistanceEntry {
-        let point: BRCMapPoint
-        let distance: CLLocationDistance
-    }
-    
-    static func findNearest(userLocation: CLLocation,
-                            mapPointType: BRCMapPointType,
-                            transaction: YapDatabaseReadTransaction) -> BRCMapPoint? {
-        let yapCollection = BRCMapPoint.yapCollection(for: mapPointType)
-        var distances: [DistanceEntry] = []
-        transaction.enumerateKeysAndObjects(inCollection: yapCollection) { (key, object, stop) in
-            guard let point = object as? BRCMapPoint,
-                point.type == mapPointType,
-                let location = point.location() else { return }
-            let distance = userLocation.distance(from: location)
-            let entry = DistanceEntry(point: point, distance: distance)
-            distances.append(entry)
-        }
-        distances.sort { $0.distance > $1.distance }
-        return distances.first?.point
-    }
-}
+
 
 public class MapViewController: BaseMapViewController {
     let readConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
+    /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
+    let geocoder: BRCGeocoder
+    var userAnnotations: [BRCUserMapPoint] = []
     
     public override init() {
         readConnection = BRCDatabaseManager.shared.readConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
+        geocoder = BRCGeocoder.shared
         super.init()
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
     }
     
-    private func setupUserGuide() {
-        sidebarButtons.findNearest = { [weak self] mapPointType, sender in
-            guard let location = self?.mapView.userLocation?.location else {
-                DDLogWarn("User location not found!")
-                return
-            }
-            self?.readConnection.read { transaction in
-                let point = UserGuide.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction)
-                DDLogInfo("Found closest point: \(String(describing: point))")
-            }
-        }
-        sidebarButtons.placePin = { [weak self] sender in
-            guard let location = self?.mapView.userLocation?.location else {
-                DDLogWarn("User location not found!")
-                return
-            }
-            DDLogInfo("Place user pin here \(location)")
-        }
-    }
-    
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    // MARK: - View Lifecycle
     
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -83,5 +46,78 @@ public class MapViewController: BaseMapViewController {
         sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
         sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 200))
     }
+    
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        reloadUserAnnotations()
+    }
+    
+    // MARK: - Annotations
+    
+    private func setupUserGuide() {
+        sidebarButtons.findNearest = { [weak self] mapPointType, sender in
+            guard let location = self?.mapView.userLocation?.location else {
+                DDLogWarn("User location not found!")
+                return
+            }
+            self?.readConnection.read { transaction in
+                let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction)
+                DDLogInfo("Found closest point: \(String(describing: point))")
+                // If we can't find your bike or home, let's make a new one
+                if point == nil,
+                    mapPointType == .userBike || mapPointType == .userHome {
+                   self?.addUserMapPoint(type: mapPointType)
+                }
+            }
+        }
+        sidebarButtons.placePin = { [weak self] sender in
+            self?.addUserMapPoint(type: .userStar)
+        }
+        mapViewDelegate.saveMapPoint = { [weak self] mapPoint in
+            self?.writeConnection.readWrite { transaction in
+                let key = mapPoint.uuid
+                let collection = type(of: mapPoint).collection
+                transaction.setObject(mapPoint, forKey: key, inCollection: collection)
+            }
+            self?.mapViewDelegate.editingAnnotation = nil
+            self?.mapView.removeAnnotation(mapPoint)
+            DDLogInfo("Saved user annotation: \(mapPoint)")
+            self?.reloadUserAnnotations()
+        }
+    }
+    
+    private func reloadUserAnnotations() {
+        mapView.removeAnnotations(userAnnotations)
+        userAnnotations = []
+        readConnection.asyncRead({ transaction in
+            transaction.enumerateKeysAndObjects(inCollection: BRCUserMapPoint.collection, using: { (key, object, stop) in
+                if let mapPoint = object as? BRCUserMapPoint {
+                    self.userAnnotations.append(mapPoint)
+                }
+            })
+        }, completionBlock: {
+            self.mapView.addAnnotations(self.userAnnotations)
+        })
+    }
+    
+    private func addUserMapPoint(type: BRCMapPointType) {
+        var coordinate = BRCLocations.blackRockCityCenter
+        if let userLocation = self.mapView.userLocation?.location {
+            coordinate = userLocation.coordinate
+        }
+        // don't drop user-location pins if youre not at BM
+        if !BRCLocations.burningManRegion.contains(coordinate) ||
+            !CLLocationCoordinate2DIsValid(coordinate) {
+            coordinate = BRCLocations.blackRockCityCenter
+        }
+        let mapPoint = BRCUserMapPoint(title: NSLocalizedString("Favorite", comment:"favorite marked on map"), coordinate: coordinate, type: type)
+        if let existingMapPoint = mapViewDelegate.editingAnnotation {
+            mapView.removeAnnotation(existingMapPoint)
+        }
+        mapViewDelegate.editingAnnotation = mapPoint
+        mapView.addAnnotation(mapPoint)
+    }
+    
+    
 
 }

@@ -33,7 +33,7 @@
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
-		D90FFA371EEFAC10005127D0 /* AnnotationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* AnnotationDelegate.swift */; };
+		D90FFA371EEFAC10005127D0 /* MapViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* MapViewDelegate.swift */; };
 		D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */; };
 		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
 		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
@@ -42,6 +42,7 @@
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */; };
+		D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D927BDB11EF4778000B7324D /* UserGuidance.swift */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
@@ -184,7 +185,7 @@
 		D9046F37198C6CDE0013CCF4 /* events.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = events.json; sourceTree = "<group>"; };
 		D9071FE51996C4A7005C3639 /* NSData+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+iBurn.h"; sourceTree = "<group>"; };
 		D9071FE61996C4A7005C3639 /* NSData+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+iBurn.m"; sourceTree = "<group>"; };
-		D90FFA361EEFAC10005127D0 /* AnnotationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationDelegate.swift; sourceTree = "<group>"; };
+		D90FFA361EEFAC10005127D0 /* MapViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewDelegate.swift; sourceTree = "<group>"; };
 		D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCAnnotationView.swift; sourceTree = "<group>"; };
 		D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCUserTrackingBarButtonItem.h; sourceTree = "<group>"; };
 		D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCUserTrackingBarButtonItem.m; sourceTree = "<group>"; };
@@ -198,6 +199,7 @@
 		D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCEventObjectTableViewCell.xib; sourceTree = "<group>"; };
 		D92562CD198A20D600ED6B50 /* MGLMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MGLMapView+iBurn.h"; sourceTree = "<group>"; };
 		D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MGLMapView+iBurn.m"; sourceTree = "<group>"; };
+		D927BDB11EF4778000B7324D /* UserGuidance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuidance.swift; sourceTree = "<group>"; };
 		D92B95991B7B0CC300116781 /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015/2015"; sourceTree = SOURCE_ROOT; };
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
@@ -633,7 +635,7 @@
 				D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */,
 				D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */,
 				D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */,
-				D90FFA361EEFAC10005127D0 /* AnnotationDelegate.swift */,
+				D90FFA361EEFAC10005127D0 /* MapViewDelegate.swift */,
 				63CD6909199AB4EE0025C8A1 /* BRCAnnotationEditView.h */,
 				63CD690A199AB4EE0025C8A1 /* BRCAnnotationEditView.m */,
 				63D270F71987159A00204954 /* BRCMapViewController.h */,
@@ -734,6 +736,7 @@
 		D9EC0E5B1B7DE0350042B596 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				D927BDB11EF4778000B7324D /* UserGuidance.swift */,
 				D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */,
 				D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */,
 				630861C7199029D100AD7109 /* BRCLocations.h */,
@@ -1015,7 +1018,7 @@
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
-				D90FFA371EEFAC10005127D0 /* AnnotationDelegate.swift in Sources */,
+				D90FFA371EEFAC10005127D0 /* MapViewDelegate.swift in Sources */,
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */,
 				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,
@@ -1029,6 +1032,7 @@
 				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
 				D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */,
+				D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
 				D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */,
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,

@@ -43,7 +43,7 @@
         [self setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:UIEdgeInsetsMake(45, 45, 45, 45) animated:animated];
         free(coordinates);
     } else {
-        [self setCenterCoordinate:[BRCLocations blackRockCityCenter] zoomLevel:14.0 animated:animated];
+        [self brc_moveToBlackRockCityCenterAnimated:animated];
     }
 }
 
@@ -62,7 +62,7 @@
 - (void)brc_moveToBlackRockCityCenterAnimated:(BOOL)animated
 {
     CLLocationCoordinate2D blackRockCityCenter = [BRCLocations blackRockCityCenter];
-    [self setCenterCoordinate:blackRockCityCenter animated:animated];
+    [self setCenterCoordinate:blackRockCityCenter zoomLevel:13.0 animated:animated];
 }
 
 @end

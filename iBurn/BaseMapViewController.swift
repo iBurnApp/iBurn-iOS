@@ -15,6 +15,7 @@ public class BaseMapViewController: UIViewController {
     
     var mapView: MGLMapView
     let mapViewDelegate: MapViewDelegate
+    public var isVisible = false
     
     public init() {
         mapView = MGLMapView()
@@ -41,13 +42,23 @@ public class BaseMapViewController: UIViewController {
     
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        centerMapAtManCoordinates(animated: false)
+        centerMapAtManCoordinatesAnimated(false)
+    }
+    
+    override public func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        isVisible = true
+    }
+    
+    override public func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        isVisible = false
     }
     
     private func setupMapView(_ mapView: MGLMapView) {
         mapView.brc_setDefaults()
         mapView.delegate = mapViewDelegate
-        centerMapAtManCoordinates(animated: false)
+        centerMapAtManCoordinatesAnimated(false)
         setupTrackingButton(mapView: mapView)
     }
     
@@ -56,8 +67,7 @@ public class BaseMapViewController: UIViewController {
         navigationItem.rightBarButtonItem = button
     }
     
-    private func centerMapAtManCoordinates(animated: Bool) {
-        mapView.brc_zoomToFullTileSource(animated: animated)
+    public func centerMapAtManCoordinatesAnimated(_ animated: Bool) {
         mapView.brc_moveToBlackRockCityCenter(animated: animated)
     }
     

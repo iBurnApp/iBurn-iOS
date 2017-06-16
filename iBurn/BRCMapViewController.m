@@ -261,7 +261,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     [super viewDidLoad];
     [self setupSideButtons];
     [self setupAnnotationEditView];
-    self.geocoder = [BRCGeocoder sharedInstance];
+    self.geocoder = [BRCGeocoder shared];
     self.guidanceButton = [[BButton alloc] initWithFrame:CGRectMake(0, 0, 35, 35) type:BButtonTypeDefault style:BButtonStyleBootstrapV3 icon:FALocationArrow fontSize:20];
 }
 
@@ -947,11 +947,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 - (void) audioPlayerChangedNotification:(NSNotification*)notification {
     [self.searchController.searchResultsTableView reloadData];
-}
-
-- (void) centerMapAtManCoordinates {
-    [self.mapView brc_zoomToFullTileSourceAnimated:YES];
-    [self.mapView brc_moveToBlackRockCityCenterAnimated:YES];
 }
 
 @end

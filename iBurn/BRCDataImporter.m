@@ -278,7 +278,7 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
     
     // Remove me!
 #warning Remove me when playa location data is fixed
-    BRCGeocoder *geocoder = [BRCGeocoder sharedInstance];
+    BRCGeocoder *geocoder = [BRCGeocoder shared];
     
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // Update Fetch info status

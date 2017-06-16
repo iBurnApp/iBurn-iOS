@@ -67,16 +67,18 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 @property (nonatomic, strong, readonly) NSString *uuid;
 @property (nonatomic, strong, readwrite) NSDate *creationDate;
 
-@property (nonatomic, strong, nullable, readwrite) NSString *title;
+@property (nonatomic, copy, nullable, readwrite) NSString *title;
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
 @property (nonatomic, readwrite) BRCMapPointType type;
 
 - (nullable CLLocation*) location;
 
-- (instancetype) initWithTitle:(nullable NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type;
+- (instancetype) initWithTitle:(nullable NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type NS_DESIGNATED_INITIALIZER;
+
+- (instancetype) init NS_UNAVAILABLE;
 
 /** yap collection */
-+ (NSString*) collection;
+@property (nonatomic, class, readonly) NSString *collection;
 
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type;

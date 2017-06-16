@@ -7,7 +7,6 @@
 //
 
 @import UIKit;
-@import KSCrash;
 @import Onboard;
 @import CoreLocation;
 #import "BRCEventsTableViewController.h"

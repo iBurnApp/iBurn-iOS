@@ -43,6 +43,7 @@
 #import "NSDate+iBurn.h"
 @import AVFoundation;
 @import CocoaLumberjack;
+#import <KSCrash/KSCrashInstallationQuincyHockey.h>
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
@@ -435,8 +436,8 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     if ([viewController isKindOfClass:[UINavigationController class]]) {
         UINavigationController *navController = (UINavigationController*)viewController;
         UIViewController *topViewController = navController.topViewController;
-        if ([topViewController isKindOfClass:[BRCMapViewController class]]) {
-            BRCMapViewController *mapViewController = (BRCMapViewController*)topViewController;
+        if ([topViewController isKindOfClass:[MapViewController class]]) {
+            MapViewController *mapViewController = (MapViewController*)topViewController;
             if (mapViewController.isVisible) {
                 [mapViewController centerMapAtManCoordinatesAnimated:YES];
             }

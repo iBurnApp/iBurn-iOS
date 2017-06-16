@@ -1,5 +1,5 @@
 //
-//  AnnotationDelegate.swift
+//  MapViewDelegate.swift
 //  iBurn
 //
 //  Created by Chris Ballinger on 6/12/17.
@@ -8,6 +8,7 @@
 
 import UIKit
 import Mapbox
+import YapDatabase
 
 extension MGLAnnotation {
     var markerImage: UIImage? {
@@ -22,6 +23,11 @@ extension MGLAnnotation {
 }
 
 public class MapViewDelegate: NSObject, MGLMapViewDelegate {
+    
+    /// Set this if you want draggable
+    var editingAnnotation: MGLAnnotation?
+    
+    var saveMapPoint: ((_ mapPoint: BRCUserMapPoint) -> Void)?
     
 //    public func mapView(_ mapView: MGLMapView, imageFor annotation: MGLAnnotation) -> MGLAnnotationImage? {
 //        guard let image = annotation.markerImage else {
@@ -49,10 +55,25 @@ public class MapViewDelegate: NSObject, MGLMapViewDelegate {
         annotationView.imageView.image = image
         annotationView.imageView.frame = imageFrame
         annotationView.frame = imageFrame
+        if editingAnnotation != nil {
+            annotationView.isDraggable = true
+        } else {
+            annotationView.isDraggable = false
+        }
         return annotationView
     }
     
     public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
         return true
+    }
+    
+    public func mapView(_ mapView: MGLMapView, didDeselect annotation: MGLAnnotation) {
+        guard let mapPoint = editingAnnotation as? BRCUserMapPoint,
+            let deselected = annotation as? BRCUserMapPoint,
+            mapPoint == deselected,
+            let save = saveMapPoint else {
+            return
+        }
+        save(mapPoint)
     }
 }

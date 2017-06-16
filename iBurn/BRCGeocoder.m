@@ -19,7 +19,7 @@
 
 @implementation BRCGeocoder
 
-+ (instancetype) sharedInstance {
++ (BRCGeocoder*) shared {
     static id sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -49,18 +49,21 @@
     return self;
 }
 
-- (void)asyncReverseLookup:(CLLocationCoordinate2D)location completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString *))completion
+- (void)asyncReverseLookup:(CLLocationCoordinate2D)coordinate completionQueue:(dispatch_queue_t)queue completion:(void (^)(NSString * _Nullable))completion
 {
+    NSParameterAssert(CLLocationCoordinate2DIsValid(coordinate));
     if (!completion) {
         return;
     }
-    
     if (!queue) {
         queue = dispatch_get_main_queue();
     }
-    
+    if (!CLLocationCoordinate2DIsValid(coordinate)) {
+        completion(nil);
+        return;
+    }
     dispatch_async(self.internalQueue, ^{
-        NSString *result = [self executeReverseLookup:location];
+        NSString *result = [self executeReverseLookup:coordinate];
         dispatch_async(queue, ^{
             completion(result);
         });
@@ -68,16 +71,19 @@
 }
 
 /** only call from internalQueue! */
-- (NSString*) executeReverseLookup:(CLLocationCoordinate2D)location {
-    NSString *format = [NSString stringWithFormat:@"reverseGeocode(reverseGeocoder, %f, %f)", location.latitude, location.longitude];
+- (nullable NSString*) executeReverseLookup:(CLLocationCoordinate2D)coordinate {
+    NSParameterAssert(CLLocationCoordinate2DIsValid(coordinate));
+    if (!CLLocationCoordinate2DIsValid(coordinate)) {
+        return nil;
+    }
+    NSString *format = [NSString stringWithFormat:@"reverseGeocode(reverseGeocoder, %f, %f)", coordinate.latitude, coordinate.longitude];
     JSValue *result = [self.context evaluateScript:format];
     NSString *locationString = [result toString];
     return locationString;
 }
 
-
 /** Synchronously lookup location. WARNING: This may block for a long time! */
-- (NSString*) reverseLookup:(CLLocationCoordinate2D)location {
+- (nullable NSString*) reverseLookup:(CLLocationCoordinate2D)location {
     __block NSString *locationString = nil;
     dispatch_sync(self.internalQueue, ^{
         locationString = [self executeReverseLookup:location];
@@ -85,9 +91,12 @@
     return locationString;
 }
 
+@end
 
+@implementation NSString (BRCGeocoder)
 /** Add font-awesome crosshairs */
-+ (NSAttributedString*) locationStringWithCrosshairs:(NSString*)locationString {
+- (NSAttributedString*) brc_attributedLocationStringWithCrosshairs {
+    NSString *locationString = self;
     NSMutableAttributedString *string = [[NSMutableAttributedString alloc] init];
     NSAttributedString *crosshairs = [[NSAttributedString alloc] initWithString:[NSString fa_stringForFontAwesomeIcon:FACrosshairs] attributes:@{NSFontAttributeName: [UIFont fontWithName:kFontAwesomeFont size:17]}];
     [string appendAttributedString:crosshairs];
@@ -96,5 +105,5 @@
     [string appendAttributedString:location];
     return string;
 }
-
 @end
+

@@ -9,12 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCLocations : NSObject
 
 /** location of the man in 2015 */
-+ (CLLocationCoordinate2D)blackRockCityCenter;
+@property (nonatomic, class, readonly) CLLocationCoordinate2D blackRockCityCenter;
 
 /** Within 5 miles of the man */
-+ (CLCircularRegion*) burningManRegion;
+@property (nonatomic, class, readonly) CLCircularRegion  *burningManRegion;
 
 @end
+NS_ASSUME_NONNULL_END

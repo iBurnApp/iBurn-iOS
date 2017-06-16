@@ -26,3 +26,5 @@
 #import "MGLMapView+iBurn.h"
 #import "BRCDataImporter.h"
 #import "BRCUserTrackingBarButtonItem.h"
+#import "BRCLocations.h"
+#import "BRCUserMapPoint.h"

@@ -8,8 +8,10 @@
 
 #import "BRCMapPoint.h"
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCUserMapPoint : BRCMapPoint
 
-@property (nonatomic, strong, readwrite) NSDate *modifiedDate;
+@property (nonatomic, strong, readwrite, nonnull) NSDate *modifiedDate;
 
 @end
+NS_ASSUME_NONNULL_END
