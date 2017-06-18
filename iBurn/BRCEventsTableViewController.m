@@ -185,7 +185,7 @@ static const CGFloat kDayPickerHeight = 65.0f;
 - (void)updateFilteredViews
 {
     self.isUpdatingFilters = YES;
-    [[BRCDatabaseManager sharedInstance] refreshEventFilteredViewsWithSelectedDay:self.selectedDay completionBlock:^{
+    [BRCDatabaseManager.shared refreshEventFilteredViewsWithSelectedDay:self.selectedDay completionBlock:^{
         self.isUpdatingFilters = NO;
         [self.tableView reloadData];
     }];
@@ -218,7 +218,7 @@ static const CGFloat kDayPickerHeight = 65.0f;
         return;
     }
     self.isRefreshingEventTimeSort = YES;
-    [[BRCDatabaseManager sharedInstance] refreshEventsSortingWithCompletionBlock:^{
+    [BRCDatabaseManager.shared refreshEventsSortingWithCompletionBlock:^{
         [self updateMappingsWithCompletionBlock:^{
             [self.tableView reloadData];
             self.isRefreshingEventTimeSort = NO;

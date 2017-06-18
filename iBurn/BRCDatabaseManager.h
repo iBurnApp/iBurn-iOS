@@ -36,7 +36,6 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 
 /** Default database */
 @property (nonatomic, class, readonly) BRCDatabaseManager *shared;
-+ (instancetype) sharedInstance;
 
 /** View containing all camp objects */
 @property (nonatomic, strong, readonly) NSString *campsViewName;

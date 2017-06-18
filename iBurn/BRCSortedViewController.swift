@@ -44,13 +44,13 @@ open class BRCSortedViewController: UITableViewController {
     public required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
-        BRCDatabaseManager.sharedInstance().readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
             let ext: AnyObject? = transaction.ext(self.extensionName)
             if (ext != nil) {
                 self.extensionRegistered = true
             }
         }
-        NotificationCenter.default.addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: NSNotification.Name.BRCDatabaseExtensionRegistered, object: BRCDatabaseManager.sharedInstance());
+        NotificationCenter.default.addObserver(self, selector: NSSelectorFromString("databaseExtensionRegistered:"), name: NSNotification.Name.BRCDatabaseExtensionRegistered, object: BRCDatabaseManager.shared);
         NotificationCenter.default.addObserver(self, selector: #selector(audioPlayerChangeNotification(_:)), name: NSNotification.Name(rawValue: BRCAudioPlayer.BRCAudioPlayerChangeNotification), object: BRCAudioPlayer.sharedInstance)
     }
     

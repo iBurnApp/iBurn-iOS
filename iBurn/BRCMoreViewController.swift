@@ -154,7 +154,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     }
     
     func showAudioTour() {
-        let audioTour = BRCAudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.sharedInstance().audioTourViewName)
+        let audioTour = BRCAudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
         audioTour.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(audioTour, animated: true)

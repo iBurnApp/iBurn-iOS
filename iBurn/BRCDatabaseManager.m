@@ -159,17 +159,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (BRCDatabaseManager*) shared {
-    return [self sharedInstance];
-}
-
-+ (instancetype)sharedInstance
-{
     static id databaseManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         databaseManager = [[[self class] alloc] init];
     });
-    
     return databaseManager;
 }
 
@@ -247,14 +241,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         Class viewClass = [viewInfo lastObject];
         YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
         YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass allowedCollections:allowedCollections];
-        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:view withName:viewName];
+        BOOL success = [self.database registerExtension:view withName:viewName];
         if (success) {
             [self postExtensionRegisteredNotification:viewName];
         }
         NSLog(@"Registered %@ %d", viewName, success);
     }];
     YapDatabaseView *dataObjectsView = [BRCDatabaseManager databaseViewForClass:[BRCDataObject class] allowedCollections:nil];
-    BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:dataObjectsView withName:self.dataObjectsViewName];
+    BOOL success = [self.database registerExtension:dataObjectsView withName:self.dataObjectsViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.dataObjectsViewName];
     }
@@ -272,7 +266,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         Class viewClass = ftsInfo[1];
         NSArray *indexedProperties = ftsInfo[2];
         YapDatabaseFullTextSearch *fullTextSearch = [BRCDatabaseManager fullTextSearchForClass:viewClass withIndexedProperties:indexedProperties];
-        BOOL success = [[BRCDatabaseManager sharedInstance].database registerExtension:fullTextSearch withName:ftsName];
+        BOOL success = [self.database registerExtension:fullTextSearch withName:ftsName];
         if (success) {
             [self postExtensionRegisteredNotification:ftsName];
         }
@@ -286,21 +280,21 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSSet *allowedCollections = [NSSet setWithArray:@[[[BRCEventObject class] collection]]];
     YapWhitelistBlacklist *whitelist = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
     YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName allowedCollections:whitelist];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
+    success = [self.database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayViewName, success);
     if (success) {
         [self postExtensionRegisteredNotification: self.eventsFilteredByDayViewName];
     }
     
     YapDatabaseFilteredView *filteredByExpiryAndTypeView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName allowedCollections:whitelist];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:filteredByExpiryAndTypeView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
+    success = [self.database registerExtension:filteredByExpiryAndTypeView withName:self.eventsFilteredByDayExpirationAndTypeViewName];
     NSLog(@"%@ %d", self.eventsFilteredByDayExpirationAndTypeViewName, success);
     if (success) {
         [self postExtensionRegisteredNotification:self.eventsFilteredByDayExpirationAndTypeViewName];
     }
     
     YapDatabaseFilteredView *favoritesFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeFavoritesOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:favoritesFiltering withName:self.everythingFilteredByFavorite];
+    success = [self.database registerExtension:favoritesFiltering withName:self.everythingFilteredByFavorite];
     if (success) {
         [self postExtensionRegisteredNotification:self.everythingFilteredByFavorite];
     }
@@ -317,7 +311,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         return NO;
     }];
     YapDatabaseFilteredView *audioTour = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:audioTourFiltering versionTag:@"1"];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:audioTour withName:self.audioTourViewName];
+    success = [self.database registerExtension:audioTour withName:self.audioTourViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.audioTourViewName];
     }
@@ -334,7 +328,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         return NO;
     }];
     YapDatabaseFilteredView *artWithImages = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:artWithImagesFiltering versionTag:@"2"];
-    success = [[BRCDatabaseManager sharedInstance].database registerExtension:artWithImages withName:self.artImagesViewName];
+    success = [self.database registerExtension:artWithImages withName:self.artImagesViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.artImagesViewName];
     }

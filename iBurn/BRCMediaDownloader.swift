@@ -49,7 +49,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         })
         super.init()
         self.session = Foundation.URLSession(configuration: config, delegate: self, delegateQueue: delegateQueue)
-        observer = NotificationCenter.default.addObserver(forName: NSNotification.Name.BRCDatabaseExtensionRegistered, object: BRCDatabaseManager.sharedInstance(), queue: OperationQueue.main) { (notification) in
+        observer = NotificationCenter.default.addObserver(forName: NSNotification.Name.BRCDatabaseExtensionRegistered, object: BRCDatabaseManager.shared, queue: OperationQueue.main) { (notification) in
             if let extensionName = notification.userInfo?["extensionName"] as? String {
                 if extensionName == self.viewName {
                     NSLog("BRCMediaDownloader databaseExtensionRegistered: %@", extensionName)

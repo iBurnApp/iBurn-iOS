@@ -104,7 +104,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     [self.dataImporter doubleCheckMapTiles:nil];
     
-    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+    [BRCDatabaseManager.shared.readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject collection]];
         NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject collection]];
         NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject collection]];
@@ -149,8 +149,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
-    _audioDownloader = [[BRCMediaDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].audioTourViewName downloadType:BRCMediaDownloadTypeAudio];
-    _imageDownloader = [[BRCMediaDownloader alloc] initWithConnection:[[BRCDatabaseManager sharedInstance].database newConnection] viewName:[BRCDatabaseManager sharedInstance].artImagesViewName downloadType:BRCMediaDownloadTypeImage];
+    _audioDownloader = [[BRCMediaDownloader alloc] initWithConnection:[BRCDatabaseManager.shared.database newConnection] viewName:BRCDatabaseManager.shared.audioTourViewName downloadType:BRCMediaDownloadTypeAudio];
+    _imageDownloader = [[BRCMediaDownloader alloc] initWithConnection:[BRCDatabaseManager.shared.database newConnection] viewName:BRCDatabaseManager.shared.artImagesViewName downloadType:BRCMediaDownloadTypeImage];
     
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
@@ -247,13 +247,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 
 - (void)setupDefaultTabBarController
 {
-    BRCDatabaseManager *dbManager = [BRCDatabaseManager sharedInstance];
+    BRCDatabaseManager *dbManager = BRCDatabaseManager.shared;
 
     self.mapViewController = [[MapViewController alloc] init];
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    BRCNearbyViewController *nearbyVC = [[BRCNearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:[BRCDatabaseManager sharedInstance].rTreeIndex];
+    BRCNearbyViewController *nearbyVC = [[BRCNearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.rTreeIndex];
     nearbyVC.title = @"Nearby";
     UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
@@ -367,7 +367,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSURLSessionConfiguration *bgSessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
-        YapDatabaseConnection *connection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        YapDatabaseConnection *connection = [BRCDatabaseManager.shared.database newConnection];
         _dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
     });
     return _dataImporter;
@@ -417,7 +417,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     }
     
     // gathering breadcrumbs!
-    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+    [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
         [locations enumerateObjectsUsingBlock:^(CLLocation *location, NSUInteger idx, BOOL *stop) {
             // only track locations within burning man
             if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {

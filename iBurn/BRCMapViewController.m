@@ -95,17 +95,17 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     if (self = [super init]) {
         _ftsName = ftsName;
         self.title = @"Map";
-        self.artConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
-        self.eventsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        self.artConnection = [BRCDatabaseManager.shared.database newConnection];
+        self.eventsConnection = [BRCDatabaseManager.shared.database newConnection];
         self.eventsConnection.objectPolicy = YapDatabasePolicyShare;
-        self.readConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
-        self.favoritesConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
-        self.campsConnection = [[BRCDatabaseManager sharedInstance].database newConnection];
+        self.readConnection = [BRCDatabaseManager.shared.database newConnection];
+        self.favoritesConnection = [BRCDatabaseManager.shared.database newConnection];
+        self.campsConnection = [BRCDatabaseManager.shared.database newConnection];
         [self reloadFavoritesIfNeeded];
         [self setupSearchBar];
         [self setupSearchController];
         [self setupSearchIndicator];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioPlayerChangedNotification:) name:BRCAudioPlayer.BRCAudioPlayerChangeNotification object:BRCAudioPlayer.sharedInstance];
     }
     return self;
@@ -113,7 +113,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 
 - (void) databaseExtensionRegistered:(NSNotification*)notification {
     NSString *extensionName = notification.userInfo[@"extensionName"];
-    if ([extensionName isEqualToString:[BRCDatabaseManager sharedInstance].everythingFilteredByFavorite]) {
+    if ([extensionName isEqualToString:BRCDatabaseManager.shared.everythingFilteredByFavorite]) {
         [self reloadFavoritesIfNeeded];
         NSLog(@"databaseExtensionRegistered: %@", extensionName);
     }
@@ -300,7 +300,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.currentlyAddingFavoritesAnnotations = YES;
     NSMutableArray *favoritesAnnotationsToAdd = [NSMutableArray array];
     [self.favoritesConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
-        YapDatabaseViewTransaction *favesTransaction = [transaction ext:[BRCDatabaseManager sharedInstance].everythingFilteredByFavorite];
+        YapDatabaseViewTransaction *favesTransaction = [transaction ext:BRCDatabaseManager.shared.everythingFilteredByFavorite];
         [favesTransaction enumerateGroupsUsingBlock:^(NSString *group, BOOL *stop) {
             [favesTransaction enumerateKeysAndObjectsInGroup:group usingBlock:^(NSString *collection, NSString *key, id object, NSUInteger index, BOOL *stop) {
                 if ([object isKindOfClass:[BRCDataObject class]]) {
@@ -793,7 +793,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 //        NSString *yapCollection = [[mapPointToDelete class] collection];
 //        [self.mapView removeAnnotation:self.editingMapPointAnnotation];
 //        self.editingMapPointAnnotation = nil;
-//        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+//        [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
 //            [transaction removeObjectForKey:mapPointToDelete.uuid inCollection:yapCollection];
 //        } completionBlock:^{
 //            [self reloadAllUserPoints];
@@ -809,7 +809,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 //        NSString *yapCollection = [[editedMapPoint class] collection];
 //        CLLocationCoordinate2D newCoordinate = self.editingMapPointAnnotation.coordinate;
 //        editedMapPoint.coordinate = newCoordinate;
-//        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+//        [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
 //            [transaction setObject:editedMapPoint forKey:editedMapPoint.uuid inCollection:yapCollection];
 //        } completionBlock:^{
 //            [self reloadAllUserPoints];
@@ -928,7 +928,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         if (dataObject.isFavorite) {
             [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
         }
-        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+        [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;

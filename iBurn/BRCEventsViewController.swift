@@ -30,7 +30,7 @@ class BRCEventsViewController: BRCSortedViewController {
     
     internal override func refreshTableItems(_ completion: @escaping ()->()) {
         var eventObjects: [BRCEventObject] = []
-        BRCDatabaseManager.sharedInstance().readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
             if let object = self.relatedObject {
                 eventObjects = object.events(with: transaction) as! [BRCEventObject]
             }

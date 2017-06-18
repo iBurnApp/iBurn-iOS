@@ -22,7 +22,7 @@ class BRCFavoritesViewController: BRCSortedViewController {
     
     override func refreshTableItems(_ completion: @escaping ()->()) {
         var favorites: [BRCDataObject] = []
-        BRCDatabaseManager.sharedInstance().readConnection.asyncRead({ (transaction) -> Void in
+        BRCDatabaseManager.shared.readConnection.asyncRead({ (transaction) -> Void in
             if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
                 viewTransaction.enumerateGroups({ (group, stop) -> Void in
                     viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in

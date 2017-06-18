@@ -30,7 +30,7 @@
     NSString *yapCollection = [[self class] collection];
     
     NSString *sourceKey = self.uniqueID;
-    NSString *extName = [BRCDatabaseManager sharedInstance].relationships;
+    NSString *extName = BRCDatabaseManager.shared.relationships;
     YapDatabaseRelationshipTransaction *relationshipTransaction = [readTransaction ext:extName];
     [relationshipTransaction enumerateEdgesWithName:nil
                                           sourceKey:nil

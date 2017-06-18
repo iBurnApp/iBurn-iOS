@@ -49,7 +49,7 @@
         [self setupDatabaseConnection];
         [self setupMappings];
         [self updateMappingsWithCompletionBlock:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioPlayerChangedNotification:) name:BRCAudioPlayer.BRCAudioPlayerChangeNotification object:BRCAudioPlayer.sharedInstance];
         [self view]; //wtf
     }
@@ -119,7 +119,7 @@
                                              selector:@selector(didChangePreferredContentSize:)
                                                  name:UIContentSizeCategoryDidChangeNotification
                                                object:nil];
-    YapDatabase *database = [BRCDatabaseManager sharedInstance].database;
+    YapDatabase *database = BRCDatabaseManager.shared.database;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
@@ -187,7 +187,7 @@
 
 - (void)setupDatabaseConnection
 {
-    YapDatabase *database = [BRCDatabaseManager sharedInstance].database;
+    YapDatabase *database = BRCDatabaseManager.shared.database;
     self.databaseConnection = [database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
     _searchConnection = [database newConnection];
@@ -341,7 +341,7 @@
         if (dataObject.isFavorite) {
             [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
         }
-        [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
+        [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;

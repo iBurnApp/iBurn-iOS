@@ -49,7 +49,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     NSParameterAssert(dataObject);
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
         self.dataObject = dataObject;
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:[BRCDatabaseManager sharedInstance]];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
 
     }
     return self;
@@ -57,7 +57,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void) databaseExtensionRegistered:(NSNotification*)notification {
     NSString *extensionName = notification.userInfo[@"extensionName"];
-    if ([extensionName isEqualToString:[BRCDatabaseManager sharedInstance].relationships]) {
+    if ([extensionName isEqualToString:BRCDatabaseManager.shared.relationships]) {
         NSLog(@"databaseExtensionRegistered: %@", extensionName);
         self.dataObject = self.dataObject; // retrigger info array population
         [self.tableView reloadData];
@@ -149,7 +149,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if (self.dataObject.isFavorite) {
         [PFAnalytics brc_trackEventInBackground:@"Favorite" object:self.dataObject];
     }
-    [[BRCDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *event = (BRCEventObject*)tempObject;
@@ -270,7 +270,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         // Go to correct camp page
         BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
         __block BRCDataObject *dataObject = nil;
-        [[BRCDatabaseManager sharedInstance].readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             dataObject = [transaction objectForKey:relationshipCellInfo.dataObject.uniqueID inCollection:[[relationshipCellInfo.dataObject class]collection]];
         }];
         BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
@@ -280,7 +280,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         // Shows events
         BRCEventRelationshipDetailInfoCell *eventRelationshipCellInfo = (BRCEventRelationshipDetailInfoCell *)cellInfo;
         BRCDataObject *relatedObject = eventRelationshipCellInfo.dataObject;
-        BRCEventsViewController *eventsVC = [[BRCEventsViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:[BRCDatabaseManager sharedInstance].relationships relatedObject:relatedObject];
+        BRCEventsViewController *eventsVC = [[BRCEventsViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.relationships relatedObject:relatedObject];
         [self.navigationController pushViewController:eventsVC animated:YES];
         
     } else if (cellInfo.cellType == BRCDetailCellInfoTypeCoordinates) {
