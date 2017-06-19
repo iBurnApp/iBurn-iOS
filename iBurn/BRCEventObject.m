@@ -309,7 +309,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
     }
     BRCEventObject *newEvent = [self copy];
     newEvent.calendarEventIdentifier = calendarEvent.eventIdentifier;
-    [transaction setObject:newEvent forKey:self.uniqueID inCollection:[BRCEventObject collection]];
+    [newEvent saveWithTransaction:transaction];
 }
 
 - (void) cancelNotification:(YapDatabaseReadWriteTransaction*)transaction {
@@ -330,14 +330,14 @@ NSString * const kBRCEventArtEdgeName = @"art";
     }
     BRCEventObject *newEvent = [self copy];
     newEvent.calendarEventIdentifier = nil;
-    [transaction setObject:newEvent forKey:self.uniqueID inCollection:[BRCEventObject collection]];
+    [newEvent saveWithTransaction:transaction];
 }
 
 - (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
     if (!self.hostedByArtUniqueID) {
         return nil;
     }
-    BRCArtObject *artObject = [readTransaction objectForKey:self.hostedByArtUniqueID inCollection:[BRCArtObject collection]];
+    BRCArtObject *artObject = [readTransaction objectForKey:self.hostedByArtUniqueID inCollection:BRCArtObject.yapCollection];
     return artObject;
 }
 
@@ -345,7 +345,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
     if (!self.hostedByCampUniqueID) {
         return nil;
     }
-    BRCCampObject *campObject = [readTransaction objectForKey:self.hostedByCampUniqueID inCollection:[BRCCampObject collection]];
+    BRCCampObject *campObject = [readTransaction objectForKey:self.hostedByCampUniqueID inCollection:BRCCampObject.yapCollection];
     return campObject;
 }
 
@@ -360,7 +360,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
         YapDatabaseRelationshipEdge *campEdge =
         [YapDatabaseRelationshipEdge edgeWithName:kBRCEventCampEdgeName
                                    destinationKey:self.hostedByCampUniqueID
-                                       collection:[[BRCCampObject class] collection]
+                                       collection:BRCCampObject.yapCollection
                                   nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
         if (campEdge) {
             [edges addObject:campEdge];
@@ -371,7 +371,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
         YapDatabaseRelationshipEdge *artEdge =
         [YapDatabaseRelationshipEdge edgeWithName:kBRCEventArtEdgeName
                                    destinationKey:self.hostedByArtUniqueID
-                                       collection:[[BRCArtObject class] collection]
+                                       collection:[[BRCArtObject class] yapCollection]
                                   nodeDeleteRules:YDB_NotifyIfSourceDeleted | YDB_NotifyIfDestinationDeleted];
         
         if (artEdge) {

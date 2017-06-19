@@ -92,7 +92,7 @@
             id cellValue = nil;
             // Distance is a 'special' case
             if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(distanceFromLocation:))]) {
-                CLLocation *userLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
+                CLLocation *userLocation = BRCAppDelegate.shared.locationManager.location;
                 CLLocationDistance distance = [object distanceFromLocation:userLocation];
                 cellValue = @(distance);
             } else {
@@ -192,13 +192,13 @@
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
             relationshipDetailInfoCell.displayName = @"Hosted By Camp";
             relationshipUniqueID = event.hostedByCampUniqueID;
-            relationshipCollection = [BRCCampObject collection];
+            relationshipCollection = BRCCampObject.yapCollection;
         }
         else if ([event.hostedByArtUniqueID length]) {
             relationshipDetailInfoCell = [[BRCRelationshipDetailInfoCell alloc] init];
             relationshipDetailInfoCell.displayName = @"Hosted At Art";
             relationshipUniqueID = event.hostedByArtUniqueID;
-            relationshipCollection = [BRCArtObject collection];
+            relationshipCollection = BRCArtObject.yapCollection;
         }
         
         if ([relationshipUniqueID length] && [relationshipCollection length]) {

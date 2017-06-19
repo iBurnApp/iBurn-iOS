@@ -221,7 +221,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 - (void) registerRelationships {
     NSString *viewName = self.relationships;
     YapDatabaseRelationshipOptions *options = [[YapDatabaseRelationshipOptions alloc] init];
-    NSSet *allowedCollections = [NSSet setWithArray:@[[[BRCEventObject class] collection]]];
+    NSSet *allowedCollections = [NSSet setWithArray:@[BRCEventObject. yapCollection]];
     options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
     YapDatabaseRelationship *relationship = [[YapDatabaseRelationship alloc] initWithVersionTag:@"2" options:options];
     BOOL success = [self.database registerExtension:relationship withName:viewName];
@@ -239,7 +239,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     [viewsInfo enumerateObjectsUsingBlock:^(NSArray *viewInfo, NSUInteger idx, BOOL *stop) {
         NSString *viewName = [viewInfo firstObject];
         Class viewClass = [viewInfo lastObject];
-        YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:[viewClass collection]]];
+        NSString *collection = [viewClass yapCollection];
+        YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:collection]];
         YapDatabaseView *view = [BRCDatabaseManager databaseViewForClass:viewClass allowedCollections:allowedCollections];
         BOOL success = [self.database registerExtension:view withName:viewName];
         if (success) {
@@ -277,7 +278,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 - (void) registerFilteredViews {
     // Register filtered views
     BOOL success = NO;
-    NSSet *allowedCollections = [NSSet setWithArray:@[[[BRCEventObject class] collection]]];
+    
+    NSSet *allowedCollections = [NSSet setWithArray:@[BRCEventObject.yapCollection]];
     YapWhitelistBlacklist *whitelist = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
     YapDatabaseFilteredView *filteredByDayView = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName allowedCollections:whitelist];
     success = [self.database registerExtension:filteredByDayView withName:self.eventsFilteredByDayViewName];
@@ -379,9 +381,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }];
     YapDatabaseRTreeIndexOptions *options = [[YapDatabaseRTreeIndexOptions alloc] init];
     NSSet *allowedCollections = [NSSet setWithArray:@[
-                                                      [[BRCArtObject class] collection],
-                                                      [[BRCCampObject class] collection],
-                                                      [[BRCEventObject class] collection]]
+                                                      [BRCArtObject yapCollection],
+                                                      [BRCCampObject yapCollection],
+                                                      [BRCEventObject yapCollection]]
                                  ];
     options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
     YapDatabaseRTreeIndex *rTree = [[YapDatabaseRTreeIndex alloc] initWithSetup:setup handler:handler versionTag:@"1" options:options];
@@ -413,7 +415,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     } else {
         // group art & camp by letter index
         grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(YapDatabaseReadTransaction *transaction, NSString *collection, NSString *key, id object){
-            if ([collection isEqualToString:[viewClass collection]])
+            if ([collection isEqualToString:[viewClass yapCollection]])
             {
                 if ([object isKindOfClass:[BRCDataObject class]]) {
                     BRCDataObject *dataObject = object;

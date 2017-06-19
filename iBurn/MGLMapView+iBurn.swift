@@ -14,8 +14,9 @@ public extension MGLMapView {
     public func brc_setDefaults() {
         styleURL = URL(string: kBRCMapBoxStyleURL)
         showsUserLocation = true
-        minimumZoomLevel = 13
+        minimumZoomLevel = 12
         backgroundColor = UIColor.brc_mapBackground
         translatesAutoresizingMaskIntoConstraints = false
+        brc_moveToBlackRockCityCenter(animated: false)
     }
 }

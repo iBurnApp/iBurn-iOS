@@ -122,8 +122,9 @@ class BRCCreditsViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == SectionInfo.people.rawValue {
             let creditsInfo = self.creditsInfoArray[indexPath.row]
-            let url = creditsInfo.url
-            BRCAppDelegate.open(url, from: self)
+            if let url = creditsInfo.url {
+                BRCAppDelegate.open(url, from: self)
+            }
         } else if indexPath.section == SectionInfo.licenses.rawValue {
             let ackVC = BRCAcknowledgementsViewController(headerLabel: nil)
             self.navigationController!.pushViewController(ackVC!, animated: true)

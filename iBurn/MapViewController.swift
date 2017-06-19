@@ -21,12 +21,14 @@ public class MapViewController: BaseMapViewController {
     let sidebarButtons: SidebarButtonsView
     let geocoder: BRCGeocoder
     var userAnnotations: [BRCUserMapPoint] = []
+    let search: SearchDisplayManager
     
     public override init() {
         readConnection = BRCDatabaseManager.shared.readConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
         geocoder = BRCGeocoder.shared
+        search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchCampsView)
         super.init()
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
@@ -45,11 +47,18 @@ public class MapViewController: BaseMapViewController {
         bottom.constant = -50
         sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
         sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 200))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Search", style: .plain, target: self, action: #selector(searchButtonPressed(_:)))
     }
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         reloadUserAnnotations()
+    }
+    
+    // MARK: - User Interaction
+    
+    func searchButtonPressed(_ sender: Any) {
+        present(search.searchController, animated: true, completion: nil)
     }
     
     // MARK: - Annotations

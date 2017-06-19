@@ -9,8 +9,32 @@
 #import <Mantle/Mantle.h>
 @import CoreLocation;
 @import Mapbox;
+@import YapDatabase;
 
-@interface BRCDataObject : MTLModel <MTLJSONSerializing, MGLAnnotation>
+NS_ASSUME_NONNULL_BEGIN
+@protocol BRCYapDatabaseObjectProtocol <NSObject, NSCoding, NSCopying>
+@required
+/**
+ * Unique YapDatabase key for this object.
+ */
+@property (nonatomic, readonly) NSString *yapKey;
+/**
+ *  The YapDatabase collection of this class
+ *
+ *  @return collection for this class
+ */
+@property (nonatomic, class, readonly) NSString *yapCollection;
+
+- (void)touchWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
+- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
+- (void)removeWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
+/** This will fetch an updated (copied) instance of the object. If nil, it means it was deleted or not present in the db. */
+- (nullable instancetype)refetchWithTransaction:(YapDatabaseReadTransaction *)transaction;
+
++ (nullable instancetype)fetchObjectWithYapKey:(NSString*)yapKey transaction:(YapDatabaseReadTransaction*)transaction;
+@end
+
+@interface BRCDataObject : MTLModel <MTLJSONSerializing, MGLAnnotation, BRCYapDatabaseObjectProtocol>
 
 #pragma mark Mutable Properties
 
@@ -71,15 +95,9 @@
 /** Calculates distance from location */
 - (CLLocationDistance) distanceFromLocation:(CLLocation*)location;
 
-/**
- *  The YapDatabase collection of this class
- *
- *  @return collection for this class
- */
-+ (NSString*) collection;
-
 @end
 
 @interface BRCDataObject (MarkerImage)
-@property (nonatomic, strong, readonly) UIImage *markerImage;
+@property (nonatomic, strong, readonly) UIImage *brc_markerImage;
 @end
+NS_ASSUME_NONNULL_END

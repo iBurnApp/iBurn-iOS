@@ -24,6 +24,7 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection;
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection sessionConfiguration:(nullable NSURLSessionConfiguration*)sessionConfiguration NS_DESIGNATED_INITIALIZER;
+- (instancetype) init NS_UNAVAILABLE;
 
 /**
  *  Load updates from remote events.json file.
@@ -42,7 +43,7 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 + (NSURL*) mapTilesURL;
 
 /** Double-checks that the map tiles exist on each launch */
-- (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo;
+- (void) doubleCheckMapTiles:(nullable BRCUpdateInfo*)updateInfo;
 
 @end
 NS_ASSUME_NONNULL_END

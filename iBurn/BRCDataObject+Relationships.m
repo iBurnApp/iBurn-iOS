@@ -27,7 +27,7 @@
     }
     NSMutableArray *events = [NSMutableArray array];
     
-    NSString *yapCollection = [[self class] collection];
+    NSString *yapCollection = [[self class] yapCollection];
     
     NSString *sourceKey = self.uniqueID;
     NSString *extName = BRCDatabaseManager.shared.relationships;

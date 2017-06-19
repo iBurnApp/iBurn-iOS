@@ -78,13 +78,7 @@ open class BRCSortedViewController: UITableViewController {
         tableView.estimatedRowHeight = 120
         tableView.rowHeight = UITableViewAutomaticDimension
         // register table cell classes
-        let classesToRegister = [BRCEventObject.self, BRCDataObject.self, BRCArtObject.self]
-        for objClass in classesToRegister {
-            let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: objClass)
-            let nib = UINib(nibName: NSStringFromClass(cellClass), bundle: nil)
-            let reuseIdentifier = cellClass.cellIdentifier()
-            tableView.register(nib, forCellReuseIdentifier: reuseIdentifier!)
-        }
+        tableView.registerCustomCellClasses()
         tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
     
@@ -132,8 +126,8 @@ open class BRCSortedViewController: UITableViewController {
     // MARK: - Internal
     
     func getCurrentLocation() -> CLLocation? {
-        let appDelegate = BRCAppDelegate.shared()
-        let currentLocation: CLLocation? = appDelegate?.locationManager.location
+        let appDelegate = BRCAppDelegate.shared
+        let currentLocation: CLLocation? = appDelegate.locationManager.location
         return currentLocation
     }
     
@@ -229,14 +223,14 @@ open class BRCSortedViewController: UITableViewController {
         let dataObjectClass = type(of: dataObject)
         let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: dataObjectClass)
         let reuseIdentifier = cellClass.cellIdentifier()
-        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier!, for: indexPath) as! BRCDataObjectTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! BRCDataObjectTableViewCell
         cell.setDataObject(dataObject)
         cell.updateDistanceLabel(from: getCurrentLocation(), dataObject: dataObject)
         cell.favoriteButtonAction = { (sender) -> Void in
             let dataCopy = dataObject.copy() as! BRCDataObject
             dataCopy.isFavorite = cell.favoriteButton.isSelected
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
-                transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: type(of: dataCopy).collection())
+                transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: type(of: dataCopy).yapCollection)
                 if let event = dataCopy as? BRCEventObject {
                     event.refreshCalendarEntry(transaction)
                 }

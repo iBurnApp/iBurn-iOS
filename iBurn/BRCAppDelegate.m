@@ -105,9 +105,9 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [self.dataImporter doubleCheckMapTiles:nil];
     
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
-        NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject collection]];
-        NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject collection]];
-        NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject collection]];
+        NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject yapCollection]];
+        NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject yapCollection]];
+        NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject yapCollection]];
         NSLog(@"Existing data: \n%d Art\n%d Camp\n%d Event", (int)artCount, (int)campCount, (int)eventCount);
     }];
     
@@ -358,7 +358,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     }
 }
 
-+ (instancetype) sharedAppDelegate {
++ (BRCAppDelegate*) shared {
     return (BRCAppDelegate*)[UIApplication sharedApplication].delegate;
 }
 
@@ -384,7 +384,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
         [[UIApplication sharedApplication] openURL:url];
     } else {
         // you're showing a modal ya dingus
-        if ([BRCAppDelegate sharedAppDelegate].window.rootViewController.presentedViewController) {
+        if ([BRCAppDelegate shared].window.rootViewController.presentedViewController) {
             [[UIApplication sharedApplication] openURL:url];
             return;
         }

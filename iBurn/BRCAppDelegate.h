@@ -14,6 +14,7 @@
 @class BRCFavoritesViewController;
 @class MapViewController;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
@@ -28,7 +29,7 @@
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;
 
 /** Don't use this unless you really have to... */
-+ (instancetype) sharedAppDelegate;
+@property (nonatomic, class, readonly) BRCAppDelegate *shared;
 
 + (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController;
 
@@ -40,3 +41,4 @@
 - (void) requestLocationPermission;
 
 @end
+NS_ASSUME_NONNULL_END

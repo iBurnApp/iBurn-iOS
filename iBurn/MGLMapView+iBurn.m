@@ -19,7 +19,13 @@
 - (void)brc_showDestination:(id<MGLAnnotation>)destination animated:(BOOL) animated {
     NSParameterAssert(destination);
     if (!destination) { return; }
-    CLLocation *userLocation = self.userLocation.location;
+    CLLocationCoordinate2D userCoord = kCLLocationCoordinate2DInvalid;
+    if (self.userLocation.location &&
+        CLLocationCoordinate2DIsValid(self.userLocation.location.coordinate)) {
+        userCoord = self.userLocation.location.coordinate;
+    } else {
+        userCoord = [BRCLocations blackRockCityCenter];
+    }
     CLLocationCoordinate2D destinationCoord = destination.coordinate;
     if ([destination isKindOfClass:[BRCDataObject class]]) {
         BRCDataObject *dataObject = (BRCDataObject*)destination;
@@ -32,13 +38,8 @@
         CLLocationCoordinate2D *coordinates = malloc(sizeof(CLLocationCoordinate2D) * 2);
         coordinates[0] = destinationCoord;
         NSUInteger coordinatesCount = 1;
-        if (userLocation) {
-            coordinates[1] = userLocation.coordinate;
-            coordinatesCount++;
-            [self setCenterCoordinate:userLocation.coordinate animated:animated];
-        } else {
-            [self setCenterCoordinate:destinationCoord animated:animated];
-        }
+        coordinates[1] = userCoord;
+        coordinatesCount++;
         [self setTargetCoordinate:destinationCoord animated:animated];
         [self setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:UIEdgeInsetsMake(45, 45, 45, 45) animated:animated];
         free(coordinates);

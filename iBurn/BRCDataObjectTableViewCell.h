@@ -12,6 +12,7 @@
 
 @class BRCDataObject;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCDataObjectTableViewCell : UITableViewCell
 
 @property (strong, nonatomic) IBOutlet DOFavoriteButton *favoriteButton;
@@ -21,16 +22,15 @@
 @property (strong, nonatomic) IBOutlet UILabel *rightSubtitleLabel;
 
 /** If favoriteButtonAction is set, you must save your changes */
-@property (nonatomic, copy) void (^favoriteButtonAction)(BRCDataObjectTableViewCell *sender);
-
+@property (nullable, nonatomic, copy) void (^favoriteButtonAction)(BRCDataObjectTableViewCell *sender);
 
 - (void) setDataObject:(BRCDataObject*)dataObject;
 
-
 + (NSString*) cellIdentifier;
 
-- (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation dataObject:(BRCDataObject*)dataObject;
+- (void) updateDistanceLabelFromLocation:(nullable CLLocation*)fromLocation dataObject:(BRCDataObject*)dataObject;
 
 + (Class) cellClassForDataObjectClass:(Class)dataObjectClass;
 
 @end
+NS_ASSUME_NONNULL_END

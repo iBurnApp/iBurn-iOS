@@ -118,7 +118,9 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [self.mapView brc_showDestination:self.dataObject animated:animated];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.mapView brc_showDestination:self.dataObject animated:animated];
+    });
 }
 
 - (UIImage*)imageIfFavorite:(BOOL)isFavorite {

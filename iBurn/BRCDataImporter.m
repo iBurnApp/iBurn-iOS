@@ -49,15 +49,6 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
     }
 }
 
-- (instancetype) init {
-    if (self = [self initWithReadWriteConnection:nil sessionConfiguration:nil]) {
-        self.backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithName:@"begin background task loadUpdatesFromURL" expirationHandler:^{
-            NSLog(@"Ran out of background time!");
-        }];
-    }
-    return self;
-}
-
 - (instancetype) initWithReadWriteConnection:(YapDatabaseConnection*)readWriteConection {
     if (self = [self initWithReadWriteConnection:readWriteConection sessionConfiguration:nil]) {
     }
@@ -305,23 +296,23 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
                     BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
                     NSArray *events = [recurringEvent eventObjects];
                     [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
-                        BRCEventObject *existingEvent = [transaction objectForKey:event.uniqueID inCollection:[[event class] collection]];
+                        BRCEventObject *existingEvent = [transaction objectForKey:event.uniqueID inCollection:[[event class] yapCollection]];
                         if (existingEvent) {
                             event.isFavorite = existingEvent.isFavorite;
                             event.userNotes = existingEvent.userNotes;
                             event.calendarEventIdentifier = existingEvent.calendarEventIdentifier;
                         }
                         event.lastUpdated = updateInfo.lastUpdated;
-                        [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] collection]];
+                        [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] yapCollection]];
                     }];
                 } else { // Art and Camps
-                    BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass collection]];
+                    BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass yapCollection]];
                     if (existingObject) {
                         object.isFavorite = existingObject.isFavorite;
                         object.userNotes = existingObject.userNotes;
                     }
                     object.lastUpdated = updateInfo.lastUpdated;
-                    [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass collection]];
+                    [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass yapCollection]];
                 }
                 
                 
@@ -340,12 +331,12 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
             }
         }];
         [objectsToRemove enumerateObjectsUsingBlock:^(BRCDataObject * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [transaction removeObjectForKey:obj.uniqueID inCollection:[[obj class] collection]];
+            [obj removeWithTransaction:transaction];
         }];
         
         ////////////// Data massaging
         NSMutableArray *objectsToUpdate = [NSMutableArray array];
-        [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, id object, BOOL *stop) {
+        [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject yapCollection] usingBlock:^(NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = [object copy];
                 __block BRCCampObject *camp = nil;
@@ -379,7 +370,7 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
             }
         }];
         [objectsToUpdate enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
-            [transaction setObject:object forKey:object.uniqueID inCollection:[[object class] collection]];
+            [object saveWithTransaction:transaction];
         }];
         updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
@@ -390,7 +381,7 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
 }
 
 /** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
-- (void) addBackgroundURLSessionCompletionHandler:(void (^)())completionHandler {
+- (void) addBackgroundURLSessionCompletionHandler:(void (^)(void))completionHandler {
     self.urlSessionCompletionHandler = completionHandler;
 }
 

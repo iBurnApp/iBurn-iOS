@@ -150,13 +150,7 @@
 }
 
 - (void) setupCellIdentifiersForTableView:(UITableView*)tableView {
-    NSArray *classesToRegister = @[[BRCEventObject class], [BRCDataObject class], [BRCArtObject class]];
-    [classesToRegister enumerateObjectsUsingBlock:^(Class viewClass, NSUInteger idx, BOOL *stop) {
-        Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:viewClass];
-        NSString *cellIdentifier = [cellClass cellIdentifier];
-        UINib *nib = [UINib nibWithNibName:NSStringFromClass(cellClass) bundle:nil];
-        [tableView registerNib:nib forCellReuseIdentifier:cellIdentifier];
-    }];
+    [tableView registerCustomCellClasses];
 }
 
 // https://github.com/ccabanero/ios-uisearchcontroller-objc/blob/master/ui-searchcontroller-objc/TableViewController.m
@@ -331,7 +325,7 @@
     NSString *cellIdentifier = [cellClass cellIdentifier];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.dataObject = dataObject;
-    CLLocation *currentLocation = [BRCAppDelegate sharedAppDelegate].locationManager.location;
+    CLLocation *currentLocation = BRCAppDelegate.shared.locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation dataObject:dataObject];
     [cell setFavoriteButtonAction:^(BRCDataObjectTableViewCell *sender) {
         NSIndexPath *indexPath = [tableView indexPathForCell:sender];
@@ -342,7 +336,7 @@
             [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
         }
         [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+            [dataObject saveWithTransaction:transaction];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;
                 [event refreshCalendarEntry:transaction];

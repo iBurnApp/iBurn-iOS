@@ -14,7 +14,7 @@ extension MGLAnnotation {
     var markerImage: UIImage? {
         var markerImage: UIImage? = nil
         if let dataObject = self as? BRCDataObject {
-            markerImage = dataObject.markerImage
+            markerImage = dataObject.brc_markerImage
         } else if let mapPoint = self as? BRCMapPoint {
             markerImage = mapPoint.image
         }

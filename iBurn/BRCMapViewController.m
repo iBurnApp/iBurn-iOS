@@ -346,8 +346,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.currentlyAddingCampAnnotations = YES;
     [self.campsConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *campAnnotationsToAdd = [NSMutableArray array];
-        [transaction enumerateKeysInCollection:[BRCCampObject collection] usingBlock:^(NSString *key, BOOL *stop) {
-            BRCCampObject *campObject = [transaction objectForKey:key inCollection:[BRCCampObject collection]];
+        [transaction enumerateKeysInCollection:BRCCampObject.yapCollection usingBlock:^(NSString *key, BOOL *stop) {
+            BRCCampObject *campObject = [transaction objectForKey:key inCollection:[BRCCampObject yapCollection]];
 //            RMAnnotation *campAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:campObject];
 //            // if campObject doesn't have a valid location, annotationWithMapView will
 //            // return nil for the campAnnotation
@@ -381,8 +381,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     self.currentlyAddingArtAnnotations = YES;
     [self.artConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *artAnnotationsToAdd = [NSMutableArray array];
-        [transaction enumerateKeysInCollection:[BRCArtObject collection] usingBlock:^(NSString *key, BOOL *stop) {
-            BRCArtObject *artObject = [transaction objectForKey:key inCollection:[BRCArtObject collection]];
+        [transaction enumerateKeysInCollection:[BRCArtObject yapCollection] usingBlock:^(NSString *key, BOOL *stop) {
+            BRCArtObject *artObject = [transaction objectForKey:key inCollection:[BRCArtObject yapCollection]];
 //            RMAnnotation *artAnnotation = [RMAnnotation brc_annotationWithMapView:self.mapView dataObject:artObject];
 //            // if artObject doesn't have a valid location, annotationWithMapView will
 //            // return nil for the artAnnotation
@@ -455,8 +455,8 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     
     [self.eventsConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSMutableArray *eventAnnotationsToAdd = [NSMutableArray array];
-        [transaction enumerateKeysInCollection:[BRCEventObject collection] usingBlock:^(NSString *key, BOOL *stop) {
-            BRCEventObject *eventObject = [transaction objectForKey:key inCollection:[BRCEventObject collection]];
+        [transaction enumerateKeysInCollection:[BRCEventObject yapCollection] usingBlock:^(NSString *key, BOOL *stop) {
+            BRCEventObject *eventObject = [transaction objectForKey:key inCollection:[BRCEventObject yapCollection]];
             
             //Check if event is currently happening or that the start time is in the next time window
 //            if([eventObject isHappeningRightNow:now] || [eventObject isStartingSoon:now]) {
@@ -929,7 +929,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
             [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
         }
         [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            [transaction setObject:dataObject forKey:dataObject.uniqueID inCollection:[[dataObject class] collection]];
+            [dataObject saveWithTransaction:transaction];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;
                 [event refreshCalendarEntry:transaction];
