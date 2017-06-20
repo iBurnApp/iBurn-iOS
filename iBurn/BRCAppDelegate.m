@@ -234,8 +234,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:completionHandler];
 }
 
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
-{
+- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler {
     if ([identifier isEqualToString:kBRCBackgroundFetchIdentifier]) {
         [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
     } else if ([identifier isEqualToString:self.audioDownloader.backgroundSessionIdentifier]) {

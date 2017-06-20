@@ -220,28 +220,8 @@ open class BRCSortedViewController: UITableViewController {
         
         let dataObject = sections[indexPath.section].objects[indexPath.row]
         
-        let dataObjectClass = type(of: dataObject)
-        let cellClass: (AnyClass!) = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: dataObjectClass)
-        let reuseIdentifier = cellClass.cellIdentifier()
-        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! BRCDataObjectTableViewCell
-        cell.setDataObject(dataObject)
-        cell.updateDistanceLabel(from: getCurrentLocation(), dataObject: dataObject)
-        cell.favoriteButtonAction = { (sender) -> Void in
-            let dataCopy = dataObject.copy() as! BRCDataObject
-            dataCopy.isFavorite = cell.favoriteButton.isSelected
-            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite({ (transaction: YapDatabaseReadWriteTransaction) -> Void in
-                transaction.setObject(dataCopy, forKey: dataCopy.uniqueID, inCollection: type(of: dataCopy).yapCollection)
-                if let event = dataCopy as? BRCEventObject {
-                    event.refreshCalendarEntry(transaction)
-                }
-                }, completionQueue:DispatchQueue.main, completionBlock: { () -> Void in
-                    self.refreshTableItems({ () -> Void in
-                        self.tableView.reloadData()
-                    })
-            })
-        }
-        if let artCell = cell as? BRCArtObjectTableViewCell {
-            artCell.configurePlayPauseButton(dataObject as! BRCArtObject)
+        guard let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: BRCDatabaseManager.shared.readWriteConnection) else {
+            return UITableViewCell()
         }
         return cell
     }

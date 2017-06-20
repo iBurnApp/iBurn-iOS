@@ -126,17 +126,27 @@ public class SearchDisplayManager: NSObject {
     fileprivate func dataObjectAtIndexPath(_ indexPath: IndexPath) -> BRCDataObject? {
         var dataObject: BRCDataObject? = nil
         longLivedReadConnection.read { transaction in
-            guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
-                DDLogWarn("Search view not ready \(self.viewName)")
-                return
-            }
-            dataObject = viewTransaction.object(at: indexPath, with: self.mappings) as? BRCDataObject
+            dataObject = BRCDataObject.object(at: indexPath, mappings: self.mappings, transaction: transaction, viewName: self.viewName)
         }
         return dataObject
     }
     
     private func refreshData() {
         tableViewController?.tableView.reloadData()
+    }
+}
+
+extension BRCDataObject {
+    static func object(at indexPath: IndexPath,
+                mappings: YapDatabaseViewMappings,
+                transaction: YapDatabaseReadTransaction,
+                viewName: String) -> BRCDataObject? {
+        guard let viewTransaction = transaction.ext(viewName) as? YapDatabaseViewTransaction else {
+            DDLogWarn("View not ready \(viewName)")
+            return nil
+        }
+        let dataObject = viewTransaction.object(at: indexPath, with: mappings) as? BRCDataObject
+        return dataObject
     }
 }
 
@@ -164,20 +174,32 @@ extension SearchDisplayManager: UITableViewDataSource {
             DDLogWarn("No object found!")
             return UITableViewCell()
         }
-        guard let cellClass = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: type(of: dataObject)) as? BRCDataObjectTableViewCell.Type else {
-            DDLogWarn("No cell class!")
+        guard let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: writeConnection) else {
             return UITableViewCell()
+        }
+        return cell
+    }
+}
+
+extension BRCDataObjectTableViewCell {
+    class func cell(at indexPath: IndexPath,
+                    tableView: UITableView,
+                    dataObject: BRCDataObject,
+                    writeConnection: YapDatabaseConnection) -> BRCDataObjectTableViewCell? {
+        guard let cellClass = BRCDataObjectTableViewCell.cellClass(for: dataObject) as? BRCDataObjectTableViewCell.Type else {
+            DDLogWarn("No cell class!")
+            return nil
         }
         let cellIdentifier = cellClass.cellIdentifier()
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? BRCDataObjectTableViewCell else {
             DDLogWarn("Couldnt dequeue cell of proper class!")
-            return UITableViewCell()
+            return nil
         }
         let currentLocation = BRCAppDelegate.shared.locationManager.location
         cell.setDataObject(dataObject)
         cell.updateDistanceLabel(from: currentLocation, dataObject: dataObject)
         cell.favoriteButtonAction = { sender in
-            self.writeConnection.readWrite { transaction in
+            writeConnection.readWrite { transaction in
                 guard let dataObject = dataObject.refetch(with: transaction) else { return }
                 dataObject.isFavorite = sender.favoriteButton.isSelected
                 dataObject.save(with: transaction)

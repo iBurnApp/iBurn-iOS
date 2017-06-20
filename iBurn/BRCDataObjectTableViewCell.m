@@ -71,6 +71,11 @@
     }
 }
 
++ (Class) cellClassForDataObject:(BRCDataObject *)dataObject {
+    return [self cellClassForDataObjectClass:dataObject.class];
+}
+    
+
 - (IBAction)favoriteButtonPressed:(id)sender {
     if (self.favoriteButton.selected) {
         [self.favoriteButton deselect];
