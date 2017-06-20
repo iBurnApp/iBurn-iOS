@@ -18,7 +18,6 @@
 
 @implementation BRCMapPoint
 @dynamic coordinate;
-@synthesize uuid = _uuid;
 
 /*
 {
@@ -64,25 +63,13 @@
 }
 
 - (instancetype) initWithTitle:(NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type {
-    if (self = [super init]) {
+    if (self = [super initWithYapKey:nil]) {
         _title = title;
         self.coordinate = coordinate;
-        _uuid = [[NSUUID UUID] UUIDString];
         _creationDate = [NSDate date];
         _type = type;
     }
     return self;
-}
-
-- (NSString*) uuid {
-    if (!_uuid) {
-        _uuid = [[NSUUID UUID] UUIDString];
-    }
-    return _uuid;
-}
-
-+ (NSString*) collection {
-    return NSStringFromClass([self class]);
 }
 
 - (CLLocationCoordinate2D) coordinate {
@@ -175,8 +162,12 @@
     }
 }
 
+- (NSString*) yapCollection {
+    return [self.class yapCollectionForType:self.type];
+}
+
 + (NSString*) yapCollectionForType:(BRCMapPointType)type {
-    NSString *collection = [[self classForType:type] collection];
+    NSString *collection = [[self classForType:type] yapCollection];
     return collection;
 }
 

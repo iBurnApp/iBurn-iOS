@@ -6,3 +6,4 @@
 #import "BRCDataImporter_Private.h"
 #import "BRCDataImportTests.h"
 #import "NSDateFormatter+iBurn.h"
+#import "iBurn-Bridging-Header.h"

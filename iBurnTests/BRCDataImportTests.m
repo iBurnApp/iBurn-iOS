@@ -138,7 +138,7 @@
     Class dataClass = [BRCRecurringEventObject class];
     [self loadDataFromFile:@"events.json" dataClass:dataClass];
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
-        [transaction enumerateKeysAndObjectsInCollection:[dataClass collection] usingBlock:^(NSString * __nonnull key, BRCEventObject *event, BOOL * __nonnull stop) {
+        [transaction enumerateKeysAndObjectsInCollection:[dataClass yapCollection] usingBlock:^(NSString * __nonnull key, BRCEventObject *event, BOOL * __nonnull stop) {
             XCTAssertNotNil(event.startDate);
             XCTAssertNotNil(event.endDate);
         }];
@@ -154,9 +154,9 @@
     Class dataClass = [BRCMapPoint class];
     [self loadDataFromFile:@"points.json" dataClass:dataClass];
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
-        NSUInteger numObjects = [transaction numberOfKeysInCollection:[dataClass collection]];
+        NSUInteger numObjects = [transaction numberOfKeysInCollection:[dataClass yapCollection]];
         XCTAssert(numObjects == 58);
-        [transaction enumerateKeysAndObjectsInCollection:[dataClass collection] usingBlock:^(NSString *key, BRCMapPoint *mapPoint, BOOL *stop) {
+        [transaction enumerateKeysAndObjectsInCollection:[dataClass yapCollection] usingBlock:^(NSString *key, BRCMapPoint *mapPoint, BOOL *stop) {
             XCTAssert(mapPoint.location != nil);
         }];
     }];
@@ -182,8 +182,8 @@
         __block NSArray *events1 = nil;
         
         [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            art1 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject collection]];
-            camp1 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject collection]];
+            art1 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject yapCollection]];
+            camp1 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject yapCollection]];
             
             art1.isFavorite = YES;
             camp1.isFavorite = YES;
@@ -192,11 +192,11 @@
             
             [events1 enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
                 event.isFavorite = YES;
-                [transaction setObject:event forKey:event.uniqueID inCollection:[BRCEventObject collection]];
+                [transaction setObject:event forKey:event.uniqueID inCollection:[BRCEventObject yapCollection]];
             }];
             
-            [transaction setObject:art1 forKey:art1.uniqueID inCollection:[BRCArtObject collection]];
-            [transaction setObject:camp1 forKey:camp1.uniqueID inCollection:[BRCCampObject collection]];
+            [transaction setObject:art1 forKey:art1.uniqueID inCollection:[BRCArtObject yapCollection]];
+            [transaction setObject:camp1 forKey:camp1.uniqueID inCollection:[BRCCampObject yapCollection]];
         }];
         
         XCTAssertNotNil(art1);
@@ -228,8 +228,8 @@
             __block NSArray *events2 = nil;
             
             [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
-                art2 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject collection]];
-                camp2 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject collection]];
+                art2 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject yapCollection]];
+                camp2 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject yapCollection]];
                 events2 = [camp2 eventsWithTransaction:transaction];
             }];
             
@@ -270,7 +270,7 @@
     [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
-    NSString *folderName = @"2015";
+    NSString *folderName = @"2016";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
     
@@ -283,7 +283,7 @@
         dataClass = [BRCEventObject class];
     }
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
-        NSUInteger count = [transaction numberOfKeysInCollection:[dataClass collection]];
+        NSUInteger count = [transaction numberOfKeysInCollection:[dataClass yapCollection]];
         XCTAssert(count > 0, @"Count shouldnt be empty!");
         NSLog(@"Loaded %d %@", (int)count, NSStringFromClass(dataClass));
     }];

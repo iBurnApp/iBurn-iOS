@@ -32,6 +32,7 @@ public class MapViewController: BaseMapViewController {
         super.init()
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
+        setupSearch(search)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -46,8 +47,7 @@ public class MapViewController: BaseMapViewController {
         let bottom = sidebarButtons.autoPinEdge(toSuperviewMargin: .bottom)
         bottom.constant = -50
         sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
-        sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 200))
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Search", style: .plain, target: self, action: #selector(searchButtonPressed(_:)))
+        sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 250))
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -57,14 +57,18 @@ public class MapViewController: BaseMapViewController {
     
     // MARK: - User Interaction
     
-    func searchButtonPressed(_ sender: Any) {
-        present(search.searchController, animated: true, completion: nil)
+    private func setupSearch(_ search: SearchDisplayManager) {
+        search.selectedObjectAction = { [weak self] object in
+            let detail = BRCDetailViewController(dataObject: object)
+            self?.navigationController?.pushViewController(detail, animated: false)
+            search.searchController.dismiss(animated: true, completion: nil)
+        }
     }
     
     // MARK: - Annotations
     
     private func setupUserGuide() {
-        sidebarButtons.findNearest = { [weak self] mapPointType, sender in
+        sidebarButtons.findNearestAction = { [weak self] mapPointType, sender in
             guard let location = self?.mapView.userLocation?.location else {
                 DDLogWarn("User location not found!")
                 return
@@ -79,19 +83,21 @@ public class MapViewController: BaseMapViewController {
                 }
             }
         }
-        sidebarButtons.placePin = { [weak self] sender in
+        sidebarButtons.placePinAction = { [weak self] sender in
             self?.addUserMapPoint(type: .userStar)
         }
         mapViewDelegate.saveMapPoint = { [weak self] mapPoint in
             self?.writeConnection.readWrite { transaction in
-                let key = mapPoint.uuid
-                let collection = type(of: mapPoint).collection
-                transaction.setObject(mapPoint, forKey: key, inCollection: collection)
+                mapPoint.save(with: transaction)
             }
             self?.mapViewDelegate.editingAnnotation = nil
             self?.mapView.removeAnnotation(mapPoint)
             DDLogInfo("Saved user annotation: \(mapPoint)")
             self?.reloadUserAnnotations()
+        }
+        sidebarButtons.searchAction = { [weak self] sender in
+            guard let strongSelf = self else { return }
+            strongSelf.present(strongSelf.search.searchController, animated: true, completion: nil)
         }
     }
     
@@ -99,7 +105,7 @@ public class MapViewController: BaseMapViewController {
         mapView.removeAnnotations(userAnnotations)
         userAnnotations = []
         readConnection.asyncRead({ transaction in
-            transaction.enumerateKeysAndObjects(inCollection: BRCUserMapPoint.collection, using: { (key, object, stop) in
+            transaction.enumerateKeysAndObjects(inCollection: BRCUserMapPoint.yapCollection, using: { (key, object, stop) in
                 if let mapPoint = object as? BRCUserMapPoint {
                     self.userAnnotations.append(mapPoint)
                 }

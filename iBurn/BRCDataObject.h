@@ -10,31 +10,12 @@
 @import CoreLocation;
 @import Mapbox;
 @import YapDatabase;
+#import "BRCYapDatabaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol BRCYapDatabaseObjectProtocol <NSObject, NSCoding, NSCopying>
-@required
-/**
- * Unique YapDatabase key for this object.
- */
-@property (nonatomic, readonly) NSString *yapKey;
-/**
- *  The YapDatabase collection of this class
- *
- *  @return collection for this class
- */
-@property (nonatomic, class, readonly) NSString *yapCollection;
 
-- (void)touchWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
-- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
-- (void)removeWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
-/** This will fetch an updated (copied) instance of the object. If nil, it means it was deleted or not present in the db. */
-- (nullable instancetype)refetchWithTransaction:(YapDatabaseReadTransaction *)transaction;
 
-+ (nullable instancetype)fetchObjectWithYapKey:(NSString*)yapKey transaction:(YapDatabaseReadTransaction*)transaction;
-@end
-
-@interface BRCDataObject : MTLModel <MTLJSONSerializing, MGLAnnotation, BRCYapDatabaseObjectProtocol>
+@interface BRCDataObject : BRCYapDatabaseObject <MTLJSONSerializing, MGLAnnotation>
 
 #pragma mark Mutable Properties
 

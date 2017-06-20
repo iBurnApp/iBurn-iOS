@@ -578,7 +578,7 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
     }
     currentLocation = [currentLocation copy];
     Class pointClass = [BRCMapPoint classForType:type];
-    NSString *yapCollection = [pointClass collection];
+    NSString *yapCollection = [pointClass yapCollection];
     __block BRCMapPoint *closestPoint = nil;
     [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * transaction) {
         NSMutableArray *distances = [NSMutableArray array];

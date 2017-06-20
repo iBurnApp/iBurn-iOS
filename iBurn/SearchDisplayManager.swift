@@ -26,15 +26,34 @@ public extension UITableView {
     }
 }
 
+extension YapDatabaseViewMappings {
+    class func basicMappings(viewName: String) -> YapDatabaseViewMappings {
+        let groupFilter: YapDatabaseViewMappingGroupFilter = { (group, transaction) -> Bool in
+            return true
+        }
+        let groupSort: YapDatabaseViewMappingGroupSort = { (group1, group2, transaction) -> ComparisonResult in
+            return group1.compare(group2)
+        }
+        let mappings = YapDatabaseViewMappings(groupFilterBlock: groupFilter, sortBlock: groupSort, view: viewName)
+        return mappings
+    }
+}
+
 public class SearchDisplayManager: NSObject {
     let viewName: String
-    let searchController: UISearchController
+    public let searchController: UISearchController
     let mappings: YapDatabaseViewMappings
     let longLivedReadConnection: YapDatabaseConnection
     let readConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
     let searchConnection: YapDatabaseConnection
     let searchQueue = YapDatabaseSearchQueue()
+    
+    private var tableViewController: UITableViewController? {
+        return searchController.searchResultsController as? UITableViewController
+    }
+    
+    public var selectedObjectAction: (_ selected: BRCDataObject) -> Void
     
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -51,33 +70,45 @@ public class SearchDisplayManager: NSObject {
         searchConnection = BRCDatabaseManager.shared.database.newConnection()
         
         // Setup mappings
-        let groupFilter: YapDatabaseViewMappingGroupFilter = { (group, transaction) -> Bool in
-            return true
-        }
-        let groupSort: YapDatabaseViewMappingGroupSort = { (group1, group2, transaction) -> ComparisonResult in
-            return group1.compare(group2)
-        }
-        mappings = YapDatabaseViewMappings(groupFilterBlock: groupFilter, sortBlock: groupSort, view: viewName)
+        mappings = YapDatabaseViewMappings.basicMappings(viewName: viewName)
         
         // Setup UISearchController
         let src = UITableViewController(style: .plain)
-        src.tableView.registerCustomCellClasses()
-        src.tableView.estimatedRowHeight = 120
-        src.tableView.rowHeight = UITableViewAutomaticDimension
         searchController = UISearchController(searchResultsController: src)
-        searchController.dimsBackgroundDuringPresentation = false
-        searchController.hidesNavigationBarDuringPresentation = false
+        selectedObjectAction = {_ in }
         
         super.init()
+        setupDefaults(for: src.tableView)
+        setupDefaults(for: searchController)
         longLivedReadConnection.read { transaction in
             self.mappings.update(with: transaction)
         }
+        setupNotifications()
+    }
+    
+    private func setupNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(yapDatabaseModified(_:)), name: NSNotification.Name.YapDatabaseModified, object: BRCDatabaseManager.shared.database)
+        NotificationCenter.default.addObserver(self, selector: #selector(audioPlayerChangeNotification(_:)), name: NSNotification.Name(rawValue: BRCAudioPlayer.BRCAudioPlayerChangeNotification), object: BRCAudioPlayer.sharedInstance)
+    }
+    
+    private func setupDefaults(for tableView: UITableView) {
+        tableView.registerCustomCellClasses()
+        tableView.estimatedRowHeight = 120
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+    
+    private func setupDefaults(for searchController: UISearchController) {
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.delegate = self
         searchController.searchResultsUpdater = self
         searchController.delegate = self
-        src.tableView.delegate = self
-        src.tableView.dataSource = self
+    }
+    
+    func audioPlayerChangeNotification(_ notification: Notification) {
+        refreshData()
     }
     
     func yapDatabaseModified(_ notification: Notification) {
@@ -86,16 +117,13 @@ public class SearchDisplayManager: NSObject {
             self.mappings.update(with: transaction)
         }
         guard notifications.count > 0 else {
-            DDLogVerbose("Nothing to see here folks...")
             return
         }
-        if let src = searchController.searchResultsController as? UITableViewController {
-            src.tableView.reloadData()
-        }
+        refreshData()
         // TODO: fix animations
     }
     
-    func dataObjectAtIndexPath(_ indexPath: IndexPath) -> BRCDataObject? {
+    fileprivate func dataObjectAtIndexPath(_ indexPath: IndexPath) -> BRCDataObject? {
         var dataObject: BRCDataObject? = nil
         longLivedReadConnection.read { transaction in
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
@@ -105,6 +133,10 @@ public class SearchDisplayManager: NSObject {
             dataObject = viewTransaction.object(at: indexPath, with: self.mappings) as? BRCDataObject
         }
         return dataObject
+    }
+    
+    private func refreshData() {
+        tableViewController?.tableView.reloadData()
     }
 }
 
@@ -118,10 +150,8 @@ extension SearchDisplayManager: UITableViewDelegate {
             DDLogWarn("No object found!")
             return
         }
-        // TODO: push detail view
-        DDLogInfo("Push detail view here for \(dataObject)")
+        selectedObjectAction(dataObject)
     }
-    
 }
 
 extension SearchDisplayManager: UITableViewDataSource {
@@ -139,22 +169,25 @@ extension SearchDisplayManager: UITableViewDataSource {
             return UITableViewCell()
         }
         let cellIdentifier = cellClass.cellIdentifier()
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier) as? BRCDataObjectTableViewCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? BRCDataObjectTableViewCell else {
             DDLogWarn("Couldnt dequeue cell of proper class!")
             return UITableViewCell()
         }
         let currentLocation = BRCAppDelegate.shared.locationManager.location
+        cell.setDataObject(dataObject)
         cell.updateDistanceLabel(from: currentLocation, dataObject: dataObject)
         cell.favoriteButtonAction = { sender in
-            dataObject.isFavorite = sender.favoriteButton.isSelected
             self.writeConnection.readWrite { transaction in
-                
+                guard let dataObject = dataObject.refetch(with: transaction) else { return }
+                dataObject.isFavorite = sender.favoriteButton.isSelected
+                dataObject.save(with: transaction)
             }
+        }
+        if let artCell = cell as? BRCArtObjectTableViewCell, let art = dataObject as? BRCArtObject {
+            artCell.configurePlayPauseButton(art)
         }
         return cell
     }
-    
-    
 }
 
 extension SearchDisplayManager: UISearchResultsUpdating {

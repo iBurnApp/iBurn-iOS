@@ -253,11 +253,11 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
     // deal with them and return
     if ([dataClass isSubclassOfClass:[BRCMapPoint class]]) {
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            [transaction removeAllObjectsInCollection:[BRCMapPoint collection]]; // remove non-user generated map points
+            [transaction removeAllObjectsInCollection:[BRCMapPoint yapCollection]]; // remove non-user generated map points
             [objects enumerateObjectsUsingBlock:^(BRCMapPoint *mapPoint, NSUInteger idx, BOOL *stop) {
-                [transaction setObject:mapPoint forKey:mapPoint.uuid inCollection:[[mapPoint class] collection]];
+                [mapPoint saveWithTransaction:transaction];
                 updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
-                [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
+                [updateInfo saveWithTransaction:transaction];
             }];
         }];
         if (objects.count > 0) {
@@ -321,7 +321,7 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
         
         // This is the worst way of removing outdated data
         NSMutableArray<BRCDataObject*> *objectsToRemove = [NSMutableArray array];
-        [transaction enumerateKeysAndObjectsInCollection:[dataClass collection] usingBlock:^(NSString * _Nonnull key, id  _Nonnull object, BOOL * _Nonnull stop) {
+        [transaction enumerateKeysAndObjectsInCollection:[dataClass yapCollection] usingBlock:^(NSString * _Nonnull key, id  _Nonnull object, BOOL * _Nonnull stop) {
             if ([object isKindOfClass:[BRCDataObject class]]) {
                 BRCDataObject *dataObject = object;
                 if (![dataObject.lastUpdated isEqualToDate:updateInfo.lastUpdated]) {

@@ -13,14 +13,17 @@ import CocoaLumberjack
 
 class SidebarButtonsView: UIView {
     enum ButtonType {
+        case search
         case pin
         case potty
         case bike
         case home
         case medical
-        static let allTypes: [ButtonType] = [.pin, .potty, .bike, .home, .medical]
+        static let allTypes: [ButtonType] = [.search, .pin, .potty, .bike, .home, .medical]
         var icon: FAIcon {
             switch self {
+            case .search:
+                return FAIcon.FASearch
             case .pin:
                 return FAIcon.FAMapMarker
             case .potty:
@@ -35,6 +38,8 @@ class SidebarButtonsView: UIView {
         }
         var mapPointType: BRCMapPointType? {
             switch self {
+            case .search:
+                return nil
             case .pin:
                 return nil
             case .potty:
@@ -50,8 +55,9 @@ class SidebarButtonsView: UIView {
     }
     private var buttons: [BButton : ButtonType] = [:]
     
-    public var findNearest: ((_ mapPointType: BRCMapPointType, _ sender: BButton) -> Void)?
-    public var placePin: ((_ sender: BButton) -> Void)?
+    public var findNearestAction: ((_ mapPointType: BRCMapPointType, _ sender: BButton) -> Void)?
+    public var placePinAction: ((_ sender: BButton) -> Void)?
+    public var searchAction: ((_ sender: BButton) -> Void)?
     
     init() {
         super.init(frame: CGRect.zero)
@@ -61,7 +67,7 @@ class SidebarButtonsView: UIView {
             let icon = type.icon
             guard let button = BButton(frame: frame, type: .default, style: .bootstrapV3, icon: icon, fontSize: 20) else { return }
             button.alpha = 0.8
-            button.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
+            button.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchUpInside)
             views.append(button)
             buttons[button] = type
         }
@@ -73,18 +79,22 @@ class SidebarButtonsView: UIView {
         stackView.autoPinEdgesToSuperviewEdges()
     }
     
-    @objc private func buttonPressed(sender: BButton) {
+    @objc private func buttonPressed(_ sender: BButton) {
         guard let buttonType = buttons[sender] else {
             DDLogError("Button type not found!")
             return
         }
         if let mapPointType = buttonType.mapPointType {
-            if let findNearest = findNearest {
+            if let findNearest = findNearestAction {
                 findNearest(mapPointType, sender)
             }
         } else if buttonType == .pin {
-            if let placePin = placePin {
+            if let placePin = placePinAction {
                 placePin(sender)
+            }
+        } else if buttonType == .search {
+            if let search = searchAction {
+                search(sender)
             }
         }
     }

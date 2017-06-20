@@ -152,7 +152,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         [PFAnalytics brc_trackEventInBackground:@"Favorite" object:self.dataObject];
     }
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [transaction setObject:tempObject forKey:tempObject.uniqueID inCollection:[[tempObject class] collection]];
+        [tempObject saveWithTransaction:transaction];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *event = (BRCEventObject*)tempObject;
             [event refreshCalendarEntry:transaction];
@@ -273,7 +273,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
         __block BRCDataObject *dataObject = nil;
         [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            dataObject = [transaction objectForKey:relationshipCellInfo.dataObject.uniqueID inCollection:[[relationshipCellInfo.dataObject class]collection]];
+            dataObject = [relationshipCellInfo.dataObject refetchWithTransaction:transaction];
         }];
         BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
         [self.navigationController pushViewController:detailVC animated:YES];

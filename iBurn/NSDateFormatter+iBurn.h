@@ -8,32 +8,35 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSTimeZone (iBurn)
 
 /** PST */
-+ (NSTimeZone*) brc_burningManTimeZone;
+@property (nonatomic, class, readonly) NSTimeZone *brc_burningManTimeZone;
 
 @end
 
 @interface NSDateFormatter (iBurn)
 
 /** e.g. 2015-09-04T11:00:00-07:00 */
-+ (NSDateFormatter*) brc_playaEventsAPIDateFormatter;
+@property (nonatomic, class, readonly) NSDateFormatter* brc_playaEventsAPIDateFormatter;
 
 /** e.g. 2015-09-04 11 */
-+ (NSDateFormatter*) brc_eventGroupHourlyDateFormatter;
+@property (nonatomic, class, readonly) NSDateFormatter* brc_eventGroupHourlyDateFormatter;
 
 /** e.g. 2015-09-04 */
-+ (NSDateFormatter*) brc_eventGroupDateFormatter;
+@property (nonatomic, class, readonly) NSDateFormatter* brc_eventGroupDateFormatter;
 
 /** e.g. 4:19 AM */
-+ (NSDateFormatter*) brc_timeOnlyDateFormatter;
+@property (nonatomic, class, readonly) NSDateFormatter* brc_timeOnlyDateFormatter;
 
 /** e.g. Monday */
-+ (NSDateFormatter*) brc_dayOfWeekDateFormatter;
+@property (nonatomic, class, readonly) NSDateFormatter* brc_dayOfWeekDateFormatter;
 
 /** e.g. 8/23 */
-+ (NSDateFormatter*) brc_shortDateFormatter;
-
+@property (nonatomic, class, readonly) NSDateFormatter* brc_shortDateFormatter;
 
 @end
+
+NS_ASSUME_NONNULL_END

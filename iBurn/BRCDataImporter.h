@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <YapDatabase/YapDatabase.h>
+@import UIKit;
 
 @class BRCUpdateInfo;
 

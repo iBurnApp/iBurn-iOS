@@ -77,10 +77,6 @@ static NSString * const kBRCUpdateTypePoints = @"points";
     return BRCUpdateDataTypeUnknown;
 }
 
-+ (NSString*) yapCollection {
-    return NSStringFromClass([self class]);
-}
-
 /** Converts from updates.json keys */
 + (BRCUpdateDataType) dataTypeFromString:(NSString*)dataTypeString {
     if (!dataTypeString) {
@@ -132,7 +128,6 @@ static NSString * const kBRCUpdateTypePoints = @"points";
 
 + (NSString*) yapKeyForDataType:(BRCUpdateDataType)dataType {
     NSString *yapKey = [self stringFromDataType:dataType];
-    NSParameterAssert(yapKey != nil);
     return yapKey;
 }
 

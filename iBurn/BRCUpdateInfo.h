@@ -7,6 +7,8 @@
 //
 
 #import <Mantle/Mantle.h>
+#import "BRCDataObject.h"
+#import "BRCYapDatabaseObject.h"
 
 typedef NS_ENUM(NSUInteger, BRCUpdateDataType) {
     BRCUpdateDataTypeUnknown,
@@ -24,8 +26,9 @@ typedef NS_ENUM(NSUInteger, BRCUpdateFetchStatus) {
     BRCUpdateFetchStatusComplete
 };
 
+NS_ASSUME_NONNULL_BEGIN
 /** Metadata parsed from update.json */
-@interface BRCUpdateInfo : MTLModel <MTLJSONSerializing>
+@interface BRCUpdateInfo : BRCYapDatabaseObject <MTLJSONSerializing>
 
 @property (nonatomic, strong, readonly) NSString *fileName;
 @property (nonatomic, strong, readonly) NSDate *lastUpdated;
@@ -35,24 +38,16 @@ typedef NS_ENUM(NSUInteger, BRCUpdateFetchStatus) {
 
 /** Returns MTLModel subclass for dataType. Not valid for
  * tiles of course. */
-- (Class) dataObjectClass;
-
-- (NSString*) yapKey;
-
-/**
- *  The YapDatabase collection of this class
- *
- *  @return collection for this class
- */
-+ (NSString*) yapCollection;
+- (nullable Class) dataObjectClass;
 
 /** Converts from updates.json keys */
 + (BRCUpdateDataType) dataTypeFromString:(NSString*)dataTypeString;
 + (BRCUpdateDataType) dataTypeForClass:(Class)dataObjectClass;
-+ (NSString*) stringFromDataType:(BRCUpdateDataType)dataType;
++ (nullable NSString*) stringFromDataType:(BRCUpdateDataType)dataType;
 
 /** Return yapKey for a subclass of BRCDataObject */
-+ (NSString*) yapKeyForClass:(Class)dataObjectClass;
-+ (NSString*) yapKeyForDataType:(BRCUpdateDataType)dataType;
++ (nullable NSString*) yapKeyForClass:(Class)dataObjectClass;
++ (nullable NSString*) yapKeyForDataType:(BRCUpdateDataType)dataType;
 
 @end
+NS_ASSUME_NONNULL_END

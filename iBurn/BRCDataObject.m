@@ -71,10 +71,7 @@
     return [NSValueTransformer valueTransformerForName:MTLURLValueTransformerName];
 }
 
-+ (NSString *)yapCollection
-{
-    return NSStringFromClass(self.class);
-}
+
 
 - (CLLocationDistance) distanceFromLocation:(CLLocation*)location {
     CLLocation *objectLocation = self.location;
@@ -110,39 +107,6 @@
 
 - (NSString*) yapKey {
     return _uniqueID;
-}
-
-- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction
-{
-    [transaction setObject:self forKey:self.yapKey inCollection:self.class.yapCollection];
-}
-
-- (void)removeWithTransaction:(YapDatabaseReadWriteTransaction *)transaction
-{
-    [transaction removeObjectForKey:self.yapKey inCollection:self.class.yapCollection];
-}
-
-- (void)touchWithTransaction:(YapDatabaseReadWriteTransaction *)transaction {
-    [transaction touchObjectForKey:self.yapKey inCollection:self.class.yapCollection];
-}
-
-/** This will fetch an updated instance of the object */
-- (nullable instancetype)refetchWithTransaction:(nonnull YapDatabaseReadTransaction *)transaction {
-    id object = [self.class fetchObjectWithYapKey:self.yapKey transaction:transaction];
-    return object;
-}
-
-+ (nullable instancetype) fetchObjectWithYapKey:(NSString *)yapKey transaction:(YapDatabaseReadTransaction *)transaction {
-    NSParameterAssert(yapKey);
-    NSParameterAssert(transaction);
-    if (!yapKey || !transaction) {
-        return nil;
-    }
-    id object = [transaction objectForKey:yapKey inCollection:self.yapCollection];
-    if ([object isKindOfClass:self]) {
-        return object;
-    }
-    return nil;
 }
 
 @end

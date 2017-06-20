@@ -42,9 +42,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-            BuildableName = "iBurnTests.xctest"
-            BlueprintName = "iBurnTests"
+            BlueprintIdentifier = "63CE2A531987140F00F65B01"
+            BuildableName = "iBurn.app"
+            BlueprintName = "iBurn"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -61,15 +61,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-            BuildableName = "iBurnTests.xctest"
-            BlueprintName = "iBurnTests"
-            ReferencedContainer = "container:iBurn.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

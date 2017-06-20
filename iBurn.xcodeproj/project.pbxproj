@@ -82,6 +82,7 @@
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B9199AB5320093B441 /* BRCMapPoint.m */; };
+		D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */; };
 		D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */; };
 		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
 		D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */; };
@@ -271,6 +272,8 @@
 		D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSocialButtonsView.m; sourceTree = "<group>"; };
 		D9B362B8199AB5320093B441 /* BRCMapPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapPoint.h; sourceTree = "<group>"; };
 		D9B362B9199AB5320093B441 /* BRCMapPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapPoint.m; sourceTree = "<group>"; };
+		D9B69D8F1EF8D8B100E2996D /* BRCYapDatabaseObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCYapDatabaseObject.h; sourceTree = "<group>"; };
+		D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCYapDatabaseObject.m; sourceTree = "<group>"; };
 		D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCNearbyViewController.swift; sourceTree = "<group>"; };
 		D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCCreditsInfo.h; sourceTree = "<group>"; };
 		D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCCreditsInfo.m; sourceTree = "<group>"; };
@@ -682,6 +685,8 @@
 				D994157E1987399F00D245C7 /* BRCEventTime.m */,
 				D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */,
 				D99415621987222800D245C7 /* BRCDataObject.h */,
+				D9B69D8F1EF8D8B100E2996D /* BRCYapDatabaseObject.h */,
+				D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */,
 				D99415631987222800D245C7 /* BRCDataObject.m */,
 				D9914C541B40D7B700F90663 /* iBurn Update API */,
 				D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */,
@@ -997,6 +1002,7 @@
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */,
+				D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */,
 				D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */,
 				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
@@ -1126,7 +1132,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1171,7 +1177,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LLVM_LTO = YES;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -1255,7 +1261,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = iBurnTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";
@@ -1285,7 +1291,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = iBurnTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";

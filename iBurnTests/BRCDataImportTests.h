@@ -9,6 +9,7 @@
 @import UIKit;
 @import XCTest;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCDataImportTests : XCTestCase
 @property (nonatomic, strong, readonly) BRCDataImporter *importer;
 @property (nonatomic, strong, readonly) YapDatabase *database;
@@ -21,3 +22,4 @@
 + (NSURL*) testDataURLForDirectory:(NSString*)directory;
 
 @end
+NS_ASSUME_NONNULL_END

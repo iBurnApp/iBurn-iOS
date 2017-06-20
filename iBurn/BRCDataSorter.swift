@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import YapDatabase
 
-open class BRCDataSorterOptions {
+public class BRCDataSorterOptions {
     open var showExpiredEvents: Bool
     open var showFutureEvents: Bool
     /** Default true. Puts expired events at bottom. */
@@ -31,7 +32,7 @@ open class BRCDataSorterOptions {
  * For "smart sorting" big arrays of BRCDataObjects into events, art, and camps.
  * Used by Nearby and Favorites screen.
  */
-open class BRCDataSorter: NSObject {
+public class BRCDataSorter: NSObject {
     open static func sortDataObjects(
         _ objects: [BRCDataObject],
         options: BRCDataSorterOptions?,

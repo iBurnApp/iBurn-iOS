@@ -9,6 +9,7 @@
 @import Mantle;
 @import CoreLocation;
 @import Mapbox;
+#import "BRCYapDatabaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -61,10 +62,9 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
  
  */
 
-@interface BRCMapPoint : MTLModel <MTLJSONSerializing, MGLAnnotation>
+@interface BRCMapPoint : BRCYapDatabaseObject <MTLJSONSerializing, MGLAnnotation>
 
 /** yap key */
-@property (nonatomic, strong, readonly) NSString *uuid;
 @property (nonatomic, strong, readwrite) NSDate *creationDate;
 
 @property (nonatomic, copy, nullable, readwrite) NSString *title;
@@ -76,9 +76,6 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 - (instancetype) initWithTitle:(nullable NSString*)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type NS_DESIGNATED_INITIALIZER;
 
 - (instancetype) init NS_UNAVAILABLE;
-
-/** yap collection */
-@property (nonatomic, class, readonly) NSString *collection;
 
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type;
