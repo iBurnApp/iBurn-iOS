@@ -31,10 +31,7 @@
 #import "BRCGeocoder.h"
 #import "BRCUserMapPoint.h"
 #import <KVOController/NSObject+FBKVOController.h>
-#import <Parse/Parse.h>
-#import "PFAnalytics+iBurn.h"
-@import YapDatabase.YapDatabaseView;
-@import YapDatabase.YapDatabaseFullTextSearch;
+@import YapDatabase;
 #import "iBurn-Swift.h"
 #import "BRCArtObject.h"
 #import "BRCArtObjectTableViewCell.h"
@@ -273,7 +270,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [PFAnalytics trackEventInBackground:@"Map" block:nil];
     [self reloadAllAnnotations];
     [self.view bringSubviewToFront:self.addMapPointButton];
     // kludge to fix keyboard appearing at wrong time
@@ -924,10 +920,6 @@ static const float kBRCMapViewCampsMinZoomLevel = 17.0f;
         NSIndexPath *indexPath = [tableView indexPathForCell:sender];
         BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
         dataObject.isFavorite = sender.favoriteButton.selected;
-        // not the best place to do this
-        if (dataObject.isFavorite) {
-            [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
-        }
         [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             [dataObject saveWithTransaction:transaction];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {

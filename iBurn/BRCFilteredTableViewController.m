@@ -1,4 +1,4 @@
- //
+  //
 //  BRCFilteredTableViewController.m
 //  iBurn
 //
@@ -20,8 +20,6 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCEventObject.h"
 #import "BRCAppDelegate.h"
-#import <Parse/Parse.h>
-#import "PFAnalytics+iBurn.h"
 #import "BRCArtObjectTableViewCell.h"
 #import "iBurn-Swift.h"
 @import AVFoundation;
@@ -273,7 +271,6 @@
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self updateViewConstraints];
-    [PFAnalytics trackEventInBackground:self.title block:nil];
 }
 
 - (void) audioPlayerChangedNotification:(NSNotification*)notification {
@@ -331,10 +328,6 @@
         NSIndexPath *indexPath = [tableView indexPathForCell:sender];
         BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
         dataObject.isFavorite = sender.favoriteButton.selected;
-        // not the best place to do this
-        if (dataObject.isFavorite) {
-            [PFAnalytics brc_trackEventInBackground:@"Favorite" object:dataObject];
-        }
         [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             [dataObject saveWithTransaction:transaction];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {

@@ -87,9 +87,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 //                                                         liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
 //    [[BITHockeyManager sharedHockeyManager] startManager];
     
-    [Parse setApplicationId:kBRCParseApplicationId
-                  clientKey:kBRCParseClientKey];
-    
     [MGLAccountManager setAccessToken:kBRCMapBoxAccessToken];
     
     [PFNetworkActivityIndicatorManager sharedManager].enabled = NO;

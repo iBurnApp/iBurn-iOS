@@ -12,9 +12,6 @@ extern NSString * const kBRCEmbargoPasscodeSHA256Hash;
 /** This URL is secret due to BMorg restrictions on placement data */
 extern NSString * const kBRCUpdatesURLString;
 
-extern NSString * const kBRCParseApplicationId;
-extern NSString * const kBRCParseClientKey;
-
 extern NSString * const kBRCMapBoxAccessToken;
 extern NSString * const kBRCMapBoxStyleURL;
 NS_ASSUME_NONNULL_END

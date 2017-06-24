@@ -29,7 +29,6 @@
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
-		D90132071B7C685D007A11B8 /* PFAnalytics+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D90132061B7C685D007A11B8 /* PFAnalytics+iBurn.m */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
@@ -169,8 +168,6 @@
 		AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
-		D90132051B7C685D007A11B8 /* PFAnalytics+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "PFAnalytics+iBurn.h"; sourceTree = "<group>"; };
-		D90132061B7C685D007A11B8 /* PFAnalytics+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "PFAnalytics+iBurn.m"; sourceTree = "<group>"; };
 		D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorter.swift; sourceTree = "<group>"; };
 		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
@@ -551,8 +548,6 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
-				D90132051B7C685D007A11B8 /* PFAnalytics+iBurn.h */,
-				D90132061B7C685D007A11B8 /* PFAnalytics+iBurn.m */,
 				D9BD4C061B787A4400313FB5 /* NSBundle+iBurn.h */,
 				D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */,
 				D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */,
@@ -1015,7 +1010,6 @@
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
-				D90132071B7C685D007A11B8 /* PFAnalytics+iBurn.m in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,

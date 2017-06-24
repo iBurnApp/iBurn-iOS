@@ -21,8 +21,6 @@
 #import "BRCEventObject.h"
 #import "BRCLocations.h"
 #import "BRCAppDelegate.h"
-#import <Parse/Parse.h>
-#import "PFAnalytics+iBurn.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import "iBurn-Swift.h"
 @import JTSImageViewController;
@@ -80,7 +78,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [PFAnalytics brc_trackEventInBackground:@"Detail" object:self.dataObject];
 }
 
 - (void)viewDidLoad
@@ -148,9 +145,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
     BRCDataObject *tempObject = [self.dataObject copy];
     tempObject.isFavorite = !tempObject.isFavorite;
     self.dataObject = tempObject;
-    if (self.dataObject.isFavorite) {
-        [PFAnalytics brc_trackEventInBackground:@"Favorite" object:self.dataObject];
-    }
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [tempObject saveWithTransaction:transaction];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {

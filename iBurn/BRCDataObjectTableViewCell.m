@@ -14,10 +14,8 @@
 #import "BRCEventObjectTableViewCell.h"
 #import "BRCArtObjectTableViewCell.h"
 #import "BRCDatabaseManager.h"
-#import "PFAnalytics+iBurn.h"
 #import "BRCEmbargo.h"
 #import <Mantle/Mantle.h>
-#import <Parse/Parse.h>
 
 @implementation BRCDataObjectTableViewCell
 
