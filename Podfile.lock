@@ -2,7 +2,6 @@ PODS:
   - Appirater (2.1.2)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - Bolts/Tasks (1.8.4)
   - CocoaLumberjack (3.2.0):
     - CocoaLumberjack/Default (= 3.2.0)
     - CocoaLumberjack/Extensions (= 3.2.0)
@@ -21,49 +20,49 @@ PODS:
     - FormatterKit/Resources
   - JSQWebViewController (5.0.0)
   - JTSImageViewController (1.5.1)
-  - KSCrash (1.15.9):
-    - KSCrash/Installations (= 1.15.9)
-  - KSCrash/Installations (1.15.9):
+  - KSCrash (1.15.11):
+    - KSCrash/Installations (= 1.15.11)
+  - KSCrash/Installations (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting
-  - KSCrash/Recording (1.15.9):
-    - KSCrash/Recording/Tools (= 1.15.9)
-  - KSCrash/Recording/Tools (1.15.9)
-  - KSCrash/Reporting (1.15.9):
+  - KSCrash/Recording (1.15.11):
+    - KSCrash/Recording/Tools (= 1.15.11)
+  - KSCrash/Recording/Tools (1.15.11)
+  - KSCrash/Reporting (1.15.11):
     - KSCrash/Recording
-    - KSCrash/Reporting/Filters (= 1.15.9)
-    - KSCrash/Reporting/MessageUI (= 1.15.9)
-    - KSCrash/Reporting/Sinks (= 1.15.9)
-    - KSCrash/Reporting/Tools (= 1.15.9)
-  - KSCrash/Reporting/Filters (1.15.9):
+    - KSCrash/Reporting/Filters (= 1.15.11)
+    - KSCrash/Reporting/MessageUI (= 1.15.11)
+    - KSCrash/Reporting/Sinks (= 1.15.11)
+    - KSCrash/Reporting/Tools (= 1.15.11)
+  - KSCrash/Reporting/Filters (1.15.11):
     - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Alert (= 1.15.9)
-    - KSCrash/Reporting/Filters/AppleFmt (= 1.15.9)
-    - KSCrash/Reporting/Filters/Base (= 1.15.9)
-    - KSCrash/Reporting/Filters/Basic (= 1.15.9)
-    - KSCrash/Reporting/Filters/GZip (= 1.15.9)
-    - KSCrash/Reporting/Filters/JSON (= 1.15.9)
-    - KSCrash/Reporting/Filters/Sets (= 1.15.9)
-    - KSCrash/Reporting/Filters/Stringify (= 1.15.9)
-    - KSCrash/Reporting/Filters/Tools (= 1.15.9)
-  - KSCrash/Reporting/Filters/Alert (1.15.9):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/AppleFmt (1.15.9):
+    - KSCrash/Reporting/Filters/Alert (= 1.15.11)
+    - KSCrash/Reporting/Filters/AppleFmt (= 1.15.11)
+    - KSCrash/Reporting/Filters/Base (= 1.15.11)
+    - KSCrash/Reporting/Filters/Basic (= 1.15.11)
+    - KSCrash/Reporting/Filters/GZip (= 1.15.11)
+    - KSCrash/Reporting/Filters/JSON (= 1.15.11)
+    - KSCrash/Reporting/Filters/Sets (= 1.15.11)
+    - KSCrash/Reporting/Filters/Stringify (= 1.15.11)
+    - KSCrash/Reporting/Filters/Tools (= 1.15.11)
+  - KSCrash/Reporting/Filters/Alert (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/Base (1.15.9):
-    - KSCrash/Recording
-  - KSCrash/Reporting/Filters/Basic (1.15.9):
+  - KSCrash/Reporting/Filters/AppleFmt (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/GZip (1.15.9):
+  - KSCrash/Reporting/Filters/Base (1.15.11):
+    - KSCrash/Recording
+  - KSCrash/Reporting/Filters/Basic (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/JSON (1.15.9):
+  - KSCrash/Reporting/Filters/GZip (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/Sets (1.15.9):
+  - KSCrash/Reporting/Filters/JSON (1.15.11):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Sets (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters/AppleFmt
     - KSCrash/Reporting/Filters/Base
@@ -71,100 +70,98 @@ PODS:
     - KSCrash/Reporting/Filters/GZip
     - KSCrash/Reporting/Filters/JSON
     - KSCrash/Reporting/Filters/Stringify
-  - KSCrash/Reporting/Filters/Stringify (1.15.9):
+  - KSCrash/Reporting/Filters/Stringify (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/Tools (1.15.9):
+  - KSCrash/Reporting/Filters/Tools (1.15.11):
     - KSCrash/Recording
-  - KSCrash/Reporting/MessageUI (1.15.9):
+  - KSCrash/Reporting/MessageUI (1.15.11):
     - KSCrash/Recording
-  - KSCrash/Reporting/Sinks (1.15.9):
+  - KSCrash/Reporting/Sinks (1.15.11):
     - KSCrash/Recording
     - KSCrash/Reporting/Filters
     - KSCrash/Reporting/Tools
-  - KSCrash/Reporting/Tools (1.15.9):
+  - KSCrash/Reporting/Tools (1.15.11):
     - KSCrash/Recording
   - KVOController (1.2.0)
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
-  - Mapbox-iOS-SDK (3.5.4)
+  - Mapbox-iOS-SDK (3.6.0)
   - Onboard (2.3.1)
-  - Parse (1.14.4):
-    - Bolts/Tasks (~> 1.8)
   - PermissionScope (1.1.1)
-  - pop (1.0.9)
+  - pop (1.0.10)
   - PureLayout (3.0.2)
   - Swizzlean (1.0.0)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
   - VTAcknowledgementsViewController (1.2.1)
-  - YapDatabase (3.0):
-    - YapDatabase/Standard (= 3.0)
-  - YapDatabase/Standard (3.0):
-    - YapDatabase/Standard/Core (= 3.0)
-    - YapDatabase/Standard/Extensions (= 3.0)
-  - YapDatabase/Standard/Core (3.0):
+  - YapDatabase (3.0.1):
+    - YapDatabase/Standard (= 3.0.1)
+  - YapDatabase/Standard (3.0.1):
+    - YapDatabase/Standard/Core (= 3.0.1)
+    - YapDatabase/Standard/Extensions (= 3.0.1)
+  - YapDatabase/Standard/Core (3.0.1):
     - CocoaLumberjack
-  - YapDatabase/Standard/Extensions (3.0):
+  - YapDatabase/Standard/Extensions (3.0.1):
     - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/ActionManager (= 3.0)
-    - YapDatabase/Standard/Extensions/AutoView (= 3.0)
-    - YapDatabase/Standard/Extensions/CloudCore (= 3.0)
-    - YapDatabase/Standard/Extensions/CloudKit (= 3.0)
-    - YapDatabase/Standard/Extensions/ConnectionProxy (= 3.0)
-    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 3.0)
-    - YapDatabase/Standard/Extensions/FilteredView (= 3.0)
-    - YapDatabase/Standard/Extensions/FullTextSearch (= 3.0)
-    - YapDatabase/Standard/Extensions/Hooks (= 3.0)
-    - YapDatabase/Standard/Extensions/ManualView (= 3.0)
-    - YapDatabase/Standard/Extensions/Relationships (= 3.0)
-    - YapDatabase/Standard/Extensions/RTreeIndex (= 3.0)
-    - YapDatabase/Standard/Extensions/SearchResultsView (= 3.0)
-    - YapDatabase/Standard/Extensions/SecondaryIndex (= 3.0)
-    - YapDatabase/Standard/Extensions/View (= 3.0)
-  - YapDatabase/Standard/Extensions/ActionManager (3.0):
+    - YapDatabase/Standard/Extensions/ActionManager (= 3.0.1)
+    - YapDatabase/Standard/Extensions/AutoView (= 3.0.1)
+    - YapDatabase/Standard/Extensions/CloudCore (= 3.0.1)
+    - YapDatabase/Standard/Extensions/CloudKit (= 3.0.1)
+    - YapDatabase/Standard/Extensions/ConnectionProxy (= 3.0.1)
+    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 3.0.1)
+    - YapDatabase/Standard/Extensions/FilteredView (= 3.0.1)
+    - YapDatabase/Standard/Extensions/FullTextSearch (= 3.0.1)
+    - YapDatabase/Standard/Extensions/Hooks (= 3.0.1)
+    - YapDatabase/Standard/Extensions/ManualView (= 3.0.1)
+    - YapDatabase/Standard/Extensions/Relationships (= 3.0.1)
+    - YapDatabase/Standard/Extensions/RTreeIndex (= 3.0.1)
+    - YapDatabase/Standard/Extensions/SearchResultsView (= 3.0.1)
+    - YapDatabase/Standard/Extensions/SecondaryIndex (= 3.0.1)
+    - YapDatabase/Standard/Extensions/View (= 3.0.1)
+  - YapDatabase/Standard/Extensions/ActionManager (3.0.1):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/AutoView
-  - YapDatabase/Standard/Extensions/AutoView (3.0):
+  - YapDatabase/Standard/Extensions/AutoView (3.0.1):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/CloudCore (3.0):
+  - YapDatabase/Standard/Extensions/CloudCore (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CloudKit (3.0):
+  - YapDatabase/Standard/Extensions/CloudKit (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ConnectionProxy (3.0):
+  - YapDatabase/Standard/Extensions/ConnectionProxy (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CrossProcessNotification (3.0):
+  - YapDatabase/Standard/Extensions/CrossProcessNotification (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/FilteredView (3.0):
-    - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/FullTextSearch (3.0):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/Hooks (3.0):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ManualView (3.0):
+  - YapDatabase/Standard/Extensions/FilteredView (3.0.1):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/Relationships (3.0):
+  - YapDatabase/Standard/Extensions/FullTextSearch (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/RTreeIndex (3.0):
+  - YapDatabase/Standard/Extensions/Hooks (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/SearchResultsView (3.0):
+  - YapDatabase/Standard/Extensions/ManualView (3.0.1):
+    - YapDatabase/Standard/Core
+    - YapDatabase/Standard/Extensions/View
+  - YapDatabase/Standard/Extensions/Relationships (3.0.1):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/RTreeIndex (3.0.1):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/SearchResultsView (3.0.1):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/AutoView
     - YapDatabase/Standard/Extensions/FullTextSearch
-  - YapDatabase/Standard/Extensions/SecondaryIndex (3.0):
+  - YapDatabase/Standard/Extensions/SecondaryIndex (3.0.1):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/View (3.0):
+  - YapDatabase/Standard/Extensions/View (3.0.1):
     - YapDatabase/Standard/Core
 
 DEPENDENCIES:
   - Appirater (~> 2.0)
   - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
-  - CocoaLumberjack/Swift (~> 3.2.0)
+  - CocoaLumberjack/Swift (from `https://github.com/CocoaLumberjack/CocoaLumberjack.git`, commit `acc32864538c5d75b41a4bfa364b1431cf89954d`)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - DOFavoriteButton (from `https://github.com/okmr-d/DOFavoriteButton.git`)
@@ -177,7 +174,6 @@ DEPENDENCIES:
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (~> 3.5)
   - Onboard (~> 2.1)
-  - Parse (~> 1.0)
   - PermissionScope (~> 1.0)
   - pop (~> 1.0)
   - PureLayout (~> 3.0)
@@ -190,10 +186,16 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   ASDayPicker:
     :path: Submodules/ASDayPicker/ASDayPicker.podspec
+  CocoaLumberjack:
+    :commit: acc32864538c5d75b41a4bfa364b1431cf89954d
+    :git: https://github.com/CocoaLumberjack/CocoaLumberjack.git
   DOFavoriteButton:
     :git: https://github.com/okmr-d/DOFavoriteButton.git
 
 CHECKOUT OPTIONS:
+  CocoaLumberjack:
+    :commit: acc32864538c5d75b41a4bfa364b1431cf89954d
+    :git: https://github.com/CocoaLumberjack/CocoaLumberjack.git
   DOFavoriteButton:
     :commit: 43c65253d4c14e596a511354ca0e0aac0ec2bd5c
     :git: https://github.com/okmr-d/DOFavoriteButton.git
@@ -202,29 +204,27 @@ SPEC CHECKSUMS:
   Appirater: f1c9e53e8b612193e6256144f6a0fd2e31f4340d
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
-  CocoaLumberjack: 9b4aed7073d242f29cc2f62068d995faf67f703a
+  CocoaLumberjack: 0d8cb05e834c1b391771fb3397d9a553accd33a9
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
-  KSCrash: d3e2bfd20728b8772a796809bbc5bf7ed040fa94
+  KSCrash: 7bd106ca4a2247774deeeb587c740ce0207de8f3
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
-  Mapbox-iOS-SDK: 81197829dcf4c4ed9a593b7a95462881b5f1309a
+  Mapbox-iOS-SDK: c911b1875a00f12bb74253b763ac483425bd4225
   Onboard: b6871f25ac753175b2ab9a362fb2feb26a81a311
-  Parse: b0aa91d2c435e53d4a9af26e741e014c9b35c42e
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
-  pop: f667631a5108a2e60d9e8797c9b32ddaf2080bce
+  pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
   Swizzlean: 628e6747d925655be3dbbb943bc8a8e8b29e6852
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   VTAcknowledgementsViewController: e1de80f2c0ce31cc7e1c6f1c8aaeec2770371f09
-  YapDatabase: 0cef6c79948169c924ae325d430ffcfa8a5231c2
+  YapDatabase: 69ca88a2dfee305fde4412cf670c76f75aa7ccd0
 
-PODFILE CHECKSUM: bf3a804b6da57aa959cb610db3e5e8a86bdc535e
+PODFILE CHECKSUM: dd44e8c6879e3c5d7d182a6b6ce821e3a52b8505
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.3.0.beta.3

@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Parse
 
 public enum EmptyListLabelText: String {
     case Loading = "Loading...",
@@ -100,10 +99,7 @@ open class BRCSortedViewController: UITableViewController {
     
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if let title = self.title {
-            PFAnalytics.trackEvent(inBackground: title, block: nil)
-        }
-        
+
         refreshTableItems { () -> Void in
             self.tableView.reloadData();
         }

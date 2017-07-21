@@ -10,16 +10,13 @@ abstract_target 'iBurnAbstract' do
 	# Debugging
 	pod 'Swizzlean'
 
-	# Gotta use fork now because it's deprecated
 	pod 'Mapbox-iOS-SDK', '~> 3.5'
-	# pod 'Mapbox-iOS-SDK', :path => 'Submodules/mapbox-ios-sdk/Mapbox-iOS-SDK.podspec'
 	pod 'YapDatabase', '~> 3.0'
-	pod 'CocoaLumberjack/Swift', '~> 3.2.0'
-	# pod 'YapDatabase', :git => 'https://github.com/ChatSecure/YapDatabase.git', :branch => 'cocoalumberjack3'
+	# pod 'CocoaLumberjack/Swift', '~> 3.2.0'
+	pod 'CocoaLumberjack/Swift', :git => 'https://github.com/CocoaLumberjack/CocoaLumberjack.git', :commit => 'acc32864538c5d75b41a4bfa364b1431cf89954d' # Fixes compile error on Xcode 9
 	pod 'Mantle', '~> 2.0'
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
-	# pod 'HockeySDK-Source', '~> 4.1.4'
 	pod 'KSCrash', '~> 1.15.9'
 	pod 'PureLayout', '~> 3.0'
 	pod 'DAKeyboardControl', '~> 2.4'
@@ -29,7 +26,6 @@ abstract_target 'iBurnAbstract' do
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'
 	pod 'pop', '~> 1.0'
-	pod 'Parse', '~> 1.0'
 	pod 'DOFavoriteButton', :git => 'https://github.com/okmr-d/DOFavoriteButton.git'
 	pod 'JSQWebViewController', '~> 5.0'
 	pod 'TUSafariActivity', '~> 1.0'
@@ -38,6 +34,5 @@ abstract_target 'iBurnAbstract' do
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', '~> 1.0'
 	pod 'JTSImageViewController'
-	# pod 'proj4', :podspec => 'https://raw.githubusercontent.com/Burning-Man-Earth/proj4.podspec/master/proj4.podspec'
 
 end

@@ -26,7 +26,6 @@
 #import "BRCLocations.h"
 #import "Appirater.h"
 @import JSQWebViewController;
-#import <Parse/Parse.h>
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
 @import TTTAttributedLabel;
@@ -89,7 +88,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     [MGLAccountManager setAccessToken:kBRCMapBoxAccessToken];
     
-    [PFNetworkActivityIndicatorManager sharedManager].enabled = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     [UIApplication sharedApplication].statusBarHidden = NO;
     
@@ -119,7 +117,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     });
     
     //[RMConfiguration sharedInstance].accessToken = @"";
-    [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     
     UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     if (launchNotification) {
@@ -183,17 +180,11 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    // Store the deviceToken in the current installation and save it to Parse.
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-    [currentInstallation setDeviceTokenFromData:deviceToken];
-    currentInstallation.channels = @[ @"global", @"updates" ];
-    [currentInstallation saveInBackground];
 }
 
 - (void)application:(UIApplication *)application
 didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
-    [PFAnalytics trackAppOpenedWithRemoteNotificationPayload:userInfo];
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
     [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
 }
@@ -301,7 +292,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) setupFestivalDates {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2016Key]) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2017Key]) {
         return;
     }
     NSBundle *dataBundle = [NSBundle brc_dataBundle];
@@ -316,9 +307,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     NSDate *endDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:endDateString];
     NSParameterAssert(endDate);
     NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
-    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2016Key];
-    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2016Key];
-    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDate2016Key];
+    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2017Key];
+    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2017Key];
+    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDate2017Key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -340,7 +331,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) enteredBurningManRegion {
-    [PFAnalytics trackEventInBackground:@"Entered_Burning_Man" block:nil];
     if ([BRCEmbargo allowEmbargoedData]) {
         return;
     }

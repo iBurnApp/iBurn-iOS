@@ -505,23 +505,25 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
         // copy bundled tiles to live store on first launch
         NSBundle *bundle = [NSBundle brc_dataBundle];
         NSURL *bundledTilesURL = [bundle URLForResource:kBRCRemoteTilesName withExtension:@"jar"];
-        success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
-        if (!success) {
-            if (updateInfo) {
-                updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
-            }
-        } else {
-            NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
-            if (updateInfo) {
-                updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": localMapTilesURL}];
-            });
-            NSError *error = nil;
-            BOOL success = [localMapTilesURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+        if (bundledTilesURL) {
+            success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
             if (!success) {
-                NSLog(@"Error excluding %@ from backup %@", localMapTilesURL, error);
+                if (updateInfo) {
+                    updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
+                }
+            } else {
+                NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
+                if (updateInfo) {
+                    updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": localMapTilesURL}];
+                });
+                NSError *error = nil;
+                BOOL success = [localMapTilesURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+                if (!success) {
+                    NSLog(@"Error excluding %@ from backup %@", localMapTilesURL, error);
+                }
             }
         }
     }
