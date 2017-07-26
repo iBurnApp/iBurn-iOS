@@ -39,10 +39,6 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 /** Set this when app is launched from background via application:handleEventsForBackgroundURLSession:completionHandler: */
 - (void) addBackgroundURLSessionCompletionHandler:(void (^)(void))completionHandler;
 
-
-/** Returns iburn.mbtiles local file URL within Application Support */
-+ (NSURL*) mapTilesURL;
-
 /** Double-checks that the map tiles exist on each launch */
 - (void) doubleCheckMapTiles:(nullable BRCUpdateInfo*)updateInfo;
 

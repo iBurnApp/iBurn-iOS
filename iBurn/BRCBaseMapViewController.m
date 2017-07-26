@@ -44,11 +44,7 @@
 
 - (void) mapTilesUpdated:(NSNotification*)notification {
     NSLog(@"Replacing map tiles via notification...");
-    if (self.mapView) {
-        [self.mapView removeFromSuperview];
-        self.mapView = nil;
-    }
-    [self setupMapView];
+    // TODO: figure out how to properly refresh tiles
 }
 
 - (void) centerMapAtManCoordinatesAnimated:(BOOL)animated {

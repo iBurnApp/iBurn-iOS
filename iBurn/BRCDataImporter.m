@@ -21,9 +21,6 @@
 @import CoreLocation;
 
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
-static NSString * const kBRCRemoteTilesName =  @"iburn.mbtiles";
-static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
-
 
 @interface BRCDataImporter() <NSURLSessionDownloadDelegate>
 @property (nonatomic, strong, readonly) NSURLSession *urlSession;
@@ -472,10 +469,12 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
 
 /** Returns iburn.mbtiles local file URL within Application Support */
 + (NSURL*) mapTilesURL {
-    NSString *fileName = kBRCLocalTilesName;
-    NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
-    NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
-    return destinationURL;
+    // No longer using static map tiles
+    return nil;
+//    NSString *fileName = kBRCLocalTilesName;
+//    NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
+//    NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
+//    return destinationURL;
 }
 
 + (NSString *) mapTilesDirectory {
@@ -496,6 +495,8 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
 
 /** Double-checks that the map tiles exist on each launch */
 - (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo {
+    // No longer using static map tiles
+    return;
     NSError *error = nil;
     NSURL *localMapTilesURL = [[self class] mapTilesURL];
     BOOL success = [self checkTilesAtURL:localMapTilesURL error:&error];
@@ -504,7 +505,8 @@ static NSString * const kBRCLocalTilesName =  @"iburn-2016.mbtiles";
         error = nil;
         // copy bundled tiles to live store on first launch
         NSBundle *bundle = [NSBundle brc_dataBundle];
-        NSURL *bundledTilesURL = [bundle URLForResource:kBRCRemoteTilesName withExtension:@"jar"];
+        //NSURL *bundledTilesURL = [bundle URLForResource:kBRCRemoteTilesName withExtension:@"jar"];
+        NSURL *bundledTilesURL = nil; // no longer in use
         if (bundledTilesURL) {
             success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
             if (!success) {
