@@ -20,6 +20,8 @@
 #import "NSBundle+iBurn.h"
 @import CoreLocation;
 
+static NSString * const kBRCLocalTilesName = @"Cache.db";
+
 NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterMapTilesUpdatedNotification";
 
 @interface BRCDataImporter() <NSURLSessionDownloadDelegate>
@@ -431,6 +433,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             }];
         }];
     } else if (updateInfo.dataType == BRCUpdateDataTypeTiles) {
+        return;
         NSError *error = nil;
         NSURL *destinationURL = [[self class] mapTilesURL];
         if ([[NSFileManager defaultManager] fileExistsAtPath:destinationURL.path isDirectory:NULL]) {
@@ -467,20 +470,20 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
 }
 
 
-/** Returns iburn.mbtiles local file URL within Application Support */
-+ (NSURL*) mapTilesURL {
+/** Returns Caches.db local file URL within mapTilesDirectory */
++ (nonnull NSURL*) mapTilesURL {
     // No longer using static map tiles
-    return nil;
-//    NSString *fileName = kBRCLocalTilesName;
-//    NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
-//    NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
-//    return destinationURL;
+    NSString *fileName = kBRCLocalTilesName;
+    NSString *mapTilesDestinationPath = [[self mapTilesDirectory] stringByAppendingPathComponent:fileName];
+    NSURL *destinationURL = [NSURL fileURLWithPath:mapTilesDestinationPath];
+    return destinationURL;
 }
 
-+ (NSString *) mapTilesDirectory {
-    NSString *applicationSupportDirectory = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
-    NSString *applicationName = [[[NSBundle mainBundle] infoDictionary] valueForKey:(NSString *)kCFBundleNameKey];
-    NSString *directory = [applicationSupportDirectory stringByAppendingPathComponent:applicationName];
+/** Will be created if it doesn't exist. /Library/Caches/com.trailbehind.iBurn2010 */
++ (nonnull NSString *) mapTilesDirectory {
+    NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+    NSString *bundleId = [[[NSBundle mainBundle] infoDictionary] valueForKey:(NSString *)kCFBundleIdentifierKey];
+    NSString *directory = [cachesDirectory stringByAppendingPathComponent:bundleId];
     NSError *error = nil;
     if (![[NSFileManager defaultManager] fileExistsAtPath:directory]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error];
@@ -495,8 +498,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
 
 /** Double-checks that the map tiles exist on each launch */
 - (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo {
-    // No longer using static map tiles
-    return;
     NSError *error = nil;
     NSURL *localMapTilesURL = [[self class] mapTilesURL];
     BOOL success = [self checkTilesAtURL:localMapTilesURL error:&error];
@@ -504,27 +505,27 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         NSLog(@"Look like the tiles are fucked: %@", error);
         error = nil;
         // copy bundled tiles to live store on first launch
-        NSBundle *bundle = [NSBundle brc_dataBundle];
-        //NSURL *bundledTilesURL = [bundle URLForResource:kBRCRemoteTilesName withExtension:@"jar"];
-        NSURL *bundledTilesURL = nil; // no longer in use
+        NSBundle *bundle = [NSBundle brc_tilesCache];
+        NSURL *bundledTilesURL = bundle.bundleURL;
+        NSURL *mapTilesDirectory = [NSURL fileURLWithPath:[[self class] mapTilesDirectory] relativeToURL:nil];
         if (bundledTilesURL) {
-            success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:localMapTilesURL error:&error];
+            success = [[NSFileManager defaultManager] copyItemAtURL:bundledTilesURL toURL:mapTilesDirectory error:&error];
             if (!success) {
                 if (updateInfo) {
                     updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
                 }
             } else {
-                NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, localMapTilesURL);
+                NSLog(@"Copied bundled tiles to live store: %@ -> %@", bundledTilesURL, mapTilesDirectory);
                 if (updateInfo) {
                     updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
                 }
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": localMapTilesURL}];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:BRCDataImporterMapTilesUpdatedNotification object:self userInfo:@{@"url": mapTilesDirectory}];
                 });
                 NSError *error = nil;
-                BOOL success = [localMapTilesURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
+                BOOL success = [mapTilesDirectory setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
                 if (!success) {
-                    NSLog(@"Error excluding %@ from backup %@", localMapTilesURL, error);
+                    NSLog(@"Error excluding %@ from backup %@", mapTilesDirectory, error);
                 }
             }
         }

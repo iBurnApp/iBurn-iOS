@@ -11,6 +11,7 @@
 @interface NSBundle (iBurn)
 
 /** Return iBurn-Data bundle */
-+ (nonnull NSBundle*) brc_dataBundle;
+@property (class, nonnull, nonatomic, readonly) NSBundle* brc_dataBundle;
+@property (class, nonnull, nonatomic, readonly) NSBundle* brc_tilesCache;
 
 @end

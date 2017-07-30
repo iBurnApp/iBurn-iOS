@@ -87,7 +87,7 @@ PODS:
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
-  - Mapbox-iOS-SDK (3.6.0)
+  - Mapbox-iOS-SDK (3.6.1)
   - Onboard (2.3.1)
   - PermissionScope (1.1.1)
   - pop (1.0.10)
@@ -214,7 +214,7 @@ SPEC CHECKSUMS:
   KSCrash: 7bd106ca4a2247774deeeb587c740ce0207de8f3
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
-  Mapbox-iOS-SDK: c911b1875a00f12bb74253b763ac483425bd4225
+  Mapbox-iOS-SDK: 7dd2a0fd08e9444b9c47f6e8fd1c32509bce3243
   Onboard: b6871f25ac753175b2ab9a362fb2feb26a81a311
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
   pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
@@ -227,4 +227,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: dd44e8c6879e3c5d7d182a6b6ce821e3a52b8505
 
-COCOAPODS: 1.3.0.beta.3
+COCOAPODS: 1.3.0.rc.1

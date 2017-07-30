@@ -58,7 +58,9 @@
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
+		D97EF8361F2E9EE70096A649 /* TileCache in Resources */ = {isa = PBXBuildFile; fileRef = D97EF8351F2E9EE70096A649 /* TileCache */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
+		D981D5561F2E9F1600E470E6 /* iBurn-2017 in Resources */ = {isa = PBXBuildFile; fileRef = D981D5551F2E9F1600E470E6 /* iBurn-2017 */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
@@ -225,9 +227,11 @@
 		D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDateFormatter+iBurn.m"; sourceTree = "<group>"; };
 		D97D7A32198AF7BD00CA7828 /* NSDate+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+iBurn.h"; sourceTree = "<group>"; };
 		D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+iBurn.m"; sourceTree = "<group>"; };
+		D97EF8351F2E9EE70096A649 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2017/TileCache"; sourceTree = SOURCE_ROOT; };
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D980A90D1B3F5A6400BE3682 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataImportTests.m; sourceTree = "<group>"; };
+		D981D5551F2E9F1600E470E6 /* iBurn-2017 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2017"; path = "Submodules/iBurn-Data/data/2017/iBurn-2017"; sourceTree = SOURCE_ROOT; };
 		D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter_Private.h; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/2015/initial_data; sourceTree = "<group>"; };
@@ -512,6 +516,8 @@
 		D94DA1AE1F225EE40064657B /* 2017 */ = {
 			isa = PBXGroup;
 			children = (
+				D981D5551F2E9F1600E470E6 /* iBurn-2017 */,
+				D97EF8351F2E9EE70096A649 /* TileCache */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 				D9ADBF5E1D6BA9A6003A71DF /* bundle.js */,
 				D9571DB41F225E73004B6607 /* 2017 */,
@@ -865,7 +871,9 @@
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D94DA1AD1F225EBC0064657B /* 2017 in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
+				D97EF8361F2E9EE70096A649 /* TileCache in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
+				D981D5561F2E9F1600E470E6 /* iBurn-2017 in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
