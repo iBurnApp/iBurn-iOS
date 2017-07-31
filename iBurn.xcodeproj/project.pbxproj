@@ -48,6 +48,7 @@
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
+		D965BFE51F2EB6E700D496FF /* MediaFiles in Resources */ = {isa = PBXBuildFile; fileRef = D965BFE41F2EB6E700D496FF /* MediaFiles */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
 		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
@@ -103,6 +104,7 @@
 		D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */; };
 		D9DE7BB01EF25C11007A983E /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BAF1EF25C11007A983E /* MapViewController.swift */; };
 		D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */; };
+		D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */; };
@@ -209,6 +211,7 @@
 		D95AB0F01B802CA000DFC2FD /* BRCBreadcrumbPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCBreadcrumbPoint.h; sourceTree = "<group>"; };
 		D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCBreadcrumbPoint.m; sourceTree = "<group>"; };
 		D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDistanceView.swift; sourceTree = "<group>"; };
+		D965BFE41F2EB6E700D496FF /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2017/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
@@ -299,6 +302,7 @@
 		D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCMediaDownloader.swift; sourceTree = "<group>"; };
 		D9DE7BAF1EF25C11007A983E /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarButtonsView.swift; sourceTree = "<group>"; };
+		D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataImporter.swift; sourceTree = "<group>"; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
@@ -516,6 +520,7 @@
 		D94DA1AE1F225EE40064657B /* 2017 */ = {
 			isa = PBXGroup;
 			children = (
+				D965BFE41F2EB6E700D496FF /* MediaFiles */,
 				D981D5551F2E9F1600E470E6 /* iBurn-2017 */,
 				D97EF8351F2E9EE70096A649 /* TileCache */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
@@ -754,6 +759,7 @@
 		D9EC0E5B1B7DE0350042B596 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */,
 				D927BDB11EF4778000B7324D /* UserGuidance.swift */,
 				D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */,
 				D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */,
@@ -877,6 +883,7 @@
 				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
+				D965BFE51F2EB6E700D496FF /* MediaFiles in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 			);
@@ -1166,6 +1173,7 @@
 				D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,
 				D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */,
+				D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */,
 				6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */,
 				D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */,
 			);

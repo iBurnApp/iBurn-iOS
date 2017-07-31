@@ -18,8 +18,24 @@ public enum BRCMediaDownloadType: Int
     case image
 }
 
+extension Bundle {
+    
+    /** Media files bundled w/ the app */
+    static var bundledMedia: Bundle? {
+        let folderName = BRCMediaDownloader.mediaFolderName
+        let mainBundlePath = Bundle.main.resourcePath as NSString?
+        guard let bundlePath =  mainBundlePath?.appendingPathComponent(folderName) else {
+            return nil
+        }
+        let bundle = Bundle(path: bundlePath)
+        return bundle
+    }
+}
+
 open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
     
+    static let mediaFolderName = "MediaFiles"
+
     let viewName: String
     let connection: YapDatabaseConnection
     var session: Foundation.URLSession!
@@ -59,20 +75,36 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         }
     }
     
-    open static func downloadPath() -> String {
+    private static var mediaFilesPath: String {
         let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
-        let folderName = "MediaFiles"
+        let folderName = BRCMediaDownloader.mediaFolderName
         let path = documentsPath.appendingPathComponent(folderName)
-        if !FileManager.default.fileExists(atPath: path) {
-            do {
-                try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
-            } catch {}
-        }
         return path
     }
     
-    open static func localMediaURL(_ fileName: String) -> URL {
-        let downloadPath = self.downloadPath() as NSString
+    
+    /** Copies media files like images/mp3s that were bundled with the app */
+    private static func copyMediaFilesIfNeeded() {
+        guard let bundle = Bundle.bundledMedia, let bundlePath = bundle.resourcePath else {
+            return
+        }
+        let path = BRCMediaDownloader.mediaFilesPath
+        if !FileManager.default.fileExists(atPath: path) {
+            do {
+                try FileManager.default.copyItem(atPath: bundlePath, toPath: path)
+                var fileURL = URL(fileURLWithPath: path)
+                var resourceValues = URLResourceValues()
+                resourceValues.isExcludedFromBackup = true
+                try fileURL.setResourceValues(resourceValues)
+            } catch let error {
+                DDLogError("Error copying media files \(error)")
+            }
+        }
+    }
+    
+    public static func localMediaURL(_ fileName: String) -> URL {
+        copyMediaFilesIfNeeded()
+        let downloadPath = self.mediaFilesPath as NSString
         let path = downloadPath.appendingPathComponent(fileName)
         let url = URL(fileURLWithPath: path)
         return url
@@ -97,6 +129,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     
     /** This will cache un-downloaded media */
     open func downloadUncachedMedia() {
+        BRCMediaDownloader.copyMediaFilesIfNeeded()
         connection.asyncRead { (transaction) in
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
                 return

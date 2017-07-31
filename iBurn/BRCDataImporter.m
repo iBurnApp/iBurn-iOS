@@ -18,6 +18,7 @@
 #import "BRCMapPoint.h"
 #import "BRCDatabaseManager.h"
 #import "NSBundle+iBurn.h"
+#import "iBurn-Swift.h"
 @import CoreLocation;
 
 static NSString * const kBRCLocalTilesName = @"Cache.db";
@@ -498,6 +499,9 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
 
 /** Double-checks that the map tiles exist on each launch */
 - (void) doubleCheckMapTiles:(BRCUpdateInfo*)updateInfo {
+    // Refresh offline map tiles
+    [BRCDataImporter downloadMapboxOfflineTiles];
+    
     NSError *error = nil;
     NSURL *localMapTilesURL = [[self class] mapTilesURL];
     BOOL success = [self checkTilesAtURL:localMapTilesURL error:&error];
