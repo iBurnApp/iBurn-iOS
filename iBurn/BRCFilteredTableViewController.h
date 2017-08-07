@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRCFilteredTableViewController : UIViewController <UISearchResultsUpdating, UISearchBarDelegate, UISearchControllerDelegate, UITableViewDataSource, UITableViewDelegate>
+@interface BRCFilteredTableViewController : UIViewController <UISearchResultsUpdating, UISearchBarDelegate, UISearchControllerDelegate, UITableViewDataSource, UITableViewDelegate, UIPageViewControllerDataSource>
 
 @property (nonatomic, strong, readonly) UITableView *tableView;
 

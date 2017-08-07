@@ -361,8 +361,12 @@
 {
     BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
     BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+    detailVC.indexPath = indexPath;
     detailVC.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:detailVC animated:YES];
+    UIPageViewController *pageVC = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
+    pageVC.dataSource = self;
+    [pageVC setViewControllers:@[detailVC] direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+    [self.navigationController pushViewController:pageVC animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
@@ -492,5 +496,37 @@
     [self.tableView endUpdates];
 }
 
+#pragma mark UIPageViewControllerDataSource
+
+- (nullable UIViewController*) pageViewController:(UIPageViewController *)pageViewController viewControllerNearViewController:(UIViewController *)viewController direction:(BRCIndexPathDirection)direction {
+    if (![viewController isKindOfClass:BRCDetailViewController.class]) {
+        return nil;
+    }
+    BRCDetailViewController *detailVC = (BRCDetailViewController*)viewController;
+    NSIndexPath *oldIndex = detailVC.indexPath;
+    if (!oldIndex) {
+        return nil;
+    }
+    NSIndexPath *newIndex = [oldIndex nextIndexPathWithDirection:direction tableView:self.tableView];
+    if (!newIndex) {
+        return nil;
+    }
+    BRCDataObject *dataObject = [self dataObjectForIndexPath:newIndex tableView:self.tableView];
+    if (!dataObject) {
+        return nil;
+    }
+    BRCDetailViewController *newDetailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
+    newDetailVC.indexPath = newIndex;
+    return newDetailVC;
+}
+
+- (nullable UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerBeforeViewController:(UIViewController *)viewController {
+    return [self pageViewController:pageViewController viewControllerNearViewController:viewController direction:BRCIndexPathDirectionBefore];
+}
+
+- (nullable UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerAfterViewController:(UIViewController *)viewController {
+    return [self pageViewController:pageViewController viewControllerNearViewController:viewController direction:BRCIndexPathDirectionAfter];
+}
 
 @end
+
