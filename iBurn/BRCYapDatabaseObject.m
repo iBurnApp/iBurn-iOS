@@ -35,9 +35,13 @@
     return self.class.yapCollection;
 }
 
-- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction
+- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction metadata:(nullable id)metadata {
+    [transaction setObject:self forKey:self.yapKey inCollection:self.yapCollection withMetadata:metadata];
+}
+
+- (void)replaceWithTransaction:(YapDatabaseReadWriteTransaction *)transaction
 {
-    [transaction setObject:self forKey:self.yapKey inCollection:self.yapCollection];
+    [transaction replaceObject:self forKey:self.yapKey inCollection:self.yapCollection];
 }
 
 - (void)removeWithTransaction:(YapDatabaseReadWriteTransaction *)transaction

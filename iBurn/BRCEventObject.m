@@ -258,21 +258,25 @@ NSString * const kBRCEventArtEdgeName = @"art";
 - (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction {
     NSParameterAssert(transaction);
     if (!transaction) { return; }
-    if (self.isFavorite) {
-        [self scheduleNotification:transaction];
+    BRCEventMetadata *metadata = (BRCEventMetadata*)[self metadataWithTransaction:transaction];
+    if (![metadata isKindOfClass:BRCEventMetadata.class]) {
+        return;
+    }
+    if (metadata.isFavorite) {
+        [self scheduleNotification:transaction metadata:metadata];
     } else {
-        [self cancelNotification:transaction];
+        [self cancelNotification:transaction metadata:metadata];
     }
 }
 
-- (void) scheduleNotification:(YapDatabaseReadWriteTransaction*)transaction {
-    NSParameterAssert(self.isFavorite);
+- (void) scheduleNotification:(YapDatabaseReadWriteTransaction*)transaction metadata:(BRCEventMetadata*)metadata {
+    NSParameterAssert(metadata.isFavorite);
     EKEventStore *store = [[self class] eventStore];
     if (!store) {
         return;
     }
-    if (self.calendarEventIdentifier) {
-        EKEvent *existingEvent = [store eventWithIdentifier:self.calendarEventIdentifier];
+    if (metadata.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:metadata.calendarEventIdentifier];
         if (existingEvent) {
             NSLog(@"Event already exists in calendar: %@ %@", self, existingEvent);
             return;
@@ -307,19 +311,19 @@ NSString * const kBRCEventArtEdgeName = @"art";
         NSLog(@"Couldn't save event: %@ %@ %@", self, calendarEvent, error);
         return;
     }
-    BRCEventObject *newEvent = [self copy];
-    newEvent.calendarEventIdentifier = calendarEvent.eventIdentifier;
-    [newEvent saveWithTransaction:transaction];
+    metadata = [metadata copy];
+    metadata.calendarEventIdentifier = calendarEvent.eventIdentifier;
+    [self replaceMetadata:metadata transaction:transaction];
 }
 
-- (void) cancelNotification:(YapDatabaseReadWriteTransaction*)transaction {
-    NSParameterAssert(!self.isFavorite);
+- (void) cancelNotification:(YapDatabaseReadWriteTransaction*)transaction metadata:(BRCEventMetadata*)metadata  {
+    NSParameterAssert(!metadata.isFavorite);
     EKEventStore *store = [[self class] eventStore];
     if (!store) {
         return;
     }
-    if (self.calendarEventIdentifier) {
-        EKEvent *existingEvent = [store eventWithIdentifier:self.calendarEventIdentifier];
+    if (metadata.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:metadata.calendarEventIdentifier];
         if (existingEvent) {
             NSError *error = nil;
             BOOL success = [store removeEvent:existingEvent span:EKSpanThisEvent error:&error];
@@ -328,9 +332,9 @@ NSString * const kBRCEventArtEdgeName = @"art";
             }
         }
     }
-    BRCEventObject *newEvent = [self copy];
-    newEvent.calendarEventIdentifier = nil;
-    [newEvent saveWithTransaction:transaction];
+    metadata = [metadata copy];
+    metadata.calendarEventIdentifier = nil;
+    [self replaceMetadata:metadata transaction:transaction];
 }
 
 - (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
@@ -347,6 +351,18 @@ NSString * const kBRCEventArtEdgeName = @"art";
     }
     BRCCampObject *campObject = [readTransaction objectForKey:self.hostedByCampUniqueID inCollection:BRCCampObject.yapCollection];
     return campObject;
+}
+
+- (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    return [self eventMetadataWithTransaction:transaction];
+}
+
+- (BRCEventMetadata*) eventMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    id metadata = [transaction metadataForKey:self.yapKey inCollection:self.yapCollection];
+    if ([metadata isKindOfClass:BRCEventMetadata.class]) {
+        return metadata;
+    }
+    return [BRCEventMetadata new];
 }
 
 #pragma mark YapDatabaseRelationshipNode

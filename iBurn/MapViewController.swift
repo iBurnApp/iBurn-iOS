@@ -59,7 +59,7 @@ public class MapViewController: BaseMapViewController {
     
     private func setupSearch(_ search: SearchDisplayManager) {
         search.selectedObjectAction = { [weak self] object in
-            let detail = BRCDetailViewController(dataObject: object)
+            let detail = BRCDetailViewController(dataObject: object.object)
             self?.navigationController?.pushViewController(detail, animated: false)
             search.searchController.dismiss(animated: true, completion: nil)
         }
@@ -88,7 +88,7 @@ public class MapViewController: BaseMapViewController {
         }
         mapViewDelegate.saveMapPoint = { [weak self] mapPoint in
             self?.writeConnection.readWrite { transaction in
-                mapPoint.save(with: transaction)
+                mapPoint.save(with: transaction, metadata: nil)
             }
             self?.mapViewDelegate.editingAnnotation = nil
             self?.mapView.removeAnnotation(mapPoint)

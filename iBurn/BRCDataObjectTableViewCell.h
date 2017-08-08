@@ -10,7 +10,7 @@
 @import DOFavoriteButton;
 #import <CoreLocation/CoreLocation.h>
 
-@class BRCDataObject;
+@class BRCDataObject, BRCObjectMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCDataObjectTableViewCell : UITableViewCell
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** If favoriteButtonAction is set, you must save your changes */
 @property (nullable, nonatomic, copy) void (^favoriteButtonAction)(BRCDataObjectTableViewCell *sender);
 
-- (void) setDataObject:(BRCDataObject*)dataObject;
+- (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata;
 
 + (NSString*) cellIdentifier;
 

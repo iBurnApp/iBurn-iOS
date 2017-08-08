@@ -32,7 +32,7 @@ class BRCEventsViewController: BRCSortedViewController {
         var eventObjects: [BRCEventObject] = []
         BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
             if let object = self.relatedObject {
-                eventObjects = object.events(with: transaction) as! [BRCEventObject]
+                eventObjects = object.events(with: transaction)
             }
         }
         let options = BRCDataSorterOptions()

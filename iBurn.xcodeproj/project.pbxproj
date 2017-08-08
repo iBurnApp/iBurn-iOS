@@ -28,7 +28,6 @@
 		63CE2A641987140F00F65B01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A631987140F00F65B01 /* main.m */; };
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
-		63D270F91987159A00204954 /* BRCMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D270F81987159A00204954 /* BRCMapViewController.m */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
@@ -43,6 +42,7 @@
 		D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */; };
 		D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D927BDB11EF4778000B7324D /* UserGuidance.swift */; };
 		D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */; };
+		D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D94DA1AD1F225EBC0064657B /* 2017 in Resources */ = {isa = PBXBuildFile; fileRef = D9571DB41F225E73004B6607 /* 2017 */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
@@ -205,6 +205,8 @@
 		D927BDB11EF4778000B7324D /* UserGuidance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuidance.swift; sourceTree = "<group>"; };
 		D92B95991B7B0CC300116781 /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015/2015"; sourceTree = SOURCE_ROOT; };
 		D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IndexPath+iBurn.swift"; sourceTree = "<group>"; };
+		D946994E1F3913A000DE8DA6 /* BRCObjectMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCObjectMetadata.h; sourceTree = "<group>"; };
+		D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCObjectMetadata.m; sourceTree = "<group>"; };
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
 		D9571DB41F225E73004B6607 /* 2017 */ = {isa = PBXFileReference; lastKnownFileType = text; name = 2017; path = "Submodules/iBurn-Data/data/2017/2017"; sourceTree = SOURCE_ROOT; };
@@ -690,6 +692,8 @@
 		D99415651987222F00D245C7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D946994E1F3913A000DE8DA6 /* BRCObjectMetadata.h */,
+				D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */,
 				D95AB0EC1B7FC7C800DFC2FD /* POI */,
 				D9941566198726A700D245C7 /* BRCArtObject.h */,
 				D9941567198726A700D245C7 /* BRCArtObject.m */,
@@ -1143,6 +1147,7 @@
 				D9BF9A6A1D52A86A004AA63B /* BRCAudioTourViewController.swift in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
+				D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
@@ -1163,7 +1168,6 @@
 				63CD690B199AB4EE0025C8A1 /* BRCAnnotationEditView.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
 				D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */,
-				63D270F91987159A00204954 /* BRCMapViewController.m in Sources */,
 				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,
 				D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */,
 				632283151989AF92009E472B /* BRCBaseMapViewController.m in Sources */,

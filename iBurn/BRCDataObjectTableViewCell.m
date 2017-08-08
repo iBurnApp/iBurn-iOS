@@ -19,7 +19,7 @@
 
 @implementation BRCDataObjectTableViewCell
 
-- (void) setDataObject:(BRCDataObject*)dataObject {
+- (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata {
     self.titleLabel.text = dataObject.title;
     // strip those newlines rull good
     NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
@@ -39,7 +39,7 @@
             self.rightSubtitleLabel.text = @"Location Restricted";
         }
     }
-    self.favoriteButton.selected = dataObject.isFavorite;
+    self.favoriteButton.selected = metadata.isFavorite;
 }
 
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation dataObject:(BRCDataObject *)dataObject {

@@ -19,7 +19,8 @@ public enum ObjectType: String {
     Art = "Art"
 }
 
-open class TableViewSection {
+
+public class TableViewSection {
     let objects: [BRCDataObject]
     let sectionTitle: ObjectType
     public init(objects: [BRCDataObject], sectionTitle: ObjectType) {
@@ -28,7 +29,7 @@ open class TableViewSection {
     }
 }
 
-open class BRCSortedViewController: UITableViewController {
+public class BRCSortedViewController: UITableViewController {
 
     var sections: [TableViewSection] = []
     var extensionRegistered: Bool = false
@@ -214,12 +215,27 @@ open class BRCSortedViewController: UITableViewController {
             return cell
         }
         
-        let dataObject = sections[indexPath.section].objects[indexPath.row]
+        guard let dataObject = dataObjectAtIndexPath(indexPath) else {
+            return UITableViewCell()
+        }
         
         guard let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: BRCDatabaseManager.shared.readWriteConnection) else {
             return UITableViewCell()
         }
         return cell
+    }
+    
+    private func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
+        let object = sections[indexPath.section].objects[indexPath.row]
+        var metadata: BRCObjectMetadata? = nil
+        BRCDatabaseManager.shared.readConnection.read { transaction in
+            metadata = object.metadata(with: transaction)
+        }
+        guard let objectMetadata = metadata else {
+            return nil
+        }
+        let dataObject = DataObject(object: object, metadata: objectMetadata)
+        return dataObject
     }
     
     // MARK: - UITableViewDelegate

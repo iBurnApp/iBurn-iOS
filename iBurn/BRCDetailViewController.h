@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class  BRCDataObject;
+@class BRCDataObject, BRCObjectMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailViewController : UITableViewController

@@ -28,6 +28,11 @@ public class BRCDataSorterOptions {
     }
 }
 
+public struct DataObject {
+    let object: BRCDataObject
+    let metadata: BRCObjectMetadata
+}
+
 /**
  * For "smart sorting" big arrays of BRCDataObjects into events, art, and camps.
  * Used by Nearby and Favorites screen.

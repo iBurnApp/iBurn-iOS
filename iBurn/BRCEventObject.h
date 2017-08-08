@@ -27,6 +27,8 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeFood
 };
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString * const kBRCEventCampEdgeName;
 extern NSString * const kBRCEventArtEdgeName;
 
@@ -40,15 +42,15 @@ extern NSString * const kBRCEventArtEdgeName;
 @property (nonatomic, strong) NSString *artName;
 
 /** PlayaEvents ID of event's camp */
-@property (nonatomic, strong) NSString *hostedByCampUniqueID;
+@property (nonatomic, strong, nullable) NSString *hostedByCampUniqueID;
 /** PlayaEvents ID of event's art */
-@property (nonatomic, strong) NSString *hostedByArtUniqueID;
+@property (nonatomic, strong, nullable) NSString *hostedByArtUniqueID;
 
 
-- (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
-- (BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
+- (nullable BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
+- (nullable BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
 /** Returns either camp or art */
-- (BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
+- (nullable BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
 
 @property (nonatomic, readonly) BOOL isAllDay;
 
@@ -98,9 +100,6 @@ extern NSString * const kBRCEventArtEdgeName;
 /** All the dates for the festival. @see majorEvents */
 + (NSArray*) datesOfFestival;
 
-/** EKEvent calendar eventIdentifier to be used when unsetting isFavorite */
-@property (nonatomic, strong) NSString *calendarEventIdentifier;
-
 /** 
  *  Returns color for event status based on isOngoing
  *  isEndingSoon, and isStartingSoon.
@@ -120,4 +119,9 @@ extern NSString * const kBRCEventArtEdgeName;
 /** Updates calendar entry. Note: this will also re-save the object. */
 - (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction;
 
+- (BRCEventMetadata*) eventMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
+
 @end
+
+NS_ASSUME_NONNULL_END
+

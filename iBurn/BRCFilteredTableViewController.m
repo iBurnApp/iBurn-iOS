@@ -228,7 +228,7 @@
     return mappings;
 }
 
-- (BRCDataObject *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
+- (DataObjectWithMetadata *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
     NSString *viewName = nil;
     YapDatabaseViewMappings *mappings = [self mappingsForTableView:tableView];
@@ -238,11 +238,14 @@
         viewName = self.viewName;
     }
     __block BRCDataObject *dataObject = nil;
+    __block BRCObjectMetadata *metadata = nil;
     [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         YapDatabaseViewTransaction *viewTransaction = [transaction extension:viewName];
         dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:mappings];
+        metadata = [dataObject metadataWithTransaction:transaction];
     }];
-    return dataObject;
+    DataObjectWithMetadata *data = [[DataObjectWithMetadata alloc] initWithObject:dataObject metadata:metadata];
+    return data;
 }
 
 - (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView
@@ -317,19 +320,23 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    __block BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    BRCDataObject *dataObject = data.object;
     Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:[dataObject class]];
     NSString *cellIdentifier = [cellClass cellIdentifier];
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
-    cell.dataObject = dataObject;
+    [cell setDataObject:dataObject metadata:data.metadata];
     CLLocation *currentLocation = BRCAppDelegate.shared.locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation dataObject:dataObject];
     [cell setFavoriteButtonAction:^(BRCDataObjectTableViewCell *sender) {
         NSIndexPath *indexPath = [tableView indexPathForCell:sender];
-        BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
-        dataObject.isFavorite = sender.favoriteButton.selected;
+        DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+        BRCDataObject *dataObject = data.object;
+        BOOL isFavorite = sender.favoriteButton.selected;
         [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            [dataObject saveWithTransaction:transaction];
+            BRCObjectMetadata *metadata = [[dataObject metadataWithTransaction:transaction] copy];
+            metadata.isFavorite = isFavorite;
+            [dataObject replaceMetadata:metadata transaction:transaction];
             if ([dataObject isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *event = (BRCEventObject*)dataObject;
                 [event refreshCalendarEntry:transaction];
@@ -359,7 +366,8 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    BRCDataObject *dataObject = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    BRCDataObject *dataObject = data.object;
     BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
     detailVC.indexPath = indexPath;
     detailVC.hidesBottomBarWhenPushed = YES;
@@ -511,7 +519,8 @@
     if (!newIndex) {
         return nil;
     }
-    BRCDataObject *dataObject = [self dataObjectForIndexPath:newIndex tableView:self.tableView];
+    DataObjectWithMetadata *data = [self dataObjectForIndexPath:newIndex tableView:self.tableView];
+    BRCDataObject *dataObject = data.object;
     if (!dataObject) {
         return nil;
     }
@@ -530,3 +539,13 @@
 
 @end
 
+@implementation DataObjectWithMetadata
+- (instancetype) initWithObject:(BRCDataObject*)object metadata:(BRCObjectMetadata*)metadata {
+    NSParameterAssert(object && metadata);
+    if (self = [super init]) {
+        _object = object;
+        _metadata = metadata;
+    }
+    return self;
+}
+@end

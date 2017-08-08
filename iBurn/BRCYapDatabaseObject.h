@@ -34,7 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, class, readonly) NSString *yapCollection;
 
 - (void)touchWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
-- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
+- (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction metadata:(nullable id)metadata;
+/** Replaces just the object, and doesn't touch the metadata */
+- (void)replaceWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
 - (void)removeWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
 /** This will fetch an updated (copied) instance of the object. If nil, it means it was deleted or not present in the db. */
 - (nullable instancetype)refetchWithTransaction:(YapDatabaseReadTransaction *)transaction;

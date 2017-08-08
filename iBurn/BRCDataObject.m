@@ -109,6 +109,24 @@
     return _uniqueID;
 }
 
+// MARK: BRCMetadataProtocol
+
+- (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    id metadata = [transaction metadataForKey:self.yapKey inCollection:self.yapCollection];
+    if ([metadata isKindOfClass:BRCObjectMetadata.class]) {
+        return metadata;
+    }
+    return [BRCObjectMetadata new];
+}
+
+- (void) replaceMetadata:(nullable BRCObjectMetadata*)metadata transaction:(YapDatabaseReadWriteTransaction*)transaction {
+    [transaction replaceMetadata:metadata forKey:self.yapKey inCollection:self.yapCollection];
+}
+
+- (void) touchMetadataWithTransaction:(YapDatabaseReadWriteTransaction*)transaction {
+    [transaction touchMetadataForKey:self.yapKey inCollection:self.yapCollection];
+}
+
 @end
 
 @implementation BRCDataObject (MarkerImage)

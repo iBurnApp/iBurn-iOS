@@ -6,29 +6,16 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import <Mantle/Mantle.h>
+@import Mantle;
 @import CoreLocation;
 @import Mapbox;
 @import YapDatabase;
 #import "BRCYapDatabaseObject.h"
+#import "BRCObjectMetadata.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-
-@interface BRCDataObject : BRCYapDatabaseObject <MTLJSONSerializing, MGLAnnotation>
-
-#pragma mark Mutable Properties
-
-/**
- *  Whether or not user has favorited this object in the app.
- */
-@property (nonatomic, readwrite) BOOL isFavorite;
-
-/** Any notes added by the user */
-@property (nonatomic, strong) NSString *userNotes;
-
-/** The last time object was fetched from iBurn API */
-@property (nonatomic, strong, readwrite) NSDate *lastUpdated;
+@interface BRCDataObject : BRCYapDatabaseObject <MTLJSONSerializing, MGLAnnotation, BRCMetadataProtocol>
 
 #pragma mark Constant Properties
 

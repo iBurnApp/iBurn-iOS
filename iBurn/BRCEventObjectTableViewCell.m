@@ -15,8 +15,8 @@
 
 @implementation BRCEventObjectTableViewCell
 
-- (void) setDataObject:(BRCDataObject*)dataObject {
-    [super setDataObject:dataObject];
+- (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata *)metadata {
+    [super setDataObject:dataObject metadata:metadata];
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
     NSDate *now = [NSDate date];
     if (eventObject.isAllDay) {

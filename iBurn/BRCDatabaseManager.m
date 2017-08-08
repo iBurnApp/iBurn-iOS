@@ -561,10 +561,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) favoritesOnlyFiltering {
-    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
-        if ([object isKindOfClass:[BRCDataObject class]]) {
-            BRCDataObject *dataObject = (BRCDataObject*)object;
-            return dataObject.isFavorite;
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withMetadataBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nullable metadata) {
+        if ([metadata isKindOfClass:BRCObjectMetadata.class]) {
+            BRCObjectMetadata *ourMetadata = (BRCObjectMetadata*)metadata;
+            return ourMetadata.isFavorite;
         }
         return NO;
     }];

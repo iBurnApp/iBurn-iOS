@@ -411,7 +411,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
             if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
                 BRCBreadcrumbPoint *point = [[BRCBreadcrumbPoint alloc] initWithLocation:location];
                 if (point) {
-                    [point saveWithTransaction:transaction];
+                    [point saveWithTransaction:transaction metadata:nil];
                 }
             }
         }];

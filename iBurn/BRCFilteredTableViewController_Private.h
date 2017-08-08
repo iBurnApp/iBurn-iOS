@@ -9,6 +9,12 @@
 #import "BRCFilteredTableViewController.h"
 @import YapDatabase.YapDatabaseView;
 
+@interface DataObjectWithMetadata: NSObject
+@property (nonatomic, strong, readonly) BRCDataObject *object;
+@property (nonatomic, strong, readonly) BRCObjectMetadata *metadata;
+- (instancetype) initWithObject:(BRCDataObject*)object metadata:(BRCObjectMetadata*)metadata;
+@end
+
 @interface BRCFilteredTableViewController ()
 @property (nonatomic, strong) UISearchController *searchController;
 @property (nonatomic, strong) YapDatabaseViewMappings *mappings;

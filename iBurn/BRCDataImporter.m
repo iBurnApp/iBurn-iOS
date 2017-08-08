@@ -255,9 +255,9 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             [transaction removeAllObjectsInCollection:[BRCMapPoint yapCollection]]; // remove non-user generated map points
             [objects enumerateObjectsUsingBlock:^(BRCMapPoint *mapPoint, NSUInteger idx, BOOL *stop) {
-                [mapPoint saveWithTransaction:transaction];
+                [mapPoint saveWithTransaction:transaction metadata:nil];
                 updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
-                [updateInfo saveWithTransaction:transaction];
+                [updateInfo saveWithTransaction:transaction metadata:nil];
             }];
         }];
         if (objects.count > 0) {
@@ -296,40 +296,34 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                     BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
                     NSArray *events = [recurringEvent eventObjects];
                     [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
-                        BRCEventObject *existingEvent = [transaction objectForKey:event.uniqueID inCollection:[[event class] yapCollection]];
-                        if (existingEvent) {
-                            event.isFavorite = existingEvent.isFavorite;
-                            event.userNotes = existingEvent.userNotes;
-                            event.calendarEventIdentifier = existingEvent.calendarEventIdentifier;
-                        }
-                        event.lastUpdated = updateInfo.lastUpdated;
-                        [transaction setObject:event forKey:event.uniqueID inCollection:[[event class] yapCollection]];
+                        [event replaceWithTransaction:transaction];
+                        BRCObjectMetadata *metadata = [[event metadataWithTransaction:transaction] copy];
+                        metadata.lastUpdated = updateInfo.lastUpdated;
+                        [event replaceMetadata:metadata transaction:transaction];
                     }];
                 } else { // Art and Camps
-                    BRCDataObject *existingObject = [transaction objectForKey:object.uniqueID inCollection:[dataClass yapCollection]];
-                    if (existingObject) {
-                        object.isFavorite = existingObject.isFavorite;
-                        object.userNotes = existingObject.userNotes;
-                    }
-                    object.lastUpdated = updateInfo.lastUpdated;
-                    [transaction setObject:object forKey:object.uniqueID inCollection:[dataClass yapCollection]];
+                    [object replaceWithTransaction:transaction];
+                    BRCObjectMetadata *metadata = [[object metadataWithTransaction:transaction] copy];
+                    metadata.lastUpdated = updateInfo.lastUpdated;
+                    [object replaceMetadata:metadata transaction:transaction];
                 }
-                
-                
             }
         }];
         
         // This is the worst way of removing outdated data
         NSMutableArray<BRCDataObject*> *objectsToRemove = [NSMutableArray array];
-        [transaction enumerateKeysAndObjectsInCollection:[dataClass yapCollection] usingBlock:^(NSString * _Nonnull key, id  _Nonnull object, BOOL * _Nonnull stop) {
-            if ([object isKindOfClass:[BRCDataObject class]]) {
+        [transaction enumerateRowsInCollection:[dataClass yapCollection] usingBlock:^(NSString * _Nonnull key, id  _Nonnull object, id  _Nullable metadata, BOOL * _Nonnull stop) {
+            if ([object isKindOfClass:[BRCDataObject class]] &&
+                [metadata isKindOfClass:BRCObjectMetadata.class]) {
                 BRCDataObject *dataObject = object;
-                if (![dataObject.lastUpdated isEqualToDate:updateInfo.lastUpdated]) {
+                BRCObjectMetadata *metadataObject = metadata;
+                if (![metadataObject.lastUpdated isEqualToDate:updateInfo.lastUpdated]) {
                     [objectsToRemove addObject:dataObject];
                     NSLog(@"Outdated object found: %@", dataObject);
                 }
             }
         }];
+
         [objectsToRemove enumerateObjectsUsingBlock:^(BRCDataObject * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [obj removeWithTransaction:transaction];
         }];
@@ -370,7 +364,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             }
         }];
         [objectsToUpdate enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
-            [object saveWithTransaction:transaction];
+            [object replaceWithTransaction:transaction];
         }];
         updateInfo.fetchStatus = BRCUpdateFetchStatusComplete;
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];

@@ -26,8 +26,8 @@
     self.isPlayingAudio = NO;
 }
 
-- (void) setDataObject:(BRCDataObject *)dataObject {
-    [super setDataObject:dataObject];
+- (void) setDataObject:(BRCDataObject *)dataObject metadata:(nonnull BRCObjectMetadata *)metadata {
+    [super setDataObject:dataObject metadata:metadata];
     if ([dataObject isKindOfClass:[BRCArtObject class]]) {
         BRCArtObject *art = (BRCArtObject*)dataObject;
         if (art.audioURL) {

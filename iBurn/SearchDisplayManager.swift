@@ -53,7 +53,7 @@ public class SearchDisplayManager: NSObject {
         return searchController.searchResultsController as? UITableViewController
     }
     
-    public var selectedObjectAction: (_ selected: BRCDataObject) -> Void
+    public var selectedObjectAction: (_ selected: DataObject) -> Void
     
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -123,10 +123,12 @@ public class SearchDisplayManager: NSObject {
         // TODO: fix animations
     }
     
-    fileprivate func dataObjectAtIndexPath(_ indexPath: IndexPath) -> BRCDataObject? {
-        var dataObject: BRCDataObject? = nil
+    fileprivate func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
+        var dataObject: DataObject? = nil
         longLivedReadConnection.read { transaction in
-            dataObject = BRCDataObject.object(at: indexPath, mappings: self.mappings, transaction: transaction, viewName: self.viewName)
+            guard let object = BRCDataObject.object(at: indexPath, mappings: self.mappings, transaction: transaction, viewName: self.viewName) else { return }
+            let metadata = object.metadata(with: transaction)
+            dataObject = DataObject(object: object, metadata: metadata)
         }
         return dataObject
     }
@@ -184,9 +186,9 @@ extension SearchDisplayManager: UITableViewDataSource {
 extension BRCDataObjectTableViewCell {
     class func cell(at indexPath: IndexPath,
                     tableView: UITableView,
-                    dataObject: BRCDataObject,
+                    dataObject: DataObject,
                     writeConnection: YapDatabaseConnection) -> BRCDataObjectTableViewCell? {
-        guard let cellClass = BRCDataObjectTableViewCell.cellClass(for: dataObject) as? BRCDataObjectTableViewCell.Type else {
+        guard let cellClass = BRCDataObjectTableViewCell.cellClass(for: dataObject.object) as? BRCDataObjectTableViewCell.Type else {
             DDLogWarn("No cell class!")
             return nil
         }
@@ -195,17 +197,18 @@ extension BRCDataObjectTableViewCell {
             DDLogWarn("Couldnt dequeue cell of proper class!")
             return nil
         }
+        
         let currentLocation = BRCAppDelegate.shared.locationManager.location
-        cell.setDataObject(dataObject)
-        cell.updateDistanceLabel(from: currentLocation, dataObject: dataObject)
+        cell.setDataObject(dataObject.object, metadata: dataObject.metadata)
+        cell.updateDistanceLabel(from: currentLocation, dataObject: dataObject.object)
         cell.favoriteButtonAction = { sender in
             writeConnection.readWrite { transaction in
-                guard let dataObject = dataObject.refetch(with: transaction) else { return }
-                dataObject.isFavorite = sender.favoriteButton.isSelected
-                dataObject.save(with: transaction)
+                guard let metadata = dataObject.object.metadata(with: transaction).copy() as? BRCObjectMetadata else { return }
+                metadata.isFavorite = sender.favoriteButton.isSelected
+                dataObject.object.replace(metadata, transaction: transaction)
             }
         }
-        if let artCell = cell as? BRCArtObjectTableViewCell, let art = dataObject as? BRCArtObject {
+        if let artCell = cell as? BRCArtObjectTableViewCell, let art = dataObject.object as? BRCArtObject {
             artCell.configurePlayPauseButton(art)
         }
         return cell

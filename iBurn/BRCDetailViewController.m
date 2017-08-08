@@ -30,6 +30,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 @interface BRCDetailViewController () <MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
+@property (nonatomic, strong, readwrite, nullable) BRCObjectMetadata *metadata;
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
@@ -65,11 +66,18 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)setDataObject:(BRCDataObject *)dataObject
 {
     _dataObject = dataObject;
+    [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
+        self.metadata = [dataObject metadataWithTransaction:transaction];
+    }];
     self.title = dataObject.title;
     self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
     [self setupMapViewWithObject:self.dataObject];
-    [self refreshFavoriteImage];
     [self.tableView reloadData];
+}
+
+- (void) setMetadata:(BRCObjectMetadata * _Nullable)metadata {
+    _metadata = metadata;
+    [self refreshFavoriteImage];
 }
 
 - (void) refreshFavoriteImage {
@@ -133,7 +141,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (UIImage *)currentStarImage
 {
-    UIImage *starImage = [self imageIfFavorite:self.dataObject.isFavorite];
+    UIImage *starImage = [self imageIfFavorite:self.metadata.isFavorite];
     return starImage;
 }
 
@@ -142,11 +150,12 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if (!self.dataObject) {
         return;
     }
-    BRCDataObject *tempObject = [self.dataObject copy];
-    tempObject.isFavorite = !tempObject.isFavorite;
-    self.dataObject = tempObject;
+    BRCObjectMetadata *newMetadata = [self.metadata copy];
+    newMetadata.isFavorite = !newMetadata.isFavorite;
+    self.metadata = newMetadata;
+    BRCDataObject *tempObject = self.dataObject;
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [tempObject saveWithTransaction:transaction];
+        [self.dataObject replaceMetadata:newMetadata transaction:transaction];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *event = (BRCEventObject*)tempObject;
             [event refreshCalendarEntry:transaction];

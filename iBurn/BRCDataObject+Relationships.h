@@ -9,9 +9,13 @@
 #import "BRCDataObject.h"
 @import YapDatabase;
 
+@class BRCEventObject;
+
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCDataObject (Relationships)
 
 /** Returns all events hosted at art/camp. Not valid for event objects. */
-- ( NSArray* __nonnull ) eventsWithTransaction:(YapDatabaseReadTransaction* __nonnull)readTransaction;
+- ( NSArray<BRCEventObject*> *) eventsWithTransaction:(YapDatabaseReadTransaction*)transaction;
 
 @end
+NS_ASSUME_NONNULL_END
