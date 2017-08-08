@@ -34,5 +34,6 @@ abstract_target 'iBurnAbstract' do
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', '~> 1.0'
 	pod 'JTSImageViewController'
-
+	pod 'UIImageColors', '~> 1.4.0'
+	pod 'Kingfisher', '~> 3.10.4'
 end

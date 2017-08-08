@@ -26,12 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata;
 
-+ (NSString*) cellIdentifier;
+@property (nonatomic, readonly, class) NSString* cellIdentifier;
 
 - (void) updateDistanceLabelFromLocation:(nullable CLLocation*)fromLocation dataObject:(BRCDataObject*)dataObject;
-
-+ (Class) cellClassForDataObjectClass:(Class)dataObjectClass;
-+ (Class) cellClassForDataObject:(BRCDataObject*)dataObject;
 
 @end
 NS_ASSUME_NONNULL_END

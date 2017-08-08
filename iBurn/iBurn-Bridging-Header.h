@@ -28,3 +28,4 @@
 #import "BRCUserTrackingBarButtonItem.h"
 #import "BRCLocations.h"
 #import "BRCUserMapPoint.h"
+#import "BRCEventObjectTableViewCell.h"

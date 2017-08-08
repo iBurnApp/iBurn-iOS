@@ -13,14 +13,10 @@ import CocoaLumberjack
 public extension UITableView {
     /** Registers custom cell classes for BRC data objects */
     public func registerCustomCellClasses() {
-        let objectClasses = [BRCEventObject.self, BRCDataObject.self, BRCArtObject.self]
-        objectClasses.forEach { objectClass in
-            guard let cellClass = BRCDataObjectTableViewCell.cellClass(forDataObjectClass: objectClass) as? BRCDataObjectTableViewCell.Type else {
-                DDLogError("Cell class not found for \(objectClass)")
-                return
-            }
-            let cellIdentifier = cellClass.cellIdentifier()
-            let nib = UINib.init(nibName: NSStringFromClass(cellClass), bundle: nil)
+        let mapping = BRCDataObjectTableViewCell.cellIdentifiers
+        mapping.forEach { cellIdentifier, cellClass in
+            let nibName = NSStringFromClass(cellClass);
+            let nib = UINib.init(nibName: nibName, bundle: nil)
             self.register(nib, forCellReuseIdentifier: cellIdentifier)
         }
     }
@@ -174,10 +170,10 @@ extension SearchDisplayManager: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let dataObject = dataObjectAtIndexPath(indexPath) else {
             DDLogWarn("No object found!")
-            return UITableViewCell()
+            fatalError()
         }
         guard let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: writeConnection) else {
-            return UITableViewCell()
+            fatalError()
         }
         return cell
     }
@@ -188,11 +184,7 @@ extension BRCDataObjectTableViewCell {
                     tableView: UITableView,
                     dataObject: DataObject,
                     writeConnection: YapDatabaseConnection) -> BRCDataObjectTableViewCell? {
-        guard let cellClass = BRCDataObjectTableViewCell.cellClass(for: dataObject.object) as? BRCDataObjectTableViewCell.Type else {
-            DDLogWarn("No cell class!")
-            return nil
-        }
-        let cellIdentifier = cellClass.cellIdentifier()
+        let cellIdentifier = dataObject.object.tableCellIdentifier
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? BRCDataObjectTableViewCell else {
             DDLogWarn("Couldnt dequeue cell of proper class!")
             return nil

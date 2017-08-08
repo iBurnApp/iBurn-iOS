@@ -216,11 +216,11 @@ public class BRCSortedViewController: UITableViewController {
         }
         
         guard let dataObject = dataObjectAtIndexPath(indexPath) else {
-            return UITableViewCell()
+            fatalError()
         }
         
         guard let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: BRCDatabaseManager.shared.readWriteConnection) else {
-            return UITableViewCell()
+            fatalError()
         }
         return cell
     }

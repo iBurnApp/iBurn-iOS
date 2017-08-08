@@ -10,12 +10,14 @@
 
 @class BRCDetailCellInfo;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailInfoTableViewCell : UITableViewCell
 
 @property (nonatomic, strong) UIImageView *artImageView;
 
 - (void) setDetailCellInfo:(BRCDetailCellInfo*)cellInfo;
 
-+ (NSString*)cellIdentifier;
+@property (nonatomic, class, readonly) NSString* cellIdentifier;
 
 @end
+NS_ASSUME_NONNULL_END

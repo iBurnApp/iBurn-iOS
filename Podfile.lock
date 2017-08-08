@@ -20,6 +20,7 @@ PODS:
     - FormatterKit/Resources
   - JSQWebViewController (5.0.0)
   - JTSImageViewController (1.5.1)
+  - Kingfisher (3.10.4)
   - KSCrash (1.15.11):
     - KSCrash/Installations (= 1.15.11)
   - KSCrash/Installations (1.15.11):
@@ -95,6 +96,7 @@ PODS:
   - Swizzlean (1.0.0)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
+  - UIImageColors (1.4.0)
   - VTAcknowledgementsViewController (1.2.1)
   - YapDatabase (3.0.1):
     - YapDatabase/Standard (= 3.0.1)
@@ -169,6 +171,7 @@ DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - JSQWebViewController (~> 5.0)
   - JTSImageViewController
+  - Kingfisher (~> 3.10.4)
   - KSCrash (~> 1.15.9)
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
@@ -180,6 +183,7 @@ DEPENDENCIES:
   - Swizzlean
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
+  - UIImageColors (~> 1.4.0)
   - VTAcknowledgementsViewController (~> 1.0)
   - YapDatabase (~> 3.0)
 
@@ -211,6 +215,7 @@ SPEC CHECKSUMS:
   FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
+  Kingfisher: dc3a4983e86d2dfa89513664983a82340c11a289
   KSCrash: 7bd106ca4a2247774deeeb587c740ce0207de8f3
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
@@ -222,9 +227,10 @@ SPEC CHECKSUMS:
   Swizzlean: 628e6747d925655be3dbbb943bc8a8e8b29e6852
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
+  UIImageColors: 1f891e1a3224efebb01ad476df3a5aed4220ee24
   VTAcknowledgementsViewController: e1de80f2c0ce31cc7e1c6f1c8aaeec2770371f09
   YapDatabase: 69ca88a2dfee305fde4412cf670c76f75aa7ccd0
 
-PODFILE CHECKSUM: dd44e8c6879e3c5d7d182a6b6ce821e3a52b8505
+PODFILE CHECKSUM: 47da7121adc049224dde1c643852c875328a834a
 
 COCOAPODS: 1.3.1

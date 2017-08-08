@@ -56,23 +56,8 @@
 }
 
 + (NSString*) cellIdentifier {
-    return NSStringFromClass([self class]);
+    return NSStringFromClass(self.class);
 }
-
-+ (Class) cellClassForDataObjectClass:(Class)dataObjectClass {
-    if (dataObjectClass == [BRCEventObject class]) {
-        return [BRCEventObjectTableViewCell class];
-    } else if (dataObjectClass == [BRCArtObject class]) {
-        return [BRCArtObjectTableViewCell class];
-    } else {
-        return [BRCDataObjectTableViewCell class];
-    }
-}
-
-+ (Class) cellClassForDataObject:(BRCDataObject *)dataObject {
-    return [self cellClassForDataObjectClass:dataObject.class];
-}
-    
 
 - (IBAction)favoriteButtonPressed:(id)sender {
     if (self.favoriteButton.selected) {

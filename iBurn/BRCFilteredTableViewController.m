@@ -317,13 +317,23 @@
     return 0;
 }
 
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    if ([data.object isKindOfClass:BRCArtObject.class]) {
+        BRCArtObject *art = (BRCArtObject*)data.object;
+        if (art.thumbnailURL) {
+            return 130;
+        }
+    }
+    return UITableViewAutomaticDimension;
+}
+
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
     BRCDataObject *dataObject = data.object;
-    Class cellClass = [BRCDataObjectTableViewCell cellClassForDataObjectClass:[dataObject class]];
-    NSString *cellIdentifier = [cellClass cellIdentifier];
+    NSString *cellIdentifier = dataObject.tableCellIdentifier;
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     [cell setDataObject:dataObject metadata:data.metadata];
     CLLocation *currentLocation = BRCAppDelegate.shared.locationManager.location;
