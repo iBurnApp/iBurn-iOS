@@ -8,14 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRCDetailCellInfo;
+@class BRCDetailCellInfo, BRCImageColors;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailInfoTableViewCell : UITableViewCell
 
 @property (nonatomic, strong) UIImageView *artImageView;
 
-- (void) setDetailCellInfo:(BRCDetailCellInfo*)cellInfo;
+- (void) setDetailCellInfo:(BRCDetailCellInfo*)cellInfo colors:(BRCImageColors*)colors;
 
 @property (nonatomic, class, readonly) NSString* cellIdentifier;
 

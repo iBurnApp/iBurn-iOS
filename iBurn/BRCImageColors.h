@@ -19,5 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
                             primaryColor:(UIColor*)primaryColor
                           secondaryColor:(UIColor*)secondaryColor
                              detailColor:(UIColor*)detailColor;
+
+/** Default app color scheme */
+@property (nonatomic, class, readonly) BRCImageColors *plain;
+
 @end
 NS_ASSUME_NONNULL_END

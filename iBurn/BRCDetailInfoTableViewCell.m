@@ -31,20 +31,28 @@
     return self;
 }
 
-- (void) setSelectableAppearance {
+- (void) setSelectableAppearance:(BRCImageColors*)colors {
     self.selectionStyle = UITableViewCellSelectionStyleDefault;
-    self.textLabel.textColor = [UIColor blueColor];
+    self.textLabel.textColor = colors.detailColor;
 }
 
-- (void) setPlainTextApperance {
+- (void) setPlainTextApperance:(BRCImageColors*)colors {
     self.selectionStyle = UITableViewCellSelectionStyleNone;
-    self.textLabel.textColor = [UIColor darkTextColor];
+    self.textLabel.textColor = colors.primaryColor;
 }
 
-- (void) setDetailCellInfo:(BRCDetailCellInfo *)cellInfo {
+- (void) prepareForReuse {
+    [super prepareForReuse];
+    self.artImageView.image = nil;
+    self.textLabel.text = nil;
+    self.backgroundColor = [UIColor whiteColor];
+}
+
+- (void) setDetailCellInfo:(BRCDetailCellInfo *)cellInfo colors:(BRCImageColors*)colors {
     if (!cellInfo) {
         return;
     }
+    self.backgroundColor = colors.backgroundColor;
     self.artImageView.image = nil;
     self.artImageView.hidden = YES;
     switch (cellInfo.cellType) {
@@ -64,18 +72,18 @@
         }
         case BRCDetailCellInfoTypeText: {
             self.textLabel.text = cellInfo.value;
-            [self setPlainTextApperance];
+            [self setPlainTextApperance:colors];
             self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
             self.textLabel.numberOfLines = 0;
             break;
         }
         case BRCDetailCellInfoTypeEmail: {
-            [self setSelectableAppearance];
+            [self setSelectableAppearance:colors];
             self.textLabel.text = cellInfo.value;
             break;
         }
         case BRCDetailCellInfoTypeURL: {
-            [self setSelectableAppearance];
+            [self setSelectableAppearance:colors];
             NSURL *url = cellInfo.value;
             self.textLabel.text = [url absoluteString];
             break;
@@ -83,14 +91,15 @@
         case BRCDetailCellInfoTypeCoordinates: {
             CLLocation *location = cellInfo.value;
             self.textLabel.text = [NSString stringWithFormat:@"%f, %f", location.coordinate.latitude, location.coordinate.longitude];
-            self.textLabel.textColor = [UIColor darkTextColor];
+            [self setPlainTextApperance:colors];
+            self.textLabel.textColor = colors.primaryColor;
             self.selectionStyle = UITableViewCellSelectionStyleDefault;
             break;
         }
         case BRCDetailCellInfoTypeSchedule: {
             NSAttributedString *attributedString = cellInfo.value;
             self.textLabel.numberOfLines = 0;
-            [self setPlainTextApperance];
+            [self setPlainTextApperance:colors];
             self.textLabel.attributedText = attributedString;
             break;
         }
@@ -103,19 +112,20 @@
             self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
             self.textLabel.numberOfLines = 0;
             self.textLabel.text = textString;
-            [self setSelectableAppearance];
+            [self setSelectableAppearance:colors];
             break;
         }
         case BRCDetailCellInfoTypeEventRelationship: {
             self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
             self.textLabel.numberOfLines = 0;
             self.textLabel.text = @"Hosted Events";
-            [self setSelectableAppearance];
+            [self setSelectableAppearance:colors];
             break;
         }
         case BRCDetailCellInfoTypeDate: {
             NSDate *date = cellInfo.value;
             self.textLabel.text = [[NSDateFormatter brc_playaEventsAPIDateFormatter] stringFromDate:date];
+            [self setPlainTextApperance:colors];
             break;
         }
         case BRCDetailCellInfoTypeImage: {
@@ -124,13 +134,14 @@
             UIImage *image = [UIImage imageWithContentsOfFile:imageURL.path];
             self.artImageView.image = image;
             self.artImageView.hidden = NO;
+            [self setPlainTextApperance:colors];
             break;
         }
     }
 }
 
 + (NSString*) cellIdentifier {
-    return NSStringFromClass([self class]);
+    return NSStringFromClass(self.class);
 }
 
 @end

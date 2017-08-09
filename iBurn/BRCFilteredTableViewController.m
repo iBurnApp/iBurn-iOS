@@ -24,7 +24,7 @@
 #import "iBurn-Swift.h"
 @import AVFoundation;
 
-@interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate, UITableViewDataSourcePrefetching>
+@interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate, UIPageViewControllerDelegate>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
 @property (nonatomic, strong, readonly) YapDatabaseSearchQueue *searchQueue;
 @end
@@ -138,10 +138,6 @@
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
-    // iOS 10 only
-    if ([self.tableView respondsToSelector:@selector(setPrefetchDataSource:)]) {
-        self.tableView.prefetchDataSource = self;
-    }
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
@@ -413,7 +409,10 @@
     detailVC.hidesBottomBarWhenPushed = YES;
     UIPageViewController *pageVC = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
     pageVC.dataSource = self;
+    pageVC.delegate = self;
+    pageVC.hidesBottomBarWhenPushed = YES;
     [pageVC setViewControllers:@[detailVC] direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+    [pageVC copyChildParameters];
     [self.navigationController pushViewController:pageVC animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
@@ -542,6 +541,13 @@
     }
     
     [self.tableView endUpdates];
+}
+
+#pragma mark UIPageViewControllerDelegate
+
+// Sent when a gesture-initiated transition ends. The 'finished' parameter indicates whether the animation finished, while the 'completed' parameter indicates whether the transition completed or bailed out (if the user let go early).
+- (void)pageViewController:(UIPageViewController *)pageViewController didFinishAnimating:(BOOL)finished previousViewControllers:(NSArray<UIViewController *> *)previousViewControllers transitionCompleted:(BOOL)completed {
+    [pageViewController copyChildParameters];
 }
 
 #pragma mark UIPageViewControllerDataSource

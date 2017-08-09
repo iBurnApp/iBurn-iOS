@@ -31,6 +31,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 @property (nonatomic, strong, readwrite, nullable) BRCObjectMetadata *metadata;
+@property (nonatomic, strong, readonly) BRCImageColors *colors;
 @property (nonatomic, strong) NSArray *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
@@ -47,6 +48,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     NSParameterAssert(dataObject);
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
+        _colors = BRCImageColors.plain;
         self.dataObject = dataObject;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
 
@@ -66,9 +68,11 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)setDataObject:(BRCDataObject *)dataObject
 {
     _dataObject = dataObject;
+    __block BRCObjectMetadata *metadata = nil;
     [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
-        self.metadata = [dataObject metadataWithTransaction:transaction];
+        metadata = [dataObject metadataWithTransaction:transaction];
     }];
+    self.metadata = metadata;
     self.title = dataObject.title;
     self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
     [self setupMapViewWithObject:self.dataObject];
@@ -77,7 +81,24 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void) setMetadata:(BRCObjectMetadata * _Nullable)metadata {
     _metadata = metadata;
+    if ([metadata isKindOfClass:BRCArtMetadata.class]) {
+        BRCArtMetadata *art = (BRCArtMetadata*)metadata;
+        BRCImageColors *colors = art.thumbnailImageColors;
+        if (colors) {
+            _colors = colors;
+        }
+    }
+    [self configureColors:self.colors];
     [self refreshFavoriteImage];
+}
+
+- (void) configureColors:(BRCImageColors*)colors {
+    self.view.backgroundColor = colors.backgroundColor;
+    self.tableView.backgroundColor = colors.backgroundColor;
+    self.view.tintColor = colors.primaryColor;
+    self.tableView.tintColor = colors.primaryColor;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.navigationItem.titleView.tintColor = colors.detailColor;
 }
 
 - (void) refreshFavoriteImage {
@@ -86,6 +107,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self.navigationController.navigationBar setTranslucent:NO];
 }
 
 - (void)viewDidLoad
@@ -231,13 +253,24 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     BRCDetailInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[BRCDetailInfoTableViewCell cellIdentifier] forIndexPath:indexPath];
     BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
-    [cell setDetailCellInfo:cellInfo];
+    [cell setDetailCellInfo:cellInfo colors:self.colors];
     return cell;
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return [self.detailCellInfoArray count];
+}
+
+- (void) tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section {
+    if (!self.colors) {
+        return;
+    }
+    UITableViewHeaderFooterView *hfv = (UITableViewHeaderFooterView*)view;
+    if (![hfv isKindOfClass:UITableViewHeaderFooterView.class]) {
+        return;
+    }
+    hfv.textLabel.textColor = self.colors.secondaryColor;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section

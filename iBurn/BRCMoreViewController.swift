@@ -92,6 +92,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     func pushArtView() {
         let dbManager = BRCDatabaseManager.shared
         let artVC = BRCFilteredTableViewController(viewClass: BRCArtObject.self, viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
+        artVC?.tableView.separatorStyle = .none
         artVC?.title = "Art"
         artVC?.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(artVC!, animated: true)

@@ -16,6 +16,24 @@ extension UIImageColors {
     }
 }
 
+public extension UIPageViewController {
+    /** Copy the paramters from child view controller */
+    public func copyChildParameters() {
+        guard let top = self.viewControllers?.first else { return }
+        let config = { (_ source: UIViewController, _ destination: UIViewController) in
+            destination.view.tintColor = source.view.tintColor
+            destination.view.backgroundColor = source.view.backgroundColor
+            destination.title = source.title
+            destination.navigationItem.rightBarButtonItem = source.navigationItem.rightBarButtonItem
+            destination.navigationController?.navigationBar.tintColor = source.view.tintColor
+            destination.navigationController?.navigationBar.backgroundColor = source.view.backgroundColor
+            destination.navigationItem.titleView?.tintColor = source.navigationItem.titleView?.tintColor
+            destination.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: source.view.tintColor]
+        }
+        config(top, self)
+    }
+}
+
 public class ColorCache {
     static let shared = ColorCache()
     let readConnection = BRCDatabaseManager.shared.readConnection
