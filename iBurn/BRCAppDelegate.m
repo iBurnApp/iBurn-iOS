@@ -101,7 +101,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     [self.dataImporter doubleCheckMapTiles:nil];
     
-    [BRCDatabaseManager.shared.readWriteConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
+    [BRCDatabaseManager.shared.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject yapCollection]];
         NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject yapCollection]];
         NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject yapCollection]];

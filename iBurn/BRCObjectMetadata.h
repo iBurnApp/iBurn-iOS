@@ -8,6 +8,7 @@
 
 @import Mantle;
 @import YapDatabase;
+#import "BRCImageColors.h"
 
 @class BRCObjectMetadata;
 NS_ASSUME_NONNULL_BEGIN
@@ -29,11 +30,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable, readwrite) NSString *userNotes;
 /** The last time object was fetched from iBurn API */
 @property (nonatomic, strong, nullable, readwrite) NSDate *lastUpdated;
+
+- (instancetype) metadataCopy;
+@end
+
+@interface BRCCampMetadata : BRCObjectMetadata
 @end
 
 @interface BRCEventMetadata : BRCObjectMetadata
 /** EKEvent calendar eventIdentifier to be used when unsetting isFavorite */
 @property (nonatomic, strong, readwrite, nullable) NSString *calendarEventIdentifier;
 @end
+
+@interface BRCArtMetadata : BRCObjectMetadata
+/** Cached image colors from thumbnail */
+@property (nonatomic, strong, readwrite, nullable) BRCImageColors *thumbnailImageColors;
+@end
+
 
 NS_ASSUME_NONNULL_END

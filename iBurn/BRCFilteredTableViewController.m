@@ -24,7 +24,7 @@
 #import "iBurn-Swift.h"
 @import AVFoundation;
 
-@interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate>
+@interface BRCFilteredTableViewController () <UIToolbarDelegate, CLLocationManagerDelegate, UITableViewDataSourcePrefetching>
 @property (nonatomic, strong, readonly) YapDatabaseConnection *searchConnection;
 @property (nonatomic, strong, readonly) YapDatabaseSearchQueue *searchQueue;
 @end
@@ -138,6 +138,10 @@
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
+    // iOS 10 only
+    if ([self.tableView respondsToSelector:@selector(setPrefetchDataSource:)]) {
+        self.tableView.prefetchDataSource = self;
+    }
     self.tableView.backgroundView = nil;
     self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.backgroundView.backgroundColor = [UIColor whiteColor];
@@ -182,6 +186,7 @@
     YapDatabase *database = BRCDatabaseManager.shared.database;
     self.databaseConnection = [database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
+    self.databaseConnection.permittedTransactions = YDB_AnyReadTransaction | YDB_MainThreadOnly;
     _searchConnection = [database newConnection];
     _searchQueue = [[YapDatabaseSearchQueue alloc] init];
 }
@@ -317,16 +322,27 @@
     return 0;
 }
 
-- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
-    if ([data.object isKindOfClass:BRCArtObject.class]) {
-        BRCArtObject *art = (BRCArtObject*)data.object;
-        if (art.thumbnailURL) {
-            return 130;
-        }
-    }
-    return UITableViewAutomaticDimension;
-}
+//- (CGFloat) tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
+//    __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+//    if ([data.object isKindOfClass:BRCArtObject.class]) {
+//        BRCArtObject *art = (BRCArtObject*)data.object;
+//        if (art.thumbnailURL) {
+//            return 180;
+//        }
+//    }
+//    return UITableViewAutomaticDimension;
+//}
+//
+//- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+//    __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+//    if ([data.object isKindOfClass:BRCArtObject.class]) {
+//        BRCArtObject *art = (BRCArtObject*)data.object;
+//        if (art.thumbnailURL) {
+//            return 180;
+//        }
+//    }
+//    return UITableViewAutomaticDimension;
+//}
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -372,6 +388,20 @@
     YapDatabaseViewMappings *mappings = [self mappingsForTableView:sender];
     NSInteger count = [mappings numberOfItemsInSection:section];
     return count;
+}
+
+- (void)tableView:(UITableView *)tableView prefetchRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths {
+//    NSMutableArray *urls = [NSMutableArray arrayWithCapacity:indexPaths.count];
+//    [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//        DataObjectWithMetadata *data = [self dataObjectForIndexPath:obj tableView:tableView];
+//        if ([data.object isKindOfClass:BRCArtObject.class]) {
+//            BRCArtObject *art = (BRCArtObject*)data.object;
+//            if (art.thumbnailURL) {
+//                [urls addObject:art.thumbnailURL];
+//            }
+//        }
+//    }];
+//    [BRCDataObject prefetchImageURLs:urls];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath

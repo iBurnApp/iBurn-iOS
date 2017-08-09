@@ -9,8 +9,16 @@
 #import "BRCObjectMetadata.h"
 
 @implementation BRCObjectMetadata
+- (instancetype) metadataCopy {
+    return [self copy];
+}
 @end
 
 @implementation BRCEventMetadata
 @end
 
+@implementation BRCArtMetadata
+@end
+
+@implementation BRCCampMetadata
+@end

@@ -298,12 +298,12 @@ static CGFloat const kTableViewHeaderHeight = 200;
         NSURL *imageURL = cellInfo.value;
         UIImage *image = [UIImage imageWithContentsOfFile:imageURL.path];
         if (image) {
-            UITableViewCell *cell = [self tableView:tableView cellForRowAtIndexPath:indexPath];
             // Create image info
             JTSImageInfo *imageInfo = [[JTSImageInfo alloc] init];
             imageInfo.image = image;
-            imageInfo.referenceRect = cell.frame;
-            imageInfo.referenceView = cell.superview;
+            CGRect rect = [tableView rectForRowAtIndexPath:indexPath];
+            imageInfo.referenceRect = rect;
+            imageInfo.referenceView = tableView;
             
             // Setup view controller
             JTSImageViewController *imageViewer = [[JTSImageViewController alloc]

@@ -9,5 +9,15 @@
 #import "BRCCampObject.h"
 
 @implementation BRCCampObject
+- (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    return [self campMetadataWithTransaction:transaction];
+}
 
+- (BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    id metadata = [transaction metadataForKey:self.yapKey inCollection:self.yapCollection];
+    if ([metadata isKindOfClass:BRCCampMetadata.class]) {
+        return metadata;
+    }
+    return [BRCCampMetadata new];
+}
 @end

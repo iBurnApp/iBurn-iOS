@@ -12,4 +12,6 @@
 
 @property (nonatomic, strong, readonly) NSString *hometown;
 
+- (BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
+
 @end

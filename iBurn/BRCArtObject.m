@@ -82,4 +82,16 @@
     return [self localMediaURLForType:BRCMediaDownloadTypeAudio];
 }
 
+- (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    return [self artMetadataWithTransaction:transaction];
+}
+
+- (BRCArtMetadata*) artMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    id metadata = [transaction metadataForKey:self.yapKey inCollection:self.yapCollection];
+    if ([metadata isKindOfClass:BRCArtMetadata.class]) {
+        return metadata;
+    }
+    return [BRCArtMetadata new];
+}
+
 @end

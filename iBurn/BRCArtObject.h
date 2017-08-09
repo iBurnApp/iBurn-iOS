@@ -29,5 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** If cached, returns local URL otherwise nil */
 @property (nonatomic, strong, readonly, nullable) NSURL *localAudioURL;
 
+- (BRCArtMetadata*) artMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
+
 @end
 NS_ASSUME_NONNULL_END

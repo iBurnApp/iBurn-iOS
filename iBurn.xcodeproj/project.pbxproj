@@ -109,6 +109,7 @@
 		D9DE7BB01EF25C11007A983E /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BAF1EF25C11007A983E /* MapViewController.swift */; };
 		D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */; };
 		D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E181F39966700906F64 /* ColorCache.swift */; };
+		D9DE9E1C1F3A447100906F64 /* BRCImageColors.m in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */; };
 		D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
@@ -315,6 +316,8 @@
 		D9DE7BAF1EF25C11007A983E /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarButtonsView.swift; sourceTree = "<group>"; };
 		D9DE9E181F39966700906F64 /* ColorCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCache.swift; sourceTree = "<group>"; };
+		D9DE9E1A1F3A447100906F64 /* BRCImageColors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCImageColors.h; sourceTree = "<group>"; };
+		D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCImageColors.m; sourceTree = "<group>"; };
 		D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataImporter.swift; sourceTree = "<group>"; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
@@ -702,6 +705,8 @@
 		D99415651987222F00D245C7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D9DE9E1A1F3A447100906F64 /* BRCImageColors.h */,
+				D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */,
 				D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */,
 				D946994E1F3913A000DE8DA6 /* BRCObjectMetadata.h */,
 				D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */,
@@ -1213,6 +1218,7 @@
 				D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */,
 				6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */,
 				D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */,
+				D9DE9E1C1F3A447100906F64 /* BRCImageColors.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
