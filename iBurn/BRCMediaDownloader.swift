@@ -110,9 +110,19 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         return url
     }
     
+    public static func imageForArt(_ art: BRCArtObject) -> UIImage? {
+        let filename = self.fileName(art, type: .image)
+        guard let bundle = Bundle.bundledMedia,
+        let image = UIImage(named: filename, in: bundle, compatibleWith: nil)
+        else {
+            return nil
+        }
+        return image
+    }
+    
     open static func fileName(_ art: BRCArtObject, type: BRCMediaDownloadType) -> String {
         let fileType = extensionForDownloadType(type)
-        let fileName = (art.uniqueID as NSString).appendingPathExtension(fileType)!
+        let fileName =  "\(art.uniqueID).\(fileType)"
         return fileName
     }
     

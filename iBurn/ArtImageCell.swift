@@ -13,48 +13,34 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
     
     @IBOutlet var thumbnailView: UIImageView!
 
-    static let downscaleSize = CGSize(width: 200, height: 200)
 
     override public func setDataObject(_ dataObject: BRCDataObject, metadata: BRCObjectMetadata) {
         super.setDataObject(dataObject, metadata: metadata)
         guard let art = dataObject as? BRCArtObject,
-        let artMetadata = metadata as? BRCArtMetadata,
-        let thumbnailURL = art.thumbnailURL else {
-            return
+        let artMetadata = metadata as? BRCArtMetadata else {
+                return
         }
-
 
         if let colors = artMetadata.thumbnailImageColors {
             setupLabelColors(colors)
         }
 
         DispatchQueue.global(qos: .userInteractive).async {
-            guard let url = art.localThumbnailURL,
-                let image = UIImage(contentsOfFile: url.path) else {
+            guard let image = BRCMediaDownloader.imageForArt(art) else {
                 return
             }
             DispatchQueue.main.async {
                 self.thumbnailView.image = image
             }
             guard artMetadata.thumbnailImageColors == nil else { return }
-            ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: ArtImageCell.downscaleSize, completion: { colors in
+            ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, completion: { colors in
                 UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
                     self.setupLabelColors(colors)
                 })
             })
         }
-        NSLog("contentView: \(self.contentView.constraints)")
     }
 
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        self.updateConstraints()
-    }
-
-    public override func updateConstraints() {
-        super.updateConstraints()
-        NSLog("contentView: \(self.contentView.constraints)")
-    }
 
     private func setupLabelColors(_ colors: BRCImageColors) {
         self.backgroundColor = colors.backgroundColor

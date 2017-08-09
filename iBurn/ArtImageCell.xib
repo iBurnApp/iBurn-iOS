@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13178.6" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13156.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -35,17 +34,8 @@
                             </mask>
                         </variation>
                     </label>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
-                        <rect key="frame" x="10" y="154.5" width="103" height="19"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="19" id="Mat-xS-PR4"/>
-                        </constraints>
-                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
-                        <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <nil key="highlightedColor"/>
-                    </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="5:00 &amp; Donut" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mdq-aF-SDa">
-                        <rect key="frame" x="189" y="154.5" width="92" height="19"/>
+                        <rect key="frame" x="189" y="142" width="92" height="19"/>
                         <constraints>
                             <constraint firstAttribute="width" relation="lessThanOrEqual" constant="155" id="si7-Qh-l0C"/>
                         </constraints>
@@ -94,7 +84,7 @@
                         </connections>
                     </button>
                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="3Ae-SF-DWh">
-                        <rect key="frame" x="0.0" y="34" width="279" height="100"/>
+                        <rect key="frame" x="8" y="34" width="271" height="100"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="BRCArtIcon" translatesAutoresizingMaskIntoConstraints="NO" id="EBX-hF-I8z">
                                 <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
@@ -104,28 +94,37 @@
                                     <constraint firstAttribute="width" secondItem="EBX-hF-I8z" secondAttribute="height" multiplier="1:1" id="ww9-Gg-4yi"/>
                                 </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dIs-6g-Ive">
-                                <rect key="frame" x="108" y="0.0" width="171" height="100"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dIs-6g-Ive">
+                                <rect key="frame" x="108" y="0.0" width="163" height="100"/>
                                 <string key="text">Greetings dirty desert dwellers!  We are Astral Headwash and we do the amazing!  We will wash your head for you again this year.  That's right, clean, fresh water warmed in the desert sun with wonderful smelling shampoo and a bit of leave-in condition to send you on your way!  Bring your happy selves to us Monday - Friday noon until 4 pm</string>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                     </stackView>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
+                        <rect key="frame" x="10" y="142" width="103" height="19"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="19" id="Mat-xS-PR4"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                        <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="H2p-sc-9uM" secondAttribute="bottomMargin" constant="2" id="2Jk-96-Lhp"/>
-                    <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="3Ae-SF-DWh" secondAttribute="bottom" constant="20.5" id="7Mn-EW-WKD"/>
+                    <constraint firstItem="jJk-MV-Kf7" firstAttribute="top" secondItem="3Ae-SF-DWh" secondAttribute="bottom" constant="8" id="7Mn-EW-WKD"/>
                     <constraint firstItem="ant-aj-o32" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="X3h-Fa-FKh" secondAttribute="trailing" constant="10" id="Ada-j2-INh"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="centerY" secondItem="Xr6-XH-xRR" secondAttribute="centerY" id="Dzp-ML-KL6"/>
                     <constraint firstItem="X3h-Fa-FKh" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="2" id="LA4-Fc-zcQ"/>
                     <constraint firstItem="ant-aj-o32" firstAttribute="centerY" secondItem="X3h-Fa-FKh" secondAttribute="centerY" id="Mwe-rl-8Mb"/>
                     <constraint firstItem="ant-aj-o32" firstAttribute="leading" secondItem="Xr6-XH-xRR" secondAttribute="trailing" constant="10" id="PBB-Rh-J1v"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="jJk-MV-Kf7" secondAttribute="bottom" id="Pwn-cu-3O7"/>
                     <constraint firstItem="jJk-MV-Kf7" firstAttribute="bottom" secondItem="mdq-aF-SDa" secondAttribute="bottom" id="TvL-hc-4QB"/>
                     <constraint firstItem="Xr6-XH-xRR" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="-8" id="WCH-Ev-WPg"/>
                     <constraint firstAttribute="trailingMargin" secondItem="ant-aj-o32" secondAttribute="trailing" constant="10" id="Ykc-3c-eeM"/>
-                    <constraint firstItem="3Ae-SF-DWh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="byx-yp-vq7"/>
+                    <constraint firstItem="3Ae-SF-DWh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="8" id="byx-yp-vq7"/>
                     <constraint firstItem="3Ae-SF-DWh" firstAttribute="top" secondItem="X3h-Fa-FKh" secondAttribute="bottom" constant="4" id="faV-OR-Spz"/>
                     <constraint firstItem="mdq-aF-SDa" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jJk-MV-Kf7" secondAttribute="trailing" constant="2" id="gFL-km-HdE"/>
                     <constraint firstAttribute="trailingMargin" secondItem="3Ae-SF-DWh" secondAttribute="trailing" id="gQV-uu-JZO"/>

@@ -31,19 +31,20 @@ public class ColorCache {
             }
             return
         }
-        // Maybe find colors in database when given stale artMetadata
-        var existingColors: BRCImageColors? = nil
-        self.readConnection.read { transaction in
-            let artMetadata = art.artMetadata(with: transaction)
-            existingColors = artMetadata.thumbnailImageColors
-        }
-        if let colors = existingColors {
-            self.completionQueue.async {
-                completion(colors)
-            }
-            return
-        }
         DispatchQueue.global(qos: .userInteractive).async {
+            // Maybe find colors in database when given stale artMetadata
+            var existingColors: BRCImageColors? = nil
+            self.readConnection.read { transaction in
+                let artMetadata = art.artMetadata(with: transaction)
+                existingColors = artMetadata.thumbnailImageColors
+            }
+            if let colors = existingColors {
+                self.completionQueue.async {
+                    completion(colors)
+                }
+                return
+            }
+            
             // Otherwise calculate the colors and save to db
             let colors = image.getColors(scaleDownSize: downscaleSize)
             let brcColors = colors.brc_ImageColors
