@@ -43,6 +43,11 @@ public class MapViewController: BaseMapViewController {
     
     override public func viewDidLoad() {
         super.viewDidLoad()
+        // TODO: make sidebar buttons work
+        //setupSidebarButtons()
+    }
+    
+    private func setupSidebarButtons() {
         view.addSubview(sidebarButtons)
         let bottom = sidebarButtons.autoPinEdge(toSuperviewMargin: .bottom)
         bottom.constant = -50
