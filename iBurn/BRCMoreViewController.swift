@@ -32,6 +32,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.navigationController?.navigationBar.setColorTheme(BRCImageColors.plain, animated: animated)
         tableView.reloadData()
     }
 

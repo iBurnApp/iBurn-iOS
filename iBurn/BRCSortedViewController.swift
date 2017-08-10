@@ -100,6 +100,7 @@ public class BRCSortedViewController: UITableViewController {
     
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.navigationController?.navigationBar.setColorTheme(BRCImageColors.plain, animated: animated)
 
         refreshTableItems { () -> Void in
             self.tableView.reloadData();

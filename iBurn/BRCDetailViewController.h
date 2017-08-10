@@ -8,12 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRCDataObject, BRCObjectMetadata;
+@class BRCDataObject, BRCObjectMetadata, BRCImageColors;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailViewController : UITableViewController
 
 @property (nonatomic, strong, readonly) BRCDataObject *dataObject;
+@property (nonatomic, strong, readonly) BRCImageColors *colors;
 @property (nonatomic, strong, nullable) NSIndexPath *indexPath;
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject;

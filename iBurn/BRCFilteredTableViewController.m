@@ -275,6 +275,7 @@
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self updateViewConstraints];
+    [self.navigationController.navigationBar setColorTheme:BRCImageColors.plain animated:YES];
 }
 
 - (void) audioPlayerChangedNotification:(NSNotification*)notification {
@@ -407,10 +408,15 @@
     BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
     detailVC.indexPath = indexPath;
     detailVC.hidesBottomBarWhenPushed = YES;
+    BRCImageColors *colors = detailVC.colors;
     UIPageViewController *pageVC = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
     pageVC.dataSource = self;
     pageVC.delegate = self;
     pageVC.hidesBottomBarWhenPushed = YES;
+    self.navigationController.navigationBar.translucent = NO;
+    UINavigationBar *navBar = self.navigationController.navigationBar;
+    [navBar setColorTheme:colors animated:YES];
+
     [pageVC setViewControllers:@[detailVC] direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
     [pageVC copyChildParameters];
     [self.navigationController pushViewController:pageVC animated:YES];

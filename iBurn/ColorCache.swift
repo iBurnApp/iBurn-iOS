@@ -16,23 +16,66 @@ extension UIImageColors {
     }
 }
 
-public extension UIPageViewController {
-    /** Copy the paramters from child view controller */
-    public func copyChildParameters() {
-        guard let top = self.viewControllers?.first else { return }
-        let config = { (_ source: UIViewController, _ destination: UIViewController) in
-            destination.view.tintColor = source.view.tintColor
-            destination.view.backgroundColor = source.view.backgroundColor
-            destination.title = source.title
-            destination.navigationItem.rightBarButtonItem = source.navigationItem.rightBarButtonItem
-            destination.navigationController?.navigationBar.tintColor = source.view.tintColor
-            destination.navigationController?.navigationBar.backgroundColor = source.view.backgroundColor
-            destination.navigationItem.titleView?.tintColor = source.navigationItem.titleView?.tintColor
-            destination.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: source.view.tintColor]
+public protocol ColorTheme {
+    func setColorTheme(_ colors: BRCImageColors, animated: Bool)
+}
+
+extension UINavigationBar: ColorTheme {
+    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        let theme = {
+            self.barTintColor = colors.backgroundColor
+            self.tintColor = colors.secondaryColor
+            self.titleTextAttributes = [NSForegroundColorAttributeName: colors.primaryColor]
         }
-        config(top, self)
+        if animated {
+            UIView.transition(with: self, duration: 0.25, options: [.beginFromCurrentState, .transitionCrossDissolve], animations: theme, completion: nil)
+        } else {
+            theme()
+        }
     }
 }
+
+extension UITableView: ColorTheme {
+    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        self.backgroundColor = colors.backgroundColor
+        self.tintColor = colors.primaryColor
+    }
+}
+
+extension UIViewController: ColorTheme {
+    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        view.backgroundColor = colors.backgroundColor
+        view.tintColor = colors.primaryColor
+    }
+    
+    /** 
+     * This is for the BRCDetailViewController so the navbar
+     * information gets propagated to the UIPageViewController
+     */
+    public func copyParameters(from fromVC: UIViewController) {
+        let destination = self
+        let source = fromVC
+
+        // https://stackoverflow.com/a/35820522/805882
+        let fadeTextAnimation = CATransition()
+        fadeTextAnimation.duration = 0.25
+        fadeTextAnimation.type = kCATransitionFade
+        navigationController?.navigationBar.layer.add(fadeTextAnimation, forKey: "fadeText")
+        
+        destination.title = source.title
+        destination.navigationItem.rightBarButtonItem = source.navigationItem.rightBarButtonItem
+    }
+}
+
+public extension UIPageViewController {
+    /** Copy the paramters from top child view controller */
+    public func copyChildParameters() {
+        guard let top = self.viewControllers?.first else { return }
+        copyParameters(from: top)
+    }
+}
+
+
 
 public class ColorCache {
     static let shared = ColorCache()

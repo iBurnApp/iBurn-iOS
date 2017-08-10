@@ -31,7 +31,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 @property (nonatomic, strong) BRCDataObject *dataObject;
 @property (nonatomic, strong, readwrite, nullable) BRCObjectMetadata *metadata;
-@property (nonatomic, strong, readonly) BRCImageColors *colors;
 @property (nonatomic, strong) NSArray<BRCDetailCellInfo*> *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
@@ -93,21 +92,20 @@ static CGFloat const kTableViewHeaderHeight = 200;
 }
 
 - (void) configureColors:(BRCImageColors*)colors {
-    self.view.backgroundColor = colors.backgroundColor;
-    self.tableView.backgroundColor = colors.backgroundColor;
-    self.view.tintColor = colors.primaryColor;
-    self.tableView.tintColor = colors.primaryColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.navigationItem.titleView.tintColor = colors.detailColor;
+    [self.tableView setColorTheme:colors animated:NO];
+    [self setColorTheme:colors animated:NO];
 }
 
 - (void) refreshFavoriteImage {
     self.favoriteBarButtonItem.image = [self currentStarImage];
 }
 
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self.navigationController.navigationBar setTranslucent:NO];
+- (void) setNavbarStyle:(BOOL)animated {
+    UINavigationBar *navBar = self.navigationController.navigationBar;
+    if (!navBar) {
+        return;
+    }
+    [navBar setColorTheme:self.colors animated:animated];
 }
 
 - (void)viewDidLoad
@@ -116,6 +114,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     
     self.tableView.estimatedRowHeight = 44.0;
     self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
     
@@ -140,6 +139,13 @@ static CGFloat const kTableViewHeaderHeight = 200;
     self.favoriteBarButtonItem.tintColor = [UIColor colorWithRed: 254./255 green: 110./255 blue: 111./255 alpha: 1.0];
     
     self.navigationItem.rightBarButtonItem = self.favoriteBarButtonItem;
+}
+
+- (void) beginAppearanceTransition:(BOOL)isAppearing animated:(BOOL)animated {
+    [super beginAppearanceTransition:isAppearing animated:animated];
+    if (isAppearing) {
+        [self setNavbarStyle:animated];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
