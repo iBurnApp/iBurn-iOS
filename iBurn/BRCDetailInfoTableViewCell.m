@@ -18,6 +18,10 @@
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import <PureLayout/PureLayout.h>
 
+@interface BRCDetailInfoTableViewCell()
+@property (nonatomic, strong) NSLayoutConstraint *aspectConstraint;
+@end
+
 @implementation BRCDetailInfoTableViewCell
 
 - (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
@@ -25,7 +29,6 @@
         _artImageView = [[UIImageView alloc] init];
         self.artImageView.contentMode = UIViewContentModeScaleAspectFill;
         [self.contentView addSubview:self.artImageView];
-        self.artImageView.clipsToBounds = YES;
         [self.artImageView autoPinEdgesToSuperviewEdges];
     }
     return self;
@@ -46,6 +49,17 @@
     self.artImageView.image = nil;
     self.textLabel.text = nil;
     self.backgroundColor = [UIColor whiteColor];
+    self.aspectConstraint = nil;
+}
+
+- (void) setAspectConstraint:(NSLayoutConstraint *)aspectConstraint {
+    if (_aspectConstraint) {
+        [self.artImageView removeConstraint:_aspectConstraint];
+    }
+    _aspectConstraint = aspectConstraint;
+    if (_aspectConstraint) {
+        [self.artImageView addConstraint:_aspectConstraint];
+    }
 }
 
 - (void) setDetailCellInfo:(BRCDetailCellInfo *)cellInfo colors:(BRCImageColors*)colors {
@@ -132,8 +146,13 @@
             NSURL *imageURL = cellInfo.value;
             self.textLabel.text = nil;
             UIImage *image = [UIImage imageWithContentsOfFile:imageURL.path];
-            self.artImageView.image = image;
-            self.artImageView.hidden = NO;
+            if (image) {
+                // https://stackoverflow.com/a/26056737/805882
+                CGFloat aspectRatio = image.size.width / image.size.height;
+                self.aspectConstraint = [NSLayoutConstraint constraintWithItem:self.artImageView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self.artImageView attribute:NSLayoutAttributeHeight multiplier:aspectRatio constant:0.0];
+                self.artImageView.image = image;
+                self.artImageView.hidden = NO;
+            }
             [self setPlainTextApperance:colors];
             break;
         }

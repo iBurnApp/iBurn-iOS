@@ -21,72 +21,68 @@
 
 @interface BRCDetailCellInfo ()
 
-@property (nonatomic, strong) NSString *key;
+@property (nonatomic, strong, readwrite) NSString *displayName;
+@property (nonatomic, strong, readwrite) id value;
+@property (nonatomic, readwrite) BRCDetailCellInfoType cellType;
+@property (nonatomic, strong, readwrite) NSString *key;
 
 @end
 
 @implementation BRCDetailCellInfo
 
 
-+ (instancetype)detailCellInfoWithKey:(NSString *)key displayName:(NSString *)displayName cellType:(BRCDetailCellInfoType)cellType
+
+- (instancetype)initWithKey:(NSString *)key displayName:(NSString *)displayName cellType:(BRCDetailCellInfoType)cellType
 {
-    BRCDetailCellInfo *cellInfo = [[self alloc] init];
-    cellInfo.key = key;
-    cellInfo.displayName = displayName;
-    cellInfo.cellType = cellType;
-    
-    return cellInfo;
+    if (self = [super init]) {
+        _key = key;
+        _displayName = displayName;
+        _cellType = cellType;
+    }
+    return self;
 }
 
-+ (NSArray *)defaultInfoArray
++ (NSArray<BRCDetailCellInfo*> *)defaultInfoArray
 {
-    NSMutableArray *defaultArray = [NSMutableArray new];
+    NSMutableArray<BRCDetailCellInfo*> *defaultArray = [NSMutableArray new];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(localThumbnailURL)) displayName:@"Image" cellType:BRCDetailCellInfoTypeImage]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(localThumbnailURL)) displayName:@"Image" cellType:BRCDetailCellInfoTypeImage]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(title)) displayName:@"Title" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(distanceFromLocation:)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(distanceFromLocation:)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(artistName)) displayName:@"Artist Name" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(artistLocation)) displayName:@"Artist Location" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(artistLocation)) displayName:@"Artist Location" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(email)) displayName:@"Email" cellType:BRCDetailCellInfoTypeEmail]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(email)) displayName:@"Email" cellType:BRCDetailCellInfoTypeEmail]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(url)) displayName:@"Homepage" cellType:BRCDetailCellInfoTypeURL]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(url)) displayName:@"Homepage" cellType:BRCDetailCellInfoTypeURL]];
     
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(hometown)) displayName:@"Hometown" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(hometown)) displayName:@"Hometown" cellType:BRCDetailCellInfoTypeText]];
     
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(detailDescription)) displayName:@"Description" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(detailDescription)) displayName:@"Description" cellType:BRCDetailCellInfoTypeText]];
     
     if ([BRCEmbargo allowEmbargoedData]) {
-        [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
+        [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
     }
     
     // last update from API
 #if DEBUG
-    [defaultArray addObject:[self detailCellInfoWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
 #endif
     
     return defaultArray;
 }
 
-+ (instancetype)detailCellInfoWitDisplayName:(NSString *)displayName value:(NSString *)value
++ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object
 {
-    BRCDetailCellInfo *cellInfo = [[self alloc] init];
-    cellInfo.displayName = displayName;
-    cellInfo.value = value;
-    return cellInfo;
-}
-
-+ (NSArray *)infoArrayForObject:(BRCDataObject *)object
-{
-    NSArray *defaultArray = [self defaultInfoArray];
-    NSMutableArray *finalCellInfoArray = [NSMutableArray new];
+    NSArray<BRCDetailCellInfo*> *defaultArray = [self defaultInfoArray];
+    NSMutableArray<BRCDetailCellInfo*> *finalCellInfoArray = [NSMutableArray new];
     [defaultArray enumerateObjectsUsingBlock:^(BRCDetailCellInfo *cellInfo, NSUInteger idx, BOOL *stop) {
         if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
             id cellValue = nil;
@@ -145,7 +141,7 @@
             BRCEventRelationshipDetailInfoCell *eventsListCell = [[BRCEventRelationshipDetailInfoCell alloc] init];
             eventsListCell.dataObject = object;
             eventsListCell.displayName = @"Events";
-            [finalCellInfoArray insertObject:eventsListCell atIndex:0];
+            [finalCellInfoArray insertObject:eventsListCell atIndex:1];
         }
     }
     

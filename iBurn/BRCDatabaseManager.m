@@ -115,9 +115,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     self.readWriteConnection.name = @"readWriteConnection";
     _readConnection = [self.database newConnection];
     self.readConnection.objectPolicy = YapDatabasePolicyShare;
-    self.readConnection.permittedTransactions = YDB_AnyReadTransaction;
-    self.readWriteConnection.permittedTransactions = YDB_AnyReadWriteTransaction;
-
+//#if DEBUG
+//    self.readConnection.permittedTransactions = YDB_AnyReadTransaction;
+//    self.readWriteConnection.permittedTransactions = YDB_AnyReadWriteTransaction;
+//#endif
+    
     [self setupViewNames];
     [self registerExtensions];
     

@@ -24,16 +24,15 @@ typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
 
 @class BRCDataObject;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailCellInfo : NSObject
 
-@property (nonatomic, strong) NSString *displayName;
-@property (nonatomic, strong) id value;
+@property (nonatomic, strong, readonly) NSString *displayName;
+@property (nonatomic, strong, readonly) id value;
+@property (nonatomic, readonly) BRCDetailCellInfoType cellType;
 
-@property (nonatomic) BRCDetailCellInfoType cellType;
 
-
-+ (instancetype)detailCellInfoWitDisplayName:(NSString *)displayName value:(NSString *)value;
-
-+ (NSArray *)infoArrayForObject:(BRCDataObject *)object;
++ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object;
 
 @end
+NS_ASSUME_NONNULL_END

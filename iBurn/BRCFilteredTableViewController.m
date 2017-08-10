@@ -182,7 +182,7 @@
     YapDatabase *database = BRCDatabaseManager.shared.database;
     self.databaseConnection = [database newConnection];
     [self.databaseConnection beginLongLivedReadTransaction];
-    self.databaseConnection.permittedTransactions = YDB_AnyReadTransaction | YDB_MainThreadOnly;
+    //self.databaseConnection.permittedTransactions = YDB_AnyReadTransaction | YDB_MainThreadOnly;
     _searchConnection = [database newConnection];
     _searchQueue = [[YapDatabaseSearchQueue alloc] init];
 }

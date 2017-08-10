@@ -32,7 +32,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 @property (nonatomic, strong) BRCDataObject *dataObject;
 @property (nonatomic, strong, readwrite, nullable) BRCObjectMetadata *metadata;
 @property (nonatomic, strong, readonly) BRCImageColors *colors;
-@property (nonatomic, strong) NSArray *detailCellInfoArray;
+@property (nonatomic, strong) NSArray<BRCDetailCellInfo*> *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
 @property (nonatomic, strong) MapViewDelegate *mapViewDelegate;
@@ -192,8 +192,9 @@ static CGFloat const kTableViewHeaderHeight = 200;
     [self.navigationController pushViewController:mapViewController animated:YES];
 }
 
-- (BRCDetailCellInfo *)cellInfoForIndexPath:(NSInteger)section
+- (nullable BRCDetailCellInfo *)cellInfoForIndexPath:(NSIndexPath*)indexPath
 {
+    NSUInteger section = indexPath.section;
     if ([self.detailCellInfoArray count] > section) {
         return self.detailCellInfoArray[section];
     }
@@ -241,18 +242,10 @@ static CGFloat const kTableViewHeaderHeight = 200;
     return 1;
 }
 
-- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
-    if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
-        return 200;
-    }
-    return [super tableView:tableView heightForRowAtIndexPath:indexPath];
-}
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     BRCDetailInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[BRCDetailInfoTableViewCell cellIdentifier] forIndexPath:indexPath];
-    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath];
     [cell setDetailCellInfo:cellInfo colors:self.colors];
     return cell;
 }
@@ -273,13 +266,28 @@ static CGFloat const kTableViewHeaderHeight = 200;
     hfv.textLabel.textColor = self.colors.secondaryColor;
 }
 
+- (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:section];
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath];
+    if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
+        // There is a "bug"/feature where returning 0 doesn't give 0 height
+        return 0.01;
+    }
+    return UITableViewAutomaticDimension;
+}
+
+
+
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     NSString *title = nil;
-    
-    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:section];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:section];
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath];
     if (cellInfo) {
-        BRCDetailCellInfo *cellInfo = self.detailCellInfoArray[section];
+        // We don't need a header for the image itself
+        if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
+            return nil;
+        }
         title = cellInfo.displayName;
     }
     return title;
@@ -289,7 +297,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath.section];
+    BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath];
     if (cellInfo.cellType == BRCDetailCellInfoTypeURL) {
         NSURL *url = cellInfo.value;
         [BRCAppDelegate openURL:url fromViewController:self];
