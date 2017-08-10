@@ -278,6 +278,10 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
         // There is a "bug"/feature where returning 0 doesn't give 0 height
         return 0.01;
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypeText &&
+               [cellInfo.key isEqualToString:NSStringFromSelector(@selector(detailDescription))]) {
+        // This is the description, so we don't really need a heading for it.
+        return 0.01;
     }
     return UITableViewAutomaticDimension;
 }
@@ -292,6 +296,10 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if (cellInfo) {
         // We don't need a header for the image itself
         if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
+            return nil;
+        } else if (cellInfo.cellType == BRCDetailCellInfoTypeText &&
+                  [cellInfo.key isEqualToString:NSStringFromSelector(@selector(detailDescription))]) {
+            // This is the description, so we don't really need a heading for it.
             return nil;
         }
         title = cellInfo.displayName;
@@ -332,7 +340,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         // Shows events
         BRCEventRelationshipDetailInfoCell *eventRelationshipCellInfo = (BRCEventRelationshipDetailInfoCell *)cellInfo;
         BRCDataObject *relatedObject = eventRelationshipCellInfo.dataObject;
-        BRCEventsViewController *eventsVC = [[BRCEventsViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.relationships relatedObject:relatedObject];
+        HostedEventsViewController *eventsVC = [[HostedEventsViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.relationships relatedObject:relatedObject];
         [self.navigationController pushViewController:eventsVC animated:YES];
         
     } else if (cellInfo.cellType == BRCDetailCellInfoTypeCoordinates) {

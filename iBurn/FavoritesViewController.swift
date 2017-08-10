@@ -1,5 +1,5 @@
 //
-//  BRCFavoritesViewController.swift
+//  FavoritesViewController.swift
 //  iBurn
 //
 //  Created by Christopher Ballinger on 8/17/15.
@@ -9,7 +9,7 @@
 import UIKit
 import YapDatabase
 
-class BRCFavoritesViewController: BRCSortedViewController {
+class FavoritesViewController: SortedViewController {
 
     required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style, extensionName: ext)

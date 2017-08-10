@@ -1,5 +1,5 @@
 //
-//  BRCNearbyViewController.swift
+//  NearbyViewController.swift
 //  iBurn
 //
 //  Created by Christopher Ballinger on 8/10/15.
@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import PureLayout
 
-class BRCNearbyViewController: BRCSortedViewController {
+class NearbyViewController: SortedViewController {
 
     fileprivate var searchDistance: CLLocationDistance = 500
     
@@ -105,7 +105,7 @@ class BRCNearbyViewController: BRCSortedViewController {
         distanceStepper.maximumValue = 3200 // approx 2 miles
         distanceStepper.value = searchDistance
         distanceStepper.stepValue = 150
-        distanceStepper.addTarget(self, action: #selector(BRCNearbyViewController.stepperValueChanged(_:)), for: UIControlEvents.valueChanged)
+        distanceStepper.addTarget(self, action: #selector(NearbyViewController.stepperValueChanged(_:)), for: UIControlEvents.valueChanged)
     }
     
     func stepperValueChanged(_ sender: AnyObject?) {

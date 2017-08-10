@@ -1,5 +1,5 @@
 //
-//  BRCAudioTourViewController.swift
+//  AudioTourViewController.swift
 //  iBurn
 //
 //  Created by Chris Ballinger on 8/3/16.
@@ -15,7 +15,7 @@ enum AudioButtonState: String {
     case Pause = "Pause"
 }
 
-class BRCAudioTourViewController: BRCSortedViewController {
+class AudioTourViewController: SortedViewController {
     
     let playAllItemsButton = UIBarButtonItem()
     
@@ -32,7 +32,7 @@ class BRCAudioTourViewController: BRCSortedViewController {
     
     func setupPlayAllItemsButton() {
         refreshButtonState()
-        playAllItemsButton.action = #selector(BRCAudioTourViewController.playAllItems(_:))
+        playAllItemsButton.action = #selector(AudioTourViewController.playAllItems(_:))
         playAllItemsButton.target = self
         self.navigationItem.rightBarButtonItem = playAllItemsButton
     }

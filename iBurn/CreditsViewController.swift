@@ -1,5 +1,5 @@
 //
-//  BRCCreditsViewController.swift
+//  CreditsViewController.swift
 //  iBurn
 //
 //  Created by Christopher Ballinger on 8/9/15.
@@ -27,7 +27,7 @@ private enum SectionInfo: Int {
     case licenses
 }
 
-class BRCCreditsViewController: UITableViewController {
+class CreditsViewController: UITableViewController {
     
     var creditsInfoArray:[BRCCreditsInfo] = []
 

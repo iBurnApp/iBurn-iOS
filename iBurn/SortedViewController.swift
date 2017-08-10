@@ -29,7 +29,8 @@ public class TableViewSection {
     }
 }
 
-public class BRCSortedViewController: UITableViewController {
+@objc(BRCSortedViewController)
+public class SortedViewController: UITableViewController {
 
     var sections: [TableViewSection] = []
     var extensionRegistered: Bool = false

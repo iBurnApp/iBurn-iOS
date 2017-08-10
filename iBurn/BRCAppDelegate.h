@@ -11,7 +11,7 @@
 @import CoreLocation;
 #import "BRCEventsTableViewController.h"
 
-@class BRCFavoritesViewController;
+@class FavoritesViewController;
 @class MapViewController;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
 @property (nonatomic, strong) MapViewController *mapViewController;
-@property (nonatomic, strong) BRCFavoritesViewController *favoritesViewController;
+@property (nonatomic, strong) FavoritesViewController *favoritesViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *artViewController;
 @property (nonatomic, strong) BRCFilteredTableViewController *campsViewController;
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;

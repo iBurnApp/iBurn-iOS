@@ -55,7 +55,7 @@
 		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
 		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
 		D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8631EF23994007766A9 /* MapDetailViewController.swift */; };
-		D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */; };
+		D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977E0421B83F43900FFC20F /* HostedEventsViewController.swift */; };
 		D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */; };
 		D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0481B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m */; };
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
@@ -89,17 +89,17 @@
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B9199AB5320093B441 /* BRCMapPoint.m */; };
 		D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */; };
-		D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */; };
+		D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B73FFD1B78BF34001D04E3 /* NearbyViewController.swift */; };
 		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
-		D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */; };
+		D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */; };
 		D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */; };
-		D9BF9A6A1D52A86A004AA63B /* BRCAudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* BRCAudioTourViewController.swift */; };
-		D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */; };
-		D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */; };
+		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
+		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
+		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
-		D9C9D2C11B7D64C0002C95E4 /* BRCMoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */; };
+		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
 		D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */; };
 		D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5B1B5AF4EE0048229A /* Accounts.framework */; };
 		D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5D1B5AF4F70048229A /* SystemConfiguration.framework */; };
@@ -229,7 +229,7 @@
 		D977C85F1EF23036007766A9 /* BaseMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMapViewController.swift; sourceTree = "<group>"; };
 		D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MGLMapView+iBurn.swift"; sourceTree = "<group>"; };
 		D977C8631EF23994007766A9 /* MapDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDetailViewController.swift; sourceTree = "<group>"; };
-		D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCEventsViewController.swift; sourceTree = "<group>"; };
+		D977E0421B83F43900FFC20F /* HostedEventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostedEventsViewController.swift; sourceTree = "<group>"; };
 		D977E0441B83F6E900FFC20F /* BRCDataObject+Relationships.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRCDataObject+Relationships.h"; sourceTree = "<group>"; };
 		D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRCDataObject+Relationships.m"; sourceTree = "<group>"; };
 		D977E0471B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventRelationshipDetailInfoCell.h; sourceTree = "<group>"; };
@@ -290,22 +290,22 @@
 		D9B362B9199AB5320093B441 /* BRCMapPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapPoint.m; sourceTree = "<group>"; };
 		D9B69D8F1EF8D8B100E2996D /* BRCYapDatabaseObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCYapDatabaseObject.h; sourceTree = "<group>"; };
 		D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCYapDatabaseObject.m; sourceTree = "<group>"; };
-		D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCNearbyViewController.swift; sourceTree = "<group>"; };
+		D9B73FFD1B78BF34001D04E3 /* NearbyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NearbyViewController.swift; sourceTree = "<group>"; };
 		D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCCreditsInfo.h; sourceTree = "<group>"; };
 		D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCCreditsInfo.m; sourceTree = "<group>"; };
 		D9BD4C031B78788D00313FB5 /* iBurn-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurn-Bridging-Header.h"; sourceTree = "<group>"; };
-		D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCCreditsViewController.swift; sourceTree = "<group>"; };
+		D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreditsViewController.swift; sourceTree = "<group>"; };
 		D9BD4C061B787A4400313FB5 /* NSBundle+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBundle+iBurn.h"; sourceTree = "<group>"; };
 		D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+iBurn.m"; sourceTree = "<group>"; };
 		D9BF9A661D515FF7004AA63B /* 2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2016; path = "Submodules/iBurn-Data/data/2016/2016"; sourceTree = SOURCE_ROOT; };
-		D9BF9A691D52A86A004AA63B /* BRCAudioTourViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioTourViewController.swift; sourceTree = "<group>"; };
-		D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCFavoritesViewController.swift; sourceTree = "<group>"; };
-		D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCSortedViewController.swift; sourceTree = "<group>"; };
+		D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioTourViewController.swift; sourceTree = "<group>"; };
+		D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoritesViewController.swift; sourceTree = "<group>"; };
+		D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedViewController.swift; sourceTree = "<group>"; };
 		D9C30F731B83118200CD03CC /* iBurn-2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2015"; path = "Submodules/iBurn-Data/data/2015/iBurn-2015"; sourceTree = SOURCE_ROOT; };
 		D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = Pods/BButton/BButton/resources/FontAwesome.ttf; sourceTree = SOURCE_ROOT; };
 		D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
 		D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = More.storyboard; sourceTree = "<group>"; };
-		D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCMoreViewController.swift; sourceTree = "<group>"; };
+		D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreViewController.swift; sourceTree = "<group>"; };
 		D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iBurn.entitlements; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		D9D12F5B1B5AF4EE0048229A /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
@@ -459,9 +459,9 @@
 				D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */,
 				D9C30F711B82EE7100CD03CC /* Sorted */,
 				D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */,
-				D9BF9A691D52A86A004AA63B /* BRCAudioTourViewController.swift */,
-				D9C9D2C01B7D64C0002C95E4 /* BRCMoreViewController.swift */,
-				D9BD4C041B78788E00313FB5 /* BRCCreditsViewController.swift */,
+				D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */,
+				D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */,
+				D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */,
 				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
 				D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */,
 				6322830219881E27009E472B /* DetailViewControllers */,
@@ -762,10 +762,10 @@
 		D9C30F711B82EE7100CD03CC /* Sorted */ = {
 			isa = PBXGroup;
 			children = (
-				D9C30F6D1B82EDBB00CD03CC /* BRCFavoritesViewController.swift */,
-				D9B73FFD1B78BF34001D04E3 /* BRCNearbyViewController.swift */,
-				D9C30F6F1B82EE6700CD03CC /* BRCSortedViewController.swift */,
-				D977E0421B83F43900FFC20F /* BRCEventsViewController.swift */,
+				D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */,
+				D9B73FFD1B78BF34001D04E3 /* NearbyViewController.swift */,
+				D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */,
+				D977E0421B83F43900FFC20F /* HostedEventsViewController.swift */,
 			);
 			name = Sorted;
 			sourceTree = "<group>";
@@ -1145,7 +1145,7 @@
 				639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */,
 				630861C9199029D100AD7109 /* BRCLocations.m in Sources */,
 				D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */,
-				D9C9D2C11B7D64C0002C95E4 /* BRCMoreViewController.swift in Sources */,
+				D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
@@ -1163,23 +1163,23 @@
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
 				D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */,
-				D9B73FFE1B78BF34001D04E3 /* BRCNearbyViewController.swift in Sources */,
+				D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */,
 				D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */,
 				D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */,
-				D9BD4C051B78788E00313FB5 /* BRCCreditsViewController.swift in Sources */,
+				D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
-				D9BF9A6A1D52A86A004AA63B /* BRCAudioTourViewController.swift in Sources */,
+				D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
 				D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
-				D9C30F701B82EE6700CD03CC /* BRCSortedViewController.swift in Sources */,
+				D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
-				D977E0431B83F43900FFC20F /* BRCEventsViewController.swift in Sources */,
+				D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
 				D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
@@ -1209,7 +1209,7 @@
 				D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */,
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,
 				63CE2A641987140F00F65B01 /* main.m in Sources */,
-				D9C30F6E1B82EDBB00CD03CC /* BRCFavoritesViewController.swift in Sources */,
+				D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */,
 				D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */,
 				D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */,
 				D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */,

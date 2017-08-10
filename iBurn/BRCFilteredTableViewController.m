@@ -578,6 +578,7 @@
     }
     BRCDetailViewController *newDetailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];
     newDetailVC.indexPath = newIndex;
+    [self.tableView scrollToRowAtIndexPath:newIndex atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
     return newDetailVC;
 }
 

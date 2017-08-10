@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) BRCDataObject *dataObject;
 @property (nonatomic, strong, readonly) BRCImageColors *colors;
+/** This is the indexPath from the containing UITableView, when presented in a UIPageViewController */
 @property (nonatomic, strong, nullable) NSIndexPath *indexPath;
 
 - (instancetype)initWithDataObject:(BRCDataObject *)dataObject;

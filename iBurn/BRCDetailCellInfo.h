@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString *displayName;
 @property (nonatomic, strong, readonly) id value;
 @property (nonatomic, readonly) BRCDetailCellInfoType cellType;
+/** The keyPath for BRCDataObject for obtaining `value` */
+@property (nonatomic, strong, readonly) NSString *key;
 
 
 + (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object;

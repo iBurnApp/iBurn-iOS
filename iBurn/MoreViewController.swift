@@ -1,5 +1,5 @@
 //
-//  BRCMoreViewController.swift
+//  MoreViewController.swift
 //  iBurn
 //
 //  Created by Christopher Ballinger on 8/13/15.
@@ -21,7 +21,7 @@ enum CellTag: Int {
     audioTour = 9
 }
 
-class BRCMoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
+class MoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
     
     // MARK: - View Lifecycle
     
@@ -117,7 +117,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     }
 
     func pushCreditsView() {
-        let creditsVC = BRCCreditsViewController()
+        let creditsVC = CreditsViewController()
         creditsVC.title = "Credits"
         creditsVC.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(creditsVC, animated: true)
@@ -157,7 +157,7 @@ class BRCMoreViewController: UITableViewController, SKStoreProductViewController
     }
     
     func showAudioTour() {
-        let audioTour = BRCAudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
+        let audioTour = AudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
         audioTour.hidesBottomBarWhenPushed = true
         navigationController!.pushViewController(audioTour, animated: true)

@@ -1,5 +1,5 @@
 //
-//  BRCEventsViewController.swift
+//  HostedEventsViewController.swift
 //  iBurn
 //
 //  Created by Christopher Ballinger on 8/18/15.
@@ -9,7 +9,7 @@
 import UIKit
 
 /** This is for showing a list of events hosted by camp/art */
-class BRCEventsViewController: BRCSortedViewController {
+class HostedEventsViewController: SortedViewController {
     
     var relatedObject: BRCDataObject?
 
