@@ -45,6 +45,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 @property (nonatomic, strong) NSArray *eventTypeArray;
 
 @property (nonatomic) BOOL showExpiredEvents;
+@property (nonatomic) BOOL searchSelectedDayOnly;
 
 @property (nonatomic, strong) YapDatabaseConnection* databaseConnection;
 
@@ -81,9 +82,10 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilterTableViewCellIdentifier];
     
-    self.timeStrings = @[@"Show Expired Events"];
+    self.timeStrings = @[@"Show Expired Events", @"Search Selected Day Only"];
     
     self.showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
+    self.searchSelectedDayOnly = [[NSUserDefaults standardUserDefaults] searchSelectedDayOnly];
     
     //All the event types to select from
     NSArray *eventTypes = @[@(BRCEventTypeWorkshop),
@@ -129,6 +131,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     NSArray *filteredArray = [self filteredTypes];
     [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
     [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
+    NSUserDefaults.standardUserDefaults.searchSelectedDayOnly = self.searchSelectedDayOnly;
     
     [self.delegate didSetNewFilterSettingsInFilterTableViewController:self];    
 }
@@ -169,6 +172,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
             showCheckMark = self.showExpiredEvents;
+        } else if (indexPath.row == 1) {
+            showCheckMark = self.searchSelectedDayOnly;
         }
         NSString *text = self.timeStrings[indexPath.row];
         cell.textLabel.text = text;
@@ -214,6 +219,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
             self.showExpiredEvents = !self.showExpiredEvents;
+        } else if (indexPath.row == 1) {
+            self.searchSelectedDayOnly = !self.searchSelectedDayOnly;
         }
     }
     else if (indexPath.section == 1) {

@@ -13,12 +13,15 @@ static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKe
 static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
 static NSString *const kBRCEntered2016EmbargoPasscodeKey = @"kBRCEntered2016EmbargoPasscodeKey";
 static NSString *const kBRCHasViewedOnboardingKey = @"kBRCHasViewedOnboardingKey";
+static NSString *const kBRCSearchSelectedDayOnlyKey = @"kBRCSearchSelectedDayOnlyKey";
+
 
 NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey";
 NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 
 
 @implementation NSUserDefaults (iBurn)
+@dynamic searchSelectedDayOnly;
 
 - (UILocalNotification*) scheduledLocalNotificationForGateUnlock {
     NSData *localNotificationData = [self objectForKey:kBRCGateUnlockNotificationKey];
@@ -105,6 +108,20 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 - (void)setHasViewedOnboarding:(BOOL)hasViewedOnboarding {
     [self setBool:hasViewedOnboarding forKey:kBRCHasViewedOnboardingKey];
     [self synchronize];
+}
+
+- (void) setSearchSelectedDayOnly:(BOOL)searchSelectedDayOnly {
+    [self setBool:searchSelectedDayOnly forKey:kBRCSearchSelectedDayOnlyKey];
+    [self synchronize];
+}
+
+- (BOOL) searchSelectedDayOnly {
+    NSNumber *result = [self objectForKey:kBRCSearchSelectedDayOnlyKey];
+    // For legacy fallback, return YES if key is not set up
+    if (!result) {
+        return YES;
+    }
+    return result.boolValue;
 }
 
 @end

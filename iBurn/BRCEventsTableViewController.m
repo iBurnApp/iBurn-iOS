@@ -193,11 +193,6 @@ static const CGFloat kDayPickerHeight = 65.0f;
 
 - (void) setupMappings {
     // we need to override search mappings for events
-    self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-        return YES;
-    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
-        return [group1 compare:group2];
-    } view:self.searchViewName];
     [self replaceTimeBasedEventMappings];
 }
 
@@ -211,6 +206,20 @@ static const CGFloat kDayPickerHeight = 65.0f;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     } view:self.viewName];
+    BOOL searchSelectedDayOnly = [NSUserDefaults standardUserDefaults].searchSelectedDayOnly;
+    self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+        if (searchSelectedDayOnly) {
+            if (group && selectedDay) {
+                return [group containsString:selectedDay];
+            } else {
+                return NO;
+            }
+        } else {
+            return YES;
+        }
+    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+        return [group1 compare:group2];
+    } view:self.searchViewName];
 }
 
 - (void) refreshEventTimeSort {

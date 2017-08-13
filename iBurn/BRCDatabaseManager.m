@@ -346,7 +346,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     // search view name, parent view name, fts name
     NSArray *searchInfoArrays = @[@[self.searchArtView, self.artViewName, self.ftsArtName],
                                   @[self.searchCampsView, self.campsViewName, self.ftsCampsName],
-                                  @[self.searchEventsView, self.eventsViewName, self.ftsEventsName],
+                                  @[self.searchEventsView, self.eventsFilteredByDayExpirationAndTypeViewName, self.ftsEventsName],
                                   @[self.searchFavoritesView, self.everythingFilteredByFavorite, self.ftsDataObjectName]];
     
     [searchInfoArrays enumerateObjectsUsingBlock:^(NSArray *searchInfoArray, NSUInteger idx, BOOL *stop) {
@@ -358,7 +358,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         
         YapDatabaseSearchResultsView *searchResultsView = [[YapDatabaseSearchResultsView alloc] initWithFullTextSearchName:ftsName
                                                                                                             parentViewName:parentViewName
-                                                                                                                versionTag:@"2"
+                                                                                                                versionTag:@"3"
                                                                                                                    options:searchViewOptions];
         
         BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
@@ -656,14 +656,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return [self eventsFilteredByDay:validDate];
 }
 
+/** TODO: Remove me. This is deprecated and not needed. */
 + (YapDatabaseViewFiltering*) eventsFilteredByDay:(NSDate*)day
 {
     NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:day];
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key)
     {
-        if (selectedDayGroup) {
-            return [group containsString:selectedDayGroup];
-        }
+//        if (selectedDayGroup) {
+//            return [group containsString:selectedDayGroup];
+//        }
         return YES;
     }];
     return filtering;
