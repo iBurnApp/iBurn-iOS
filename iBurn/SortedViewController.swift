@@ -227,7 +227,7 @@ public class SortedViewController: UITableViewController {
         return cell
     }
     
-    private func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
+    fileprivate func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
         let object = sections[indexPath.section].objects[indexPath.row]
         var metadata: BRCObjectMetadata? = nil
         BRCDatabaseManager.shared.readConnection.read { transaction in
@@ -246,10 +246,53 @@ public class SortedViewController: UITableViewController {
         if !hasTableItems() {
             return
         }
-        let dataObject = sections[indexPath.section].objects[indexPath.row]
-        let detailVC = BRCDetailViewController(dataObject: dataObject)
+        guard let data = dataObjectAtIndexPath(indexPath) else {
+            return
+        }
+        let detailVC = BRCDetailViewController(dataObject: data.object)
+        detailVC.indexPath = indexPath
         detailVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(detailVC, animated: true)
+        
+        let colors = detailVC.colors
+        let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+        pageVC.dataSource = self
+        pageVC.delegate = self
+        self.navigationController?.navigationBar.isTranslucent = false
+        let navBar = self.navigationController?.navigationBar
+        navBar?.setColorTheme(colors, animated: false)
+        pageVC.setViewControllers([detailVC], direction: .forward, animated: false, completion: nil)
+        pageVC.copyChildParameters()
+        navigationController?.pushViewController(pageVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+extension SortedViewController: UIPageViewControllerDelegate {
+    public func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+        pageViewController.copyChildParameters()
+    }
+}
+
+extension SortedViewController: UIPageViewControllerDataSource {
+    private func pageViewController(_ pageViewController: UIPageViewController, viewControllerNear viewController: UIViewController, direction: IndexPathDirection) -> UIViewController? {
+        guard let detailVC = viewController as? BRCDetailViewController,
+            let oldIndex = detailVC.indexPath,
+            let newIndex = oldIndex.nextIndexPath(direction: direction, tableView: tableView),
+            let data = dataObjectAtIndexPath(newIndex) else {
+            return nil
+        }
+        let newDetailVC = BRCDetailViewController(dataObject: data.object)
+        newDetailVC.indexPath = newIndex
+        self.tableView.scrollToRow(at: newIndex, at: .middle, animated: false)
+        return newDetailVC
+    }
+    
+    
+    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        return self.pageViewController(pageViewController, viewControllerNear: viewController, direction: .before)
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        return self.pageViewController(pageViewController, viewControllerNear: viewController, direction: .after)
     }
 }
