@@ -158,16 +158,21 @@
     return [super storageBehaviorForPropertyWithKey:propertyKey];
 }
 
++ (NSArray<NSString*>*) excludedPropertyKeysArray {
+    NSArray<NSString*> *keys = @[NSStringFromSelector(@selector(coordinate)),
+                                 NSStringFromSelector(@selector(location)),
+                                 NSStringFromSelector(@selector(burnerMapLocation)),
+                                 NSStringFromSelector(@selector(burnerMapCoordinate)),
+                                 NSStringFromSelector(@selector(yapKey)),
+                                 NSStringFromSelector(@selector(brc_markerImage))];
+    return keys;
+}
+
 + (NSSet<NSString*>*) excludedPropertyKeys {
     static dispatch_once_t onceToken;
     static NSSet<NSString*> *excludedPropertyKeysSet = nil;
     dispatch_once(&onceToken, ^{
-        NSArray<NSString*> *keys = @[NSStringFromSelector(@selector(coordinate)),
-                                     NSStringFromSelector(@selector(location)),
-                                     NSStringFromSelector(@selector(burnerMapLocation)),
-                                     NSStringFromSelector(@selector(burnerMapCoordinate)),
-                                     NSStringFromSelector(@selector(yapKey)),
-                                     NSStringFromSelector(@selector(brc_markerImage))];
+        NSArray<NSString*> *keys = [self excludedPropertyKeysArray];
         excludedPropertyKeysSet = [NSSet setWithArray:keys];
     });
     return excludedPropertyKeysSet;

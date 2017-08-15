@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Playa Coordinates e.g. 7:30 & Inspirit
  */
-@property (nonatomic, readonly, nullable) NSString *burnerMapLocationString;
+@property (nonatomic, readwrite, nullable) NSString *burnerMapLocationString;
 
 @end
 

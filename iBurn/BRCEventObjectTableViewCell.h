@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCEventObjectTableViewCell : BRCDataObjectTableViewCell
 
+@property (weak, nonatomic) IBOutlet UILabel *hostLabel;
 @property (strong, nonatomic) IBOutlet UILabel *eventTypeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
 

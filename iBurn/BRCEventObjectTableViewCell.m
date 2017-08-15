@@ -69,8 +69,8 @@
 }
 
 - (void) setupLocationLabelFromEvent:(BRCEventObject*)eventObject {
-    NSString *playaLocation = eventObject.playaLocation;
-    NSString *locationName = nil;
+    //NSString *playaLocation = eventObject.playaLocation;
+    NSString *hostName = nil;
     __block BRCCampObject *camp = nil;
     __block BRCArtObject *art = nil;
     // shouldn't be doing this fetch in here... best moved up to the view controller
@@ -82,30 +82,13 @@
         art = [eventObject hostedByArtWithTransaction:transaction];
     }];
     if (camp) {
-        locationName = camp.title;
+        hostName = camp.title;
     } else if (art) {
-        locationName = art.title;
+        hostName = art.title;
     }
-    NSString *labelString = nil;
-    if (locationName) {
-        labelString = locationName;
-    }
-    if (!playaLocation && camp.playaLocation) {
-        playaLocation = camp.playaLocation;
-    }
-    if (!playaLocation && art.playaLocation) {
-        playaLocation = art.playaLocation;
-    }
-    if (!playaLocation) {
-        playaLocation = @"0:00 & ?";
-    }
-    if (![BRCEmbargo canShowLocationForObject:eventObject]) {
-        playaLocation = @"Location Restricted";
-    }
-    if (playaLocation) {
-        labelString = [labelString stringByAppendingFormat:@" - %@", playaLocation];
-    }
-    self.locationLabel.text = labelString;
+    self.hostLabel.text = hostName;
+    
+    [self setupLocationLabel:self.locationLabel dataObject:eventObject];
 }
 
 @end

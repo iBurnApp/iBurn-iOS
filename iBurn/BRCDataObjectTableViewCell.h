@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, class) NSString* cellIdentifier;
 
 - (void) updateDistanceLabelFromLocation:(nullable CLLocation*)fromLocation dataObject:(BRCDataObject*)dataObject;
+/** Internal function */
+- (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject;
 
 @end
 NS_ASSUME_NONNULL_END

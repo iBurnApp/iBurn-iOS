@@ -30,23 +30,27 @@
         BRCArtObject *art = (BRCArtObject*)dataObject;
         self.rightSubtitleLabel.text = art.artistName;
     } else {
-        NSString *playaLocation = dataObject.playaLocation;
-        if (!playaLocation) {
-            playaLocation = @"0:00 & ?";
-        }
-        if ([BRCEmbargo canShowLocationForObject:dataObject]) {
-            self.rightSubtitleLabel.text = playaLocation;
-        } else if (dataObject.burnerMapLocationString) {
-            NSString *burnerMapAddress = dataObject.shortBurnerMapAddress;
-            if (!burnerMapAddress) {
-                burnerMapAddress = dataObject.burnerMapLocationString;
-            }
-            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"BurnerMap: %@",burnerMapAddress];
-        } else {
-            self.rightSubtitleLabel.text = @"Location Restricted";
-        }
+        [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
     }
     self.favoriteButton.selected = metadata.isFavorite;
+}
+
+- (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {
+    NSString *playaLocation = dataObject.playaLocation;
+    if (!playaLocation) {
+        playaLocation = @"0:00 & ?";
+    }
+    if ([BRCEmbargo canShowLocationForObject:dataObject]) {
+        label.text = playaLocation;
+    } else if (dataObject.burnerMapLocationString) {
+        NSString *burnerMapAddress = dataObject.shortBurnerMapAddress;
+        if (!burnerMapAddress) {
+            burnerMapAddress = dataObject.burnerMapLocationString;
+        }
+        label.text = [NSString stringWithFormat:@"BurnerMap: %@",burnerMapAddress];
+    } else {
+        label.text = @"Location Restricted";
+    }
 }
 
 - (void) updateDistanceLabelFromLocation:(CLLocation*)fromLocation dataObject:(BRCDataObject *)dataObject {

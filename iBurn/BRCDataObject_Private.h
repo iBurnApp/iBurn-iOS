@@ -10,4 +10,5 @@
 
 @interface BRCDataObject ()
 @property (nonatomic, strong, readwrite) NSString *uniqueID;
++ (NSArray<NSString*>*) excludedPropertyKeysArray;
 @end

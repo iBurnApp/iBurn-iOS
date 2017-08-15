@@ -11,6 +11,7 @@
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "MTLValueTransformer.h"
 #import "BRCEventObject_Private.h"
+#import "BRCDataObject_Private.h"
 #import "UIColor+iBurn.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
@@ -29,6 +30,22 @@ NSString * const kBRCEventArtEdgeName = @"art";
 @end
 
 @implementation BRCEventObject
+@dynamic isAllDay;
+
++ (NSArray<NSString*>*) excludedPropertyKeysArray {
+    NSMutableArray<NSString*> *keys = [[super excludedPropertyKeysArray] mutableCopy];
+    [keys addObject:NSStringFromSelector(@selector(isAllDay))];
+    return keys;
+}
+
+
+/** The API no longer has all_day, but camps are now just listing events from 12:00am->11:45pm which is bullshit */
+- (BOOL) isAllDay {
+    if (self.timeIntervalForDuration > 23 * 60 * 60) {
+        return YES;
+    }
+    return NO;
+}
 
 - (NSTimeInterval)timeIntervalUntilStart:(NSDate*)date
 {
@@ -65,8 +82,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
                                NSStringFromSelector(@selector(checkLocation)): @"check_location",
                                NSStringFromSelector(@selector(hostedByCampUniqueID)): @"hosted_by_camp",
                                NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art",
-                               NSStringFromSelector(@selector(eventType)): @"event_type.abbr",
-                               NSStringFromSelector(@selector(isAllDay)): @"all_day"};
+                               NSStringFromSelector(@selector(eventType)): @"event_type.abbr"};
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:artPaths];
 }
 
