@@ -677,10 +677,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) eventsFilteredByExpiration:(BOOL)showExpired eventTypes:(NSSet*)eventTypes {
+    BOOL showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             NSDate *now = [NSDate date];
             BRCEventObject *eventObject = (BRCEventObject*)object;
+            if (eventObject.isAllDay && !showAllDayEvents) {
+                return NO;
+            }
             BOOL eventHasEnded = [eventObject hasEnded:now] || [eventObject isEndingSoon:now];
             BOOL eventMatchesTypeFilter = [eventTypes containsObject:@(eventObject.eventType)];
             

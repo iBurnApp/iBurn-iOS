@@ -46,6 +46,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 @property (nonatomic) BOOL showExpiredEvents;
 @property (nonatomic) BOOL searchSelectedDayOnly;
+@property (nonatomic) BOOL showAllDayEvents;
 
 @property (nonatomic, strong) YapDatabaseConnection* databaseConnection;
 
@@ -82,10 +83,11 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilterTableViewCellIdentifier];
     
-    self.timeStrings = @[@"Show Expired Events", @"Search Selected Day Only"];
+    self.timeStrings = @[@"Show Expired Events", @"Search Selected Day Only", @"Show All Day Events"];
     
     self.showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
     self.searchSelectedDayOnly = [[NSUserDefaults standardUserDefaults] searchSelectedDayOnly];
+    self.showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     
     //All the event types to select from
     NSArray *eventTypes = @[@(BRCEventTypeWorkshop),
@@ -132,6 +134,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
     [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
     NSUserDefaults.standardUserDefaults.searchSelectedDayOnly = self.searchSelectedDayOnly;
+    NSUserDefaults.standardUserDefaults.showAllDayEvents = self.showAllDayEvents;
     
     [self.delegate didSetNewFilterSettingsInFilterTableViewController:self];    
 }
@@ -174,6 +177,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
             showCheckMark = self.showExpiredEvents;
         } else if (indexPath.row == 1) {
             showCheckMark = self.searchSelectedDayOnly;
+        } else if (indexPath.row == 2) {
+            showCheckMark = self.showAllDayEvents;
         }
         NSString *text = self.timeStrings[indexPath.row];
         cell.textLabel.text = text;
@@ -221,6 +226,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
             self.showExpiredEvents = !self.showExpiredEvents;
         } else if (indexPath.row == 1) {
             self.searchSelectedDayOnly = !self.searchSelectedDayOnly;
+        } else if (indexPath.row == 2) {
+            self.showAllDayEvents = !self.showAllDayEvents;
         }
     }
     else if (indexPath.section == 1) {

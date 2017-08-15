@@ -27,6 +27,9 @@ extern NSString *const kBRCGateUnlockNotificationKey;
 /** Whether or not search on event view shows results for all days */
 @property (nonatomic, readwrite) BOOL searchSelectedDayOnly;
 
+/** Whether or not to show "All Day" events */
+@property (nonatomic, readwrite) BOOL showAllDayEvents;
+
 - (BOOL)enteredEmbargoPasscode;
 - (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode;
 

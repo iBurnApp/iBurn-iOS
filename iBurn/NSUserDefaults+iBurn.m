@@ -14,6 +14,7 @@ static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
 static NSString *const kBRCEntered2016EmbargoPasscodeKey = @"kBRCEntered2016EmbargoPasscodeKey";
 static NSString *const kBRCHasViewedOnboardingKey = @"kBRCHasViewedOnboardingKey";
 static NSString *const kBRCSearchSelectedDayOnlyKey = @"kBRCSearchSelectedDayOnlyKey";
+static NSString *const kBRCShowAllDayEventsKey = @"kBRCShowAllDayEventsKey";
 
 
 NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey";
@@ -21,7 +22,7 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 
 
 @implementation NSUserDefaults (iBurn)
-@dynamic searchSelectedDayOnly;
+@dynamic searchSelectedDayOnly, showAllDayEvents;
 
 - (UILocalNotification*) scheduledLocalNotificationForGateUnlock {
     NSData *localNotificationData = [self objectForKey:kBRCGateUnlockNotificationKey];
@@ -122,6 +123,15 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
         return YES;
     }
     return result.boolValue;
+}
+
+- (void) setShowAllDayEvents:(BOOL)showAllDayEvents {
+    [self setBool:showAllDayEvents forKey:kBRCShowAllDayEventsKey];
+    [self synchronize];
+}
+
+- (BOOL) showAllDayEvents {
+    return [self boolForKey:kBRCShowAllDayEventsKey];
 }
 
 @end
