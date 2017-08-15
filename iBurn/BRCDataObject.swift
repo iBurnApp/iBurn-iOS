@@ -34,4 +34,19 @@ public extension BRCDataObject {
         }
         return cellIdentifier
     }
+    
+    /** Short address e.g. 7:45 & G */
+    public var shortBurnerMapAddress: String? {
+        guard let string = self.burnerMapLocationString else { return nil }
+        let components = string.components(separatedBy: " & ")
+        guard let radial = components.first, let street = components.last, street.characters.count > 1 else {
+            return self.burnerMapLocationString
+        }
+        let index = street.index(street.startIndex, offsetBy: 1)
+        let trimmedStreet = street.substring(to: index)
+        let shortAddress = "\(radial) & \(trimmedStreet)"
+        return shortAddress
+    }
 }
+
+

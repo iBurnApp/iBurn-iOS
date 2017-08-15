@@ -46,6 +46,7 @@
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D94DA1AD1F225EBC0064657B /* 2017 in Resources */ = {isa = PBXBuildFile; fileRef = D9571DB41F225E73004B6607 /* 2017 */; };
+		D94E60B21F4384E3007B5142 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D94E60B11F4384E3007B5142 /* bundle.js */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
@@ -81,7 +82,6 @@
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
 		D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */; };
 		D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */; };
-		D9ADBF5F1D6BA9A7003A71DF /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D9ADBF5E1D6BA9A6003A71DF /* bundle.js */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
 		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
@@ -214,6 +214,7 @@
 		D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCObjectMetadata.m; sourceTree = "<group>"; };
 		D94699511F39699C00DE8DA6 /* ArtImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtImageCell.swift; sourceTree = "<group>"; };
 		D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ArtImageCell.xib; sourceTree = "<group>"; };
+		D94E60B11F4384E3007B5142 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2017/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
 		D9571DB41F225E73004B6607 /* 2017 */ = {isa = PBXFileReference; lastKnownFileType = text; name = 2017; path = "Submodules/iBurn-Data/data/2017/2017"; sourceTree = SOURCE_ROOT; };
@@ -539,11 +540,11 @@
 		D94DA1AE1F225EE40064657B /* 2017 */ = {
 			isa = PBXGroup;
 			children = (
+				D94E60B11F4384E3007B5142 /* bundle.js */,
 				D965BFE41F2EB6E700D496FF /* MediaFiles */,
 				D981D5551F2E9F1600E470E6 /* iBurn-2017 */,
 				D97EF8351F2E9EE70096A649 /* TileCache */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
-				D9ADBF5E1D6BA9A6003A71DF /* bundle.js */,
 				D9571DB41F225E73004B6607 /* 2017 */,
 			);
 			name = 2017;
@@ -753,6 +754,7 @@
 		D9BF9A651D515FC2004AA63B /* 2016 */ = {
 			isa = PBXGroup;
 			children = (
+				D9ADBF5E1D6BA9A6003A71DF /* bundle.js */,
 				D91392DF1D6519300090E093 /* iBurn-2016 */,
 				D9BF9A661D515FF7004AA63B /* 2016 */,
 			);
@@ -900,8 +902,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
-				D9ADBF5F1D6BA9A7003A71DF /* bundle.js in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
+				D94E60B21F4384E3007B5142 /* bundle.js in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D94DA1AD1F225EBC0064657B /* 2017 in Resources */,

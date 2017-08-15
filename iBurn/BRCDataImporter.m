@@ -342,6 +342,10 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                     if (camp.location) {
                         event.coordinate = camp.coordinate;
                     }
+                    if (camp.burnerMapLocation) {
+                        // Also copy BurnerMap location if available
+                        event.burnerMapCoordinate = camp.burnerMapCoordinate;
+                    }
                 } else if (event.hostedByCampUniqueID) {
                     // the API JSON is bunk and references non-existent camps
                     event.hostedByCampUniqueID = nil;

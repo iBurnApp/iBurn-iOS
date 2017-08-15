@@ -16,6 +16,7 @@
 #import "BRCDatabaseManager.h"
 #import "BRCEmbargo.h"
 #import <Mantle/Mantle.h>
+#import "iBurn-Swift.h"
 
 @implementation BRCDataObjectTableViewCell
 
@@ -35,6 +36,12 @@
         }
         if ([BRCEmbargo canShowLocationForObject:dataObject]) {
             self.rightSubtitleLabel.text = playaLocation;
+        } else if (dataObject.burnerMapLocationString) {
+            NSString *burnerMapAddress = dataObject.shortBurnerMapAddress;
+            if (!burnerMapAddress) {
+                burnerMapAddress = dataObject.burnerMapLocationString;
+            }
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"BurnerMap: %@",burnerMapAddress];
         } else {
             self.rightSubtitleLabel.text = @"Location Restricted";
         }

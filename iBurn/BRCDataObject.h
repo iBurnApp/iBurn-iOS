@@ -26,21 +26,21 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Object description (from the PlayaEvents API)
  */
-@property (nonatomic, strong, readonly) NSString *detailDescription;
+@property (nonatomic, strong, readonly, nullable) NSString *detailDescription;
 /**
  *  Email (from the PlayaEvents API)
  */
-@property (nonatomic, strong, readonly) NSString *email;
+@property (nonatomic, strong, readonly, nullable) NSString *email;
 
 /**
  *  Homepage (from the PlayaEvents API)
  */
-@property (nonatomic, strong, readonly) NSURL *url;
+@property (nonatomic, strong, readonly, nullable) NSURL *url;
 
 /**
  *  Real GPS location (this property is dynamically generated)
  */
-@property (nonatomic, readonly) CLLocation *location;
+@property (nonatomic, readonly, nullable) CLLocation *location;
 
 /** Same as location (this property is dynamically generated) */
 @property (nonatomic, readwrite) CLLocationCoordinate2D coordinate;
@@ -58,10 +58,25 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Playa Coordinates
  */
-@property (nonatomic, strong) NSString *playaLocation;
+@property (nonatomic, strong, nullable) NSString *playaLocation;
 
 /** Calculates distance from location */
 - (CLLocationDistance) distanceFromLocation:(CLLocation*)location;
+
+// MARK: Burner Map
+
+/**
+ *  Real GPS location (this property is dynamically generated)
+ */
+@property (nonatomic, readonly, nullable) CLLocation *burnerMapLocation;
+
+/** Same as location (this property is dynamically generated) */
+@property (nonatomic, readwrite) CLLocationCoordinate2D burnerMapCoordinate;
+
+/**
+ *  Playa Coordinates e.g. 7:30 & Inspirit
+ */
+@property (nonatomic, readonly, nullable) NSString *burnerMapLocationString;
 
 @end
 

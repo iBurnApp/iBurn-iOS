@@ -269,7 +269,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if (![hfv isKindOfClass:UITableViewHeaderFooterView.class]) {
         return;
     }
-    hfv.textLabel.textColor = self.colors.secondaryColor;
+    hfv.textLabel.textColor = self.colors.detailColor;
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
