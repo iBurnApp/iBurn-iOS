@@ -29,6 +29,33 @@ public class TableViewSection {
     }
 }
 
+extension CLLocation {
+    static var currentLocation: CLLocation? {
+        let appDelegate = BRCAppDelegate.shared
+        let currentLocation = appDelegate.locationManager.location
+        return currentLocation
+    }
+}
+
+extension UIViewController {
+    /** Adds current geocoded playa address to navigation bar title */
+    func geocodeNavigationBar() {
+        guard let location = CLLocation.currentLocation else { return }
+        BRCGeocoder.shared.asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { locationString in
+            if let locationString = locationString, locationString.characters.count > 0 {
+                let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
+                let label = UILabel()
+                label.attributedText = attrString
+                label.sizeToFit()
+                self.navigationItem.titleView = label
+            } else {
+                self.navigationItem.title = self.title
+            }
+        }
+    }
+}
+
+
 @objc(BRCSortedViewController)
 public class SortedViewController: UITableViewController {
 
@@ -106,19 +133,7 @@ public class SortedViewController: UITableViewController {
         refreshTableItems { () -> Void in
             self.tableView.reloadData();
         }
-        if let location = getCurrentLocation() {
-            BRCGeocoder.shared.asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { (locationString: String!) -> Void in
-                if locationString.characters.count > 0 {
-                    let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
-                    let label = UILabel()
-                    label.attributedText = attrString
-                    label.sizeToFit()
-                    self.navigationItem.titleView = label
-                } else {
-                    self.navigationItem.title = self.title
-                }
-            }
-        }
+        geocodeNavigationBar()
     }
     
     

@@ -58,6 +58,7 @@ public class MapViewController: BaseMapViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         reloadUserAnnotations()
+        geocodeNavigationBar()
     }
     
     // MARK: - User Interaction
