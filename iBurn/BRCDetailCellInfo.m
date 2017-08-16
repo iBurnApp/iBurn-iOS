@@ -109,7 +109,12 @@
                 } else {
                     cellValue = playaAddress;
                 }
+                // We don't want to show locations for art because it's kind of meaningless
+                if ([object isKindOfClass:BRCArtObject.class]) {
+                    cellValue = nil;
+                }
             }
+            
             if (cellValue != nil && ![cellValue isEqual:[NSNull null]]) {
                 //if value is a string check that it has an length
                 if ([cellValue isKindOfClass:[NSString class]]) {
