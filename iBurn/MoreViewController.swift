@@ -124,7 +124,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func showFeedbackView() {
-        //BITHockeyManager.shared().feedbackManager.showFeedbackListView()
+        let url = URL(string: "https://github.com/Burning-Man-Earth/iBurn-iOS/issues")!
+        UIApplication.shared.openURL(url)
     }
 
     func showShareSheet(_ fromView: UIView) {
