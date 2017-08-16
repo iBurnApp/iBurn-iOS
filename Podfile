@@ -17,7 +17,6 @@ abstract_target 'iBurnAbstract' do
 	pod 'Mantle', '~> 2.0'
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
-	pod 'KSCrash', '~> 1.15.9'
 	pod 'PureLayout', '~> 3.0'
 	pod 'DAKeyboardControl', '~> 2.4'
 	pod 'BButton', '~> 4.0'
@@ -25,7 +24,6 @@ abstract_target 'iBurnAbstract' do
 	pod 'TTTAttributedLabel', '~> 2.0'
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'
-	pod 'pop', '~> 1.0'
 	pod 'DOFavoriteButton', :git => 'https://github.com/okmr-d/DOFavoriteButton.git'
 	pod 'JSQWebViewController', '~> 5.0'
 	pod 'TUSafariActivity', '~> 1.0'
@@ -35,5 +33,4 @@ abstract_target 'iBurnAbstract' do
 	pod 'PermissionScope', '~> 1.0'
 	pod 'JTSImageViewController'
 	pod 'UIImageColors', '~> 1.4.0'
-	pod 'Kingfisher', '~> 3.10.4'
 end

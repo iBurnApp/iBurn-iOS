@@ -20,70 +20,6 @@ PODS:
     - FormatterKit/Resources
   - JSQWebViewController (5.0.0)
   - JTSImageViewController (1.5.1)
-  - Kingfisher (3.10.4)
-  - KSCrash (1.15.11):
-    - KSCrash/Installations (= 1.15.11)
-  - KSCrash/Installations (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting
-  - KSCrash/Recording (1.15.11):
-    - KSCrash/Recording/Tools (= 1.15.11)
-  - KSCrash/Recording/Tools (1.15.11)
-  - KSCrash/Reporting (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters (= 1.15.11)
-    - KSCrash/Reporting/MessageUI (= 1.15.11)
-    - KSCrash/Reporting/Sinks (= 1.15.11)
-    - KSCrash/Reporting/Tools (= 1.15.11)
-  - KSCrash/Reporting/Filters (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Alert (= 1.15.11)
-    - KSCrash/Reporting/Filters/AppleFmt (= 1.15.11)
-    - KSCrash/Reporting/Filters/Base (= 1.15.11)
-    - KSCrash/Reporting/Filters/Basic (= 1.15.11)
-    - KSCrash/Reporting/Filters/GZip (= 1.15.11)
-    - KSCrash/Reporting/Filters/JSON (= 1.15.11)
-    - KSCrash/Reporting/Filters/Sets (= 1.15.11)
-    - KSCrash/Reporting/Filters/Stringify (= 1.15.11)
-    - KSCrash/Reporting/Filters/Tools (= 1.15.11)
-  - KSCrash/Reporting/Filters/Alert (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/AppleFmt (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/Base (1.15.11):
-    - KSCrash/Recording
-  - KSCrash/Reporting/Filters/Basic (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/GZip (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/JSON (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/Sets (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/AppleFmt
-    - KSCrash/Reporting/Filters/Base
-    - KSCrash/Reporting/Filters/Basic
-    - KSCrash/Reporting/Filters/GZip
-    - KSCrash/Reporting/Filters/JSON
-    - KSCrash/Reporting/Filters/Stringify
-  - KSCrash/Reporting/Filters/Stringify (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters/Base
-  - KSCrash/Reporting/Filters/Tools (1.15.11):
-    - KSCrash/Recording
-  - KSCrash/Reporting/MessageUI (1.15.11):
-    - KSCrash/Recording
-  - KSCrash/Reporting/Sinks (1.15.11):
-    - KSCrash/Recording
-    - KSCrash/Reporting/Filters
-    - KSCrash/Reporting/Tools
-  - KSCrash/Reporting/Tools (1.15.11):
-    - KSCrash/Recording
   - KVOController (1.2.0)
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
@@ -91,7 +27,6 @@ PODS:
   - Mapbox-iOS-SDK (3.6.1)
   - Onboard (2.3.1)
   - PermissionScope (1.1.1)
-  - pop (1.0.10)
   - PureLayout (3.0.2)
   - Swizzlean (1.0.0)
   - TTTAttributedLabel (2.0.0)
@@ -171,14 +106,11 @@ DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - JSQWebViewController (~> 5.0)
   - JTSImageViewController
-  - Kingfisher (~> 3.10.4)
-  - KSCrash (~> 1.15.9)
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (~> 3.5)
   - Onboard (~> 2.1)
   - PermissionScope (~> 1.0)
-  - pop (~> 1.0)
   - PureLayout (~> 3.0)
   - Swizzlean
   - TTTAttributedLabel (~> 2.0)
@@ -215,14 +147,11 @@ SPEC CHECKSUMS:
   FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
   JSQWebViewController: 0461aa42612b221571556df61d9c09f080cb2eef
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
-  Kingfisher: dc3a4983e86d2dfa89513664983a82340c11a289
-  KSCrash: 7bd106ca4a2247774deeeb587c740ce0207de8f3
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
   Mapbox-iOS-SDK: 7dd2a0fd08e9444b9c47f6e8fd1c32509bce3243
   Onboard: b6871f25ac753175b2ab9a362fb2feb26a81a311
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
-  pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
   Swizzlean: 628e6747d925655be3dbbb943bc8a8e8b29e6852
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
@@ -231,6 +160,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: e1de80f2c0ce31cc7e1c6f1c8aaeec2770371f09
   YapDatabase: 69ca88a2dfee305fde4412cf670c76f75aa7ccd0
 
-PODFILE CHECKSUM: 47da7121adc049224dde1c643852c875328a834a
+PODFILE CHECKSUM: b5d429b094b6ee48427c00a13d445ae6048180ec
 
 COCOAPODS: 1.3.1

@@ -42,7 +42,6 @@
 #import "NSDate+iBurn.h"
 @import AVFoundation;
 @import CocoaLumberjack;
-#import <KSCrash/KSCrashInstallationQuincyHockey.h>
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
