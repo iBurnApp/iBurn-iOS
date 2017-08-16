@@ -31,6 +31,13 @@
     if (userLocation && CLLocationCoordinate2DIsValid(userLocation.coordinate)) {
         userCoord = userLocation.coordinate;
     }
+    
+    // Check if user coord is super far away
+    CLCircularRegion *burningManRegion = [BRCLocations burningManRegion];
+    if (![burningManRegion containsCoordinate:userCoord]) {
+        userCoord = [BRCLocations blackRockCityCenter];
+    }
+    
     CLLocationCoordinate2D destinationCoord = destination.coordinate;
     if (CLLocationCoordinate2DIsValid(destinationCoord)) {
         CLLocationCoordinate2D *coordinates = malloc(sizeof(CLLocationCoordinate2D) * 2);
