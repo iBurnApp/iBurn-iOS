@@ -26,6 +26,11 @@
     self.isPlayingAudio = NO;
 }
 
+- (void) prepareForReuse {
+    [super prepareForReuse];
+    self.isPlayingAudio = NO;
+}
+
 - (void) setDataObject:(BRCDataObject *)dataObject metadata:(nonnull BRCObjectMetadata *)metadata {
     [super setDataObject:dataObject metadata:metadata];
     if ([dataObject isKindOfClass:[BRCArtObject class]]) {

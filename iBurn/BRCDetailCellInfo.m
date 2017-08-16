@@ -48,7 +48,11 @@
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(localThumbnailURL)) displayName:@"Image" cellType:BRCDetailCellInfoTypeImage]];
     
-    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Location" cellType:BRCDetailCellInfoTypeText]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(audioURL)) displayName:@"Audio Guide" cellType:BRCDetailCellInfoTypeAudio]];
+    
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Official Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
+    
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(burnerMapLocationString)) displayName:@"BurnerMap Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(detailDescription)) displayName:@"Description" cellType:BRCDetailCellInfoTypeText]];
     
@@ -95,6 +99,17 @@
             } else {
                 cellValue = [object valueForKey:cellInfo.key];
             }
+            // Stupid Embargo
+            if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
+                NSString *playaAddress = object.playaLocation;
+                if (![BRCEmbargo canShowLocationForObject:object]) {
+                    cellValue = @"Restricted";
+                } else if (!playaAddress) {
+                    cellValue = @"Unknown";
+                } else {
+                    cellValue = playaAddress;
+                }
+            }
             if (cellValue != nil && ![cellValue isEqual:[NSNull null]]) {
                 //if value is a string check that it has an length
                 if ([cellValue isKindOfClass:[NSString class]]) {
@@ -117,12 +132,6 @@
                     }
                 }
                 cellInfo.value = cellValue;
-                
-                if (![BRCEmbargo canShowLocationForObject:object]) {
-                    if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
-                        cellInfo.value = @"Restricted";
-                    }
-                }
                 
                 //add value and dispaly name to array
                 [finalCellInfoArray addObject:cellInfo];

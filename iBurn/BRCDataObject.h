@@ -15,7 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface BRCDataObject : BRCYapDatabaseObject <MTLJSONSerializing, MGLAnnotation, BRCMetadataProtocol>
+@interface BRCDataObject : BRCYapDatabaseObject <MTLJSONSerializing, BRCMetadataProtocol>
 
 #pragma mark Constant Properties
 

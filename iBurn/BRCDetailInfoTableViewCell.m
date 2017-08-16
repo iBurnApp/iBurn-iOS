@@ -62,7 +62,7 @@
     }
 }
 
-- (void) setDetailCellInfo:(BRCDetailCellInfo *)cellInfo colors:(BRCImageColors*)colors {
+- (void) setDetailCellInfo:(BRCDetailCellInfo *)cellInfo object:(BRCDataObject*)object colors:(BRCImageColors*)colors {
     if (!cellInfo) {
         return;
     }
@@ -154,6 +154,25 @@
                 self.artImageView.hidden = NO;
             }
             [self setPlainTextApperance:colors];
+            break;
+        }
+        case BRCDetailCellInfoTypeAudio: {
+            self.textLabel.text = @"🔈 Play / Pause Audio Tour";
+            [self setSelectableAppearance:colors];
+            break;
+        }
+        case BRCDetailCellInfoTypePlayaAddress: {
+            self.textLabel.text = cellInfo.value;
+            if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
+                if (!object.playaLocation || ![BRCEmbargo canShowLocationForObject:object]) {
+                    [self setPlainTextApperance:colors];
+                } else {
+                    [self setSelectableAppearance:colors];
+                }
+            }
+            if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(burnerMapLocationString))]) {
+                [self setSelectableAppearance:colors];
+            }
             break;
         }
     }

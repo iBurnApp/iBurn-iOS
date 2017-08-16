@@ -16,10 +16,12 @@ typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
     BRCDetailCellInfoTypeRelationship,
     BRCDetailCellInfoTypeDistanceFromCurrentLocation,
     BRCDetailCellInfoTypeDistanceFromHomeCamp,
+    BRCDetailCellInfoTypePlayaAddress,
     BRCDetailCellInfoTypeSchedule,
     BRCDetailCellInfoTypeDate,
     BRCDetailCellInfoTypeEventRelationship, // for getting events hosted at art/camp
-    BRCDetailCellInfoTypeImage
+    BRCDetailCellInfoTypeImage,
+    BRCDetailCellInfoTypeAudio
 };
 
 @class BRCDataObject;

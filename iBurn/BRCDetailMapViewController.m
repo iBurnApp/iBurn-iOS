@@ -33,7 +33,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self.mapView brc_showDestination:self.dataObject animated:NO];
+    [self.mapView brc_showDestinationForDataObject:self.dataObject animated:NO padding:UIEdgeInsetsZero];
     //[self.mapView addAnnotation:[RMAnnotation brc_annotationWithMapView:self.mapView dataObject:self.dataObject]];
 }
 

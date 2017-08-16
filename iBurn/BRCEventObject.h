@@ -37,9 +37,9 @@ extern NSString * const kBRCEventArtEdgeName;
 @property (nonatomic, readonly) BRCEventType eventType;
 
 /** Camp hosting event. (To assist our full-text search indexing) */
-@property (nonatomic, strong) NSString *campName;
+@property (nonatomic, strong, nullable) NSString *campName;
 /** Art hosting event. (To assist our full-text search indexing) */
-@property (nonatomic, strong) NSString *artName;
+@property (nonatomic, strong, nullable) NSString *artName;
 
 /** PlayaEvents ID of event's camp */
 @property (nonatomic, strong, nullable) NSString *hostedByCampUniqueID;

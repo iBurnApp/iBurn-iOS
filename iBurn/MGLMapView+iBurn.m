@@ -13,27 +13,25 @@
 #import "UIColor+iBurn.h"
 #import "BRCDataObject.h"
 #import "BRCEmbargo.h"
+#import "iBurn-Swift.h"
 
 @implementation MGLMapView (iBurn)
 
-- (void)brc_showDestination:(id<MGLAnnotation>)destination animated:(BOOL) animated {
+- (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject animated:(BOOL)animated padding:(UIEdgeInsets)padding {
+    MapAnnotation *annotation = [[MapAnnotation alloc] initWithObject:dataObject];
+    if (!annotation) { return; }
+    [self brc_showDestination:annotation animated:animated padding:padding];
+}
+
+- (void)brc_showDestination:(id<MGLAnnotation>)destination animated:(BOOL) animated padding:(UIEdgeInsets)padding {
     NSParameterAssert(destination);
     if (!destination) { return; }
-    CLLocationCoordinate2D userCoord = kCLLocationCoordinate2DInvalid;
-    if (self.userLocation.location &&
-        CLLocationCoordinate2DIsValid(self.userLocation.location.coordinate)) {
-        userCoord = self.userLocation.location.coordinate;
-    } else {
-        userCoord = [BRCLocations blackRockCityCenter];
+    CLLocationCoordinate2D userCoord = [BRCLocations blackRockCityCenter];
+    CLLocation *userLocation = self.userLocation.location;
+    if (userLocation && CLLocationCoordinate2DIsValid(userLocation.coordinate)) {
+        userCoord = userLocation.coordinate;
     }
     CLLocationCoordinate2D destinationCoord = destination.coordinate;
-    if ([destination isKindOfClass:[BRCDataObject class]]) {
-        BRCDataObject *dataObject = (BRCDataObject*)destination;
-        if (![BRCEmbargo canShowLocationForObject:dataObject] ||
-            !dataObject.location) {
-            destinationCoord = kCLLocationCoordinate2DInvalid;
-        }
-    }
     if (CLLocationCoordinate2DIsValid(destinationCoord)) {
         CLLocationCoordinate2D *coordinates = malloc(sizeof(CLLocationCoordinate2D) * 2);
         coordinates[0] = destinationCoord;
@@ -41,7 +39,7 @@
         coordinates[1] = userCoord;
         coordinatesCount++;
         [self setTargetCoordinate:destinationCoord animated:animated];
-        [self setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:UIEdgeInsetsMake(45, 45, 45, 45) animated:animated];
+        [self setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:padding animated:animated];
         free(coordinates);
     } else {
         [self brc_moveToBlackRockCityCenterAnimated:animated];

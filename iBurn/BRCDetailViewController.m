@@ -118,6 +118,21 @@ static CGFloat const kTableViewHeaderHeight = 200;
     
     [self.tableView registerClass:[BRCDetailInfoTableViewCell class] forCellReuseIdentifier:[BRCDetailInfoTableViewCell cellIdentifier]];
     
+    self.favoriteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[self currentStarImage] style:UIBarButtonItemStylePlain target:self action:@selector(didTapFavorite:)];
+    self.favoriteBarButtonItem.tintColor = [UIColor colorWithRed: 254./255 green: 110./255 blue: 111./255 alpha: 1.0];
+    
+    self.navigationItem.rightBarButtonItem = self.favoriteBarButtonItem;
+}
+
+- (void) beginAppearanceTransition:(BOOL)isAppearing animated:(BOOL)animated {
+    [super beginAppearanceTransition:isAppearing animated:animated];
+    if (isAppearing) {
+        [self setNavbarStyle:animated];
+    }
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     if (self.mapView) {
         CGRect headerFrame = CGRectMake(0.0, 0.0, CGRectGetWidth(self.view.bounds), kTableViewHeaderHeight);
         
@@ -132,19 +147,11 @@ static CGFloat const kTableViewHeaderHeight = 200;
         
         [clearHeaderView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
         
-        self.tableView.tableHeaderView = clearHeaderView;
-    }
-    
-    self.favoriteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[self currentStarImage] style:UIBarButtonItemStylePlain target:self action:@selector(didTapFavorite:)];
-    self.favoriteBarButtonItem.tintColor = [UIColor colorWithRed: 254./255 green: 110./255 blue: 111./255 alpha: 1.0];
-    
-    self.navigationItem.rightBarButtonItem = self.favoriteBarButtonItem;
-}
-
-- (void) beginAppearanceTransition:(BOOL)isAppearing animated:(BOOL)animated {
-    [super beginAppearanceTransition:isAppearing animated:animated];
-    if (isAppearing) {
-        [self setNavbarStyle:animated];
+        if ([self.dataObject isKindOfClass:BRCArtObject.class]) {
+            self.tableView.tableFooterView = clearHeaderView;
+        } else {
+            self.tableView.tableHeaderView = clearHeaderView;
+        }
     }
 }
 
@@ -152,7 +159,9 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     [super viewDidAppear:animated];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.mapView brc_showDestination:self.dataObject animated:animated];
+        // Mapbox ignores you if it isn't loaded yet
+        UIEdgeInsets padding = UIEdgeInsetsMake(45, 45, 45, 45);
+        [self.mapView brc_showDestinationForDataObject:self.dataObject animated:NO padding:padding];
     });
 }
 
@@ -209,12 +218,15 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
-    if (dataObject.location) {
+    if (dataObject.location || dataObject.burnerMapLocation) {
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
         self.mapViewDelegate = [[MapViewDelegate alloc] init];
         self.mapView.delegate = self.mapViewDelegate;
-        [self.mapView addAnnotation:self.dataObject];
+        MapAnnotation *annotation = [[MapAnnotation alloc] initWithObject:dataObject];
+        if (annotation) {
+            [self.mapView addAnnotation:annotation];
+        }
         self.mapView.userInteractionEnabled = NO;
     }
     else {
@@ -252,7 +264,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     BRCDetailInfoTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[BRCDetailInfoTableViewCell cellIdentifier] forIndexPath:indexPath];
     BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath];
-    [cell setDetailCellInfo:cellInfo colors:self.colors];
+    [cell setDetailCellInfo:cellInfo object:self.dataObject colors:self.colors];
     return cell;
 }
 
@@ -370,6 +382,26 @@ static CGFloat const kTableViewHeaderHeight = 200;
             [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
         }
         
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypeAudio) {
+        if ([self.dataObject isKindOfClass:[BRCArtObject class]]) {
+            BRCArtObject *art = (BRCArtObject*)self.dataObject;
+            if ([[BRCAudioPlayer sharedInstance] isPlaying:art]) {
+                [[BRCAudioPlayer sharedInstance] togglePlayPause];
+            } else if (art.audioURL) {
+                [[BRCAudioPlayer sharedInstance] playAudioTour:@[art]];
+            }
+        }
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypePlayaAddress) {
+        CLLocation *location = self.dataObject.location;
+        if (!location) {
+            location = self.dataObject.burnerMapLocation;
+        }
+        if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))] && ![BRCEmbargo canShowLocationForObject:self.dataObject]) {
+            location = nil;
+        }
+        if (location) {
+            [self didTapMapContainerview:tableView];
+        }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
@@ -377,19 +409,19 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 #pragma - mark UIScrollViewDelegate
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
-    CGFloat navBarY = CGRectGetMaxY(self.navigationController.navigationBar.frame);
-    CGFloat contentOffSetY = scrollView.contentOffset.y;
-    CGFloat headerViewHeight = CGRectGetHeight(self.tableView.tableHeaderView.frame);
-    CGFloat visibelHeight = headerViewHeight - (navBarY + contentOffSetY);
-    CGRect mapRect = CGRectZero;
-    if (visibelHeight > 0) {
-        mapRect = CGRectMake(0, headerViewHeight - visibelHeight, CGRectGetWidth(self.tableView.tableHeaderView.frame), visibelHeight);
-    }
-    self.mapView.frame = mapRect;
-    [self.mapView brc_showDestination:self.dataObject animated:NO];
-}
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+//{
+//    CGFloat navBarY = CGRectGetMaxY(self.navigationController.navigationBar.frame);
+//    CGFloat contentOffSetY = scrollView.contentOffset.y;
+//    CGFloat headerViewHeight = CGRectGetHeight(self.tableView.tableHeaderView.frame);
+//    CGFloat visibelHeight = headerViewHeight - (navBarY + contentOffSetY);
+//    CGRect mapRect = CGRectZero;
+//    if (visibelHeight > 0) {
+//        mapRect = CGRectMake(0, headerViewHeight - visibelHeight, CGRectGetWidth(self.tableView.tableHeaderView.frame), visibelHeight);
+//    }
+//    self.mapView.frame = mapRect;
+//    [self.mapView brc_showDestinationForDataObject:self.dataObject animated:NO];
+//}
 
 
 #pragma - mark MFMailComposeViewControllerDelegate 
