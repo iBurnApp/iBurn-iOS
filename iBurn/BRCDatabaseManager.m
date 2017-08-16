@@ -311,7 +311,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseViewFiltering *audioTourFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
         if ([object isKindOfClass:[BRCArtObject class]]) {
             BRCArtObject *art = (BRCArtObject*)object;
-            if (art.remoteAudioURL) {
+            if (art.audioURL) {
                 return YES;
             }
         }

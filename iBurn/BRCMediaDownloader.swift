@@ -85,6 +85,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     
     /** Copies media files like images/mp3s that were bundled with the app */
     private static func copyMediaFilesIfNeeded() {
+        return
         guard let bundle = Bundle.bundledMedia, let bundlePath = bundle.resourcePath else {
             return
         }
@@ -102,12 +103,16 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         }
     }
     
-    public static func localMediaURL(_ fileName: String) -> URL {
-        copyMediaFilesIfNeeded()
-        let downloadPath = self.mediaFilesPath as NSString
-        let path = downloadPath.appendingPathComponent(fileName)
-        let url = URL(fileURLWithPath: path)
+    public static func localMediaURL(_ fileName: String) -> URL? {
+        let bundle = Bundle.bundledMedia
+        let url = bundle?.url(forResource: fileName, withExtension: nil)
         return url
+        
+//        copyMediaFilesIfNeeded()
+//        let downloadPath = self.mediaFilesPath as NSString
+//        let path = downloadPath.appendingPathComponent(fileName)
+//        let url = URL(fileURLWithPath: path)
+//        return url
     }
     
     public static func imageForArt(_ art: BRCArtObject) -> UIImage? {
@@ -131,7 +136,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         case .image:
             return "jpg"
         case .audio:
-            return "mp3"
+            return "m4a"
         default:
             return ""
         }
@@ -139,6 +144,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     
     /** This will cache un-downloaded media */
     open func downloadUncachedMedia() {
+        return
         BRCMediaDownloader.copyMediaFilesIfNeeded()
         connection.asyncRead { (transaction) in
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
@@ -225,11 +231,11 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     //MARK: NSURLSessionDownloadDelegate
     
     open func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        guard let fileName = downloadTask.taskDescription else {
+        guard let fileName = downloadTask.taskDescription,
+        let destURL = type(of: self).localMediaURL(fileName) else {
             DDLogError("taskDescription is nil!")
             return
         }
-        let destURL = type(of: self).localMediaURL(fileName)
         do {
             try FileManager.default.moveItem(at: location, to: destURL)
             try (destURL as NSURL).setResourceValue(true, forKey: URLResourceKey.isExcludedFromBackupKey)
