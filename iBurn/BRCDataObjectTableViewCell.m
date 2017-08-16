@@ -38,7 +38,10 @@
 - (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {
     NSString *playaLocation = dataObject.playaLocation;
     if (!playaLocation) {
-        playaLocation = @"0:00 & ?";
+        playaLocation = dataObject.burnerMapLocationString;
+        if (!playaLocation) {
+            playaLocation = @"Location Unknown";
+        }
     }
     if ([BRCEmbargo canShowLocationForObject:dataObject]) {
         label.text = playaLocation;
