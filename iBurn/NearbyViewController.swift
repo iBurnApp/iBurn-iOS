@@ -48,17 +48,17 @@ class NearbyViewController: SortedViewController {
     }
     
     internal override func refreshTableItems(_ completion: @escaping ()->()) {
-        if let currentLocation = getCurrentLocation() {
-            let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
-            emptyListText = EmptyListLabelText.Loading
-            BRCDatabaseManager.shared.queryObjects(in: region, completionQueue: DispatchQueue.main, resultsBlock: { (results) -> Void in
-                let nearbyObjects = results as! [BRCDataObject]
-                let options = BRCDataSorterOptions()
-                BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
-                    self.processSortedData(events, art: art, camps: camps, completion: completion)
-                })
+        guard let currentLocation = getCurrentLocation() else { return }
+        let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
+        emptyListText = EmptyListLabelText.Loading
+        BRCDatabaseManager.shared.queryObjects(in: region, completionQueue: DispatchQueue.main, resultsBlock: { (results) -> Void in
+            let nearbyObjects = results as! [BRCDataObject]
+            let options = BRCDataSorterOptions()
+            options.sortOrder = .distance(currentLocation)
+            BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
+                self.processSortedData(events, art: art, camps: camps, completion: completion)
             })
-        }
+        })
     }
     
     func refreshHeaderLabel() {

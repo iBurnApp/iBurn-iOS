@@ -378,10 +378,17 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseRTreeIndexHandler *handler = [YapDatabaseRTreeIndexHandler withObjectBlock:^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCDataObject class]]) {
             BRCDataObject *dataObject = object;
-            dict[RTreeMinLat] = @(dataObject.coordinate.latitude);
-            dict[RTreeMaxLat] = @(dataObject.coordinate.latitude);
-            dict[RTreeMinLon] = @(dataObject.coordinate.longitude);
-            dict[RTreeMaxLon] = @(dataObject.coordinate.longitude);
+            CLLocation *location = dataObject.location;
+            if (!location) {
+                location = dataObject.burnerMapLocation;
+            }
+            if (!location) {
+                return;
+            }
+            dict[RTreeMinLat] = @(location.coordinate.latitude);
+            dict[RTreeMaxLat] = @(location.coordinate.latitude);
+            dict[RTreeMinLon] = @(location.coordinate.longitude);
+            dict[RTreeMaxLon] = @(location.coordinate.longitude);
         }
     }];
     YapDatabaseRTreeIndexOptions *options = [[YapDatabaseRTreeIndexOptions alloc] init];
@@ -391,7 +398,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                                                       [BRCEventObject yapCollection]]
                                  ];
     options.allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:allowedCollections];
-    YapDatabaseRTreeIndex *rTree = [[YapDatabaseRTreeIndex alloc] initWithSetup:setup handler:handler versionTag:@"1" options:options];
+    YapDatabaseRTreeIndex *rTree = [[YapDatabaseRTreeIndex alloc] initWithSetup:setup handler:handler versionTag:@"2" options:options];
     BOOL success = [self.database registerExtension:rTree withName:self.rTreeIndex];
     if (success) {
         [self postExtensionRegisteredNotification:self.rTreeIndex];

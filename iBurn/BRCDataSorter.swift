@@ -9,7 +9,14 @@
 import UIKit
 import YapDatabase
 
+
+public enum SortOrder {
+    case title
+    case distance(CLLocation)
+}
+
 public class BRCDataSorterOptions {
+    open var sortOrder: SortOrder
     open var showExpiredEvents: Bool
     open var showFutureEvents: Bool
     /** Default true. Puts expired events at bottom. */
@@ -20,6 +27,7 @@ public class BRCDataSorterOptions {
         showFutureEvents = false
         sortEventsWithExpiration = true
         now = Date()
+        sortOrder = .title
         /* DATE TESTING
         #if DEBUG
         now = NSDate.brc_testDate()
@@ -82,8 +90,16 @@ public class BRCDataSorter: NSObject {
                         $0.startDate.timeIntervalSinceNow < $1.startDate.timeIntervalSinceNow
                     }
                 }
-                camps.sort { $0.title < $1.title }
-                art.sort { $0.title < $1.title }
+                let sortOrder = options?.sortOrder ?? SortOrder.title
+                switch sortOrder {
+                case .distance(let from):
+                    camps.sort { $0.distance(from: from) < $1.distance(from: from) }
+                    art.sort { $0.distance(from: from) < $1.distance(from: from) }
+                case .title:
+                    camps.sort { $0.title < $1.title }
+                    art.sort { $0.title < $1.title }
+                }
+                
                 queue.async(execute: { () -> Void in
                     callbackBlock(events, art, camps)
                 })
