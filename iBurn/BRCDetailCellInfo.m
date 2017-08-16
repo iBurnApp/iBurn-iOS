@@ -50,11 +50,11 @@
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(audioURL)) displayName:@"Audio Guide" cellType:BRCDetailCellInfoTypeAudio]];
     
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(detailDescription)) displayName:@"Description" cellType:BRCDetailCellInfoTypeText]];
+    
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Official Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(burnerMapLocationString)) displayName:@"BurnerMap Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
-    
-    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(detailDescription)) displayName:@"Description" cellType:BRCDetailCellInfoTypeText]];
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(distanceFromLocation:)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
@@ -219,7 +219,7 @@
         }
         
         
-        NSUInteger index = 0;
+        NSUInteger index = 1;
         
         if (fullScheduleString) {
             BRCDetailCellInfo *scheduleCellInfo = [[self alloc] init];
