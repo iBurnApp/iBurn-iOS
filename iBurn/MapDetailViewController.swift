@@ -75,7 +75,7 @@ public class MapDetailViewController: BaseMapViewController {
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if let annotation = annotation {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(250)) {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(100)) {
                 let padding = UIEdgeInsetsMake(120, 60, 45, 60)
                 self.mapView.brc_showDestination(annotation, animated: animated, padding: padding)
                 self.mapView.selectAnnotation(annotation, animated: animated)
