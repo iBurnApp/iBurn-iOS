@@ -11,8 +11,11 @@
 #import "UIColor+iBurn.h"
 
 
-static const double kAverageHumanWalkingSpeedFactor = 0.72; // in seconds/meter == 3.1 mph
-static const double kAverageHumanBikingSpeedFactor = 0.232258065; // in seconds/meter == 9.6 mph
+static const double kAverageHumanWalkingSpeedFactor = 1.4;
+static const double kAverageHumanBikingSpeedFactor = 0.432258065;
+
+//static const double kAverageHumanWalkingSpeedFactor = 0.72; // in seconds/meter == 3.1 mph
+//static const double kAverageHumanBikingSpeedFactor = 0.232258065; // in seconds/meter == 9.6 mph
 
 /**
  *  Returns estimated walking time, calculated by distance in meters x 0.72 seconds/meter
