@@ -188,7 +188,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
 
 - (UIColor*) colorForEventStatus:(NSDate*)currentDate {
     if ([self isStartingSoon:currentDate]) {
-        return [UIColor brc_lightGreenColor];
+        return [UIColor brc_greenColor];
     }
     if (![self hasStarted:currentDate]) {
         return [UIColor darkTextColor];
