@@ -69,15 +69,15 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 //    fileLogger.maximumFileSize = 0;
 //    [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
-    /* DATE TESTING
+    // DATE TESTING
 #if DEBUG
-    self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
-    
-    [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
-        return [NSDate brc_testDate];
-    }];
+//    self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
+//    
+//    [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
+//        return [NSDate brc_testDate];
+//    }];
 #endif
-     */
+     
     
     [BRCDataImporter copyBundledTilesIfNeeded];
     

@@ -28,11 +28,11 @@ public class BRCDataSorterOptions {
         sortEventsWithExpiration = true
         now = Date()
         sortOrder = .title
-        /* DATE TESTING
-        #if DEBUG
-        now = NSDate.brc_testDate()
-        #endif
-         */
+        //DATE TESTING
+//        #if DEBUG
+//        now = NSDate.brc_test()
+//        #endif
+ 
     }
 }
 
