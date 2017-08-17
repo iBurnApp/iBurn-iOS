@@ -221,16 +221,16 @@
         
         NSUInteger index = 1;
         
+        if (relationshipDetailInfoCell) {
+            [finalCellInfoArray insertObject:relationshipDetailInfoCell atIndex:index];
+        }
+        
         if (fullScheduleString) {
             BRCDetailCellInfo *scheduleCellInfo = [[self alloc] init];
             scheduleCellInfo.displayName = @"Schedule";
             scheduleCellInfo.value = fullScheduleString;
             scheduleCellInfo.cellType = BRCDetailCellInfoTypeSchedule;
             [finalCellInfoArray insertObject:scheduleCellInfo atIndex:index];
-        }
-        
-        if (relationshipDetailInfoCell) {
-            [finalCellInfoArray insertObject:relationshipDetailInfoCell atIndex:index];
         }
     }
     
