@@ -64,7 +64,6 @@
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
 		D97EF8361F2E9EE70096A649 /* TileCache in Resources */ = {isa = PBXBuildFile; fileRef = D97EF8351F2E9EE70096A649 /* TileCache */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
-		D981D5561F2E9F1600E470E6 /* iBurn-2017 in Resources */ = {isa = PBXBuildFile; fileRef = D981D5551F2E9F1600E470E6 /* iBurn-2017 */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
@@ -115,6 +114,7 @@
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */; };
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
+		D9F86F281F4543F2008D6622 /* iBurn-2017 in Resources */ = {isa = PBXBuildFile; fileRef = D981D5551F2E9F1600E470E6 /* iBurn-2017 */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
 		F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */; };
@@ -901,6 +901,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9F86F281F4543F2008D6622 /* iBurn-2017 in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D94E60B21F4384E3007B5142 /* bundle.js in Resources */,
@@ -910,7 +911,6 @@
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D97EF8361F2E9EE70096A649 /* TileCache in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
-				D981D5561F2E9F1600E470E6 /* iBurn-2017 in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
