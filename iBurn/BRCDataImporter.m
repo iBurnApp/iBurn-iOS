@@ -296,16 +296,14 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                     BRCRecurringEventObject *recurringEvent = (BRCRecurringEventObject*)object;
                     NSArray *events = [recurringEvent eventObjects];
                     [events enumerateObjectsUsingBlock:^(BRCEventObject *event, NSUInteger idx, BOOL *stop) {
-                        [event replaceWithTransaction:transaction];
                         BRCObjectMetadata *metadata = [[event metadataWithTransaction:transaction] copy];
                         metadata.lastUpdated = updateInfo.lastUpdated;
-                        [event replaceMetadata:metadata transaction:transaction];
+                        [event saveWithTransaction:transaction metadata:metadata];
                     }];
                 } else { // Art and Camps
-                    [object replaceWithTransaction:transaction];
                     BRCObjectMetadata *metadata = [[object metadataWithTransaction:transaction] copy];
                     metadata.lastUpdated = updateInfo.lastUpdated;
-                    [object replaceMetadata:metadata transaction:transaction];
+                    [object saveWithTransaction:transaction metadata:metadata];
                 }
             }
         }];

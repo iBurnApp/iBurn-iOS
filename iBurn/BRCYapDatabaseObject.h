@@ -33,8 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy, class, readonly) NSString *yapCollection;
 
+/** Whether or not an object with this key/collection exists in the database */
+- (BOOL)existsWithTransaction:(YapDatabaseReadTransaction*)transaction;
 - (void)touchWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
 - (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction metadata:(nullable id)metadata;
+/** Checks if object exists before saving. If metadata is nil, it will not overwrite existing metadata. */
+- (void)upsertWithTransaction:(YapDatabaseReadWriteTransaction *)transaction metadata:(nullable id)metadata;
 /** Replaces just the object, and doesn't touch the metadata */
 - (void)replaceWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;
 - (void)removeWithTransaction:(YapDatabaseReadWriteTransaction *)transaction;

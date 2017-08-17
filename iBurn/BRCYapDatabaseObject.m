@@ -35,6 +35,20 @@
     return self.class.yapCollection;
 }
 
+- (BOOL)existsWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    BOOL exists = [transaction hasObjectForKey:self.yapKey inCollection:self.yapCollection];
+    return exists;
+}
+
+- (void) upsertWithTransaction:(YapDatabaseReadWriteTransaction *)transaction metadata:(id)metadata {
+    if ([self existsWithTransaction:transaction]
+        && !metadata) {
+        [self replaceWithTransaction:transaction];
+    } else {
+        [self saveWithTransaction:transaction metadata:metadata];
+    }
+}
+
 - (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction metadata:(nullable id)metadata {
     [transaction setObject:self forKey:self.yapKey inCollection:self.yapCollection withMetadata:metadata];
 }
