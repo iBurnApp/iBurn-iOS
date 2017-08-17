@@ -39,7 +39,11 @@
     } else if ([eventObject isHappeningRightNow:now]) {
         NSTimeInterval endDuration = [eventObject timeIntervalUntilEnd:[NSDate date]];
         NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:endDuration];
-        self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Ends %@", minsUntilEndString];
+        if (!minsUntilEndString.length && endDuration == 0) {
+            minsUntilEndString = @"0 min";
+        }
+        NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
+        self.rightSubtitleLabel.text = [NSString stringWithFormat:@"%@ (%@ left)", startTime, minsUntilEndString];
     } else if ([eventObject hasEnded:now] && [eventObject hasStarted:now]) {
         NSString *text = [self defaultEventText:eventObject];
         self.rightSubtitleLabel.text = text;
