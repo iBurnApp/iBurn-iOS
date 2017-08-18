@@ -22,20 +22,18 @@
 @import YapDatabase;
 
 // layout metrics
-
 static const CGFloat kDayPickerHeight = 65.0f;
 
 @interface BRCEventsTableViewController () <BRCEventsFilterTableViewControllerDelegate, UIPopoverPresentationControllerDelegate>
-@property (nonatomic, strong, readonly) NSDate *selectedDay;
-@property (nonatomic, strong) NSArray *dayPickerRowTitles;
-@property (nonatomic, strong) NSArray *festivalDates;
-@property (nonatomic, strong) UISegmentedControl *dayPickerSegmentedControl;
 
+// data
+@property (nonatomic, strong, readonly) NSDate *selectedDay;
+@property (nonatomic, strong) NSArray *festivalDates;
 @property (nonatomic) BOOL isRefreshingEventTimeSort;
+    
+// UI
 @property (nonatomic, strong) ASDayPicker *dayPicker;
-@property (nonatomic, strong) UIView *tableHeaderView;
 @property (nonatomic, strong) NSLayoutConstraint *dayPickerHeight;
-@property (nonatomic, strong) NSLayoutConstraint *tableViewHeaderHeight;
 
 @end
 
@@ -47,105 +45,61 @@ static const CGFloat kDayPickerHeight = 65.0f;
 	
 - (void) viewDidLoad {
     [super viewDidLoad];
-	
+    
+    [self setAutomaticallyAdjustsScrollViewInsets:NO];
+    
+    // setup navbar
     UIBarButtonItem *filterButton = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(filterButtonPressed:)];
 	UIBarButtonItem *loadingButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.loadingIndicatorView];
-	
-    self.navigationItem.rightBarButtonItems = @[filterButton, loadingButtonItem];
-	self.selectedDay = [NSDate date];
-	self.searchController.hidesNavigationBarDuringPresentation = YES;
-	
-	[self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
-}
-	
-- (void) viewWillAppear:(BOOL)animated {
-	[super viewWillAppear:animated];
-	
-	[self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
-}
-	
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
+	self.navigationItem.rightBarButtonItems = @[filterButton, loadingButtonItem];
+    
+    // setup subviews
+    [self setupSubviews];
+    [self setupConstraints];
+    
+    // setup search
+    self.searchController.searchBar.backgroundColor = [UIColor whiteColor];
+    
+    // setup data
+    self.selectedDay = [NSDate date];
 }
     
 #pragma mark - subviews
-	
-- (void) layoutTableHeaderViewWithWidth:(CGFloat)width {
-	// http://stackoverflow.com/questions/27512738/uisearchbar-subview-of-uitableviewheader
-	
-	NSParameterAssert(self.tableView != nil);
-	// Configure header view
-	UIView *tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 0)];
-	tableHeaderView.translatesAutoresizingMaskIntoConstraints = NO;
-	
-	// Create container view for search bar
-	UIView *searchBarContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 44)];
-	searchBarContainerView.translatesAutoresizingMaskIntoConstraints = NO;
-	NSParameterAssert(self.searchController.searchBar != nil);
-	self.searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	[searchBarContainerView addSubview:self.searchController.searchBar];
-	[self.searchController.searchBar sizeToFit];
-	CGRect searchBarFrame = self.searchController.searchBar.frame;
-	searchBarFrame.origin = CGPointMake(0, 0);
-	self.searchController.searchBar.frame = searchBarFrame;
-	
-	[self setupDayPicker];
-	[tableHeaderView addSubview:self.dayPicker];
-	[tableHeaderView addSubview:searchBarContainerView];
-	
-	// setup table header view constraints
-	[searchBarContainerView autoSetDimension:ALDimensionHeight toSize:44.0];
-	[searchBarContainerView autoSetDimension:ALDimensionWidth toSize:width];
-	[searchBarContainerView autoPinEdge:ALEdgeBottom toEdge:ALEdgeBottom ofView:tableHeaderView];
-	_dayPickerHeight = [self.dayPicker autoSetDimension:ALDimensionHeight toSize:kDayPickerHeight];
-	[self.dayPicker autoSetDimension:ALDimensionWidth toSize:width];
-	[self.dayPicker autoPinEdge:ALEdgeTop toEdge:ALEdgeTop ofView:tableHeaderView withOffset:8];
-	[self.dayPicker autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:searchBarContainerView];
-	
-	NSLayoutConstraint *headerWidthConstraint = [NSLayoutConstraint constraintWithItem:tableHeaderView
-                                                                             attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual
-                                                                                toItem:nil
-                                                                             attribute:NSLayoutAttributeNotAnAttribute
-                                                                            multiplier:1.0f
-                                                                              constant:width];
-	[tableHeaderView addConstraint:headerWidthConstraint];
-	CGFloat height = [tableHeaderView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
-	[tableHeaderView removeConstraint:headerWidthConstraint];
-	
-	tableHeaderView.frame = CGRectMake(0, 0, width, height);
-	[tableHeaderView autoSetDimension:ALDimensionWidth toSize:width];
-	self.tableViewHeaderHeight = [tableHeaderView autoSetDimension:ALDimensionHeight toSize:height];
-	
-	// Then add header to table view
-	self.tableView.tableHeaderView = tableHeaderView;
+    
+- (void) setupSubviews {
+    // date picker
+    self.dayPicker = [[ASDayPicker alloc] initWithFrame:CGRectZero];
+    [self.dayPicker.daysScrollView setScrollEnabled:NO];
+    [self.dayPicker setStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
+    [self.dayPicker setWeekdayTitles:[ASDayPicker weekdayTitlesWithLocaleIdentifier:nil length:3 uppercase:YES]];
+    [self.dayPicker setSelectedDate:self.selectedDay];
+    [self.dayPicker setSelectedDateBackgroundImage:[UIImage imageNamed:@"BRCDateSelection"]];
+    [self.KVOController observe:self.dayPicker keyPath:NSStringFromSelector(@selector(selectedDate)) options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew block:^(id observer, ASDayPicker *dayPicker, NSDictionary *change) {
+        self.selectedDay = dayPicker.selectedDate;
+    }];
+    [self.view addSubview:self.dayPicker];
 }
-	
-- (void) setupDayPicker {
-	self.dayPicker = [[ASDayPicker alloc] initForAutoLayout];
-	self.dayPicker.daysScrollView.scrollEnabled = NO;
-	[self.dayPicker setStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
-	[self.dayPicker setWeekdayTitles:[ASDayPicker weekdayTitlesWithLocaleIdentifier:nil length:3 uppercase:YES]];
-	self.dayPicker.selectedDate = self.selectedDay;
-	[self.dayPicker setSelectedDateBackgroundImage:[UIImage imageNamed:@"BRCDateSelection"]];
-	[self.KVOController observe:self.dayPicker keyPath:NSStringFromSelector(@selector(selectedDate)) options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew block:^(id observer, ASDayPicker *dayPicker, NSDictionary *change) {
-		NSDate *newDate = dayPicker.selectedDate;
-		self.selectedDay = newDate;
-	}];
+    
+- (void) setupConstraints {
+    // date picker
+    self.dayPicker.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.dayPicker.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:64].active = YES;
+    [self.dayPicker.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor].active = YES;
+    [self.dayPicker.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor].active = YES;
+    self.dayPickerHeight = [self.dayPicker.heightAnchor constraintEqualToConstant:kDayPickerHeight];
+    self.dayPickerHeight.active = YES;
+    
+    // table
+    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.tableView.topAnchor constraintEqualToAnchor:self.dayPicker.bottomAnchor].active = YES;
+    [self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+    [self.tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor].active = YES;
+    [self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor].active = YES;
+    
+    // ** hack: tell our superclass not to override these
+    self.hasAddedConstraints = YES;
 }
 
-	
-- (void) updateViewConstraints {
-	if (!self.hasAddedConstraints) {
-		NSParameterAssert(self.tableView != nil);
-		NSParameterAssert(self.dayPicker != nil);
-		
-		[self.tableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
-		self.hasAddedConstraints = YES;
-	}
-	[super updateViewConstraints];
-}
-	
 #pragma mark - Data
 	
 - (NSInteger) indexForDay:(NSDate*)date {
@@ -159,19 +113,17 @@ static const CGFloat kDayPickerHeight = 65.0f;
 	return [self.festivalDates objectAtIndex:index];
 }
     
-    - (NSDate*) selectedDayInFestivalRange:(NSDate*)dayCandidate {
-        NSDate *validDate = [dayCandidate brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
-        return validDate;
-    }
+- (NSDate*) selectedDayInFestivalRange:(NSDate*)dayCandidate {
+    return [dayCandidate brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
+}
     
 - (void) setSelectedDay:(NSDate *)selectedDay {
     if (!selectedDay) {
         selectedDay = [NSDate date];
     }
-    NSDate *selectedDayInFestivalRange = [self selectedDayInFestivalRange:selectedDay];
-    _selectedDay = selectedDayInFestivalRange;
-    NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:_selectedDay];
-    self.navigationItem.leftBarButtonItem.title = dayString;
+    
+    _selectedDay = [self selectedDayInFestivalRange:selectedDay];
+    self.navigationItem.leftBarButtonItem.title = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:_selectedDay];
     [self updateFilteredViews];
     [self replaceTimeBasedEventMappings];
     [self updateMappingsWithCompletionBlock:^{
@@ -181,20 +133,20 @@ static const CGFloat kDayPickerHeight = 65.0f;
     
 - (NSDate*) selectedDay {
     if (!_selectedDay) {
-        NSDate *selectedDayInFestivalRange = [self selectedDayInFestivalRange:[NSDate date]];
-        _selectedDay = selectedDayInFestivalRange;
+        _selectedDay = [self selectedDayInFestivalRange:[NSDate date]];
     }
+    
     return _selectedDay;
 }
     
-- (void)updateFilteredViews
-    {
-        self.isUpdatingFilters = YES;
-        [BRCDatabaseManager.shared refreshEventFilteredViewsWithSelectedDay:self.selectedDay completionBlock:^{
-            self.isUpdatingFilters = NO;
-            [self.tableView reloadData];
-        }];
-    }
+- (void)updateFilteredViews {
+    self.isUpdatingFilters = YES;
+    
+    [BRCDatabaseManager.shared refreshEventFilteredViewsWithSelectedDay:self.selectedDay completionBlock:^{
+        self.isUpdatingFilters = NO;
+        [self.tableView reloadData];
+    }];
+}
     
 - (void) setupMappings {
     // we need to override search mappings for events
@@ -206,11 +158,13 @@ static const CGFloat kDayPickerHeight = 65.0f;
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         if (group && selectedDay) {
             return [group containsString:selectedDay];
+        } else {
+            return NO;
         }
-        return NO;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     } view:self.viewName];
+    
     BOOL searchSelectedDayOnly = [NSUserDefaults standardUserDefaults].searchSelectedDayOnly;
     self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         if (searchSelectedDayOnly) {
@@ -231,6 +185,7 @@ static const CGFloat kDayPickerHeight = 65.0f;
     if (self.isRefreshingEventTimeSort) {
         return;
     }
+    
     self.isRefreshingEventTimeSort = YES;
     [BRCDatabaseManager.shared refreshEventsSortingWithCompletionBlock:^{
         [self updateMappingsWithCompletionBlock:^{
@@ -318,33 +273,6 @@ static const CGFloat kDayPickerHeight = 65.0f;
 - (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
     // This makes our date picker appear in a popover
     return UIModalPresentationNone;
-}
-
-#pragma mark - UISearchControllerDelegate
-
-- (void)willPresentSearchController:(UISearchController *)searchController {
-    self.dayPicker.userInteractionEnabled = NO;
-    [self.view layoutIfNeeded];
-    [UIView animateWithDuration:0.5 animations:^{
-        self.dayPicker.alpha = 0.0;
-        [self.dayPicker removeConstraint:self.dayPickerHeight];
-        self.tableViewHeaderHeight.constant = self.tableViewHeaderHeight.constant - kDayPickerHeight;
-        [self.view layoutIfNeeded];
-    } completion:^(BOOL finished) {
-    }];
-}
-
-- (void)willDismissSearchController:(UISearchController *)searchController {
-    self.dayPicker.userInteractionEnabled = YES;
-    [self.view layoutIfNeeded];
-    [UIView animateWithDuration:0.5 animations:^{
-        self.dayPicker.alpha = 1.0;
-        //self.dayPickerHeight.constant = kDayPickerHeight;
-        //self.tableViewHeaderHeight.constant = self.tableViewHeaderHeight.constant + kDayPickerHeight;
-        [self.view layoutIfNeeded];
-    } completion:^(BOOL finished) {
-        [self layoutTableHeaderViewWithWidth:self.view.bounds.size.width];
-    }];
 }
 
 @end
