@@ -300,8 +300,12 @@ NSString * const kBRCEventArtEdgeName = @"art";
     }
     BRCDataObject *host = [self hostWithTransaction:transaction];
     NSMutableString *locationString = [NSMutableString string];
-    if (host.playaLocation) {
-        [locationString appendFormat:@"%@ - ", host.playaLocation];
+    NSString *playaLocation = host.playaLocation;
+    if (!playaLocation.length) {
+        playaLocation = host.burnerMapLocationString;
+    }
+    if (playaLocation.length) {
+        [locationString appendFormat:@"%@ - ", playaLocation];
     }
     if (host.title) {
         [locationString appendFormat:@"%@", host.title];

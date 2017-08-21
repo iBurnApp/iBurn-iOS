@@ -77,18 +77,46 @@ public extension UIPageViewController {
 
 
 
-public class ColorCache {
+public class ColorCache: NSObject {
     static let shared = ColorCache()
     let readConnection = BRCDatabaseManager.shared.readConnection
     let writeConnection = BRCDatabaseManager.shared.readWriteConnection
     var completionQueue = DispatchQueue.main
     
+    func prefetchAllColors() {
+        DispatchQueue.global(qos: .default).async {
+            var objects: [(BRCArtObject, BRCArtMetadata)] = []
+            self.readConnection.read { transaction in
+                transaction.enumerateRows(inCollection: BRCArtObject.yapCollection, using: { (key, object, metadata, stop) in
+                    guard let art = object as? BRCArtObject else {
+                        return
+                    }
+                    let artMetadata = art.artMetadata(with: transaction)
+                    if artMetadata.thumbnailImageColors != nil {
+                        return
+                    }
+                    if art.localThumbnailURL != nil {
+                        objects.append((art, artMetadata))
+                    }
+                })
+            }
+            objects.forEach({ (art, metadata) in
+                guard let image = BRCMediaDownloader.imageForArt(art) else {
+                    return
+                }
+                self.getColors(art: art, artMetadata: metadata, image: image, downscaleSize: .zero, completion: nil)
+            })
+        }
+    }
+    
     /** Only works for art objects at the moment */
-    func getColors(art: BRCArtObject, artMetadata: BRCArtMetadata, image: UIImage, downscaleSize: CGSize, completion: @escaping (BRCImageColors)->Void) {
+    func getColors(art: BRCArtObject, artMetadata: BRCArtMetadata, image: UIImage, downscaleSize: CGSize, completion: ((BRCImageColors)->Void)?) {
         // Found colors in cache
         if let colors = artMetadata.thumbnailImageColors {
-            self.completionQueue.async {
-                completion(colors)
+            if let completion = completion {
+                self.completionQueue.async {
+                    completion(colors)
+                }
             }
             return
         }
@@ -100,8 +128,10 @@ public class ColorCache {
                 existingColors = artMetadata.thumbnailImageColors
             }
             if let colors = existingColors {
-                self.completionQueue.async {
-                    completion(colors)
+                if let completion = completion {
+                    self.completionQueue.async {
+                        completion(colors)
+                    }
                 }
                 return
             }
@@ -109,9 +139,12 @@ public class ColorCache {
             // Otherwise calculate the colors and save to db
             let colors = image.getColors(scaleDownSize: downscaleSize)
             let brcColors = colors.brc_ImageColors
-            self.completionQueue.async {
-                completion(brcColors)
+            if let completion = completion {
+                self.completionQueue.async {
+                    completion(brcColors)
+                }
             }
+            
             self.writeConnection.asyncReadWrite { transaction in
                 let metadata = art.artMetadata(with: transaction).metadataCopy()
                 metadata.thumbnailImageColors = brcColors

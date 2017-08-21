@@ -54,7 +54,7 @@
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Official Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
     
-    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(burnerMapLocationString)) displayName:@"BurnerMap Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(burnerMapLocationString)) displayName:@"BurnerMap.com Location" cellType:BRCDetailCellInfoTypePlayaAddress]];
     
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(distanceFromLocation:)) displayName:@"Distance" cellType:BRCDetailCellInfoTypeDistanceFromCurrentLocation]];
     
@@ -104,7 +104,7 @@
                 NSString *playaAddress = object.playaLocation;
                 if (![BRCEmbargo canShowLocationForObject:object]) {
                     cellValue = @"Restricted";
-                } else if (!playaAddress) {
+                } else if (!playaAddress.length) {
                     cellValue = @"Unknown";
                 } else {
                     cellValue = playaAddress;

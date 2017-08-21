@@ -218,7 +218,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
-    if (dataObject.location || dataObject.burnerMapLocation) {
+    if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
         self.mapViewDelegate = [[MapViewDelegate alloc] init];

@@ -270,6 +270,7 @@ public class SortedViewController: UITableViewController {
         
         let colors = detailVC.colors
         let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+        pageVC.hidesBottomBarWhenPushed = true
         pageVC.dataSource = self
         pageVC.delegate = self
         self.navigationController?.navigationBar.isTranslucent = false

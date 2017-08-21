@@ -115,6 +115,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
             NSLog(@"Fetched data from internet with result: %d", (int)result);
         }];
+        [ColorCache.shared prefetchAllColors];
     });
     
     //[RMConfiguration sharedInstance].accessToken = @"";

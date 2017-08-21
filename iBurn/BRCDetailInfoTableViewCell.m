@@ -164,7 +164,7 @@
         case BRCDetailCellInfoTypePlayaAddress: {
             self.textLabel.text = cellInfo.value;
             if ([cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
-                if (!object.playaLocation || ![BRCEmbargo canShowLocationForObject:object]) {
+                if (!object.playaLocation.length || ![BRCEmbargo canShowLocationForObject:object]) {
                     [self setPlainTextApperance:colors];
                 } else {
                     [self setSelectableAppearance:colors];

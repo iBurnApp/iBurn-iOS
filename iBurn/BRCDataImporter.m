@@ -268,8 +268,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     }
     
     // Remove me!
-#warning Remove me when playa location data is fixed
-    BRCGeocoder *geocoder = [BRCGeocoder shared];
+    //BRCGeocoder *geocoder = [BRCGeocoder shared];
     
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // Update Fetch info status
@@ -281,13 +280,12 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
             @autoreleasepool {
                 ////////////////
-#warning Remove me when playa location data is fixed
-                if (object.location && object.playaLocation.length == 0) {
-                    NSString *playaLocation = [geocoder reverseLookup:object.location.coordinate];
-                    if (playaLocation.length > 0) {
-                        object.playaLocation = playaLocation;
-                    }
-                }
+//                if (object.location && object.playaLocation.length == 0) {
+//                    NSString *playaLocation = [geocoder reverseLookup:object.location.coordinate];
+//                    if (playaLocation.length > 0) {
+//                        object.playaLocation = playaLocation;
+//                    }
+//                }
                 ///////////////
                 
                 
@@ -359,12 +357,12 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                 } else if (event.hostedByArtUniqueID) {
                     event.hostedByArtUniqueID = nil;
                 }
-                if (event.location && event.playaLocation.length == 0) {
-                    NSString *playaLocation = [geocoder reverseLookup:event.location.coordinate];
-                    if (playaLocation.length > 0) {
-                        event.playaLocation = playaLocation;
-                    }
-                }
+//                if (event.location && event.playaLocation.length == 0) {
+//                    NSString *playaLocation = [geocoder reverseLookup:event.location.coordinate];
+//                    if (playaLocation.length > 0) {
+//                        event.playaLocation = playaLocation;
+//                    }
+//                }
                 [objectsToUpdate addObject:event];
             }
         }];

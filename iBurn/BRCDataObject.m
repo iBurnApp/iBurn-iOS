@@ -50,6 +50,14 @@
     return [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
 }
 
+- (NSString*) playaLocation {
+    // Filter out empty locations returned from the API as "&"
+    if (_playaLocation.length > 1) {
+        return _playaLocation;
+    }
+    return nil;
+}
+
 - (CLLocation*) burnerMapLocation {
     CLLocationCoordinate2D coordinate = self.burnerMapCoordinate;
     if (!CLLocationCoordinate2DIsValid(coordinate)) {

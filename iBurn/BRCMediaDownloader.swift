@@ -85,7 +85,6 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     
     /** Copies media files like images/mp3s that were bundled with the app */
     private static func copyMediaFilesIfNeeded() {
-        return
         guard let bundle = Bundle.bundledMedia, let bundlePath = bundle.resourcePath else {
             return
         }
@@ -103,31 +102,49 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         }
     }
     
+    /** This is where a local file WOULD be located, but the file may not be there */
+    public static func localCacheURL(_ fileName: String) -> URL {
+        let localCache = BRCMediaDownloader.mediaFilesPath
+        let localURL = URL(fileURLWithPath: localCache)
+        let fileURL = localURL.appendingPathComponent(fileName)
+        return fileURL
+    }
+    
+    /** Checks if file exists first, Prefer downloaded media over bundled */
     public static func localMediaURL(_ fileName: String) -> URL? {
+        copyMediaFilesIfNeeded()
+        let fileURL = self.localCacheURL(fileName)
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            return fileURL
+        }
         let bundle = Bundle.bundledMedia
         let url = bundle?.url(forResource: fileName, withExtension: nil)
         return url
-        
-//        copyMediaFilesIfNeeded()
-//        let downloadPath = self.mediaFilesPath as NSString
-//        let path = downloadPath.appendingPathComponent(fileName)
-//        let url = URL(fileURLWithPath: path)
-//        return url
     }
     
     public static func imageForArt(_ art: BRCArtObject) -> UIImage? {
         let filename = self.fileName(art, type: .image)
-        guard let bundle = Bundle.bundledMedia,
-        let image = UIImage(named: filename, in: bundle, compatibleWith: nil)
-        else {
+        guard let bundle = Bundle.bundledMedia else {
             return nil
         }
-        return image
+        if let image = UIImage(named: filename, in: bundle, compatibleWith: nil) {
+            return image
+        }
+        let cacheUrl = URL(fileURLWithPath: BRCMediaDownloader.mediaFilesPath)
+        if let cacheBundle = Bundle(url: cacheUrl), let image = UIImage(named: filename, in: cacheBundle, compatibleWith: nil) {
+            return image
+        }
+        return nil
     }
     
-    open static func fileName(_ art: BRCArtObject, type: BRCMediaDownloadType) -> String {
+    func fileNameForObject(_ object: BRCDataObject) -> String {
+        let fileName = BRCMediaDownloader.fileName(object, type: downloadType)
+        return fileName
+    }
+    
+    open static func fileName(_ object: BRCDataObject, type: BRCMediaDownloadType) -> String {
         let fileType = extensionForDownloadType(type)
-        let fileName =  "\(art.uniqueID).\(fileType)"
+        let fileName =  "\(object.uniqueID).\(fileType)"
         return fileName
     }
     
@@ -144,7 +161,6 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     
     /** This will cache un-downloaded media */
     open func downloadUncachedMedia() {
-        return
         BRCMediaDownloader.copyMediaFilesIfNeeded()
         connection.asyncRead { (transaction) in
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
@@ -162,6 +178,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
                         case .image:
                             remoteURL = dataObject.remoteThumbnailURL
                             localURL = dataObject.localThumbnailURL
+                            
                             break
                         case .audio:
                             remoteURL = dataObject.remoteAudioURL
@@ -213,7 +230,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
                 return
             }
             let task = self.session.downloadTask(with: remoteURL)
-            let fileName = type(of: self).fileName(file, type: downloadType)
+            let fileName = fileNameForObject(file)
             task.taskDescription = fileName
             DDLogInfo("Downloading file: \(String(describing: remoteURL))")
             task.resume()
@@ -231,11 +248,12 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     //MARK: NSURLSessionDownloadDelegate
     
     open func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        guard let fileName = downloadTask.taskDescription,
-        let destURL = type(of: self).localMediaURL(fileName) else {
+        
+        guard let fileName = downloadTask.taskDescription else {
             DDLogError("taskDescription is nil!")
             return
         }
+        let destURL = BRCMediaDownloader.localCacheURL(fileName)
         do {
             try FileManager.default.moveItem(at: location, to: destURL)
             try (destURL as NSURL).setResourceValue(true, forKey: URLResourceKey.isExcludedFromBackupKey)
