@@ -77,6 +77,7 @@
     NSString *hostName = nil;
     __block BRCCampObject *camp = nil;
     __block BRCArtObject *art = nil;
+    __block BRCDataObject *host = nil;
     // shouldn't be doing this fetch in here... best moved up to the view controller
     [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
         camp = [eventObject hostedByCampWithTransaction:transaction];
@@ -86,13 +87,15 @@
         art = [eventObject hostedByArtWithTransaction:transaction];
     }];
     if (camp) {
+        host = camp;
         hostName = camp.title;
     } else if (art) {
+        host = art;
         hostName = art.title;
     }
     self.hostLabel.text = hostName;
     
-    [self setupLocationLabel:self.locationLabel dataObject:eventObject];
+    [self setupLocationLabel:self.locationLabel dataObject:host];
 }
 
 @end
