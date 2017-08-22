@@ -25,7 +25,7 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
             setupLabelColors(colors)
         }
 
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             guard let image = BRCMediaDownloader.imageForArt(art) else {
                 return
             }
@@ -33,7 +33,7 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
                 self.thumbnailView.image = image
             }
             guard artMetadata.thumbnailImageColors == nil else { return }
-            ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, completion: { colors in
+            ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
                 UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
                     self.setupLabelColors(colors)
                 })

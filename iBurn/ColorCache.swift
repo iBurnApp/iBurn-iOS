@@ -104,13 +104,13 @@ public class ColorCache: NSObject {
                 guard let image = BRCMediaDownloader.imageForArt(art) else {
                     return
                 }
-                self.getColors(art: art, artMetadata: metadata, image: image, downscaleSize: .zero, completion: nil)
+                self.getColors(art: art, artMetadata: metadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: nil)
             })
         }
     }
     
-    /** Only works for art objects at the moment */
-    func getColors(art: BRCArtObject, artMetadata: BRCArtMetadata, image: UIImage, downscaleSize: CGSize, completion: ((BRCImageColors)->Void)?) {
+    /** Only works for art objects at the moment. If processingQueue is nil, it will execute block on current queue */
+    func getColors(art: BRCArtObject, artMetadata: BRCArtMetadata, image: UIImage, downscaleSize: CGSize, processingQueue: DispatchQueue?, completion: ((BRCImageColors)->Void)?) {
         // Found colors in cache
         if let colors = artMetadata.thumbnailImageColors {
             if let completion = completion {
@@ -120,7 +120,7 @@ public class ColorCache: NSObject {
             }
             return
         }
-        DispatchQueue.global(qos: .userInteractive).async {
+        let processBlock = {
             // Maybe find colors in database when given stale artMetadata
             var existingColors: BRCImageColors? = nil
             self.readConnection.read { transaction in
@@ -150,6 +150,13 @@ public class ColorCache: NSObject {
                 metadata.thumbnailImageColors = brcColors
                 art.replace(metadata, transaction: transaction)
             }
+        }
+        if let processingQueue = processingQueue {
+            processingQueue.async {
+                processBlock()
+            }
+        } else {
+            processBlock()
         }
     }
 }
