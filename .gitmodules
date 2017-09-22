@@ -10,3 +10,6 @@
 [submodule "Submodules/mapbox-ios-sdk"]
 	path = Submodules/mapbox-ios-sdk
 	url = git@github.com:Burning-Man-Earth/mapbox-ios-sdk.git
+[submodule "Submodules/PermissionScope"]
+	path = Submodules/PermissionScope
+	url = git@github.com:Burning-Man-Earth/PermissionScope.git

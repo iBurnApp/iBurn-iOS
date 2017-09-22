@@ -3,6 +3,13 @@ platform :ios, '8.0'
 inhibit_all_warnings!
 use_frameworks!
 
+abstract_target 'PlayaKitAbstract' do
+	target 'PlayaKit'
+	target 'PlayaKitTests'
+	pod 'CocoaLumberjack/Swift', '~> 3.2.1'
+	pod 'YapDatabase', '~> 3.0'
+end 
+
 abstract_target 'iBurnAbstract' do
 	target 'iBurn'
 	target 'iBurnTests'
@@ -23,13 +30,13 @@ abstract_target 'iBurnAbstract' do
 	pod 'TTTAttributedLabel', '~> 2.0'
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'
-	pod 'DOFavoriteButton', :git => 'https://github.com/okmr-d/DOFavoriteButton.git'
+	pod 'DOFavoriteButton', :path => 'Submodules/DOFavoriteButton/DOFavoriteButton.podspec'
 	pod 'JSQWebViewController', '~> 5.0'
 	pod 'TUSafariActivity', '~> 1.0'
 	pod 'ASDayPicker', :path => 'Submodules/ASDayPicker/ASDayPicker.podspec'
 	pod 'KVOController', '~> 1.0'
 	pod 'Onboard', '~> 2.1'
-	pod 'PermissionScope', '~> 1.0'
+	pod 'PermissionScope', :path => 'Submodules/PermissionScope/PermissionScope.podspec'
 	pod 'JTSImageViewController'
 	pod 'UIImageColors', '~> 1.4.0'
 end

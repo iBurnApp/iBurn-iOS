@@ -19,7 +19,7 @@ public extension BRCDataObjectTableViewCell {
 public extension BRCDataObject {
     
     /** Returns the cellIdentifier for table cell subclass */
-    public var tableCellIdentifier: String {
+    @objc public var tableCellIdentifier: String {
         var cellIdentifier = BRCDataObjectTableViewCell.cellIdentifier
         if let art = self as? BRCArtObject {
             if art.localThumbnailURL != nil {
@@ -36,14 +36,14 @@ public extension BRCDataObject {
     }
     
     /** Short address e.g. 7:45 & G */
-    public var shortBurnerMapAddress: String? {
+    @objc public var shortBurnerMapAddress: String? {
         guard let string = self.burnerMapLocationString else { return nil }
         let components = string.components(separatedBy: " & ")
         guard let radial = components.first, let street = components.last, street.characters.count > 1 else {
             return self.burnerMapLocationString
         }
         let index = street.index(street.startIndex, offsetBy: 1)
-        let trimmedStreet = street.substring(to: index)
+        let trimmedStreet = street[..<index]
         let shortAddress = "\(radial) & \(trimmedStreet)"
         return shortAddress
     }

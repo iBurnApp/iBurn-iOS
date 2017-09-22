@@ -36,8 +36,8 @@ fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 /** Make sure to listen for BRCAudioPlayerChangeNotification and refresh your views */
 open class BRCAudioPlayer: NSObject {
     /** This is fired if track is changed, or stops playing */
-    open static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
-    open static let sharedInstance = BRCAudioPlayer()
+    @objc open static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
+    @objc open static let sharedInstance = BRCAudioPlayer()
     var player: AVQueuePlayer?
     fileprivate var nowPlaying: BRCArtObject?
     fileprivate var queuedObjects: [BRCArtObject] = []
@@ -51,7 +51,7 @@ open class BRCAudioPlayer: NSObject {
         NotificationCenter.default.addObserver(self, selector: #selector(BRCAudioPlayer.didFinishPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
-    open func isPlaying(_ item: BRCArtObject) -> Bool {
+    @objc open func isPlaying(_ item: BRCArtObject) -> Bool {
         if nowPlaying?.uniqueID == item.uniqueID && player?.rate > 0 {
             return true
         }
@@ -59,7 +59,7 @@ open class BRCAudioPlayer: NSObject {
     }
     
     /** Plays audio tour for items, if they are the same it will pause */
-    open func playAudioTour(_ items: [BRCArtObject]) {
+    @objc open func playAudioTour(_ items: [BRCArtObject]) {
         // this should never happen
         if items.count == 0 {
             reset()
@@ -92,7 +92,7 @@ open class BRCAudioPlayer: NSObject {
         fireChangeNotification()
     }
     
-    open func togglePlayPause() {
+    @objc open func togglePlayPause() {
         if ((player?.currentItem) == nil) {
             reset()
         } else {
@@ -118,7 +118,7 @@ open class BRCAudioPlayer: NSObject {
         player = nil
     }
     
-    func didFinishPlaying(_ notification: Notification) {
+    @objc func didFinishPlaying(_ notification: Notification) {
         let endedItem = notification.object as? AVPlayerItem
                 
         if (player?.items().count == 0) {

@@ -39,6 +39,16 @@
                ReferencedContainer = "container:iBurn.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D960F24D1F74E65A00144290"
+               BuildableName = "PlayaKitTests.xctest"
+               BlueprintName = "PlayaKitTests"
+               ReferencedContainer = "container:iBurn.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference

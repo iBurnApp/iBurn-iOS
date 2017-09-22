@@ -16,16 +16,16 @@ extension UIImageColors {
     }
 }
 
-public protocol ColorTheme {
+@objc public protocol ColorTheme {
     func setColorTheme(_ colors: BRCImageColors, animated: Bool)
 }
 
 extension UINavigationBar: ColorTheme {
-    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+    @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         let theme = {
             self.barTintColor = colors.backgroundColor
             self.tintColor = colors.secondaryColor
-            self.titleTextAttributes = [NSForegroundColorAttributeName: colors.primaryColor]
+            self.titleTextAttributes = [NSAttributedStringKey.foregroundColor: colors.primaryColor]
         }
         if animated {
             UIView.transition(with: self, duration: 0.25, options: [.beginFromCurrentState, .transitionCrossDissolve], animations: theme, completion: nil)
@@ -36,14 +36,14 @@ extension UINavigationBar: ColorTheme {
 }
 
 extension UITableView: ColorTheme {
-    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+    @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         self.backgroundColor = colors.backgroundColor
         self.tintColor = colors.primaryColor
     }
 }
 
 extension UIViewController: ColorTheme {
-    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+    @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         view.backgroundColor = colors.backgroundColor
         view.tintColor = colors.primaryColor
     }
@@ -52,7 +52,7 @@ extension UIViewController: ColorTheme {
      * This is for the BRCDetailViewController so the navbar
      * information gets propagated to the UIPageViewController
      */
-    public func copyParameters(from fromVC: UIViewController) {
+    @objc public func copyParameters(from fromVC: UIViewController) {
         let destination = self
         let source = fromVC
 
@@ -69,7 +69,7 @@ extension UIViewController: ColorTheme {
 
 public extension UIPageViewController {
     /** Copy the paramters from top child view controller */
-    public func copyChildParameters() {
+    @objc public func copyChildParameters() {
         guard let top = self.viewControllers?.first else { return }
         copyParameters(from: top)
     }
@@ -78,12 +78,12 @@ public extension UIPageViewController {
 
 
 public class ColorCache: NSObject {
-    static let shared = ColorCache()
+    @objc static let shared = ColorCache()
     let readConnection = BRCDatabaseManager.shared.readConnection
     let writeConnection = BRCDatabaseManager.shared.readWriteConnection
     var completionQueue = DispatchQueue.main
     
-    func prefetchAllColors() {
+    @objc func prefetchAllColors() {
         DispatchQueue.global(qos: .default).async {
             var objects: [(BRCArtObject, BRCArtMetadata)] = []
             self.readConnection.read { transaction in

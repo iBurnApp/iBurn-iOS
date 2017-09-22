@@ -9,14 +9,14 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-               BuildableName = "iBurnTests.xctest"
-               BlueprintName = "iBurnTests"
+               BlueprintIdentifier = "D960F2451F74E65A00144290"
+               BuildableName = "PlayaKit.framework"
+               BlueprintName = "PlayaKit"
                ReferencedContainer = "container:iBurn.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,36 +29,7 @@
       language = ""
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-               BuildableName = "iBurnTests.xctest"
-               BlueprintName = "iBurnTests"
-               ReferencedContainer = "container:iBurn.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D960F24D1F74E65A00144290"
-               BuildableName = "PlayaKitTests.xctest"
-               BlueprintName = "PlayaKitTests"
-               ReferencedContainer = "container:iBurn.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-            BuildableName = "iBurnTests.xctest"
-            BlueprintName = "iBurnTests"
-            ReferencedContainer = "container:iBurn.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -76,9 +47,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-            BuildableName = "iBurnTests.xctest"
-            BlueprintName = "iBurnTests"
+            BlueprintIdentifier = "D960F2451F74E65A00144290"
+            BuildableName = "PlayaKit.framework"
+            BlueprintName = "PlayaKit"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -94,9 +65,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D980A9091B3F5A6400BE3682"
-            BuildableName = "iBurnTests.xctest"
-            BlueprintName = "iBurnTests"
+            BlueprintIdentifier = "D960F2451F74E65A00144290"
+            BuildableName = "PlayaKit.framework"
+            BlueprintName = "PlayaKit"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -13,7 +13,7 @@ import PermissionScope
 open class BRCPermissions: NSObject {
     
     /** Show location permissions prompt */
-    open static func promptForLocation(_ completion: @escaping ()->()) {
+    @objc open static func promptForLocation(_ completion: @escaping ()->()) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Location"
         pscope.bodyLabel.text = "iBurn is best with location!"
@@ -27,7 +27,7 @@ open class BRCPermissions: NSObject {
         }
     }
     
-    open static func promptForEvents(_ completion: @escaping ()->()) {
+    @objc open static func promptForEvents(_ completion: @escaping ()->()) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"
@@ -41,7 +41,7 @@ open class BRCPermissions: NSObject {
     }
     
     /** Show notification permissions prompt */
-    open static func promptForPush(_ completion: @escaping ()->()) {
+    @objc open static func promptForPush(_ completion: @escaping ()->()) {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"

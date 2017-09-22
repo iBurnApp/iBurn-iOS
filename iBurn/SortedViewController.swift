@@ -69,7 +69,7 @@ public class SortedViewController: UITableViewController {
         super.init(style: style)
     }
     
-    public required init(style: UITableViewStyle, extensionName ext: String) {
+    @objc public required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
         BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
@@ -122,7 +122,7 @@ public class SortedViewController: UITableViewController {
         }
     }
     
-    open func audioPlayerChangeNotification(_ notification: Notification) {
+    @objc open func audioPlayerChangeNotification(_ notification: Notification) {
         self.tableView.reloadData()
     }
     

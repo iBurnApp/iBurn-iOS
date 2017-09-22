@@ -60,7 +60,7 @@
 }
 
 - (void) configurePlayPauseButton:(BRCArtObject *)artObject {
-    if ([[BRCAudioPlayer sharedInstance] isPlaying:artObject]) {
+    if ([BRCAudioPlayer.sharedInstance isPlaying:artObject]) {
         self.isPlayingAudio = YES;
     } else {
         self.isPlayingAudio = NO;

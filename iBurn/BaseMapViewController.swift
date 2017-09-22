@@ -15,7 +15,7 @@ public class BaseMapViewController: UIViewController {
     
     var mapView: MGLMapView
     let mapViewDelegate: MapViewDelegate
-    public var isVisible = false
+    @objc public var isVisible = false
     
     public init() {
         mapView = MGLMapView()
@@ -70,7 +70,7 @@ public class BaseMapViewController: UIViewController {
         navigationItem.rightBarButtonItem = button
     }
     
-    public func centerMapAtManCoordinatesAnimated(_ animated: Bool) {
+    @objc public func centerMapAtManCoordinatesAnimated(_ animated: Bool) {
         mapView.brc_moveToBlackRockCityCenter(animated: animated)
     }
     
