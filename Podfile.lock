@@ -2,13 +2,13 @@ PODS:
   - Appirater (2.1.2)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - CocoaLumberjack (3.2.0):
-    - CocoaLumberjack/Default (= 3.2.0)
-    - CocoaLumberjack/Extensions (= 3.2.0)
-  - CocoaLumberjack/Default (3.2.0)
-  - CocoaLumberjack/Extensions (3.2.0):
+  - CocoaLumberjack (3.2.1):
+    - CocoaLumberjack/Default (= 3.2.1)
+    - CocoaLumberjack/Extensions (= 3.2.1)
+  - CocoaLumberjack/Default (3.2.1)
+  - CocoaLumberjack/Extensions (3.2.1):
     - CocoaLumberjack/Default
-  - CocoaLumberjack/Swift (3.2.0):
+  - CocoaLumberjack/Swift (3.2.1):
     - CocoaLumberjack/Default
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
@@ -24,7 +24,7 @@ PODS:
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
-  - Mapbox-iOS-SDK (3.6.1)
+  - Mapbox-iOS-SDK (3.6.3)
   - Onboard (2.3.1)
   - PermissionScope (1.1.1)
   - PureLayout (3.0.2)
@@ -32,7 +32,7 @@ PODS:
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
   - UIImageColors (1.4.0)
-  - VTAcknowledgementsViewController (1.2.1)
+  - VTAcknowledgementsViewController (1.3)
   - YapDatabase (3.0.1):
     - YapDatabase/Standard (= 3.0.1)
   - YapDatabase/Standard (3.0.1):
@@ -98,7 +98,7 @@ DEPENDENCIES:
   - Appirater (~> 2.0)
   - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
-  - CocoaLumberjack/Swift (from `https://github.com/CocoaLumberjack/CocoaLumberjack.git`, commit `acc32864538c5d75b41a4bfa364b1431cf89954d`)
+  - CocoaLumberjack/Swift (~> 3.2.1)
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - DOFavoriteButton (from `https://github.com/okmr-d/DOFavoriteButton.git`)
@@ -108,7 +108,7 @@ DEPENDENCIES:
   - JTSImageViewController
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
-  - Mapbox-iOS-SDK (~> 3.5)
+  - Mapbox-iOS-SDK (~> 3.6)
   - Onboard (~> 2.1)
   - PermissionScope (~> 1.0)
   - PureLayout (~> 3.0)
@@ -122,16 +122,10 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   ASDayPicker:
     :path: Submodules/ASDayPicker/ASDayPicker.podspec
-  CocoaLumberjack:
-    :commit: acc32864538c5d75b41a4bfa364b1431cf89954d
-    :git: https://github.com/CocoaLumberjack/CocoaLumberjack.git
   DOFavoriteButton:
     :git: https://github.com/okmr-d/DOFavoriteButton.git
 
 CHECKOUT OPTIONS:
-  CocoaLumberjack:
-    :commit: acc32864538c5d75b41a4bfa364b1431cf89954d
-    :git: https://github.com/CocoaLumberjack/CocoaLumberjack.git
   DOFavoriteButton:
     :commit: 43c65253d4c14e596a511354ca0e0aac0ec2bd5c
     :git: https://github.com/okmr-d/DOFavoriteButton.git
@@ -140,7 +134,7 @@ SPEC CHECKSUMS:
   Appirater: f1c9e53e8b612193e6256144f6a0fd2e31f4340d
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  CocoaLumberjack: 0d8cb05e834c1b391771fb3397d9a553accd33a9
+  CocoaLumberjack: 2800c03334042fe80589423c8d80e582dcaec482
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
@@ -149,7 +143,7 @@ SPEC CHECKSUMS:
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
-  Mapbox-iOS-SDK: 7dd2a0fd08e9444b9c47f6e8fd1c32509bce3243
+  Mapbox-iOS-SDK: 27805cb5f36d2bffe732b1d392278f4e408d06d2
   Onboard: b6871f25ac753175b2ab9a362fb2feb26a81a311
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
@@ -157,9 +151,9 @@ SPEC CHECKSUMS:
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   UIImageColors: 1f891e1a3224efebb01ad476df3a5aed4220ee24
-  VTAcknowledgementsViewController: e1de80f2c0ce31cc7e1c6f1c8aaeec2770371f09
+  VTAcknowledgementsViewController: 0bc8149be64f0d5b7f398e146353af8fde04b313
   YapDatabase: 69ca88a2dfee305fde4412cf670c76f75aa7ccd0
 
-PODFILE CHECKSUM: b5d429b094b6ee48427c00a13d445ae6048180ec
+PODFILE CHECKSUM: 5ed9efe0da67423455ebe3257fc01b0d1200033f
 
 COCOAPODS: 1.3.1
