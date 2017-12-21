@@ -9,43 +9,54 @@
 import Foundation
 import YapDatabase
 
-public struct YapStorage {
-    let key: String
-    let collection: String
+
+
+public struct YapKeyCollection {
+    public let key: String
+    public let collection: String
     
+    public init(key: String, collection: String) {
+        self.key = key
+        self.collection = collection
+    }
+}
+
+extension YapKeyCollection {
     public func fetch(_ transaction: YapDatabaseReadTransaction) -> Any? {
         return transaction.object(forKey: key, inCollection: collection)
     }
 }
 
-public protocol YapObjectStorage {
-    var yapStorage: YapStorage { get }
+public protocol YapStorable {
+    var yapKeyCollection: YapKeyCollection { get }
     /// Default collection for objects of this type
     static var defaultYapCollection: String { get }
 }
 
-public protocol YapObjectFetching: YapObjectStorage {
+public protocol YapObjectFetching: YapStorable {
     func refetch(_ transaction: YapDatabaseReadTransaction) -> Self?
     func refetch<T: YapObjectProtocol>(_ transaction: YapDatabaseReadTransaction, ofType: T.Type) -> T?
-    static func fetch(_ transaction: YapDatabaseReadTransaction, yapStorage: YapStorage) -> Self?
-    static func fetch<T: YapObjectProtocol>(_ transaction: YapDatabaseReadTransaction, yapStorage: YapStorage, ofType: T.Type) -> T?
+    /// Fetches from default collection `defaultYapCollection`
+    static func fetch(_ transaction: YapDatabaseReadTransaction, yapKey: String) -> Self?
+    static func fetch(_ transaction: YapDatabaseReadTransaction, yapKeyCollection: YapKeyCollection) -> Self?
+    static func fetch<T: YapObjectProtocol>(_ transaction: YapDatabaseReadTransaction, yapKeyCollection: YapKeyCollection, ofType: T.Type) -> T?
     func exists(_ transaction: YapDatabaseReadTransaction) -> Bool
 }
 
 public extension YapObjectFetching {
     
     func exists(_ transaction: YapDatabaseReadTransaction) -> Bool {
-        let storage = yapStorage
+        let storage = yapKeyCollection
         return transaction.hasObject(forKey: storage.key, inCollection: storage.collection)
     }
     
-    public static func fetch<T: YapObjectProtocol>(_ transaction: YapDatabaseReadTransaction, yapStorage: YapStorage, ofType: T.Type) -> T? {
-        let object = yapStorage.fetch(transaction) as? T
+    public static func fetch<T: YapObjectProtocol>(_ transaction: YapDatabaseReadTransaction, yapKeyCollection: YapKeyCollection, ofType: T.Type) -> T? {
+        let object = yapKeyCollection.fetch(transaction) as? T
         return object
     }
     
     public func refetch<T: YapObjectProtocol>(_ transaction: YapDatabaseReadTransaction, ofType: T.Type) -> T? {
-        let object: T? = ofType.fetch(transaction, yapStorage: yapStorage, ofType: ofType)
+        let object: T? = ofType.fetch(transaction, yapKeyCollection: yapKeyCollection, ofType: ofType)
         return object
     }
 }
@@ -62,12 +73,12 @@ public protocol YapObjectProtocol: YapObjectSaving, YapObjectFetching { }
 
 public extension YapObjectProtocol {
     public func touch(_ transaction: YapDatabaseReadWriteTransaction) {
-        let storage = yapStorage
+        let storage = yapKeyCollection
         transaction.touchObject(forKey: storage.key, inCollection: storage.collection)
     }
     
     public func save(_ transaction: YapDatabaseReadWriteTransaction, metadata: Any?) {
-        let storage = yapStorage
+        let storage = yapKeyCollection
         transaction.setObject(self, forKey: storage.key, inCollection: storage.collection, withMetadata: metadata)
     }
     
@@ -80,44 +91,35 @@ public extension YapObjectProtocol {
     }
     
     public func replace(_ transaction: YapDatabaseReadWriteTransaction) {
-        let storage = yapStorage
+        let storage = yapKeyCollection
         transaction.replace(self, forKey: storage.key, inCollection: storage.collection)
     }
     
     public func remove(_ transaction: YapDatabaseReadWriteTransaction) {
-        let storage = yapStorage
+        let storage = yapKeyCollection
         transaction.removeObject(forKey: storage.key, inCollection: storage.collection)
     }
 }
 
-open class YapObject: NSObject, YapObjectProtocol, Codable {
-    open var yapKey = UUID().uuidString
+public class YapObject: YapObjectProtocol {
+    public var yapKey: String
     
-    public override init() {
-    }
-    
-    public convenience init(yapKey: String) {
-        self.init()
+    public init(yapKey: String) {
         self.yapKey = yapKey
-    }
-    
-    // MARK: Codable
-    private enum CodingKeys: String, CodingKey { case yapKey }
-    
-    required public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        yapKey = try container.decode(String.self, forKey: .yapKey)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(yapKey, forKey: .yapKey)
     }
 }
 
 extension YapObject: YapObjectFetching {
-    public static func fetch(_ transaction: YapDatabaseReadTransaction, yapStorage: YapStorage) -> Self? {
-        let object = YapObject.fetch(transaction, yapStorage: yapStorage, ofType: self)
+    /// Fetches from class's default collection `defaultYapCollection`
+    public static func fetch(_ transaction: YapDatabaseReadTransaction, yapKey: String) -> Self? {
+        let collection = self.defaultYapCollection
+        let yapKeyCollection = YapKeyCollection(key: yapKey, collection: collection)
+        let object = fetch(transaction, yapKeyCollection: yapKeyCollection)
+        return object
+    }
+    
+    public static func fetch(_ transaction: YapDatabaseReadTransaction, yapKeyCollection: YapKeyCollection) -> Self? {
+        let object = YapObject.fetch(transaction, yapKeyCollection: yapKeyCollection, ofType: self)
         return object
     }
     
@@ -127,10 +129,10 @@ extension YapObject: YapObjectFetching {
     }
 }
 
-extension YapObject: YapObjectStorage {
+extension YapObject: YapStorable {
     
-    public var yapStorage: YapStorage {
-        return YapStorage(key: yapKey, collection: yapCollection)
+    public var yapKeyCollection: YapKeyCollection {
+        return YapKeyCollection(key: yapKey, collection: yapCollection)
     }
     
     open var yapCollection: String {

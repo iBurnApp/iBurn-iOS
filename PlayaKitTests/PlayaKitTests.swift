@@ -8,6 +8,7 @@
 
 import XCTest
 import YapDatabase
+import CocoaLumberjack
 @testable import PlayaKit
 
 class CodableTest: NSObject, Codable {
@@ -27,8 +28,9 @@ class PlayaKitTests: XCTestCase {
         let dbPath = "\(NSTemporaryDirectory())/\(UUID().uuidString)"
         let encoder = PropertyListEncoder()
         let decoder = PropertyListDecoder()
+        DDLog.add(DDTTYLogger.sharedInstance)
         self.database = YapDatabase(path: dbPath, serializer: { (collection, key, object) -> Data in
-            if let encodableObject = object as? YapObject {
+            if let encodableObject = object as? APIObject {
                 var data: Data? = nil
                 do {
                     data = try encoder.encode(encodableObject)
@@ -43,7 +45,7 @@ class PlayaKitTests: XCTestCase {
         }, deserializer: { (collection, key, data) -> Any? in
             var object: Any? = nil
             do {
-                object = try decoder.decode(YapObject.self, from: data)
+                object = try decoder.decode(APIObject.self, from: data)
             } catch let err {
                 fatalError("Could not decode object \(err)")
             }
@@ -55,28 +57,48 @@ class PlayaKitTests: XCTestCase {
     
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        DDLog.removeAllLoggers()
         super.tearDown()
     }
     
     // Verify that default collections are unique
     func testObjectCreation() {
-        let art = ArtObject(name: "art")
-        let camp = CampObject(name: "camp")
-        let event = EventObject(name: "event")
+        let art = ArtObject(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
+        let camp = CampObject(title: "asdf")
+        let event = EventObject(title: "event")
         let objects: [APIObject] = [art, camp, event]
         for object in objects {
             XCTAssertEqual(object.yapCollection, type(of: object).defaultYapCollection)
-            XCTAssertEqual(object.yapCollection, object.yapStorage.collection)
+            XCTAssertEqual(object.yapCollection, object.yapKeyCollection.collection)
         }
         XCTAssertNotEqual(art.yapCollection, camp.yapCollection)
         XCTAssertNotEqual(art.yapCollection, event.yapCollection)
         XCTAssertNotEqual(camp.yapCollection, event.yapCollection)
     }
     
+    func testJSONBundle() {
+        let testBundle = Bundle(for: type(of: self))
+        let jsonBundleURL = testBundle.url(forResource: "2017", withExtension: nil)!
+        let jsonBundle = Bundle(url: jsonBundleURL)!
+        let artURL = jsonBundle.url(forResource: "art.json", withExtension: "js")!
+        let campURL = jsonBundle.url(forResource: "camps.json", withExtension: "js")!
+        let eventURL = jsonBundle.url(forResource: "events.json", withExtension: "js")!
+        let artJSONData = try! Data(contentsOf: artURL)
+        let campJSONData = try! Data(contentsOf: campURL)
+        let eventJSONData = try! Data(contentsOf: eventURL)
+        let decoder = JSONDecoder()
+        let art: [ArtObject] = try! decoder.decode([ArtObject].self, from: artJSONData)
+        let camps: [CampObject] = try! decoder.decode([CampObject].self, from: campJSONData)
+        let events: [EventObject] = try! decoder.decode([EventObject].self, from: eventJSONData)
+        XCTAssert(art.count > 0)
+        XCTAssert(camps.count > 0)
+        XCTAssert(events.count > 0)
+    }
+    
     func testObjectSaving() {
-        let art = ArtObject(name: "art")
-        let camp = CampObject(name: "camp")
-        let event = EventObject(name: "event")
+        let art = ArtObject(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
+        let camp = CampObject(title: "camp")
+        let event = EventObject(title: "event")
         let objects: [APIObject] = [art, camp, event]
         
         connection.readWrite { transaction in

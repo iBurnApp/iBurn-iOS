@@ -105,6 +105,7 @@
 		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
+		D9C4A3F31F7A08D800BF3483 /* 2017 in Resources */ = {isa = PBXBuildFile; fileRef = D9571DB41F225E73004B6607 /* 2017 */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
@@ -115,6 +116,8 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */; };
+		D9DE74491F80AF0700B01AC5 /* APIProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE74481F80AF0700B01AC5 /* APIProtocol.swift */; };
+		D9DE744B1F80AFB700B01AC5 /* PlayaLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */; };
 		D9DE7BB01EF25C11007A983E /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BAF1EF25C11007A983E /* MapViewController.swift */; };
 		D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */; };
 		D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E181F39966700906F64 /* ColorCache.swift */; };
@@ -371,6 +374,8 @@
 		D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		D9D12F611B5AF5070048229A /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCMediaDownloader.swift; sourceTree = "<group>"; };
+		D9DE74481F80AF0700B01AC5 /* APIProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIProtocol.swift; sourceTree = "<group>"; };
+		D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayaLocation.swift; sourceTree = "<group>"; };
 		D9DE7BAF1EF25C11007A983E /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarButtonsView.swift; sourceTree = "<group>"; };
 		D9DE9E181F39966700906F64 /* ColorCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCache.swift; sourceTree = "<group>"; };
@@ -652,7 +657,9 @@
 		D960F2471F74E65A00144290 /* PlayaKit */ = {
 			isa = PBXGroup;
 			children = (
+				D9DE74481F80AF0700B01AC5 /* APIProtocol.swift */,
 				D960F23F1F74E1D900144290 /* APIObject.swift */,
+				D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */,
 				D960F23D1F74B86500144290 /* YapObject.swift */,
 				D960F2481F74E65A00144290 /* PlayaKit.h */,
 				D960F2491F74E65A00144290 /* Info.plist */,
@@ -1106,6 +1113,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9C4A3F31F7A08D800BF3483 /* 2017 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1491,6 +1499,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D960F2641F74ECBE00144290 /* YapObject.swift in Sources */,
+				D9DE74491F80AF0700B01AC5 /* APIProtocol.swift in Sources */,
+				D9DE744B1F80AFB700B01AC5 /* PlayaLocation.swift in Sources */,
 				D960F2651F74ECC700144290 /* APIObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
