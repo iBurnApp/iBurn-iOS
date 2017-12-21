@@ -11,11 +11,6 @@ import YapDatabase
 import CocoaLumberjack
 @testable import PlayaKit
 
-class CodableTest: NSObject, Codable {
-    let name: String = "name"
-    let test: String = "test"
-}
-
 class PlayaKitTests: XCTestCase {
     
     
@@ -63,9 +58,9 @@ class PlayaKitTests: XCTestCase {
     
     // Verify that default collections are unique
     func testObjectCreation() {
-        let art = ArtObject(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
-        let camp = CampObject(title: "asdf")
-        let event = EventObject(title: "event")
+        let art = Art(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
+        let camp = Camp(title: "asdf")
+        let event = Event(title: "event")
         let objects: [APIObject] = [art, camp, event]
         for object in objects {
             XCTAssertEqual(object.yapCollection, type(of: object).defaultYapCollection)
@@ -87,18 +82,18 @@ class PlayaKitTests: XCTestCase {
         let campJSONData = try! Data(contentsOf: campURL)
         let eventJSONData = try! Data(contentsOf: eventURL)
         let decoder = JSONDecoder()
-        let art: [ArtObject] = try! decoder.decode([ArtObject].self, from: artJSONData)
-        let camps: [CampObject] = try! decoder.decode([CampObject].self, from: campJSONData)
-        let events: [EventObject] = try! decoder.decode([EventObject].self, from: eventJSONData)
+        let art: [Art] = try! decoder.decode([Art].self, from: artJSONData)
+        let camps: [Camp] = try! decoder.decode([Camp].self, from: campJSONData)
+        let events: [Event] = try! decoder.decode([Event].self, from: eventJSONData)
         XCTAssert(art.count > 0)
         XCTAssert(camps.count > 0)
         XCTAssert(events.count > 0)
     }
     
     func testObjectSaving() {
-        let art = ArtObject(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
-        let camp = CampObject(title: "camp")
-        let event = EventObject(title: "event")
+        let art = Art(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
+        let camp = Camp(title: "camp")
+        let event = Event(title: "event")
         let objects: [APIObject] = [art, camp, event]
         
         connection.readWrite { transaction in

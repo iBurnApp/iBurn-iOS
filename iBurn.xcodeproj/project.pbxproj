@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -125,6 +125,9 @@
 		D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
+		D9EC18B81FEC52060013CDAA /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B71FEC52060013CDAA /* Event.swift */; };
+		D9EC18BA1FEC52130013CDAA /* Art.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B91FEC52130013CDAA /* Art.swift */; };
+		D9EC18BC1FEC521C0013CDAA /* Camp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18BB1FEC521C0013CDAA /* Camp.swift */; };
 		D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */; };
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
@@ -387,6 +390,9 @@
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
+		D9EC18B71FEC52060013CDAA /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		D9EC18B91FEC52130013CDAA /* Art.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Art.swift; sourceTree = "<group>"; };
+		D9EC18BB1FEC521C0013CDAA /* Camp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camp.swift; sourceTree = "<group>"; };
 		D9EC1BED1D47E29A004A62E6 /* BRCOnboardingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCOnboardingViewController.h; sourceTree = "<group>"; };
 		D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCOnboardingViewController.m; sourceTree = "<group>"; };
 		D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioPlayer.swift; sourceTree = "<group>"; };
@@ -657,10 +663,8 @@
 		D960F2471F74E65A00144290 /* PlayaKit */ = {
 			isa = PBXGroup;
 			children = (
-				D9DE74481F80AF0700B01AC5 /* APIProtocol.swift */,
-				D960F23F1F74E1D900144290 /* APIObject.swift */,
-				D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */,
-				D960F23D1F74B86500144290 /* YapObject.swift */,
+				D9EC18BE1FEC59380013CDAA /* Protocols */,
+				D9EC18BD1FEC52290013CDAA /* Models */,
 				D960F2481F74E65A00144290 /* PlayaKit.h */,
 				D960F2491F74E65A00144290 /* Info.plist */,
 			);
@@ -917,6 +921,27 @@
 			name = Utilities;
 			sourceTree = "<group>";
 		};
+		D9EC18BD1FEC52290013CDAA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */,
+				D960F23F1F74E1D900144290 /* APIObject.swift */,
+				D9EC18B71FEC52060013CDAA /* Event.swift */,
+				D9EC18B91FEC52130013CDAA /* Art.swift */,
+				D9EC18BB1FEC521C0013CDAA /* Camp.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D9EC18BE1FEC59380013CDAA /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				D9DE74481F80AF0700B01AC5 /* APIProtocol.swift */,
+				D960F23D1F74B86500144290 /* YapObject.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1058,7 +1083,7 @@
 				};
 			};
 			buildConfigurationList = 63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1502,6 +1527,9 @@
 				D9DE74491F80AF0700B01AC5 /* APIProtocol.swift in Sources */,
 				D9DE744B1F80AFB700B01AC5 /* PlayaLocation.swift in Sources */,
 				D960F2651F74ECC700144290 /* APIObject.swift in Sources */,
+				D9EC18B81FEC52060013CDAA /* Event.swift in Sources */,
+				D9EC18BA1FEC52130013CDAA /* Art.swift in Sources */,
+				D9EC18BC1FEC521C0013CDAA /* Camp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
