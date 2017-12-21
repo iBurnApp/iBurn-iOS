@@ -55,18 +55,15 @@ public struct CampLocation: PlayaLocation, Codable {
     public let frontage: String?
     /// e.g. "4:15"
     public let intersection: String?
+    /// e.g. "100 x 50"
+    public let dimensions: String?
+    
     public enum IntersectionType: String, Codable {
         case and = "&"
         case at = "@"
     }
     /// e.g. "&" or "@"
-//    public var intersectionType: IntersectionType? {
-//        guard let value = intersection else { return nil }
-//        return IntersectionType(rawValue: value)
-//    }
     public let intersectionType: IntersectionType?
-    /// e.g. "100 x 50"
-    public let dimensions: String?
     
     // MARK: Codable
     public enum CodingKeys: String, CodingKey {

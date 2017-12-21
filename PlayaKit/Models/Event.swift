@@ -11,45 +11,16 @@ import YapDatabase
 import CocoaLumberjack
 
 public class Event: APIObject, EventProtocol {
-    // MARK: Codable
-    public enum CodingKeys: String, CodingKey {
-        case hostedByCamp = "hosted_by_camp"
-        case hostedByArt = "located_at_art"
-        case title
-        case eventType = "event_type"
-        case occurrences = "occurrence_set"
-    }
     
-    private struct EventTypeInternal: Codable {
-        static let unknown = EventTypeInternal(type: .unknown)
-        let type: EventType
-        private enum CodingKeys: String, CodingKey {
-            case type = "abbr"
-        }
-    }
-    
-    public func hostedByCamp(_ transaction: YapDatabaseReadTransaction) -> CampProtocol? {
-        guard let yapKey = self.hostedByCamp else { return nil }
-        let camp = Camp.fetch(transaction, yapKey: yapKey)
-        return camp
-    }
-    
-    public func hostedByArt(_ transaction: YapDatabaseReadTransaction) -> ArtProtocol? {
-        guard let yapKey = self.hostedByArt else { return nil }
-        let art = Art.fetch(transaction, yapKey: yapKey)
-        return art
-    }
+    // MARK: Private Properties
     
     /// Unique id of camp host
     private var hostedByCamp: String?
     /// Unique id of art host
     private var hostedByArt: String?
-    
-    public var occurrences: [EventOccurrence] = []
     private var eventTypeInternal: EventTypeInternal = EventTypeInternal.unknown
-    public var eventType: EventType {
-        return eventTypeInternal.type
-    }
+    
+    // MARK: Init
     
     public override init(title: String,
                          year: Int = Calendar.current.component(.year, from: Date()),
@@ -57,7 +28,35 @@ public class Event: APIObject, EventProtocol {
         super.init(title: title, year: year, uniqueId: uniqueId)
     }
     
+    // MARK: EventProtocol
+    
+    public var occurrences: [EventOccurrence] = []
+
+    public func hostedByCamp(_ transaction: YapDatabaseReadTransaction) -> CampProtocol? {
+        guard let yapKey = self.hostedByCamp else { return nil }
+        let camp = Camp.fetch(transaction, key: yapKey)
+        return camp
+    }
+    
+    public func hostedByArt(_ transaction: YapDatabaseReadTransaction) -> ArtProtocol? {
+        guard let yapKey = self.hostedByArt else { return nil }
+        let art = Art.fetch(transaction, key: yapKey)
+        return art
+    }
+    
+    public var eventType: EventType {
+        return eventTypeInternal.type
+    }
+    
     // MARK: Codable
+    
+    public enum CodingKeys: String, CodingKey {
+        case hostedByCamp = "hosted_by_camp"
+        case hostedByArt = "located_at_art"
+        case title
+        case eventType = "event_type"
+        case occurrences = "occurrence_set"
+    }
     
     required public init(from decoder: Decoder) throws {
         try super.init(from: decoder)
@@ -146,6 +145,14 @@ public enum EventType: String, Codable {
     case parade = "para"
     case food
     case other = "othr"
+}
+
+private struct EventTypeInternal: Codable {
+    static let unknown = EventTypeInternal(type: .unknown)
+    let type: EventType
+    private enum CodingKeys: String, CodingKey {
+        case type = "abbr"
+    }
 }
 
 private extension DateFormatter {

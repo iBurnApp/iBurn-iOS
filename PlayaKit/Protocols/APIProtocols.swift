@@ -13,7 +13,7 @@ public enum DecodeError: Error {
     case dateFormatting
 }
 
-public protocol APIProtocol {
+public protocol APIProtocol: YapObjectProtocol {
     /// unique 'uid' returned from PlayaEvents API
     var uniqueId: String { get }
     var title: String { get }

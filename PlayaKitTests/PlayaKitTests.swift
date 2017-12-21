@@ -64,7 +64,6 @@ class PlayaKitTests: XCTestCase {
         let objects: [APIObject] = [art, camp, event]
         for object in objects {
             XCTAssertEqual(object.yapCollection, type(of: object).defaultYapCollection)
-            XCTAssertEqual(object.yapCollection, object.yapKeyCollection.collection)
         }
         XCTAssertNotEqual(art.yapCollection, camp.yapCollection)
         XCTAssertNotEqual(art.yapCollection, event.yapCollection)

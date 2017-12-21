@@ -12,22 +12,19 @@ import YapDatabase
 import CocoaLumberjack
 
 
-public class APIObject: YapObjectProtocol, APIProtocol, Codable {
+public class APIObject: APIProtocol, Codable {
+   
+    // MARK: APIProtocol Properties
+    
     public var uniqueId: String
     public var location: PlayaLocation?
     public var year: Int = 0
     public var title: String = ""
     public var detailDescription: String?
     public var email: String?
-    public var urlString: String?
-    
-    public var url: URL? {
-        if let urlString = urlString {
-            return URL(string: urlString)
-        } else {
-            return nil
-        }
-    }
+    public var url: URL?
+
+    // MARK: Init
     
     public init(title: String,
                 year: Int = Calendar.current.component(.year, from: Date()),
@@ -43,7 +40,7 @@ public class APIObject: YapObjectProtocol, APIProtocol, Codable {
         case title = "name"
         case detailDescription = "description"
         case email = "contact_email"
-        case urlString = "url"
+        case url
         case year = "year"
     }
     
@@ -53,7 +50,9 @@ public class APIObject: YapObjectProtocol, APIProtocol, Codable {
         title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
         email = try container.decodeIfPresent(String.self, forKey: .email)
         detailDescription = try container.decodeIfPresent(String.self, forKey: .detailDescription)
-        urlString = try container.decodeIfPresent(String.self, forKey: .urlString)
+        if let urlString = try container.decodeIfPresent(String.self, forKey: .url) {
+            url = URL(string: urlString)
+        }
         year = try container.decode(Int.self, forKey: .year)
     }
     
@@ -64,42 +63,38 @@ public class APIObject: YapObjectProtocol, APIProtocol, Codable {
         try container.encode(year, forKey: .year)
         try container.encodeIfPresent(email, forKey: .email)
         try container.encodeIfPresent(detailDescription, forKey: .detailDescription)
-        try container.encodeIfPresent(urlString, forKey: .urlString)
+        try container.encodeIfPresent(url?.absoluteString, forKey: .url)
     }
 }
 
 
-extension APIObject: YapObjectFetching {
+extension APIObject: YapObjectProtocol {
+    public var yapKey: String {
+        return uniqueId
+    }
+    
+    public var yapCollection: String {
+        return type(of: self).defaultYapCollection
+    }
+    
+    public static var defaultYapCollection: String {
+        return NSStringFromClass(self)
+    }
+    
     /// Fetches from class's default collection `defaultYapCollection`
-    public static func fetch(_ transaction: YapDatabaseReadTransaction, yapKey: String) -> Self? {
+    public static func fetch(_ transaction: YapDatabaseReadTransaction, key: String) -> Self? {
         let collection = self.defaultYapCollection
-        let yapKeyCollection = YapKeyCollection(key: yapKey, collection: collection)
-        let object = fetch(transaction, yapKeyCollection: yapKeyCollection)
+        let object = fetch(transaction, key: key, collection: collection)
         return object
     }
     
-    public static func fetch(_ transaction: YapDatabaseReadTransaction, yapKeyCollection: YapKeyCollection) -> Self? {
-        let object = APIObject.fetch(transaction, yapKeyCollection: yapKeyCollection, ofType: self)
+    public static func fetch(_ transaction: YapDatabaseReadTransaction, key: String, collection: String) -> Self? {
+        let object = APIObject.fetch(transaction, key: key, collection: collection, ofType: self)
         return object
     }
     
     public func refetch(_ transaction: YapDatabaseReadTransaction) -> Self? {
         let object = refetch(transaction, ofType: type(of: self))
         return object
-    }
-}
-
-extension APIObject: YapStorable {
-    
-    public var yapKeyCollection: YapKeyCollection {
-        return YapKeyCollection(key: uniqueId, collection: yapCollection)
-    }
-    
-    open var yapCollection: String {
-        return type(of: self).defaultYapCollection
-    }
-    
-    open static var defaultYapCollection: String {
-        return NSStringFromClass(self)
     }
 }

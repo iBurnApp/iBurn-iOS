@@ -10,7 +10,15 @@ import Foundation
 import CocoaLumberjack
 
 public class Camp: APIObject, CampProtocol {
+    
+    // MARK: CampProtocol
+    
+    public var burnerMapLocation: CampLocation?
+    public var hometown: String?
     public var campLocation: CampLocation?
+    
+    // MARK: APIProtocol
+    
     public override var location: PlayaLocation? {
         get {
             return campLocation
@@ -19,6 +27,8 @@ public class Camp: APIObject, CampProtocol {
             self.campLocation = newValue as? CampLocation
         }
     }
+    
+    // MARK: Init
     
     public override init(title: String,
                          year: Int = Calendar.current.component(.year, from: Date()),
@@ -32,10 +42,6 @@ public class Camp: APIObject, CampProtocol {
         case burnerMapLocation = "burnermap_location"
         case hometown
     }
-    
-    public var burnerMapLocation: CampLocation?
-    
-    public var hometown: String?
     
     required public init(from decoder: Decoder) throws {
         try super.init(from: decoder)
