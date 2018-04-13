@@ -1,8 +1,8 @@
-# [iBurn-iOS](https://github.com/Burning-Man-Earth/iBurn-iOS)
+# [iBurn-iOS](https://github.com/iBurnApp/iBurn-iOS)
 
-[![Build Status](https://travis-ci.org/Burning-Man-Earth/iBurn-iOS.svg?branch=master)](https://travis-ci.org/Burning-Man-Earth/iBurn-iOS)
+[![Build Status](https://travis-ci.org/iBurnApp/iBurn-iOS.svg?branch=master)](https://travis-ci.org/iBurnApp/iBurn-iOS)
 
-iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. Following the 2014 rewrite, the 2015 release has been updated for iOS 8 and we're starting to write new code in Swift. We decided to use [YapDatabase](https://github.com/yaptv/YapDatabase)+[Mantle](https://github.com/Mantle/Mantle) instead of Core Data, and [Mapbox](https://github.com/mapbox/mapbox-ios-sdk) instead of MapKit for our [offline map tiles](https://github.com/Burning-Man-Earth/iBurn-Maps). For a more complete list check out our `Podfile`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/Burning-Man-Earth/iBurn-Android).
+iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. Following the 2014 rewrite, the 2015 release has been updated for iOS 8 and we're starting to write new code in Swift. We decided to use [YapDatabase](https://github.com/yaptv/YapDatabase)+[Mantle](https://github.com/Mantle/Mantle) instead of Core Data, and [Mapbox](https://github.com/mapbox/mapbox-ios-sdk) instead of MapKit for our [offline map tiles](https://github.com/iBurnApp/iBurn-Maps). For a more complete list check out our `Podfile`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/iBurnApp/iBurn-Android).
 
 [![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8) [![iBurn Google Play Store Link](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.gaiagps.iburn&hl=en)
 
@@ -16,7 +16,7 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 * Fetch submodules and install Pods.
 
 ```
-$ git clone https://github.com/Burning-Man-Earth/iBurn-iOS.git
+$ git clone https://github.com/iBurnApp/iBurn-iOS.git
 $ cd iBurn-iOS/
 $ git submodule update --init
 $ pod install
@@ -55,7 +55,7 @@ Fortunately, you can still run and test the app without it.
 
 ## Contributing
 
-Thank you for your interest in contributing to iBurn! Please open up an issue on our tracker before starting work on major interface or functionality changes. The easiest place to start is the list of bugs on the [issue tracker](https://github.com/Burning-Man-Earth/iBurn-iOS/issues). Otherwise, feel free to run wild!
+Thank you for your interest in contributing to iBurn! Please open up an issue on our tracker before starting work on major interface or functionality changes. The easiest place to start is the list of bugs on the [issue tracker](https://github.com/iBurnApp/iBurn-iOS/issues). Otherwise, feel free to run wild!
 
 1. Fork the project and do your work in a feature branch.
 2. Make sure everything compiles and existing functionality is not broken.
