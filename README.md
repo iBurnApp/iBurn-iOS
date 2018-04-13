@@ -38,13 +38,12 @@ $ curl -o ./Submodules/iBurn-Data/data/2015/2015/camps.json.js http://playaevent
 	// $ echo -n passcode | sha256sum
 	NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
 	NSString * const kBRCUpdatesURLString = @"";
-	NSString * const kBRCParseApplicationId = @"";
-	NSString * const kBRCParseClientKey = @"";
+	NSString * const kBRCMapBoxStyleURL = @"https://example.com";
 	```
 or run this command:
 
 ```
-$ echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
+$ echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n NSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\n" > ./iBurn/BRCSecrets.m
 ```
 
 * Compile and Run!

@@ -10,13 +10,12 @@ git:
 before_install:
   - sed -i -e 's/git@github.com:/git:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
-  # Fix Travis  xcodebuild exited with 65 https://github.com/travis-ci/travis-ci/issues/6675#issuecomment-257964767
   - export IOS_SIMULATOR_UDID=`instruments -s devices | grep -m 1 "iPhone 8 (11" | awk -F '[ ]' '{print $4}' | awk -F '[\[]' '{print $2}' | sed 's/.$//'`
   - echo $IOS_SIMULATOR_UDID
 
 install:
 #  - mkdir Submodules/iBurn-Data/data/2016/2016
-  - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCParseApplicationId = @\"\";\nNSString * const kBRCParseClientKey = @\"\";\n" > ./iBurn/BRCSecrets.m
+  - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n NSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:
   - bundle install
@@ -24,4 +23,4 @@ before_script:
   - bundle exec pod install
 script:
   - set -o pipefail
-  - travis_retry xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator -destination "id=$IOS_SIMULATOR_UDID" build | xcpretty -c
+  - xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator -destination "id=$IOS_SIMULATOR_UDID" build | xcpretty -c
