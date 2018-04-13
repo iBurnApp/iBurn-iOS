@@ -25,7 +25,6 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCLocations.h"
 #import "Appirater.h"
-@import JSQWebViewController;
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
 @import TTTAttributedLabel;
@@ -356,7 +355,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     dispatch_once(&onceToken, ^{
         NSURLSessionConfiguration *bgSessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
         YapDatabaseConnection *connection = [BRCDatabaseManager.shared.database newConnection];
-        _dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
+        self->_dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
     });
     return _dataImporter;
 }

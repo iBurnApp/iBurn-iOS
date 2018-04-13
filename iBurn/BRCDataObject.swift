@@ -39,7 +39,7 @@ public extension BRCDataObject {
     @objc public var shortBurnerMapAddress: String? {
         guard let string = self.burnerMapLocationString else { return nil }
         let components = string.components(separatedBy: " & ")
-        guard let radial = components.first, let street = components.last, street.characters.count > 1 else {
+        guard let radial = components.first, let street = components.last, street.count > 1 else {
             return self.burnerMapLocationString
         }
         let index = street.index(street.startIndex, offsetBy: 1)

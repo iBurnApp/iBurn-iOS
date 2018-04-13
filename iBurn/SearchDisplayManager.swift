@@ -209,7 +209,7 @@ extension BRCDataObjectTableViewCell {
 
 extension SearchDisplayManager: UISearchResultsUpdating {
     public func updateSearchResults(for searchController: UISearchController) {
-        guard var searchString = searchController.searchBar.text, searchString.characters.count > 0 else {
+        guard var searchString = searchController.searchBar.text, searchString.count > 0 else {
             return
         }
         searchString = "\(searchString)*"

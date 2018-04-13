@@ -280,19 +280,19 @@ typedef enum : NSUInteger {
                             options:UIViewAnimationOptionBeginFromCurrentState
                          animations:^(void)
          {
-             _buttonImageView.transform = CGAffineTransformMakeScale(0.01, 0.01);
-             _activityView.transform    = CGAffineTransformMakeScale(0.01, 0.01);
+             self->_buttonImageView.transform = CGAffineTransformMakeScale(0.01, 0.01);
+             self->_activityView.transform    = CGAffineTransformMakeScale(0.01, 0.01);
          }
                          completion:^(BOOL finished)
          {
-             _buttonImageView.hidden = YES;
+             self->_buttonImageView.hidden = YES;
              
-             [_activityView startAnimating];
+             [self->_activityView startAnimating];
              
              [UIView animateWithDuration:0.25 animations:^(void)
               {
-                  _buttonImageView.transform = CGAffineTransformIdentity;
-                  _activityView.transform    = CGAffineTransformIdentity;
+                  self->_buttonImageView.transform = CGAffineTransformIdentity;
+                  self->_activityView.transform    = CGAffineTransformIdentity;
               }];
          }];
         
@@ -313,15 +313,15 @@ typedef enum : NSUInteger {
                                 options:UIViewAnimationOptionBeginFromCurrentState
                              animations:^(void)
              {
-                 if (_state == MGLUserTrackingButtonStateHeading &&
-                     _mapView.userTrackingMode != MGLUserTrackingModeFollowWithHeading)
+                 if (self->_state == MGLUserTrackingButtonStateHeading &&
+                     self->_mapView.userTrackingMode != MGLUserTrackingModeFollowWithHeading)
                  {
                      // coming out of heading mode
                      //
                      animate = YES;
                  }
-                 else if ((_state != MGLUserTrackingButtonStateHeading) &&
-                          _mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading)
+                 else if ((self->_state != MGLUserTrackingButtonStateHeading) &&
+                          self->_mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading)
                  {
                      // going into heading mode
                      //
@@ -329,27 +329,27 @@ typedef enum : NSUInteger {
                  }
                  
                  if (animate)
-                     _buttonImageView.transform = CGAffineTransformMakeScale(0.01, 0.01);
+                     self->_buttonImageView.transform = CGAffineTransformMakeScale(0.01, 0.01);
                  
-                 if (_state == MGLUserTrackingButtonStateActivity)
-                     _activityView.transform = CGAffineTransformMakeScale(0.01, 0.01);
+                 if (self->_state == MGLUserTrackingButtonStateActivity)
+                     self->_activityView.transform = CGAffineTransformMakeScale(0.01, 0.01);
              }
                              completion:^(BOOL finished)
              {
                  [self updateImage];
                  
-                 _buttonImageView.hidden = NO;
+                 self->_buttonImageView.hidden = NO;
                  
-                 if (_state == MGLUserTrackingButtonStateActivity)
-                     [_activityView stopAnimating];
+                 if (self->_state == MGLUserTrackingButtonStateActivity)
+                     [self->_activityView stopAnimating];
                  
                  [UIView animateWithDuration:0.25 animations:^(void)
                   {
                       if (animate)
-                          _buttonImageView.transform = CGAffineTransformIdentity;
+                          self->_buttonImageView.transform = CGAffineTransformIdentity;
                       
-                      if (_state == MGLUserTrackingButtonStateActivity)
-                          _activityView.transform = CGAffineTransformIdentity;
+                      if (self->_state == MGLUserTrackingButtonStateActivity)
+                          self->_activityView.transform = CGAffineTransformIdentity;
                   }];
              }];
             

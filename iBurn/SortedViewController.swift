@@ -42,7 +42,7 @@ extension UIViewController {
     func geocodeNavigationBar() {
         guard let location = CLLocation.currentLocation else { return }
         BRCGeocoder.shared.asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { locationString in
-            if let locationString = locationString, locationString.characters.count > 0 {
+            if let locationString = locationString, locationString.count > 0 {
                 let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
                 let label = UILabel()
                 label.attributedText = attrString
