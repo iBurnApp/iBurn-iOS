@@ -110,7 +110,7 @@ public class SortedViewController: UITableViewController {
         tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
     
-    func databaseExtensionRegistered(_ notification: Notification) {
+    @objc func databaseExtensionRegistered(_ notification: Notification) {
         if let extensionName = notification.userInfo?["extensionName"] as? String {
             if extensionName == self.extensionName {
                 NSLog("databaseExtensionRegistered: %@", extensionName)
