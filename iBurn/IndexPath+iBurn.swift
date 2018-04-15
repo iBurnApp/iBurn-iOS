@@ -15,7 +15,7 @@ public enum IndexPathDirection: Int {
 }
 
 public extension NSIndexPath {
-    public func nextIndexPath(direction: IndexPathDirection, tableView: UITableView) -> NSIndexPath? {
+    @objc public func nextIndexPath(direction: IndexPathDirection, tableView: UITableView) -> NSIndexPath? {
         let indexPath = self as IndexPath
         return indexPath.nextIndexPath(direction: direction, tableView: tableView) as NSIndexPath?
     }

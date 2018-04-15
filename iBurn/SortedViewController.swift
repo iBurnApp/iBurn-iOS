@@ -42,7 +42,7 @@ extension UIViewController {
     func geocodeNavigationBar() {
         guard let location = CLLocation.currentLocation else { return }
         BRCGeocoder.shared.asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { locationString in
-            if let locationString = locationString, locationString.characters.count > 0 {
+            if let locationString = locationString, locationString.count > 0 {
                 let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
                 let label = UILabel()
                 label.attributedText = attrString
@@ -69,7 +69,7 @@ public class SortedViewController: UITableViewController {
         super.init(style: style)
     }
     
-    public required init(style: UITableViewStyle, extensionName ext: String) {
+    @objc public required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
         BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
@@ -110,7 +110,7 @@ public class SortedViewController: UITableViewController {
         tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
     
-    func databaseExtensionRegistered(_ notification: Notification) {
+    @objc func databaseExtensionRegistered(_ notification: Notification) {
         if let extensionName = notification.userInfo?["extensionName"] as? String {
             if extensionName == self.extensionName {
                 NSLog("databaseExtensionRegistered: %@", extensionName)
@@ -122,7 +122,7 @@ public class SortedViewController: UITableViewController {
         }
     }
     
-    open func audioPlayerChangeNotification(_ notification: Notification) {
+    @objc open func audioPlayerChangeNotification(_ notification: Notification) {
         self.tableView.reloadData()
     }
     

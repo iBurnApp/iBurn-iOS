@@ -26,7 +26,7 @@ public extension BRCDataImporter {
     }
     
     /** Downloads offline tiles directly from official Mapbox server */
-    public static func downloadMapboxOfflineTiles() {
+    @objc public static func downloadMapboxOfflineTiles() {
         let storage = MGLOfflineStorage.shared()
         let styleURL = URL(string: kBRCMapBoxStyleURL)!
         let bounds = MGLMapView.brc_bounds
@@ -42,7 +42,7 @@ public extension BRCDataImporter {
     }
     
     /** Copies the bundled Mapbox "offline" tiles to where Mapbox expects them */
-    public static func copyBundledTilesIfNeeded() {
+    @objc public static func copyBundledTilesIfNeeded() {
         var tilesUrl = mapTilesDirectory
         if FileManager.default.fileExists(atPath: tilesUrl.path) {
             DDLogVerbose("Tiles already exist at path \(tilesUrl.path)")

@@ -14,7 +14,7 @@ class HostedEventsViewController: SortedViewController {
     var relatedObject: BRCDataObject?
 
     /** You'll want to pass in the YapDatabaseRelationship extensionName. RelatedObject should be a BRCCampObject or BRCArtObject for event lookup. */
-    init(style: UITableViewStyle, extensionName ext: String, relatedObject obj: BRCDataObject) {
+    @objc init(style: UITableViewStyle, extensionName ext: String, relatedObject obj: BRCDataObject) {
         relatedObject = obj
         super.init(style: style, extensionName: ext)
         emptyDetailText = "Looks like there's no listed events."

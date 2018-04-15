@@ -41,9 +41,9 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     var session: Foundation.URLSession!
     
     let downloadType: BRCMediaDownloadType
-    open let backgroundSessionIdentifier: String
+    @objc open let backgroundSessionIdentifier: String
     var observer: NSObjectProtocol?
-    open var backgroundCompletion: (()->())?
+    @objc open var backgroundCompletion: (()->())?
     let delegateQueue = OperationQueue()
     var backgroundTask: UIBackgroundTaskIdentifier
     
@@ -53,7 +53,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         }
     }
     
-    public init(connection: YapDatabaseConnection, viewName: String, downloadType: BRCMediaDownloadType) {
+    @objc public init(connection: YapDatabaseConnection, viewName: String, downloadType: BRCMediaDownloadType) {
         self.downloadType = downloadType
         self.connection = connection
         self.viewName = viewName
@@ -111,7 +111,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     }
     
     /** Checks if file exists first, Prefer downloaded media over bundled */
-    public static func localMediaURL(_ fileName: String) -> URL? {
+    @objc public static func localMediaURL(_ fileName: String) -> URL? {
         copyMediaFilesIfNeeded()
         let fileURL = self.localCacheURL(fileName)
         if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -142,7 +142,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         return fileName
     }
     
-    open static func fileName(_ object: BRCDataObject, type: BRCMediaDownloadType) -> String {
+    @objc open static func fileName(_ object: BRCDataObject, type: BRCMediaDownloadType) -> String {
         let fileType = extensionForDownloadType(type)
         let fileName =  "\(object.uniqueID).\(fileType)"
         return fileName

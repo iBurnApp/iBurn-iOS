@@ -23,7 +23,7 @@ class MapAnnotation: NSObject, MGLAnnotation {
         self.subtitle = subtitle
     }
     
-    convenience init?(object: BRCDataObject) {
+    @objc convenience init?(object: BRCDataObject) {
         var location = object.location
         var address = object.playaLocation
         if location == nil {
@@ -54,7 +54,7 @@ public class MapDetailViewController: BaseMapViewController {
     private let dataObject: BRCDataObject
     private let annotation: MapAnnotation?
     
-    public init(dataObject: BRCDataObject) {
+    @objc public init(dataObject: BRCDataObject) {
         self.dataObject = dataObject
         self.annotation = MapAnnotation(object: dataObject)
         super.init()

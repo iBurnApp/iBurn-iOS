@@ -11,7 +11,7 @@ import Mapbox
 
 public extension MGLMapView {
     /// Sets default iBurn behavior for mapView
-    public func brc_setDefaults() {
+    @objc public func brc_setDefaults() {
         styleURL = URL(string: kBRCMapBoxStyleURL)
         showsUserLocation = true
         minimumZoomLevel = 12

@@ -18,7 +18,7 @@ class NearbyViewController: SortedViewController {
     let distanceStepper: UIStepper = UIStepper()
     let tableHeaderView: UIView = UIView()
     
-    required init(style: UITableViewStyle, extensionName ext: String) {
+    @objc required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style, extensionName: ext)
         emptyDetailText = "Try a bigger search area."
     }
@@ -64,7 +64,7 @@ class NearbyViewController: SortedViewController {
     func refreshHeaderLabel() {
         let labelText: NSMutableAttributedString = NSMutableAttributedString()
         let font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
-        let attributes: [String: AnyObject] = [NSFontAttributeName: font]
+        let attributes: [NSAttributedStringKey: Any] = [NSAttributedStringKey.font: font]
         labelText.append(NSAttributedString(string: "Within ", attributes: attributes))
         labelText.append(TTTLocationFormatter.brc_humanizedString(forDistance: searchDistance))
         tableHeaderLabel.attributedText = labelText
@@ -108,7 +108,7 @@ class NearbyViewController: SortedViewController {
         distanceStepper.addTarget(self, action: #selector(NearbyViewController.stepperValueChanged(_:)), for: UIControlEvents.valueChanged)
     }
     
-    func stepperValueChanged(_ sender: AnyObject?) {
+    @objc func stepperValueChanged(_ sender: AnyObject?) {
         if let stepper = sender as? UIStepper {
             searchDistance = stepper.value
             refreshTableHeaderView()

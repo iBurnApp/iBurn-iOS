@@ -25,7 +25,6 @@
 #import "CLLocationManager+iBurn.h"
 #import "BRCLocations.h"
 #import "Appirater.h"
-@import JSQWebViewController;
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
 @import TTTAttributedLabel;
@@ -356,7 +355,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     dispatch_once(&onceToken, ^{
         NSURLSessionConfiguration *bgSessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
         YapDatabaseConnection *connection = [BRCDatabaseManager.shared.database newConnection];
-        _dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
+        self->_dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
     });
     return _dataImporter;
 }
@@ -367,22 +366,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     }
     NSParameterAssert(url);
     NSParameterAssert(viewController);
-    NSOperatingSystemVersion iosVersion = {.majorVersion = 9};
-    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:iosVersion]) {
-        [[UIApplication sharedApplication] openURL:url];
-    } else {
-        // you're showing a modal ya dingus
-        if ([BRCAppDelegate shared].window.rootViewController.presentedViewController) {
-            [[UIApplication sharedApplication] openURL:url];
-            return;
-        }
-        TUSafariActivity *activity = [[TUSafariActivity alloc] init];
-        NSURLRequest *request = [NSURLRequest requestWithURL:url];
-        WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-        WebViewController *wvc = [[WebViewController alloc] initWithUrlRequest:request configuration:configuration activities:@[activity]];
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:wvc];
-        [viewController presentViewController:nav animated:YES completion:NULL];
-    }
+    [[UIApplication sharedApplication] openURL:url];
 }
 
 #pragma mark CLLocationManagerDelegate

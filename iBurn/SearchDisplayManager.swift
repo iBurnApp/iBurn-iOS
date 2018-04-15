@@ -12,7 +12,7 @@ import CocoaLumberjack
 
 public extension UITableView {
     /** Registers custom cell classes for BRC data objects */
-    public func registerCustomCellClasses() {
+    @objc public func registerCustomCellClasses() {
         let mapping = BRCDataObjectTableViewCell.cellIdentifiers
         mapping.forEach { cellIdentifier, cellClass in
             let nibName = NSStringFromClass(cellClass);
@@ -23,7 +23,7 @@ public extension UITableView {
 }
 
 extension YapDatabaseViewMappings {
-    class func basicMappings(viewName: String) -> YapDatabaseViewMappings {
+    @objc class func basicMappings(viewName: String) -> YapDatabaseViewMappings {
         let groupFilter: YapDatabaseViewMappingGroupFilter = { (group, transaction) -> Bool in
             return true
         }
@@ -103,11 +103,11 @@ public class SearchDisplayManager: NSObject {
         searchController.delegate = self
     }
     
-    func audioPlayerChangeNotification(_ notification: Notification) {
+    @objc func audioPlayerChangeNotification(_ notification: Notification) {
         refreshData()
     }
     
-    func yapDatabaseModified(_ notification: Notification) {
+    @objc func yapDatabaseModified(_ notification: Notification) {
         let notifications = longLivedReadConnection.beginLongLivedReadTransaction()
         longLivedReadConnection.read { transaction in
             self.mappings.update(with: transaction)
@@ -209,7 +209,7 @@ extension BRCDataObjectTableViewCell {
 
 extension SearchDisplayManager: UISearchResultsUpdating {
     public func updateSearchResults(for searchController: UISearchController) {
-        guard var searchString = searchController.searchBar.text, searchString.characters.count > 0 else {
+        guard var searchString = searchController.searchBar.text, searchString.count > 0 else {
             return
         }
         searchString = "\(searchString)*"

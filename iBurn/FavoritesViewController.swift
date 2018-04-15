@@ -11,7 +11,7 @@ import YapDatabase
 
 class FavoritesViewController: SortedViewController {
 
-    required init(style: UITableViewStyle, extensionName ext: String) {
+    @objc required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style, extensionName: ext)
         emptyDetailText = "Favorite things to see them here."
     }

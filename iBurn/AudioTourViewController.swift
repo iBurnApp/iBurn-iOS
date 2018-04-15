@@ -54,7 +54,7 @@ class AudioTourViewController: SortedViewController {
         refreshButtonState()
     }
     
-    func playAllItems(_ sender: AnyObject?) {
+    @objc func playAllItems(_ sender: AnyObject?) {
         if BRCAudioPlayer.sharedInstance.player != nil {
             BRCAudioPlayer.sharedInstance.togglePlayPause()
         } else {
