@@ -1,4 +1,4 @@
-platform :ios, '10.0'
+platform :ios, '9.0'
 
 inhibit_all_warnings!
 use_frameworks!
@@ -17,7 +17,7 @@ abstract_target 'iBurnAbstract' do
 	# Debugging
 	pod 'Swizzlean'
 
-	pod 'Mapbox-iOS-SDK', '~> 3.6'
+	pod 'Mapbox-iOS-SDK', '~> 4.0'
 	pod 'YapDatabase', '~> 3.0'
 	pod 'CocoaLumberjack/Swift', '~> 3.4.1'
 	pod 'Mantle', '~> 2.0'

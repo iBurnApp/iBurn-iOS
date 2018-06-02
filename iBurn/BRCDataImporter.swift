@@ -27,7 +27,7 @@ public extension BRCDataImporter {
     
     /** Downloads offline tiles directly from official Mapbox server */
     @objc public static func downloadMapboxOfflineTiles() {
-        let storage = MGLOfflineStorage.shared()
+        let storage = MGLOfflineStorage.shared
         let styleURL = URL(string: kBRCMapBoxStyleURL)!
         let bounds = MGLMapView.brc_bounds
         let region =  MGLTilePyramidOfflineRegion(styleURL: styleURL, bounds: bounds, fromZoomLevel: 13, toZoomLevel: 17)

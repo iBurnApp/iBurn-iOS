@@ -23,7 +23,7 @@ PODS:
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
-  - Mapbox-iOS-SDK (3.7.8)
+  - Mapbox-iOS-SDK (4.0.2)
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
   - PureLayout (3.0.2)
@@ -106,7 +106,7 @@ DEPENDENCIES:
   - JTSImageViewController
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
-  - Mapbox-iOS-SDK (~> 3.6)
+  - Mapbox-iOS-SDK (~> 4.0)
   - Onboard (~> 2.1)
   - PermissionScope (from `Submodules/PermissionScope/PermissionScope.podspec`)
   - PureLayout (~> 3.0)
@@ -158,7 +158,7 @@ SPEC CHECKSUMS:
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
-  Mapbox-iOS-SDK: a8b55533ef5c5e91b5a26533bd4fb0ec88a3b994
+  Mapbox-iOS-SDK: 02b15b70167d54b45fdc059737672a3a68cd780f
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: bea4e9cfc681fdcd5a1f5513ffe5436fa62455aa
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
@@ -169,6 +169,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: d62bb400ca68e240680906bcfa2a2b380d39b30f
   YapDatabase: 299a32de9d350d37a9ac5b0532609d87d5d2a5de
 
-PODFILE CHECKSUM: 5633960d268265f15a73b975673cd8a016437490
+PODFILE CHECKSUM: 8790311dd3d8fb01511d98d641ce7a9b35a39af0
 
 COCOAPODS: 1.5.3
