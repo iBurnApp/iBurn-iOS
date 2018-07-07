@@ -141,16 +141,17 @@ public class MapViewController: BaseMapViewController {
     }
     
     private func showDirections(from: CLLocation, to destination: Waypoint) {
-        let origin = Waypoint(coordinate: from.coordinate, name: "Start")
-        
-        let options = NavigationRouteOptions(waypoints: [origin, destination])
-        
-        Directions.shared.calculate(options) { [weak self] (waypoints, routes, error) in
-            guard let route = routes?.first else { return }
-            
-            let viewController = NavigationViewController(for: route)
-            self?.present(viewController, animated: true, completion: nil)
-        }
+        // TODO: Add some sort of routing. Default Mapbox routing doesn't work.
+//        let origin = Waypoint(coordinate: from.coordinate, name: "Start")
+//
+//        let options = NavigationRouteOptions(waypoints: [origin, destination])
+//
+//        Directions.shared.calculate(options) { [weak self] (waypoints, routes, error) in
+//            guard let route = routes?.first else { return }
+//
+//            let viewController = NavigationViewController(for: route)
+//            self?.present(viewController, animated: true, completion: nil)
+//        }
     }
 
 }
