@@ -36,6 +36,12 @@
 		D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */; };
 		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
 		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
+		D9167B7320F14A9500815F81 /* 2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7220F14A9500815F81 /* 2018 */; };
+		D9167B7520F14A9E00815F81 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7420F14A9D00815F81 /* bundle.js */; };
+		D9167B7720F14AB100815F81 /* MediaFiles in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7620F14AB100815F81 /* MediaFiles */; };
+		D9167B7920F14ABA00815F81 /* TileCache in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7820F14ABA00815F81 /* TileCache */; };
+		D9167B7B20F14AD000815F81 /* iBurn-2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7A20F14AD000815F81 /* iBurn-2018 */; };
+		D9167B7D20F14BB300815F81 /* 2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7220F14A9500815F81 /* 2018 */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -46,8 +52,6 @@
 		D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */; };
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
-		D94DA1AD1F225EBC0064657B /* 2017 in Resources */ = {isa = PBXBuildFile; fileRef = D9571DB41F225E73004B6607 /* 2017 */; };
-		D94E60B21F4384E3007B5142 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D94E60B11F4384E3007B5142 /* bundle.js */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
@@ -59,7 +63,6 @@
 		D960F25C1F74E65A00144290 /* PlayaKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D960F2641F74ECBE00144290 /* YapProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23D1F74B86500144290 /* YapProtocols.swift */; };
 		D960F2651F74ECC700144290 /* APIObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23F1F74E1D900144290 /* APIObject.swift */; };
-		D965BFE51F2EB6E700D496FF /* MediaFiles in Resources */ = {isa = PBXBuildFile; fileRef = D965BFE41F2EB6E700D496FF /* MediaFiles */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
 		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
@@ -70,7 +73,6 @@
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
-		D97EF8361F2E9EE70096A649 /* TileCache in Resources */ = {isa = PBXBuildFile; fileRef = D97EF8351F2E9EE70096A649 /* TileCache */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
@@ -103,7 +105,6 @@
 		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
-		D9C4A3F31F7A08D800BF3483 /* 2017 in Resources */ = {isa = PBXBuildFile; fileRef = D9571DB41F225E73004B6607 /* 2017 */; };
 		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
@@ -253,6 +254,11 @@
 		D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = UserTracking.xcassets; sourceTree = "<group>"; };
 		D91392DF1D6519300090E093 /* iBurn-2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2016"; path = "Submodules/iBurn-Data/data/2016/iBurn-2016"; sourceTree = SOURCE_ROOT; };
 		D9167B6120F132C500815F81 /* InfoPlistSecrets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoPlistSecrets.h; sourceTree = "<group>"; };
+		D9167B7220F14A9500815F81 /* 2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2018; path = "Submodules/iBurn-Data/data/2018/2018"; sourceTree = SOURCE_ROOT; };
+		D9167B7420F14A9D00815F81 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2018/bundle.js"; sourceTree = SOURCE_ROOT; };
+		D9167B7620F14AB100815F81 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2018/MediaFiles"; sourceTree = SOURCE_ROOT; };
+		D9167B7820F14ABA00815F81 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2018/TileCache"; sourceTree = SOURCE_ROOT; };
+		D9167B7A20F14AD000815F81 /* iBurn-2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2018"; path = "Submodules/iBurn-Data/data/2018/iBurn-2018"; sourceTree = SOURCE_ROOT; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCDataObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -575,6 +581,8 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
+				D9167B6220F14A5F00815F81 /* 2018 */,
 				D94DA1AE1F225EE40064657B /* 2017 */,
 				D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */,
 				D9BF9A651D515FC2004AA63B /* 2016 */,
@@ -616,6 +624,18 @@
 			path = "Submodules/iBurn-Data/data/2014";
 			sourceTree = SOURCE_ROOT;
 		};
+		D9167B6220F14A5F00815F81 /* 2018 */ = {
+			isa = PBXGroup;
+			children = (
+				D9167B7A20F14AD000815F81 /* iBurn-2018 */,
+				D9167B7820F14ABA00815F81 /* TileCache */,
+				D9167B7620F14AB100815F81 /* MediaFiles */,
+				D9167B7420F14A9D00815F81 /* bundle.js */,
+				D9167B7220F14A9500815F81 /* 2018 */,
+			);
+			name = 2018;
+			sourceTree = "<group>";
+		};
 		D92562C91988772600ED6B50 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
@@ -641,7 +661,6 @@
 				D965BFE41F2EB6E700D496FF /* MediaFiles */,
 				D981D5551F2E9F1600E470E6 /* iBurn-2017 */,
 				D97EF8351F2E9EE70096A649 /* TileCache */,
-				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 				D9571DB41F225E73004B6607 /* 2017 */,
 			);
 			name = 2017;
@@ -1104,22 +1123,23 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9167B7320F14A9500815F81 /* 2018 in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
+				D9167B7520F14A9E00815F81 /* bundle.js in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
-				D94E60B21F4384E3007B5142 /* bundle.js in Resources */,
+				D9167B7720F14AB100815F81 /* MediaFiles in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
-				D94DA1AD1F225EBC0064657B /* 2017 in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
-				D97EF8361F2E9EE70096A649 /* TileCache in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
-				D965BFE51F2EB6E700D496FF /* MediaFiles in Resources */,
+				D9167B7920F14ABA00815F81 /* TileCache in Resources */,
 				D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
+				D9167B7B20F14AD000815F81 /* iBurn-2018 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1134,7 +1154,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9C4A3F31F7A08D800BF3483 /* 2017 in Resources */,
+				D9167B7D20F14BB300815F81 /* 2018 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

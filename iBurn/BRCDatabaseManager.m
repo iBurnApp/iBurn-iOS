@@ -31,8 +31,8 @@ static NSString * const RTreeMaxLat = @"RTreeMaxLat";
 static NSString * const RTreeMinLon = @"RTreeMinLon";
 static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
-NSString * const kBRCDatabaseName = @"iBurn-2017.sqlite";
-static NSString * const kBRCDatabaseFolderName = @"iBurn-2017";
+NSString * const kBRCDatabaseName = @"iBurn-2018.sqlite";
+static NSString * const kBRCDatabaseFolderName = @"iBurn-2018";
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
