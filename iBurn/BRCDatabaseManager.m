@@ -106,10 +106,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         NSLog(@"Error excluding %@ from backup %@", dbURL, error);
     }
     
-    self.database.defaultObjectPolicy = YapDatabasePolicyShare;
-    self.database.defaultObjectCacheEnabled = YES;
-    self.database.defaultObjectCacheLimit = 10000;
-    self.database.defaultMetadataCacheEnabled = NO;
+    YapDatabaseConnectionConfig *config = self.database.connectionDefaults;
+    config.objectPolicy = YapDatabasePolicyShare;
+    config.objectCacheEnabled = YES;
+    config.objectCacheLimit = 10000;
+    config.metadataCacheEnabled = NO;
     self.readWriteConnection = [self.database newConnection];
     self.readWriteConnection.objectPolicy = YapDatabasePolicyShare;
     self.readWriteConnection.name = @"readWriteConnection";
@@ -358,7 +359,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         
         YapDatabaseSearchResultsView *searchResultsView = [[YapDatabaseSearchResultsView alloc] initWithFullTextSearchName:ftsName
                                                                                                             parentViewName:parentViewName
-                                                                                                                versionTag:@"3"
+                                                                                                                versionTag:@"4"
                                                                                                                    options:searchViewOptions];
         
         BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
@@ -552,7 +553,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseFullTextSearch*) fullTextSearchForClass:(Class)viewClass
                                 withIndexedProperties:(NSArray *)properties
 {
-    YapDatabaseFullTextSearchHandler *searchHandler = [YapDatabaseFullTextSearchHandler withObjectBlock:^(NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
+    YapDatabaseFullTextSearchHandler *searchHandler = [YapDatabaseFullTextSearchHandler withObjectBlock:^(YapDatabaseReadTransaction *transaction, NSMutableDictionary *dict, NSString *collection, NSString *key, id object) {
         
         [properties enumerateObjectsUsingBlock:^(NSString *property, NSUInteger idx, BOOL *stop) {
             if ([object isKindOfClass:viewClass]) {

@@ -15,7 +15,7 @@ abstract_target 'iBurnAbstract' do
 	target 'iBurnTests'
 
 	# Debugging
-	pod 'Swizzlean'
+	pod 'Swizzlean', :configurations => ['Debug']
 
 	pod 'Mapbox-iOS-SDK', '~> 4.0'
 	pod 'YapDatabase', '~> 3.0'

@@ -88,7 +88,6 @@
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
 		D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */; };
-		D99A8CB71F4BA24200D1D9C0 /* iBurn-2017 in Resources */ = {isa = PBXBuildFile; fileRef = D981D5551F2E9F1600E470E6 /* iBurn-2017 */; };
 		D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
@@ -1103,7 +1102,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D99A8CB71F4BA24200D1D9C0 /* iBurn-2017 in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D94E60B21F4384E3007B5142 /* bundle.js in Resources */,
