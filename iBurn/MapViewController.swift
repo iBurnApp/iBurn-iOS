@@ -11,8 +11,9 @@ import YapDatabase
 import CoreLocation
 import BButton
 import CocoaLumberjack
-
-
+import MapboxDirections
+import MapboxCoreNavigation
+import MapboxNavigation
 
 public class MapViewController: BaseMapViewController {
     let readConnection: YapDatabaseConnection
@@ -44,7 +45,7 @@ public class MapViewController: BaseMapViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
         // TODO: make sidebar buttons work
-        //setupSidebarButtons()
+        setupSidebarButtons()
     }
     
     private func setupSidebarButtons() {
@@ -80,11 +81,11 @@ public class MapViewController: BaseMapViewController {
                 return
             }
             self?.readConnection.read { transaction in
-                let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction)
-                DDLogInfo("Found closest point: \(String(describing: point))")
-                // If we can't find your bike or home, let's make a new one
-                if point == nil,
-                    mapPointType == .userBike || mapPointType == .userHome {
+                if let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction) {
+                    DDLogInfo("Found closest point: \(point)")
+                    self?.showDirections(from: location, to: point.waypoint)
+                } else if mapPointType == .userBike || mapPointType == .userHome {
+                    // If we can't find your bike or home, let's make a new one
                    self?.addUserMapPoint(type: mapPointType)
                 }
             }
@@ -139,6 +140,23 @@ public class MapViewController: BaseMapViewController {
         mapView.addAnnotation(mapPoint)
     }
     
-    
+    private func showDirections(from: CLLocation, to destination: Waypoint) {
+        let origin = Waypoint(coordinate: from.coordinate, name: "Start")
+        
+        let options = NavigationRouteOptions(waypoints: [origin, destination])
+        
+        Directions.shared.calculate(options) { [weak self] (waypoints, routes, error) in
+            guard let route = routes?.first else { return }
+            
+            let viewController = NavigationViewController(for: route)
+            self?.present(viewController, animated: true, completion: nil)
+        }
+    }
 
+}
+
+private extension BRCMapPoint {
+    var waypoint: Waypoint {
+        return Waypoint(coordinate: coordinate, name: title)
+    }
 }

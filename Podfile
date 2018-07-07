@@ -18,6 +18,7 @@ abstract_target 'iBurnAbstract' do
 	pod 'Swizzlean', :configurations => ['Debug']
 
 	pod 'Mapbox-iOS-SDK', '~> 4.0'
+	pod 'MapboxNavigation', '~> 0.18'
 	pod 'YapDatabase', '~> 3.0'
 	pod 'CocoaLumberjack/Swift', '~> 3.4.1'
 	pod 'Mantle', '~> 2.0'

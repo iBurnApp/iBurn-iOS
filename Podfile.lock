@@ -24,11 +24,27 @@ PODS:
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
   - Mapbox-iOS-SDK (4.1.1)
+  - MapboxCoreNavigation (0.18.1):
+    - MapboxDirections.swift (~> 0.21.0)
+    - MapboxMobileEvents (~> 0.4)
+    - Turf (~> 0.1)
+  - MapboxDirections.swift (0.21.0):
+    - Polyline (~> 4.2)
+  - MapboxMobileEvents (0.4.2)
+  - MapboxNavigation (0.18.1):
+    - Mapbox-iOS-SDK (~> 4.0)
+    - MapboxCoreNavigation (= 0.18.1)
+    - MapboxSpeech (~> 0.0.1)
+    - Solar (~> 2.1)
+  - MapboxSpeech (0.0.1)
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
+  - Polyline (4.2.0)
   - PureLayout (3.0.2)
+  - Solar (2.1.0)
   - Swizzlean (1.0.1)
   - TTTAttributedLabel (2.0.0)
+  - Turf (0.2.0)
   - TUSafariActivity (1.0.4)
   - UIImageColors (2.0.0)
   - VTAcknowledgementsViewController (1.4.1)
@@ -110,6 +126,7 @@ DEPENDENCIES:
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
   - Mapbox-iOS-SDK (~> 4.0)
+  - MapboxNavigation (~> 0.18)
   - Onboard (~> 2.1)
   - PermissionScope (from `Submodules/PermissionScope/PermissionScope.podspec`)
   - PureLayout (~> 3.0)
@@ -132,10 +149,18 @@ SPEC REPOS:
     - KVOController
     - Mantle
     - Mapbox-iOS-SDK
+    - MapboxCoreNavigation
+    - MapboxDirections.swift
+    - MapboxMobileEvents
+    - MapboxNavigation
+    - MapboxSpeech
     - Onboard
+    - Polyline
     - PureLayout
+    - Solar
     - Swizzlean
     - TTTAttributedLabel
+    - Turf
     - TUSafariActivity
     - UIImageColors
     - VTAcknowledgementsViewController
@@ -162,16 +187,24 @@ SPEC CHECKSUMS:
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
   Mapbox-iOS-SDK: 78e66fad4085433d04fccb9364df4be08042fb82
+  MapboxCoreNavigation: 3754c160e928dbcd58720de808b1f67db52b20e6
+  MapboxDirections.swift: 14d32d1601834e15c930cbab4201e57b0f7a2218
+  MapboxMobileEvents: 16a130964e5780331507a72c01fefc45a0eb7736
+  MapboxNavigation: 619fda6eb4b4ce48df8676041f017e4698c8dc35
+  MapboxSpeech: 6cc9b3d53adc2988af3ebc704dd17907b84a3f9f
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: bea4e9cfc681fdcd5a1f5513ffe5436fa62455aa
+  Polyline: 3d69f75bb136357e27291d439d0436c6ebda57a4
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
+  Solar: 2dc6e7cc39186cb0c8228fa08df76fb50c7d8f24
   Swizzlean: 090f99f6e367f82b2b94ac29129b0b56f05c1c57
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
+  Turf: 65817136031583da7ea2b43e6611dd10ddbdab2f
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   UIImageColors: 3ae0150e539342697808281a3975fe5dec2024ce
   VTAcknowledgementsViewController: 9a7d0f040f17dfa6d02fc731bec8b188e4b4ee59
   YapDatabase: 170882ac5926507a4ea6dddaf704ebdd3f1ec61c
 
-PODFILE CHECKSUM: 212ed380656d351e6bbd09a5a8c1fd0d0bf2ec49
+PODFILE CHECKSUM: e204edc8dba305f833c3e84cb1dfa62b3660e175
 
 COCOAPODS: 1.5.3
