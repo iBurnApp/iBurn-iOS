@@ -214,14 +214,25 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 - (void) registerExtensions {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_block_t registerExtensions = ^{
         [self registerRegularViews];
         [self registerFullTextSearch];
         [self registerFilteredViews];
         [self registerSearchViews];
         [self registerRTreeIndex];
         [self registerRelationships];
-    });
+    };
+#if DEBUG
+    NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+    // This can make it easier when writing tests
+    if (environment[@"SYNC_DB_STARTUP"]) {
+        registerExtensions();
+    } else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), registerExtensions);
+    }
+#else
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), registerExtensions);
+#endif
 }
 
 - (void) registerRelationships {

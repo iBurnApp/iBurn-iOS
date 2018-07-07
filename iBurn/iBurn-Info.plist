@@ -49,17 +49,17 @@
 		</dict>
 	</dict>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>iBurn doesn't use Bluetooth.</string>
+	<string>iBurn does not use Bluetooth.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>iBurn can automatically add favorited events to your calendar.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>iBurn doesn't use your contacts.</string>
+	<string>iBurn does not use your contacts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>iBurn only uses your location within the app itself to help you navigate the playa and discover fun things happening near you.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>iBurn doesn't use the microphone.</string>
+	<string>iBurn does not use the microphone.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>iBurn doesn't use motion tracking.</string>
+	<string>iBurn does not use motion tracking.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>FontAwesome.ttf</string>

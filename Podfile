@@ -3,15 +3,13 @@ platform :ios, '9.0'
 inhibit_all_warnings!
 use_frameworks!
 
-abstract_target 'PlayaKitAbstract' do
-	target 'PlayaKit'
-	target 'PlayaKitTests'
+target 'PlayaKit' do
 	pod 'CocoaLumberjack/Swift', '~> 3.4.1'
 	pod 'YapDatabase', '~> 3.0'
+	target 'PlayaKitTests'
 end 
 
-abstract_target 'iBurnAbstract' do
-	target 'iBurn'
+target 'iBurn' do
 	target 'iBurnTests'
 
 	# Debugging

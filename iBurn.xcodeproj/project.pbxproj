@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */; };
 		42686B30A7FF923440BC38BC /* Pods_iBurnAbstract_iBurn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010F001B72E2EA000A847C /* BRCGeocoderTest.m */; };
@@ -28,6 +29,7 @@
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
 		691C73B483260FE8CB84583E /* Pods_PlayaKitAbstract_PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */; };
+		7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */; };
 		8A13A997EA8C9EC18B2D8CB7 /* Pods_PlayaKitAbstract_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
@@ -57,7 +59,6 @@
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
 		D960F24F1F74E65A00144290 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; };
-		D960F2561F74E65A00144290 /* PlayaKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitTests.swift */; };
 		D960F2581F74E65A00144290 /* PlayaKit.h in Headers */ = {isa = PBXBuildFile; fileRef = D960F2481F74E65A00144290 /* PlayaKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D960F25B1F74E65A00144290 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; };
 		D960F25C1F74E65A00144290 /* PlayaKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -89,7 +90,7 @@
 		D994156E198726C100D245C7 /* BRCEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156D198726C100D245C7 /* BRCEventObject.m */; };
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
-		D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */; };
+		D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */; };
 		D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
@@ -132,7 +133,9 @@
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
+		EAEAEF9B157915E16B74E206 /* Pods_iBurn_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */; };
 		F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */; };
+		FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -181,7 +184,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
+		3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C938B49996428877731060F /* Pods-iBurnAbstract-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
@@ -225,12 +232,17 @@
 		63D270F71987159A00204954 /* BRCMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCMapViewController.h; sourceTree = "<group>"; };
 		63D270F81987159A00204954 /* BRCMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCMapViewController.m; sourceTree = "<group>"; };
 		65C20DF5B15D2087485F0E97 /* Pods-iBurnAbstract-iBurn.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurn.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn.release.xcconfig"; sourceTree = "<group>"; };
+		66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn.release.xcconfig"; sourceTree = "<group>"; };
+		72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
+		73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 		80E2C6DD5C95EC58E5AE41B8 /* Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
+		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorter.swift; sourceTree = "<group>"; };
 		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
@@ -317,8 +329,8 @@
 		D981D5551F2E9F1600E470E6 /* iBurn-2017 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2017"; path = "Submodules/iBurn-Data/data/2017/iBurn-2017"; sourceTree = SOURCE_ROOT; };
 		D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter_Private.h; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
-		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/2015/initial_data; sourceTree = "<group>"; };
-		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/2015/updated_data; sourceTree = "<group>"; };
+		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/initial_data; sourceTree = "<group>"; };
+		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/updated_data; sourceTree = "<group>"; };
 		D9914C511B40D61500F90663 /* BRCUpdateInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCUpdateInfo.h; sourceTree = "<group>"; };
 		D9914C521B40D61500F90663 /* BRCUpdateInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCUpdateInfo.m; sourceTree = "<group>"; };
 		D99395A6198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailInfoTableViewCell.h; sourceTree = "<group>"; };
@@ -345,7 +357,7 @@
 		D99415791987277500D245C7 /* BRCDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDatabaseManager.m; sourceTree = "<group>"; };
 		D994157D1987399F00D245C7 /* BRCEventTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventTime.h; sourceTree = "<group>"; };
 		D994157E1987399F00D245C7 /* BRCEventTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventTime.m; sourceTree = "<group>"; };
-		D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-iBurnAbstract-iBurn-acknowledgements.plist"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
+		D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-iBurn-acknowledgements.plist"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
 		D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDisplayManager.swift; sourceTree = "<group>"; };
 		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObject.swift; sourceTree = "<group>"; };
@@ -405,8 +417,11 @@
 		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
 		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
 		D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCArtObjectTableViewCell.xib; sourceTree = "<group>"; };
+		DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
+		F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
+		F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -424,6 +439,7 @@
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
 				42686B30A7FF923440BC38BC /* Pods_iBurnAbstract_iBurn.framework in Frameworks */,
+				FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,6 +448,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				691C73B483260FE8CB84583E /* Pods_PlayaKitAbstract_PlayaKit.framework in Frameworks */,
+				7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -441,6 +458,7 @@
 			files = (
 				D960F24F1F74E65A00144290 /* PlayaKit.framework in Frameworks */,
 				8A13A997EA8C9EC18B2D8CB7 /* Pods_PlayaKitAbstract_PlayaKitTests.framework in Frameworks */,
+				2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -449,6 +467,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */,
+				EAEAEF9B157915E16B74E206 /* Pods_iBurn_iBurnTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -466,6 +485,14 @@
 				58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */,
 				80E2C6DD5C95EC58E5AE41B8 /* Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig */,
 				3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */,
+				CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */,
+				B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */,
+				DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */,
+				F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */,
+				72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */,
+				66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */,
+				30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */,
+				73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -523,6 +550,10 @@
 				B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */,
 				9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */,
 				947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */,
+				3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */,
+				F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */,
+				22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */,
+				4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -587,7 +618,7 @@
 				D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */,
 				D9BF9A651D515FC2004AA63B /* 2016 */,
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
-				D99A61571B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist */,
+				D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */,
 				D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */,
 				D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */,
 				D9842A2B1B51C71C0056455D /* 2015 */,
@@ -1132,7 +1163,7 @@
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
-				D99A61581B2A0AAD009CC09E /* Pods-iBurnAbstract-iBurn-acknowledgements.plist in Resources */,
+				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
 				D9167B7920F14ABA00815F81 /* TileCache in Resources */,
@@ -1181,7 +1212,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PlayaKitAbstract-PlayaKit-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PlayaKit-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1194,7 +1225,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests-frameworks.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 			);
@@ -1205,7 +1236,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		494E5894B2B0684522784BC0 /* [CP] Check Pods Manifest.lock */ = {
@@ -1219,7 +1250,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-iBurnAbstract-iBurnTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-iBurn-iBurnTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1237,7 +1268,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-iBurnAbstract-iBurn-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-iBurn-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1250,7 +1281,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests-frameworks.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
@@ -1317,7 +1348,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E161ADB7ACA7D83761C1C90B /* [CP] Embed Pods Frameworks */ = {
@@ -1326,7 +1357,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn-frameworks.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
@@ -1393,7 +1424,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E9C3145650DF2A650019858A /* [CP] Check Pods Manifest.lock */ = {
@@ -1407,7 +1438,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PlayaKitAbstract-PlayaKitTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PlayaKit-PlayaKitTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1521,7 +1552,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D960F2561F74E65A00144290 /* PlayaKitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1677,7 +1707,7 @@
 		};
 		63CE2A811987140F00F65B01 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5C938B49996428877731060F /* Pods-iBurnAbstract-iBurn.debug.xcconfig */;
+			baseConfigurationReference = 72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -1706,7 +1736,7 @@
 		};
 		63CE2A821987140F00F65B01 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 65C20DF5B15D2087485F0E97 /* Pods-iBurnAbstract-iBurn.release.xcconfig */;
+			baseConfigurationReference = 66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -1733,7 +1763,7 @@
 		};
 		D960F25E1F74E65A00144290 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */;
+			baseConfigurationReference = CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1769,7 +1799,7 @@
 		};
 		D960F25F1F74E65A00144290 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */;
+			baseConfigurationReference = B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1804,7 +1834,7 @@
 		};
 		D960F2621F74E65A00144290 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 80E2C6DD5C95EC58E5AE41B8 /* Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig */;
+			baseConfigurationReference = DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1829,7 +1859,7 @@
 		};
 		D960F2631F74E65A00144290 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */;
+			baseConfigurationReference = F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1853,7 +1883,7 @@
 		};
 		D980A9121B3F5A6400BE3682 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */;
+			baseConfigurationReference = 30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
@@ -1880,7 +1910,7 @@
 		};
 		D980A9131B3F5A6400BE3682 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */;
+			baseConfigurationReference = 73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;

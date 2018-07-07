@@ -72,7 +72,7 @@ class PlayaKitTests: XCTestCase {
     
     func testJSONBundle() {
         let testBundle = Bundle(for: type(of: self))
-        let jsonBundleURL = testBundle.url(forResource: "2017", withExtension: nil)!
+        let jsonBundleURL = testBundle.url(forResource: "2018", withExtension: nil)!
         let jsonBundle = Bundle(url: jsonBundleURL)!
         let artURL = jsonBundle.url(forResource: "art.json", withExtension: "js")!
         let campURL = jsonBundle.url(forResource: "camps.json", withExtension: "js")!

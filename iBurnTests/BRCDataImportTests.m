@@ -184,8 +184,8 @@
         __block NSArray<BRCEventObject*> *events1 = nil;
         
         [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            art1 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject yapCollection]];
-            camp1 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject yapCollection]];
+            art1 = [transaction objectForKey:@"a2I0V000001RLHeUAO" inCollection:[BRCArtObject yapCollection]];
+            camp1 = [transaction objectForKey:@"a1X0V000003WK4xUAG" inCollection:[BRCCampObject yapCollection]];
             
             artMetadata1.isFavorite = YES;
             campMetadata1.isFavorite = YES;
@@ -233,9 +233,9 @@
             __block NSArray<BRCEventObject*> *events2 = nil;
             
             [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
-                art2 = [transaction objectForKey:@"2275" inCollection:[BRCArtObject yapCollection]];
+                art2 = [transaction objectForKey:@"a2I0V000001RLHeUAO" inCollection:[BRCArtObject yapCollection]];
                 artMetadata2 = [art2 artMetadataWithTransaction:transaction];
-                camp2 = [transaction objectForKey:@"7230" inCollection:[BRCCampObject yapCollection]];
+                camp2 = [transaction objectForKey:@"a1X0V000003WK4xUAG" inCollection:[BRCCampObject yapCollection]];
                 campMetadata2 = [camp2 campMetadataWithTransaction:transaction];
                 events2 = [camp2 eventsWithTransaction:transaction];
             }];
