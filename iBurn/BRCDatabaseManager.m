@@ -678,12 +678,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 /** TODO: Remove me. This is deprecated and not needed. */
 + (YapDatabaseViewFiltering*) eventsFilteredByDay:(NSDate*)day
 {
-    NSString *selectedDayGroup = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:day];
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withKeyBlock:^BOOL (YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key)
     {
-//        if (selectedDayGroup) {
-//            return [group containsString:selectedDayGroup];
-//        }
         return YES;
     }];
     return filtering;
