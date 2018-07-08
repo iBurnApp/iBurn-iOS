@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */; };
-		42686B30A7FF923440BC38BC /* Pods_iBurnAbstract_iBurn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010F001B72E2EA000A847C /* BRCGeocoderTest.m */; };
 		630861C9199029D100AD7109 /* BRCLocations.m in Sources */ = {isa = PBXBuildFile; fileRef = 630861C8199029D100AD7109 /* BRCLocations.m */; };
@@ -28,9 +27,7 @@
 		63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A601987140F00F65B01 /* InfoPlist.strings */; };
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
-		691C73B483260FE8CB84583E /* Pods_PlayaKitAbstract_PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */; };
 		7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */; };
-		8A13A997EA8C9EC18B2D8CB7 /* Pods_PlayaKitAbstract_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
@@ -60,8 +57,6 @@
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
 		D960F24F1F74E65A00144290 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; };
 		D960F2581F74E65A00144290 /* PlayaKit.h in Headers */ = {isa = PBXBuildFile; fileRef = D960F2481F74E65A00144290 /* PlayaKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D960F25B1F74E65A00144290 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; };
-		D960F25C1F74E65A00144290 /* PlayaKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D960F2641F74ECBE00144290 /* YapProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23D1F74B86500144290 /* YapProtocols.swift */; };
 		D960F2651F74ECC700144290 /* APIObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23F1F74E1D900144290 /* APIObject.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
@@ -134,7 +129,6 @@
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
 		EAEAEF9B157915E16B74E206 /* Pods_iBurn_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */; };
-		F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */; };
 		FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */; };
 /* End PBXBuildFile section */
 
@@ -145,13 +139,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = D960F2451F74E65A00144290;
 			remoteInfo = PlayaKit;
-		};
-		D960F2521F74E65A00144290 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 63CE2A531987140F00F65B01;
-			remoteInfo = iBurn;
 		};
 		D960F2591F74E65A00144290 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -176,7 +163,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D960F25C1F74E65A00144290 /* PlayaKit.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -434,11 +420,9 @@
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
 				D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */,
 				D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */,
-				D960F25B1F74E65A00144290 /* PlayaKit.framework in Frameworks */,
 				63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */,
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
-				42686B30A7FF923440BC38BC /* Pods_iBurnAbstract_iBurn.framework in Frameworks */,
 				FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -447,7 +431,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				691C73B483260FE8CB84583E /* Pods_PlayaKitAbstract_PlayaKit.framework in Frameworks */,
 				7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -457,7 +440,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D960F24F1F74E65A00144290 /* PlayaKit.framework in Frameworks */,
-				8A13A997EA8C9EC18B2D8CB7 /* Pods_PlayaKitAbstract_PlayaKitTests.framework in Frameworks */,
 				2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -466,7 +448,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F23C8310E424F497B2CFDE53 /* Pods_iBurnAbstract_iBurnTests.framework in Frameworks */,
 				EAEAEF9B157915E16B74E206 /* Pods_iBurn_iBurnTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1061,7 +1042,6 @@
 			);
 			dependencies = (
 				D960F2511F74E65A00144290 /* PBXTargetDependency */,
-				D960F2531F74E65A00144290 /* PBXTargetDependency */,
 			);
 			name = PlayaKitTests;
 			productName = PlayaKitTests;
@@ -1572,11 +1552,6 @@
 			isa = PBXTargetDependency;
 			target = D960F2451F74E65A00144290 /* PlayaKit */;
 			targetProxy = D960F2501F74E65A00144290 /* PBXContainerItemProxy */;
-		};
-		D960F2531F74E65A00144290 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 63CE2A531987140F00F65B01 /* iBurn */;
-			targetProxy = D960F2521F74E65A00144290 /* PBXContainerItemProxy */;
 		};
 		D960F25A1F74E65A00144290 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
