@@ -30,6 +30,7 @@
 		7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
+		D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D90FFA371EEFAC10005127D0 /* MapViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* MapViewDelegate.swift */; };
 		D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */; };
@@ -124,7 +125,6 @@
 		D9EC18B81FEC52060013CDAA /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B71FEC52060013CDAA /* Event.swift */; };
 		D9EC18BA1FEC52130013CDAA /* Art.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B91FEC52130013CDAA /* Art.swift */; };
 		D9EC18BC1FEC521C0013CDAA /* Camp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18BB1FEC521C0013CDAA /* Camp.swift */; };
-		D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */; };
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
@@ -233,6 +233,7 @@
 		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
 		D902DF0F1B7B228100057898 /* BRCDataImportTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImportTests.h; sourceTree = "<group>"; };
+		D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BRCOnboardingViewController.swift; path = iBurn/BRCOnboardingViewController.swift; sourceTree = "<group>"; };
 		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
 		D9046ED4198C65D70013CCF4 /* camp_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = camp_data.json; sourceTree = "<group>"; };
 		D9046ED5198C65D70013CCF4 /* dates_info.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
@@ -397,8 +398,6 @@
 		D9EC18B71FEC52060013CDAA /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		D9EC18B91FEC52130013CDAA /* Art.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Art.swift; sourceTree = "<group>"; };
 		D9EC18BB1FEC521C0013CDAA /* Camp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camp.swift; sourceTree = "<group>"; };
-		D9EC1BED1D47E29A004A62E6 /* BRCOnboardingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCOnboardingViewController.h; sourceTree = "<group>"; };
-		D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCOnboardingViewController.m; sourceTree = "<group>"; };
 		D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioPlayer.swift; sourceTree = "<group>"; };
 		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
 		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
@@ -493,6 +492,7 @@
 		63CE2A4B1987140F00F65B01 = {
 			isa = PBXGroup;
 			children = (
+				D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */,
 				63CE2A5D1987140F00F65B01 /* iBurn */,
 				D980A90B1B3F5A6400BE3682 /* iBurnTests */,
 				D960F2471F74E65A00144290 /* PlayaKit */,
@@ -571,8 +571,6 @@
 			isa = PBXGroup;
 			children = (
 				D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */,
-				D9EC1BED1D47E29A004A62E6 /* BRCOnboardingViewController.h */,
-				D9EC1BEE1D47E29A004A62E6 /* BRCOnboardingViewController.m */,
 				D9C30F711B82EE7100CD03CC /* Sorted */,
 				D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */,
 				D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */,
@@ -1447,6 +1445,7 @@
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
 				D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */,
 				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
+				D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */,
 				D9DE7BB01EF25C11007A983E /* MapViewController.swift in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */,
@@ -1474,7 +1473,6 @@
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
-				D9EC1BEF1D47E29A004A62E6 /* BRCOnboardingViewController.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,

@@ -35,7 +35,6 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
-#import "BRCOnboardingViewController.h"
 #import <Swizzlean/Swizzlean.h>
 @import PermissionScope;
 #import "NSDate+iBurn.h"
@@ -150,7 +149,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
     if (!hasViewedOnboarding) {
-        OnboardingViewController *onboardingVC = [BRCOnboardingViewController onboardingViewControllerWithCompletion:^{
+        OnboardingViewController *onboardingVC = [[BRCOnboardingViewController alloc] initWithCompletion:^{
             [UIView transitionWithView:self.window
                               duration:1.0
                                options:UIViewAnimationOptionTransitionCrossDissolve
