@@ -7,7 +7,6 @@
 //
 
 #import "MGLMapView+iBurn.h"
-#import "BRCLocations.h"
 #import "BRCDataImporter.h"
 #import "BRCSecrets.h"
 #import "UIColor+iBurn.h"

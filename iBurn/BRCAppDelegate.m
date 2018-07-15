@@ -23,7 +23,6 @@
 #import "BRCFilteredTableViewController_Private.h"
 #import "BRCDetailViewController.h"
 #import "CLLocationManager+iBurn.h"
-#import "BRCLocations.h"
 #import "Appirater.h"
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>

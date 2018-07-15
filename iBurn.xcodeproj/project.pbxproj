@@ -10,7 +10,6 @@
 		2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010F001B72E2EA000A847C /* BRCGeocoderTest.m */; };
-		630861C9199029D100AD7109 /* BRCLocations.m in Sources */ = {isa = PBXBuildFile; fileRef = 630861C8199029D100AD7109 /* BRCLocations.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
@@ -31,6 +30,7 @@
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */; };
+		D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D90FFA371EEFAC10005127D0 /* MapViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* MapViewDelegate.swift */; };
 		D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */; };
@@ -181,8 +181,6 @@
 		63010EFD1B72DEEA000A847C /* BRCGeocoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCGeocoder.h; sourceTree = "<group>"; };
 		63010EFE1B72DEEA000A847C /* BRCGeocoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoder.m; sourceTree = "<group>"; };
 		63010F001B72E2EA000A847C /* BRCGeocoderTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoderTest.m; sourceTree = "<group>"; };
-		630861C7199029D100AD7109 /* BRCLocations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCLocations.h; sourceTree = "<group>"; };
-		630861C8199029D100AD7109 /* BRCLocations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCLocations.m; sourceTree = "<group>"; };
 		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
 		6322830019881DDE009E472B /* BRCDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailViewController.m; sourceTree = "<group>"; };
 		6322830319881F41009E472B /* BRCDetailCellInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailCellInfo.h; sourceTree = "<group>"; };
@@ -234,6 +232,7 @@
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
 		D902DF0F1B7B228100057898 /* BRCDataImportTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImportTests.h; sourceTree = "<group>"; };
 		D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BRCOnboardingViewController.swift; path = iBurn/BRCOnboardingViewController.swift; sourceTree = "<group>"; };
+		D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCLocations.swift; sourceTree = "<group>"; };
 		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
 		D9046ED4198C65D70013CCF4 /* camp_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = camp_data.json; sourceTree = "<group>"; };
 		D9046ED5198C65D70013CCF4 /* dates_info.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
@@ -937,8 +936,7 @@
 				D927BDB11EF4778000B7324D /* UserGuidance.swift */,
 				D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */,
 				D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */,
-				630861C7199029D100AD7109 /* BRCLocations.h */,
-				630861C8199029D100AD7109 /* BRCLocations.m */,
+				D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */,
 				63010EFD1B72DEEA000A847C /* BRCGeocoder.h */,
 				63010EFE1B72DEEA000A847C /* BRCGeocoder.m */,
 				D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */,
@@ -1433,7 +1431,6 @@
 				D994156119871E8400D245C7 /* BRCEventsTableViewController.m in Sources */,
 				D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */,
 				639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */,
-				630861C9199029D100AD7109 /* BRCLocations.m in Sources */,
 				D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */,
 				D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
@@ -1478,6 +1475,7 @@
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,
 				D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
+				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,

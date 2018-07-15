@@ -19,7 +19,6 @@
 #import "BRCEmbargo.h"
 #import "BRCCampObject.h"
 #import "BRCEventObject.h"
-#import "BRCLocations.h"
 #import "BRCAppDelegate.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import "iBurn-Swift.h"

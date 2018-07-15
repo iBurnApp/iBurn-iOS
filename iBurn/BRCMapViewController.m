@@ -18,7 +18,6 @@
 #import "MGLMapView+iBurn.h"
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
-#import "BRCLocations.h"
 #import "BRCAcknowledgementsViewController.h"
 #import "BButton.h"
 #import "BRCMapPoint.h"
