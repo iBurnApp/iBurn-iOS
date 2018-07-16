@@ -31,6 +31,7 @@
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */; };
 		D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */; };
+		D9038C7620FBFAFD0085C6B9 /* BRCImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
 		D90FFA371EEFAC10005127D0 /* MapViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* MapViewDelegate.swift */; };
 		D90FFA391EEFAF19005127D0 /* BRCAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* BRCAnnotationView.swift */; };
@@ -233,6 +234,7 @@
 		D902DF0F1B7B228100057898 /* BRCDataImportTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImportTests.h; sourceTree = "<group>"; };
 		D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BRCOnboardingViewController.swift; path = iBurn/BRCOnboardingViewController.swift; sourceTree = "<group>"; };
 		D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCLocations.swift; sourceTree = "<group>"; };
+		D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCImageColors.swift; sourceTree = "<group>"; };
 		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
 		D9046ED4198C65D70013CCF4 /* camp_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = camp_data.json; sourceTree = "<group>"; };
 		D9046ED5198C65D70013CCF4 /* dates_info.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dates_info.json; sourceTree = "<group>"; };
@@ -930,6 +932,7 @@
 		D9EC0E5B1B7DE0350042B596 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */,
 				D9167B6120F132C500815F81 /* InfoPlistSecrets.h */,
 				D9DE9E181F39966700906F64 /* ColorCache.swift */,
 				D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */,
@@ -1469,6 +1472,7 @@
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
 				D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */,
+				D9038C7620FBFAFD0085C6B9 /* BRCImageColors.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,

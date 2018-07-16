@@ -12,6 +12,7 @@
 #import "TTTTimeIntervalFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
 #import "BRCEmbargo.h"
+#import "iBurn-Swift.h"
 
 @implementation BRCEventObjectTableViewCell
 
@@ -59,6 +60,9 @@
     }
     self.eventTypeLabel.text = eventType;
     [self setupLocationLabelFromEvent:eventObject];
+    
+    BRCImageColors *colors = [BRCImageColors colorsFor:eventObject.eventType];
+    [self setColorTheme:colors animated:NO];
 }
 
 - (NSString*) defaultEventText:(BRCEventObject*)eventObject {

@@ -10,6 +10,7 @@
 #import "BRCEventObject.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCDatabaseManager.h"
+#import "iBurn-Swift.h"
 @import YapDatabase;
 
 
@@ -171,6 +172,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilterTableViewCellIdentifier];
     
+    BRCImageColors *colors = BRCImageColors.plain;
     BOOL showCheckMark = NO;
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
@@ -187,8 +189,10 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
         BRCEventTypeContainer *container = self.eventTypeArray[indexPath.row];
         showCheckMark = container.isSelected;
         cell.textLabel.text = container.title;
+        colors = [BRCImageColors colorsFor:container.type];
     }
-    
+    cell.textLabel.textColor = colors.primaryColor;
+    cell.backgroundColor = colors.backgroundColor;
     
     if (showCheckMark) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
