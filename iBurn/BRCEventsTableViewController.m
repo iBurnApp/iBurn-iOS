@@ -20,6 +20,7 @@
 #import "ASDayPicker.h"
 #import <KVOController/NSObject+FBKVOController.h>
 #import "PureLayout.h"
+#import "iBurn-Swift.h"
 
 static const CGFloat kDayPickerHeight = 65.0f;
 
@@ -169,9 +170,6 @@ static const CGFloat kDayPickerHeight = 65.0f;
     self.navigationItem.leftBarButtonItem.title = dayString;
     [self updateFilteredViews];
     [self replaceTimeBasedEventMappings];
-    [self updateMappingsWithCompletionBlock:^{
-        [self.tableView reloadData];
-    }];
 }
 
 - (NSDate*) selectedDay {
@@ -192,22 +190,22 @@ static const CGFloat kDayPickerHeight = 65.0f;
 }
 
 - (void) setupMappings {
-    // we need to override search mappings for events
+    [super setupMappings];
     [self replaceTimeBasedEventMappings];
 }
 
 - (void) replaceTimeBasedEventMappings {
     NSString *selectedDay = [[NSDateFormatter brc_eventGroupDateFormatter] stringFromDate:self.selectedDay];
-    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+    [self.viewHandler setGroupFilter:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         if (group && selectedDay) {
             return [group containsString:selectedDay];
         }
         return NO;
-    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+    } groupSort:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
-    } view:self.viewName];
+    }];
     BOOL searchSelectedDayOnly = [NSUserDefaults standardUserDefaults].searchSelectedDayOnly;
-    self.searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
+    [self.searchViewHandler setGroupFilter:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         if (searchSelectedDayOnly) {
             if (group && selectedDay) {
                 return [group containsString:selectedDay];
@@ -217,9 +215,9 @@ static const CGFloat kDayPickerHeight = 65.0f;
         } else {
             return YES;
         }
-    } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
+    } groupSort:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
-    } view:self.searchViewName];
+    }];
 }
 
 - (void) refreshEventTimeSort {
@@ -228,10 +226,7 @@ static const CGFloat kDayPickerHeight = 65.0f;
     }
     self.isRefreshingEventTimeSort = YES;
     [BRCDatabaseManager.shared refreshEventsSortingWithCompletionBlock:^{
-        [self updateMappingsWithCompletionBlock:^{
-            [self.tableView reloadData];
-            self.isRefreshingEventTimeSort = NO;
-        }];
+        self.isRefreshingEventTimeSort = NO;
     }];
 }
 
@@ -241,7 +236,7 @@ static const CGFloat kDayPickerHeight = 65.0f;
 {
     if (![self isSearchResultsControllerTableView:tableView])
     {
-        NSArray *rawGroups = [self.mappings allGroups];
+        NSArray *rawGroups = [self.viewHandler allGroups];
         NSMutableArray *groups = [NSMutableArray arrayWithCapacity:rawGroups.count];
         [rawGroups enumerateObjectsUsingBlock:^(NSString *groupName, NSUInteger idx, BOOL *stop) {
             NSString *hour = [[groupName componentsSeparatedByString:@" "] lastObject];
@@ -343,6 +338,8 @@ static const CGFloat kDayPickerHeight = 65.0f;
 - (void) didDismissSearchController:(UISearchController *)searchController {
     
 }
+
+// MARK: - YapViewHandlerDelegate
 
 
 @end

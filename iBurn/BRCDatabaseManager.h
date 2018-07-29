@@ -10,6 +10,7 @@
 @import CoreLocation;
 @import YapDatabase;
 @import MapKit;
+@class LongLivedConnectionManager;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,6 +26,8 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readConnection;
+@property (nonatomic, strong, readonly) LongLivedConnectionManager *longLived;
+
 
 /** Check to see if a file exists at the correct path */
 + (BOOL)existsDatabaseWithName:(NSString *)databaseName;

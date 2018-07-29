@@ -46,7 +46,6 @@
         [self setupLoadingIndicatorView];
         [self setupDatabaseConnection];
         [self setupMappings];
-        [self updateMappingsWithCompletionBlock:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioPlayerChangedNotification:) name:BRCAudioPlayer.BRCAudioPlayerChangeNotification object:BRCAudioPlayer.sharedInstance];
         [self view]; //wtf
@@ -117,11 +116,6 @@
                                              selector:@selector(didChangePreferredContentSize:)
                                                  name:UIContentSizeCategoryDidChangeNotification
                                                object:nil];
-    YapDatabase *database = BRCDatabaseManager.shared.database;
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(yapDatabaseModified:)
-                                                 name:YapDatabaseModifiedNotification
-                                               object:database];
 }
 
 - (void) updateViewConstraints {
@@ -180,9 +174,6 @@
 - (void)setupDatabaseConnection
 {
     YapDatabase *database = BRCDatabaseManager.shared.database;
-    self.databaseConnection = [database newConnection];
-    [self.databaseConnection beginLongLivedReadTransaction];
-    //self.databaseConnection.permittedTransactions = YDB_AnyReadTransaction | YDB_MainThreadOnly;
     _searchConnection = [database newConnection];
     _searchQueue = [[YapDatabaseSearchQueue alloc] init];
 }
@@ -194,17 +185,8 @@
     YapDatabaseViewMappingGroupSort groupSort = ^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     };
-    self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.viewName];
-    _searchMappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:groupFilter sortBlock:groupSort view:self.searchViewName];
-    NSParameterAssert(self.mappings != nil);
-    NSParameterAssert(self.searchMappings != nil);
-}
-
-- (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock {
-    [self.databaseConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        [self.mappings updateWithTransaction:transaction];
-        [self.searchMappings updateWithTransaction:transaction];
-    } completionBlock:completionBlock];
+    _viewHandler = [[YapViewHandler alloc] initWithManager:BRCDatabaseManager.shared.longLived delegate:self viewName:self.viewName groupFilter:groupFilter groupSort:groupSort];
+    _searchViewHandler = [[YapViewHandler alloc] initWithManager:BRCDatabaseManager.shared.longLived delegate:self viewName:self.searchViewName groupFilter:groupFilter groupSort:groupSort];
 }
 
 - (void) locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
@@ -218,32 +200,22 @@
     [self refreshLoadingIndicatorViewAnimation];
 }
 
-- (YapDatabaseViewMappings*) mappingsForTableView:(UITableView*)tableView {
-    YapDatabaseViewMappings *mappings = nil;
+- (YapViewHandler*) viewHandlerForTableView:(UITableView*)tableView {
+    YapViewHandler *viewHandler = nil;
     if ([self isSearchResultsControllerTableView:tableView]) {
-        mappings = self.searchMappings;
+        viewHandler = self.searchViewHandler;
     } else {
-        mappings = self.mappings;
+        viewHandler = self.viewHandler;
     }
-    NSParameterAssert(mappings != nil);
-    return mappings;
+    return viewHandler;
 }
 
 - (DataObjectWithMetadata *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
-    NSString *viewName = nil;
-    YapDatabaseViewMappings *mappings = [self mappingsForTableView:tableView];
-    if ([self isSearchResultsControllerTableView:tableView]) {
-        viewName = self.searchViewName;
-    } else {
-        viewName = self.viewName;
-    }
-    __block BRCDataObject *dataObject = nil;
-    __block BRCObjectMetadata *metadata = nil;
-    [self.databaseConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction extension:viewName];
-        dataObject = [viewTransaction objectAtIndexPath:indexPath withMappings:mappings];
-        metadata = [dataObject metadataWithTransaction:transaction];
+    YapViewHandler *viewHandler = [self viewHandlerForTableView:tableView];
+    BRCDataObject *dataObject = [viewHandler objectAtIndexPath:indexPath];
+    BRCObjectMetadata *metadata = [self.viewHandler readWithBlock:^id _Nullable(YapDatabaseReadTransaction * _Nonnull transaction) {
+        return [dataObject metadataWithTransaction:transaction];
     }];
     DataObjectWithMetadata *data = [[DataObjectWithMetadata alloc] initWithObject:dataObject metadata:metadata];
     return data;
@@ -287,7 +259,7 @@
 {
     if (![self isSearchResultsControllerTableView:tableView])
     {
-        NSMutableArray *groups = [NSMutableArray arrayWithArray:[self.mappings allGroups]];
+        NSMutableArray *groups = [NSMutableArray arrayWithArray:[self.viewHandler allGroups]];
         [groups insertObject:UITableViewIndexSearch atIndex:0];
         return groups;
     }
@@ -304,7 +276,7 @@
             // The index is offset by one to allow for the extra search icon inserted at the front
             // of the index
             
-            return  [self.mappings sectionForGroup:title];
+            return  [self.viewHandler sectionForGroup:title];
         }
         else
         {
@@ -375,15 +347,15 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender
 {
-    YapDatabaseViewMappings *mappings = [self mappingsForTableView:sender];
-    NSInteger count = [mappings numberOfSections];
+    YapViewHandler *viewHandler = [self viewHandlerForTableView:sender];
+    NSInteger count = [viewHandler numberOfSections];
     return count;
 }
 
 - (NSInteger)tableView:(UITableView *)sender numberOfRowsInSection:(NSInteger)section
 {
-    YapDatabaseViewMappings *mappings = [self mappingsForTableView:sender];
-    NSInteger count = [mappings numberOfItemsInSection:section];
+    YapViewHandler *viewHandler = [self viewHandlerForTableView:sender];
+    NSInteger count = [viewHandler numberOfItemsInSection:section];
     return count;
 }
 
@@ -436,119 +408,6 @@
     }
 }
 
-#pragma - mark YapDatabseModified
-
-- (void)yapDatabaseModified:(NSNotification *)notification
-{
-    // Jump to the most recent commit.
-    // End & Re-Begin the long-lived transaction atomically.
-    // Also grab all the notifications for all the commits that I jump.
-    // If the UI is a bit backed up, I may jump multiple commits.
-    
-    NSArray *notifications = [self.databaseConnection beginLongLivedReadTransaction];
-    
-    [self updateMappingsWithCompletionBlock:^{
-        [self.tableView reloadData];
-        UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
-        [src.tableView reloadData];
-    }];
-    return;
-#warning TODO fix animations ^^^
-    
-    // Process the notification(s),
-    // and get the change-set(s) as applies to my view and mappings configuration.
-    
-    NSArray *sectionChanges = nil;
-    NSArray *rowChanges = nil;
-    
-    YapDatabaseViewConnection *viewConnection = [self.databaseConnection ext:self.viewName];
-    NSUInteger sizeEstimate = [viewConnection numberOfRawChangesForNotifications:notifications];
-    if (sizeEstimate > 150) {
-        [self updateMappingsWithCompletionBlock:^{
-            [self.tableView reloadData];
-        }];
-        return;
-    }
-    
-    [viewConnection getSectionChanges:&sectionChanges
-                           rowChanges:&rowChanges
-                     forNotifications:notifications
-                         withMappings:self.mappings];
-    
-    // No need to update mappings.
-    // The above method did it automatically.
-    
-    if ([sectionChanges count] == 0 & [rowChanges count] == 0)
-    {
-        // Nothing has changed that affects our tableView
-        return;
-    }
-    
-    // If there are too many row changes, just reload the data instead of animating
-    if ([rowChanges count] > 50) {
-        [self.tableView reloadData];
-        return;
-    }
-    
-    [self.tableView beginUpdates];
-    
-    for (YapDatabaseViewSectionChange *sectionChange in sectionChanges)
-    {
-        switch (sectionChange.type)
-        {
-            case YapDatabaseViewChangeDelete :
-            {
-                [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionChange.index]
-                              withRowAnimation:UITableViewRowAnimationAutomatic];
-                break;
-            }
-            case YapDatabaseViewChangeInsert :
-            {
-                [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionChange.index]
-                              withRowAnimation:UITableViewRowAnimationAutomatic];
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    
-    for (YapDatabaseViewRowChange *rowChange in rowChanges)
-    {
-        switch (rowChange.type)
-        {
-            case YapDatabaseViewChangeDelete :
-            {
-                [self.tableView deleteRowsAtIndexPaths:@[ rowChange.indexPath ]
-                                      withRowAnimation:UITableViewRowAnimationAutomatic];
-                break;
-            }
-            case YapDatabaseViewChangeInsert :
-            {
-                [self.tableView insertRowsAtIndexPaths:@[ rowChange.newIndexPath ]
-                                      withRowAnimation:UITableViewRowAnimationAutomatic];
-                break;
-            }
-            case YapDatabaseViewChangeMove :
-            {
-                [self.tableView deleteRowsAtIndexPaths:@[ rowChange.indexPath ]
-                                      withRowAnimation:UITableViewRowAnimationAutomatic];
-                [self.tableView insertRowsAtIndexPaths:@[ rowChange.newIndexPath ]
-                                      withRowAnimation:UITableViewRowAnimationAutomatic];
-                break;
-            }
-            case YapDatabaseViewChangeUpdate :
-            {
-                [self.tableView reloadRowsAtIndexPaths:@[ rowChange.indexPath ]
-                                      withRowAnimation:UITableViewRowAnimationNone];
-                break;
-            }
-        }
-    }
-    
-    [self.tableView endUpdates];
-}
-
 #pragma mark UIPageViewControllerDelegate
 
 // Sent when a gesture-initiated transition ends. The 'finished' parameter indicates whether the animation finished, while the 'completed' parameter indicates whether the transition completed or bailed out (if the user let go early).
@@ -588,6 +447,26 @@
 
 - (nullable UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerAfterViewController:(UIViewController *)viewController {
     return [self pageViewController:pageViewController viewControllerNearViewController:viewController direction:BRCIndexPathDirectionAfter];
+}
+
+// MARK: YapViewHandlerDelegate
+
+- (void) didSetupMappings:(YapViewHandler *)handler {
+    if (handler == self.viewHandler) {
+        [self.tableView reloadData];
+    } else if (handler == self.searchViewHandler) {
+        UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
+        [src.tableView reloadData];
+    }
+}
+
+- (void) didReceiveChanges:(YapViewHandler *)handler sectionChanges:(NSArray<YapDatabaseViewSectionChange *> *)sectionChanges rowChanges:(NSArray<YapDatabaseViewRowChange *> *)rowChanges {
+    if (handler == self.viewHandler) {
+        [self.tableView handleYapViewChangesWithSectionChanges:sectionChanges rowChanges:rowChanges];
+    } else if (handler == self.searchViewHandler) {
+        UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
+        [src.tableView handleYapViewChangesWithSectionChanges:sectionChanges rowChanges:rowChanges];
+    }
 }
 
 @end

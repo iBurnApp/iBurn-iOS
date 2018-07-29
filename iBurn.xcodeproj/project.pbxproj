@@ -72,6 +72,8 @@
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
+		D984DFC6210D4B3100A45922 /* YapViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFC5210D4B3100A45922 /* YapViewHandler.swift */; };
+		D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D984DFC7210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.m */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
@@ -316,6 +318,9 @@
 		D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataImportTests.m; sourceTree = "<group>"; };
 		D981D5551F2E9F1600E470E6 /* iBurn-2017 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2017"; path = "Submodules/iBurn-Data/data/2017/iBurn-2017"; sourceTree = SOURCE_ROOT; };
 		D9842A2E1B51EE710056455D /* BRCDataImporter_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataImporter_Private.h; sourceTree = "<group>"; };
+		D984DFC5210D4B3100A45922 /* YapViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YapViewHandler.swift; sourceTree = "<group>"; };
+		D984DFC7210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "YapDatabaseViewConnection+iBurn.m"; sourceTree = "<group>"; };
+		D984DFC8210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "YapDatabaseViewConnection+iBurn.h"; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/initial_data; sourceTree = "<group>"; };
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/updated_data; sourceTree = "<group>"; };
@@ -544,6 +549,7 @@
 			isa = PBXGroup;
 			children = (
 				D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */,
+				D984DFC5210D4B3100A45922 /* YapViewHandler.swift */,
 				D9EC0E5B1B7DE0350042B596 /* Utilities */,
 				D9EC0E5A1B7DE02F0042B596 /* Views */,
 				D979CEC7199AF11E007F0313 /* Categories */,
@@ -737,6 +743,8 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				D984DFC8210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.h */,
+				D984DFC7210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.m */,
 				D9BD4C061B787A4400313FB5 /* NSBundle+iBurn.h */,
 				D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */,
 				D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */,
@@ -1464,6 +1472,7 @@
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */,
+				D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
 				D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */,
@@ -1503,6 +1512,7 @@
 				6322831B1989B139009E472B /* BRCDetailMapViewController.m in Sources */,
 				D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */,
 				D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */,
+				D984DFC6210D4B3100A45922 /* YapViewHandler.swift in Sources */,
 				D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */,
 				D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */,
 				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,

@@ -9,64 +9,15 @@
 import Foundation
 import YapDatabase
 
-public extension UITableView {
-    func handleYapViewChanges(sectionChanges: [YapDatabaseViewSectionChange],
-                              rowChanges: [YapDatabaseViewRowChange]) {
-        let updates = {
-            sectionChanges.forEach {
-                switch $0.type {
-                case .insert:
-                    self.insertSections($0.indexSet, with: .automatic)
-                case .delete:
-                    self.deleteSections($0.indexSet, with: .automatic)
-                case .move, .update:
-                    break
-                }
-            }
-            rowChanges.forEach {
-                switch $0.type {
-                case .insert:
-                    if let newIndexPath = $0.newIndexPath {
-                        self.insertRows(at: [newIndexPath], with: .automatic)
-                    }
-                case .delete:
-                    if let indexPath = $0.indexPath {
-                        self.deleteRows(at: [indexPath], with: .automatic)
-                    }
-                case .move:
-                    if let indexPath = $0.indexPath,
-                        let newIndexPath = $0.newIndexPath {
-                        self.deleteRows(at: [indexPath], with: .automatic)
-                        self.insertRows(at: [newIndexPath], with: .automatic)
-                    }
-                case .update:
-                    if let indexPath = $0.indexPath {
-                        self.reloadRows(at: [indexPath], with: .automatic)
-                    }
-                }
-            }
-        }
-        
-        if #available(iOS 11.0, *) {
-            self.performBatchUpdates({
-                updates()
-            }, completion: nil)
-        } else {
-            beginUpdates()
-            updates()
-            endUpdates()
-        }
-    }
-}
-
 @objc public protocol YapViewHandlerDelegate: NSObjectProtocol {
-    /** Recommeded to do a reload data here */
+    /** Recommeded to do a reloadData here */
     func didSetupMappings(_ handler: YapViewHandler)
     func didReceiveChanges(_ handler: YapViewHandler,
                            sectionChanges: [YapDatabaseViewSectionChange],
                            rowChanges: [YapDatabaseViewRowChange])
 }
 
+/// The public API should be used on the main thread only
 @objc public final class YapViewHandler: NSObject {
     // MARK: Public Properties
 
@@ -76,6 +27,17 @@ public extension UITableView {
     public enum MappingsGroups {
         case names([String])
         case block(YapDatabaseViewMappingGroupFilter, YapDatabaseViewMappingGroupSort)
+        
+        public static let all = MappingsGroups.block({ _,_ in return true },
+                                              { a, b, _ in
+                                                return a.compare(b) })
+    }
+    
+    /// Setting this will reset the internal mappings
+    public var groups: MappingsGroups {
+        didSet {
+            setupMappings()
+        }
     }
     
     // MARK: Private Properties
@@ -85,7 +47,7 @@ public extension UITableView {
             self.delegate?.didSetupMappings(self)
         }
     }
-    private let groups: MappingsGroups
+
     
     // MARK: Init
     
@@ -93,13 +55,14 @@ public extension UITableView {
     public init(manager: LongLivedConnectionManager,
                 delegate: YapViewHandlerDelegate,
                 viewName: String,
-                groups: MappingsGroups) {
+                groups: MappingsGroups = MappingsGroups.all) {
         self.connection = manager.connection
         self.delegate = delegate
         self.viewName = viewName
         self.groups = groups
         super.init()
         manager.registerViewHandler(self)
+        setupMappings()
     }
     
     /// Init must be called on the main thread
@@ -129,17 +92,41 @@ public extension UITableView {
     
     // MARK: Public API
     
+    // MARK: Groups
+    
+    @objc public func setGroupNames(_ groupNames: [String]) {
+        self.groups = MappingsGroups.names(groupNames)
+    }
+    
+    @objc public func setGroupFilter(_ groupFilter: @escaping YapDatabaseViewMappingGroupFilter,
+                                        groupSort: @escaping YapDatabaseViewMappingGroupSort) {
+        self.groups = MappingsGroups.block(groupFilter, groupSort)
+    }
+    
+    @objc public var allGroups: [String] {
+        return self.mappings?.allGroups ?? []
+    }
+    
+    @objc public func sectionForGroup(_ group: String) -> Int {
+        guard let section = self.mappings?.section(forGroup: group) else {
+            return NSNotFound
+        }
+        return Int(section)
+    }
+    
+    // MARK: Table Mappings
+    
     @objc public func numberOfItemsInSection(_ section: Int) -> Int {
         let count = self.mappings?.numberOfItems(inSection: UInt(section)) ?? 0
         return Int(count)
     }
     
-    @objc public func numberOfSections() -> Int {
+    @objc public var numberOfSections: Int {
         let count = self.mappings?.numberOfSections() ?? 0
         return Int(count)
     }
     
-    @objc public func object(at indexPath: IndexPath) -> Any? {
+    @objc public func objectAtIndexPath(_ indexPath: IndexPath) -> Any? {
         return object(at: indexPath)
     }
     
@@ -159,32 +146,45 @@ public extension UITableView {
         }
         return object
     }
+    
+    public func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
+        var object: T? = nil
+        connection.read { transaction in
+            object = block(transaction)
+        }
+        return object
+    }
+    
+    @objc public func read(block: @escaping ((YapDatabaseReadTransaction) -> Any?)) -> Any? {
+        return read(block)
+    }
 }
 
+// MARK: Private API
 private extension YapViewHandler {
     
     func setupMappings() {
-        switch groups {
-        case .names(let names):
-            self.mappings = YapDatabaseViewMappings(groups: names, view: viewName)
-        case .block(let filterBlock, let sortBlock):
-            self.mappings = YapDatabaseViewMappings(groupFilterBlock: filterBlock,
-                                                    sortBlock: sortBlock,
-                                                    view: viewName)
+        var mappings: YapDatabaseViewMappings?
+        self.connection.read { transaction in
+            guard transaction.ext(self.viewName) != nil else {
+                return
+            }
+            switch self.groups {
+            case .names(let names):
+                mappings = YapDatabaseViewMappings(groups: names, view: self.viewName)
+            case .block(let filterBlock, let sortBlock):
+                mappings = YapDatabaseViewMappings(groupFilterBlock: filterBlock,
+                                                   sortBlock: sortBlock,
+                                                   view: self.viewName)
+            }
+            mappings?.update(with: transaction)
         }
+        self.mappings = mappings
     }
     
     /// Mappings cannot be setup until after the view is ready
     func setupMappingsIfNeeded() {
         guard mappings != nil else { return }
-        var extensionReady = false
-        self.connection.read { transaction in
-            guard transaction.ext(self.viewName) != nil else {
-                return
-            }
-            extensionReady = true
-        }
-        guard extensionReady else { return }
         setupMappings()
     }
 }
@@ -193,8 +193,11 @@ fileprivate extension YapViewHandler {
     func yapDatabaseModified(notifications: [Notification]) {
         setupMappingsIfNeeded()
         guard let mappings = self.mappings,
-            notifications.count > 0,
             let viewConnection = connection.ext(viewName) as? YapDatabaseViewConnection else {
+            return
+        }
+        guard viewConnection.hasChanges(for: notifications) else {
+            connection.read { self.mappings?.update(with: $0) }
             return
         }
         let src = viewConnection.brc_getSectionRowChanges(for: notifications, with: mappings)
@@ -217,6 +220,7 @@ fileprivate extension YapViewHandler {
         self.connection = database.newConnection()
         self.viewHandlers = NSHashTable(options: .weakMemory)
         super.init()
+        self.connection.beginLongLivedReadTransaction()
         self.observer = NotificationCenter.default.addObserver(forName: NSNotification.Name.YapDatabaseModified,
                                                                object: database,
                                                                queue: OperationQueue.main,
@@ -242,5 +246,55 @@ private extension LongLivedConnectionManager {
 private extension YapDatabaseViewSectionChange {
     var indexSet: IndexSet {
         return IndexSet(integer: IndexSet.Element(index))
+    }
+}
+
+
+public extension UITableView {
+    @objc func handleYapViewChanges(sectionChanges: [YapDatabaseViewSectionChange],
+                                    rowChanges: [YapDatabaseViewRowChange]) {
+        let updates = {
+            sectionChanges.forEach {
+                switch $0.type {
+                case .insert:
+                    self.insertSections($0.indexSet, with: .automatic)
+                case .delete:
+                    self.deleteSections($0.indexSet, with: .automatic)
+                case .move, .update:
+                    break
+                }
+            }
+            rowChanges.forEach {
+                switch $0.type {
+                case .insert:
+                    if let newIndexPath = $0.newIndexPath {
+                        self.insertRows(at: [newIndexPath], with: .automatic)
+                    }
+                case .delete:
+                    if let indexPath = $0.indexPath {
+                        self.deleteRows(at: [indexPath], with: .automatic)
+                    }
+                case .move:
+                    if let indexPath = $0.indexPath,
+                        let newIndexPath = $0.newIndexPath {
+                        self.moveRow(at: indexPath, to: newIndexPath)
+                    }
+                case .update:
+                    if let indexPath = $0.indexPath {
+                        self.reloadRows(at: [indexPath], with: .automatic)
+                    }
+                }
+            }
+        }
+        
+        if #available(iOS 11.0, *) {
+            self.performBatchUpdates({
+                updates()
+            }, completion: nil)
+        } else {
+            beginUpdates()
+            updates()
+            endUpdates()
+        }
     }
 }

@@ -16,6 +16,7 @@
 #import "BRCEventsTableViewController.h"
 #import "NSDate+iBurn.h"
 #import "BRCUpdateInfo.h"
+#import "iBurn-Swift.h"
 @import YapDatabase.YapDatabaseView;
 @import YapDatabase.YapDatabaseFullTextSearch;
 @import YapDatabase.YapDatabaseRTreeIndex;
@@ -116,6 +117,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     self.readWriteConnection.name = @"readWriteConnection";
     _readConnection = [self.database newConnection];
     self.readConnection.objectPolicy = YapDatabasePolicyShare;
+    
+    _longLived = [[LongLivedConnectionManager alloc] initWithDatabase:self.database];
 //#if DEBUG
 //    self.readConnection.permittedTransactions = YDB_AnyReadTransaction;
 //    self.readWriteConnection.permittedTransactions = YDB_AnyReadWriteTransaction;

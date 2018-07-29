@@ -7,7 +7,8 @@
 //
 
 #import "BRCFilteredTableViewController.h"
-@import YapDatabase.YapDatabaseView;
+#import "iBurn-Swift.h"
+@import YapDatabase;
 
 @interface DataObjectWithMetadata: NSObject
 @property (nonatomic, strong, readonly) BRCDataObject *object;
@@ -15,11 +16,10 @@
 - (instancetype) initWithObject:(BRCDataObject*)object metadata:(BRCObjectMetadata*)metadata;
 @end
 
-@interface BRCFilteredTableViewController ()
+@interface BRCFilteredTableViewController () <YapViewHandlerDelegate>
 @property (nonatomic, strong) UISearchController *searchController;
-@property (nonatomic, strong) YapDatabaseViewMappings *mappings;
-@property (nonatomic, strong) YapDatabaseViewMappings *searchMappings;
-@property (nonatomic, strong) YapDatabaseConnection *databaseConnection;
+@property (nonatomic, strong) YapViewHandler *viewHandler;
+@property (nonatomic, strong) YapViewHandler *searchViewHandler;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicatorView;
 
 @property (nonatomic) BOOL isUpdatingFilters;
@@ -27,7 +27,6 @@
 @property (nonatomic) BOOL hasAddedConstraints;
 
 - (void) setupMappings;
-- (void) updateMappingsWithCompletionBlock:(dispatch_block_t)completionBlock;
 
 - (BOOL) shouldAnimateLoadingIndicator;
 - (void) refreshLoadingIndicatorViewAnimation;
