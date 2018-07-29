@@ -28,3 +28,4 @@
 #import "BRCUserMapPoint.h"
 #import "BRCEventObjectTableViewCell.h"
 #import "BRCImageColors.h"
+#import "YapDatabaseViewConnection+iBurn.h"
