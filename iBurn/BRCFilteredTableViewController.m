@@ -213,9 +213,9 @@
 - (DataObjectWithMetadata *)dataObjectForIndexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
 {
     YapViewHandler *viewHandler = [self viewHandlerForTableView:tableView];
-    BRCDataObject *dataObject = [viewHandler objectAtIndexPath:indexPath];
-    BRCObjectMetadata *metadata = [self.viewHandler readWithBlock:^id _Nullable(YapDatabaseReadTransaction * _Nonnull transaction) {
-        return [dataObject metadataWithTransaction:transaction];
+    __block BRCObjectMetadata *metadata = nil;
+    BRCDataObject *dataObject = [viewHandler objectAtIndexPath:indexPath readBlock:^(BRCDataObject * _Nonnull dataObject, YapDatabaseReadTransaction * _Nonnull transaction) {
+        metadata = [dataObject metadataWithTransaction:transaction];
     }];
     DataObjectWithMetadata *data = [[DataObjectWithMetadata alloc] initWithObject:dataObject metadata:metadata];
     return data;
@@ -316,7 +316,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    __block DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
+    DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
     BRCDataObject *dataObject = data.object;
     NSString *cellIdentifier = dataObject.tableCellIdentifier;
     BRCDataObjectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
@@ -462,10 +462,10 @@
 
 - (void) didReceiveChanges:(YapViewHandler *)handler sectionChanges:(NSArray<YapDatabaseViewSectionChange *> *)sectionChanges rowChanges:(NSArray<YapDatabaseViewRowChange *> *)rowChanges {
     if (handler == self.viewHandler) {
-        [self.tableView handleYapViewChangesWithSectionChanges:sectionChanges rowChanges:rowChanges];
+        [self.tableView handleYapViewChangesWithSectionChanges:sectionChanges rowChanges:rowChanges completion:nil];
     } else if (handler == self.searchViewHandler) {
         UITableViewController *src = (UITableViewController*)self.searchController.searchResultsController;
-        [src.tableView handleYapViewChangesWithSectionChanges:sectionChanges rowChanges:rowChanges];
+        [src.tableView handleYapViewChangesWithSectionChanges:sectionChanges rowChanges:rowChanges completion:nil];
     }
 }
 

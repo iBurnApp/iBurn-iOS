@@ -10,6 +10,7 @@
 #import "iBurn-Swift.h"
 @import YapDatabase;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface DataObjectWithMetadata: NSObject
 @property (nonatomic, strong, readonly) BRCDataObject *object;
 @property (nonatomic, strong, readonly) BRCObjectMetadata *metadata;
@@ -34,3 +35,4 @@
 - (BOOL)isSearchResultsControllerTableView:(UITableView *)tableView;
 
 @end
+NS_ASSUME_NONNULL_END

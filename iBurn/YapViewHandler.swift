@@ -8,6 +8,7 @@
 
 import Foundation
 import YapDatabase
+import CocoaLumberjack
 
 @objc public protocol YapViewHandlerDelegate: NSObjectProtocol {
     /** Recommeded to do a reloadData here */
@@ -36,7 +37,9 @@ import YapDatabase
     /// Setting this will reset the internal mappings
     public var groups: MappingsGroups {
         didSet {
-            setupMappings()
+            DDLogInfo("didSetGroups \(self.viewName): \(self.groups))")
+            self.mappings = nil
+            let _ = setupMappings()
         }
     }
     
@@ -44,6 +47,7 @@ import YapDatabase
     private let connection: YapDatabaseConnection
     private var mappings: YapDatabaseViewMappings? {
         didSet {
+            DDLogInfo("didSetMappings \(self.viewName): \(String(describing: self.mappings))")
             self.delegate?.didSetupMappings(self)
         }
     }
@@ -61,8 +65,8 @@ import YapDatabase
         self.viewName = viewName
         self.groups = groups
         super.init()
-        manager.registerViewHandler(self)
-        setupMappings()
+        manager.registerHandler(self)
+        let _ = setupMappings()
     }
     
     /// Init must be called on the main thread
@@ -126,33 +130,38 @@ import YapDatabase
         return Int(count)
     }
     
-    @objc public func objectAtIndexPath(_ indexPath: IndexPath) -> Any? {
-        return object(at: indexPath)
+    @objc public func objectAtIndexPath(_ indexPath: IndexPath) -> AnyObject? {
+        return objectAtIndexPath(indexPath, readBlock: nil)
     }
     
-    public func object<T>(at indexPath: IndexPath) -> T? {
+    @objc public func objectAtIndexPath(_ indexPath: IndexPath,
+                                        readBlock: ((AnyObject, YapDatabaseReadTransaction) -> Void)? = nil) -> AnyObject? {
+        return object(at: indexPath, readBlock: readBlock)
+    }
+    
+    public func object<T>(at indexPath: IndexPath,
+                          readBlock: ((T, YapDatabaseReadTransaction) -> Void)? = nil) -> T? {
         let row = UInt(indexPath.row)
         let section = UInt(indexPath.section)
         guard let mappings = self.mappings,
             row < mappings.numberOfItems(inSection: section) else {
             return nil
         }
-        var object: T? = nil
-        connection.read { transaction in
-            guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
-                return
+        let object: T? = read {
+            guard let viewTransaction = $0.ext(self.viewName) as? YapDatabaseViewTransaction,
+                let object = viewTransaction.object(atRow: row,
+                                                    inSection: section,
+                                                    with: mappings) as? T else {
+                return nil
             }
-            object = viewTransaction.object(atRow: row, inSection: section, with: mappings) as? T
+            readBlock?(object, $0)
+            return object
         }
         return object
     }
     
     public func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
-        var object: T? = nil
-        connection.read { transaction in
-            object = block(transaction)
-        }
-        return object
+        return connection.read(block)
     }
     
     @objc public func read(block: @escaping ((YapDatabaseReadTransaction) -> Any?)) -> Any? {
@@ -163,10 +172,11 @@ import YapDatabase
 // MARK: Private API
 private extension YapViewHandler {
     
-    func setupMappings() {
+    func setupMappings() -> Bool {
         var mappings: YapDatabaseViewMappings?
         self.connection.read { transaction in
             guard transaction.ext(self.viewName) != nil else {
+                DDLogInfo("Cannot setup mappings yet, view not ready: \(self.viewName)")
                 return
             }
             switch self.groups {
@@ -179,28 +189,35 @@ private extension YapViewHandler {
             }
             mappings?.update(with: transaction)
         }
-        self.mappings = mappings
+        if let mappings = mappings {
+            self.mappings = mappings
+            return true
+        }
+        return false
     }
     
     /// Mappings cannot be setup until after the view is ready
-    func setupMappingsIfNeeded() {
-        guard mappings != nil else { return }
-        setupMappings()
+    func setupMappingsIfNeeded() -> Bool {
+        guard mappings == nil else { return false }
+        return setupMappings()
     }
 }
 
-fileprivate extension YapViewHandler {
-    func yapDatabaseModified(notifications: [Notification]) {
-        setupMappingsIfNeeded()
+extension YapViewHandler: YapViewHandlerProtocol {
+    public func yapDatabaseModified(notifications: [Notification]) {
+        let newMappings = setupMappingsIfNeeded()
         guard let mappings = self.mappings,
             let viewConnection = connection.ext(viewName) as? YapDatabaseViewConnection else {
             return
         }
-        guard viewConnection.hasChanges(for: notifications) else {
-            connection.read { self.mappings?.update(with: $0) }
+        guard !newMappings,
+            viewConnection.hasChanges(for: notifications) else {
+            DDLogInfo("Updated forced mappings \(mappings)")
+            connection.read { mappings.update(with: $0) }
             return
         }
         let src = viewConnection.brc_getSectionRowChanges(for: notifications, with: mappings)
+        DDLogInfo("Updated animation mappings \(mappings)")
         guard src.rowChanges.count > 0,
             src.sectionChanges.count > 0 else {
                 return
@@ -211,9 +228,13 @@ fileprivate extension YapViewHandler {
     }
 }
 
+@objc public protocol YapViewHandlerProtocol: NSObjectProtocol {
+    func yapDatabaseModified(notifications: [Notification])
+}
+
 @objc public final class LongLivedConnectionManager: NSObject {
     fileprivate let connection: YapDatabaseConnection
-    private let viewHandlers: NSHashTable<YapViewHandler>
+    private let viewHandlers: NSHashTable<YapViewHandlerProtocol>
     private var observer: NSObjectProtocol?
     
     @objc public init(database: YapDatabase) {
@@ -231,15 +252,17 @@ fileprivate extension YapViewHandler {
 }
 
 fileprivate extension LongLivedConnectionManager {
-    func registerViewHandler(_ viewHandler: YapViewHandler) {
-        self.viewHandlers.add(viewHandler)
+    func registerHandler(_ handler: YapViewHandlerProtocol) {
+        self.viewHandlers.add(handler)
     }
 }
 
 private extension LongLivedConnectionManager {
     func yapDatabaseModified(notification: Notification) {
         let notifications = connection.beginLongLivedReadTransaction()
-        viewHandlers.allObjects.forEach { $0.yapDatabaseModified(notifications: notifications) }
+        viewHandlers.allObjects.forEach {
+            $0.yapDatabaseModified(notifications: notifications)
+        }
     }
 }
 
@@ -252,7 +275,8 @@ private extension YapDatabaseViewSectionChange {
 
 public extension UITableView {
     @objc func handleYapViewChanges(sectionChanges: [YapDatabaseViewSectionChange],
-                                    rowChanges: [YapDatabaseViewRowChange]) {
+                                    rowChanges: [YapDatabaseViewRowChange],
+                                    completion: ((Bool) -> Void)? = nil) {
         let updates = {
             sectionChanges.forEach {
                 switch $0.type {
@@ -287,14 +311,30 @@ public extension UITableView {
             }
         }
         
+        guard rowChanges.count < 20, sectionChanges.count < 10 else {
+            reloadData()
+            return
+        }
+        
         if #available(iOS 11.0, *) {
             self.performBatchUpdates({
                 updates()
-            }, completion: nil)
+            }, completion: completion)
         } else {
             beginUpdates()
             updates()
             endUpdates()
+            completion?(true)
         }
+    }
+}
+
+public extension YapDatabaseConnection {
+    func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
+        var object: T? = nil
+        read { transaction in
+            object = block(transaction)
+        }
+        return object
     }
 }

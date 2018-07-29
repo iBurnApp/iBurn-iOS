@@ -32,8 +32,8 @@
                                                       withMappings:(YapDatabaseViewMappings *)mappings {
     NSParameterAssert(notifications != nil);
     NSParameterAssert(mappings != nil);
-    NSArray *sc = nil;
-    NSArray *rc = nil;
+    NSArray<YapDatabaseViewSectionChange*> *sc = nil;
+    NSArray<YapDatabaseViewRowChange*> *rc = nil;
     [self getSectionChanges:&sc rowChanges:&rc forNotifications:notifications withMappings:mappings];
     if (!sc) {
         sc = @[];

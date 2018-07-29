@@ -165,11 +165,14 @@ static const CGFloat kDayPickerHeight = 65.0f;
         selectedDay = [NSDate date];
     }
     NSDate *selectedDayInFestivalRange = [self selectedDayInFestivalRange:selectedDay];
+    BOOL needsUpdate = ![_selectedDay isEqualToDate:selectedDayInFestivalRange];
     _selectedDay = selectedDayInFestivalRange;
-    NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:_selectedDay];
-    self.navigationItem.leftBarButtonItem.title = dayString;
-    [self updateFilteredViews];
-    [self replaceTimeBasedEventMappings];
+    if (needsUpdate) {
+        NSString *dayString = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:_selectedDay];
+        self.navigationItem.leftBarButtonItem.title = dayString;
+        [self updateFilteredViews];
+        [self replaceTimeBasedEventMappings];
+    }
 }
 
 - (NSDate*) selectedDay {
