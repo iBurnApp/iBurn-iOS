@@ -7,13 +7,9 @@
 //
 
 @import YapDatabase;
+@class BRCSectionRowChanges;
 
 NS_ASSUME_NONNULL_BEGIN
-@interface BRCSectionRowChanges : NSObject
-@property (nonatomic, strong, readonly) NSArray<YapDatabaseViewSectionChange *> *sectionChanges;
-@property (nonatomic, strong, readonly) NSArray<YapDatabaseViewRowChange *> *rowChanges;
-@end
-
 @interface YapDatabaseViewConnection (iBurn)
 
 - (BRCSectionRowChanges*) brc_getSectionRowChangesForNotifications:(NSArray<NSNotification*> *)notifications

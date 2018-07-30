@@ -37,7 +37,6 @@ import CocoaLumberjack
     /// Setting this will reset the internal mappings
     public var groups: MappingsGroups {
         didSet {
-            DDLogInfo("didSetGroups \(self.viewName): \(self.groups))")
             self.mappings = nil
             let _ = setupMappings()
         }
@@ -47,7 +46,6 @@ import CocoaLumberjack
     private let connection: YapDatabaseConnection
     private var mappings: YapDatabaseViewMappings? {
         didSet {
-            DDLogInfo("didSetMappings \(self.viewName): \(String(describing: self.mappings))")
             self.delegate?.didSetupMappings(self)
         }
     }
@@ -176,7 +174,6 @@ private extension YapViewHandler {
         var mappings: YapDatabaseViewMappings?
         self.connection.read { transaction in
             guard transaction.ext(self.viewName) != nil else {
-                DDLogInfo("Cannot setup mappings yet, view not ready: \(self.viewName)")
                 return
             }
             switch self.groups {
@@ -213,13 +210,11 @@ extension YapViewHandler: YapViewHandlerProtocol {
         }
         guard !newMappings,
             viewConnection.hasChanges(for: notifications) else {
-            DDLogInfo("Updated forced mappings \(mappings)")
             connection.read { mappings.update(with: $0) }
             return
         }
         let src = viewConnection.brc_getSectionRowChanges(for: notifications, with: mappings)
-        DDLogInfo("Updated animation mappings \(mappings)")
-        guard src.rowChanges.count > 0,
+        guard src.rowChanges.count > 0 ||
             src.sectionChanges.count > 0 else {
                 return
         }
@@ -337,5 +332,16 @@ public extension YapDatabaseConnection {
             object = block(transaction)
         }
         return object
+    }
+}
+
+@objc public class BRCSectionRowChanges: NSObject {
+    @objc public let sectionChanges: [YapDatabaseViewSectionChange]
+    @objc public let rowChanges: [YapDatabaseViewRowChange]
+    
+    @objc public init(sectionChanges: [YapDatabaseViewSectionChange],
+                      rowChanges: [YapDatabaseViewRowChange]) {
+        self.sectionChanges = sectionChanges
+        self.rowChanges = rowChanges
     }
 }

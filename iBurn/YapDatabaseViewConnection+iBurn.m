@@ -7,24 +7,7 @@
 //
 
 #import "YapDatabaseViewConnection+iBurn.h"
-
-@interface BRCSectionRowChanges()
-- (instancetype) initWithSectionChanges:(NSArray<YapDatabaseViewSectionChange *> *)sectionChanges rowChanges:(NSArray<YapDatabaseViewRowChange *> *) rowChanges;
-@end
-
-@implementation BRCSectionRowChanges
-
-- (instancetype) initWithSectionChanges:(NSArray<YapDatabaseViewSectionChange *> *)sectionChanges rowChanges:(NSArray<YapDatabaseViewRowChange *> *) rowChanges {
-    NSParameterAssert(sectionChanges != nil);
-    NSParameterAssert(rowChanges != nil);
-    if (self = [super init]) {
-        _sectionChanges = sectionChanges;
-        _rowChanges = rowChanges;
-    }
-    return self;
-}
-
-@end
+#import "iBurn-Swift.h"
 
 @implementation YapDatabaseViewConnection (iBurn)
 
