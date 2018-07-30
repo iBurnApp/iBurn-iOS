@@ -1,5 +1,5 @@
 //
-//  ListController.swift
+//  SearchCooordinator.swift
 //  iBurn
 //
 //  Created by Chris Ballinger on 7/30/18.
@@ -8,13 +8,13 @@
 
 import Foundation
 
-protocol SearchController: NSObjectProtocol {
+protocol SearchCooordinator: NSObjectProtocol {
     var searchController: UISearchController { get }
     func setupSearchButton()
     func searchButtonPressed(_ sender: Any)
 }
 
-extension SearchController where Self: UIViewController {
+extension SearchCooordinator where Self: UIViewController {
     func setupSearchButton() {
         if #available(iOS 11.0, *) {
             navigationItem.searchController = searchController

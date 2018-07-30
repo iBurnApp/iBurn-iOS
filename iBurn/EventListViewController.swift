@@ -57,6 +57,7 @@ public final class EventListViewController: UIViewController {
         setupFilterButton()
         setupListCoordinator()
         setupSearchButton()
+        definesPresentationContext = true
         
         view.addSubview(tableView)
         tableView.edgeAnchors == view.edgeAnchors
@@ -152,7 +153,7 @@ extension EventListViewController: BRCEventsFilterTableViewControllerDelegate {
     }
 }
 
-extension EventListViewController: SearchController {
+extension EventListViewController: SearchCooordinator {
     var searchController: UISearchController {
         return listCoordinator.searchDisplayManager.searchController
     }

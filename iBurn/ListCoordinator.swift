@@ -33,8 +33,8 @@ import Foundation
 
 extension ListCoordinator: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
-        searchDisplayManager.searchController.isActive = false
         let vc = pageViewManager.pageViewController(for: object.object, at: indexPath, navBar: parent?.navigationController?.navigationBar)
-        parent?.navigationController?.pushViewController(vc, animated: true)
+        parent?.navigationController?.pushViewController(vc, animated: false)
+        searchDisplayManager.searchController.isActive = false
     }
 }

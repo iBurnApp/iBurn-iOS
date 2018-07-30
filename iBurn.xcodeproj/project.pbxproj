@@ -136,7 +136,7 @@
 		D9E0DA91210F82530056286B /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9E0DA90210F82530056286B /* YearSettings.plist */; };
 		D9E0DA93210F830A0056286B /* YearSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA92210F830A0056286B /* YearSettings.swift */; };
 		D9E0DA95210F95330056286B /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA94210F95330056286B /* UserSettings.swift */; };
-		D9E0DA97210FB46B0056286B /* ListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA96210FB46B0056286B /* ListController.swift */; };
+		D9E0DA97210FB46B0056286B /* SearchCooordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA96210FB46B0056286B /* SearchCooordinator.swift */; };
 		D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
@@ -424,7 +424,7 @@
 		D9E0DA90210F82530056286B /* YearSettings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = YearSettings.plist; sourceTree = "<group>"; };
 		D9E0DA92210F830A0056286B /* YearSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSettings.swift; sourceTree = "<group>"; };
 		D9E0DA94210F95330056286B /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
-		D9E0DA96210FB46B0056286B /* ListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListController.swift; sourceTree = "<group>"; };
+		D9E0DA96210FB46B0056286B /* SearchCooordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCooordinator.swift; sourceTree = "<group>"; };
 		D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Blocks.swift"; sourceTree = "<group>"; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
@@ -610,7 +610,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				D9E0DA96210FB46B0056286B /* ListController.swift */,
+				D9E0DA96210FB46B0056286B /* SearchCooordinator.swift */,
 				D9E0DA8A210F78850056286B /* ListCoordinator.swift */,
 				D984DFD2210EC03100A45922 /* PageViewManager.swift */,
 				D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */,
@@ -1530,7 +1530,7 @@
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */,
-				D9E0DA97210FB46B0056286B /* ListController.swift in Sources */,
+				D9E0DA97210FB46B0056286B /* SearchCooordinator.swift in Sources */,
 				D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */,
 				D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,

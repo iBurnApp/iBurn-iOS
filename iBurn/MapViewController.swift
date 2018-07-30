@@ -46,6 +46,8 @@ public class MapViewController: BaseMapViewController {
         // TODO: make sidebar buttons work
         setupSidebarButtons()
         setupSearchButton()
+        search.tableViewAdapter.delegate = self
+        definesPresentationContext = true
     }
     
     private func setupSidebarButtons() {
@@ -63,21 +65,7 @@ public class MapViewController: BaseMapViewController {
     }
     
     // MARK: - User Interaction
-    
-    private func setupSearch(_ search: SearchDisplayManager) {
-        search.tableViewAdapter.delegate = self
-        if #available(iOS 11.0, *) {
-            navigationItem.searchController = search.searchController
-        } else {
-            let search = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButtonPressed(_:)))
-            self.navigationItem.leftBarButtonItem = search
-        }
-    }
-    
-    @objc func searchButtonPressed(_ sender: Any) {
-        present(search.searchController, animated: true, completion: nil)
-    }
-    
+
     // MARK: - Annotations
     
     private func setupUserGuide() {
@@ -164,7 +152,7 @@ extension MapViewController: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
         let detail = BRCDetailViewController(dataObject: object.object)
         self.navigationController?.pushViewController(detail, animated: false)
-        search.searchController.dismiss(animated: true, completion: nil)
+        search.searchController.isActive = false
     }
 }
 
@@ -175,7 +163,7 @@ private extension BRCMapPoint {
 }
 
 
-extension MapViewController: SearchController {
+extension MapViewController: SearchCooordinator {
     var searchController: UISearchController {
         return search.searchController
     }

@@ -44,6 +44,7 @@ public final class ObjectListViewController: UIViewController {
         super.viewDidLoad()
         setupSearchButton()
         self.listCoordinator.parent = self
+        definesPresentationContext = true
         
         view.addSubview(tableView)
         tableView.edgeAnchors == view.edgeAnchors
@@ -60,7 +61,7 @@ public final class ObjectListViewController: UIViewController {
     }
 }
 
-extension ObjectListViewController: SearchController {
+extension ObjectListViewController: SearchCooordinator {
     var searchController: UISearchController {
         return listCoordinator.searchDisplayManager.searchController
     }
