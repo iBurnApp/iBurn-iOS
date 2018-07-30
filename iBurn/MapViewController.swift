@@ -65,11 +65,7 @@ public class MapViewController: BaseMapViewController {
     // MARK: - User Interaction
     
     private func setupSearch(_ search: SearchDisplayManager) {
-        search.selectedObjectAction = { [weak self] object in
-            let detail = BRCDetailViewController(dataObject: object.object)
-            self?.navigationController?.pushViewController(detail, animated: false)
-            search.searchController.dismiss(animated: true, completion: nil)
-        }
+        search.tableViewAdapter.delegate = self
     }
     
     // MARK: - Annotations
@@ -153,7 +149,14 @@ public class MapViewController: BaseMapViewController {
 //            self?.present(viewController, animated: true, completion: nil)
 //        }
     }
+}
 
+extension MapViewController: YapTableViewAdapterDelegate {
+    public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
+        let detail = BRCDetailViewController(dataObject: object.object)
+        self.navigationController?.pushViewController(detail, animated: false)
+        search.searchController.dismiss(animated: true, completion: nil)
+    }
 }
 
 private extension BRCMapPoint {

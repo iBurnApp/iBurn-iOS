@@ -231,14 +231,10 @@ public class SortedViewController: UITableViewController {
             }
             return cell
         }
-        
         guard let dataObject = dataObjectAtIndexPath(indexPath) else {
-            fatalError()
+            return UITableViewCell()
         }
-        
-        guard let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: BRCDatabaseManager.shared.readWriteConnection) else {
-            fatalError()
-        }
+        let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: dataObject, writeConnection: BRCDatabaseManager.shared.readWriteConnection)
         return cell
     }
     

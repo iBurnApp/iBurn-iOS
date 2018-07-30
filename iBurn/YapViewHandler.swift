@@ -10,6 +10,8 @@ import Foundation
 import YapDatabase
 import CocoaLumberjack
 
+
+
 @objc public protocol YapViewHandlerDelegate: NSObjectProtocol {
     /** Recommeded to do a reloadData here */
     func didSetupMappings(_ handler: YapViewHandler)
@@ -22,7 +24,7 @@ import CocoaLumberjack
 @objc public final class YapViewHandler: NSObject {
     // MARK: Public Properties
 
-    @objc public private(set) weak var delegate: YapViewHandlerDelegate?
+    @objc public weak var delegate: YapViewHandlerDelegate?
     @objc public let viewName: String
     
     public enum MappingsGroups {
@@ -56,9 +58,9 @@ import CocoaLumberjack
     // MARK: Init
     
     /// Init must be called on the main thread
-    public init(manager: LongLivedConnectionManager,
-                delegate: YapViewHandlerDelegate,
-                viewName: String,
+    public init(viewName: String,
+                manager: LongLivedConnectionManager = BRCDatabaseManager.shared.longLived,
+                delegate: YapViewHandlerDelegate? = nil,
                 groups: MappingsGroups = MappingsGroups.all) {
         self.connection = manager.connection
         self.delegate = delegate
@@ -70,14 +72,14 @@ import CocoaLumberjack
     }
     
     /// Init must be called on the main thread
-    @objc public convenience init(manager: LongLivedConnectionManager,
+    @objc public convenience init(viewName: String,
+                                  manager: LongLivedConnectionManager,
                                   delegate: YapViewHandlerDelegate,
-                                  viewName: String,
                                   groupNames: [String]) {
         let groups = MappingsGroups.names(groupNames)
-        self.init(manager: manager,
+        self.init(viewName: viewName,
+                  manager: manager,
                   delegate: delegate,
-                  viewName: viewName,
                   groups: groups)
     }
     
@@ -88,9 +90,9 @@ import CocoaLumberjack
                                   groupFilter: @escaping YapDatabaseViewMappingGroupFilter,
                                   groupSort: @escaping YapDatabaseViewMappingGroupSort) {
         let groups = MappingsGroups.block(groupFilter, groupSort)
-        self.init(manager: manager,
+        self.init(viewName: viewName,
+                  manager: manager,
                   delegate: delegate,
-                  viewName: viewName,
                   groups: groups)
     }
     

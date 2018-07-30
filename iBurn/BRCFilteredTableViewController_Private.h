@@ -11,12 +11,6 @@
 @import YapDatabase;
 
 NS_ASSUME_NONNULL_BEGIN
-@interface DataObjectWithMetadata: NSObject
-@property (nonatomic, strong, readonly) BRCDataObject *object;
-@property (nonatomic, strong, readonly) BRCObjectMetadata *metadata;
-- (instancetype) initWithObject:(BRCDataObject*)object metadata:(BRCObjectMetadata*)metadata;
-@end
-
 @interface BRCFilteredTableViewController () <YapViewHandlerDelegate>
 @property (nonatomic, strong) UISearchController *searchController;
 @property (nonatomic, strong) YapViewHandler *viewHandler;

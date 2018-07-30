@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *rightSubtitleLabel;
 
 /** If favoriteButtonAction is set, you must save your changes */
-@property (nullable, nonatomic, copy) void (^favoriteButtonAction)(BRCDataObjectTableViewCell *sender);
+@property (nullable, nonatomic, copy) void (^favoriteButtonAction)(UITableViewCell *cell, BOOL isFavorite);
 
 - (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata;
 

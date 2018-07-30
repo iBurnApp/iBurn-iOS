@@ -36,9 +36,15 @@ public class BRCDataSorterOptions {
     }
 }
 
-public struct DataObject {
-    let object: BRCDataObject
-    let metadata: BRCObjectMetadata
+@objc(DataObjectWithMetadata)
+public class DataObject: NSObject {
+    @objc let object: BRCDataObject
+    @objc let metadata: BRCObjectMetadata
+    @objc public init(object: BRCDataObject,
+                      metadata: BRCObjectMetadata) {
+        self.object = object
+        self.metadata = metadata
+    }
 }
 
 /**

@@ -323,11 +323,10 @@
     [cell setDataObject:dataObject metadata:data.metadata];
     CLLocation *currentLocation = BRCAppDelegate.shared.locationManager.location;
     [cell updateDistanceLabelFromLocation:currentLocation dataObject:dataObject];
-    [cell setFavoriteButtonAction:^(BRCDataObjectTableViewCell *sender) {
-        NSIndexPath *indexPath = [tableView indexPathForCell:sender];
+    [cell setFavoriteButtonAction:^(UITableViewCell *cell, BOOL isFavorite) {
+        NSIndexPath *indexPath = [tableView indexPathForCell:cell];
         DataObjectWithMetadata *data = [self dataObjectForIndexPath:indexPath tableView:tableView];
         BRCDataObject *dataObject = data.object;
-        BOOL isFavorite = sender.favoriteButton.selected;
         [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
             BRCObjectMetadata *metadata = [[dataObject metadataWithTransaction:transaction] copy];
             metadata.isFavorite = isFavorite;
@@ -469,15 +468,4 @@
     }
 }
 
-@end
-
-@implementation DataObjectWithMetadata
-- (instancetype) initWithObject:(BRCDataObject*)object metadata:(BRCObjectMetadata*)metadata {
-    NSParameterAssert(object && metadata);
-    if (self = [super init]) {
-        _object = object;
-        _metadata = metadata;
-    }
-    return self;
-}
 @end

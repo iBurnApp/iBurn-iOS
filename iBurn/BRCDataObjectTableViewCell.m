@@ -80,7 +80,7 @@
         [self.favoriteButton select];
     }
     if (self.favoriteButtonAction) {
-        self.favoriteButtonAction(self);
+        self.favoriteButtonAction(self, self.favoriteButton.selected);
     }
 }
 
