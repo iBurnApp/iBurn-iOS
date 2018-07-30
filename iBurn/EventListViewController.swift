@@ -1,8 +1,8 @@
 //
-//  ObjectListViewController.swift
+//  EventListViewController.swift
 //  iBurn
 //
-//  Created by Chris Ballinger on 7/29/18.
+//  Created by Chris Ballinger on 7/30/18.
 //  Copyright © 2018 Burning Man Earth. All rights reserved.
 //
 
@@ -10,7 +10,7 @@ import UIKit
 import Anchorage
 
 @objc
-public final class ObjectListViewController: UIViewController {
+public final class EventListViewController: UIViewController {
     
     // MARK: - Public Properties
     
@@ -21,7 +21,7 @@ public final class ObjectListViewController: UIViewController {
     // MARK: - Private Properties
     
     let listCoordinator: ListCoordinator
-
+    
     // MARK: - Init
     
     @objc public init(viewName: String,
@@ -48,4 +48,28 @@ public final class ObjectListViewController: UIViewController {
         view.addSubview(tableView)
         tableView.edgeAnchors == view.edgeAnchors
     }
+}
+
+
+private extension ObjectListViewController {
+    
+    // MARK: UI Actions
+    
+    @objc func filterButtonPressed(_ sender: Any) {
+        let filterVC = BRCEventsFilterTableViewController(delegate: self)
+        let nav = UINavigationController(rootViewController: filterVC)
+        present(nav, animated: true, completion: nil)
+    }
+}
+
+extension ObjectListViewController: BRCEventsFilterTableViewControllerDelegate {
+    public func didSetNewFilterSettings(_ viewController: BRCEventsFilterTableViewController) {
+        
+    }
+    
+    public func didSetNewSortSettings(_ viewController: BRCEventsFilterTableViewController) {
+        
+    }
+    
+    
 }

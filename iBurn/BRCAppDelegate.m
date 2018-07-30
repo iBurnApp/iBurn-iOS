@@ -92,9 +92,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Can we set a better interval?
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
-    
-    [self setupFestivalDates];
-    
+        
     [self.dataImporter doubleCheckMapTiles:nil];
     
     [BRCDatabaseManager.shared.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
@@ -288,28 +286,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
         unlockNotification.userInfo = @{kBRCGateUnlockNotificationKey: @YES};
         [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:unlockNotification];
     }
-}
-
-- (void) setupFestivalDates {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2018Key]) {
-        return;
-    }
-    NSBundle *dataBundle = [NSBundle brc_dataBundle];
-    NSURL *datesInfoURL = [dataBundle URLForResource:@"dates_info" withExtension:@"json"];
-    NSData *datesInfoData = [NSData dataWithContentsOfURL:datesInfoURL];
-    NSDictionary *datesInfoDictionary = [NSJSONSerialization JSONObjectWithData:datesInfoData options:0 error:nil];
-    NSDictionary *rangeInfoDictionary = [datesInfoDictionary objectForKey:@"rangeInfo"];
-    NSString *startDateString = [rangeInfoDictionary objectForKey:@"startDate"];
-    NSDate *startDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:startDateString];
-    NSParameterAssert(startDate);
-    NSString *endDateString = [rangeInfoDictionary objectForKey:@"endDate"];
-    NSDate *endDate = [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:endDateString];
-    NSParameterAssert(endDate);
-    NSArray *majorEventsArray = [datesInfoDictionary objectForKey:@"majorEvents"];
-    [[NSUserDefaults standardUserDefaults] setObject:majorEventsArray forKey:kBRCMajorEvents2018Key];
-    [[NSUserDefaults standardUserDefaults] setObject:startDate forKey:kBRCStartDate2018Key];
-    [[NSUserDefaults standardUserDefaults] setObject:endDate forKey:kBRCEndDate2018Key];
-    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void) preloadExistingData {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PlayaYear</key>
+	<string>2018</string>
+	<key>EventStart</key>
+	<date>2018-08-27T07:00:00Z</date>
+	<key>EventEnd</key>
+	<date>2018-09-03T19:00:00Z</date>
+</dict>
+</plist>

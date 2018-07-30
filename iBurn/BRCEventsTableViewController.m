@@ -294,12 +294,12 @@ static const CGFloat kDayPickerHeight = 65.0f;
 
  #pragma - mark BRCEventsFilterTableViewControllerDelegate Methods
 
-- (void)didSetNewFilterSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController
+- (void)didSetNewFilterSettings:(BRCEventsFilterTableViewController *)viewController
 {
     [self updateFilteredViews];
 }
 
-- (void)didSetNewSortSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController
+- (void)didSetNewSortSettings:(BRCEventsFilterTableViewController *)viewController
 {
     [self refreshEventTimeSort];
 }

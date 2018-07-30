@@ -18,10 +18,6 @@
 #import "iBurn-Swift.h"
 @import EventKit;
 
-NSString * const kBRCStartDate2018Key = @"kBRCStartDate2018Key";
-NSString * const kBRCEndDate2018Key = @"kBRCEndDate2018Key";
-NSString * const kBRCMajorEvents2018Key = @"kBRCMajorEvents2018Key";
-
 NSString * const kBRCEventCampEdgeName = @"camp";
 NSString * const kBRCEventArtEdgeName = @"art";
 
@@ -142,31 +138,13 @@ NSString * const kBRCEventArtEdgeName = @"art";
 }
 
 + (NSDate*) festivalStartDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCStartDate2018Key];
+    return YearSettings.eventStart;
 }
 + (NSDate*) festivalEndDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCEndDate2018Key];
+    return YearSettings.eventEnd;
 }
-/** Array of titles of major events, starting with first day of events */
-+ (NSArray*) majorEvents {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kBRCMajorEvents2018Key];
-}
-
-+ (NSArray*) datesOfFestival {
-    NSCalendar *gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    NSDate *festivalStartDate = [self festivalStartDate];
-    NSUInteger numberOfDays = [self majorEvents].count;
-
-    NSMutableArray *dates = [NSMutableArray arrayWithCapacity:numberOfDays];
-    
-    for (int i = 0; i < numberOfDays; i++) {
-        NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
-        dayComponent.day = i;
-        
-        NSDate *nextDate = [gregorianCalendar dateByAddingComponents:dayComponent toDate:festivalStartDate options:0];
-        [dates addObject:nextDate];
-    }
-    return dates;
++ (NSArray<NSDate*>*) datesOfFestival {
+    return YearSettings.festivalDays;
 }
 
 - (UIImage *)markerImageForEventStatus:(NSDate*)currentDate

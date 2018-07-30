@@ -94,11 +94,8 @@ extern NSString * const kBRCEventArtEdgeName;
 + (NSDate*) festivalStartDate;
 /** first day of exodus */
 + (NSDate*) festivalEndDate;
-
-/** Array of titles of major events, starting with first day of events @see datesOfFestival */
-+ (NSArray*) majorEvents;
 /** All the dates for the festival. @see majorEvents */
-+ (NSArray*) datesOfFestival;
++ (NSArray<NSDate*>*) datesOfFestival;
 
 /** 
  *  Returns color for event status based on isOngoing

@@ -137,7 +137,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     NSUserDefaults.standardUserDefaults.searchSelectedDayOnly = self.searchSelectedDayOnly;
     NSUserDefaults.standardUserDefaults.showAllDayEvents = self.showAllDayEvents;
     
-    [self.delegate didSetNewFilterSettingsInFilterTableViewController:self];    
+    [self.delegate didSetNewFilterSettings:self];    
 }
 
 - (NSArray *)filteredTypes

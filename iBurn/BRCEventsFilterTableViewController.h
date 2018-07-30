@@ -10,16 +10,18 @@
 
 @class BRCEventsFilterTableViewController;
 
+NS_ASSUME_NONNULL_BEGIN
 @protocol BRCEventsFilterTableViewControllerDelegate <NSObject>
 @required
-- (void)didSetNewFilterSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController;
-- (void)didSetNewSortSettingsInFilterTableViewController:(BRCEventsFilterTableViewController *)viewController;
+- (void)didSetNewFilterSettings:(BRCEventsFilterTableViewController *)viewController;
+- (void)didSetNewSortSettings:(BRCEventsFilterTableViewController *)viewController;
 @end
 
 @interface BRCEventsFilterTableViewController : UIViewController
 
 @property (nonatomic, weak, readonly) id <BRCEventsFilterTableViewControllerDelegate> delegate;
 
-- (instancetype)initWithDelegate:(id <BRCEventsFilterTableViewControllerDelegate>)delegate;
+- (instancetype)initWithDelegate:(nullable id <BRCEventsFilterTableViewControllerDelegate>)delegate;
 
 @end
+NS_ASSUME_NONNULL_END

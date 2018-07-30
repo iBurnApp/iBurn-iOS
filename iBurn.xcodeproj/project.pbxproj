@@ -129,6 +129,12 @@
 		D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E181F39966700906F64 /* ColorCache.swift */; };
 		D9DE9E1C1F3A447100906F64 /* BRCImageColors.m in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */; };
 		D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */; };
+		D9E0DA89210F76B60056286B /* EventListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA88210F76B60056286B /* EventListViewController.swift */; };
+		D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA8A210F78850056286B /* ListCoordinator.swift */; };
+		D9E0DA8D210F7AB70056286B /* UITableView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA8C210F7AB70056286B /* UITableView+iBurn.swift */; };
+		D9E0DA8F210F81920056286B /* UserDefaults+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA8E210F81920056286B /* UserDefaults+iBurn.swift */; };
+		D9E0DA91210F82530056286B /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9E0DA90210F82530056286B /* YearSettings.plist */; };
+		D9E0DA93210F830A0056286B /* YearSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA92210F830A0056286B /* YearSettings.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EC18B81FEC52060013CDAA /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B71FEC52060013CDAA /* Event.swift */; };
@@ -408,6 +414,12 @@
 		D9DE9E1A1F3A447100906F64 /* BRCImageColors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCImageColors.h; sourceTree = "<group>"; };
 		D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCImageColors.m; sourceTree = "<group>"; };
 		D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataImporter.swift; sourceTree = "<group>"; };
+		D9E0DA88210F76B60056286B /* EventListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventListViewController.swift; sourceTree = "<group>"; };
+		D9E0DA8A210F78850056286B /* ListCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListCoordinator.swift; sourceTree = "<group>"; };
+		D9E0DA8C210F7AB70056286B /* UITableView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableView+iBurn.swift"; sourceTree = "<group>"; };
+		D9E0DA8E210F81920056286B /* UserDefaults+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+iBurn.swift"; sourceTree = "<group>"; };
+		D9E0DA90210F82530056286B /* YearSettings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = YearSettings.plist; sourceTree = "<group>"; };
+		D9E0DA92210F830A0056286B /* YearSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSettings.swift; sourceTree = "<group>"; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
@@ -581,6 +593,7 @@
 		63CE2A5E1987140F00F65B01 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				D9E0DA90210F82530056286B /* YearSettings.plist */,
 				63CE2A5F1987140F00F65B01 /* iBurn-Info.plist */,
 				63CE2A601987140F00F65B01 /* InfoPlist.strings */,
 				63CE2A651987140F00F65B01 /* iBurn-Prefix.pch */,
@@ -591,6 +604,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9E0DA8A210F78850056286B /* ListCoordinator.swift */,
 				D984DFD2210EC03100A45922 /* PageViewManager.swift */,
 				D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */,
 				D9C30F711B82EE7100CD03CC /* Sorted */,
@@ -759,6 +773,8 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				D9E0DA8E210F81920056286B /* UserDefaults+iBurn.swift */,
+				D9E0DA8C210F7AB70056286B /* UITableView+iBurn.swift */,
 				D984DFCE210EB38F00A45922 /* NSCopying+iBurn.swift */,
 				D984DFC8210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.h */,
 				D984DFC7210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.m */,
@@ -867,6 +883,7 @@
 			isa = PBXGroup;
 			children = (
 				D984DFD0210EB8C800A45922 /* ObjectListViewController.swift */,
+				D9E0DA88210F76B60056286B /* EventListViewController.swift */,
 				D92562C91988772600ED6B50 /* Cells */,
 				D972BD281993423E008057DB /* Events */,
 				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
@@ -958,6 +975,7 @@
 		D9EC0E5B1B7DE0350042B596 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				D9E0DA92210F830A0056286B /* YearSettings.swift */,
 				D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */,
 				D9167B6120F132C500815F81 /* InfoPlistSecrets.h */,
 				D9DE9E181F39966700906F64 /* ColorCache.swift */,
@@ -1169,6 +1187,7 @@
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
+				D9E0DA91210F82530056286B /* YearSettings.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
 				D9167B7920F14ABA00815F81 /* TileCache in Resources */,
@@ -1479,7 +1498,9 @@
 				D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */,
 				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
 				D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */,
+				D9E0DA8D210F7AB70056286B /* UITableView+iBurn.swift in Sources */,
 				D9DE7BB01EF25C11007A983E /* MapViewController.swift in Sources */,
+				D9E0DA89210F76B60056286B /* EventListViewController.swift in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */,
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
@@ -1498,6 +1519,7 @@
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
+				D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */,
 				D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */,
 				D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
@@ -1511,6 +1533,8 @@
 				D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */,
 				D9038C7620FBFAFD0085C6B9 /* BRCImageColors.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
+				D9E0DA93210F830A0056286B /* YearSettings.swift in Sources */,
+				D9E0DA8F210F81920056286B /* UserDefaults+iBurn.swift in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,

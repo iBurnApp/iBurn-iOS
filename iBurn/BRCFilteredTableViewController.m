@@ -230,15 +230,6 @@
     return NO;
 }
 
-- (UIImageView *)imageViewForFavoriteWithImageName:(NSString *)imageName {
-    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-    imageView.contentMode = UIViewContentModeCenter;
-    UIColor *tintColor = [[[UIApplication sharedApplication] keyWindow] tintColor];
-    imageView.tintColor = tintColor;
-    return imageView;
-}
-
 - (void) didChangePreferredContentSize:(NSNotification*)notification {
     // this doens't seem to trigger a re-layout of the cells?
     [self.tableView reloadData];
