@@ -19,6 +19,8 @@ import Foundation
     let tableView: UITableView
     let viewHandler: YapViewHandler
     let writeConnection: YapDatabaseConnection
+    /// For converting sectionIndexTitles
+    public var groupTransformer: ((String) -> String)?
     public weak var delegate: YapTableViewAdapterDelegate?
     var audioObserver: NSObjectProtocol?
 
@@ -61,6 +63,11 @@ extension YapTableViewAdapter: UITableViewDelegate {
 extension YapTableViewAdapter: UITableViewDataSource {
     public func sectionIndexTitles(for tableView: UITableView) -> [String]? {
         var groups = viewHandler.allGroups
+        if let groupTransformer = self.groupTransformer {
+            groups = groups.map {
+                groupTransformer($0)
+            }
+        }
         groups.insert(UITableViewIndexSearch, at: 0)
         return groups
     }
