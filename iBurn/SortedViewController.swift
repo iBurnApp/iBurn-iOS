@@ -64,6 +64,10 @@ public class SortedViewController: UITableViewController {
     var extensionName: String = ""
     var emptyListText = EmptyListLabelText.Loading
     var emptyDetailText: String = ""
+    private lazy var pageViewManager: PageViewManager = {
+        let pvm = PageViewManager(objectProvider: self, tableView: tableView)
+        return pvm
+    }()
     
     public override init(style: UITableViewStyle) {
         super.init(style: style)
@@ -238,7 +242,23 @@ public class SortedViewController: UITableViewController {
         return cell
     }
     
-    fileprivate func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
+    // MARK: - UITableViewDelegate
+    
+    override open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if !hasTableItems() {
+            return
+        }
+        guard let data = dataObjectAtIndexPath(indexPath) else {
+            return
+        }
+        let pageVC = pageViewManager.pageViewController(for: data.object, at: indexPath, navBar: self.navigationController?.navigationBar)
+        navigationController?.pushViewController(pageVC, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+extension SortedViewController: DataObjectProvider {
+    public func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
         let object = sections[indexPath.section].objects[indexPath.row]
         var metadata: BRCObjectMetadata? = nil
         BRCDatabaseManager.shared.readConnection.read { transaction in
@@ -249,62 +269,5 @@ public class SortedViewController: UITableViewController {
         }
         let dataObject = DataObject(object: object, metadata: objectMetadata)
         return dataObject
-    }
-    
-    // MARK: - UITableViewDelegate
-    
-    override open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if !hasTableItems() {
-            return
-        }
-        guard let data = dataObjectAtIndexPath(indexPath) else {
-            return
-        }
-        let detailVC = BRCDetailViewController(dataObject: data.object)
-        detailVC.indexPath = indexPath
-        detailVC.hidesBottomBarWhenPushed = true
-        
-        let colors = detailVC.colors
-        let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
-        pageVC.hidesBottomBarWhenPushed = true
-        pageVC.dataSource = self
-        pageVC.delegate = self
-        self.navigationController?.navigationBar.isTranslucent = false
-        let navBar = self.navigationController?.navigationBar
-        navBar?.setColorTheme(colors, animated: false)
-        pageVC.setViewControllers([detailVC], direction: .forward, animated: false, completion: nil)
-        pageVC.copyChildParameters()
-        navigationController?.pushViewController(pageVC, animated: true)
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-}
-
-extension SortedViewController: UIPageViewControllerDelegate {
-    public func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        pageViewController.copyChildParameters()
-    }
-}
-
-extension SortedViewController: UIPageViewControllerDataSource {
-    private func pageViewController(_ pageViewController: UIPageViewController, viewControllerNear viewController: UIViewController, direction: IndexPathDirection) -> UIViewController? {
-        guard let detailVC = viewController as? BRCDetailViewController,
-            let oldIndex = detailVC.indexPath,
-            let newIndex = oldIndex.nextIndexPath(direction: direction, tableView: tableView),
-            let data = dataObjectAtIndexPath(newIndex) else {
-            return nil
-        }
-        let newDetailVC = BRCDetailViewController(dataObject: data.object)
-        newDetailVC.indexPath = newIndex
-        self.tableView.scrollToRow(at: newIndex, at: .middle, animated: false)
-        return newDetailVC
-    }
-    
-    
-    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        return self.pageViewController(pageViewController, viewControllerNear: viewController, direction: .before)
-    }
-    
-    public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        return self.pageViewController(pageViewController, viewControllerNear: viewController, direction: .after)
     }
 }

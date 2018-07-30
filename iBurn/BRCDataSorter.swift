@@ -36,16 +36,7 @@ public class BRCDataSorterOptions {
     }
 }
 
-@objc(DataObjectWithMetadata)
-public class DataObject: NSObject {
-    @objc let object: BRCDataObject
-    @objc let metadata: BRCObjectMetadata
-    @objc public init(object: BRCDataObject,
-                      metadata: BRCObjectMetadata) {
-        self.object = object
-        self.metadata = metadata
-    }
-}
+
 
 /**
  * For "smart sorting" big arrays of BRCDataObjects into events, art, and camps.

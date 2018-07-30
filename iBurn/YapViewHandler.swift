@@ -10,8 +10,6 @@ import Foundation
 import YapDatabase
 import CocoaLumberjack
 
-
-
 @objc public protocol YapViewHandlerDelegate: NSObjectProtocol {
     /** Recommeded to do a reloadData here */
     func didSetupMappings(_ handler: YapViewHandler)
@@ -204,6 +202,7 @@ private extension YapViewHandler {
         return setupMappings()
     }
 }
+
 
 extension YapViewHandler: YapViewHandlerProtocol {
     public func yapDatabaseModified(notifications: [Notification]) {

@@ -22,7 +22,7 @@ public extension UITableView {
     }
 }
 
-public class SearchDisplayManager: NSObject {
+public final class SearchDisplayManager: NSObject {
     let viewName: String
     public let searchController: UISearchController
     let viewHandler: YapViewHandler
@@ -81,8 +81,6 @@ public class SearchDisplayManager: NSObject {
     @objc func audioPlayerChangeNotification(_ notification: Notification) {
         refreshData()
     }
-
-
     
     private func refreshData() {
         tableViewController?.tableView.reloadData()

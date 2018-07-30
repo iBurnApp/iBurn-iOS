@@ -77,6 +77,9 @@
 		D984DFCB210E9F0700A45922 /* YapTableViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */; };
 		D984DFCD210EB0CA00A45922 /* BRCDataObjectTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFCC210EB0CA00A45922 /* BRCDataObjectTableViewCell.swift */; };
 		D984DFCF210EB38F00A45922 /* NSCopying+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFCE210EB38F00A45922 /* NSCopying+iBurn.swift */; };
+		D984DFD1210EB8C800A45922 /* ObjectListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFD0210EB8C800A45922 /* ObjectListViewController.swift */; };
+		D984DFD3210EC03100A45922 /* PageViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFD2210EC03100A45922 /* PageViewManager.swift */; };
+		D984DFD5210EC84200A45922 /* DataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFD4210EC84200A45922 /* DataObject.swift */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
@@ -327,6 +330,9 @@
 		D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = YapTableViewAdapter.swift; path = iBurn/YapTableViewAdapter.swift; sourceTree = "<group>"; };
 		D984DFCC210EB0CA00A45922 /* BRCDataObjectTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObjectTableViewCell.swift; sourceTree = "<group>"; };
 		D984DFCE210EB38F00A45922 /* NSCopying+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSCopying+iBurn.swift"; sourceTree = "<group>"; };
+		D984DFD0210EB8C800A45922 /* ObjectListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectListViewController.swift; sourceTree = "<group>"; };
+		D984DFD2210EC03100A45922 /* PageViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewManager.swift; sourceTree = "<group>"; };
+		D984DFD4210EC84200A45922 /* DataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DataObject.swift; path = iBurn/DataObject.swift; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/initial_data; sourceTree = "<group>"; };
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/updated_data; sourceTree = "<group>"; };
@@ -504,6 +510,7 @@
 		63CE2A4B1987140F00F65B01 = {
 			isa = PBXGroup;
 			children = (
+				D984DFD4210EC84200A45922 /* DataObject.swift */,
 				D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */,
 				D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */,
 				63CE2A5D1987140F00F65B01 /* iBurn */,
@@ -584,6 +591,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D984DFD2210EC03100A45922 /* PageViewManager.swift */,
 				D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */,
 				D9C30F711B82EE7100CD03CC /* Sorted */,
 				D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */,
@@ -858,6 +866,7 @@
 		D994155E19871D9000D245C7 /* Filtered Tables */ = {
 			isa = PBXGroup;
 			children = (
+				D984DFD0210EB8C800A45922 /* ObjectListViewController.swift */,
 				D92562C91988772600ED6B50 /* Cells */,
 				D972BD281993423E008057DB /* Events */,
 				D994155519871D1500D245C7 /* BRCFilteredTableViewController.h */,
@@ -1281,6 +1290,7 @@
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
+				"${BUILT_PRODUCTS_DIR}/Anchorage/Anchorage.framework",
 				"${BUILT_PRODUCTS_DIR}/Appirater/Appirater.framework",
 				"${BUILT_PRODUCTS_DIR}/BButton/BButton.framework",
 				"${BUILT_PRODUCTS_DIR}/CupertinoYankee/CupertinoYankee.framework",
@@ -1314,6 +1324,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YapDatabase.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ASDayPicker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Anchorage.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Appirater.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BButton.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CupertinoYankee.framework",
@@ -1357,6 +1368,7 @@
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
+				"${BUILT_PRODUCTS_DIR}/Anchorage/Anchorage.framework",
 				"${BUILT_PRODUCTS_DIR}/Appirater/Appirater.framework",
 				"${BUILT_PRODUCTS_DIR}/BButton/BButton.framework",
 				"${BUILT_PRODUCTS_DIR}/CupertinoYankee/CupertinoYankee.framework",
@@ -1390,6 +1402,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YapDatabase.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ASDayPicker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Anchorage.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Appirater.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BButton.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CupertinoYankee.framework",
@@ -1454,6 +1467,7 @@
 				D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */,
 				D984DFCD210EB0CA00A45922 /* BRCDataObjectTableViewCell.swift in Sources */,
 				D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */,
+				D984DFD3210EC03100A45922 /* PageViewManager.swift in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
 				D9CC7E0A20806FA600A6E502 /* AppDelegate.swift in Sources */,
@@ -1474,6 +1488,7 @@
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
 				D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */,
+				D984DFD5210EC84200A45922 /* DataObject.swift in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */,
 				D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */,
 				D984DFCB210E9F0700A45922 /* YapTableViewAdapter.swift in Sources */,
@@ -1488,6 +1503,7 @@
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
 				D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */,
 				D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */,
+				D984DFD1210EB8C800A45922 /* ObjectListViewController.swift in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,

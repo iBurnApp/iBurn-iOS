@@ -12,6 +12,8 @@ end
 target 'iBurn' do
 	target 'iBurnTests'
 
+	pod 'Anchorage'
+
 	# Debugging
 	pod 'Swizzlean', :configurations => ['Debug']
 

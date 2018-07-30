@@ -56,6 +56,25 @@ extension YapTableViewAdapter: UITableViewDelegate {
 }
 
 extension YapTableViewAdapter: UITableViewDataSource {
+    public func sectionIndexTitles(for tableView: UITableView) -> [String]? {
+        var groups = viewHandler.allGroups
+        groups.insert(UITableViewIndexSearch, at: 0)
+        return groups
+    }
+    
+    public func tableView(_ tableView: UITableView, sectionForSectionIndexTitle title: String, at index: Int) -> Int {
+        if index > 0 {
+            return viewHandler.sectionForGroup(title)
+        } else {
+            tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
+            return NSNotFound
+        }
+    }
+    
+    public func numberOfSections(in tableView: UITableView) -> Int {
+        return viewHandler.numberOfSections
+    }
+    
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewHandler.numberOfItemsInSection(section)
     }
@@ -78,4 +97,5 @@ extension YapTableViewAdapter: YapViewHandlerDelegate {
         tableView.handleYapViewChanges(sectionChanges: sectionChanges, rowChanges: rowChanges)
     }
 }
+
 

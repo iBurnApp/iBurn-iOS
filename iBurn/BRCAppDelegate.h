@@ -24,8 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) MapViewController *mapViewController;
 @property (nonatomic, strong) FavoritesViewController *favoritesViewController;
-@property (nonatomic, strong) BRCFilteredTableViewController *artViewController;
-@property (nonatomic, strong) BRCFilteredTableViewController *campsViewController;
 @property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;
 
 /** Don't use this unless you really have to... */

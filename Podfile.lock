@@ -1,4 +1,5 @@
 PODS:
+  - Anchorage (4.2.4)
   - Appirater (2.3.1)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
@@ -113,6 +114,7 @@ PODS:
     - YapDatabase/Standard/Core
 
 DEPENDENCIES:
+  - Anchorage
   - Appirater (~> 2.0)
   - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
@@ -139,6 +141,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
+    - Anchorage
     - Appirater
     - BButton
     - CocoaLumberjack
@@ -175,6 +178,7 @@ EXTERNAL SOURCES:
     :path: Submodules/PermissionScope/PermissionScope.podspec
 
 SPEC CHECKSUMS:
+  Anchorage: f855157310859280c706cc0b9c9281c21702f515
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
   ASDayPicker: 3a8f8734ad50da082046c29a1850103307c1e5cf
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
@@ -205,6 +209,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 9a7d0f040f17dfa6d02fc731bec8b188e4b4ee59
   YapDatabase: 170882ac5926507a4ea6dddaf704ebdd3f1ec61c
 
-PODFILE CHECKSUM: 3c3bebacf9460e1d5e7f52661e11d1fbb4ffb9c1
+PODFILE CHECKSUM: 702faf115b27ac1018f61c3c3540f3a787c752e4
 
 COCOAPODS: 1.5.3
