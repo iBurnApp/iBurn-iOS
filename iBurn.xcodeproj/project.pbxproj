@@ -136,6 +136,8 @@
 		D9E0DA91210F82530056286B /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9E0DA90210F82530056286B /* YearSettings.plist */; };
 		D9E0DA93210F830A0056286B /* YearSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA92210F830A0056286B /* YearSettings.swift */; };
 		D9E0DA95210F95330056286B /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA94210F95330056286B /* UserSettings.swift */; };
+		D9E0DA97210FB46B0056286B /* ListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA96210FB46B0056286B /* ListController.swift */; };
+		D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EC18B81FEC52060013CDAA /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B71FEC52060013CDAA /* Event.swift */; };
@@ -422,6 +424,8 @@
 		D9E0DA90210F82530056286B /* YearSettings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = YearSettings.plist; sourceTree = "<group>"; };
 		D9E0DA92210F830A0056286B /* YearSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSettings.swift; sourceTree = "<group>"; };
 		D9E0DA94210F95330056286B /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		D9E0DA96210FB46B0056286B /* ListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListController.swift; sourceTree = "<group>"; };
+		D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Blocks.swift"; sourceTree = "<group>"; };
 		D9E28F84198823CC009B3A7A /* BRCRecurringEventObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRecurringEventObject.h; sourceTree = "<group>"; };
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
@@ -606,6 +610,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9E0DA96210FB46B0056286B /* ListController.swift */,
 				D9E0DA8A210F78850056286B /* ListCoordinator.swift */,
 				D984DFD2210EC03100A45922 /* PageViewManager.swift */,
 				D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */,
@@ -775,6 +780,7 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */,
 				D9E0DA8E210F81920056286B /* UserDefaults+iBurn.swift */,
 				D9E0DA8C210F7AB70056286B /* UITableView+iBurn.swift */,
 				D984DFCE210EB38F00A45922 /* NSCopying+iBurn.swift */,
@@ -1524,6 +1530,7 @@
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */,
+				D9E0DA97210FB46B0056286B /* ListController.swift in Sources */,
 				D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */,
 				D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */,
 				D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */,
@@ -1544,6 +1551,7 @@
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,
 				D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
+				D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */,
 				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,

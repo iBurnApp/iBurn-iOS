@@ -20,8 +20,7 @@ public final class EventListViewController: UIViewController {
     
     // MARK: - Private Properties
     
-    private let stackView = UIStackView()
-    private let listCoordinator: ListCoordinator
+    internal let listCoordinator: ListCoordinator
     private let tableView = UITableView.iBurnTableView()
     private let dayPicker = ASDayPicker()
     private var selectedDay: Date {
@@ -54,13 +53,23 @@ public final class EventListViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupDayPicker()
-        setupStackView()
+        setupTableView()
         setupFilterButton()
         setupListCoordinator()
         setupSearchButton()
         
-        view.addSubview(stackView)
-        stackView.edgeAnchors == view.edgeAnchors
+        view.addSubview(tableView)
+        tableView.edgeAnchors == view.edgeAnchors
+    }
+    
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        searchWillAppear()
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        searchDidAppear()
     }
 }
 
@@ -69,9 +78,10 @@ private extension EventListViewController {
     
     // MARK: - Setup
     
-    func setupSearchButton() {
-        let search = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButtonPressed(_:)))
-        self.navigationItem.leftBarButtonItem = search
+    func setupTableView() {
+        let size = CGSize(width: tableView.bounds.width, height: 65)
+        dayPicker.frame = CGRect(origin: .zero, size: size)
+        tableView.tableHeaderView = dayPicker
     }
     
     func setupListCoordinator() {
@@ -85,14 +95,7 @@ private extension EventListViewController {
         self.navigationItem.rightBarButtonItems = [filter, loading]
     }
     
-    func setupStackView() {
-        stackView.axis = .vertical
-        stackView.addArrangedSubview(dayPicker)
-        stackView.addArrangedSubview(tableView)
-    }
-    
     func setupDayPicker() {
-        dayPicker.heightAnchor == 65.0
         dayPicker.daysScrollView.isScrollEnabled = false
         dayPicker.setStart(YearSettings.eventStart, end: YearSettings.eventEnd)
         dayPicker.weekdayTitles = ASDayPicker.weekdayTitles(withLocaleIdentifier: nil, length: 3, uppercase: true)
@@ -105,10 +108,7 @@ private extension EventListViewController {
     }
     
     // MARK: - UI Actions
-    
-    @objc func searchButtonPressed(_ sender: Any) {
-        present(listCoordinator.searchDisplayManager.searchController, animated: true, completion: nil)
-    }
+
     
     @objc func filterButtonPressed(_ sender: Any) {
         let filterVC = BRCEventsFilterTableViewController(delegate: self)
@@ -149,5 +149,11 @@ private extension EventListViewController {
 extension EventListViewController: BRCEventsFilterTableViewControllerDelegate {
     public func didSetNewFilterSettings(_ viewController: BRCEventsFilterTableViewController) {
         updateFilteredViews()
+    }
+}
+
+extension EventListViewController: SearchController {
+    var searchController: UISearchController {
+        return listCoordinator.searchDisplayManager.searchController
     }
 }

@@ -33,7 +33,6 @@ public class MapViewController: BaseMapViewController {
         super.init()
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
-        setupSearch(search)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -46,6 +45,7 @@ public class MapViewController: BaseMapViewController {
         super.viewDidLoad()
         // TODO: make sidebar buttons work
         setupSidebarButtons()
+        setupSearchButton()
     }
     
     private func setupSidebarButtons() {
@@ -66,6 +66,16 @@ public class MapViewController: BaseMapViewController {
     
     private func setupSearch(_ search: SearchDisplayManager) {
         search.tableViewAdapter.delegate = self
+        if #available(iOS 11.0, *) {
+            navigationItem.searchController = search.searchController
+        } else {
+            let search = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButtonPressed(_:)))
+            self.navigationItem.leftBarButtonItem = search
+        }
+    }
+    
+    @objc func searchButtonPressed(_ sender: Any) {
+        present(search.searchController, animated: true, completion: nil)
     }
     
     // MARK: - Annotations
@@ -99,8 +109,7 @@ public class MapViewController: BaseMapViewController {
             self?.reloadUserAnnotations()
         }
         sidebarButtons.searchAction = { [weak self] sender in
-            guard let strongSelf = self else { return }
-            strongSelf.present(strongSelf.search.searchController, animated: true, completion: nil)
+            self?.searchButtonPressed(sender)
         }
     }
     
@@ -164,3 +173,11 @@ private extension BRCMapPoint {
         return Waypoint(coordinate: coordinate, name: title)
     }
 }
+
+
+extension MapViewController: SearchController {
+    var searchController: UISearchController {
+        return search.searchController
+    }
+}
+

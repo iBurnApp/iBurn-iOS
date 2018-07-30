@@ -42,10 +42,26 @@ public final class ObjectListViewController: UIViewController {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.tableHeaderView = listCoordinator.searchDisplayManager.searchController.searchBar
+        setupSearchButton()
         self.listCoordinator.parent = self
         
         view.addSubview(tableView)
         tableView.edgeAnchors == view.edgeAnchors
+    }
+    
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        searchWillAppear()
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        searchDidAppear()
+    }
+}
+
+extension ObjectListViewController: SearchController {
+    var searchController: UISearchController {
+        return listCoordinator.searchDisplayManager.searchController
     }
 }
