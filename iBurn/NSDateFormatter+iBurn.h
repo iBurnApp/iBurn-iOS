@@ -10,13 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSTimeZone (iBurn)
-
-/** PST */
-@property (nonatomic, class, readonly) NSTimeZone *brc_burningManTimeZone;
-
-@end
-
 @interface NSDateFormatter (iBurn)
 
 /** e.g. 2015-09-04T11:00:00-07:00 */

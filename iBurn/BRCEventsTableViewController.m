@@ -207,7 +207,7 @@ static const CGFloat kDayPickerHeight = 65.0f;
     } groupSort:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     }];
-    BOOL searchSelectedDayOnly = [NSUserDefaults standardUserDefaults].searchSelectedDayOnly;
+    BOOL searchSelectedDayOnly = UserSettings.searchSelectedDayOnly;
     [self.searchViewHandler setGroupFilter:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         if (searchSelectedDayOnly) {
             if (group && selectedDay) {
@@ -297,11 +297,6 @@ static const CGFloat kDayPickerHeight = 65.0f;
 - (void)didSetNewFilterSettings:(BRCEventsFilterTableViewController *)viewController
 {
     [self updateFilteredViews];
-}
-
-- (void)didSetNewSortSettings:(BRCEventsFilterTableViewController *)viewController
-{
-    [self refreshEventTimeSort];
 }
 
 #pragma mark UIAdaptivePresentationControllerDelegate

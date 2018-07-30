@@ -13,6 +13,7 @@
 
 @class FavoritesViewController;
 @class MapViewController;
+@class EventListViewController;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
@@ -24,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) MapViewController *mapViewController;
 @property (nonatomic, strong) FavoritesViewController *favoritesViewController;
-@property (nonatomic, strong) BRCEventsTableViewController *eventsViewController;
+@property (nonatomic, strong) EventListViewController *eventsViewController;
 
 /** Don't use this unless you really have to... */
 @property (nonatomic, class, readonly) BRCAppDelegate *shared;

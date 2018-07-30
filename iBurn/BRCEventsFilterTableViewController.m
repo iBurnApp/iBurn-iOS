@@ -87,7 +87,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     self.timeStrings = @[@"Show Expired Events", @"Search Selected Day Only", @"Show All Day Events"];
     
     self.showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
-    self.searchSelectedDayOnly = [[NSUserDefaults standardUserDefaults] searchSelectedDayOnly];
+    self.searchSelectedDayOnly = UserSettings.searchSelectedDayOnly;
     self.showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     
     //All the event types to select from
@@ -119,11 +119,11 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
     self.eventTypeArray = [self.eventTypeArray sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
     
+    UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButtonPressed:)];
+    UIBarButtonItem *done = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneButtonPressed:)];
     
-    UIBarButtonItem *doneBottun = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneButtonPressed:)];
-    
-    self.navigationItem.rightBarButtonItem = doneBottun;
-    
+    self.navigationItem.leftBarButtonItem = cancel;
+    self.navigationItem.rightBarButtonItem = done;
     
     [self.view addSubview:self.tableView];
 }
@@ -131,11 +131,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    NSArray *filteredArray = [self filteredTypes];
-    [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
-    [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
-    NSUserDefaults.standardUserDefaults.searchSelectedDayOnly = self.searchSelectedDayOnly;
-    NSUserDefaults.standardUserDefaults.showAllDayEvents = self.showAllDayEvents;
+
     
     [self.delegate didSetNewFilterSettings:self];    
 }
@@ -150,6 +146,16 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (void)doneButtonPressed:(id)sender
 {
+    NSArray *filteredArray = [self filteredTypes];
+    [[NSUserDefaults standardUserDefaults] setSelectedEventTypes:filteredArray];
+    [[NSUserDefaults standardUserDefaults] setShowExpiredEvents:self.showExpiredEvents];
+    UserSettings.searchSelectedDayOnly = self.searchSelectedDayOnly;
+    NSUserDefaults.standardUserDefaults.showAllDayEvents = self.showAllDayEvents;
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)cancelButtonPressed:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

@@ -20,6 +20,7 @@ import Foundation
     let viewHandler: YapViewHandler
     let writeConnection: YapDatabaseConnection
     public weak var delegate: YapTableViewAdapterDelegate?
+    var audioObserver: NSObjectProtocol?
 
     /// This will take control of the UITableViewDataSource
     /// and YapViewHandlerDelegate
@@ -33,23 +34,25 @@ import Foundation
         tableView.dataSource = self
         tableView.delegate = self
         viewHandler.delegate = self
+        setupNotifications()
     }
 }
 
 private extension YapTableViewAdapter {
-    func object(at indexPath: IndexPath) -> DataObject? {
-        var dataObject: DataObject? = nil
-        let _: BRCDataObject? = viewHandler.object(at: indexPath) { (object, transaction) in
-            let metadata = object.metadata(with: transaction)
-            dataObject = DataObject(object: object, metadata: metadata)
-        }
-        return dataObject
+    func setupNotifications() {
+        audioObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: BRCAudioPlayer.BRCAudioPlayerChangeNotification), object: BRCAudioPlayer.sharedInstance, queue: OperationQueue.main, using: { [weak self] (notification) in
+            self?.audioPlayerChangeNotification(notification)
+        })
+    }
+    
+    @objc func audioPlayerChangeNotification(_ notification: Notification) {
+        tableView.reloadData()
     }
 }
 
 extension YapTableViewAdapter: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let object = object(at: indexPath) else { return }
+        guard let object = viewHandler.dataObjectAtIndexPath(indexPath) else { return }
         delegate?.didSelectObject(self, object: object, in: tableView, at: indexPath)
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -80,7 +83,7 @@ extension YapTableViewAdapter: UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let object = object(at: indexPath) else {
+        guard let object = viewHandler.dataObjectAtIndexPath(indexPath) else {
             return UITableViewCell()
         }
         let cell = BRCDataObjectTableViewCell.cell(at: indexPath, tableView: tableView, dataObject: object, writeConnection: writeConnection)

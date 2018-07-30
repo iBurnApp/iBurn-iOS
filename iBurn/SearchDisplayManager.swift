@@ -10,18 +10,6 @@ import UIKit
 import YapDatabase
 import CocoaLumberjack
 
-public extension UITableView {
-    /** Registers custom cell classes for BRC data objects */
-    @objc public func registerCustomCellClasses() {
-        let mapping = BRCDataObjectTableViewCell.cellIdentifiers
-        mapping.forEach { cellIdentifier, cellClass in
-            let nibName = NSStringFromClass(cellClass);
-            let nib = UINib.init(nibName: nibName, bundle: nil)
-            self.register(nib, forCellReuseIdentifier: cellIdentifier)
-        }
-    }
-}
-
 public final class SearchDisplayManager: NSObject {
     let viewName: String
     public let searchController: UISearchController
@@ -31,7 +19,6 @@ public final class SearchDisplayManager: NSObject {
     let writeConnection: YapDatabaseConnection
     let searchConnection: YapDatabaseConnection
     let searchQueue = YapDatabaseSearchQueue()
-    var observer: NSObjectProtocol?
     
     private var tableViewController: UITableViewController? {
         return searchController.searchResultsController as? UITableViewController
@@ -55,40 +42,19 @@ public final class SearchDisplayManager: NSObject {
         super.init()
         setupDefaults(for: src.tableView)
         setupDefaults(for: searchController)
-        setupNotifications()
     }
-    
-    private func setupNotifications() {
-        observer = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: BRCAudioPlayer.BRCAudioPlayerChangeNotification), object: BRCAudioPlayer.sharedInstance, queue: OperationQueue.main, using: { [weak self] (notification) in
-            self?.audioPlayerChangeNotification(notification)
-        })
-    }
-    
+
     private func setupDefaults(for tableView: UITableView) {
-        tableView.registerCustomCellClasses()
-        tableView.estimatedRowHeight = 120
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.setDataObjectDefaults()
     }
     
     private func setupDefaults(for searchController: UISearchController) {
-        searchController.dimsBackgroundDuringPresentation = false
+        searchController.dimsBackgroundDuringPresentation = true
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.delegate = self
         searchController.searchResultsUpdater = self
         searchController.delegate = self
     }
-    
-    @objc func audioPlayerChangeNotification(_ notification: Notification) {
-        refreshData()
-    }
-    
-    private func refreshData() {
-        tableViewController?.tableView.reloadData()
-    }
-}
-
-extension SearchDisplayManager: UISearchControllerDelegate {
-    
 }
 
 extension SearchDisplayManager: UISearchResultsUpdating {
@@ -108,7 +74,6 @@ extension SearchDisplayManager: UISearchResultsUpdating {
     }
 }
 
-extension SearchDisplayManager: UISearchBarDelegate {
-    
-}
+extension SearchDisplayManager: UISearchBarDelegate { }
 
+extension SearchDisplayManager: UISearchControllerDelegate { }

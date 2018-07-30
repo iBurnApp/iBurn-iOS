@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol BRCEventsFilterTableViewControllerDelegate <NSObject>
 @required
 - (void)didSetNewFilterSettings:(BRCEventsFilterTableViewController *)viewController;
-- (void)didSetNewSortSettings:(BRCEventsFilterTableViewController *)viewController;
 @end
 
 @interface BRCEventsFilterTableViewController : UIViewController

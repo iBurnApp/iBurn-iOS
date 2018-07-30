@@ -13,26 +13,28 @@ import Foundation
     let searchDisplayManager: SearchDisplayManager
     let pageViewManager: PageViewManager
     let tableViewAdapter: YapTableViewAdapter
-    var navigationController: UINavigationController?
+    weak var parent: UIViewController?
     
     init(viewName: String,
          searchViewName: String,
          tableView: UITableView,
-         navigationController: UINavigationController? = nil) {
+         parent: UIViewController? = nil) {
         self.searchDisplayManager = SearchDisplayManager(viewName: searchViewName)
         let viewHandler = YapViewHandler(viewName: viewName)
         self.tableViewAdapter = YapTableViewAdapter(viewHandler: viewHandler,
                                                     tableView: tableView)
         self.pageViewManager = PageViewManager(objectProvider: viewHandler, tableView: tableView)
-        self.navigationController = navigationController
+        self.parent = parent
         super.init()
         self.tableViewAdapter.delegate = self
+        self.searchDisplayManager.tableViewAdapter.delegate = self
     }
 }
 
 extension ListCoordinator: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
-        let vc = pageViewManager.pageViewController(for: object.object, at: indexPath, navBar: navigationController?.navigationBar)
-        self.navigationController?.pushViewController(vc, animated: true)
+        searchDisplayManager.searchController.isActive = false
+        let vc = pageViewManager.pageViewController(for: object.object, at: indexPath, navBar: parent?.navigationController?.navigationBar)
+        parent?.navigationController?.pushViewController(vc, animated: true)
     }
 }

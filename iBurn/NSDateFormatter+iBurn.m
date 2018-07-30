@@ -7,19 +7,9 @@
 //
 
 #import "NSDateFormatter+iBurn.h"
-
-@implementation NSTimeZone (iBurn)
-
-+ (NSTimeZone*) brc_burningManTimeZone {
-    NSTimeZone *tz = [NSTimeZone timeZoneWithName:@"PST"]; //use Gerlach time
-    return tz;
-}
-
-@end
+#import "iBurn-Swift.h"
 
 @implementation NSDateFormatter (iBurn)
-
-
 
 + (NSDateFormatter*) brc_playaEventsAPIDateFormatter
 {
@@ -35,14 +25,7 @@
 
 + (NSDateFormatter*) brc_eventGroupDateFormatter
 {
-    static NSDateFormatter *brc_eventGroupDateFormatter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        brc_eventGroupDateFormatter = [NSDateFormatter new];
-        brc_eventGroupDateFormatter.dateFormat = @"yyyy-MM-dd";
-        brc_eventGroupDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
-    });
-    return brc_eventGroupDateFormatter;
+    return DateFormatters.eventGroupDateFormatter;
 }
 
 /** e.g. 2015-09-04 11 */

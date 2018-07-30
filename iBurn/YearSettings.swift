@@ -28,6 +28,14 @@ public final class YearSettings: NSObject {
         return YearSettings.shared.festivalDays
     }
     
+    /** Returns date if within range, or eventStart if out of range. */
+    @objc public static func dayWithinFestival(_ date: Date) -> Date {
+        guard (self.eventStart ... self.eventEnd).contains(date) else {
+            return self.eventStart
+        }
+        return date
+    }
+    
     static let shared = YearSettings()
     
     /// e.g. "2018"

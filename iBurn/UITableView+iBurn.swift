@@ -9,12 +9,26 @@
 import Foundation
 
 
-extension UITableView {
+public extension UITableView {
     public static func iBurnTableView() -> UITableView {
         let tableView = UITableView()
-        tableView.registerCustomCellClasses()
-        tableView.estimatedRowHeight = 120
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.setDataObjectDefaults()
         return tableView
+    }
+    
+    public func setDataObjectDefaults() {
+        registerCustomCellClasses()
+        estimatedRowHeight = 120
+        rowHeight = UITableViewAutomaticDimension
+    }
+    
+    /** Registers custom cell classes for BRC data objects */
+    @objc public func registerCustomCellClasses() {
+        let mapping = BRCDataObjectTableViewCell.cellIdentifiers
+        mapping.forEach { cellIdentifier, cellClass in
+            let nibName = NSStringFromClass(cellClass);
+            let nib = UINib.init(nibName: nibName, bundle: nil)
+            self.register(nib, forCellReuseIdentifier: cellIdentifier)
+        }
     }
 }

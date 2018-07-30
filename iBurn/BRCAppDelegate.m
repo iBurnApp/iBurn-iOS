@@ -92,7 +92,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Can we set a better interval?
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
-        
+    
     [self.dataImporter doubleCheckMapTiles:nil];
     
     [BRCDatabaseManager.shared.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
@@ -248,8 +248,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
-    
-    self.eventsViewController = [[BRCEventsTableViewController alloc] initWithViewClass:[BRCEventObject class] viewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
+    self.eventsViewController = [[EventListViewController alloc] initWithViewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
     self.eventsViewController.title = @"Events";
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];

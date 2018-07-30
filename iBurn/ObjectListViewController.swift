@@ -43,7 +43,7 @@ public final class ObjectListViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         tableView.tableHeaderView = listCoordinator.searchDisplayManager.searchController.searchBar
-        self.listCoordinator.navigationController = self.navigationController
+        self.listCoordinator.parent = self
         
         view.addSubview(tableView)
         tableView.edgeAnchors == view.edgeAnchors
