@@ -9,19 +9,21 @@
 import UIKit
 import StoreKit
 
-enum CellTag: Int {
-    case art = 1,
-    camps = 2,
-    unlock = 3,
-    credits = 4,
-    feedback = 5,
-    share = 6,
-    rate = 7,
-    debugShowOnboarding = 8,
-    audioTour = 9
-}
 
 class MoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
+    
+    enum CellTag: Int {
+        case art = 1,
+        camps = 2,
+        unlock = 3,
+        credits = 4,
+        feedback = 5,
+        share = 6,
+        rate = 7,
+        debugShowOnboarding = 8,
+        audioTour = 9,
+        appearance = 10
+    }
     
     // MARK: - View Lifecycle
     
@@ -64,29 +66,31 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        let cell = tableView.cellForRow(at: indexPath)!
-        if let cellTag = CellTag(rawValue: cell.tag) {
-            switch cellTag {
-            case .art:
-                pushArtView()
-            case .camps:
-                pushCampsView()
-            case .unlock:
-                showUnlockView()
-            case .credits:
-                pushCreditsView()
-            case .feedback:
-                showFeedbackView()
-            case .share:
-                showShareSheet(cell)
-            case .rate:
-                showRatingsView()
-            case .debugShowOnboarding:
-                showOnboardingView()
-            case .audioTour:
-                showAudioTour()
-            }
+        guard let cell = tableView.cellForRow(at: indexPath),
+        let cellTag = CellTag(rawValue: cell.tag) else {
+            return
+        }
+        switch cellTag {
+        case .art:
+            pushArtView()
+        case .camps:
+            pushCampsView()
+        case .unlock:
+            showUnlockView()
+        case .credits:
+            pushCreditsView()
+        case .feedback:
+            showFeedbackView()
+        case .share:
+            showShareSheet(cell)
+        case .rate:
+            showRatingsView()
+        case .debugShowOnboarding:
+            showOnboardingView()
+        case .audioTour:
+            showAudioTour()
+        case .appearance:
+            pushAppearanceView()
         }
     }
 
@@ -96,7 +100,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         artVC.tableView.separatorStyle = .none
         artVC.title = "Art"
         artVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(artVC, animated: true)
+        navigationController?.pushViewController(artVC, animated: true)
     }
 
     func pushCampsView() {
@@ -104,7 +108,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let campsVC = ObjectListViewController(viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
         campsVC.title = "Camps"
         campsVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(campsVC, animated: true)
+        navigationController?.pushViewController(campsVC, animated: true)
     }
 
     func showUnlockView() {
@@ -119,7 +123,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let creditsVC = CreditsViewController()
         creditsVC.title = "Credits"
         creditsVC.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(creditsVC, animated: true)
+        navigationController?.pushViewController(creditsVC, animated: true)
     }
 
     func showFeedbackView() {
@@ -160,7 +164,12 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let audioTour = AudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
         audioTour.hidesBottomBarWhenPushed = true
-        navigationController!.pushViewController(audioTour, animated: true)
+        navigationController?.pushViewController(audioTour, animated: true)
+    }
+    
+    func pushAppearanceView() {
+        let vc = AppearanceViewController.fromStoryboard()
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     // MARK: - SKStoreProductViewControllerDelegate
@@ -168,5 +177,10 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
         viewController.dismiss(animated: true, completion: nil)
     }
-    
+}
+
+extension MoreViewController: StoryboardRepresentable {
+    static func fromStoryboard() -> UIViewController {
+        return Storyboard.more.instantiateInitialViewController()!
+    }
 }

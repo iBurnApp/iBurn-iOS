@@ -253,7 +253,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
-    UIViewController *moreVC = [UIStoryboard storyboardWithName:@"More" bundle:[NSBundle mainBundle]].instantiateInitialViewController;
+    UIViewController *moreVC = [MoreViewController fromStoryboard];
     moreVC.title = @"More";
     moreVC.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
     

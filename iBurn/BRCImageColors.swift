@@ -73,7 +73,20 @@ public extension BRCImageColors {
                                       secondaryColor: .darkText,
                                       detailColor: .lightGray)
     
+    static let plainDark = BRCImageColors(backgroundColor: .black,
+                                      primaryColor: .white,
+                                      secondaryColor: .white,
+                                      detailColor: .white)
+    
     @objc public static func colors(for eventType: BRCEventType) -> BRCImageColors {
+        guard Appearance.contrast == .colorful else {
+            switch Appearance.theme {
+            case .light:
+                return plain
+            case .dark:
+                return plainDark
+            }
+        }
         switch eventType {
         case .adult:
             return adult
