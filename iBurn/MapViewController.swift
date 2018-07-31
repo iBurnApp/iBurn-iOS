@@ -11,9 +11,6 @@ import YapDatabase
 import CoreLocation
 import BButton
 import CocoaLumberjack
-import MapboxDirections
-import MapboxCoreNavigation
-import MapboxNavigation
 
 public class MapViewController: BaseMapViewController {
     let readConnection: YapDatabaseConnection
@@ -77,7 +74,6 @@ public class MapViewController: BaseMapViewController {
             self?.readConnection.read { transaction in
                 if let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction) {
                     DDLogInfo("Found closest point: \(point)")
-                    self?.showDirections(from: location, to: point.waypoint)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     // If we can't find your bike or home, let's make a new one
                    self?.addUserMapPoint(type: mapPointType)
@@ -132,20 +128,6 @@ public class MapViewController: BaseMapViewController {
         mapViewDelegate.editingAnnotation = mapPoint
         mapView.addAnnotation(mapPoint)
     }
-    
-    private func showDirections(from: CLLocation, to destination: Waypoint) {
-        // TODO: Add some sort of routing. Default Mapbox routing doesn't work.
-//        let origin = Waypoint(coordinate: from.coordinate, name: "Start")
-//
-//        let options = NavigationRouteOptions(waypoints: [origin, destination])
-//
-//        Directions.shared.calculate(options) { [weak self] (waypoints, routes, error) in
-//            guard let route = routes?.first else { return }
-//
-//            let viewController = NavigationViewController(for: route)
-//            self?.present(viewController, animated: true, completion: nil)
-//        }
-    }
 }
 
 extension MapViewController: YapTableViewAdapterDelegate {
@@ -156,16 +138,8 @@ extension MapViewController: YapTableViewAdapterDelegate {
     }
 }
 
-private extension BRCMapPoint {
-    var waypoint: Waypoint {
-        return Waypoint(coordinate: coordinate, name: title)
-    }
-}
-
-
 extension MapViewController: SearchCooordinator {
     var searchController: UISearchController {
         return search.searchController
     }
 }
-
