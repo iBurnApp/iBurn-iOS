@@ -165,11 +165,12 @@ NSString * const kBRCEventArtEdgeName = @"art";
 }
 
 - (UIColor*) colorForEventStatus:(NSDate*)currentDate {
+    BRCImageColors *colors = [BRCImageColors colorsFor:self.eventType];
     if ([self isStartingSoon:currentDate]) {
         return [UIColor brc_greenColor];
     }
     if (![self hasStarted:currentDate]) {
-        return [UIColor darkTextColor];
+        return colors.primaryColor;
     }
     if ([self isEndingSoon:currentDate]) {
         return [UIColor brc_orangeColor];
@@ -180,7 +181,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
     if ([self isHappeningRightNow:currentDate]) {
         return [UIColor brc_greenColor];
     }
-    return [UIColor darkTextColor];
+    return colors.primaryColor;
 }
 
 + (NSString *)stringForEventType:(BRCEventType)type

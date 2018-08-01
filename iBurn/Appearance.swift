@@ -6,7 +6,7 @@
 //  Copyright © 2018 Burning Man Earth. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 @objc public class Appearance: NSObject {
     
@@ -32,11 +32,13 @@ import Foundation
     private var theme: AppTheme {
         didSet {
             UserSettings.theme = theme
+            setGlobalAppearance()
         }
     }
     private var colors: AppColors {
         didSet {
             UserSettings.contrast = colors
+            setGlobalAppearance()
         }
     }
     
@@ -44,6 +46,20 @@ import Foundation
         self.theme = UserSettings.theme
         self.colors = UserSettings.contrast
     }
+    
+    private func setGlobalAppearance() {
+//        let colors: BRCImageColors
+//        let barStyle: UIBarStyle
+//        switch theme {
+//        case .light:
+//            colors = .plain
+//            barStyle = .default
+//        case .dark:
+//            colors = .plainDark
+//            barStyle = .black
+//        }
+    }
+
 }
 
 
