@@ -19,13 +19,13 @@ class SidebarButtonsView: UIView {
         case bike
         case home
         case medical
-        static let allTypes: [ButtonType] = [.search, .pin, .potty, .bike, .home, .medical]
+        static let allTypes: [ButtonType] = [.pin, .bike, .home]
         var icon: FAIcon {
             switch self {
             case .search:
                 return FAIcon.FASearch
             case .pin:
-                return FAIcon.FAMapMarker
+                return FAIcon.FAStarO
             case .potty:
                 return FAIcon.FAFemale
             case .bike:

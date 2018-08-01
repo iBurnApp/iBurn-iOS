@@ -20,6 +20,7 @@ public class MapViewController: BaseMapViewController {
     let geocoder: BRCGeocoder
     var userAnnotations: [BRCUserMapPoint] = []
     let search: SearchDisplayManager
+    let tapGesture = UITapGestureRecognizer()
     
     public override init() {
         readConnection = BRCDatabaseManager.shared.readConnection
@@ -45,6 +46,7 @@ public class MapViewController: BaseMapViewController {
         setupSearchButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
+        setupTapGesture()
     }
     
     private func setupSidebarButtons() {
@@ -52,7 +54,7 @@ public class MapViewController: BaseMapViewController {
         let bottom = sidebarButtons.autoPinEdge(toSuperviewMargin: .bottom)
         bottom.constant = -50
         sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
-        sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 250))
+        sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 150))
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -60,12 +62,41 @@ public class MapViewController: BaseMapViewController {
         reloadUserAnnotations()
         geocodeNavigationBar()
     }
+}
+
+private extension MapViewController {
+    
+    func setupTapGesture() {
+        tapGesture.addTarget(self, action: #selector(singleTap(_:)))
+        view.addGestureRecognizer(tapGesture)
+    }
     
     // MARK: - User Interaction
+    
+    @objc func singleTap(_ gesture: UITapGestureRecognizer) {
+        guard let nav = self.navigationController else { return }
+        let shouldHide = !nav.isNavigationBarHidden
+        let newAlpha: CGFloat = shouldHide ? 0.0 : 1.0
+        nav.setNavigationBarHidden(shouldHide, animated: true)
+        if !shouldHide {
+            self.tabBarController?.tabBar.isHidden = false
+            self.sidebarButtons.isHidden = false
+        }
+        UIView.animate(withDuration: 0.5, animations: {
+            self.sidebarButtons.alpha = newAlpha
+            self.tabBarController?.tabBar.alpha = newAlpha
+        }) { (finished) in
+            if shouldHide {
+                self.tabBarController?.tabBar.isHidden = true
+                self.sidebarButtons.isHidden = true
+            }
+        }
 
+    }
+    
     // MARK: - Annotations
     
-    private func setupUserGuide() {
+    func setupUserGuide() {
         sidebarButtons.findNearestAction = { [weak self] mapPointType, sender in
             guard let location = self?.mapView.userLocation?.location else {
                 DDLogWarn("User location not found!")
@@ -76,7 +107,7 @@ public class MapViewController: BaseMapViewController {
                     DDLogInfo("Found closest point: \(point)")
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     // If we can't find your bike or home, let's make a new one
-                   self?.addUserMapPoint(type: mapPointType)
+                    self?.addUserMapPoint(type: mapPointType)
                 }
             }
         }
@@ -97,7 +128,7 @@ public class MapViewController: BaseMapViewController {
         }
     }
     
-    private func reloadUserAnnotations() {
+    func reloadUserAnnotations() {
         mapView.removeAnnotations(userAnnotations)
         userAnnotations = []
         readConnection.asyncRead({ transaction in
@@ -111,7 +142,7 @@ public class MapViewController: BaseMapViewController {
         })
     }
     
-    private func addUserMapPoint(type: BRCMapPointType) {
+    func addUserMapPoint(type: BRCMapPointType) {
         var coordinate = BRCLocations.blackRockCityCenter
         if let userLocation = self.mapView.userLocation?.location {
             coordinate = userLocation.coordinate
