@@ -71,9 +71,14 @@ static CGFloat const kTableViewHeaderHeight = 200;
         metadata = [dataObject metadataWithTransaction:transaction];
     }];
     self.metadata = metadata;
+    if ([dataObject isKindOfClass:BRCEventObject.class]) {
+        BRCEventObject *event = (BRCEventObject*)dataObject;
+        _colors = [BRCImageColors colorsFor:event.eventType];
+    }
     self.title = dataObject.title;
     self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
     [self setupMapViewWithObject:self.dataObject];
+    [self configureColors:self.colors];
     [self.tableView reloadData];
 }
 
@@ -86,7 +91,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
             _colors = colors;
         }
     }
-    [self configureColors:self.colors];
     [self refreshFavoriteImage];
 }
 
