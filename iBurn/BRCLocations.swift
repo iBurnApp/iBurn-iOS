@@ -12,7 +12,7 @@ import Foundation
     private static let kBRCManRegionIdentifier = "kBRCManRegionIdentifier"
     
     /** location of the man */
-    @objc static let blackRockCityCenter = CLLocationCoordinate2DMake(40.7864, -119.2065)
+    @objc static let blackRockCityCenter = YearSettings.manCenterCoordinate
     
     /** Within 5 miles of the man */
     @objc static let burningManRegion: CLCircularRegion = {

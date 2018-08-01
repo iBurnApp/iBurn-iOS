@@ -8,5 +8,9 @@
 	<date>2018-08-27T07:00:00Z</date>
 	<key>EventEnd</key>
 	<date>2018-09-03T19:00:00Z</date>
+	<key>ManCenterLatitude</key>
+	<real>40.7864</real>
+	<key>ManCenterLongitude</key>
+	<real>-119.2065</real>
 </dict>
 </plist>

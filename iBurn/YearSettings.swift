@@ -7,9 +7,12 @@
 //
 
 import Foundation
+import CoreLocation
 
 @objc
 public final class YearSettings: NSObject {
+    
+    // MARK: - Public
     
     /// e.g. "2018"
     @objc public static var playaYear: String {
@@ -36,21 +39,39 @@ public final class YearSettings: NSObject {
         return date
     }
     
-    static let shared = YearSettings()
+    /// location of The Man
+    public static var manCenterCoordinate: CLLocationCoordinate2D {
+        return YearSettings.shared.manCenterCoordinate
+    }
+
+    // MARK: - Private
+    
+    private struct Keys {
+        static let playaYear = "PlayaYear"
+        static let eventStart = "EventStart"
+        static let eventEnd = "EventEnd"
+        static let manCenterLatitude = "ManCenterLatitude"
+        static let manCenterLongitude = "ManCenterLongitude"
+    }
+    
+    private static let path = Bundle(for: YearSettings.self).path(forResource: "YearSettings", ofType: "plist")!
+    private let allSettings: [String: Any]
+    
+    private static let shared = YearSettings()
     
     /// e.g. "2018"
-    let playaYear: String
-    let eventStart: Date
-    let eventEnd: Date
-    let festivalDays: [Date]
+    private let playaYear: String
+    private let eventStart: Date
+    private let eventEnd: Date
+    private let festivalDays: [Date]
+    private let manCenterCoordinate: CLLocationCoordinate2D
     
     override init() {
-        let yearSettingsPlistPath = Bundle(for: YearSettings.self).path(forResource: "YearSettings", ofType: "plist")!
-        let yearSettings = NSDictionary(contentsOfFile: yearSettingsPlistPath)! as! [String: AnyObject]
-        let eventStart = yearSettings["EventStart"] as! Date
+        self.allSettings = NSDictionary(contentsOfFile: YearSettings.path)! as! [String: Any]
+        let eventStart = allSettings["EventStart"] as! Date
         self.eventStart = eventStart
-        self.eventEnd = yearSettings["EventEnd"] as! Date
-        self.playaYear = yearSettings["PlayaYear"] as! String
+        self.eventEnd = allSettings["EventEnd"] as! Date
+        self.playaYear = allSettings["PlayaYear"] as! String
         
         let numberOfDays = Calendar.current.dateComponents([.day], from: self.eventStart, to: self.eventEnd).day ?? 0
         self.festivalDays = (0..<numberOfDays).compactMap {
@@ -59,5 +80,8 @@ public final class YearSettings: NSObject {
             let date = Calendar.current.date(byAdding: day, to: eventStart)
             return date
         }
+        let manCenterLatitude = allSettings[Keys.manCenterLatitude] as! Double
+        let manCenterLongitude = allSettings[Keys.manCenterLongitude] as! Double
+        self.manCenterCoordinate = CLLocationCoordinate2D(latitude: manCenterLatitude, longitude: manCenterLongitude)
     }
 }
