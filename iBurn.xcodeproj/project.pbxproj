@@ -73,6 +73,8 @@
 		D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9794B73198BBFB400D7FDA7 /* UIColor+iBurn.m */; };
 		D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */; };
 		D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */; };
+		D97EB5EC21122A7D001B4351 /* DayPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97EB5EB21122A7D001B4351 /* DayPicker.swift */; };
+		D97EB5EE21122EF1001B4351 /* DayView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D97EB5ED21122EF0001B4351 /* DayView.xib */; };
 		D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */; };
 		D984DFC6210D4B3100A45922 /* YapViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFC5210D4B3100A45922 /* YapViewHandler.swift */; };
 		D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D984DFC7210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.m */; };
@@ -332,6 +334,8 @@
 		D97D7A30198ADBE400CA7828 /* NSDateFormatter+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDateFormatter+iBurn.m"; sourceTree = "<group>"; };
 		D97D7A32198AF7BD00CA7828 /* NSDate+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+iBurn.h"; sourceTree = "<group>"; };
 		D97D7A33198AF7BD00CA7828 /* NSDate+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+iBurn.m"; sourceTree = "<group>"; };
+		D97EB5EB21122A7D001B4351 /* DayPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayPicker.swift; sourceTree = "<group>"; };
+		D97EB5ED21122EF0001B4351 /* DayView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DayView.xib; sourceTree = "<group>"; };
 		D97EF8351F2E9EE70096A649 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2017/TileCache"; sourceTree = SOURCE_ROOT; };
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D980A90D1B3F5A6400BE3682 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -980,6 +984,8 @@
 		D9EC0E5A1B7DE02F0042B596 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D97EB5EB21122A7D001B4351 /* DayPicker.swift */,
+				D97EB5ED21122EF0001B4351 /* DayView.xib */,
 				D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */,
 				D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */,
 				D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */,
@@ -1213,6 +1219,7 @@
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 				D9167B7B20F14AD000815F81 /* iBurn-2018 in Resources */,
+				D97EB5EE21122EF1001B4351 /* DayView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1528,6 +1535,7 @@
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,
+				D97EB5EC21122A7D001B4351 /* DayPicker.swift in Sources */,
 				D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */,
 				D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
