@@ -67,7 +67,7 @@ class AudioTourViewController: SortedViewController {
 
     override func refreshTableItems(_ completion: @escaping ()->()) {
         var art: [BRCArtObject] = []
-        BRCDatabaseManager.shared.readConnection.asyncRead({ (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (transaction: YapDatabaseReadTransaction) -> Void in
             if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
                 viewTransaction.enumerateGroups({ (group, stop) -> Void in
                     viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in

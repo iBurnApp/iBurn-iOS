@@ -234,7 +234,7 @@ extension YapViewHandler: YapViewHandlerProtocol {
 }
 
 @objc public final class LongLivedConnectionManager: NSObject {
-    fileprivate let connection: YapDatabaseConnection
+    @objc public let connection: YapDatabaseConnection
     private let viewHandlers: NSHashTable<YapViewHandlerProtocol>
     private var observer: NSObjectProtocol?
     

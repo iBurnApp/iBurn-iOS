@@ -76,7 +76,7 @@ public class SortedViewController: UITableViewController {
     @objc public required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
-        BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.shared.uiConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
             let ext: AnyObject? = transaction.ext(self.extensionName)
             if (ext != nil) {
                 self.extensionRegistered = true
@@ -261,7 +261,7 @@ extension SortedViewController: DataObjectProvider {
     public func dataObjectAtIndexPath(_ indexPath: IndexPath) -> DataObject? {
         let object = sections[indexPath.section].objects[indexPath.row]
         var metadata: BRCObjectMetadata? = nil
-        BRCDatabaseManager.shared.readConnection.read { transaction in
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
             metadata = object.metadata(with: transaction)
         }
         guard let objectMetadata = metadata else {

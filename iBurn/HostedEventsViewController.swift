@@ -30,16 +30,17 @@ class HostedEventsViewController: SortedViewController {
     
     internal override func refreshTableItems(_ completion: @escaping ()->()) {
         var eventObjects: [BRCEventObject] = []
-        BRCDatabaseManager.shared.readConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
+        BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (transaction) in
             if let object = self.relatedObject {
                 eventObjects = object.events(with: transaction)
             }
+        }) {
+            let options = BRCDataSorterOptions()
+            options.showFutureEvents = true
+            options.showExpiredEvents = true
+            BRCDataSorter.sortDataObjects(eventObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
+                self.processSortedData(events, art: art, camps: camps, completion: completion)
+            })
         }
-        let options = BRCDataSorterOptions()
-        options.showFutureEvents = true
-        options.showExpiredEvents = true
-        BRCDataSorter.sortDataObjects(eventObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
-            self.processSortedData(events, art: art, camps: camps, completion: completion)
-        })
     }
 }

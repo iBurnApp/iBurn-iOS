@@ -149,7 +149,7 @@
     if ([object isKindOfClass:[BRCCampObject class]] ||
         [object isKindOfClass:[BRCArtObject class]]) {
         __block NSArray *events = @[];
-        [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
             events = [object eventsWithTransaction:transaction];
         }];
         if (events.count > 0) {
@@ -213,7 +213,7 @@
         }
         
         if ([relationshipUniqueID length] && [relationshipCollection length]) {
-            [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
                 relationshipDetailInfoCell.dataObject = [transaction objectForKey:relationshipUniqueID inCollection:relationshipCollection];
             }];
         }

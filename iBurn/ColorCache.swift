@@ -79,14 +79,14 @@ public extension UIPageViewController {
 
 public class ColorCache: NSObject {
     @objc static let shared = ColorCache()
-    let readConnection = BRCDatabaseManager.shared.readConnection
+    let backgroundReadConnection = BRCDatabaseManager.shared.backgroundReadConnection
     let writeConnection = BRCDatabaseManager.shared.readWriteConnection
     var completionQueue = DispatchQueue.main
     
     @objc func prefetchAllColors() {
         DispatchQueue.global(qos: .default).async {
             var objects: [(BRCArtObject, BRCArtMetadata)] = []
-            self.readConnection.read { transaction in
+            self.backgroundReadConnection.read { transaction in
                 transaction.enumerateRows(inCollection: BRCArtObject.yapCollection, using: { (key, object, metadata, stop) in
                     guard let art = object as? BRCArtObject else {
                         return
@@ -123,7 +123,7 @@ public class ColorCache: NSObject {
         let processBlock = {
             // Maybe find colors in database when given stale artMetadata
             var existingColors: BRCImageColors? = nil
-            self.readConnection.read { transaction in
+            self.backgroundReadConnection.read { transaction in
                 let artMetadata = art.artMetadata(with: transaction)
                 existingColors = artMetadata.thumbnailImageColors
             }

@@ -67,7 +67,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     _dataObject = dataObject;
     __block BRCObjectMetadata *metadata = nil;
-    [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
+    [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
         metadata = [dataObject metadataWithTransaction:transaction];
     }];
     self.metadata = metadata;
@@ -345,7 +345,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         // Go to correct camp page
         BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
         __block BRCDataObject *dataObject = nil;
-        [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             dataObject = [relationshipCellInfo.dataObject refetchWithTransaction:transaction];
         }];
         BRCDetailViewController *detailVC = [[BRCDetailViewController alloc] initWithDataObject:dataObject];

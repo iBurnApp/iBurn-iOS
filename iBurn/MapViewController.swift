@@ -13,7 +13,7 @@ import BButton
 import CocoaLumberjack
 
 public class MapViewController: BaseMapViewController {
-    let readConnection: YapDatabaseConnection
+    let uiConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
@@ -23,7 +23,7 @@ public class MapViewController: BaseMapViewController {
     let tapGesture = UITapGestureRecognizer()
     
     public override init() {
-        readConnection = BRCDatabaseManager.shared.readConnection
+        uiConnection = BRCDatabaseManager.shared.uiConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
         geocoder = BRCGeocoder.shared
@@ -102,7 +102,7 @@ private extension MapViewController {
                 DDLogWarn("User location not found!")
                 return
             }
-            self?.readConnection.read { transaction in
+            self?.uiConnection.read { transaction in
                 if let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction) {
                     DDLogInfo("Found closest point: \(point)")
                 } else if mapPointType == .userBike || mapPointType == .userHome {
@@ -131,7 +131,7 @@ private extension MapViewController {
     func reloadUserAnnotations() {
         mapView.removeAnnotations(userAnnotations)
         userAnnotations = []
-        readConnection.asyncRead({ transaction in
+        uiConnection.asyncRead({ transaction in
             transaction.enumerateKeysAndObjects(inCollection: BRCUserMapPoint.yapCollection, using: { (key, object, stop) in
                 if let mapPoint = object as? BRCUserMapPoint {
                     self.userAnnotations.append(mapPoint)

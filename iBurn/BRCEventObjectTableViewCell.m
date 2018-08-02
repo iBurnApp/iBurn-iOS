@@ -83,7 +83,7 @@
     __block BRCArtObject *art = nil;
     __block BRCDataObject *host = nil;
     // shouldn't be doing this fetch in here... best moved up to the view controller
-    [BRCDatabaseManager.shared.readConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+    [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
         camp = [eventObject hostedByCampWithTransaction:transaction];
         if (camp) {
             return;

@@ -111,12 +111,12 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     config.objectPolicy = YapDatabasePolicyShare;
     config.objectCacheEnabled = YES;
     config.objectCacheLimit = 10000;
-    config.metadataCacheEnabled = NO;
+    config.metadataCacheEnabled = YES;
     self.readWriteConnection = [self.database newConnection];
     self.readWriteConnection.objectPolicy = YapDatabasePolicyShare;
     self.readWriteConnection.name = @"readWriteConnection";
-    _readConnection = [self.database newConnection];
-    self.readConnection.objectPolicy = YapDatabasePolicyShare;
+    _backgroundReadConnection = [self.database newConnection];
+    self.backgroundReadConnection.objectPolicy = YapDatabasePolicyShare;
     
     _longLived = [[LongLivedConnectionManager alloc] initWithDatabase:self.database];
 //#if DEBUG
@@ -202,6 +202,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
     _rTreeIndex = @"RTreeIndex";
     _relationships = @"relationships";
+}
+
+- (YapDatabaseConnection*) uiConnection {
+    return self.longLived.connection;
 }
 
 #pragma mark Registration
@@ -799,7 +803,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                            @(maxLat)];
     YapDatabaseQuery *query = [YapDatabaseQuery queryWithString:queryString parameters:paramters];
     
-    [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [self.backgroundReadConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         YapDatabaseRTreeIndexTransaction *rTree = [transaction ext:self.rTreeIndex];
         [rTree enumerateKeysAndObjectsMatchingQuery:query usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCDataObject class]]) {

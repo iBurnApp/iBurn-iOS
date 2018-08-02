@@ -15,7 +15,6 @@ public final class SearchDisplayManager: NSObject {
     public let searchController: UISearchController
     let viewHandler: YapViewHandler
     public let tableViewAdapter: YapTableViewAdapter
-    let readConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
     let searchConnection: YapDatabaseConnection
     let searchQueue = YapDatabaseSearchQueue()
@@ -29,7 +28,6 @@ public final class SearchDisplayManager: NSObject {
         
         // Setup connections
         viewHandler = YapViewHandler(viewName: self.viewName)
-        readConnection = BRCDatabaseManager.shared.readConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         searchConnection = BRCDatabaseManager.shared.database.newConnection()
         
