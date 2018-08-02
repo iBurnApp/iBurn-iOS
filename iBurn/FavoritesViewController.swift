@@ -53,6 +53,10 @@ public class FavoritesViewController: ObjectListViewController {
 
 private extension FavoritesViewController {
     
+    var selectedFilter: FavoritesFilter {
+        return FavoritesFilter.allValues[filterControl.selectedSegmentIndex]
+    }
+    
     // MARK: - Setup
     
     func setupFilter() {
@@ -78,7 +82,7 @@ private extension FavoritesViewController {
     // MARK: - UI Interaction
     
     @objc func filterValueChanged(_ sender: UISegmentedControl) {
-        let value = FavoritesFilter.allValues[sender.selectedSegmentIndex]
+        let value = selectedFilter
         UserSettings.favoritesFilter = value
         updateFilter(value)
     }
