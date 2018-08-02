@@ -16,13 +16,22 @@ import Foundation
 }
 
 @objc public final class YapTableViewAdapter: NSObject {
-    let tableView: UITableView
+    var tableView: UITableView {
+        didSet {
+            tableView.delegate = self
+            tableView.dataSource = self
+        }
+    }
     let viewHandler: YapViewHandler
     let writeConnection: YapDatabaseConnection
     /// For converting sectionIndexTitles
-    public var groupTransformer: ((String) -> String)?
+    public var groupTransformer: (String) -> String = { $0 }
     public weak var delegate: YapTableViewAdapterDelegate?
     var audioObserver: NSObjectProtocol?
+    /// on the right side quick scroll bar
+    var showSectionIndexTitles = true
+    /// header sections
+    var showSectionHeaderTitles = false
 
     /// This will take control of the UITableViewDataSource
     /// and YapViewHandlerDelegate
@@ -61,25 +70,31 @@ extension YapTableViewAdapter: UITableViewDelegate {
 }
 
 extension YapTableViewAdapter: UITableViewDataSource {
+    
+    public func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard showSectionHeaderTitles else { return nil }
+        return groupTransformer(viewHandler.allGroups[section])
+    }
+    
     public func sectionIndexTitles(for tableView: UITableView) -> [String]? {
-        var groups = viewHandler.allGroups
-        if let groupTransformer = self.groupTransformer {
-            groups = groups.map {
-                groupTransformer($0)
-            }
+        guard showSectionIndexTitles else {
+            return nil
         }
-        groups.insert(UITableViewIndexSearch, at: 0)
+        let groups = viewHandler.allGroups.map {
+            groupTransformer($0)
+        }
+//        groups.insert(UITableViewIndexSearch, at: 0)
         return groups
     }
     
-    public func tableView(_ tableView: UITableView, sectionForSectionIndexTitle title: String, at index: Int) -> Int {
-        if index > 0 {
-            return viewHandler.sectionForGroup(title)
-        } else {
-            tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
-            return NSNotFound
-        }
-    }
+//    public func tableView(_ tableView: UITableView, sectionForSectionIndexTitle title: String, at index: Int) -> Int {
+//        if index > 0 {
+//            return viewHandler.sectionForGroup(title)
+//        } else {
+//            tableView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
+//            return NSNotFound
+//        }
+//    }
     
     public func numberOfSections(in tableView: UITableView) -> Int {
         return viewHandler.numberOfSections

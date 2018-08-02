@@ -9,37 +9,87 @@
 import UIKit
 import YapDatabase
 
-class FavoritesViewController: SortedViewController {
+public enum FavoritesFilter: String {
+    case all = "All"
+    case event = "Events"
+    case art = "Art"
+    case camp = "Camps"
+    /// this is the order that the filters appear
+    static let allValues: [FavoritesFilter] = [.all, .art, .camp, .event]
+}
 
-    @objc required init(style: UITableViewStyle, extensionName ext: String) {
-        super.init(style: style, extensionName: ext)
-        emptyDetailText = "Favorite things to see them here."
-    }
+public class FavoritesViewController: ObjectListViewController {
     
-    required init!(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-    
-    override func refreshTableItems(_ completion: @escaping ()->()) {
-        var favorites: [BRCDataObject] = []
-        BRCDatabaseManager.shared.readConnection.asyncRead({ (transaction) -> Void in
-            if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
-                viewTransaction.enumerateGroups({ (group, stop) -> Void in
-                    viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in
-                        if let dataObject = object as? BRCDataObject {
-                            favorites.append(dataObject)
-                        }
-                    })
-                })
+    private enum Group: String {
+        case event = "BRCEventObject"
+        case camp = "BRCCampObject"
+        case art = "BRCArtObject"
+        var sectionTitle: String? {
+            return filter?.rawValue
+        }
+        var filter: FavoritesFilter? {
+            switch self {
+            case .art:
+                return .art
+            case .camp:
+                return .camp
+            case .event:
+                return .event
             }
-        }, completionBlock: { () -> Void in
-            let options = BRCDataSorterOptions()
-            options.showFutureEvents = true
-            options.showExpiredEvents = true
-            BRCDataSorter.sortDataObjects(favorites, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
-                self.processSortedData(events, art: art, camps: camps, completion: completion)
-            })
-        })
+        }
     }
+    
+    private let filterControl = UISegmentedControl(items: FavoritesFilter.allValues.map { $0.rawValue })
 
+    // MARK: - View Lifecycle
+    
+    public override func viewDidLoad() {
+        self.tableView = UITableView.iBurnTableView(style: .grouped)
+        super.viewDidLoad()
+        setupFilter()
+        setupTableViewAdapter()
+    }
+}
+
+private extension FavoritesViewController {
+    
+    // MARK: - Setup
+    
+    func setupFilter() {
+        tableView.tableHeaderView = filterControl
+        filterControl.addTarget(self, action: #selector(filterValueChanged(_:)), for: .valueChanged)
+        
+        let userFilter = UserSettings.favoritesFilter
+        let index = FavoritesFilter.allValues.index(of: userFilter) ?? 0
+        filterControl.selectedSegmentIndex = index
+        updateFilter(userFilter)
+    }
+    
+    func setupTableViewAdapter() {
+        listCoordinator.searchDisplayManager.tableViewAdapter.showSectionIndexTitles = false
+        listCoordinator.tableViewAdapter.showSectionIndexTitles = false
+        listCoordinator.tableViewAdapter.showSectionHeaderTitles = true
+        listCoordinator.tableViewAdapter.groupTransformer = {
+            guard let group = Group(rawValue: $0), let title = group.sectionTitle else { return $0 }
+            return title
+        }
+    }
+    
+    // MARK: - UI Interaction
+    
+    @objc func filterValueChanged(_ sender: UISegmentedControl) {
+        let value = FavoritesFilter.allValues[sender.selectedSegmentIndex]
+        UserSettings.favoritesFilter = value
+        updateFilter(value)
+    }
+    
+    private func updateFilter(_ newFilter: FavoritesFilter) {
+        listCoordinator.tableViewAdapter.viewHandler.groups = .filter { (group, _) -> Bool in
+            if newFilter == .all {
+                return true
+            }
+            guard let filter = Group(rawValue: group)?.filter else { return false }
+            return filter == newFilter
+        }
+    }
 }

@@ -242,7 +242,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
     
-    self.favoritesViewController = [[FavoritesViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:dbManager.everythingFilteredByFavorite];
+    self.favoritesViewController = [[FavoritesViewController alloc] initWithViewName:BRCDatabaseManager.shared.everythingFilteredByFavorite searchViewName:BRCDatabaseManager.shared.searchFavoritesView];
     self.favoritesViewController.title = @"Favorites";
     UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];

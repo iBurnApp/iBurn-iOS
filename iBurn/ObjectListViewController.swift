@@ -10,13 +10,17 @@ import UIKit
 import Anchorage
 
 @objc
-public final class ObjectListViewController: UIViewController {
+public class ObjectListViewController: UIViewController {
     
     // MARK: - Public Properties
     
     public let viewName: String
     public let searchViewName: String
-    public let tableView = UITableView.iBurnTableView()
+    public var tableView = UITableView.iBurnTableView() {
+        didSet {
+            listCoordinator.tableViewAdapter.tableView = tableView
+        }
+    }
     
     // MARK: - Private Properties
     

@@ -11,7 +11,7 @@ import Anchorage
 import ASDayPicker
 
 @objc
-public final class EventListViewController: UIViewController {
+public class EventListViewController: UIViewController {
     
     // MARK: - Public Properties
     
@@ -141,14 +141,14 @@ private extension EventListViewController {
     
     func replaceTimeBasedEventMappings() {
         let selectedDayString = DateFormatter.eventGroupDateFormatter.string(from: self.selectedDay)
-        self.listCoordinator.tableViewAdapter.viewHandler.groups = .block({ (group, transaction) -> Bool in
+        self.listCoordinator.tableViewAdapter.viewHandler.groups = .filterSort({ (group, transaction) -> Bool in
             return group.contains(selectedDayString)
         }, { (group1, group2, transaction) -> ComparisonResult in
             return group1.compare(group2)
         })
         let searchSelectedDayOnly = UserSettings.searchSelectedDayOnly
         
-        self.listCoordinator.searchDisplayManager.tableViewAdapter.viewHandler.groups = .block({ (group, transaction) -> Bool in
+        self.listCoordinator.searchDisplayManager.tableViewAdapter.viewHandler.groups = .filterSort({ (group, transaction) -> Bool in
             if searchSelectedDayOnly {
                 return group.contains(selectedDayString)
             } else {

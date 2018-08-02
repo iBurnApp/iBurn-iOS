@@ -15,6 +15,21 @@ public final class UserSettings: NSObject {
         static let searchSelectedDayOnly = "kBRCSearchSelectedDayOnlyKey"
         static let theme = "Theme"
         static let contrast = "Contrast"
+        static let favoritesFilter = "FavoritesFilter"
+    }
+    
+    /// Selected favorites filter
+    public static var favoritesFilter: FavoritesFilter {
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: Keys.favoritesFilter)
+        }
+        get {
+            guard let string = UserDefaults.standard.string(forKey: Keys.favoritesFilter),
+                let filter = FavoritesFilter(rawValue: string) else {
+                    return .all
+            }
+            return filter
+        }
     }
     
     /** Whether or not search on event view shows results for all days */

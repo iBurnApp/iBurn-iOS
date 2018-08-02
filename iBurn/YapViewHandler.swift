@@ -26,13 +26,10 @@ import CocoaLumberjack
     @objc public let viewName: String
     
     public enum MappingsGroups {
+        case all
         case names([String])
-        case block(YapDatabaseViewMappingGroupFilter, YapDatabaseViewMappingGroupSort)
-        
-        public static let all = MappingsGroups.block({ _,_ in return true },
-                                              { a, b, _ in
-                                                return a.compare(b) })
-    }
+        case filter(YapDatabaseViewMappingGroupFilter)
+        case filterSort(YapDatabaseViewMappingGroupFilter, YapDatabaseViewMappingGroupSort)    }
     
     /// Setting this will reset the internal mappings
     public var groups: MappingsGroups {
@@ -85,7 +82,7 @@ import CocoaLumberjack
                                   viewName: String,
                                   groupFilter: @escaping YapDatabaseViewMappingGroupFilter,
                                   groupSort: @escaping YapDatabaseViewMappingGroupSort) {
-        let groups = MappingsGroups.block(groupFilter, groupSort)
+        let groups = MappingsGroups.filterSort(groupFilter, groupSort)
         self.init(viewName: viewName,
                   manager: manager,
                   delegate: delegate,
@@ -102,7 +99,7 @@ import CocoaLumberjack
     
     @objc public func setGroupFilter(_ groupFilter: @escaping YapDatabaseViewMappingGroupFilter,
                                         groupSort: @escaping YapDatabaseViewMappingGroupSort) {
-        self.groups = MappingsGroups.block(groupFilter, groupSort)
+        self.groups = MappingsGroups.filterSort(groupFilter, groupSort)
     }
     
     @objc public var allGroups: [String] {
@@ -179,9 +176,17 @@ private extension YapViewHandler {
             switch self.groups {
             case .names(let names):
                 mappings = YapDatabaseViewMappings(groups: names, view: self.viewName)
-            case .block(let filterBlock, let sortBlock):
+            case .filterSort(let filterBlock, let sortBlock):
                 mappings = YapDatabaseViewMappings(groupFilterBlock: filterBlock,
                                                    sortBlock: sortBlock,
+                                                   view: self.viewName)
+            case .filter(let filterBlock):
+                mappings = YapDatabaseViewMappings(groupFilterBlock: filterBlock,
+                                                   sortBlock: { (g1, g2, _) in return g1.compare(g2) },
+                                                   view: self.viewName)
+            case .all:
+                mappings = YapDatabaseViewMappings(groupFilterBlock: { _,_ in true },
+                                                   sortBlock: { (g1, g2, _) in return g1.compare(g2) },
                                                    view: self.viewName)
             }
             mappings?.update(with: transaction)
