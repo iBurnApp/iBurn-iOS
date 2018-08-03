@@ -32,7 +32,7 @@
 - (void) setupMapView {
     self.mapView = [[MGLMapView alloc] init];
     [self.mapView brc_setDefaults];
-    _annotationDelegate = [[MapViewDelegate alloc] init];
+    _annotationDelegate = [[MapViewAdapter alloc] init];
     self.mapView.delegate = self.annotationDelegate;
     [self.view addSubview:self.mapView];
     [self.mapView autoPinEdgesToSuperviewEdges];

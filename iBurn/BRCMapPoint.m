@@ -88,8 +88,10 @@
 }
 
 - (void) setCoordinate:(CLLocationCoordinate2D)coordinate {
+    [self willChangeValueForKey:NSStringFromSelector(@selector(coordinate))];
     _latitude = coordinate.latitude;
     _longitude = coordinate.longitude;
+    [self didChangeValueForKey:NSStringFromSelector(@selector(coordinate))];
 }
 
 + (NSDictionary *)encodingBehaviorsByPropertyKey {
@@ -184,5 +186,21 @@
     }
 }
 
+- (NSString*) title {
+    switch (self.type) {
+        case BRCMapPointTypeUserHome:
+            return @"Home";
+        case BRCMapPointTypeUserBike:
+            return @"Bike";
+        case BRCMapPointTypeUserStar: {
+            if (_title) {
+                return _title;
+            }
+            return @"Favorite";
+        }
+        default:
+            return _title;
+    }
+}
 
 @end

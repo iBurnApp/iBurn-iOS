@@ -12,6 +12,7 @@
 
 @class BRCAnnotationEditView;
 
+NS_ASSUME_NONNULL_BEGIN
 @protocol BRCAnnotationEditViewDelegate <NSObject>
 @required
 - (void)editViewDidSelectDelete:(BRCAnnotationEditView *)editView mapPointToDelete:(BRCUserMapPoint *)mapPointToDelete;
@@ -23,7 +24,7 @@
 - (instancetype)initWithDelegate:(id <BRCAnnotationEditViewDelegate>)delegate;
 
 /** set the mapPoint to change textField title */
-@property (nonatomic, copy) BRCUserMapPoint *mapPoint;
+@property (nonatomic, copy, nullable) BRCUserMapPoint *mapPoint;
 
 @property (nonatomic, weak, readonly) id<BRCAnnotationEditViewDelegate> delegate;
 @property (nonatomic, strong, readonly) UITextField* textField;
@@ -31,6 +32,7 @@
 @property (nonatomic, strong, readonly) BButton *deleteButton;
 
 /** for different BRCUserMapPoint types */
-@property (nonatomic, strong, readonly) NSArray *typeButtons;
+@property (nonatomic, strong, readonly) NSArray<UIButton*> *typeButtons;
 
 @end
+NS_ASSUME_NONNULL_END

@@ -8,31 +8,15 @@
 
 import UIKit
 
-class MapAnnotation: NSObject, MGLAnnotation {
+class DataObjectAnnotation: NSObject, MGLAnnotation {
     
-    weak var parent: BRCDataObject? = nil
     let coordinate: CLLocationCoordinate2D
     let title: String?
     let subtitle: String?
     
-    init(coordinate: CLLocationCoordinate2D,
-         title: String?,
-         subtitle: String?) {
-        self.coordinate = coordinate
-        self.title = title
-        self.subtitle = subtitle
-    }
-    
-    @objc convenience init?(object: BRCDataObject) {
-        var location = object.location
-        var address = object.playaLocation
-        if location == nil {
-            location = object.burnerMapLocation
-        }
-        if address == nil {
-            address = object.burnerMapLocationString
-        }
-        guard let loc = location else {
+    @objc public init?(object: BRCDataObject) {
+        guard let location = object.location ?? object.burnerMapLocation,
+            let address = object.playaLocation ?? object.burnerMapLocationString else {
             return nil
         }
         var title = object.title
@@ -43,8 +27,10 @@ class MapAnnotation: NSObject, MGLAnnotation {
                 title = art
             }
         }
-        self.init(coordinate: loc.coordinate, title: title, subtitle: address)
-        self.parent = object
+        self.coordinate = location.coordinate
+        self.title = title
+        self.subtitle = address
+        super.init()
     }
     
 }
@@ -52,15 +38,19 @@ class MapAnnotation: NSObject, MGLAnnotation {
 public class MapDetailViewController: BaseMapViewController {
     
     private let dataObject: BRCDataObject
-    private let annotation: MapAnnotation?
+    private let annotation: DataObjectAnnotation?
     
     @objc public init(dataObject: BRCDataObject) {
         self.dataObject = dataObject
-        self.annotation = MapAnnotation(object: dataObject)
+        self.annotation = DataObjectAnnotation(object: dataObject)
         super.init()
         if let annotation = annotation {
             mapView.addAnnotation(annotation)
         }
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     public override func viewDidLoad() {
@@ -84,7 +74,5 @@ public class MapDetailViewController: BaseMapViewController {
     }
 
     
-    required public init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+
 }

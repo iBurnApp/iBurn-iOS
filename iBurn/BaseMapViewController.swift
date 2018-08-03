@@ -13,31 +13,29 @@ import CocoaLumberjack
 
 public class BaseMapViewController: UIViewController {
     
-    var mapView: MGLMapView
-    let mapViewDelegate: MapViewDelegate
+    let mapView = MGLMapView()
+    let mapViewAdapter: MapViewAdapter
     @objc public var isVisible = false
     
+    // MARK: - Init
+    
     public init() {
-        mapView = MGLMapView()
-        mapViewDelegate = MapViewDelegate()
+        mapViewAdapter = MapViewAdapter(mapView: mapView)
         super.init(nibName: nil, bundle: nil)
-        setupMapView(mapView)
     }
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+    // MARK: - View Lifecycle
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(self, selector: #selector(mapTilesUpdated), name: NSNotification.Name.BRCDataImporterMapTilesUpdated, object: nil)
         view.addSubview(mapView)
-        view.sendSubview(toBack: mapView)
         mapView.autoPinEdgesToSuperviewEdges()
+        setupTrackingButton(mapView: mapView)
+        setupMapView(mapView)
     }
     
     override public func viewWillAppear(_ animated: Bool) {
@@ -58,26 +56,23 @@ public class BaseMapViewController: UIViewController {
         isVisible = false
     }
     
-    private func setupMapView(_ mapView: MGLMapView) {
-        mapView.brc_setDefaults()
-        mapView.delegate = mapViewDelegate
-        centerMapAtManCoordinatesAnimated(false)
-        setupTrackingButton(mapView: mapView)
-    }
-    
-    private func setupTrackingButton(mapView: MGLMapView) {
-        let button = BRCUserTrackingBarButtonItem(mapView: mapView)
-        navigationItem.rightBarButtonItem = button
-    }
+    // MARK: - Public API
     
     @objc public func centerMapAtManCoordinatesAnimated(_ animated: Bool) {
         mapView.brc_moveToBlackRockCityCenter(animated: animated)
     }
+}
+
+// MARK: - Private
+
+private extension BaseMapViewController {
+    func setupMapView(_ mapView: MGLMapView) {
+        mapView.brc_setDefaults()
+        centerMapAtManCoordinatesAnimated(false)
+    }
     
-    @objc private func mapTilesUpdated(notification: Notification) {
-        DDLogInfo("Replacing map tiles via notification...")
-        mapView.removeFromSuperview()
-        mapView = MGLMapView()
-        setupMapView(mapView)
+    func setupTrackingButton(mapView: MGLMapView) {
+        let button = BRCUserTrackingBarButtonItem(mapView: mapView)
+        navigationItem.rightBarButtonItem = button
     }
 }

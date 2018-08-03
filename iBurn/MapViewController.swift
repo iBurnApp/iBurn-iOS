@@ -18,7 +18,6 @@ public class MapViewController: BaseMapViewController {
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
     let geocoder: BRCGeocoder
-    var userAnnotations: [BRCUserMapPoint] = []
     let search: SearchDisplayManager
     let tapGesture = UITapGestureRecognizer()
     
@@ -59,7 +58,7 @@ public class MapViewController: BaseMapViewController {
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        reloadUserAnnotations()
+        mapViewAdapter.reloadUserAnnotations()
         geocodeNavigationBar()
     }
 }
@@ -110,6 +109,7 @@ private extension MapViewController {
             self?.uiConnection.read { transaction in
                 if let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction) {
                     DDLogInfo("Found closest point: \(point)")
+                    self?.mapView.selectAnnotation(point, animated: true)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     // If we can't find your bike or home, let's make a new one
                     self?.addUserMapPoint(type: mapPointType)
@@ -119,32 +119,9 @@ private extension MapViewController {
         sidebarButtons.placePinAction = { [weak self] sender in
             self?.addUserMapPoint(type: .userStar)
         }
-        mapViewDelegate.saveMapPoint = { [weak self] mapPoint in
-            self?.writeConnection.readWrite { transaction in
-                mapPoint.save(with: transaction, metadata: nil)
-            }
-            self?.mapViewDelegate.editingAnnotation = nil
-            self?.mapView.removeAnnotation(mapPoint)
-            DDLogInfo("Saved user annotation: \(mapPoint)")
-            self?.reloadUserAnnotations()
-        }
         sidebarButtons.searchAction = { [weak self] sender in
             self?.searchButtonPressed(sender)
         }
-    }
-    
-    func reloadUserAnnotations() {
-        mapView.removeAnnotations(userAnnotations)
-        userAnnotations = []
-        uiConnection.asyncRead({ transaction in
-            transaction.enumerateKeysAndObjects(inCollection: BRCUserMapPoint.yapCollection, using: { (key, object, stop) in
-                if let mapPoint = object as? BRCUserMapPoint {
-                    self.userAnnotations.append(mapPoint)
-                }
-            })
-        }, completionBlock: {
-            self.mapView.addAnnotations(self.userAnnotations)
-        })
     }
     
     func addUserMapPoint(type: BRCMapPointType) {
@@ -157,20 +134,17 @@ private extension MapViewController {
             !CLLocationCoordinate2DIsValid(coordinate) {
             coordinate = BRCLocations.blackRockCityCenter
         }
-        let mapPoint = BRCUserMapPoint(title: NSLocalizedString("Favorite", comment:"favorite marked on map"), coordinate: coordinate, type: type)
-        if let existingMapPoint = mapViewDelegate.editingAnnotation {
-            mapView.removeAnnotation(existingMapPoint)
-        }
-        mapViewDelegate.editingAnnotation = mapPoint
-        mapView.addAnnotation(mapPoint)
+        let mapPoint = BRCUserMapPoint(title: nil, coordinate: coordinate, type: type)
+        mapViewAdapter.editMapPoint(mapPoint)
     }
 }
 
 extension MapViewController: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
+        let nav = presentingViewController?.navigationController ??
+            navigationController
         let detail = BRCDetailViewController(dataObject: object.object)
-        self.navigationController?.pushViewController(detail, animated: false)
-        search.searchController.isActive = false
+        nav?.pushViewController(detail, animated: false)
     }
 }
 

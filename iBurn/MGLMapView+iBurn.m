@@ -17,7 +17,7 @@
 @implementation MGLMapView (iBurn)
 
 - (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject animated:(BOOL)animated padding:(UIEdgeInsets)padding {
-    MapAnnotation *annotation = [[MapAnnotation alloc] initWithObject:dataObject];
+    DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject];
     if (!annotation) { return; }
     [self brc_showDestination:annotation animated:animated padding:padding];
 }

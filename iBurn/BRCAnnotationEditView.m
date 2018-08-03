@@ -193,7 +193,7 @@
 
 - (void) starButtonPressed:(id)sender {
     if (!self.mapPoint.title.length) {
-        self.mapPoint.title = @"Saved Pin";
+        self.mapPoint.title = @"Favorite";
     }
     [self savePoint:self.mapPoint ofType:BRCMapPointTypeUserStar];
 }

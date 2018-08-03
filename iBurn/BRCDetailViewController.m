@@ -33,7 +33,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 @property (nonatomic, strong) NSArray<BRCDetailCellInfo*> *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
 @property (nonatomic, strong) MGLMapView *mapView;
-@property (nonatomic, strong) MapViewDelegate *mapViewDelegate;
+@property (nonatomic, strong) MapViewAdapter *mapViewAdapter;
 @end
 
 @implementation BRCDetailViewController
@@ -224,9 +224,8 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
-        self.mapViewDelegate = [[MapViewDelegate alloc] init];
-        self.mapView.delegate = self.mapViewDelegate;
-        MapAnnotation *annotation = [[MapAnnotation alloc] initWithObject:dataObject];
+        self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView];
+        DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject];
         if (annotation) {
             [self.mapView addAnnotation:annotation];
         }
