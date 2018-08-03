@@ -40,6 +40,8 @@
 @import AVFoundation;
 @import CocoaLumberjack;
 
+static int ddLogLevel = DDLogLevelVerbose;
+
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
 @interface BRCAppDelegate() <UINavigationControllerDelegate>
@@ -60,11 +62,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 {
 #if DEBUG
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
-//
-//    DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
-//    fileLogger.rollingFrequency = 0;
-//    fileLogger.maximumFileSize = 0;
-//    [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
+
+    DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
+    fileLogger.doNotReuseLogFiles = YES;
+    [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
     // DATE TESTING
 #if DEBUG
@@ -211,6 +212,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    DDLogInfo(@"applicationWillTerminate");
 }
 
 - (void)application:(UIApplication *)application
@@ -227,6 +229,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     } else if ([identifier isEqualToString:self.imageDownloader.backgroundSessionIdentifier]) {
         self.imageDownloader.backgroundCompletion = completionHandler;
     }
+}
+
+- (void) applicationDidReceiveMemoryWarning:(UIApplication *)application {
+    DDLogWarn(@"applicationDidReceiveMemoryWarning:");
 }
 
 - (void)setupDefaultTabBarController
