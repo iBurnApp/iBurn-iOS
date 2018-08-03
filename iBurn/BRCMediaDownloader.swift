@@ -32,7 +32,7 @@ extension Bundle {
     }
 }
 
-open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
+public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
     
     static let mediaFolderName = "MediaFiles"
 
@@ -41,9 +41,9 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     var session: Foundation.URLSession!
     
     let downloadType: BRCMediaDownloadType
-    @objc open let backgroundSessionIdentifier: String
+    @objc public let backgroundSessionIdentifier: String
     var observer: NSObjectProtocol?
-    @objc open var backgroundCompletion: (()->())?
+    @objc public var backgroundCompletion: (()->())?
     let delegateQueue = OperationQueue()
     var backgroundTask: UIBackgroundTaskIdentifier
     
@@ -142,7 +142,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
         return fileName
     }
     
-    @objc open static func fileName(_ object: BRCDataObject, type: BRCMediaDownloadType) -> String {
+    @objc public static func fileName(_ object: BRCDataObject, type: BRCMediaDownloadType) -> String {
         let fileType = extensionForDownloadType(type)
         let fileName =  "\(object.uniqueID).\(fileType)"
         return fileName
@@ -160,7 +160,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     }
     
     /** This will cache un-downloaded media */
-    open func downloadUncachedMedia() {
+    public func downloadUncachedMedia() {
         BRCMediaDownloader.copyMediaFilesIfNeeded()
         connection.asyncRead { (transaction) in
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
@@ -238,7 +238,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     }
     
     //MARK: NSURLSessionDelegate
-    open func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+    public func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
         if let backgroundCompletion = backgroundCompletion {
             backgroundCompletion()
         }
@@ -247,7 +247,7 @@ open class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionDownloadD
     
     //MARK: NSURLSessionDownloadDelegate
     
-    open func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         
         guard let fileName = downloadTask.taskDescription else {
             DDLogError("taskDescription is nil!")

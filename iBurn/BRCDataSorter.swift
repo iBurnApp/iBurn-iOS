@@ -15,13 +15,13 @@ public enum SortOrder {
     case distance(CLLocation)
 }
 
-public class BRCDataSorterOptions {
-    open var sortOrder: SortOrder
-    open var showExpiredEvents: Bool
-    open var showFutureEvents: Bool
+public final class BRCDataSorterOptions {
+    public var sortOrder: SortOrder
+    public var showExpiredEvents: Bool
+    public var showFutureEvents: Bool
     /** Default true. Puts expired events at bottom. */
-    open var sortEventsWithExpiration: Bool
-    open var now: Date
+    public var sortEventsWithExpiration: Bool
+    public var now: Date
     public init () {
         showExpiredEvents = false
         showFutureEvents = false
@@ -42,8 +42,8 @@ public class BRCDataSorterOptions {
  * For "smart sorting" big arrays of BRCDataObjects into events, art, and camps.
  * Used by Nearby and Favorites screen.
  */
-public class BRCDataSorter: NSObject {
-    open static func sortDataObjects(
+public final class BRCDataSorter: NSObject {
+    public static func sortDataObjects(
         _ objects: [BRCDataObject],
         options: BRCDataSorterOptions?,
         completionQueue: DispatchQueue?,

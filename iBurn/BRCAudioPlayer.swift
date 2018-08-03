@@ -34,10 +34,10 @@ fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 
 
 /** Make sure to listen for BRCAudioPlayerChangeNotification and refresh your views */
-open class BRCAudioPlayer: NSObject {
+public final class BRCAudioPlayer: NSObject {
     /** This is fired if track is changed, or stops playing */
-    @objc open static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
-    @objc open static let sharedInstance = BRCAudioPlayer()
+    @objc public static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
+    @objc public static let sharedInstance = BRCAudioPlayer()
     var player: AVQueuePlayer?
     fileprivate var nowPlaying: BRCArtObject?
     fileprivate var queuedObjects: [BRCArtObject] = []
@@ -51,7 +51,7 @@ open class BRCAudioPlayer: NSObject {
         NotificationCenter.default.addObserver(self, selector: #selector(BRCAudioPlayer.didFinishPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
-    @objc open func isPlaying(_ item: BRCArtObject) -> Bool {
+    @objc public func isPlaying(_ item: BRCArtObject) -> Bool {
         if nowPlaying?.uniqueID == item.uniqueID && player?.rate > 0 {
             return true
         }
@@ -59,7 +59,7 @@ open class BRCAudioPlayer: NSObject {
     }
     
     /** Plays audio tour for items, if they are the same it will pause */
-    @objc open func playAudioTour(_ items: [BRCArtObject]) {
+    @objc public func playAudioTour(_ items: [BRCArtObject]) {
         // this should never happen
         if items.count == 0 {
             reset()
@@ -92,7 +92,7 @@ open class BRCAudioPlayer: NSObject {
         fireChangeNotification()
     }
     
-    @objc open func togglePlayPause() {
+    @objc public func togglePlayPause() {
         if ((player?.currentItem) == nil) {
             reset()
         } else {
