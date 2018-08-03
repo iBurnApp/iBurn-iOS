@@ -46,8 +46,8 @@ public class FavoritesViewController: ObjectListViewController {
     public override func viewDidLoad() {
         self.tableView = UITableView.iBurnTableView(style: .grouped)
         super.viewDidLoad()
-        setupFilter()
         setupTableViewAdapter()
+        setupFilter()
     }
 }
 
