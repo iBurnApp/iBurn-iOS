@@ -28,6 +28,7 @@ import Foundation
         super.init()
         self.tableViewAdapter.delegate = self
         self.searchDisplayManager.tableViewAdapter.delegate = self
+        self.searchDisplayManager.searchController.delegate = self
     }
 }
 
@@ -37,5 +38,17 @@ extension ListCoordinator: YapTableViewAdapterDelegate {
          parent?.navigationController
         let vc = pageViewManager.pageViewController(for: object.object, at: indexPath, navBar: nav?.navigationBar)
         nav?.pushViewController(vc, animated: true)
+    }
+}
+
+extension ListCoordinator: UISearchControllerDelegate {
+    func didPresentSearchController(_ searchController: UISearchController) {
+        pageViewManager.tableView = self.searchDisplayManager.tableViewAdapter.tableView
+        pageViewManager.objectProvider = self.searchDisplayManager.viewHandler
+    }
+    
+    func didDismissSearchController(_ searchController: UISearchController) {
+        pageViewManager.tableView = self.tableViewAdapter.tableView
+        pageViewManager.objectProvider = self.tableViewAdapter.viewHandler
     }
 }

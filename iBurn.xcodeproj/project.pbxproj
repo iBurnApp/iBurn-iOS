@@ -102,6 +102,7 @@
 		D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */; };
 		D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */; };
 		D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A27ADD210FFC0F000BD535 /* Appearance.swift */; };
+		D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
 		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
@@ -383,6 +384,7 @@
 		D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-iBurn-acknowledgements.plist"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
 		D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDisplayManager.swift; sourceTree = "<group>"; };
 		D9A27ADD210FFC0F000BD535 /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
+		D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDatabaseManager.swift; sourceTree = "<group>"; };
 		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObject.swift; sourceTree = "<group>"; };
 		D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAcknowledgementsViewController.h; sourceTree = "<group>"; };
@@ -949,6 +951,7 @@
 		D994157B1987278400D245C7 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */,
 				D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */,
 				D99415781987277500D245C7 /* BRCDatabaseManager.h */,
 				D99415791987277500D245C7 /* BRCDatabaseManager.m */,
@@ -1534,6 +1537,7 @@
 				D9E0DA8F210F81920056286B /* UserSettings.swift in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
+				D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */,
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,
 				D97EB5EC21122A7D001B4351 /* DayPicker.swift in Sources */,
 				D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */,

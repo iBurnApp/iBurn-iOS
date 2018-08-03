@@ -70,7 +70,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // DATE TESTING
 #if DEBUG
 //    self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
-//    
+//
 //    [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
 //        return [NSDate brc_testDate];
 //    }];
@@ -233,6 +233,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 
 - (void) applicationDidReceiveMemoryWarning:(UIApplication *)application {
     DDLogWarn(@"applicationDidReceiveMemoryWarning:");
+    [BRCDatabaseManager.shared reduceCacheLimit];
 }
 
 - (void)setupDefaultTabBarController

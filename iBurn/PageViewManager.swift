@@ -10,8 +10,8 @@ import UIKit
 
 @objc public final class PageViewManager: NSObject {
     
-    let tableView: UITableView
-    let objectProvider: DataObjectProvider
+    var tableView: UITableView
+    var objectProvider: DataObjectProvider
     
     @objc public init(objectProvider: DataObjectProvider,
                       tableView: UITableView) {
