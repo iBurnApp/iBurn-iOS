@@ -52,14 +52,7 @@
 }
 
 + (NSDateFormatter*) brc_dayOfWeekDateFormatter {
-    static NSDateFormatter *brc_dayOfWeekDateFormatter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        brc_dayOfWeekDateFormatter = [[NSDateFormatter alloc] init];
-        brc_dayOfWeekDateFormatter.dateFormat = @"EEEE";
-        brc_dayOfWeekDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
-    });
-    return brc_dayOfWeekDateFormatter;
+    return DateFormatters.dayOfWeek;
 }
 
 + (NSDateFormatter*) brc_shortDateFormatter {

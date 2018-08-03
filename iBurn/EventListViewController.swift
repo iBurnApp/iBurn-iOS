@@ -88,8 +88,9 @@ private extension EventListViewController {
     func setupListCoordinator() {
         self.listCoordinator.parent = self
         let groupTransformer: (String) -> String = {
-            guard let hourString = $0.components(separatedBy: " ").last,
-            var hour = Int(hourString) else {
+            let components = $0.components(separatedBy: " ")
+            guard let hourString = components.last,
+                var hour = Int(hourString) else {
                 return $0
             }
             hour = hour % 12
@@ -98,7 +99,28 @@ private extension EventListViewController {
             }
             return "\(hour)"
         }
-        self.listCoordinator.searchDisplayManager.tableViewAdapter.groupTransformer = groupTransformer
+        let searchGroupTransformer: (String) -> String = {
+            let components = $0.components(separatedBy: " ")
+            guard let hourString = components.last,
+                let dateString = components.first,
+                let date = DateFormatter.eventGroupDateFormatter.date(from: dateString),
+                var hour = Int(hourString) else {
+                    return $0
+            }
+            let day = DateFormatter.dayOfWeek.string(from: date)
+            let dayLetter: String
+            if let letter = day.first {
+                dayLetter = "\(letter)"
+            } else {
+                dayLetter = ""
+            }
+            hour = hour % 12
+            if hour == 0 {
+                hour = 12
+            }
+            return "\(dayLetter)\(hour)"
+        }
+        self.listCoordinator.searchDisplayManager.tableViewAdapter.groupTransformer = searchGroupTransformer
         self.listCoordinator.tableViewAdapter.groupTransformer = groupTransformer
         replaceTimeBasedEventMappings()
     }

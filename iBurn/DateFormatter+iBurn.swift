@@ -20,16 +20,31 @@ public extension NSTimeZone {
 }
 
 extension DateFormatter {
+    /** e.g. 2015-09-04 */
     static let eventGroupDateFormatter: DateFormatter = {
         var df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
         df.timeZone = TimeZone.burningManTimeZone
         return df
     }()
+    
+    /// e.g. "Monday"
+    static let dayOfWeek: DateFormatter = {
+        var df = DateFormatter()
+        df.dateFormat = "EEEE"
+        df.timeZone = TimeZone.burningManTimeZone
+        return df
+    }()
 }
 
 @objc public final class DateFormatters: NSObject {
+    /** e.g. 2015-09-04 */
     @objc public static var eventGroupDateFormatter: DateFormatter {
         return DateFormatter.eventGroupDateFormatter
+    }
+    
+    /// e.g. "Monday"
+    @objc public static var dayOfWeek: DateFormatter {
+        return DateFormatter.dayOfWeek
     }
 }
