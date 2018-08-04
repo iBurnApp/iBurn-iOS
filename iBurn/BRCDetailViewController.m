@@ -224,11 +224,10 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
-        self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView];
         DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject];
-        if (annotation) {
-            [self.mapView addAnnotation:annotation];
-        }
+        SingleAnnotationDataSource *dataSource = [[SingleAnnotationDataSource alloc] initWithAnnotation:annotation];
+        self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView dataSource:dataSource];
+        [self.mapViewAdapter reloadAnnotations];
         self.mapView.userInteractionEnabled = NO;
     }
     else {

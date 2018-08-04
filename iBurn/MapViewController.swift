@@ -20,6 +20,9 @@ public class MapViewController: BaseMapViewController {
     let geocoder: BRCGeocoder
     let search: SearchDisplayManager
     let tapGesture = UITapGestureRecognizer()
+    var userMapViewAdapter: UserMapViewAdapter? {
+        return mapViewAdapter as? UserMapViewAdapter
+    }
     
     public override init() {
         uiConnection = BRCDatabaseManager.shared.uiConnection
@@ -28,6 +31,8 @@ public class MapViewController: BaseMapViewController {
         geocoder = BRCGeocoder.shared
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchCampsView)
         super.init()
+        let dataSource = UserAnnotationDataSource()
+        mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
     }
@@ -58,7 +63,7 @@ public class MapViewController: BaseMapViewController {
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        mapViewAdapter.reloadUserAnnotations()
+        mapViewAdapter.reloadAnnotations()
         geocodeNavigationBar()
     }
 }
@@ -135,7 +140,7 @@ private extension MapViewController {
             coordinate = BRCLocations.blackRockCityCenter
         }
         let mapPoint = BRCUserMapPoint(title: nil, coordinate: coordinate, type: type)
-        mapViewAdapter.editMapPoint(mapPoint)
+        userMapViewAdapter?.editMapPoint(mapPoint)
     }
 }
 

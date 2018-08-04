@@ -330,15 +330,7 @@ public extension UITableView {
     }
 }
 
-public extension YapDatabaseConnection {
-    func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
-        var object: T? = nil
-        read { transaction in
-            object = block(transaction)
-        }
-        return object
-    }
-}
+
 
 @objc public class BRCSectionRowChanges: NSObject {
     @objc public let sectionChanges: [YapDatabaseViewSectionChange]

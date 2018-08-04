@@ -41,6 +41,9 @@
 		D9167B7920F14ABA00815F81 /* TileCache in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7820F14ABA00815F81 /* TileCache */; };
 		D9167B7B20F14AD000815F81 /* iBurn-2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7A20F14AD000815F81 /* iBurn-2018 */; };
 		D9167B7D20F14BB300815F81 /* 2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7220F14A9500815F81 /* 2018 */; };
+		D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9251483211519A2007A7904 /* AnnotationDataSource.swift */; };
+		D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D925148521151F17007A7904 /* UserMapViewAdapter.swift */; };
+		D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */; };
 		D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */; };
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
@@ -280,6 +283,9 @@
 		D9167B7620F14AB100815F81 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2018/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D9167B7820F14ABA00815F81 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2018/TileCache"; sourceTree = SOURCE_ROOT; };
 		D9167B7A20F14AD000815F81 /* iBurn-2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2018"; path = "Submodules/iBurn-Data/data/2018/iBurn-2018"; sourceTree = SOURCE_ROOT; };
+		D9251483211519A2007A7904 /* AnnotationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationDataSource.swift; sourceTree = "<group>"; };
+		D925148521151F17007A7904 /* UserMapViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UserMapViewAdapter.swift; path = iBurn/UserMapViewAdapter.swift; sourceTree = "<group>"; };
+		D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "YapDatabaseConnection+iBurn.swift"; path = "iBurn/YapDatabaseConnection+iBurn.swift"; sourceTree = "<group>"; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCDataObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -538,6 +544,8 @@
 		63CE2A4B1987140F00F65B01 = {
 			isa = PBXGroup;
 			children = (
+				D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */,
+				D925148521151F17007A7904 /* UserMapViewAdapter.swift */,
 				D984DFD4210EC84200A45922 /* DataObject.swift */,
 				D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */,
 				D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */,
@@ -590,6 +598,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9251483211519A2007A7904 /* AnnotationDataSource.swift */,
 				D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */,
 				D984DFC5210D4B3100A45922 /* YapViewHandler.swift */,
 				D9EC0E5B1B7DE0350042B596 /* Utilities */,
@@ -1492,6 +1501,7 @@
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
 				D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */,
 				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
+				D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */,
 				D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */,
 				D9E0DA8D210F7AB70056286B /* UITableView+iBurn.swift in Sources */,
 				D9DE7BB01EF25C11007A983E /* MapViewController.swift in Sources */,
@@ -1517,6 +1527,7 @@
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,
 				D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */,
+				D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */,
 				D9E0DA97210FB46B0056286B /* SearchCooordinator.swift in Sources */,
 				D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */,
 				D984DFC9210D84CD00A45922 /* YapDatabaseViewConnection+iBurn.m in Sources */,
@@ -1554,6 +1565,7 @@
 				D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */,
 				D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */,
 				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,
+				D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */,
 				D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
 				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,

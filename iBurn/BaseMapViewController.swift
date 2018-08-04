@@ -14,7 +14,7 @@ import CocoaLumberjack
 public class BaseMapViewController: UIViewController {
     
     let mapView = MGLMapView()
-    let mapViewAdapter: MapViewAdapter
+    var mapViewAdapter: MapViewAdapter
     @objc public var isVisible = false
     
     // MARK: - Init
