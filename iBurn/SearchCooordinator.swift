@@ -22,7 +22,9 @@ extension SearchCooordinator where Self: UIViewController {
             let search = UIBarButtonItem(barButtonSystemItem: .search) { [weak self](button) in
                 self?.searchButtonPressed(button)
             }
-            navigationItem.leftBarButtonItem = search
+            var buttons: [UIBarButtonItem] = navigationItem.rightBarButtonItems ?? []
+            buttons.append(search)
+            navigationItem.rightBarButtonItems = buttons
         }
     }
     
