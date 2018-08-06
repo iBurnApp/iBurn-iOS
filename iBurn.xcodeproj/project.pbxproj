@@ -120,7 +120,8 @@
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
 		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
-		D9CB2A552117E7E900A0F2AE /* PlayaGeocoder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; };
+		D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; };
+		D9CB2A69211897FB00A0F2AE /* PlayaGeocoder.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D9CC7E0A20806FA600A6E502 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CC7E0920806FA600A6E502 /* AppDelegate.swift */; };
 		D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */; };
 		D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5B1B5AF4EE0048229A /* Accounts.framework */; };
@@ -206,6 +207,13 @@
 			remoteGlobalIDString = D9CB2A232117C56900A0F2AE;
 			remoteInfo = "PlayaGeocoder (iOS)";
 		};
+		D9CB2A6A211897FB00A0F2AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D9CB2A232117C56900A0F2AE;
+			remoteInfo = "PlayaGeocoder (iOS)";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -215,6 +223,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D9CB2A69211897FB00A0F2AE /* PlayaGeocoder.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -494,7 +503,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9CB2A552117E7E900A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				D9D12F621B5AF5070048229A /* Social.framework in Frameworks */,
 				D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */,
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
@@ -503,6 +511,7 @@
 				63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */,
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
+				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1121,6 +1130,7 @@
 			);
 			dependencies = (
 				D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */,
+				D9CB2A6B211897FB00A0F2AE /* PBXTargetDependency */,
 			);
 			name = iBurn;
 			productName = iBurn;
@@ -1713,6 +1723,11 @@
 			name = "PlayaGeocoder (iOS)";
 			targetProxy = D9CB2A562117E7EE00A0F2AE /* PBXContainerItemProxy */;
 		};
+		D9CB2A6B211897FB00A0F2AE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "PlayaGeocoder (iOS)";
+			targetProxy = D9CB2A6A211897FB00A0F2AE /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -1834,6 +1849,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
@@ -1863,6 +1879,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
