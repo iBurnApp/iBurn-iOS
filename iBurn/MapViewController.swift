@@ -72,12 +72,12 @@ private extension MapViewController {
     
     func setupTapGesture() {
         tapGesture.addTarget(self, action: #selector(singleTap(_:)))
-        tapGesture.numberOfTapsRequired = 1
-        let doubleTap = UITapGestureRecognizer()
-        doubleTap.numberOfTapsRequired = 2
-        tapGesture.require(toFail: doubleTap)
+        mapView.gestureRecognizers?.compactMap {
+            $0 as? UITapGestureRecognizer
+        }.forEach {
+            tapGesture.require(toFail: $0)
+        }
         view.addGestureRecognizer(tapGesture)
-        view.addGestureRecognizer(doubleTap)
     }
     
     // MARK: - User Interaction

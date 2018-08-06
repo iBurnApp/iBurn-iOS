@@ -11,11 +11,13 @@ import UIKit
 @objc(ArtImageCell)
 public class ArtImageCell: BRCArtObjectTableViewCell {
     
+    /// to prevent reloading cells images that dont match current state
+    private var objectUniqueId: String = ""
     @IBOutlet var thumbnailView: UIImageView!
-
 
     override public func setDataObject(_ dataObject: BRCDataObject, metadata: BRCObjectMetadata) {
         super.setDataObject(dataObject, metadata: metadata)
+        objectUniqueId = dataObject.uniqueID
         guard let art = dataObject as? BRCArtObject,
         let artMetadata = metadata as? BRCArtMetadata else {
                 return
@@ -30,10 +32,12 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
                 return
             }
             DispatchQueue.main.async {
+                guard self.objectUniqueId == dataObject.uniqueID else { return }
                 self.thumbnailView.image = image
             }
             guard artMetadata.thumbnailImageColors == nil else { return }
             ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
+                guard self.objectUniqueId == dataObject.uniqueID else { return }
                 UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
                     self.setupLabelColors(colors)
                 })

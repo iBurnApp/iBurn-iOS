@@ -283,7 +283,7 @@
 		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
 		D902DF0F1B7B228100057898 /* BRCDataImportTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImportTests.h; sourceTree = "<group>"; };
-		D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BRCOnboardingViewController.swift; path = iBurn/BRCOnboardingViewController.swift; sourceTree = "<group>"; };
+		D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCOnboardingViewController.swift; sourceTree = "<group>"; };
 		D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCLocations.swift; sourceTree = "<group>"; };
 		D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCImageColors.swift; sourceTree = "<group>"; };
 		D9046ED3198C65D70013CCF4 /* art_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = art_data.json; sourceTree = "<group>"; };
@@ -311,8 +311,8 @@
 		D9167B7820F14ABA00815F81 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2018/TileCache"; sourceTree = SOURCE_ROOT; };
 		D9167B7A20F14AD000815F81 /* iBurn-2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2018"; path = "Submodules/iBurn-Data/data/2018/iBurn-2018"; sourceTree = SOURCE_ROOT; };
 		D9251483211519A2007A7904 /* AnnotationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationDataSource.swift; sourceTree = "<group>"; };
-		D925148521151F17007A7904 /* UserMapViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UserMapViewAdapter.swift; path = iBurn/UserMapViewAdapter.swift; sourceTree = "<group>"; };
-		D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "YapDatabaseConnection+iBurn.swift"; path = "iBurn/YapDatabaseConnection+iBurn.swift"; sourceTree = "<group>"; };
+		D925148521151F17007A7904 /* UserMapViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMapViewAdapter.swift; sourceTree = "<group>"; };
+		D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "YapDatabaseConnection+iBurn.swift"; sourceTree = "<group>"; };
 		D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDataObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCDataObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -377,12 +377,12 @@
 		D984DFC5210D4B3100A45922 /* YapViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YapViewHandler.swift; sourceTree = "<group>"; };
 		D984DFC7210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "YapDatabaseViewConnection+iBurn.m"; sourceTree = "<group>"; };
 		D984DFC8210D84CC00A45922 /* YapDatabaseViewConnection+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "YapDatabaseViewConnection+iBurn.h"; sourceTree = "<group>"; };
-		D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = YapTableViewAdapter.swift; path = iBurn/YapTableViewAdapter.swift; sourceTree = "<group>"; };
+		D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YapTableViewAdapter.swift; sourceTree = "<group>"; };
 		D984DFCC210EB0CA00A45922 /* BRCDataObjectTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObjectTableViewCell.swift; sourceTree = "<group>"; };
 		D984DFCE210EB38F00A45922 /* NSCopying+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSCopying+iBurn.swift"; sourceTree = "<group>"; };
 		D984DFD0210EB8C800A45922 /* ObjectListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectListViewController.swift; sourceTree = "<group>"; };
 		D984DFD2210EC03100A45922 /* PageViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewManager.swift; sourceTree = "<group>"; };
-		D984DFD4210EC84200A45922 /* DataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DataObject.swift; path = iBurn/DataObject.swift; sourceTree = "<group>"; };
+		D984DFD4210EC84200A45922 /* DataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataObject.swift; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
 		D9914C4B1B40C54600F90663 /* initial_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = initial_data; path = TestData/initial_data; sourceTree = "<group>"; };
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/updated_data; sourceTree = "<group>"; };
@@ -574,11 +574,6 @@
 			isa = PBXGroup;
 			children = (
 				D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */,
-				D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */,
-				D925148521151F17007A7904 /* UserMapViewAdapter.swift */,
-				D984DFD4210EC84200A45922 /* DataObject.swift */,
-				D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */,
-				D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */,
 				63CE2A5D1987140F00F65B01 /* iBurn */,
 				D980A90B1B3F5A6400BE3682 /* iBurnTests */,
 				D960F2471F74E65A00144290 /* PlayaKit */,
@@ -660,6 +655,9 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D925148521151F17007A7904 /* UserMapViewAdapter.swift */,
+				D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */,
+				D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */,
 				D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */,
 				D9E0DA96210FB46B0056286B /* SearchCooordinator.swift */,
 				D9E0DA8A210F78850056286B /* ListCoordinator.swift */,
@@ -831,6 +829,7 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */,
 				D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */,
 				D9E0DA8E210F81920056286B /* UserSettings.swift */,
 				D9E0DA8C210F7AB70056286B /* UITableView+iBurn.swift */,
@@ -988,6 +987,7 @@
 		D994157B1987278400D245C7 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				D984DFD4210EC84200A45922 /* DataObject.swift */,
 				D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */,
 				D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */,
 				D99415781987277500D245C7 /* BRCDatabaseManager.h */,
