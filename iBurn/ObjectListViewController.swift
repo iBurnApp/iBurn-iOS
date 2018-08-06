@@ -52,6 +52,7 @@ public class ObjectListViewController: UIViewController {
         
         view.addSubview(tableView)
         tableView.edgeAnchors == view.edgeAnchors
+        setupMapButton()
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -68,5 +69,11 @@ public class ObjectListViewController: UIViewController {
 extension ObjectListViewController: SearchCooordinator {
     var searchController: UISearchController {
         return listCoordinator.searchDisplayManager.searchController
+    }
+}
+
+extension ObjectListViewController: MapButtonHelper {
+    func mapButtonPressed(_ sender: Any) {
+        //let mapVC = MapDetailViewController
     }
 }

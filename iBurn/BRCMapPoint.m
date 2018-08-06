@@ -10,6 +10,7 @@
 #import "MTLModel+NSCoding.h"
 #import "BRCUserMapPoint.h"
 #import "BRCBreadcrumbPoint.h"
+@import PlayaGeocoder;
 
 @interface BRCMapPoint()
 @property (nonatomic) CLLocationDegrees latitude;
@@ -201,6 +202,10 @@
         default:
             return _title;
     }
+}
+
+- (nullable NSString*) subtitle {
+    return [PlayaGeocoder.shared syncReverseLookup:self.coordinate];
 }
 
 @end

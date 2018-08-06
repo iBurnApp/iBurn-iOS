@@ -8,33 +8,6 @@
 
 import UIKit
 
-class DataObjectAnnotation: NSObject, MGLAnnotation {
-    
-    let coordinate: CLLocationCoordinate2D
-    let title: String?
-    let subtitle: String?
-    
-    @objc public init?(object: BRCDataObject) {
-        guard let location = object.location ?? object.burnerMapLocation,
-            let address = object.playaLocation ?? object.burnerMapLocationString else {
-            return nil
-        }
-        var title = object.title
-        if let event = object as? BRCEventObject {
-            if let camp = event.campName {
-                title = camp
-            } else if let art = event.artName {
-                title = art
-            }
-        }
-        self.coordinate = location.coordinate
-        self.title = title
-        self.subtitle = address
-        super.init()
-    }
-    
-}
-
 public class MapDetailViewController: BaseMapViewController {
     
     private let dataObject: BRCDataObject

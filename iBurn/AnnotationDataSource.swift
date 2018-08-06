@@ -47,3 +47,52 @@ extension UserAnnotationDataSource: AnnotationDataSource {
         return userAnnotations
     }
 }
+
+/// This wrapper is required because MGLAnnotation has
+/// different optionality requirements than BRCDataObject for `title`
+public final class DataObjectAnnotation: NSObject {
+    fileprivate let object: BRCDataObject
+    @objc public init(object: BRCDataObject) {
+        self.object = object
+    }
+}
+
+extension DataObjectAnnotation: MGLAnnotation {
+    public var coordinate: CLLocationCoordinate2D {
+        return object.location?.coordinate ?? kCLLocationCoordinate2DInvalid
+    }
+    
+    public var title: String? {
+        var title = object.title
+        if let event = object as? BRCEventObject {
+            if let camp = event.campName {
+                title = camp
+            } else if let art = event.artName {
+                title = art
+            }
+        }
+        return title
+    }
+    
+    public var subtitle: String? {
+        return object.playaLocation
+    }
+}
+
+
+/// Protocol for iBurn-specific annotations
+public protocol ImageAnnotation: MGLAnnotation {
+    var markerImage: UIImage? { get }
+}
+
+extension DataObjectAnnotation: ImageAnnotation {
+    public var markerImage: UIImage? {
+        return object.brc_markerImage
+    }
+}
+
+extension BRCMapPoint: ImageAnnotation {
+    public var markerImage: UIImage? {
+        return image
+    }
+}

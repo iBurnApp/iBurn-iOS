@@ -9,7 +9,7 @@
 import UIKit
 import Mapbox
 import YapDatabase
-
+import BButton
 
 public class MapViewAdapter: NSObject {
     
@@ -27,6 +27,7 @@ public class MapViewAdapter: NSObject {
         self.mapView = mapView
         self.dataSource = dataSource
         super.init()
+        self.mapView.delegate = self
     }
 
     // MARK: - Public API
@@ -39,15 +40,44 @@ public class MapViewAdapter: NSObject {
     }
 }
 
-extension MGLAnnotation {
-    var markerImage: UIImage? {
-        var markerImage: UIImage? = nil
-        if let dataObject = self as? BRCDataObject {
-            markerImage = dataObject.brc_markerImage
-        } else if let mapPoint = self as? BRCMapPoint {
-            markerImage = mapPoint.image
+
+// MARK: - MGLMapViewDelegate
+
+extension MapViewAdapter: MGLMapViewDelegate {
+    public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
+        guard let imageAnnotation = annotation as? ImageAnnotation,
+            let image = imageAnnotation.markerImage ?? UIImage(named: "BRCPurplePin") else {
+                return nil
         }
-        return markerImage ?? UIImage(named: "BRCPurplePin")
+        let annotationView: ImageAnnotationView
+        if let view = mapView.dequeueReusableAnnotationView(withIdentifier: ImageAnnotationView.reuseIdentifier) as? ImageAnnotationView {
+            annotationView = view
+        } else {
+            annotationView = ImageAnnotationView(reuseIdentifier: ImageAnnotationView.reuseIdentifier)
+        }
+        annotationView.image = image
+        if let annotation = annotation as? AnyHashable {
+            annotationViews[annotation] = annotationView
+        }
+        return annotationView
     }
+    
+    public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+        return true
+    }
+    
+    public func mapView(_ mapView: MGLMapView, didDeselect annotation: MGLAnnotation) {}
+    
+    public func mapView(_ mapView: MGLMapView, leftCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
+        return nil
+    }
+    
+    public func mapView(_ mapView: MGLMapView, rightCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
+        return nil
+    }
+    
+    public func mapView(_ mapView: MGLMapView, annotation: MGLAnnotation, calloutAccessoryControlTapped control: UIControl) {}
 }
+
+
 

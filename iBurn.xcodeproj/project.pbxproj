@@ -63,6 +63,8 @@
 		D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */; };
 		D969E5AF21100B9200FF6700 /* Storyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AE21100B9200FF6700 /* Storyboard.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
+		D9774B172118DB4500BE3CC8 /* MapButtonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9774B162118DB4500BE3CC8 /* MapButtonHelper.swift */; };
+		D9774B1C2118DEE200BE3CC8 /* MapListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */; };
 		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
 		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
 		D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8631EF23994007766A9 /* MapDetailViewController.swift */; };
@@ -360,6 +362,8 @@
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
 		D975CAF0198DAB5A00CC8226 /* BRCSecrets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSecrets.h; sourceTree = "<group>"; };
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
+		D9774B162118DB4500BE3CC8 /* MapButtonHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapButtonHelper.swift; sourceTree = "<group>"; };
+		D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapListViewController.swift; sourceTree = "<group>"; };
 		D977C85F1EF23036007766A9 /* BaseMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMapViewController.swift; sourceTree = "<group>"; };
 		D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MGLMapView+iBurn.swift"; sourceTree = "<group>"; };
 		D977C8631EF23994007766A9 /* MapDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDetailViewController.swift; sourceTree = "<group>"; };
@@ -664,6 +668,7 @@
 		63D270F61987157900204954 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9774B162118DB4500BE3CC8 /* MapButtonHelper.swift */,
 				D925148521151F17007A7904 /* UserMapViewAdapter.swift */,
 				D984DFCA210E9F0700A45922 /* YapTableViewAdapter.swift */,
 				D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */,
@@ -924,6 +929,7 @@
 		D99395A5198B806800E9ADD2 /* MapViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */,
 				D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */,
 				D9DE7BAF1EF25C11007A983E /* MapViewController.swift */,
 				D977C8631EF23994007766A9 /* MapDetailViewController.swift */,
@@ -1595,11 +1601,13 @@
 				D9E0DA89210F76B60056286B /* EventListViewController.swift in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */,
+				D9774B172118DB4500BE3CC8 /* MapButtonHelper.swift in Sources */,
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
 				D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
+				D9774B1C2118DEE200BE3CC8 /* MapListViewController.swift in Sources */,
 				D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */,
 				D984DFD5210EC84200A45922 /* DataObject.swift in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */,
