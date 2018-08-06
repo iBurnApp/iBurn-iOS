@@ -48,6 +48,16 @@
                ReferencedContainer = "container:iBurn.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D97F56742117B9DC00BFBE7F"
+               BuildableName = "PlayaGeocoderTests.xctest"
+               BlueprintName = "PlayaGeocoderTests"
+               ReferencedContainer = "container:iBurn.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference

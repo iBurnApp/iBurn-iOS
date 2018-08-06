@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PlayaGeocoder
 
 public enum EmptyListLabelText: String {
     case Loading = "Loading...",
@@ -41,7 +42,7 @@ extension UIViewController {
     /** Adds current geocoded playa address to navigation bar title */
     func geocodeNavigationBar() {
         guard let location = CLLocation.currentLocation else { return }
-        BRCGeocoder.shared.asyncReverseLookup(location.coordinate, completionQueue: DispatchQueue.main) { locationString in
+        PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { locationString in
             if let locationString = locationString, locationString.count > 0 {
                 let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
                 let label = UILabel()

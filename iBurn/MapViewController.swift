@@ -11,13 +11,14 @@ import YapDatabase
 import CoreLocation
 import BButton
 import CocoaLumberjack
+import PlayaGeocoder
 
 public class MapViewController: BaseMapViewController {
     let uiConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
-    let geocoder: BRCGeocoder
+    let geocoder = PlayaGeocoder.shared
     let search: SearchDisplayManager
     let tapGesture = UITapGestureRecognizer()
     var userMapViewAdapter: UserMapViewAdapter? {
@@ -28,7 +29,6 @@ public class MapViewController: BaseMapViewController {
         uiConnection = BRCDatabaseManager.shared.uiConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
-        geocoder = BRCGeocoder.shared
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchCampsView)
         super.init()
         let dataSource = UserAnnotationDataSource()

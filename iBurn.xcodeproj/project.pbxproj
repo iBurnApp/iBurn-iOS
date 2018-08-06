@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
-		63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010F001B72E2EA000A847C /* BRCGeocoderTest.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
@@ -36,7 +35,6 @@
 		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
 		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
 		D9167B7320F14A9500815F81 /* 2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7220F14A9500815F81 /* 2018 */; };
-		D9167B7520F14A9E00815F81 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7420F14A9D00815F81 /* bundle.js */; };
 		D9167B7720F14AB100815F81 /* MediaFiles in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7620F14AB100815F81 /* MediaFiles */; };
 		D9167B7920F14ABA00815F81 /* TileCache in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7820F14ABA00815F81 /* TileCache */; };
 		D9167B7B20F14AD000815F81 /* iBurn-2018 in Resources */ = {isa = PBXBuildFile; fileRef = D9167B7A20F14AD000815F81 /* iBurn-2018 */; };
@@ -122,6 +120,7 @@
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
 		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
+		D9CB2A552117E7E900A0F2AE /* PlayaGeocoder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; };
 		D9CC7E0A20806FA600A6E502 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CC7E0920806FA600A6E502 /* AppDelegate.swift */; };
 		D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */; };
 		D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5B1B5AF4EE0048229A /* Accounts.framework */; };
@@ -165,19 +164,47 @@
 			remoteGlobalIDString = D960F2451F74E65A00144290;
 			remoteInfo = PlayaKit;
 		};
-		D960F2591F74E65A00144290 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D960F2451F74E65A00144290;
-			remoteInfo = PlayaKit;
-		};
 		D980A9101B3F5A6400BE3682 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 63CE2A531987140F00F65B01;
 			remoteInfo = iBurn;
+		};
+		D9CB2A4D2117E7B500A0F2AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D9CB2A0B2117C50A00A0F2AE;
+			remoteInfo = "PlayaGeocoder (macOS)";
+		};
+		D9CB2A4F2117E7B500A0F2AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D9CB2A2C2117C56900A0F2AE;
+			remoteInfo = "PlayaGeocoder (iOS)";
+		};
+		D9CB2A512117E7B500A0F2AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D9CB2A142117C50A00A0F2AE;
+			remoteInfo = "PlayaGeocoderTests (macOS)";
+		};
+		D9CB2A532117E7B500A0F2AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D9CB2A392117C5C900A0F2AE;
+			remoteInfo = "PlayaGeocoderTests (iOS)";
+		};
+		D9CB2A562117E7EE00A0F2AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D9CB2A232117C56900A0F2AE;
+			remoteInfo = "PlayaGeocoder (iOS)";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -196,6 +223,7 @@
 
 /* Begin PBXFileReference section */
 		22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn_iBurnUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -205,7 +233,6 @@
 		5C938B49996428877731060F /* Pods-iBurnAbstract-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
 		63010EFD1B72DEEA000A847C /* BRCGeocoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCGeocoder.h; sourceTree = "<group>"; };
 		63010EFE1B72DEEA000A847C /* BRCGeocoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoder.m; sourceTree = "<group>"; };
-		63010F001B72E2EA000A847C /* BRCGeocoderTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCGeocoderTest.m; sourceTree = "<group>"; };
 		632282FF19881DDE009E472B /* BRCDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailViewController.h; sourceTree = "<group>"; };
 		6322830019881DDE009E472B /* BRCDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailViewController.m; sourceTree = "<group>"; };
 		6322830319881F41009E472B /* BRCDetailCellInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailCellInfo.h; sourceTree = "<group>"; };
@@ -279,7 +306,7 @@
 		D91392DF1D6519300090E093 /* iBurn-2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2016"; path = "Submodules/iBurn-Data/data/2016/iBurn-2016"; sourceTree = SOURCE_ROOT; };
 		D9167B6120F132C500815F81 /* InfoPlistSecrets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoPlistSecrets.h; sourceTree = "<group>"; };
 		D9167B7220F14A9500815F81 /* 2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2018; path = "Submodules/iBurn-Data/data/2018/2018"; sourceTree = SOURCE_ROOT; };
-		D9167B7420F14A9D00815F81 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2018/bundle.js"; sourceTree = SOURCE_ROOT; };
+		D9167B7420F14A9D00815F81 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/scripts/latest/geocoder/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9167B7620F14AB100815F81 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2018/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D9167B7820F14ABA00815F81 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2018/TileCache"; sourceTree = SOURCE_ROOT; };
 		D9167B7A20F14AD000815F81 /* iBurn-2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2018"; path = "Submodules/iBurn-Data/data/2018/iBurn-2018"; sourceTree = SOURCE_ROOT; };
@@ -417,6 +444,7 @@
 		D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
 		D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = More.storyboard; sourceTree = "<group>"; };
 		D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreViewController.swift; sourceTree = "<group>"; };
+		D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaGeocoder.xcodeproj; path = PlayaGeocoder/PlayaGeocoder.xcodeproj; sourceTree = "<group>"; };
 		D9CC7E0920806FA600A6E502 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iBurn.entitlements; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -466,6 +494,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9CB2A552117E7E900A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				D9D12F621B5AF5070048229A /* Social.framework in Frameworks */,
 				D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */,
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
@@ -544,6 +573,7 @@
 		63CE2A4B1987140F00F65B01 = {
 			isa = PBXGroup;
 			children = (
+				D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */,
 				D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */,
 				D925148521151F17007A7904 /* UserMapViewAdapter.swift */,
 				D984DFD4210EC84200A45922 /* DataObject.swift */,
@@ -591,6 +621,7 @@
 				F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */,
 				22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */,
 				4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */,
+				2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -839,7 +870,6 @@
 				D9914C4A1B40C52E00F90663 /* TestData */,
 				D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */,
 				D902DF0F1B7B228100057898 /* BRCDataImportTests.h */,
-				63010F001B72E2EA000A847C /* BRCGeocoderTest.m */,
 				D980A90C1B3F5A6400BE3682 /* Supporting Files */,
 				D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */,
 			);
@@ -991,6 +1021,17 @@
 			name = Sorted;
 			sourceTree = "<group>";
 		};
+		D9CB2A472117E7B400A0F2AE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D9CB2A4E2117E7B500A0F2AE /* PlayaGeocoder.framework */,
+				D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */,
+				D9CB2A522117E7B500A0F2AE /* PlayaGeocoderTests (macOS).xctest */,
+				D9CB2A542117E7B500A0F2AE /* PlayaGeocoderTests (iOS).xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		D9EC0E5A1B7DE02F0042B596 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -1079,7 +1120,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				D960F25A1F74E65A00144290 /* PBXTargetDependency */,
+				D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */,
 			);
 			name = iBurn;
 			productName = iBurn;
@@ -1152,7 +1193,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = BRC;
-				LastSwiftUpdateCheck = 0900;
+				LastSwiftUpdateCheck = 0940;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Burning Man Earth";
 				TargetAttributes = {
@@ -1196,6 +1237,12 @@
 			mainGroup = 63CE2A4B1987140F00F65B01;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D9CB2A472117E7B400A0F2AE /* Products */;
+					ProjectRef = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				63CE2A531987140F00F65B01 /* iBurn */,
@@ -1206,6 +1253,37 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXReferenceProxy section */
+		D9CB2A4E2117E7B500A0F2AE /* PlayaGeocoder.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = PlayaGeocoder.framework;
+			remoteRef = D9CB2A4D2117E7B500A0F2AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = PlayaGeocoder.framework;
+			remoteRef = D9CB2A4F2117E7B500A0F2AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D9CB2A522117E7B500A0F2AE /* PlayaGeocoderTests (macOS).xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "PlayaGeocoderTests (macOS).xctest";
+			remoteRef = D9CB2A512117E7B500A0F2AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D9CB2A542117E7B500A0F2AE /* PlayaGeocoderTests (iOS).xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "PlayaGeocoderTests (iOS).xctest";
+			remoteRef = D9CB2A532117E7B500A0F2AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
 /* Begin PBXResourcesBuildPhase section */
 		63CE2A521987140F00F65B01 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
@@ -1213,7 +1291,6 @@
 			files = (
 				D9167B7320F14A9500815F81 /* 2018 in Resources */,
 				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
-				D9167B7520F14A9E00815F81 /* bundle.js in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D9167B7720F14AB100815F81 /* MediaFiles in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
@@ -1615,7 +1692,6 @@
 			files = (
 				D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */,
 				D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */,
-				63010F011B72E2EA000A847C /* BRCGeocoderTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1627,15 +1703,15 @@
 			target = D960F2451F74E65A00144290 /* PlayaKit */;
 			targetProxy = D960F2501F74E65A00144290 /* PBXContainerItemProxy */;
 		};
-		D960F25A1F74E65A00144290 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D960F2451F74E65A00144290 /* PlayaKit */;
-			targetProxy = D960F2591F74E65A00144290 /* PBXContainerItemProxy */;
-		};
 		D980A9111B3F5A6400BE3682 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 63CE2A531987140F00F65B01 /* iBurn */;
 			targetProxy = D980A9101B3F5A6400BE3682 /* PBXContainerItemProxy */;
+		};
+		D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "PlayaGeocoder (iOS)";
+			targetProxy = D9CB2A562117E7EE00A0F2AE /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

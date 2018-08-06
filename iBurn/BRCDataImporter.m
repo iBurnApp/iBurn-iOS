@@ -20,6 +20,7 @@
 #import "NSBundle+iBurn.h"
 #import "iBurn-Swift.h"
 @import CoreLocation;
+@import PlayaGeocoder;
 
 static NSString * const kBRCLocalTilesName = @"Cache.db";
 
@@ -267,8 +268,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         }
     }
     
-    // Remove me!
-    //BRCGeocoder *geocoder = [BRCGeocoder shared];
+    PlayaGeocoder *geocoder = [PlayaGeocoder shared];
     
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // Update Fetch info status
@@ -280,12 +280,20 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         [objects enumerateObjectsUsingBlock:^(BRCDataObject *object, NSUInteger idx, BOOL *stop) {
             @autoreleasepool {
                 ////////////////
-//                if (object.location && object.playaLocation.length == 0) {
-//                    NSString *playaLocation = [geocoder reverseLookup:object.location.coordinate];
-//                    if (playaLocation.length > 0) {
-//                        object.playaLocation = playaLocation;
-//                    }
-//                }
+                if (object.location && object.playaLocation.length == 0) {
+                    NSString *playaLocation = [geocoder syncReverseLookup:object.location.coordinate];
+                    if (playaLocation.length > 0) {
+                        object.playaLocation = playaLocation;
+                    }
+                }
+                if (!object.location && object.playaLocation.length) {
+                    CLLocationCoordinate2D coordinate = [geocoder syncForwardLookup:object.playaLocation];
+                    if (CLLocationCoordinate2DIsValid(coordinate)) {
+                        object.coordinate = coordinate;
+                    } else {
+                        NSLog(@"Geocode Error %@ %@: \"%@\"", NSStringFromClass(dataClass), object.uniqueID, object.playaLocation);
+                    }
+                }
                 ///////////////
                 
                 
@@ -357,12 +365,12 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                 } else if (event.hostedByArtUniqueID) {
                     event.hostedByArtUniqueID = nil;
                 }
-//                if (event.location && event.playaLocation.length == 0) {
-//                    NSString *playaLocation = [geocoder reverseLookup:event.location.coordinate];
-//                    if (playaLocation.length > 0) {
-//                        event.playaLocation = playaLocation;
-//                    }
-//                }
+                if (event.location && event.playaLocation.length == 0) {
+                    NSString *playaLocation = [geocoder syncReverseLookup:event.location.coordinate];
+                    if (playaLocation.length > 0) {
+                        event.playaLocation = playaLocation;
+                    }
+                }
                 [objectsToUpdate addObject:event];
             }
         }];

@@ -1,8 +1,7 @@
 PODS:
   - Anchorage (4.2.4)
   - Appirater (2.3.1)
-  - ASDayPicker (1.0.0):
-    - PureLayout
+  - ASDayPicker (1.0.0)
   - BButton (4.0.2)
   - CocoaLumberjack (3.4.2):
     - CocoaLumberjack/Default (= 3.4.2)
@@ -156,7 +155,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Anchorage: f855157310859280c706cc0b9c9281c21702f515
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
-  ASDayPicker: 34bb1ce537bd5ab0093da9cebfaa792adea631d3
+  ASDayPicker: 3a8f8734ad50da082046c29a1850103307c1e5cf
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
   CocoaLumberjack: db7cc9e464771f12054c22ff6947c5a58d43a0fd
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
