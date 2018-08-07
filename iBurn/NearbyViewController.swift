@@ -30,6 +30,11 @@ class NearbyViewController: SortedViewController {
     
     // MARK: - View cycle
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupMapButton()
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         refreshTableHeaderView()
@@ -128,4 +133,19 @@ class NearbyViewController: SortedViewController {
         return UITableViewAutomaticDimension
     }
 
+}
+
+extension NearbyViewController: MapButtonHelper {
+    func mapButtonPressed(_ sender: Any) {
+        var annotations: [MGLAnnotation] = []
+        sections.forEach { (section) in
+            section.objects.forEach({ (object) in
+                guard let annotation = object.annotation else { return }
+                annotations.append(annotation)
+            })
+        }
+        let dataSource = StaticAnnotationDataSource(annotations: annotations)
+        let mapVC = BaseMapViewController(dataSource: dataSource)
+        navigationController?.pushViewController(mapVC, animated: true)
+    }
 }
