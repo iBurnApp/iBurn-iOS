@@ -25,14 +25,15 @@ public class MapViewController: BaseMapViewController {
         return mapViewAdapter as? UserMapViewAdapter
     }
     
-    public override init() {
+    public init() {
         uiConnection = BRCDatabaseManager.shared.uiConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchCampsView)
-        super.init()
-        let dataSource = UserAnnotationDataSource()
-        mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
+        let dataSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
+        let mapView = MGLMapView()
+        let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
+        super.init(mapViewAdapter: mapViewAdapter)
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
     }

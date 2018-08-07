@@ -12,39 +12,76 @@ import Foundation
     func allAnnotations() -> [MGLAnnotation]
 }
 
-public class SingleAnnotationDataSource: NSObject {
-    public let annotation: MGLAnnotation
+public class StaticAnnotationDataSource: NSObject {
+    public let annotations: [MGLAnnotation]
     
-    @objc public init(annotation: MGLAnnotation) {
-        self.annotation = annotation
+    @objc public init(annotations: [MGLAnnotation]) {
+        self.annotations = annotations
     }
-}
-
-extension SingleAnnotationDataSource: AnnotationDataSource {
-    public func allAnnotations() -> [MGLAnnotation] {
-        return [annotation]
-    }
-}
-
-public class UserAnnotationDataSource: NSObject {
-    let uiConnection: YapDatabaseConnection
     
-    override init() {
-        uiConnection = BRCDatabaseManager.shared.uiConnection
+    @objc public convenience init(annotation: MGLAnnotation) {
+        self.init(annotations: [annotation])
     }
 }
 
-extension UserAnnotationDataSource: AnnotationDataSource {
+extension StaticAnnotationDataSource: AnnotationDataSource {
     public func allAnnotations() -> [MGLAnnotation] {
-        var userAnnotations: [BRCMapPoint] = []
+        return annotations
+    }
+}
+
+public class YapViewAnnotationDataSource: NSObject {
+    private let viewHandler: YapViewHandler
+    
+    init(viewHandler: YapViewHandler) {
+        self.viewHandler = viewHandler
+    }
+}
+
+public class YapCollectionAnnotationDataSource: NSObject {
+    public let collection: String
+    private let uiConnection: YapDatabaseConnection
+    
+    init(collection: String,
+         uiConnection: YapDatabaseConnection = BRCDatabaseManager.shared.uiConnection) {
+        self.uiConnection = uiConnection
+        self.collection = collection
+    }
+}
+
+extension YapViewAnnotationDataSource: AnnotationDataSource {
+    public func allAnnotations() -> [MGLAnnotation] {
+        var annotations: [MGLAnnotation] = []
+        for section in 0..<viewHandler.numberOfSections {
+            for row in 0..<viewHandler.numberOfItemsInSection(section) {
+                let index = IndexPath(row: row, section: section)
+                if let dataObject: BRCDataObject = viewHandler.object(at: index),
+                    let annotation = dataObject.annotation {
+                    annotations.append(annotation)
+                }
+            }
+        }
+        return annotations
+    }
+}
+
+extension YapCollectionAnnotationDataSource: AnnotationDataSource {
+    public func allAnnotations() -> [MGLAnnotation] {
+        var annotations: [MGLAnnotation] = []
         uiConnection.read({ transaction in
-            transaction.enumerateKeysAndObjects(inCollection: BRCUserMapPoint.yapCollection, using: { (key, object, stop) in
-                if let mapPoint = object as? BRCUserMapPoint {
-                    userAnnotations.append(mapPoint)
+            transaction.enumerateKeysAndObjects(inCollection: self.collection, using: { (key, object, stop) in
+                if let annotation = object as? MGLAnnotation {
+                    annotations.append(annotation)
                 }
             })
         })
-        return userAnnotations
+        return annotations
+    }
+}
+
+public extension BRCDataObject {
+    var annotation: DataObjectAnnotation? {
+        return DataObjectAnnotation(object: self)
     }
 }
 
@@ -52,7 +89,11 @@ extension UserAnnotationDataSource: AnnotationDataSource {
 /// different optionality requirements than BRCDataObject for `title`
 public final class DataObjectAnnotation: NSObject {
     fileprivate let object: BRCDataObject
-    @objc public init(object: BRCDataObject) {
+    @objc public init?(object: BRCDataObject) {
+        guard let location = object.location,
+            CLLocationCoordinate2DIsValid(location.coordinate) else {
+            return nil
+        }
         self.object = object
     }
 }

@@ -74,6 +74,8 @@ extension ObjectListViewController: SearchCooordinator {
 
 extension ObjectListViewController: MapButtonHelper {
     func mapButtonPressed(_ sender: Any) {
-        //let mapVC = MapDetailViewController
+        let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler)
+        let mapVC = BaseMapViewController(dataSource: dataSource)
+        navigationController?.pushViewController(mapVC, animated: true)
     }
 }

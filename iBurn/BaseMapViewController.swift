@@ -13,15 +13,31 @@ import CocoaLumberjack
 
 public class BaseMapViewController: UIViewController {
     
-    let mapView = MGLMapView()
+    var mapView: MGLMapView {
+        return mapViewAdapter.mapView
+    }
     var mapViewAdapter: MapViewAdapter
     @objc public var isVisible = false
     
     // MARK: - Init
     
-    public init() {
-        mapViewAdapter = MapViewAdapter(mapView: mapView)
+    /// Use custom MapViewAdapter
+    public init(mapViewAdapter: MapViewAdapter) {
+        self.mapViewAdapter = mapViewAdapter
         super.init(nibName: nil, bundle: nil)
+    }
+    
+    /// Using default MapViewAdapter
+    public init(dataSource: AnnotationDataSource? = nil) {
+        let mapView = MGLMapView()
+        self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: dataSource)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        let mapView = MGLMapView()
+        self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: nil)
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -36,6 +52,7 @@ public class BaseMapViewController: UIViewController {
         mapView.autoPinEdgesToSuperviewEdges()
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
+        mapViewAdapter.reloadAnnotations()
     }
     
     override public func viewWillAppear(_ animated: Bool) {

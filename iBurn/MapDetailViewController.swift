@@ -11,15 +11,14 @@ import UIKit
 public class MapDetailViewController: BaseMapViewController {
     
     private let dataObject: BRCDataObject
-    private let annotation: DataObjectAnnotation?
     
     @objc public init(dataObject: BRCDataObject) {
         self.dataObject = dataObject
-        self.annotation = DataObjectAnnotation(object: dataObject)
-        super.init()
-        if let annotation = annotation {
-            mapView.addAnnotation(annotation)
+        var dataSource: AnnotationDataSource?
+        if let annotation = dataObject.annotation {
+            dataSource = StaticAnnotationDataSource(annotation: annotation)
         }
+        super.init(dataSource: dataSource)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -37,15 +36,13 @@ public class MapDetailViewController: BaseMapViewController {
     
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if let annotation = annotation {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(100)) {
-                let padding = UIEdgeInsetsMake(120, 60, 45, 60)
-                self.mapView.brc_showDestination(annotation, animated: animated, padding: padding)
-                self.mapView.selectAnnotation(annotation, animated: animated)
-            }
+        guard let annotation = dataObject.annotation else {
+            return
+        }
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(100)) {
+            let padding = UIEdgeInsetsMake(120, 60, 45, 60)
+            self.mapView.brc_showDestination(annotation, animated: animated, padding: padding)
+            self.mapView.selectAnnotation(annotation, animated: animated)
         }
     }
-
-    
-
 }

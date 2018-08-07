@@ -225,7 +225,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
         DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject];
-        SingleAnnotationDataSource *dataSource = [[SingleAnnotationDataSource alloc] initWithAnnotation:annotation];
+        StaticAnnotationDataSource *dataSource = [[StaticAnnotationDataSource alloc] initWithAnnotation:annotation];
         self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView dataSource:dataSource];
         [self.mapViewAdapter reloadAnnotations];
         self.mapView.userInteractionEnabled = NO;

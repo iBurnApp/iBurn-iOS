@@ -13,6 +13,8 @@
 
 static const double kAverageHumanWalkingSpeedFactor = 1.4;
 static const double kAverageHumanBikingSpeedFactor = 0.432258065;
+/// We add 120 seconds of faffing time to every estimate
+static const double kFaffConstantSeconds = 120;
 
 //static const double kAverageHumanWalkingSpeedFactor = 0.72; // in seconds/meter == 3.1 mph
 //static const double kAverageHumanBikingSpeedFactor = 0.232258065; // in seconds/meter == 9.6 mph
@@ -26,12 +28,12 @@ static const double kAverageHumanBikingSpeedFactor = 0.432258065;
  *  @return estimated walking time in seconds
  */
 static NSTimeInterval BRCTimeIntervalForWalkingDistance(CLLocationDistance distance) {
-    return kAverageHumanWalkingSpeedFactor * distance;
+    return kAverageHumanWalkingSpeedFactor * distance + kFaffConstantSeconds;
 }
 
 /** For cyclists in Copenhagen, the average cycling speed is 15.5 km/h (9.6 mph) */
 static NSTimeInterval BRCTimeIntervalForBikingDistance(CLLocationDistance distance) {
-    return kAverageHumanBikingSpeedFactor * distance;
+    return kAverageHumanBikingSpeedFactor * distance + kFaffConstantSeconds;
 }
 
 @implementation TTTLocationFormatter (iBurn)

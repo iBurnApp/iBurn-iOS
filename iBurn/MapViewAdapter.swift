@@ -15,8 +15,7 @@ public class MapViewAdapter: NSObject {
     
     // MARK: - Properties
 
-    public var mapView: MGLMapView
-    
+    public let mapView: MGLMapView
     public var dataSource: AnnotationDataSource?
     
     var annotations: [MGLAnnotation] = []
