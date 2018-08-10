@@ -34,7 +34,9 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
+#if DEBUG
 #import <Swizzlean/Swizzlean.h>
+#endif
 @import PermissionScope;
 #import "NSDate+iBurn.h"
 @import AVFoundation;

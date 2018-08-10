@@ -54,6 +54,9 @@ public class FavoritesViewController: ObjectListViewController {
 private extension FavoritesViewController {
     
     var selectedFilter: FavoritesFilter {
+        guard filterControl.selectedSegmentIndex >= 0 else {
+            return .all
+        }
         return FavoritesFilter.allValues[filterControl.selectedSegmentIndex]
     }
     

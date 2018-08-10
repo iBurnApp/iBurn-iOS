@@ -174,6 +174,9 @@ class NearbyViewController: SortedViewController {
 
 private extension NearbyViewController {
     var selectedFilter: NearbyFilter {
+        guard filterControl.selectedSegmentIndex >= 0 else {
+            return .all
+        }
         return NearbyFilter.allValues[filterControl.selectedSegmentIndex]
     }
     

@@ -31,6 +31,7 @@ public class MapViewController: BaseMapViewController {
         sidebarButtons = SidebarButtonsView()
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchCampsView)
         let dataSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
+        dataSource.allowedClass = BRCUserMapPoint.self
         let mapView = MGLMapView()
         let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(mapViewAdapter: mapViewAdapter)

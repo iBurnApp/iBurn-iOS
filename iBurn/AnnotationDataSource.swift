@@ -40,6 +40,7 @@ public class YapViewAnnotationDataSource: NSObject {
 
 public class YapCollectionAnnotationDataSource: NSObject {
     public let collection: String
+    public var allowedClass = NSObject.self
     private let uiConnection: YapDatabaseConnection
     
     init(collection: String,
@@ -70,6 +71,10 @@ extension YapCollectionAnnotationDataSource: AnnotationDataSource {
         var annotations: [MGLAnnotation] = []
         uiConnection.read({ transaction in
             transaction.enumerateKeysAndObjects(inCollection: self.collection, using: { (key, object, stop) in
+                guard let nsObject = object as? NSObject,
+                    nsObject.isKind(of: self.allowedClass) else {
+                    return
+                }
                 if let annotation = object as? MGLAnnotation {
                     annotations.append(annotation)
                 }
