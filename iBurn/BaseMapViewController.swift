@@ -25,6 +25,7 @@ public class BaseMapViewController: UIViewController {
     public init(mapViewAdapter: MapViewAdapter) {
         self.mapViewAdapter = mapViewAdapter
         super.init(nibName: nil, bundle: nil)
+        self.mapViewAdapter.parent = self
     }
     
     /// Using default MapViewAdapter
@@ -32,12 +33,14 @@ public class BaseMapViewController: UIViewController {
         let mapView = MGLMapView()
         self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(nibName: nil, bundle: nil)
+        self.mapViewAdapter.parent = self
     }
     
     public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         let mapView = MGLMapView()
         self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: nil)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.mapViewAdapter.parent = self
     }
     
     required public init?(coder aDecoder: NSCoder) {

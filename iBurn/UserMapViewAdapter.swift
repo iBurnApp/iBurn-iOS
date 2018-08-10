@@ -87,6 +87,8 @@ public class UserMapViewAdapter: MapViewAdapter {
             annotationView.isDraggable = true
             annotationView.startDragging()
             editMapPoint(point)
+        case .info:
+            break
         }
     }
 }
@@ -94,11 +96,6 @@ public class UserMapViewAdapter: MapViewAdapter {
 // MARK: - Public
 
 private extension UserMapViewAdapter {
-
-    enum ButtonTag: Int {
-        case edit = 1,
-        delete = 2
-    }
     
     func clearEditingAnnotation() {
         if let existingMapPoint = self.editingAnnotation {

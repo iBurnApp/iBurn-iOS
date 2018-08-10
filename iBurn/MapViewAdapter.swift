@@ -11,13 +11,22 @@ import Mapbox
 import YapDatabase
 import BButton
 
+
+
 public class MapViewAdapter: NSObject {
     
+    enum ButtonTag: Int {
+        case edit = 1,
+        delete = 2,
+        info = 3
+    }
+
     // MARK: - Properties
 
     public let mapView: MGLMapView
     public var dataSource: AnnotationDataSource?
-    
+    public weak var parent: UIViewController?
+
     var annotations: [MGLAnnotation] = []
     var annotationViews: [AnyHashable: MGLAnnotationView] = [:]
     
@@ -62,6 +71,9 @@ extension MapViewAdapter: MGLMapViewDelegate {
     }
     
     public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+        guard annotation is ImageAnnotation else {
+            return false
+        }
         return true
     }
     
@@ -72,10 +84,27 @@ extension MapViewAdapter: MGLMapViewDelegate {
     }
     
     public func mapView(_ mapView: MGLMapView, rightCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
-        return nil
+        guard annotation is DataObjectAnnotation else {
+            return nil
+        }
+        let infoButton = UIButton(type: .infoLight)
+        infoButton.tag = ButtonTag.info.rawValue
+        return infoButton
     }
     
-    public func mapView(_ mapView: MGLMapView, annotation: MGLAnnotation, calloutAccessoryControlTapped control: UIControl) {}
+    public func mapView(_ mapView: MGLMapView, annotation: MGLAnnotation, calloutAccessoryControlTapped control: UIControl) {
+        guard let data = annotation as? DataObjectAnnotation,
+            let tag = ButtonTag(rawValue: control.tag) else {
+                return
+        }
+        switch tag {
+        case .delete, .edit:
+            break
+        case .info:
+            let vc = BRCDetailViewController(dataObject: data.object)
+            parent?.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
 }
 
 

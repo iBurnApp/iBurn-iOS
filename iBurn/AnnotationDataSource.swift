@@ -88,7 +88,7 @@ public extension BRCDataObject {
 /// This wrapper is required because MGLAnnotation has
 /// different optionality requirements than BRCDataObject for `title`
 public final class DataObjectAnnotation: NSObject {
-    fileprivate let object: BRCDataObject
+    let object: BRCDataObject
     @objc public init?(object: BRCDataObject) {
         guard let location = object.location,
             CLLocationCoordinate2DIsValid(location.coordinate) else {

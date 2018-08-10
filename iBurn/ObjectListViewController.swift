@@ -76,6 +76,7 @@ extension ObjectListViewController: MapButtonHelper {
     func mapButtonPressed(_ sender: Any) {
         let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler)
         let mapVC = BaseMapViewController(dataSource: dataSource)
+        mapVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(mapVC, animated: true)
     }
 }

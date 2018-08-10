@@ -37,6 +37,9 @@
 
 - (NSURL*) remoteThumbnailURL {
     NSString *urlString = self.imageURLs.firstObject[@"thumbnail_url"];
+    if (![urlString isKindOfClass:NSString.class]) {
+        return nil;
+    }
     return [NSURL URLWithString:urlString];
 }
 

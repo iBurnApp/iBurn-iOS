@@ -146,6 +146,7 @@ extension NearbyViewController: MapButtonHelper {
         }
         let dataSource = StaticAnnotationDataSource(annotations: annotations)
         let mapVC = BaseMapViewController(dataSource: dataSource)
+        mapVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(mapVC, animated: true)
     }
 }
