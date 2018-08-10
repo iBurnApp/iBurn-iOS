@@ -65,10 +65,6 @@ public class BaseMapViewController: UIViewController {
     override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         isVisible = true
-        // There is maybe a bug in Mapbox?
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.centerMapAtManCoordinatesAnimated(false)
-        }
     }
     
     override public func viewDidDisappear(_ animated: Bool) {

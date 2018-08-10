@@ -10,6 +10,15 @@ import UIKit
 import MapKit
 import PureLayout
 
+public enum NearbyFilter: String {
+    case all = "All"
+    case event = "Events"
+    case art = "Art"
+    case camp = "Camps"
+    /// this is the order that the filters appear
+    static let allValues: [NearbyFilter] = [.all, .art, .camp, .event]
+}
+
 class NearbyViewController: SortedViewController {
 
     fileprivate var searchDistance: CLLocationDistance = 500
@@ -17,6 +26,7 @@ class NearbyViewController: SortedViewController {
     let tableHeaderLabel: UILabel = UILabel()
     let distanceStepper: UIStepper = UIStepper()
     let tableHeaderView: UIView = UIView()
+    private let filterControl = UISegmentedControl(items: NearbyFilter.allValues.map { $0.rawValue })
     
     @objc required init(style: UITableViewStyle, extensionName ext: String) {
         super.init(style: style, extensionName: ext)
@@ -33,6 +43,7 @@ class NearbyViewController: SortedViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupMapButton()
+        setupFilter()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -60,7 +71,23 @@ class NearbyViewController: SortedViewController {
             let nearbyObjects = results as! [BRCDataObject]
             let options = BRCDataSorterOptions()
             options.sortOrder = .distance(currentLocation)
-            BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (events, art, camps) -> (Void) in
+            BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (_events, _art, _camps) -> (Void) in
+                var events = _events
+                var art = _art
+                var camps = _camps
+                switch self.selectedFilter {
+                case .all:
+                    break
+                case .event:
+                    art = []
+                    camps = []
+                case .art:
+                    events = []
+                    camps = []
+                case .camp:
+                    art = []
+                    events = []
+                }
                 self.processSortedData(events, art: art, camps: camps, completion: completion)
             })
         })
@@ -78,7 +105,7 @@ class NearbyViewController: SortedViewController {
     
     func refreshTableHeaderView() {
         refreshHeaderLabel()
-        tableHeaderView.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: 45)
+        tableHeaderView.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: 85)
         tableView.tableHeaderView = tableHeaderView
     }
     
@@ -91,14 +118,18 @@ class NearbyViewController: SortedViewController {
         tableHeaderLabel.textAlignment = NSTextAlignment.left
         tableHeaderLabel.translatesAutoresizingMaskIntoConstraints = false
         distanceStepper.translatesAutoresizingMaskIntoConstraints = false
+        filterControl.translatesAutoresizingMaskIntoConstraints = false
         setupDistanceStepper()
         tableHeaderView.addSubview(tableHeaderLabel)
         tableHeaderView.addSubview(distanceStepper)
+        tableHeaderView.addSubview(filterControl)
+        distanceStepper.autoPinEdge(toSuperviewEdge: .top, withInset: 8)
         tableHeaderLabel.autoAlignAxis(ALAxis.horizontal, toSameAxisOf: distanceStepper)
         tableHeaderLabel.autoPinEdge(ALEdge.right, to: ALEdge.left, of: distanceStepper)
         tableHeaderLabel.autoPinEdge(toSuperviewMargin: ALEdge.left)
-        distanceStepper.autoAlignAxis(toSuperviewMarginAxis: ALAxis.horizontal)
         distanceStepper.autoPinEdge(toSuperviewMargin: ALEdge.right)
+        filterControl.autoPinEdge(.top, to: .bottom, of: distanceStepper, withOffset: 8)
+        filterControl.autoPinEdges(toSuperviewMarginsExcludingEdge: .top)
         tableHeaderView.translatesAutoresizingMaskIntoConstraints = true
         tableHeaderView.autoresizingMask = [ .flexibleHeight, .flexibleWidth ]
         refreshTableHeaderView()
@@ -123,6 +154,12 @@ class NearbyViewController: SortedViewController {
         }
     }
     
+    @objc func filterValueChanged(_ sender: UISegmentedControl) {
+        let value = selectedFilter
+        UserSettings.nearbyFilter = value
+        updateFilter(value)
+    }
+    
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if !hasTableItems() {
             return 0
@@ -135,6 +172,27 @@ class NearbyViewController: SortedViewController {
 
 }
 
+private extension NearbyViewController {
+    var selectedFilter: NearbyFilter {
+        return NearbyFilter.allValues[filterControl.selectedSegmentIndex]
+    }
+    
+    func setupFilter() {
+        filterControl.addTarget(self, action: #selector(filterValueChanged(_:)), for: .valueChanged)
+        
+        let userFilter = UserSettings.nearbyFilter
+        let index = NearbyFilter.allValues.index(of: userFilter) ?? 0
+        filterControl.selectedSegmentIndex = index
+        updateFilter(userFilter)
+    }
+    
+    private func updateFilter(_ newFilter: NearbyFilter) {
+        refreshTableItems({ () -> Void in
+            self.tableView.reloadData()
+        })
+    }
+}
+
 extension NearbyViewController: MapButtonHelper {
     func mapButtonPressed(_ sender: Any) {
         var annotations: [MGLAnnotation] = []
@@ -145,7 +203,7 @@ extension NearbyViewController: MapButtonHelper {
             })
         }
         let dataSource = StaticAnnotationDataSource(annotations: annotations)
-        let mapVC = BaseMapViewController(dataSource: dataSource)
+        let mapVC = MapListViewController(dataSource: dataSource)
         mapVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(mapVC, animated: true)
     }

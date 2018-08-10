@@ -16,6 +16,7 @@ public final class UserSettings: NSObject {
         static let theme = "Theme"
         static let contrast = "Contrast"
         static let favoritesFilter = "FavoritesFilter"
+        static let nearbyFilter = "NearbyFilter"
     }
     
     /// Selected favorites filter
@@ -26,6 +27,20 @@ public final class UserSettings: NSObject {
         get {
             guard let string = UserDefaults.standard.string(forKey: Keys.favoritesFilter),
                 let filter = FavoritesFilter(rawValue: string) else {
+                    return .all
+            }
+            return filter
+        }
+    }
+    
+    /// Selected Nearby filter
+    public static var nearbyFilter: NearbyFilter {
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: Keys.nearbyFilter)
+        }
+        get {
+            guard let string = UserDefaults.standard.string(forKey: Keys.nearbyFilter),
+                let filter = NearbyFilter(rawValue: string) else {
                     return .all
             }
             return filter
