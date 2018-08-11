@@ -138,6 +138,7 @@
 		D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E181F39966700906F64 /* ColorCache.swift */; };
 		D9DE9E1C1F3A447100906F64 /* BRCImageColors.m in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */; };
 		D9DEAACC211F74D2007899B9 /* ProcessInfo+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEAACB211F74D1007899B9 /* ProcessInfo+iBurn.swift */; };
+		D9DEAACE211F9558007899B9 /* LabelAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEAACD211F9558007899B9 /* LabelAnnotationView.swift */; };
 		D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */; };
 		D9E0DA89210F76B60056286B /* EventListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA88210F76B60056286B /* EventListViewController.swift */; };
 		D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA8A210F78850056286B /* ListCoordinator.swift */; };
@@ -475,6 +476,7 @@
 		D9DE9E1A1F3A447100906F64 /* BRCImageColors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCImageColors.h; sourceTree = "<group>"; };
 		D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCImageColors.m; sourceTree = "<group>"; };
 		D9DEAACB211F74D1007899B9 /* ProcessInfo+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProcessInfo+iBurn.swift"; sourceTree = "<group>"; };
+		D9DEAACD211F9558007899B9 /* LabelAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAnnotationView.swift; sourceTree = "<group>"; };
 		D9DEC5FB1F2EB2B400F536ED /* BRCDataImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataImporter.swift; sourceTree = "<group>"; };
 		D9E0DA88210F76B60056286B /* EventListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventListViewController.swift; sourceTree = "<group>"; };
 		D9E0DA8A210F78850056286B /* ListCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListCoordinator.swift; sourceTree = "<group>"; };
@@ -1053,6 +1055,7 @@
 		D9EC0E5A1B7DE02F0042B596 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D9DEAACD211F9558007899B9 /* LabelAnnotationView.swift */,
 				D97EB5EB21122A7D001B4351 /* DayPicker.swift */,
 				D97EB5ED21122EF0001B4351 /* DayView.xib */,
 				D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */,
@@ -1621,6 +1624,7 @@
 				D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */,
 				D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
+				D9DEAACE211F9558007899B9 /* LabelAnnotationView.swift in Sources */,
 				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D994155719871D1500D245C7 /* BRCFilteredTableViewController.m in Sources */,

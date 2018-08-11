@@ -10,7 +10,7 @@ import UIKit
 import Mapbox
 import YapDatabase
 import BButton
-
+import CocoaLumberjack
 
 
 public class MapViewAdapter: NSObject {
@@ -30,8 +30,10 @@ public class MapViewAdapter: NSObject {
     var annotations: [MGLAnnotation] = []
     /// key is annotation
     var annotationViews: [AnyHashable: MGLAnnotationView] = [:]
+    var labelViews: [LabelAnnotationView] = []
+
     /// for checking if annotations overlap
-    private var overlappingAnnotations: [OverlapCoordinate: [DataObjectAnnotation]] = [:]
+    private var overlappingAnnotations: [OverlapCoordinate: Set<DataObjectAnnotation>] = [:]
     
     @objc public init(mapView: MGLMapView,
                       dataSource: AnnotationDataSource? = nil) {
@@ -60,21 +62,31 @@ extension MapViewAdapter: MGLMapViewDelegate {
             let image = imageAnnotation.markerImage ?? UIImage(named: "BRCPurplePin") else {
                 return nil
         }
-        let annotationView: ImageAnnotationView
-        if let view = mapView.dequeueReusableAnnotationView(withIdentifier: ImageAnnotationView.reuseIdentifier) as? ImageAnnotationView {
-            annotationView = view
-        } else {
-            annotationView = ImageAnnotationView(reuseIdentifier: ImageAnnotationView.reuseIdentifier)
-        }
-        annotationView.image = image
-        if let annotation = annotation as? AnyHashable {
-            annotationViews[annotation] = annotationView
-        }
-        
-        if let data = annotation as? DataObjectAnnotation {
+        var annotationView: MGLAnnotationView?
+        if let _ = annotation as? BRCMapPoint {
+            let imageAnnotationView: ImageAnnotationView
+            if let view = mapView.dequeueReusableAnnotationView(withIdentifier: ImageAnnotationView.reuseIdentifier) as? ImageAnnotationView {
+                imageAnnotationView = view
+            } else {
+                imageAnnotationView = ImageAnnotationView(reuseIdentifier: ImageAnnotationView.reuseIdentifier)
+            }
+            imageAnnotationView.image = image
+            annotationView = imageAnnotationView
+        } else if let data = annotation as? DataObjectAnnotation {
+            let labelAnnotationView: LabelAnnotationView
+            if let view = mapView.dequeueReusableAnnotationView(withIdentifier: LabelAnnotationView.reuseIdentifier) as? LabelAnnotationView {
+                labelAnnotationView = view
+            } else {
+                labelAnnotationView = LabelAnnotationView(reuseIdentifier: LabelAnnotationView.reuseIdentifier)
+            }
+            labelAnnotationView.imageView.image = image
+            labelAnnotationView.label.text = data.title
+            labelViews.append(labelAnnotationView)
+            annotationView = labelAnnotationView
+            
             let overlapCoordinate = data.originalCoordinate.overlapCoordinate
-            var overlapping = overlappingAnnotations[overlapCoordinate] ?? []
-            overlapping.append(data)
+            var overlapping = overlappingAnnotations[overlapCoordinate] ?? Set<DataObjectAnnotation>()
+            overlapping.insert(data)
             if overlapping.count > 1 {
                 for (i, annotation) in overlapping.enumerated() {
                     let percentage = Double(i) / Double(overlapping.count)
@@ -82,6 +94,11 @@ extension MapViewAdapter: MGLMapViewDelegate {
                 }
             }
             overlappingAnnotations[overlapCoordinate] = overlapping
+        }
+        
+        if let annotation = annotation as? AnyHashable,
+            let annotationView = annotationView {
+            annotationViews[annotation] = annotationView
         }
 
         return annotationView
@@ -120,6 +137,15 @@ extension MapViewAdapter: MGLMapViewDelegate {
         case .info:
             let vc = BRCDetailViewController(dataObject: data.object)
             parent?.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+        DDLogVerbose("New zoom level: \(mapView.zoomLevel)")
+        
+        let labelIsHidden = mapView.zoomLevel <= 14
+        labelViews.forEach { (view) in
+            view.label.isHidden = labelIsHidden
         }
     }
 }

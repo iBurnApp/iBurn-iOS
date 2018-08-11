@@ -107,6 +107,17 @@ public final class DataObjectAnnotation: NSObject {
         self.originalCoordinate = location.coordinate
         self.object = object
     }
+    
+    public override var hashValue: Int {
+        return object.uniqueID.hashValue
+    }
+    
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let data = object as? DataObjectAnnotation else {
+            return false
+        }
+        return data.object.uniqueID == self.object.uniqueID
+    }
 }
 
 extension DataObjectAnnotation: MGLAnnotation {
