@@ -1,5 +1,5 @@
 //
-//  MapViewController.swift
+//  MainMapViewController.swift
 //  iBurn
 //
 //  Created by Chris Ballinger on 6/14/17.
@@ -13,7 +13,7 @@ import BButton
 import CocoaLumberjack
 import PlayaGeocoder
 
-public class MapViewController: BaseMapViewController {
+public class MainMapViewController: BaseMapViewController {
     let uiConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
@@ -70,7 +70,7 @@ public class MapViewController: BaseMapViewController {
     }
 }
 
-private extension MapViewController {
+private extension MainMapViewController {
     
     func setupTapGesture() {
         tapGesture.addTarget(self, action: #selector(singleTap(_:)))
@@ -146,7 +146,7 @@ private extension MapViewController {
     }
 }
 
-extension MapViewController: YapTableViewAdapterDelegate {
+extension MainMapViewController: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
         let nav = presentingViewController?.navigationController ??
             navigationController
@@ -155,7 +155,7 @@ extension MapViewController: YapTableViewAdapterDelegate {
     }
 }
 
-extension MapViewController: SearchCooordinator {
+extension MainMapViewController: SearchCooordinator {
     var searchController: UISearchController {
         return search.searchController
     }

@@ -71,11 +71,13 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 #endif
     // DATE TESTING
 #if DEBUG
-//    self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
-//
-//    [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
-//        return [NSDate brc_testDate];
-//    }];
+    if (NSProcessInfo.mockDateEnabled) {
+        self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
+        
+        [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
+            return [NSDate brc_testDate];
+        }];
+    }
 #endif
      
     
@@ -242,7 +244,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 {
     BRCDatabaseManager *dbManager = BRCDatabaseManager.shared;
 
-    self.mapViewController = [[MapViewController alloc] init];
+    self.mapViewController = [[MainMapViewController alloc] init];
     UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
@@ -393,8 +395,8 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     if ([viewController isKindOfClass:[UINavigationController class]]) {
         UINavigationController *navController = (UINavigationController*)viewController;
         UIViewController *topViewController = navController.topViewController;
-        if ([topViewController isKindOfClass:[MapViewController class]]) {
-            MapViewController *mapViewController = (MapViewController*)topViewController;
+        if ([topViewController isKindOfClass:[MainMapViewController class]]) {
+            MainMapViewController *mapViewController = (MainMapViewController*)topViewController;
             if (mapViewController.isVisible) {
                 [mapViewController centerMapAtManCoordinatesAnimated:YES];
             }

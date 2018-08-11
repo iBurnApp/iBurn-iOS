@@ -29,9 +29,11 @@ public final class BRCDataSorterOptions {
         now = Date()
         sortOrder = .title
         //DATE TESTING
-//        #if DEBUG
-//        now = NSDate.brc_test()
-//        #endif
+        #if DEBUG
+        if ProcessInfo.mockDateEnabled {
+            now = NSDate.brc_test()
+        }
+        #endif
  
     }
 }

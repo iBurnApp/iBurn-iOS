@@ -93,20 +93,23 @@ public extension BRCDataObject {
 /// This wrapper is required because MGLAnnotation has
 /// different optionality requirements than BRCDataObject for `title`
 public final class DataObjectAnnotation: NSObject {
+    /// this value may be slightly changed to prevent data overlap
+    public var coordinate: CLLocationCoordinate2D
+    public let originalCoordinate: CLLocationCoordinate2D
+
     let object: BRCDataObject
     @objc public init?(object: BRCDataObject) {
         guard let location = object.location,
             CLLocationCoordinate2DIsValid(location.coordinate) else {
             return nil
         }
+        self.coordinate = location.coordinate
+        self.originalCoordinate = location.coordinate
         self.object = object
     }
 }
 
 extension DataObjectAnnotation: MGLAnnotation {
-    public var coordinate: CLLocationCoordinate2D {
-        return object.location?.coordinate ?? kCLLocationCoordinate2DInvalid
-    }
     
     public var title: String? {
         var title = object.title
