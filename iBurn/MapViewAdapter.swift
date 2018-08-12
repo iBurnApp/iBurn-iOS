@@ -89,7 +89,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
             overlapping.insert(data)
             if overlapping.count > 1 {
                 for (i, annotation) in overlapping.enumerated() {
-                    let percentage = Double(i) / Double(overlapping.count)
+                    let percentage = Double(i) / Double(overlapping.count) + 0.18
                     annotation.coordinate = data.originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
                 }
             }
