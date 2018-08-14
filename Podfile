@@ -5,7 +5,8 @@ use_frameworks!
 
 target 'PlayaKit' do
 	pod 'CocoaLumberjack/Swift', '~> 3.4.1'
-	pod 'YapDatabase', '~> 3.0'
+	# pod 'YapDatabase', '~> 3.0'
+	pod 'YapDatabase', :git => 'https://github.com/ChatSecure/YapDatabase.git', :branch => 'nil-fixes'
 	target 'PlayaKitTests'
 end 
 
@@ -17,8 +18,11 @@ target 'iBurn' do
 	# Debugging
 	pod 'Swizzlean', :configurations => ['Debug']
 
-	pod 'Mapbox-iOS-SDK', '~> 4.0'
-	pod 'YapDatabase', '~> 3.0'
+	#pod 'Mapbox-iOS-SDK', '~> 4.0'
+	pod 'Mapbox-iOS-SDK', :podspec => "https://raw.githubusercontent.com/mapbox/mapbox-gl-native/ios-v4.3.0-beta.1/platform/ios/Mapbox-iOS-SDK.podspec"
+	# pod 'YapDatabase', '~> 3.0'
+	pod 'YapDatabase', :git => 'https://github.com/ChatSecure/YapDatabase.git', :branch => 'nil-fixes'
+
 	pod 'CocoaLumberjack/Swift', '~> 3.4.1'
 	pod 'Mantle', '~> 2.0'
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
