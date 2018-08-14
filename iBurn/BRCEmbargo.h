@@ -11,6 +11,7 @@
 
 @class BRCDataObject;
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCEmbargo : NSObject
 
 
@@ -22,3 +23,4 @@
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject;
 
 @end
+NS_ASSUME_NONNULL_END

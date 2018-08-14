@@ -57,6 +57,7 @@ extension YapViewAnnotationDataSource: AnnotationDataSource {
             for row in 0..<viewHandler.numberOfItemsInSection(section) {
                 let index = IndexPath(row: row, section: section)
                 if let dataObject: BRCDataObject = viewHandler.object(at: index),
+                    BRCEmbargo.canShowLocation(for: dataObject),
                     let annotation = dataObject.annotation {
                     annotations.append(annotation)
                 }
