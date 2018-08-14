@@ -15,7 +15,7 @@ before_install:
 
 install:
 #  - mkdir Submodules/iBurn-Data/data/2016/2016
-  - echo -e "#define MAPBOX_ACCESS_TOKEN test\n" > ./iBurn/InfoPlistSecrets.h
+  - echo -e "#define MAPBOX_ACCESS_TOKEN test\n#define CRASHLYTICS_API_TOKEN test\n" > ./iBurn/InfoPlistSecrets.h
   - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\nNSString * const kBRCMapBoxAccessToken = @\"\";\n" > ./iBurn/BRCSecrets.m
 
 before_script:

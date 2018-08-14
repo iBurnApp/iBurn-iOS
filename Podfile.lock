@@ -11,9 +11,12 @@ PODS:
     - CocoaLumberjack/Default
   - CocoaLumberjack/Swift (3.4.2):
     - CocoaLumberjack/Default
+  - Crashlytics (3.10.5):
+    - Fabric (~> 1.7.9)
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
   - DOFavoriteButton (0.0.4)
+  - Fabric (1.7.9)
   - FormatterKit/LocationFormatter (1.8.2):
     - FormatterKit/Resources
   - FormatterKit/Resources (1.8.2)
@@ -103,9 +106,11 @@ DEPENDENCIES:
   - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
   - CocoaLumberjack/Swift (~> 3.4.1)
+  - Crashlytics
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - DOFavoriteButton (from `Submodules/DOFavoriteButton/DOFavoriteButton.podspec`)
+  - Fabric
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - JTSImageViewController
@@ -128,8 +133,10 @@ SPEC REPOS:
     - Appirater
     - BButton
     - CocoaLumberjack
+    - Crashlytics
     - CupertinoYankee
     - DAKeyboardControl
+    - Fabric
     - FormatterKit
     - JTSImageViewController
     - KVOController
@@ -158,9 +165,11 @@ SPEC CHECKSUMS:
   ASDayPicker: 3a8f8734ad50da082046c29a1850103307c1e5cf
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
   CocoaLumberjack: db7cc9e464771f12054c22ff6947c5a58d43a0fd
+  Crashlytics: 7f2e38d302d9da96475b3d64d86fb29e31a542b7
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: bb0a80f74441428668393d90534dac9a39712bbc
+  Fabric: a2917d3895e4c1569b9c3170de7320ea1b1e6661
   FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
@@ -176,6 +185,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 9a7d0f040f17dfa6d02fc731bec8b188e4b4ee59
   YapDatabase: b418a4baa6906e8028748938f9159807fd039af4
 
-PODFILE CHECKSUM: 1670d3173422cbea14a491cce0b0e6b80eaf73fc
+PODFILE CHECKSUM: 86561a4cc740609a70bb9f9a5868980edc512c25
 
 COCOAPODS: 1.5.3

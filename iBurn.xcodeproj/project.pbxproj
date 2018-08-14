@@ -319,7 +319,7 @@
 		D91392DF1D6519300090E093 /* iBurn-2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2016"; path = "Submodules/iBurn-Data/data/2016/iBurn-2016"; sourceTree = SOURCE_ROOT; };
 		D9167B6120F132C500815F81 /* InfoPlistSecrets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoPlistSecrets.h; sourceTree = "<group>"; };
 		D9167B7220F14A9500815F81 /* 2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2018; path = "Submodules/iBurn-Data/data/2018/2018"; sourceTree = SOURCE_ROOT; };
-		D9167B7420F14A9D00815F81 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/scripts/latest/geocoder/bundle.js"; sourceTree = SOURCE_ROOT; };
+		D9167B7420F14A9D00815F81 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2018/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9167B7620F14AB100815F81 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2018/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D9167B7820F14ABA00815F81 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2018/TileCache"; sourceTree = SOURCE_ROOT; };
 		D9167B7A20F14AD000815F81 /* iBurn-2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2018"; path = "Submodules/iBurn-Data/data/2018/iBurn-2018"; sourceTree = SOURCE_ROOT; };
@@ -1137,6 +1137,7 @@
 				63CE2A521987140F00F65B01 /* Resources */,
 				E161ADB7ACA7D83761C1C90B /* [CP] Embed Pods Frameworks */,
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
+				D907AD6821215F20004A255A /* Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -1432,6 +1433,20 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		D907AD6821215F20004A255A /* Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = Crashlytics;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "SCRIPT_PATH=\"$SRCROOT/iBurn/crashlytics.sh\"\n\nif [ ! -f $SCRIPT_PATH ]; then\n  echo \"warning: Crashlytics disabled because crashlytics.sh could not be found.\"\nelse\n  sh $SCRIPT_PATH\nfi\n";
 		};
 		DB9C5A21BC9017032482FB42 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

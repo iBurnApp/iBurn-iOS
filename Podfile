@@ -38,4 +38,6 @@ target 'iBurn' do
 	pod 'PermissionScope', :path => 'Submodules/PermissionScope/PermissionScope.podspec'
 	pod 'JTSImageViewController'
 	pod 'UIImageColors', '~> 2.0.0'
+	pod 'Fabric'
+	pod 'Crashlytics'
 end

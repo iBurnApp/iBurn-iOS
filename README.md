@@ -47,14 +47,29 @@ $ curl -o ./Submodules/iBurn-Data/data/2015/2015/camps.json.js http://playaevent
 
 ```obj-c
 #define MAPBOX_ACCESS_TOKEN test
+#define CRASHLYTICS_API_TOKEN test
 ```
 	
 or run these commands:
 
 ```
 $ echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n NSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\nNSString * const kBRCMapBoxAccessToken = @\"\";\n" > ./iBurn/BRCSecrets.m
-$ echo -e "#define MAPBOX_ACCESS_TOKEN test\n" > ./iBurn/InfoPlistSecrets.h
+$ echo -e "#define MAPBOX_ACCESS_TOKEN test\n#define CRASHLYTICS_API_TOKEN test\n" > ./iBurn/InfoPlistSecrets.h
 ```
+
+
+* Create `.env` file: (optional)
+
+```
+CRASHLYTICS_API_TOKEN=""
+```
+
+* Create `iBurn/crashlytics.sh` file: (optional)
+
+```
+"${PODS_ROOT}/Fabric/run" $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET
+```
+
 
 * Compile and Run!
 

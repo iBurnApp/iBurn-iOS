@@ -41,6 +41,8 @@
 #import "NSDate+iBurn.h"
 @import AVFoundation;
 @import CocoaLumberjack;
+#import <Fabric/Fabric.h>
+#import <Crashlytics/Crashlytics.h>
 
 static int ddLogLevel = DDLogLevelVerbose;
 
@@ -62,6 +64,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [Fabric with:@[Crashlytics.class]];
+    
 #if DEBUG
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
