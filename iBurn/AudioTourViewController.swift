@@ -18,16 +18,25 @@ enum AudioButtonState: String {
 class AudioTourViewController: SortedViewController {
     
     let playAllItemsButton = UIBarButtonItem()
+    let soundcloudButton = UIButton(frame: CGRect(x: 0, y: 0, width: 200, height: 50))
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupPlayAllItemsButton()
+        setupSoundcloudButton()
+        tableView.tableHeaderView = soundcloudButton
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tableView.reloadData()
         self.refreshButtonState()
+    }
+    
+    func setupSoundcloudButton() {
+        soundcloudButton.setTitleColor(.darkText, for: .normal)
+        soundcloudButton.setTitle("Open in SoundCloud", for: .normal)
+        soundcloudButton.addTarget(self, action: #selector(soundcloudButtonPressed(_:)), for: .touchUpInside)
     }
     
     func setupPlayAllItemsButton() {
@@ -85,4 +94,11 @@ class AudioTourViewController: SortedViewController {
         })
     }
 
+}
+
+private extension AudioTourViewController {
+    @objc func soundcloudButtonPressed(_ sender: Any) {
+        let url = URL(string: "https://soundcloud.com/burningman/sets/2018-burning-man-art-audio-guide-i-robot")!
+        UIApplication.shared.openURL(url)
+    }
 }
