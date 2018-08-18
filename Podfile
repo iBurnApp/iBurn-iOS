@@ -19,7 +19,8 @@ target 'iBurn' do
 	pod 'Swizzlean', :configurations => ['Debug']
 
 	#pod 'Mapbox-iOS-SDK', '~> 4.0'
-	pod 'Mapbox-iOS-SDK', :podspec => "https://raw.githubusercontent.com/mapbox/mapbox-gl-native/ios-v4.3.0-beta.1/platform/ios/Mapbox-iOS-SDK.podspec"
+	pod 'Mapbox-iOS-SDK-symbols', :path => 'Submodules/Mapbox-Pod/dynamic/Mapbox-iOS-SDK-symbols.podspec'
+	# pod 'Mapbox-iOS-SDK', :podspec => "https://raw.githubusercontent.com/mapbox/mapbox-gl-native/ios-v4.3.0-beta.1/platform/ios/Mapbox-iOS-SDK.podspec"
 	# pod 'YapDatabase', '~> 3.0'
 	pod 'YapDatabase', :git => 'https://github.com/ChatSecure/YapDatabase.git', :branch => 'nil-fixes'
 

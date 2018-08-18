@@ -27,7 +27,7 @@ PODS:
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
-  - Mapbox-iOS-SDK (4.3.0-beta.1)
+  - Mapbox-iOS-SDK-symbols (4.3.0-symbols)
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
   - PureLayout (3.0.2)
@@ -116,7 +116,7 @@ DEPENDENCIES:
   - JTSImageViewController
   - KVOController (~> 1.0)
   - Mantle (~> 2.0)
-  - Mapbox-iOS-SDK (from `https://raw.githubusercontent.com/mapbox/mapbox-gl-native/ios-v4.3.0-beta.1/platform/ios/Mapbox-iOS-SDK.podspec`)
+  - Mapbox-iOS-SDK-symbols (from `Submodules/Mapbox-Pod/dynamic/Mapbox-iOS-SDK-symbols.podspec`)
   - Onboard (~> 2.1)
   - PermissionScope (from `Submodules/PermissionScope/PermissionScope.podspec`)
   - PureLayout (~> 3.0)
@@ -154,8 +154,8 @@ EXTERNAL SOURCES:
     :path: Submodules/ASDayPicker/ASDayPicker.podspec
   DOFavoriteButton:
     :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
-  Mapbox-iOS-SDK:
-    :podspec: https://raw.githubusercontent.com/mapbox/mapbox-gl-native/ios-v4.3.0-beta.1/platform/ios/Mapbox-iOS-SDK.podspec
+  Mapbox-iOS-SDK-symbols:
+    :path: Submodules/Mapbox-Pod/dynamic/Mapbox-iOS-SDK-symbols.podspec
   PermissionScope:
     :path: Submodules/PermissionScope/PermissionScope.podspec
   YapDatabase:
@@ -182,7 +182,7 @@ SPEC CHECKSUMS:
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
-  Mapbox-iOS-SDK: 5b591317c6bf19ae2da705f173bf5180d90bdbe9
+  Mapbox-iOS-SDK-symbols: 049f2e7ca6442ff51036e9930601410de8dce66a
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: bea4e9cfc681fdcd5a1f5513ffe5436fa62455aa
   PureLayout: 4d550abe49a94f24c2808b9b95db9131685fe4cd
@@ -193,6 +193,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 9a7d0f040f17dfa6d02fc731bec8b188e4b4ee59
   YapDatabase: 170882ac5926507a4ea6dddaf704ebdd3f1ec61c
 
-PODFILE CHECKSUM: 8afa47b94bf647a8ac0310504e5b15c465a49d42
+PODFILE CHECKSUM: e79c09bbbc783cb72f0f22117a0822519f137d4a
 
 COCOAPODS: 1.5.3
