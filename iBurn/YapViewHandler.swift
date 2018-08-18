@@ -312,7 +312,8 @@ public extension UITableView {
             }
         }
         
-        guard rowChanges.count < 20, sectionChanges.count < 10 else {
+        // Getting lots of crashes for section animation errors, so let's disable those
+        guard rowChanges.count < 20, sectionChanges.count == 0 else {
             reloadData()
             return
         }
