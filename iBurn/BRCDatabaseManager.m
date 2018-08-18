@@ -336,7 +336,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         }
         return NO;
     }];
-    YapDatabaseFilteredView *audioTour = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:audioTourFiltering versionTag:@"1"];
+    YapDatabaseFilteredView *audioTour = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:audioTourFiltering versionTag:@"2"];
     success = [self.database registerExtension:audioTour withName:self.audioTourViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.audioTourViewName];
