@@ -17,10 +17,17 @@ extension UIImageColors {
 }
 
 @objc public protocol ColorTheme {
+    func setDefaultColorTheme(animated: Bool)
     func setColorTheme(_ colors: BRCImageColors, animated: Bool)
 }
 
 extension UINavigationBar: ColorTheme {
+    
+    @objc public func setDefaultColorTheme(animated: Bool) {
+        let colors = Appearance.colors
+        setColorTheme(colors, animated: animated)
+    }
+    
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         let theme = {
             self.barTintColor = colors.backgroundColor
@@ -36,6 +43,11 @@ extension UINavigationBar: ColorTheme {
 }
 
 extension UITableView: ColorTheme {
+    @objc public func setDefaultColorTheme(animated: Bool) {
+        let colors = Appearance.colors
+        setColorTheme(colors, animated: animated)
+    }
+    
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         self.backgroundColor = colors.backgroundColor
         self.tintColor = colors.primaryColor
@@ -43,6 +55,11 @@ extension UITableView: ColorTheme {
 }
 
 extension UIViewController: ColorTheme {
+    @objc public func setDefaultColorTheme(animated: Bool) {
+        let colors = Appearance.colors
+        setColorTheme(colors, animated: animated)
+    }
+
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         view.backgroundColor = colors.backgroundColor
         view.tintColor = colors.primaryColor

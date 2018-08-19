@@ -58,6 +58,10 @@ public class ObjectListViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         searchWillAppear()
+        
+        setDefaultColorTheme(animated: animated)
+        self.tableView.setDefaultColorTheme(animated: animated)
+        self.navigationController?.navigationBar.setDefaultColorTheme(animated: animated)
     }
     
     public override func viewDidAppear(_ animated: Bool) {

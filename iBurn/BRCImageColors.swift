@@ -118,6 +118,10 @@ public extension BRCImageColors {
 }
 
 extension BRCEventObjectTableViewCell: ColorTheme {
+    public func setDefaultColorTheme(animated: Bool) {
+        setColorTheme(Appearance.colors, animated: animated)
+    }
+    
     public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         backgroundColor = colors.backgroundColor
         descriptionLabel.textColor = colors.secondaryColor

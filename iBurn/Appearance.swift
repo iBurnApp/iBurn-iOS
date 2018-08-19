@@ -32,13 +32,11 @@ import UIKit
     private var theme: AppTheme {
         didSet {
             UserSettings.theme = theme
-            setGlobalAppearance()
         }
     }
     private var colors: AppColors {
         didSet {
             UserSettings.contrast = colors
-            setGlobalAppearance()
         }
     }
     
@@ -47,19 +45,27 @@ import UIKit
         self.colors = UserSettings.contrast
     }
     
-    private func setGlobalAppearance() {
-//        let colors: BRCImageColors
-//        let barStyle: UIBarStyle
-//        switch theme {
-//        case .light:
-//            colors = .plain
-//            barStyle = .default
-//        case .dark:
-//            colors = .plainDark
-//            barStyle = .black
-//        }
+    @objc public static var colors: BRCImageColors {
+        let colors: BRCImageColors
+        switch theme {
+        case .light:
+            colors = .plain
+        case .dark:
+            colors = .plainDark
+        }
+        return colors
     }
 
+    @objc public static var barStyle: UIBarStyle {
+        let barStyle: UIBarStyle
+        switch theme {
+        case .light:
+            barStyle = .default
+        case .dark:
+            barStyle = .black
+        }
+        return barStyle
+    }
 }
 
 
