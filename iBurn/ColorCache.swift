@@ -138,7 +138,9 @@ public class ColorCache: NSObject {
             
             // Otherwise calculate the colors and save to db
             let colors = image.getColors(quality: .high)
-            let brcColors = colors.brc_ImageColors
+            guard let brcColors = colors?.brc_ImageColors else {
+                return
+            }
             if let completion = completion {
                 self.completionQueue.async {
                     completion(brcColors)

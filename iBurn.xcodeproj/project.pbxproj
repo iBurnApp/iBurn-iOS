@@ -1388,7 +1388,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 			);
@@ -1399,7 +1399,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		494E5894B2B0684522784BC0 /* [CP] Check Pods Manifest.lock */ = {
@@ -1458,7 +1458,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
@@ -1472,8 +1472,8 @@
 				"${BUILT_PRODUCTS_DIR}/JTSImageViewController/JTSImageViewController.framework",
 				"${BUILT_PRODUCTS_DIR}/KVOController/KVOController.framework",
 				"${BUILT_PRODUCTS_DIR}/Mantle/Mantle.framework",
-				"${PODS_ROOT}/../Submodules/Mapbox-Pod/dynamic/Mapbox.framework",
-				"${PODS_ROOT}/../Submodules/Mapbox-Pod/dynamic/Mapbox.framework.dSYM",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework.dSYM",
 				"${BUILT_PRODUCTS_DIR}/Onboard/Onboard.framework",
 				"${BUILT_PRODUCTS_DIR}/PermissionScope/PermissionScope.framework",
 				"${BUILT_PRODUCTS_DIR}/PureLayout/PureLayout.framework",
@@ -1511,7 +1511,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E161ADB7ACA7D83761C1C90B /* [CP] Embed Pods Frameworks */ = {
@@ -1520,7 +1520,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
@@ -1534,8 +1534,8 @@
 				"${BUILT_PRODUCTS_DIR}/JTSImageViewController/JTSImageViewController.framework",
 				"${BUILT_PRODUCTS_DIR}/KVOController/KVOController.framework",
 				"${BUILT_PRODUCTS_DIR}/Mantle/Mantle.framework",
-				"${PODS_ROOT}/../Submodules/Mapbox-Pod/dynamic/Mapbox.framework",
-				"${PODS_ROOT}/../Submodules/Mapbox-Pod/dynamic/Mapbox.framework.dSYM",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework.dSYM",
 				"${BUILT_PRODUCTS_DIR}/Onboard/Onboard.framework",
 				"${BUILT_PRODUCTS_DIR}/PermissionScope/PermissionScope.framework",
 				"${BUILT_PRODUCTS_DIR}/PureLayout/PureLayout.framework",
@@ -1573,7 +1573,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E9C3145650DF2A650019858A /* [CP] Check Pods Manifest.lock */ = {
