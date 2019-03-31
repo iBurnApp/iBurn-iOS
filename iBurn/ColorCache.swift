@@ -67,7 +67,7 @@ extension UIViewController: ColorTheme {
     }
 }
 
-public extension UIPageViewController {
+extension UIPageViewController {
     /** Copy the paramters from top child view controller */
     @objc public func copyChildParameters() {
         guard let top = self.viewControllers?.first else { return }

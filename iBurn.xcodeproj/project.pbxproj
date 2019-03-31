@@ -48,6 +48,7 @@
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */; };
 		D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D927BDB11EF4778000B7324D /* UserGuidance.swift */; };
+		D93402352250811300318A7E /* PlayaKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitTests.swift */; };
 		D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */; };
 		D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */; };
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
@@ -1217,7 +1218,7 @@
 			attributes = {
 				CLASSPREFIX = BRC;
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "Burning Man Earth";
 				TargetAttributes = {
 					63CE2A531987140F00F65B01 = {
@@ -1252,10 +1253,11 @@
 			};
 			buildConfigurationList = 63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */;
 			compatibilityVersion = "Xcode 8.0";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 63CE2A4B1987140F00F65B01;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -1724,6 +1726,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D93402352250811300318A7E /* PlayaKitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1777,6 +1780,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -1822,7 +1826,7 @@
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -1831,6 +1835,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -1870,7 +1875,7 @@
 				LLVM_LTO = YES;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1901,6 +1906,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "iBurn/iBurn-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1928,6 +1934,7 @@
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "iBurn/iBurn-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -1963,6 +1970,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1998,6 +2006,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.iburnapp.PlayaKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -2025,6 +2034,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -2049,6 +2059,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.iburnapp.PlayaKitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -2061,11 +2072,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/Pods",
-				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = iBurnTests/Info.plist;
@@ -2075,6 +2081,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "iBurnTests/iBurnTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
 			};
 			name = Debug;
@@ -2089,11 +2096,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/Pods",
-				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = iBurnTests/Info.plist;
@@ -2102,6 +2104,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iburnapp.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "iBurnTests/iBurnTests-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iBurn.app/iBurn";
 			};
 			name = Release;

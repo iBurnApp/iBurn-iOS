@@ -109,8 +109,8 @@ public final class DataObjectAnnotation: NSObject {
         self.object = object
     }
     
-    public override var hashValue: Int {
-        return object.uniqueID.hashValue
+    public override var hash: Int {
+        return object.uniqueID.hash
     }
     
     public override func isEqual(_ object: Any?) -> Bool {

@@ -13,7 +13,7 @@ extension TimeZone {
     static let burningManTimeZone = TimeZone(abbreviation: "PDT")!
 }
 
-public extension NSTimeZone {
+extension NSTimeZone {
     @objc public static var brc_burningManTimeZone: NSTimeZone {
         return TimeZone.burningManTimeZone as NSTimeZone
     }

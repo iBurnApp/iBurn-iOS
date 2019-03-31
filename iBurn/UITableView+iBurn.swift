@@ -9,7 +9,7 @@
 import Foundation
 
 
-public extension UITableView {
+extension UITableView {
     public static func iBurnTableView(style: UITableViewStyle = .plain) -> UITableView {
         let tableView = UITableView(frame: .zero, style: style)
         tableView.setDataObjectDefaults()
