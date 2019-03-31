@@ -37,13 +37,13 @@ extension UIBarButtonItem {
         }
     }
     
-    convenience init(title: String?, style: UIBarButtonItemStyle, closure: @escaping UIBarButtonItemTargetClosure) {
+    convenience init(title: String?, style: UIBarButtonItem.Style, closure: @escaping UIBarButtonItemTargetClosure) {
         self.init(title: title, style: style, target: nil, action: nil)
         targetClosure = closure
         action = #selector(UIBarButtonItem.closureAction)
     }
     
-    convenience init(barButtonSystemItem: UIBarButtonSystemItem, closure: @escaping UIBarButtonItemTargetClosure) {
+    convenience init(barButtonSystemItem: UIBarButtonItem.SystemItem, closure: @escaping UIBarButtonItemTargetClosure) {
         self.init(barButtonSystemItem: barButtonSystemItem, target: nil, action: nil)
         targetClosure = closure
         action = #selector(UIBarButtonItem.closureAction)

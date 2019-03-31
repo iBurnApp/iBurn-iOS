@@ -10,7 +10,7 @@ import Foundation
 
 
 extension UITableView {
-    public static func iBurnTableView(style: UITableViewStyle = .plain) -> UITableView {
+    public static func iBurnTableView(style: UITableView.Style = .plain) -> UITableView {
         let tableView = UITableView(frame: .zero, style: style)
         tableView.setDataObjectDefaults()
         return tableView
@@ -19,7 +19,7 @@ extension UITableView {
     public func setDataObjectDefaults() {
         registerCustomCellClasses()
         estimatedRowHeight = 120
-        rowHeight = UITableViewAutomaticDimension
+        rowHeight = UITableView.automaticDimension
     }
     
     /** Registers custom cell classes for BRC data objects */

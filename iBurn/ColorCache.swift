@@ -25,7 +25,7 @@ extension UINavigationBar: ColorTheme {
         let theme = {
             self.barTintColor = colors.backgroundColor
             self.tintColor = colors.secondaryColor
-            self.titleTextAttributes = [NSAttributedStringKey.foregroundColor: colors.primaryColor]
+            self.titleTextAttributes = [NSAttributedString.Key.foregroundColor: colors.primaryColor]
         }
         if animated {
             UIView.transition(with: self, duration: 0.25, options: [.beginFromCurrentState, .transitionCrossDissolve], animations: theme, completion: nil)
@@ -59,7 +59,7 @@ extension UIViewController: ColorTheme {
         // https://stackoverflow.com/a/35820522/805882
         let fadeTextAnimation = CATransition()
         fadeTextAnimation.duration = 0.25
-        fadeTextAnimation.type = kCATransitionFade
+        fadeTextAnimation.type = CATransitionType.fade
         navigationController?.navigationBar.layer.add(fadeTextAnimation, forKey: "fadeText")
         
         destination.title = source.title

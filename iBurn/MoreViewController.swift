@@ -49,12 +49,12 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let cellImage = cell.imageView?.image {
-            cell.imageView!.image = cellImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+            cell.imageView!.image = cellImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
         }
         
         if cell.tag == CellTag.unlock.rawValue {
             if BRCEmbargo.allowEmbargoedData() {
-                cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+                cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
                 cell.textLabel!.text = "Location Data Unlocked"
                 cell.textLabel!.textColor = UIColor.lightGray
                 cell.isUserInteractionEnabled = false
@@ -161,7 +161,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     func showAudioTour() {
-        let audioTour = AudioTourViewController(style: UITableViewStyle.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
+        let audioTour = AudioTourViewController(style: UITableView.Style.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
         audioTour.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(audioTour, animated: true)

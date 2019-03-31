@@ -29,7 +29,7 @@ public class EventListViewController: UIViewController {
         }
     }
     private var dayObserver: NSKeyValueObservation?
-    private var loadingIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+    private var loadingIndicator = UIActivityIndicatorView(style: .gray)
     
     // MARK: - Init
     

@@ -70,11 +70,11 @@ public class SortedViewController: UITableViewController {
         return pvm
     }()
     
-    public override init(style: UITableViewStyle) {
+    public override init(style: UITableView.Style) {
         super.init(style: style)
     }
     
-    @objc public required init(style: UITableViewStyle, extensionName ext: String) {
+    @objc public required init(style: UITableView.Style, extensionName ext: String) {
         super.init(style: style)
         extensionName = ext
         BRCDatabaseManager.shared.uiConnection.read { (transaction: YapDatabaseReadTransaction) -> Void in
@@ -109,7 +109,7 @@ public class SortedViewController: UITableViewController {
     
     func setupTableView() {
         tableView.estimatedRowHeight = 120
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         // register table cell classes
         tableView.registerCustomCellClasses()
         tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
@@ -210,7 +210,7 @@ public class SortedViewController: UITableViewController {
         if !hasTableItems() {
             return 0
         }
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     override open func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
@@ -221,7 +221,7 @@ public class SortedViewController: UITableViewController {
         if !hasTableItems() {
             return 55
         }
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     override open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
