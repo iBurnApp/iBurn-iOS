@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import CocoaLumberjack
 
 public class Camp: APIObject, CampProtocol {
     

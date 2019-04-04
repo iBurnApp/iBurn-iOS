@@ -7,13 +7,12 @@
 //
 
 import Foundation
-import YapDatabase
 
 public enum DecodeError: Error {
     case dateFormatting
 }
 
-public protocol APIProtocol: YapObjectProtocol {
+public protocol APIProtocol {
     /// unique 'uid' returned from PlayaEvents API
     var uniqueId: String { get }
     var title: String { get }
@@ -41,8 +40,8 @@ public protocol ArtProtocol: APIProtocol {
 }
 
 public protocol EventProtocol: APIProtocol {
+    var hostedByCamp: String? { get }
+    var hostedByArt: String? { get }
     var occurrences: [EventOccurrence] { get }
-    func hostedByCamp(_ transaction: YapDatabaseReadTransaction) -> CampProtocol?
-    func hostedByArt(_ transaction: YapDatabaseReadTransaction) -> ArtProtocol?
     var eventType: EventType { get }
 }

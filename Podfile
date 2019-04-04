@@ -3,11 +3,9 @@ platform :ios, '9.0'
 inhibit_all_warnings!
 use_frameworks!
 
-target 'PlayaKit' do
+target 'PlayaKitTests' do
 	pod 'CocoaLumberjack/Swift'
-	# pod 'YapDatabase', '3.1.1'
 	pod 'YapDatabase', :git => 'https://github.com/yapstudios/YapDatabase.git', :branch => 'master'
-	target 'PlayaKitTests'
 end 
 
 target 'iBurn' do

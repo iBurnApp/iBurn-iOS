@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import CocoaLumberjack
 
 public class Art: APIObject, ArtProtocol {
     public override var location: PlayaLocation? {
@@ -36,8 +35,6 @@ public class Art: APIObject, ArtProtocol {
         case donationURL = "donation_link"
     }
     
-    
-    
     public init(title: String,
                 year: Int = Calendar.current.component(.year, from: Date()),
                 artistName: String,
@@ -58,12 +55,12 @@ public class Art: APIObject, ArtProtocol {
         do {
             artLocation = try container.decodeIfPresent(ArtLocation.self, forKey: .location)
         } catch {
-            //DDLogWarn("Error decoding artLocation \(yapKey) \(error)")
+            debugPrint("Error decoding artLocation \(error)")
         }
         do {
             donationURL = try container.decodeIfPresent(URL.self, forKey: .donationURL)
         } catch {
-            //DDLogWarn("Error decoding donationURL \(yapKey) \(error)")
+            debugPrint("Error decoding donationURL \(error)")
         }
         imagesLocations = try container.decodeIfPresent([ImageLocation].self, forKey: .images) ?? []
     }
@@ -89,18 +86,13 @@ public enum ArtCategory: String {
 }
 
 private struct ImageLocation: Codable {
-    let thumbnailURLString: String
+    private let thumbnailURLString: String?
     var thumbnailURL: URL? {
+        guard let thumbnailURLString = self.thumbnailURLString else { return nil }
         return URL(string: thumbnailURLString)
     }
     static func URLs(imageLocations: [ImageLocation]) -> [URL] {
-        var imageURLs: [URL] = []
-        imageLocations.forEach {
-            if let url = $0.thumbnailURL {
-                imageURLs.append(url)
-            }
-        }
-        return imageURLs
+        return imageLocations.compactMap { $0.thumbnailURL }
     }
     
     // MARK: Codable
