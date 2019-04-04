@@ -33,68 +33,68 @@ PODS:
   - TUSafariActivity (1.0.4)
   - UIImageColors (2.1.0)
   - VTAcknowledgementsViewController (1.5.1)
-  - YapDatabase (3.1.1):
-    - YapDatabase/Standard (= 3.1.1)
-  - YapDatabase/Standard (3.1.1):
-    - YapDatabase/Standard/Core (= 3.1.1)
-    - YapDatabase/Standard/Extensions (= 3.1.1)
-  - YapDatabase/Standard/Core (3.1.1):
+  - YapDatabase (3.1.2):
+    - YapDatabase/Standard (= 3.1.2)
+  - YapDatabase/Standard (3.1.2):
+    - YapDatabase/Standard/Core (= 3.1.2)
+    - YapDatabase/Standard/Extensions (= 3.1.2)
+  - YapDatabase/Standard/Core (3.1.2):
     - CocoaLumberjack
-  - YapDatabase/Standard/Extensions (3.1.1):
+  - YapDatabase/Standard/Extensions (3.1.2):
     - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/ActionManager (= 3.1.1)
-    - YapDatabase/Standard/Extensions/AutoView (= 3.1.1)
-    - YapDatabase/Standard/Extensions/CloudCore (= 3.1.1)
-    - YapDatabase/Standard/Extensions/CloudKit (= 3.1.1)
-    - YapDatabase/Standard/Extensions/ConnectionPool (= 3.1.1)
-    - YapDatabase/Standard/Extensions/ConnectionProxy (= 3.1.1)
-    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 3.1.1)
-    - YapDatabase/Standard/Extensions/FilteredView (= 3.1.1)
-    - YapDatabase/Standard/Extensions/FullTextSearch (= 3.1.1)
-    - YapDatabase/Standard/Extensions/Hooks (= 3.1.1)
-    - YapDatabase/Standard/Extensions/ManualView (= 3.1.1)
-    - YapDatabase/Standard/Extensions/Relationships (= 3.1.1)
-    - YapDatabase/Standard/Extensions/RTreeIndex (= 3.1.1)
-    - YapDatabase/Standard/Extensions/SearchResultsView (= 3.1.1)
-    - YapDatabase/Standard/Extensions/SecondaryIndex (= 3.1.1)
-    - YapDatabase/Standard/Extensions/View (= 3.1.1)
-  - YapDatabase/Standard/Extensions/ActionManager (3.1.1):
+    - YapDatabase/Standard/Extensions/ActionManager (= 3.1.2)
+    - YapDatabase/Standard/Extensions/AutoView (= 3.1.2)
+    - YapDatabase/Standard/Extensions/CloudCore (= 3.1.2)
+    - YapDatabase/Standard/Extensions/CloudKit (= 3.1.2)
+    - YapDatabase/Standard/Extensions/ConnectionPool (= 3.1.2)
+    - YapDatabase/Standard/Extensions/ConnectionProxy (= 3.1.2)
+    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 3.1.2)
+    - YapDatabase/Standard/Extensions/FilteredView (= 3.1.2)
+    - YapDatabase/Standard/Extensions/FullTextSearch (= 3.1.2)
+    - YapDatabase/Standard/Extensions/Hooks (= 3.1.2)
+    - YapDatabase/Standard/Extensions/ManualView (= 3.1.2)
+    - YapDatabase/Standard/Extensions/Relationships (= 3.1.2)
+    - YapDatabase/Standard/Extensions/RTreeIndex (= 3.1.2)
+    - YapDatabase/Standard/Extensions/SearchResultsView (= 3.1.2)
+    - YapDatabase/Standard/Extensions/SecondaryIndex (= 3.1.2)
+    - YapDatabase/Standard/Extensions/View (= 3.1.2)
+  - YapDatabase/Standard/Extensions/ActionManager (3.1.2):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/AutoView
-  - YapDatabase/Standard/Extensions/AutoView (3.1.1):
+  - YapDatabase/Standard/Extensions/AutoView (3.1.2):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/CloudCore (3.1.1):
+  - YapDatabase/Standard/Extensions/CloudCore (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CloudKit (3.1.1):
+  - YapDatabase/Standard/Extensions/CloudKit (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ConnectionPool (3.1.1):
+  - YapDatabase/Standard/Extensions/ConnectionPool (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ConnectionProxy (3.1.1):
+  - YapDatabase/Standard/Extensions/ConnectionProxy (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CrossProcessNotification (3.1.1):
+  - YapDatabase/Standard/Extensions/CrossProcessNotification (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/FilteredView (3.1.1):
-    - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/FullTextSearch (3.1.1):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/Hooks (3.1.1):
-    - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ManualView (3.1.1):
+  - YapDatabase/Standard/Extensions/FilteredView (3.1.2):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/Relationships (3.1.1):
+  - YapDatabase/Standard/Extensions/FullTextSearch (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/RTreeIndex (3.1.1):
+  - YapDatabase/Standard/Extensions/Hooks (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/SearchResultsView (3.1.1):
+  - YapDatabase/Standard/Extensions/ManualView (3.1.2):
+    - YapDatabase/Standard/Core
+    - YapDatabase/Standard/Extensions/View
+  - YapDatabase/Standard/Extensions/Relationships (3.1.2):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/RTreeIndex (3.1.2):
+    - YapDatabase/Standard/Core
+  - YapDatabase/Standard/Extensions/SearchResultsView (3.1.2):
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/AutoView
     - YapDatabase/Standard/Extensions/FullTextSearch
-  - YapDatabase/Standard/Extensions/SecondaryIndex (3.1.1):
+  - YapDatabase/Standard/Extensions/SecondaryIndex (3.1.2):
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/View (3.1.1):
+  - YapDatabase/Standard/Extensions/View (3.1.2):
     - YapDatabase/Standard/Core
 
 DEPENDENCIES:
@@ -122,7 +122,7 @@ DEPENDENCIES:
   - TUSafariActivity (~> 1.0)
   - UIImageColors (~> 2.1)
   - VTAcknowledgementsViewController (~> 1.0)
-  - YapDatabase (= 3.1.1)
+  - YapDatabase (from `https://github.com/yapstudios/YapDatabase.git`, branch `master`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -146,7 +146,6 @@ SPEC REPOS:
     - TUSafariActivity
     - UIImageColors
     - VTAcknowledgementsViewController
-    - YapDatabase
 
 EXTERNAL SOURCES:
   ASDayPicker:
@@ -155,6 +154,14 @@ EXTERNAL SOURCES:
     :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
   PermissionScope:
     :path: Submodules/PermissionScope/PermissionScope.podspec
+  YapDatabase:
+    :branch: master
+    :git: https://github.com/yapstudios/YapDatabase.git
+
+CHECKOUT OPTIONS:
+  YapDatabase:
+    :commit: 4d42e250597387af7eb96b2d2fdba4a4f7a3741f
+    :git: https://github.com/yapstudios/YapDatabase.git
 
 SPEC CHECKSUMS:
   Anchorage: 21a98675245188427f0bcea21404d42a824a766f
@@ -180,8 +187,8 @@ SPEC CHECKSUMS:
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   UIImageColors: d2ef3b0877d203cbb06489eeb78ea8b7788caabe
   VTAcknowledgementsViewController: 3bb742da852a5161dc9f4b017e52f926a41ef5d3
-  YapDatabase: b418a4baa6906e8028748938f9159807fd039af4
+  YapDatabase: d8cd02058e36bc0902e405d8f3326eb8d7dbf36c
 
-PODFILE CHECKSUM: bec76606f7bea67bf447ae5e6100db20b923d56e
+PODFILE CHECKSUM: bd3d7454c2706ee9cc8bf339f9e96075b28a0df0
 
 COCOAPODS: 1.6.1

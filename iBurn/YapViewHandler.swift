@@ -287,6 +287,8 @@ public extension UITableView {
                     self.deleteSections($0.indexSet, with: .automatic)
                 case .move, .update:
                     break
+                @unknown default:
+                    break
                 }
             }
             rowChanges.forEach {
@@ -308,6 +310,8 @@ public extension UITableView {
                     if let indexPath = $0.indexPath {
                         self.reloadRows(at: [indexPath], with: .automatic)
                     }
+                @unknown default:
+                    break
                 }
             }
         }
