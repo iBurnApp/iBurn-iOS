@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */; };
+		53A2C86D4A2F39EAFD71ADC7 /* Pods_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D71622BFA2846EC8C479564C /* Pods_PlayaKitTests.framework */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
@@ -249,6 +249,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn_iBurnUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -306,6 +307,7 @@
 		B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
+		D71622BFA2846EC8C479564C /* Pods_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorter.swift; sourceTree = "<group>"; };
 		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
@@ -505,6 +507,7 @@
 		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
 		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
 		D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCArtObjectTableViewCell.xib; sourceTree = "<group>"; };
+		DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -535,7 +538,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D92C740F2255C24C00FCD532 /* PlayaKit.framework in Frameworks */,
-				2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */,
+				53A2C86D4A2F39EAFD71ADC7 /* Pods_PlayaKitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -569,6 +572,8 @@
 				66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */,
 				30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */,
 				73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */,
+				01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */,
+				DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -632,6 +637,7 @@
 				22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */,
 				4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */,
 				2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */,
+				D71622BFA2846EC8C479564C /* Pods_PlayaKitTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1334,7 +1340,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
 			);
@@ -1345,7 +1351,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		494E5894B2B0684522784BC0 /* [CP] Check Pods Manifest.lock */ = {
@@ -1533,7 +1539,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PlayaKit-PlayaKitTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PlayaKitTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1876,7 +1882,7 @@
 		};
 		D960F2621F74E65A00144290 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */;
+			baseConfigurationReference = 01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1902,7 +1908,7 @@
 		};
 		D960F2631F74E65A00144290 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */;
+			baseConfigurationReference = DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;

@@ -8,6 +8,7 @@
 
 import Foundation
 
+@objcMembers
 public class Art: APIObject, ArtProtocol {
     public override var location: PlayaLocation? {
         get {

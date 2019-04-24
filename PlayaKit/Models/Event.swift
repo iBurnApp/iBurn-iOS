@@ -8,14 +8,15 @@
 
 import Foundation
 
+@objcMembers
 public class Event: APIObject, EventProtocol {
     
     // MARK: Private Properties
     
     /// Unique id of camp host
-    public var hostedByCamp: String?
+    public private(set) var hostedByCamp: String?
     /// Unique id of art host
-    public var hostedByArt: String?
+    public private(set) var hostedByArt: String?
     private var eventTypeInternal: EventTypeInternal = EventTypeInternal.unknown
     
     // MARK: Init
@@ -28,7 +29,7 @@ public class Event: APIObject, EventProtocol {
     
     // MARK: EventProtocol
     
-    public var occurrences: [EventOccurrence] = []
+    public private(set) var occurrences: [EventOccurrence] = []
     
     public var eventType: EventType {
         return eventTypeInternal.type

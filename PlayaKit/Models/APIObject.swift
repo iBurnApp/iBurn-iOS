@@ -9,17 +9,18 @@
 import Foundation
 import CoreLocation
 
-public class APIObject: APIProtocol, Codable {
+@objcMembers
+public class APIObject: NSObject, APIProtocol, Codable {
    
     // MARK: APIProtocol Properties
     
-    public var uniqueId: String
-    public var location: PlayaLocation?
-    public var year: Int = 0
-    public var title: String = ""
-    public var detailDescription: String?
-    public var email: String?
-    public var url: URL?
+    public private(set) var uniqueId: String
+    public private(set) var location: PlayaLocation?
+    public private(set) var year: Int = 0
+    public internal(set) var title: String = ""
+    public private(set) var detailDescription: String?
+    public private(set) var email: String?
+    public private(set) var url: URL?
 
     // MARK: Init
     
