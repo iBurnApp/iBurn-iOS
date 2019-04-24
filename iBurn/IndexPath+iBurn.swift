@@ -14,7 +14,7 @@ public enum IndexPathDirection: Int {
     case after
 }
 
-public extension NSIndexPath {
+extension NSIndexPath {
     @objc public func nextIndexPath(direction: IndexPathDirection, tableView: UITableView) -> NSIndexPath? {
         let indexPath = self as IndexPath
         return indexPath.nextIndexPath(direction: direction, tableView: tableView) as NSIndexPath?
@@ -22,7 +22,7 @@ public extension NSIndexPath {
 }
 
 
-public extension IndexPath {
+extension IndexPath {
     // Inspired by https://akosma.com/2012/04/20/getting-the-next-and-the-previous-nsindexpath-instances/
     public func nextIndexPath(direction: IndexPathDirection, tableView: UITableView) -> IndexPath? {
         let sectionCount = tableView.numberOfSections

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension BRCDataObjectTableViewCell {
+extension BRCDataObjectTableViewCell {
     /** Mapping between cell identifiers and cell classes */
     public static let cellIdentifiers = [BRCDataObjectTableViewCell.cellIdentifier: BRCDataObjectTableViewCell.self,
                                      BRCArtObjectTableViewCell.cellIdentifier: BRCArtObjectTableViewCell.self,
@@ -16,7 +16,7 @@ public extension BRCDataObjectTableViewCell {
                                      ArtImageCell.cellIdentifier: ArtImageCell.self]
 }
 
-public extension BRCDataObject {
+extension BRCDataObject {
     
     /** Returns the cellIdentifier for table cell subclass */
     @objc public var tableCellIdentifier: String {

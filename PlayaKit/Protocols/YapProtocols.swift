@@ -26,9 +26,9 @@ public protocol YapObjectFetching: YapStorable {
     func exists(_ transaction: YapDatabaseReadTransaction) -> Bool
 }
 
-public extension YapObjectFetching {
+extension YapObjectFetching {
     
-    func exists(_ transaction: YapDatabaseReadTransaction) -> Bool {
+    public func exists(_ transaction: YapDatabaseReadTransaction) -> Bool {
         return transaction.hasObject(forKey: yapKey, inCollection: yapCollection)
     }
     
@@ -53,7 +53,7 @@ public protocol YapObjectSaving {
 
 public protocol YapObjectProtocol: YapObjectSaving, YapObjectFetching { }
 
-public extension YapObjectProtocol {
+extension YapObjectProtocol {
     public func touch(_ transaction: YapDatabaseReadWriteTransaction) {
         transaction.touchObject(forKey: yapKey, inCollection: yapCollection)
     }

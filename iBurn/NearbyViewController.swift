@@ -28,7 +28,7 @@ class NearbyViewController: SortedViewController {
     let tableHeaderView: UIView = UIView()
     private let filterControl = UISegmentedControl(items: NearbyFilter.allValues.map { $0.rawValue })
     
-    @objc required init(style: UITableViewStyle, extensionName ext: String) {
+    @objc required init(style: UITableView.Style, extensionName ext: String) {
         super.init(style: style, extensionName: ext)
         emptyDetailText = "Try a bigger search area."
     }
@@ -65,7 +65,7 @@ class NearbyViewController: SortedViewController {
     
     internal override func refreshTableItems(_ completion: @escaping ()->()) {
         guard let currentLocation = getCurrentLocation() else { return }
-        let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, searchDistance, searchDistance)
+        let region = MKCoordinateRegion.init(center: currentLocation.coordinate, latitudinalMeters: searchDistance, longitudinalMeters: searchDistance)
         emptyListText = EmptyListLabelText.Loading
         BRCDatabaseManager.shared.queryObjects(in: region, completionQueue: DispatchQueue.main, resultsBlock: { (results) -> Void in
             let nearbyObjects = results as! [BRCDataObject]
@@ -95,8 +95,8 @@ class NearbyViewController: SortedViewController {
     
     func refreshHeaderLabel() {
         let labelText: NSMutableAttributedString = NSMutableAttributedString()
-        let font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
-        let attributes: [NSAttributedStringKey: Any] = [NSAttributedStringKey.font: font]
+        let font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body)
+        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font]
         labelText.append(NSAttributedString(string: "Within ", attributes: attributes))
         labelText.append(TTTLocationFormatter.brc_humanizedString(forDistance: searchDistance))
         tableHeaderLabel.attributedText = labelText
@@ -141,7 +141,7 @@ class NearbyViewController: SortedViewController {
         distanceStepper.maximumValue = 3200 // approx 2 miles
         distanceStepper.value = searchDistance
         distanceStepper.stepValue = 150
-        distanceStepper.addTarget(self, action: #selector(NearbyViewController.stepperValueChanged(_:)), for: UIControlEvents.valueChanged)
+        distanceStepper.addTarget(self, action: #selector(NearbyViewController.stepperValueChanged(_:)), for: UIControl.Event.valueChanged)
     }
     
     @objc func stepperValueChanged(_ sender: AnyObject?) {
@@ -167,7 +167,7 @@ class NearbyViewController: SortedViewController {
         if section == 0 {
             return 25
         }
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
 
 }
@@ -184,7 +184,7 @@ private extension NearbyViewController {
         filterControl.addTarget(self, action: #selector(filterValueChanged(_:)), for: .valueChanged)
         
         let userFilter = UserSettings.nearbyFilter
-        let index = NearbyFilter.allValues.index(of: userFilter) ?? 0
+        let index = NearbyFilter.allValues.firstIndex(of: userFilter) ?? 0
         filterControl.selectedSegmentIndex = index
         updateFilter(userFilter)
     }

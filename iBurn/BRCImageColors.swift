@@ -17,7 +17,7 @@ extension UIColor {
     }
 }
 
-public extension BRCImageColors {
+extension BRCImageColors {
     
     static let adult = BRCImageColors(backgroundColor: UIColor(hex: 0x222222),
                                       primaryColor: UIColor(hex: 0xD92F2F),

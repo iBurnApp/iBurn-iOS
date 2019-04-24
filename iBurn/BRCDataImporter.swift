@@ -12,7 +12,7 @@ import CocoaLumberjack
 
 
 
-public extension BRCDataImporter {
+extension BRCDataImporter {
     
     /** This is where Mapbox stores its tile cache */
     private static var mapTilesDirectory: URL {

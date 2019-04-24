@@ -67,7 +67,7 @@ private extension FavoritesViewController {
         filterControl.addTarget(self, action: #selector(filterValueChanged(_:)), for: .valueChanged)
         
         let userFilter = UserSettings.favoritesFilter
-        let index = FavoritesFilter.allValues.index(of: userFilter) ?? 0
+        let index = FavoritesFilter.allValues.firstIndex(of: userFilter) ?? 0
         filterControl.selectedSegmentIndex = index
         updateFilter(userFilter)
     }

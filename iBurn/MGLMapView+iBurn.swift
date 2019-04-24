@@ -9,7 +9,7 @@
 import Foundation
 import Mapbox
 
-public extension MGLMapView {
+extension MGLMapView {
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults() {
         styleURL = URL(string: kBRCMapBoxStyleURL)

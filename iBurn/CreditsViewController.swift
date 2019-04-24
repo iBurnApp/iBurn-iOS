@@ -13,8 +13,8 @@ import VTAcknowledgementsViewController
 open class SubtitleCell: UITableViewCell {
     static let kReuseIdentifier = "kSubtitleIdentifier"
 
-    public override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: UITableViewCellStyle.subtitle, reuseIdentifier: SubtitleCell.kReuseIdentifier)
+    public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: UITableViewCell.CellStyle.subtitle, reuseIdentifier: SubtitleCell.kReuseIdentifier)
     }
 
     public required init(coder aDecoder: NSCoder) {
@@ -32,7 +32,7 @@ class CreditsViewController: UITableViewController {
     var creditsInfoArray:[BRCCreditsInfo] = []
 
     init () {
-        super.init(style: UITableViewStyle.grouped)
+        super.init(style: UITableView.Style.grouped)
     }
 
     required init!(coder aDecoder: NSCoder) {
@@ -97,10 +97,10 @@ class CreditsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: SubtitleCell.kReuseIdentifier, for: indexPath) 
         // style cell
-        cell.textLabel!.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.headline)
-        cell.detailTextLabel!.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.subheadline)
+        cell.textLabel!.font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.headline)
+        cell.detailTextLabel!.font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.subheadline)
         cell.detailTextLabel!.textColor = UIColor.lightGray
-        cell.accessoryType = UITableViewCellAccessoryType.disclosureIndicator
+        cell.accessoryType = UITableViewCell.AccessoryType.disclosureIndicator
         // set body
         if indexPath.section == SectionInfo.people.rawValue {
             let creditsInfo = self.creditsInfoArray[indexPath.row]

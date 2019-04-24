@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension BRCDatabaseManager {
+extension BRCDatabaseManager {
     /// When running low on memory, limit caches to 250
     @objc public func reduceCacheLimit() {
         let connections = [self.readWriteConnection,

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension ProcessInfo {
+extension ProcessInfo {
     /// whether or not we should fake the current date for testing Events
     @objc public static var mockDateEnabled: Bool {
         guard let mock = ProcessInfo.processInfo.environment["MOCK_DATE"],

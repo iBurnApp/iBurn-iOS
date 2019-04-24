@@ -62,7 +62,7 @@ import Onboard
     override func viewDidLoad() {
         super.viewDidLoad()
         // fill frame w/ video
-        moviePlayerController.videoGravity = AVLayerVideoGravity.resizeAspectFill.rawValue
+        moviePlayerController.videoGravity = convertToAVLayerVideoGravity(AVLayerVideoGravity.resizeAspectFill.rawValue)
         // loop video http://stackoverflow.com/a/26401680
         weak var weakVC: BRCOnboardingViewController? = self
         // prevent memory cycle
@@ -71,8 +71,13 @@ import Onboard
             nil, using:         // the queue of the sending
             { note in
                 // holding a pointer to avPlayer to reuse it
-                weakVC?.moviePlayerController.player?.seek(to: kCMTimeZero)
+                weakVC?.moviePlayerController.player?.seek(to: CMTime.zero)
                 weakVC?.moviePlayerController.player?.play()
         })
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToAVLayerVideoGravity(_ input: String) -> AVLayerVideoGravity {
+	return AVLayerVideoGravity(rawValue: input)
 }

@@ -264,13 +264,18 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
         DDLogInfo("Media file cached: \(destURL)")
         self.session.getTasksWithCompletionHandler({ (_, _, downloads) in
             if downloads.count == 0 {
-                if self.backgroundTask != UIBackgroundTaskInvalid {
-                    UIApplication.shared.endBackgroundTask(self.backgroundTask)
-                    self.backgroundTask = UIBackgroundTaskInvalid
+                if self.backgroundTask != UIBackgroundTaskIdentifier.invalid {
+                    UIApplication.shared.endBackgroundTask(convertToUIBackgroundTaskIdentifier(self.backgroundTask.rawValue))
+                    self.backgroundTask = UIBackgroundTaskIdentifier.invalid
                 }
                 
             }
         })
     }
     
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToUIBackgroundTaskIdentifier(_ input: Int) -> UIBackgroundTaskIdentifier {
+	return UIBackgroundTaskIdentifier(rawValue: input)
 }
