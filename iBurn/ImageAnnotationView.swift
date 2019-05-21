@@ -66,7 +66,9 @@ final class ImageAnnotationView: MGLAnnotationView {
         case .ending, .canceling:
             endDragging()
         case .none:
-            return
+            break
+        @unknown default:
+            break
         }
     }
 }

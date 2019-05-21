@@ -2,11 +2,10 @@
 //  PlayaKit.h
 //  PlayaKit
 //
-//  Created by Chris Ballinger on 9/21/17.
-//  Copyright © 2017 Burning Man Earth. All rights reserved.
+//  Created by Chris Ballinger on 4/3/19.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for PlayaKit.
 FOUNDATION_EXPORT double PlayaKitVersionNumber;

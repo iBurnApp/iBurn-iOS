@@ -7,19 +7,19 @@
 //
 
 import Foundation
-import CocoaLumberjack
 
+@objcMembers
 public class Camp: APIObject, CampProtocol {
     
     // MARK: CampProtocol
     
-    public var burnerMapLocation: CampLocation?
-    public var hometown: String?
-    public var campLocation: CampLocation?
+    public private(set) var burnerMapLocation: CampLocation?
+    public private(set) var hometown: String?
+    public private(set) var campLocation: CampLocation?
     
     // MARK: APIProtocol
     
-    public override var location: PlayaLocation? {
+    public private(set) override var location: PlayaLocation? {
         get {
             return campLocation
         }

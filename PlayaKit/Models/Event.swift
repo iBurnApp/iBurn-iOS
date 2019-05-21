@@ -7,17 +7,16 @@
 //
 
 import Foundation
-import YapDatabase
-import CocoaLumberjack
 
+@objcMembers
 public class Event: APIObject, EventProtocol {
     
     // MARK: Private Properties
     
     /// Unique id of camp host
-    private var hostedByCamp: String?
+    public private(set) var hostedByCamp: String?
     /// Unique id of art host
-    private var hostedByArt: String?
+    public private(set) var hostedByArt: String?
     private var eventTypeInternal: EventTypeInternal = EventTypeInternal.unknown
     
     // MARK: Init
@@ -30,19 +29,7 @@ public class Event: APIObject, EventProtocol {
     
     // MARK: EventProtocol
     
-    public var occurrences: [EventOccurrence] = []
-
-    public func hostedByCamp(_ transaction: YapDatabaseReadTransaction) -> CampProtocol? {
-        guard let yapKey = self.hostedByCamp else { return nil }
-        let camp = Camp.fetch(transaction, key: yapKey)
-        return camp
-    }
-    
-    public func hostedByArt(_ transaction: YapDatabaseReadTransaction) -> ArtProtocol? {
-        guard let yapKey = self.hostedByArt else { return nil }
-        let art = Art.fetch(transaction, key: yapKey)
-        return art
-    }
+    public private(set) var occurrences: [EventOccurrence] = []
     
     public var eventType: EventType {
         return eventTypeInternal.type
@@ -66,12 +53,12 @@ public class Event: APIObject, EventProtocol {
         do {
             eventTypeInternal = try container.decode(EventTypeInternal.self, forKey: .eventType)
         } catch let error {
-            DDLogWarn("Error decoding event type for \(uniqueId) \(error)")
+            debugPrint("Error decoding event type for \(uniqueId) \(error)")
         }
         do {
             occurrences = try container.decodeIfPresent([EventOccurrence].self, forKey: .occurrences) ?? []
         } catch let error {
-            DDLogWarn("Error decoding event occurrences for \(uniqueId) \(error)")
+            debugPrint("Error decoding event occurrences for \(uniqueId) \(error)")
         }
         title = try container.decode(String.self, forKey: .title)
     }

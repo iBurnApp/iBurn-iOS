@@ -8,21 +8,19 @@
 
 import Foundation
 import CoreLocation
-import YapDatabase
-import CocoaLumberjack
 
-
-public class APIObject: APIProtocol, Codable {
+@objcMembers
+public class APIObject: NSObject, APIProtocol, Codable {
    
     // MARK: APIProtocol Properties
     
-    public var uniqueId: String
-    public var location: PlayaLocation?
-    public var year: Int = 0
-    public var title: String = ""
-    public var detailDescription: String?
-    public var email: String?
-    public var url: URL?
+    public private(set) var uniqueId: String
+    public private(set) var location: PlayaLocation?
+    public private(set) var year: Int = 0
+    public internal(set) var title: String = ""
+    public private(set) var detailDescription: String?
+    public private(set) var email: String?
+    public private(set) var url: URL?
 
     // MARK: Init
     
@@ -47,7 +45,18 @@ public class APIObject: APIProtocol, Codable {
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         uniqueId = try container.decode(String.self, forKey: .uniqueId)
-        title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        do {
+            title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        } catch {
+            // really?
+            do {
+                if let titleNumber = try container.decodeIfPresent(Decimal.self, forKey: .title) {
+                    self.title = "\(titleNumber)"
+                }
+            } catch {
+                debugPrint("This item deserves no title \(error)")
+            }
+        }
         email = try container.decodeIfPresent(String.self, forKey: .email)
         detailDescription = try container.decodeIfPresent(String.self, forKey: .detailDescription)
         if let urlString = try container.decodeIfPresent(String.self, forKey: .url) {
@@ -64,37 +73,5 @@ public class APIObject: APIProtocol, Codable {
         try container.encodeIfPresent(email, forKey: .email)
         try container.encodeIfPresent(detailDescription, forKey: .detailDescription)
         try container.encodeIfPresent(url?.absoluteString, forKey: .url)
-    }
-}
-
-
-extension APIObject: YapObjectProtocol {
-    public var yapKey: String {
-        return uniqueId
-    }
-    
-    public var yapCollection: String {
-        return type(of: self).defaultYapCollection
-    }
-    
-    public static var defaultYapCollection: String {
-        return NSStringFromClass(self)
-    }
-    
-    /// Fetches from class's default collection `defaultYapCollection`
-    public static func fetch(_ transaction: YapDatabaseReadTransaction, key: String) -> Self? {
-        let collection = self.defaultYapCollection
-        let object = fetch(transaction, key: key, collection: collection)
-        return object
-    }
-    
-    public static func fetch(_ transaction: YapDatabaseReadTransaction, key: String, collection: String) -> Self? {
-        let object = APIObject.fetch(transaction, key: key, collection: collection, ofType: self)
-        return object
-    }
-    
-    public func refetch(_ transaction: YapDatabaseReadTransaction) -> Self? {
-        let object = refetch(transaction, ofType: type(of: self))
-        return object
     }
 }

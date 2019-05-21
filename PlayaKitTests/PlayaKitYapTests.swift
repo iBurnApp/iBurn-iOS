@@ -69,26 +69,6 @@ class PlayaKitTests: XCTestCase {
         XCTAssertNotEqual(camp.yapCollection, event.yapCollection)
     }
     
-    // FIXME: These tests are broken
-    func testJSONBundle() {
-//        let testBundle = Bundle(for: type(of: self))
-//        let jsonBundleURL = testBundle.url(forResource: "2018", withExtension: nil)!
-//        let jsonBundle = Bundle(url: jsonBundleURL)!
-//        let artURL = jsonBundle.url(forResource: "art.json", withExtension: "js")!
-//        let campURL = jsonBundle.url(forResource: "camps.json", withExtension: "js")!
-//        let eventURL = jsonBundle.url(forResource: "events.json", withExtension: "js")!
-//        let artJSONData = try! Data(contentsOf: artURL)
-//        let campJSONData = try! Data(contentsOf: campURL)
-//        let eventJSONData = try! Data(contentsOf: eventURL)
-//        let decoder = JSONDecoder()
-//        let art: [Art] = try! decoder.decode([Art].self, from: artJSONData)
-//        let camps: [Camp] = try! decoder.decode([Camp].self, from: campJSONData)
-//        let events: [Event] = try! decoder.decode([Event].self, from: eventJSONData)
-//        XCTAssert(art.count > 0)
-//        XCTAssert(camps.count > 0)
-//        XCTAssert(events.count > 0)
-    }
-    
     func testObjectSaving() {
         let art = Art(title: "art title", artistName: "JIMBOB", artistHometown: "somewhere, usa")
         let camp = Camp(title: "camp")

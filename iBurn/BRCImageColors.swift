@@ -112,6 +112,8 @@ extension BRCImageColors {
             return support
         case .workshop:
             return workshop
+        @unknown default:
+            return plain
         }
         return plain
     }

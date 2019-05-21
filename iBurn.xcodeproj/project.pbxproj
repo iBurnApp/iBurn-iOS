@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
@@ -23,7 +22,9 @@
 		63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A601987140F00F65B01 /* InfoPlist.strings */; };
 		63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63CE2A671987140F00F65B01 /* BRCAppDelegate.m */; };
 		63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CE2A691987140F00F65B01 /* Images.xcassets */; };
-		7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */; };
+		6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */; };
+		8B63739199F78E117A29DE00 /* libPods-PlayaKitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */; };
+		BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
 		D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */; };
@@ -48,7 +49,9 @@
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */; };
 		D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D927BDB11EF4778000B7324D /* UserGuidance.swift */; };
-		D93402352250811300318A7E /* PlayaKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitTests.swift */; };
+		D92C740F2255C24C00FCD532 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D92C740E2255C24300FCD532 /* PlayaKit.framework */; };
+		D92C74102255C2B500FCD532 /* YapProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23D1F74B86500144290 /* YapProtocols.swift */; };
+		D93402352250811300318A7E /* PlayaKitYapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitYapTests.swift */; };
 		D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */; };
 		D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */; };
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
@@ -57,10 +60,6 @@
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
-		D960F24F1F74E65A00144290 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D960F2461F74E65A00144290 /* PlayaKit.framework */; };
-		D960F2581F74E65A00144290 /* PlayaKit.h in Headers */ = {isa = PBXBuildFile; fileRef = D960F2481F74E65A00144290 /* PlayaKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D960F2641F74ECBE00144290 /* YapProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23D1F74B86500144290 /* YapProtocols.swift */; };
-		D960F2651F74ECC700144290 /* APIObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23F1F74E1D900144290 /* APIObject.swift */; };
 		D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */; };
 		D969E5AF21100B9200FF6700 /* Storyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AE21100B9200FF6700 /* Storyboard.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
@@ -119,7 +118,6 @@
 		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
-		D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */; };
 		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
 		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
@@ -132,8 +130,6 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */; };
-		D9DE74491F80AF0700B01AC5 /* APIProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE74481F80AF0700B01AC5 /* APIProtocols.swift */; };
-		D9DE744B1F80AFB700B01AC5 /* PlayaLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */; };
 		D9DE7BB01EF25C11007A983E /* MainMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BAF1EF25C11007A983E /* MainMapViewController.swift */; };
 		D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */; };
 		D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E181F39966700906F64 /* ColorCache.swift */; };
@@ -152,23 +148,39 @@
 		D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
-		D9EC18B81FEC52060013CDAA /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B71FEC52060013CDAA /* Event.swift */; };
-		D9EC18BA1FEC52130013CDAA /* Art.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18B91FEC52130013CDAA /* Art.swift */; };
-		D9EC18BC1FEC521C0013CDAA /* Camp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC18BB1FEC521C0013CDAA /* Camp.swift */; };
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
-		EAEAEF9B157915E16B74E206 /* Pods_iBurn_iBurnTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */; };
-		FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D960F2501F74E65A00144290 /* PBXContainerItemProxy */ = {
+		D92C73F22255C06F00FCD532 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D960F2451F74E65A00144290;
+			containerPortal = D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D92C73BF2255AEEB00FCD532;
 			remoteInfo = PlayaKit;
+		};
+		D92C73F42255C06F00FCD532 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D92C73C82255AEEB00FCD532;
+			remoteInfo = PlayaKitTests;
+		};
+		D92C740A2255C24300FCD532 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D92C73F82255C17900FCD532;
+			remoteInfo = "PlayaKit (iOS)";
+		};
+		D92C740D2255C24300FCD532 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D92C74082255C17900FCD532;
+			remoteInfo = "PlayaKit (iOS)";
 		};
 		D980A9101B3F5A6400BE3682 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -236,12 +248,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn_iBurnUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-iBurn-iBurnTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C938B49996428877731060F /* Pods-iBurnAbstract-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
@@ -290,6 +302,7 @@
 		9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-iBurn.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
@@ -337,6 +350,7 @@
 		D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MGLMapView+iBurn.m"; sourceTree = "<group>"; };
 		D927BDB11EF4778000B7324D /* UserGuidance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuidance.swift; sourceTree = "<group>"; };
 		D92B95991B7B0CC300116781 /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015/2015"; sourceTree = SOURCE_ROOT; };
+		D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaKit.xcodeproj; path = PlayaKit/PlayaKit.xcodeproj; sourceTree = "<group>"; };
 		D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IndexPath+iBurn.swift"; sourceTree = "<group>"; };
 		D946994E1F3913A000DE8DA6 /* BRCObjectMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCObjectMetadata.h; sourceTree = "<group>"; };
 		D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCObjectMetadata.m; sourceTree = "<group>"; };
@@ -352,12 +366,8 @@
 		D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCBreadcrumbPoint.m; sourceTree = "<group>"; };
 		D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDistanceView.swift; sourceTree = "<group>"; };
 		D960F23D1F74B86500144290 /* YapProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YapProtocols.swift; sourceTree = "<group>"; };
-		D960F23F1F74E1D900144290 /* APIObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIObject.swift; sourceTree = "<group>"; };
-		D960F2461F74E65A00144290 /* PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D960F2481F74E65A00144290 /* PlayaKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayaKit.h; sourceTree = "<group>"; };
-		D960F2491F74E65A00144290 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D960F24E1F74E65A00144290 /* PlayaKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlayaKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D960F2551F74E65A00144290 /* PlayaKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayaKitTests.swift; sourceTree = "<group>"; };
+		D960F2551F74E65A00144290 /* PlayaKitYapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayaKitYapTests.swift; sourceTree = "<group>"; };
 		D960F2571F74E65A00144290 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D965BFE41F2EB6E700D496FF /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2017/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
@@ -469,8 +479,6 @@
 		D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		D9D12F611B5AF5070048229A /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCMediaDownloader.swift; sourceTree = "<group>"; };
-		D9DE74481F80AF0700B01AC5 /* APIProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIProtocols.swift; sourceTree = "<group>"; };
-		D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayaLocation.swift; sourceTree = "<group>"; };
 		D9DE7BAF1EF25C11007A983E /* MainMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMapViewController.swift; sourceTree = "<group>"; };
 		D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarButtonsView.swift; sourceTree = "<group>"; };
 		D9DE9E181F39966700906F64 /* ColorCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCache.swift; sourceTree = "<group>"; };
@@ -493,16 +501,15 @@
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
-		D9EC18B71FEC52060013CDAA /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
-		D9EC18B91FEC52130013CDAA /* Art.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Art.swift; sourceTree = "<group>"; };
-		D9EC18BB1FEC521C0013CDAA /* Camp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camp.swift; sourceTree = "<group>"; };
 		D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioPlayer.swift; sourceTree = "<group>"; };
 		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
 		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
 		D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCArtObjectTableViewCell.xib; sourceTree = "<group>"; };
+		DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
+		E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PlayaKitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -521,15 +528,7 @@
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
-				FD12CE8E31DACC582677DCF8 /* Pods_iBurn.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D960F2421F74E65A00144290 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7643DABA49E6E2D09CBB1D26 /* Pods_PlayaKit.framework in Frameworks */,
+				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -537,8 +536,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D960F24F1F74E65A00144290 /* PlayaKit.framework in Frameworks */,
-				2AAB622B925533E9F35E594B /* Pods_PlayaKit_PlayaKitTests.framework in Frameworks */,
+				D92C740F2255C24C00FCD532 /* PlayaKit.framework in Frameworks */,
+				8B63739199F78E117A29DE00 /* libPods-PlayaKitTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -546,7 +545,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EAEAEF9B157915E16B74E206 /* Pods_iBurn_iBurnTests.framework in Frameworks */,
+				6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -572,6 +571,8 @@
 				66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */,
 				30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */,
 				73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */,
+				01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */,
+				DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -592,6 +593,7 @@
 			isa = PBXGroup;
 			children = (
 				D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */,
+				D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */,
 				63CE2A5D1987140F00F65B01 /* iBurn */,
 				D980A90B1B3F5A6400BE3682 /* iBurnTests */,
 				D960F2471F74E65A00144290 /* PlayaKit */,
@@ -607,7 +609,6 @@
 			children = (
 				63CE2A541987140F00F65B01 /* iBurn.app */,
 				D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */,
-				D960F2461F74E65A00144290 /* PlayaKit.framework */,
 				D960F24E1F74E65A00144290 /* PlayaKitTests.xctest */,
 			);
 			name = Products;
@@ -632,9 +633,10 @@
 				947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */,
 				3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */,
 				F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */,
-				22531AC7E3B44DC22B5A64C8 /* Pods_iBurn.framework */,
-				4187631C75AE9FA1C2DA3C93 /* Pods_iBurn_iBurnTests.framework */,
 				2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */,
+				E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */,
+				B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */,
+				2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -776,6 +778,16 @@
 			name = Cells;
 			sourceTree = "<group>";
 		};
+		D92C73EB2255C06F00FCD532 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D92C73F32255C06F00FCD532 /* PlayaKit.framework */,
+				D92C73F52255C06F00FCD532 /* PlayaKitTests.xctest */,
+				D92C740E2255C24300FCD532 /* PlayaKit.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		D94DA1AE1F225EE40064657B /* 2017 */ = {
 			isa = PBXGroup;
 			children = (
@@ -804,10 +816,7 @@
 		D960F2471F74E65A00144290 /* PlayaKit */ = {
 			isa = PBXGroup;
 			children = (
-				D9EC18BE1FEC59380013CDAA /* Protocols */,
-				D9EC18BD1FEC52290013CDAA /* Models */,
-				D960F2481F74E65A00144290 /* PlayaKit.h */,
-				D960F2491F74E65A00144290 /* Info.plist */,
+				D960F23D1F74B86500144290 /* YapProtocols.swift */,
 			);
 			path = PlayaKit;
 			sourceTree = "<group>";
@@ -815,7 +824,7 @@
 		D960F2541F74E65A00144290 /* PlayaKitTests */ = {
 			isa = PBXGroup;
 			children = (
-				D960F2551F74E65A00144290 /* PlayaKitTests.swift */,
+				D960F2551F74E65A00144290 /* PlayaKitYapTests.swift */,
 				D960F2571F74E65A00144290 /* Info.plist */,
 			);
 			path = PlayaKitTests;
@@ -1093,39 +1102,7 @@
 			name = Utilities;
 			sourceTree = "<group>";
 		};
-		D9EC18BD1FEC52290013CDAA /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				D9DE744A1F80AFB700B01AC5 /* PlayaLocation.swift */,
-				D960F23F1F74E1D900144290 /* APIObject.swift */,
-				D9EC18B71FEC52060013CDAA /* Event.swift */,
-				D9EC18B91FEC52130013CDAA /* Art.swift */,
-				D9EC18BB1FEC521C0013CDAA /* Camp.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		D9EC18BE1FEC59380013CDAA /* Protocols */ = {
-			isa = PBXGroup;
-			children = (
-				D9DE74481F80AF0700B01AC5 /* APIProtocols.swift */,
-				D960F23D1F74B86500144290 /* YapProtocols.swift */,
-			);
-			path = Protocols;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
-
-/* Begin PBXHeadersBuildPhase section */
-		D960F2431F74E65A00144290 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D960F2581F74E65A00144290 /* PlayaKit.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		63CE2A531987140F00F65B01 /* iBurn */ = {
@@ -1139,6 +1116,7 @@
 				E161ADB7ACA7D83761C1C90B /* [CP] Embed Pods Frameworks */,
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
 				D907AD6821215F20004A255A /* Crashlytics */,
+				53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1151,25 +1129,6 @@
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
 			productType = "com.apple.product-type.application";
 		};
-		D960F2451F74E65A00144290 /* PlayaKit */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D960F25D1F74E65A00144290 /* Build configuration list for PBXNativeTarget "PlayaKit" */;
-			buildPhases = (
-				08CEE89C6E0060A97AFD3A33 /* [CP] Check Pods Manifest.lock */,
-				D960F2411F74E65A00144290 /* Sources */,
-				D960F2421F74E65A00144290 /* Frameworks */,
-				D960F2431F74E65A00144290 /* Headers */,
-				D960F2441F74E65A00144290 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = PlayaKit;
-			productName = PlayaKit;
-			productReference = D960F2461F74E65A00144290 /* PlayaKit.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 		D960F24D1F74E65A00144290 /* PlayaKitTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D960F2611F74E65A00144290 /* Build configuration list for PBXNativeTarget "PlayaKitTests" */;
@@ -1178,12 +1137,11 @@
 				D960F24A1F74E65A00144290 /* Sources */,
 				D960F24B1F74E65A00144290 /* Frameworks */,
 				D960F24C1F74E65A00144290 /* Resources */,
-				4848A9A2EEF6E8E1C101AEA7 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				D960F2511F74E65A00144290 /* PBXTargetDependency */,
+				D92C740B2255C24300FCD532 /* PBXTargetDependency */,
 			);
 			name = PlayaKitTests;
 			productName = PlayaKitTests;
@@ -1199,6 +1157,7 @@
 				D980A9071B3F5A6400BE3682 /* Frameworks */,
 				D980A9081B3F5A6400BE3682 /* Resources */,
 				DB9C5A21BC9017032482FB42 /* [CP] Embed Pods Frameworks */,
+				F0F8D9D639BE0D2FDC435A0E /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1234,12 +1193,6 @@
 							};
 						};
 					};
-					D960F2451F74E65A00144290 = {
-						CreatedOnToolsVersion = 9.0;
-						DevelopmentTeam = 4T8JLQR6GR;
-						LastSwiftMigration = 1020;
-						ProvisioningStyle = Automatic;
-					};
 					D960F24D1F74E65A00144290 = {
 						CreatedOnToolsVersion = 9.0;
 						DevelopmentTeam = 4T8JLQR6GR;
@@ -1269,18 +1222,42 @@
 					ProductGroup = D9CB2A472117E7B400A0F2AE /* Products */;
 					ProjectRef = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
 				},
+				{
+					ProductGroup = D92C73EB2255C06F00FCD532 /* Products */;
+					ProjectRef = D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
 				63CE2A531987140F00F65B01 /* iBurn */,
 				D980A9091B3F5A6400BE3682 /* iBurnTests */,
-				D960F2451F74E65A00144290 /* PlayaKit */,
 				D960F24D1F74E65A00144290 /* PlayaKitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		D92C73F32255C06F00FCD532 /* PlayaKit.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = PlayaKit.framework;
+			remoteRef = D92C73F22255C06F00FCD532 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D92C73F52255C06F00FCD532 /* PlayaKitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = PlayaKitTests.xctest;
+			remoteRef = D92C73F42255C06F00FCD532 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D92C740E2255C24300FCD532 /* PlayaKit.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = PlayaKit.framework;
+			remoteRef = D92C740D2255C24300FCD532 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		D9CB2A4E2117E7B500A0F2AE /* PlayaGeocoder.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -1317,7 +1294,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9167B7320F14A9500815F81 /* 2018 in Resources */,
-				D9C94D7A1B2CE24800E04EB1 /* FontAwesome.ttf in Resources */,
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D9167B7720F14AB100815F81 /* MediaFiles in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
@@ -1334,13 +1310,6 @@
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 				D9167B7B20F14AD000815F81 /* iBurn-2018 in Resources */,
 				D97EB5EE21122EF1001B4351 /* DayView.xib in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D960F2441F74E65A00144290 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1364,44 +1333,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		08CEE89C6E0060A97AFD3A33 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PlayaKit-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4848A9A2EEF6E8E1C101AEA7 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
-				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YapDatabase.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		494E5894B2B0684522784BC0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1418,6 +1349,40 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Appirater/Appirater.bundle",
+				"${PODS_ROOT}/BButton/BButton/resources/FontAwesome.ttf",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/heart.png",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/like.png",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/smile.png",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/star.png",
+				"${PODS_ROOT}/FormatterKit/FormatterKit/FormatterKit.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/TUSafariActivity/TUSafariActivity.bundle",
+				"${PODS_ROOT}/VTAcknowledgementsViewController/VTAcknowledgementsViewController.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Appirater.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/heart.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/like.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/smile.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/star.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FormatterKit.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TUSafariActivity.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/VTAcknowledgementsViewController.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D7B18F91C1AE7095AA93FD85 /* [CP] Check Pods Manifest.lock */ = {
@@ -1459,55 +1424,17 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
-				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
-				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
-				"${BUILT_PRODUCTS_DIR}/Anchorage/Anchorage.framework",
-				"${BUILT_PRODUCTS_DIR}/Appirater/Appirater.framework",
-				"${BUILT_PRODUCTS_DIR}/BButton/BButton.framework",
-				"${BUILT_PRODUCTS_DIR}/CupertinoYankee/CupertinoYankee.framework",
-				"${BUILT_PRODUCTS_DIR}/DAKeyboardControl/DAKeyboardControl.framework",
-				"${BUILT_PRODUCTS_DIR}/DOFavoriteButton/DOFavoriteButton.framework",
-				"${BUILT_PRODUCTS_DIR}/FormatterKit/FormatterKit.framework",
-				"${BUILT_PRODUCTS_DIR}/JTSImageViewController/JTSImageViewController.framework",
-				"${BUILT_PRODUCTS_DIR}/KVOController/KVOController.framework",
-				"${BUILT_PRODUCTS_DIR}/Mantle/Mantle.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework.dSYM",
-				"${BUILT_PRODUCTS_DIR}/Onboard/Onboard.framework",
-				"${BUILT_PRODUCTS_DIR}/PermissionScope/PermissionScope.framework",
-				"${BUILT_PRODUCTS_DIR}/PureLayout/PureLayout.framework",
-				"${BUILT_PRODUCTS_DIR}/Swizzlean/Swizzlean.framework",
-				"${BUILT_PRODUCTS_DIR}/TTTAttributedLabel/TTTAttributedLabel.framework",
-				"${BUILT_PRODUCTS_DIR}/TUSafariActivity/TUSafariActivity.framework",
-				"${BUILT_PRODUCTS_DIR}/UIImageColors/UIImageColors.framework",
-				"${BUILT_PRODUCTS_DIR}/VTAcknowledgementsViewController/VTAcknowledgementsViewController.framework",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/889347F4-EFF6-36C7-A3A2-222C76C4A2E7.bcsymbolmap",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/B1A29F9B-DC14-3A52-ACD0-1BDF517FE210.bcsymbolmap",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YapDatabase.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ASDayPicker.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Anchorage.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Appirater.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BButton.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CupertinoYankee.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DAKeyboardControl.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DOFavoriteButton.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FormatterKit.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JTSImageViewController.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KVOController.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mantle.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mapbox.framework",
 				"${DWARF_DSYM_FOLDER_PATH}/Mapbox.framework.dSYM",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Onboard.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PermissionScope.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PureLayout.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Swizzlean.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TTTAttributedLabel.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TUSafariActivity.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/UIImageColors.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/VTAcknowledgementsViewController.framework",
+				"${BUILT_PRODUCTS_DIR}/889347F4-EFF6-36C7-A3A2-222C76C4A2E7.bcsymbolmap",
+				"${BUILT_PRODUCTS_DIR}/B1A29F9B-DC14-3A52-ACD0-1BDF517FE210.bcsymbolmap",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1521,55 +1448,17 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
-				"${BUILT_PRODUCTS_DIR}/YapDatabase/YapDatabase.framework",
-				"${BUILT_PRODUCTS_DIR}/ASDayPicker/ASDayPicker.framework",
-				"${BUILT_PRODUCTS_DIR}/Anchorage/Anchorage.framework",
-				"${BUILT_PRODUCTS_DIR}/Appirater/Appirater.framework",
-				"${BUILT_PRODUCTS_DIR}/BButton/BButton.framework",
-				"${BUILT_PRODUCTS_DIR}/CupertinoYankee/CupertinoYankee.framework",
-				"${BUILT_PRODUCTS_DIR}/DAKeyboardControl/DAKeyboardControl.framework",
-				"${BUILT_PRODUCTS_DIR}/DOFavoriteButton/DOFavoriteButton.framework",
-				"${BUILT_PRODUCTS_DIR}/FormatterKit/FormatterKit.framework",
-				"${BUILT_PRODUCTS_DIR}/JTSImageViewController/JTSImageViewController.framework",
-				"${BUILT_PRODUCTS_DIR}/KVOController/KVOController.framework",
-				"${BUILT_PRODUCTS_DIR}/Mantle/Mantle.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework.dSYM",
-				"${BUILT_PRODUCTS_DIR}/Onboard/Onboard.framework",
-				"${BUILT_PRODUCTS_DIR}/PermissionScope/PermissionScope.framework",
-				"${BUILT_PRODUCTS_DIR}/PureLayout/PureLayout.framework",
-				"${BUILT_PRODUCTS_DIR}/Swizzlean/Swizzlean.framework",
-				"${BUILT_PRODUCTS_DIR}/TTTAttributedLabel/TTTAttributedLabel.framework",
-				"${BUILT_PRODUCTS_DIR}/TUSafariActivity/TUSafariActivity.framework",
-				"${BUILT_PRODUCTS_DIR}/UIImageColors/UIImageColors.framework",
-				"${BUILT_PRODUCTS_DIR}/VTAcknowledgementsViewController/VTAcknowledgementsViewController.framework",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/889347F4-EFF6-36C7-A3A2-222C76C4A2E7.bcsymbolmap",
+				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/B1A29F9B-DC14-3A52-ACD0-1BDF517FE210.bcsymbolmap",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YapDatabase.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ASDayPicker.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Anchorage.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Appirater.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BButton.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CupertinoYankee.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DAKeyboardControl.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DOFavoriteButton.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FormatterKit.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JTSImageViewController.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KVOController.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mantle.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mapbox.framework",
 				"${DWARF_DSYM_FOLDER_PATH}/Mapbox.framework.dSYM",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Onboard.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PermissionScope.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PureLayout.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Swizzlean.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TTTAttributedLabel.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TUSafariActivity.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/UIImageColors.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/VTAcknowledgementsViewController.framework",
+				"${BUILT_PRODUCTS_DIR}/889347F4-EFF6-36C7-A3A2-222C76C4A2E7.bcsymbolmap",
+				"${BUILT_PRODUCTS_DIR}/B1A29F9B-DC14-3A52-ACD0-1BDF517FE210.bcsymbolmap",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1587,11 +1476,45 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PlayaKit-PlayaKitTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PlayaKitTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F0F8D9D639BE0D2FDC435A0E /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Appirater/Appirater.bundle",
+				"${PODS_ROOT}/BButton/BButton/resources/FontAwesome.ttf",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/heart.png",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/like.png",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/smile.png",
+				"${PODS_ROOT}/../Submodules/DOFavoriteButton/DOFavoriteButton/star.png",
+				"${PODS_ROOT}/FormatterKit/FormatterKit/FormatterKit.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/TUSafariActivity/TUSafariActivity.bundle",
+				"${PODS_ROOT}/VTAcknowledgementsViewController/VTAcknowledgementsViewController.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Appirater.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/heart.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/like.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/smile.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/star.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FormatterKit.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TUSafariActivity.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/VTAcknowledgementsViewController.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1710,25 +1633,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D960F2411F74E65A00144290 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D960F2641F74ECBE00144290 /* YapProtocols.swift in Sources */,
-				D9DE74491F80AF0700B01AC5 /* APIProtocols.swift in Sources */,
-				D9DE744B1F80AFB700B01AC5 /* PlayaLocation.swift in Sources */,
-				D960F2651F74ECC700144290 /* APIObject.swift in Sources */,
-				D9EC18B81FEC52060013CDAA /* Event.swift in Sources */,
-				D9EC18BA1FEC52130013CDAA /* Art.swift in Sources */,
-				D9EC18BC1FEC521C0013CDAA /* Camp.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D960F24A1F74E65A00144290 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D93402352250811300318A7E /* PlayaKitTests.swift in Sources */,
+				D92C74102255C2B500FCD532 /* YapProtocols.swift in Sources */,
+				D93402352250811300318A7E /* PlayaKitYapTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1744,10 +1654,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D960F2511F74E65A00144290 /* PBXTargetDependency */ = {
+		D92C740B2255C24300FCD532 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D960F2451F74E65A00144290 /* PlayaKit */;
-			targetProxy = D960F2501F74E65A00144290 /* PBXContainerItemProxy */;
+			name = "PlayaKit (iOS)";
+			targetProxy = D92C740A2255C24300FCD532 /* PBXContainerItemProxy */;
 		};
 		D980A9111B3F5A6400BE3682 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1941,82 +1851,9 @@
 			};
 			name = Release;
 		};
-		D960F25E1F74E65A00144290 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 4T8JLQR6GR;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = PlayaKit/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.iburnapp.PlayaKit;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		D960F25F1F74E65A00144290 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 4T8JLQR6GR;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = PlayaKit/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.iburnapp.PlayaKit;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		D960F2621F74E65A00144290 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */;
+			baseConfigurationReference = 01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2042,7 +1879,7 @@
 		};
 		D960F2631F74E65A00144290 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */;
+			baseConfigurationReference = DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2128,15 +1965,6 @@
 			buildConfigurations = (
 				63CE2A811987140F00F65B01 /* Debug */,
 				63CE2A821987140F00F65B01 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D960F25D1F74E65A00144290 /* Build configuration list for PBXNativeTarget "PlayaKit" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D960F25E1F74E65A00144290 /* Debug */,
-				D960F25F1F74E65A00144290 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
