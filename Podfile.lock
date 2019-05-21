@@ -3,17 +3,17 @@ PODS:
   - Appirater (2.3.1)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - CocoaLumberjack (3.5.2):
-    - CocoaLumberjack/Core (= 3.5.2)
-  - CocoaLumberjack/Core (3.5.2)
-  - CocoaLumberjack/Swift (3.5.2):
+  - CocoaLumberjack (3.5.3):
+    - CocoaLumberjack/Core (= 3.5.3)
+  - CocoaLumberjack/Core (3.5.3)
+  - CocoaLumberjack/Swift (3.5.3):
     - CocoaLumberjack/Core
-  - Crashlytics (3.12.0):
-    - Fabric (~> 1.9.0)
+  - Crashlytics (3.13.1):
+    - Fabric (~> 1.10.1)
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
   - DOFavoriteButton (0.0.4)
-  - Fabric (1.9.0)
+  - Fabric (1.10.1)
   - FormatterKit/LocationFormatter (1.8.2):
     - FormatterKit/Resources
   - FormatterKit/Resources (1.8.2)
@@ -24,7 +24,7 @@ PODS:
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
-  - Mapbox-iOS-SDK (4.9.0)
+  - Mapbox-iOS-SDK (4.11.0)
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
   - PureLayout (3.1.4)
@@ -168,17 +168,17 @@ SPEC CHECKSUMS:
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  CocoaLumberjack: 118bf4a820efc641f79fa487b75ed928dccfae23
-  Crashlytics: 07fb167b1694128c1c9a5a5cc319b0e9c3ca0933
+  CocoaLumberjack: 2f44e60eb91c176d471fdba43b9e3eae6a721947
+  Crashlytics: 5aa8e90dcbf2f34898b4f5a0037787531246cca0
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
-  Fabric: f988e33c97f08930a413e08123064d2e5f68d655
+  Fabric: f6f21452846788bb44595d73e9909d79d328e617
   FormatterKit: 4b8f29acc9b872d5d12a63efb560661e8f2e1b98
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
-  Mapbox-iOS-SDK: 225036950837cbe408e6b333e51cd6001c122499
+  Mapbox-iOS-SDK: fa40ce2e941dcded1e49015c8bc98a654e8191a0
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
   PureLayout: f08c01b8dec00bb14a1fefa3de4c7d9c265df85e
@@ -189,6 +189,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 3bb742da852a5161dc9f4b017e52f926a41ef5d3
   YapDatabase: d8cd02058e36bc0902e405d8f3326eb8d7dbf36c
 
-PODFILE CHECKSUM: 46e2468605c90a4e1db14c1256f19e8f79c820ad
+PODFILE CHECKSUM: 91c05895a15fc3fb6e2645925eab7987e50f371d
 
-COCOAPODS: 1.6.1
+COCOAPODS: 1.7.0.rc.2
