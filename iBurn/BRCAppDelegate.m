@@ -320,6 +320,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) enteredBurningManRegion {
+    BRCLocations.hasEnteredBurningManRegion = true;
     if ([BRCEmbargo allowEmbargoedData]) {
         return;
     }

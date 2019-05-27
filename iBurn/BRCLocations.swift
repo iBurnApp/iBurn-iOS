@@ -22,4 +22,6 @@ import Foundation
         let burningManRegion = CLCircularRegion(center: manCoordinate, radius: radius, identifier: kBRCManRegionIdentifier)
         return burningManRegion
     }()
+    
+    @objc static var hasEnteredBurningManRegion: Bool = false
 }

@@ -707,8 +707,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             if (eventObject.isAllDay && !showAllDayEvents) {
                 return NO;
             }
-            // Fucking puritans
-            if (eventObject.eventType == BRCEventTypeAdult) {
+            if (eventObject.eventType == BRCEventTypeAdult &&
+                !BRCLocations.hasEnteredBurningManRegion) {
                 return NO;
             }
             BOOL eventHasEnded = [eventObject hasEnded:now] || [eventObject isEndingSoon:now];
