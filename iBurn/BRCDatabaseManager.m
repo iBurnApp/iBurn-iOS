@@ -13,7 +13,6 @@
 #import "NSDateFormatter+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCAppDelegate.h"
-#import "BRCEventsTableViewController.h"
 #import "NSDate+iBurn.h"
 #import "BRCUpdateInfo.h"
 #import "iBurn-Swift.h"

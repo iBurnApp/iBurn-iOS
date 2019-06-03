@@ -7,8 +7,6 @@
 //
 
 #import "BRCAppDelegate.h"
-#import "BRCMapViewController.h"
-#import "BRCEventsTableViewController.h"
 #import "BRCDatabaseManager.h"
 #import "BRCDataImporter.h"
 #import "BRCArtObject.h"
@@ -20,7 +18,6 @@
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCEventObject.h"
-#import "BRCFilteredTableViewController_Private.h"
 #import "BRCDetailViewController.h"
 #import "CLLocationManager+iBurn.h"
 #import "Appirater.h"
@@ -396,9 +393,6 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
             if (mapViewController.isVisible) {
                 [mapViewController centerMapAtManCoordinatesAnimated:YES];
             }
-        } else if ([topViewController isKindOfClass:[BRCEventsTableViewController class]]) {
-            BRCEventsTableViewController *eventsVC = (BRCEventsTableViewController*)topViewController;
-            [eventsVC didSelectFromTabBar:tabBarController];
         }
     }
 }

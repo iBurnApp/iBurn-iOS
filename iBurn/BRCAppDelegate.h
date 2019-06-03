@@ -9,7 +9,6 @@
 @import UIKit;
 @import Onboard;
 @import CoreLocation;
-#import "BRCEventsTableViewController.h"
 
 @class FavoritesViewController;
 @class MainMapViewController;

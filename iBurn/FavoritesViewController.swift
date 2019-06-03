@@ -9,13 +9,11 @@
 import UIKit
 import YapDatabase
 
-public enum FavoritesFilter: String {
+public enum FavoritesFilter: String, CaseIterable {
     case all = "All"
-    case event = "Events"
     case art = "Art"
     case camp = "Camps"
-    /// this is the order that the filters appear
-    static let allValues: [FavoritesFilter] = [.all, .art, .camp, .event]
+    case event = "Events"
 }
 
 public class FavoritesViewController: ObjectListViewController {
@@ -39,7 +37,7 @@ public class FavoritesViewController: ObjectListViewController {
         }
     }
     
-    private let filterControl = UISegmentedControl(items: FavoritesFilter.allValues.map { $0.rawValue })
+    private let filterControl = UISegmentedControl(items: FavoritesFilter.allCases.map { $0.rawValue })
 
     // MARK: - View Lifecycle
     
@@ -57,7 +55,7 @@ private extension FavoritesViewController {
         guard filterControl.selectedSegmentIndex >= 0 else {
             return .all
         }
-        return FavoritesFilter.allValues[filterControl.selectedSegmentIndex]
+        return FavoritesFilter.allCases[filterControl.selectedSegmentIndex]
     }
     
     // MARK: - Setup
@@ -67,7 +65,7 @@ private extension FavoritesViewController {
         filterControl.addTarget(self, action: #selector(filterValueChanged(_:)), for: .valueChanged)
         
         let userFilter = UserSettings.favoritesFilter
-        let index = FavoritesFilter.allValues.firstIndex(of: userFilter) ?? 0
+        let index = FavoritesFilter.allCases.firstIndex(of: userFilter) ?? 0
         filterControl.selectedSegmentIndex = index
         updateFilter(userFilter)
     }

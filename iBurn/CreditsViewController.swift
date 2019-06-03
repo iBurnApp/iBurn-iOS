@@ -125,7 +125,7 @@ class CreditsViewController: UITableViewController {
             }
         } else if indexPath.section == SectionInfo.licenses.rawValue {
             let ackVC = BRCAcknowledgementsViewController(headerLabel: nil)
-            self.navigationController!.pushViewController(ackVC!, animated: true)
+            self.navigationController?.pushViewController(ackVC!, animated: true)
         }
     }
 
