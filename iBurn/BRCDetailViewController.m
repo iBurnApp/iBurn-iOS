@@ -327,7 +327,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     BRCDetailCellInfo *cellInfo = [self cellInfoForIndexPath:indexPath];
     if (cellInfo.cellType == BRCDetailCellInfoTypeURL) {
         NSURL *url = cellInfo.value;
-        [BRCAppDelegate openURL:url fromViewController:self];
+        [WebViewHelper presentWebViewWithUrl:url from:self];
     }
     else if (cellInfo.cellType == BRCDetailCellInfoTypeEmail) {
         

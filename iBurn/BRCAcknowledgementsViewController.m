@@ -9,6 +9,7 @@
 #import "BRCAcknowledgementsViewController.h"
 @import PureLayout;
 #import "BRCAppDelegate.h"
+#import "iBurn-Swift.h"
 
 @interface VTAcknowledgementsViewController()
 // private methods from superclass
@@ -58,7 +59,7 @@
 
 - (void)attributedLabel:(TTTAttributedLabel *)label
    didSelectLinkWithURL:(NSURL *)url {
-    [BRCAppDelegate openURL:url fromViewController:self];
+    [WebViewHelper presentWebViewWithUrl:url from:self];
 }
 
 @end

@@ -351,15 +351,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     return _dataImporter;
 }
 
-+ (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController {
-    if (!url || !viewController) {
-        return;
-    }
-    NSParameterAssert(url);
-    NSParameterAssert(viewController);
-    [[UIApplication sharedApplication] openURL:url];
-}
-
 #pragma mark CLLocationManagerDelegate
 
 - (void)locationManager:(CLLocationManager *)manager

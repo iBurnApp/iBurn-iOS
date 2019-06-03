@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 /** Don't use this unless you really have to... */
 @property (nonatomic, class, readonly) BRCAppDelegate *shared;
 
-+ (void) openURL:(NSURL*)url fromViewController:(UIViewController*)viewController;
-
 #pragma mark Permissions
 
 /** Asks for remotification permission */

@@ -128,7 +128,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
 
     func showFeedbackView() {
         let url = URL(string: "https://github.com/Burning-Man-Earth/iBurn-iOS/issues")!
-        UIApplication.shared.openURL(url)
+        WebViewHelper.presentWebView(url: url, from: self)
     }
 
     func showShareSheet(_ fromView: UIView) {

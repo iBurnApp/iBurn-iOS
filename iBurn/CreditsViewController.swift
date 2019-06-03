@@ -121,7 +121,7 @@ class CreditsViewController: UITableViewController {
         if indexPath.section == SectionInfo.people.rawValue {
             let creditsInfo = self.creditsInfoArray[indexPath.row]
             if let url = creditsInfo.url {
-                BRCAppDelegate.open(url, from: self)
+                WebViewHelper.presentWebView(url: url, from: self)
             }
         } else if indexPath.section == SectionInfo.licenses.rawValue {
             let ackVC = BRCAcknowledgementsViewController(headerLabel: nil)
