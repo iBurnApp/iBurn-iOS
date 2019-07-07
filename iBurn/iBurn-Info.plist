@@ -68,6 +68,10 @@
 	<string>iBurn can automatically add favorited events to your calendar.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>iBurn does not use your contacts.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>iBurn only uses your location within the app itself to help you navigate the playa and discover fun things happening near you.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>iBurn only uses your location within the app itself to help you navigate the playa and discover fun things happening near you.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>iBurn only uses your location within the app itself to help you navigate the playa and discover fun things happening near you.</string>
 	<key>NSMicrophoneUsageDescription</key>
