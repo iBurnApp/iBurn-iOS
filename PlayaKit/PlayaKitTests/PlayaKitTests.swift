@@ -14,7 +14,7 @@ class TestFixtures {
 
     static func decodeObjects<T: Decodable>(resource: String) throws -> [T] {
         let testBundle = Bundle(for: TestFixtures.self)
-        let jsonBundleURL = testBundle.url(forResource: "2018", withExtension: nil)!
+        let jsonBundleURL = testBundle.url(forResource: "2019", withExtension: nil)!
         let jsonBundle = Bundle(url: jsonBundleURL)!
         let resourceURL = jsonBundle.url(forResource: resource, withExtension: "js")!
         let jsonData = try Data(contentsOf: resourceURL)

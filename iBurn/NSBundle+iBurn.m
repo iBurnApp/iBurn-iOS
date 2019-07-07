@@ -14,7 +14,7 @@ static NSString * const kBRCBundledTilesFolder = @"TileCache";
 
 /** Return iBurn-Data bundle */
 + (NSBundle*) brc_dataBundle {
-    NSString *folderName = @"2018";
+    NSString *folderName = @"2019";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
     NSParameterAssert(dataBundle != nil);

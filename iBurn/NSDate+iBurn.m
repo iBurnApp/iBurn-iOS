@@ -59,7 +59,7 @@
 
 + (NSDate*) brc_testDate {
     NSDateFormatter *df = [NSDateFormatter brc_playaEventsAPIDateFormatter];
-    NSString *testDateString = @"2018-08-29T11:00:00-07:00";
+    NSString *testDateString = @"2019-08-29T11:00:00-07:00";
     NSDate *date = [df dateFromString:testDateString];
     NSParameterAssert(date);
     return date;
