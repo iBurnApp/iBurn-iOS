@@ -45,7 +45,7 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
     var observer: NSObjectProtocol?
     @objc public var backgroundCompletion: (()->())?
     let delegateQueue = OperationQueue()
-    var backgroundTask: UIBackgroundTaskIdentifier
+    private var backgroundTasks: [Int: UIBackgroundTaskIdentifier] = [:]
     
     deinit {
         if let observer = observer {
@@ -60,9 +60,6 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
         let backgroundSessionIdentifier = "BRCMediaDownloaderSession" + viewName
         self.backgroundSessionIdentifier = backgroundSessionIdentifier
         let config = URLSessionConfiguration.background(withIdentifier: backgroundSessionIdentifier)
-        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: backgroundSessionIdentifier, expirationHandler: { 
-            NSLog("%@ task expired", backgroundSessionIdentifier)
-        })
         super.init()
         self.session = Foundation.URLSession(configuration: config, delegate: self, delegateQueue: delegateQueue)
         observer = NotificationCenter.default.addObserver(forName: NSNotification.Name.BRCDatabaseExtensionRegistered, object: BRCDatabaseManager.shared, queue: OperationQueue.main) { (notification) in
@@ -233,6 +230,10 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
             let fileName = fileNameForObject(file)
             task.taskDescription = fileName
             DDLogInfo("Downloading file: \(String(describing: remoteURL))")
+            let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: fileName, expirationHandler: {
+                NSLog("%@ task expired", fileName)
+            })
+            backgroundTasks[task.taskIdentifier] = backgroundTask
             task.resume()
         }
     }
@@ -246,6 +247,10 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
     }
     
     //MARK: NSURLSessionDownloadDelegate
+    
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        finishBackgroundTask(for: task)
+    }
     
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         
@@ -262,20 +267,17 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
             return
         }
         DDLogInfo("Media file cached: \(destURL)")
-        self.session.getTasksWithCompletionHandler({ (_, _, downloads) in
-            if downloads.count == 0 {
-                if self.backgroundTask != UIBackgroundTaskIdentifier.invalid {
-                    UIApplication.shared.endBackgroundTask(convertToUIBackgroundTaskIdentifier(self.backgroundTask.rawValue))
-                    self.backgroundTask = UIBackgroundTaskIdentifier.invalid
-                }
-                
-            }
-        })
+        finishBackgroundTask(for: downloadTask)
     }
     
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertToUIBackgroundTaskIdentifier(_ input: Int) -> UIBackgroundTaskIdentifier {
-	return UIBackgroundTaskIdentifier(rawValue: input)
+    private func finishBackgroundTask(for downloadTask: URLSessionTask) {
+        if let backgroundTask = backgroundTasks[downloadTask.taskIdentifier] {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTasks[downloadTask.taskIdentifier] = nil
+            DDLogInfo("Ending background task found for \(downloadTask.taskIdentifier)")
+        } else {
+            DDLogWarn("No background task found for \(downloadTask.taskIdentifier)")
+        }
+    }
+    
 }
