@@ -47,8 +47,10 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) NSString *artViewName;
 /** View containing all event objects */
 @property (nonatomic, strong, readonly) NSString *eventsViewName;
-/** View containing all BRCDataObjects (art, camps, events) */
+/** View containing all BRCDataObjects (art, camps, events), grouped by collection */
 @property (nonatomic, strong, readonly) NSString *dataObjectsViewName;
+/** View containing all BRCDataObjects (art, camps, events), grouped by event time, then name */
+@property (nonatomic, strong, readonly) NSString *searchObjectsViewName;
 
 /** Camps YapDatabaseFullTextSearch */
 @property (nonatomic, strong, readonly) NSString *ftsCampsName;
@@ -78,6 +80,8 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) NSString *searchArtView;
 /** Search view containing all event objects */
 @property (nonatomic, strong, readonly) NSString *searchEventsView;
+/** Search view containing all API objects */
+@property (nonatomic, strong, readonly) NSString *searchEverythingView;
 /** Search view containing all favorited objects */
 @property (nonatomic, strong, readonly) NSString *searchFavoritesView;
 

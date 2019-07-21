@@ -26,6 +26,7 @@
 		BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */; };
 		D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0A1B7B19FC00057898 /* BRCDataSorter.swift */; };
 		D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */; };
+		D90372A322E4EDB800C5CC36 /* GroupTransformers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90372A222E4EDB800C5CC36 /* GroupTransformers.swift */; };
 		D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */; };
 		D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */; };
 		D9038C7620FBFAFD0085C6B9 /* BRCImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */; };
@@ -301,6 +302,7 @@
 		D902DF0C1B7B1F2D00057898 /* iBurnTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iBurnTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCDataSorterTests.swift; sourceTree = "<group>"; };
 		D902DF0F1B7B228100057898 /* BRCDataImportTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataImportTests.h; sourceTree = "<group>"; };
+		D90372A222E4EDB800C5CC36 /* GroupTransformers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupTransformers.swift; sourceTree = "<group>"; };
 		D9038C7120FBF12E0085C6B9 /* BRCOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCOnboardingViewController.swift; sourceTree = "<group>"; };
 		D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCLocations.swift; sourceTree = "<group>"; };
 		D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCImageColors.swift; sourceTree = "<group>"; };
@@ -1071,6 +1073,7 @@
 		D9EC0E5B1B7DE0350042B596 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				D90372A222E4EDB800C5CC36 /* GroupTransformers.swift */,
 				D969E5AE21100B9200FF6700 /* Storyboard.swift */,
 				D9A27ADD210FFC0F000BD535 /* Appearance.swift */,
 				D9E0DA94210F95330056286B /* DateFormatter+iBurn.swift */,
@@ -1578,6 +1581,7 @@
 				D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */,
 				D9038C7620FBFAFD0085C6B9 /* BRCImageColors.swift in Sources */,
 				D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */,
+				D90372A322E4EDB800C5CC36 /* GroupTransformers.swift in Sources */,
 				D9E0DA93210F830A0056286B /* YearSettings.swift in Sources */,
 				D9E0DA8F210F81920056286B /* UserSettings.swift in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,

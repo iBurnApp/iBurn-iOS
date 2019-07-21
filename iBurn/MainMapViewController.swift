@@ -29,7 +29,8 @@ public class MainMapViewController: BaseMapViewController {
         uiConnection = BRCDatabaseManager.shared.uiConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
-        search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchCampsView)
+        search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchEverythingView)
+        search.tableViewAdapter.groupTransformer = GroupTransformers.searchGroup
         let dataSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
         dataSource.allowedClass = BRCUserMapPoint.self
         let mapView = MGLMapView()

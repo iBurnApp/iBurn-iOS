@@ -181,6 +181,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _campsViewName = [[self class] databaseViewNameForClass:[BRCCampObject class]];
     _eventsViewName = [[self class] databaseViewNameForClass:[BRCEventObject class]];
     _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
+    _searchObjectsViewName = [[[self class] databaseViewNameForClass:[BRCDataObject class]] stringByAppendingString:@"SearchObjects"];
     _audioTourViewName = @"AudioTour";
     _artImagesViewName = @"ArtWithImages";
     
@@ -197,6 +198,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _searchArtView = [self.ftsArtName stringByAppendingString:searchSuffix];
     _searchCampsView = [self.ftsCampsName stringByAppendingString:searchSuffix];
     _searchEventsView = [self.ftsEventsName stringByAppendingString:searchSuffix];
+    _searchEverythingView = [self.ftsDataObjectName stringByAppendingString:searchSuffix];
     _searchFavoritesView = [self.everythingFilteredByFavorite stringByAppendingString:searchSuffix];
 
     _rTreeIndex = @"RTreeIndex";
@@ -271,12 +273,50 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         }
         NSLog(@"Registered %@ %d", viewName, success);
     }];
-    YapDatabaseView *dataObjectsView = [BRCDatabaseManager databaseViewForClass:[BRCDataObject class] allowedCollections:nil];
+    YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObjects:[BRCArtObject yapCollection], [BRCCampObject yapCollection], [BRCEventObject yapCollection], nil]];
+    YapDatabaseView *dataObjectsView = [BRCDatabaseManager databaseViewForClass:[BRCDataObject class] allowedCollections:allowedCollections];
     BOOL success = [self.database registerExtension:dataObjectsView withName:self.dataObjectsViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.dataObjectsViewName];
     }
     NSLog(@"Registered %@ %d", self.dataObjectsViewName, success);
+    
+    [self registerSearchObjectsView];
+}
+
+- (void) registerSearchObjectsView {
+    YapDatabaseViewGrouping *searchObjectsGrouping = [YapDatabaseViewGrouping withObjectBlock:^NSString * _Nullable(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        if ([object isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *eventObject = (BRCEventObject*)object;
+            NSDateFormatter *dateFormatter = [NSDateFormatter brc_eventGroupHourlyDateFormatter];
+            NSString *groupName = [dateFormatter stringFromDate:eventObject.startDate];
+            return groupName;
+        } else if ([object isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = object;
+            NSString *groupName = nil;
+            
+            NSString *firstLetter = [[dataObject.title substringToIndex:1] uppercaseString];
+            NSCharacterSet *alphabet = [NSCharacterSet letterCharacterSet];
+            unichar firstChar = [firstLetter characterAtIndex:0];
+            // ABCD... is fine
+            if ([alphabet characterIsMember:firstChar]) {
+                groupName = firstLetter;
+            } else { // 123!@#$ goes to the top in "#"
+                groupName = @"#";
+            }
+            return groupName;
+        }
+        return collection;
+    }];
+    YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObjects:[BRCArtObject yapCollection], [BRCCampObject yapCollection], [BRCEventObject yapCollection], nil]];
+    YapDatabaseViewOptions *searchObjectsViewOptions = [[YapDatabaseViewOptions alloc] init];
+    searchObjectsViewOptions.allowedCollections = allowedCollections;
+    YapDatabaseView *searchObjectsView = [[YapDatabaseAutoView alloc] initWithGrouping:searchObjectsGrouping sorting:[[self class] sortingForClass:[BRCDataObject class]] versionTag:@"1" options:searchObjectsViewOptions];
+    BOOL success = [self.database registerExtension:searchObjectsView withName:self.searchObjectsViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.searchObjectsViewName];
+    }
+    NSLog(@"Registered %@ %d", self.searchObjectsViewName, success);
 }
 
 - (void) registerFullTextSearch {
@@ -365,6 +405,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSArray *searchInfoArrays = @[@[self.searchArtView, self.artViewName, self.ftsArtName],
                                   @[self.searchCampsView, self.campsViewName, self.ftsCampsName],
                                   @[self.searchEventsView, self.eventsFilteredByDayExpirationAndTypeViewName, self.ftsEventsName],
+                                  @[self.searchEverythingView, self.searchObjectsViewName, self.ftsDataObjectName],
                                   @[self.searchFavoritesView, self.everythingFilteredByFavorite, self.ftsDataObjectName]];
     
     [searchInfoArrays enumerateObjectsUsingBlock:^(NSArray *searchInfoArray, NSUInteger idx, BOOL *stop) {
@@ -376,7 +417,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         
         YapDatabaseSearchResultsView *searchResultsView = [[YapDatabaseSearchResultsView alloc] initWithFullTextSearchName:ftsName
                                                                                                             parentViewName:parentViewName
-                                                                                                                versionTag:@"4"
+                                                                                                                versionTag:@"6"
                                                                                                                    options:searchViewOptions];
         
         BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
@@ -439,7 +480,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             return nil;
         }];
     } else if (viewClass == [BRCDataObject class]) {
-        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(YapDatabaseReadTransaction *transaction, NSString *collection, NSString *key){
+        grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString * _Nullable(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull collection, NSString * _Nonnull key) {
             return collection;
         }];
     } else {
@@ -536,7 +577,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
     YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    NSString *versionTag = @"4";
+    NSString *versionTag = @"6";
     if (options.allowedCollections) {
         options.allowedCollections = allowedCollections;
     }
