@@ -83,7 +83,10 @@ public final class LocationStorage: NSObject {
 
 extension LocationStorage: CLLocationManagerDelegate {
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let newCrumbs = locations.map { Breadcrumb.from($0) }
+        let newCrumbs: [Breadcrumb] = locations.compactMap {
+            guard BRCLocations.burningManRegion.contains($0.coordinate) else { return nil }
+            return Breadcrumb.from($0)
+        }
         dbQueue.asyncWrite({ (db) in
             for var crumb in newCrumbs {
                 try crumb.insert(db)
