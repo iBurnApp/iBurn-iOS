@@ -44,6 +44,9 @@
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
 		D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */; };
 		D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D927BDB11EF4778000B7324D /* UserGuidance.swift */; };
+		D92AC56522F00AE700C9FE32 /* TracksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AC56422F00AE700C9FE32 /* TracksViewController.swift */; };
+		D92AC56922F0168F00C9FE32 /* LocationStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AC56822F0168F00C9FE32 /* LocationStorage.swift */; };
+		D92AC57022F0176B00C9FE32 /* Breadcrumb.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AC56F22F0176B00C9FE32 /* Breadcrumb.swift */; };
 		D92C740F2255C24C00FCD532 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D92C740E2255C24300FCD532 /* PlayaKit.framework */; };
 		D92C74102255C2B500FCD532 /* YapProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23D1F74B86500144290 /* YapProtocols.swift */; };
 		D93402352250811300318A7E /* PlayaKitYapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitYapTests.swift */; };
@@ -342,6 +345,9 @@
 		D92562CD198A20D600ED6B50 /* MGLMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MGLMapView+iBurn.h"; sourceTree = "<group>"; };
 		D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MGLMapView+iBurn.m"; sourceTree = "<group>"; };
 		D927BDB11EF4778000B7324D /* UserGuidance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuidance.swift; sourceTree = "<group>"; };
+		D92AC56422F00AE700C9FE32 /* TracksViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracksViewController.swift; sourceTree = "<group>"; };
+		D92AC56822F0168F00C9FE32 /* LocationStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStorage.swift; sourceTree = "<group>"; };
+		D92AC56F22F0176B00C9FE32 /* Breadcrumb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Breadcrumb.swift; sourceTree = "<group>"; };
 		D92B95991B7B0CC300116781 /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015/2015"; sourceTree = SOURCE_ROOT; };
 		D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaKit.xcodeproj; path = PlayaKit/PlayaKit.xcodeproj; sourceTree = "<group>"; };
 		D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IndexPath+iBurn.swift"; sourceTree = "<group>"; };
@@ -638,6 +644,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D92AC55E22F00A6E00C9FE32 /* Tracks */,
 				D9251483211519A2007A7904 /* AnnotationDataSource.swift */,
 				D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */,
 				D984DFC5210D4B3100A45922 /* YapViewHandler.swift */,
@@ -771,6 +778,16 @@
 				D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */,
 			);
 			name = Cells;
+			sourceTree = "<group>";
+		};
+		D92AC55E22F00A6E00C9FE32 /* Tracks */ = {
+			isa = PBXGroup;
+			children = (
+				D92AC56422F00AE700C9FE32 /* TracksViewController.swift */,
+				D92AC56822F0168F00C9FE32 /* LocationStorage.swift */,
+				D92AC56F22F0176B00C9FE32 /* Breadcrumb.swift */,
+			);
+			path = Tracks;
 			sourceTree = "<group>";
 		};
 		D92C73EB2255C06F00FCD532 /* Products */ = {
@@ -1531,6 +1548,7 @@
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
 				D9CC7E0A20806FA600A6E502 /* AppDelegate.swift in Sources */,
+				D92AC57022F0176B00C9FE32 /* Breadcrumb.swift in Sources */,
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
 				D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */,
 				632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */,
@@ -1547,6 +1565,7 @@
 				D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */,
 				D9774B172118DB4500BE3CC8 /* MapButtonHelper.swift in Sources */,
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
+				D92AC56522F00AE700C9FE32 /* TracksViewController.swift in Sources */,
 				D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
@@ -1596,6 +1615,7 @@
 				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
 				D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
+				D92AC56922F0168F00C9FE32 /* LocationStorage.swift in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,
 				D90FFA371EEFAC10005127D0 /* MapViewAdapter.swift in Sources */,

@@ -22,7 +22,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         rate = 7,
         debugShowOnboarding = 8,
         audioTour = 9,
-        appearance = 10
+        appearance = 10,
+        locationHistory = 11
     }
     
     // MARK: - View Lifecycle
@@ -91,7 +92,15 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             showAudioTour()
         case .appearance:
             pushAppearanceView()
+        case .locationHistory:
+            pushTracksView()
         }
+    }
+    
+    func pushTracksView() {
+        let tracksVC = TracksViewController()
+        tracksVC.hidesBottomBarWhenPushed = true
+        self.navigationController?.pushViewController(tracksVC, animated: true)
     }
 
     func pushArtView() {

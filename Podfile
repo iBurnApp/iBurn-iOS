@@ -43,6 +43,7 @@ target 'iBurn' do
 	pod 'UIImageColors', '~> 2.1'
 	pod 'Fabric'
 	pod 'Crashlytics'
+	pod 'GRDB.swift', :git => 'https://github.com/Rightpoint/GRDB.swift.git', :branch => 'fix-issue-360-modulemap'
 end
 
 # https://github.com/CocoaPods/CocoaPods/issues/8069#issuecomment-420044112
