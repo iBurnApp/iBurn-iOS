@@ -30,7 +30,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         clearEditingAnnotation()
         self.editingAnnotation = mapPoint
         mapView.addAnnotation(mapPoint)
-        mapView.selectAnnotation(mapPoint, animated: true)
+        mapView.selectAnnotation(mapPoint, animated: true, completionHandler: nil)
     }
     
     // MARK: - MGLMapViewDelegate Overrides

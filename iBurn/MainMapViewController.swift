@@ -117,7 +117,7 @@ private extension MainMapViewController {
             self?.uiConnection.read { transaction in
                 if let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction) {
                     DDLogInfo("Found closest point: \(point)")
-                    self?.mapView.selectAnnotation(point, animated: true)
+                    self?.mapView.selectAnnotation(point, animated: true, completionHandler: nil)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     // If we can't find your bike or home, let's make a new one
                     self?.addUserMapPoint(type: mapPointType)

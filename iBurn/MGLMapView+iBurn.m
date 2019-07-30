@@ -44,7 +44,7 @@
         NSUInteger coordinatesCount = 1;
         coordinates[1] = userCoord;
         coordinatesCount++;
-        [self setTargetCoordinate:destinationCoord animated:animated];
+        [self setTargetCoordinate:destinationCoord animated:animated completionHandler:nil];
         [self setVisibleCoordinates:coordinates count:coordinatesCount edgePadding:padding animated:animated];
         free(coordinates);
     } else {

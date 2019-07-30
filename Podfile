@@ -5,7 +5,7 @@ inhibit_all_warnings!
 
 target 'PlayaKitTests' do
 	pod 'CocoaLumberjack/Swift'
-	pod 'YapDatabase', :git => 'https://github.com/yapstudios/YapDatabase.git', :branch => 'master', :modular_headers => true
+	pod 'YapDatabase', :modular_headers => true
 end 
 
 target 'iBurn' do
@@ -16,11 +16,11 @@ target 'iBurn' do
 	# Debugging
 	pod 'Swizzlean', :configurations => ['Debug']
 
-	pod 'Mapbox-iOS-SDK', '~> 4.0'
+	pod 'Mapbox-iOS-SDK', '~> 5.0'
 	# pod 'Mapbox-iOS-SDK-symbols', :path => 'Submodules/Mapbox-Pod/dynamic/Mapbox-iOS-SDK-symbols.podspec'
 	# pod 'Mapbox-iOS-SDK', :podspec => "https://raw.githubusercontent.com/mapbox/mapbox-gl-native/ios-v4.3.0-beta.1/platform/ios/Mapbox-iOS-SDK.podspec"
 	#pod 'YapDatabase', '3.1.1'
-	pod 'YapDatabase', :git => 'https://github.com/yapstudios/YapDatabase.git', :branch => 'master', :modular_headers => true
+	pod 'YapDatabase', :modular_headers => true
 
 	pod 'CocoaLumberjack/Swift'
 	pod 'Mantle', '~> 2.0', :modular_headers => true

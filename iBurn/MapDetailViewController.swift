@@ -42,7 +42,7 @@ public class MapDetailViewController: BaseMapViewController {
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(100)) {
             let padding = UIEdgeInsets.init(top: 120, left: 60, bottom: 45, right: 60)
             self.mapView.brc_showDestination(annotation, animated: animated, padding: padding)
-            self.mapView.selectAnnotation(annotation, animated: animated)
+            self.mapView.selectAnnotation(annotation, animated: animated, completionHandler: nil)
         }
     }
 }
