@@ -81,6 +81,21 @@ public final class LocationStorage: NSObject {
     }
 }
 
+extension LocationStorage {
+    func deleteAllBreadcrumbs() {
+        dbQueue.asyncWrite({ (db) in
+            try Breadcrumb.deleteAll(db)
+        }) { (db, result) in
+            switch result {
+            case .success:
+                print("Deleted crumbs")
+            case .failure(let error):
+                print("Error deleting crumbs: \(error)")
+            }
+        }
+    }
+}
+
 extension LocationStorage: CLLocationManagerDelegate {
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let newCrumbs: [Breadcrumb] = locations.compactMap {
