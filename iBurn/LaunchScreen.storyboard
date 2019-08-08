@@ -18,7 +18,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Sticker" translatesAutoresizingMaskIntoConstraints="NO" id="lm1-D2-57F">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="PlayaBackground" translatesAutoresizingMaskIntoConstraints="NO" id="utY-qm-ZF9">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchSticker" translatesAutoresizingMaskIntoConstraints="NO" id="lm1-D2-57F">
                                 <rect key="frame" x="20" y="227" width="374" height="442.5"/>
                             </imageView>
                         </subviews>
@@ -38,6 +42,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Sticker" width="433.5" height="442.5"/>
+        <image name="LaunchSticker" width="433.5" height="442.5"/>
+        <image name="PlayaBackground" width="1224" height="1632"/>
     </resources>
 </document>
