@@ -35,6 +35,7 @@
 		D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* ImageAnnotationView.swift */; };
 		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
 		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
+		D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D913995C22FA88F000CA39A7 /* LaunchScreen.storyboard */; };
 		D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9251483211519A2007A7904 /* AnnotationDataSource.swift */; };
 		D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D925148521151F17007A7904 /* UserMapViewAdapter.swift */; };
 		D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */; };
@@ -117,7 +118,6 @@
 		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
-		D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */; };
 		D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */; };
 		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
 		D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; };
@@ -324,6 +324,7 @@
 		D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCUserTrackingBarButtonItem.m; sourceTree = "<group>"; };
 		D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = UserTracking.xcassets; sourceTree = "<group>"; };
 		D91392DF1D6519300090E093 /* iBurn-2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2016"; path = "Submodules/iBurn-Data/data/2016/iBurn-2016"; sourceTree = SOURCE_ROOT; };
+		D913995C22FA88F000CA39A7 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D9167B6120F132C500815F81 /* InfoPlistSecrets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoPlistSecrets.h; sourceTree = "<group>"; };
 		D9167B7220F14A9500815F81 /* 2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2018; path = "Submodules/iBurn-Data/data/2018/2018"; sourceTree = SOURCE_ROOT; };
 		D9167B7420F14A9D00815F81 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2018/bundle.js"; sourceTree = SOURCE_ROOT; };
@@ -460,7 +461,6 @@
 		D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedViewController.swift; sourceTree = "<group>"; };
 		D9C30F731B83118200CD03CC /* iBurn-2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2015"; path = "Submodules/iBurn-Data/data/2015/iBurn-2015"; sourceTree = SOURCE_ROOT; };
 		D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = Pods/BButton/BButton/resources/FontAwesome.ttf; sourceTree = SOURCE_ROOT; };
-		D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
 		D9C9D2BC1B7D58F1002C95E4 /* More.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = More.storyboard; sourceTree = "<group>"; };
 		D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreViewController.swift; sourceTree = "<group>"; };
 		D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaGeocoder.xcodeproj; path = PlayaGeocoder/PlayaGeocoder.xcodeproj; sourceTree = "<group>"; };
@@ -698,6 +698,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D913995C22FA88F000CA39A7 /* LaunchScreen.storyboard */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 				D962BFF522D2946300637D8F /* 2019 */,
 				D9167B6220F14A5F00815F81 /* 2018 */,
@@ -707,7 +708,6 @@
 				63CE2A691987140F00F65B01 /* Images.xcassets */,
 				D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */,
 				D9C94D791B2CE24800E04EB1 /* FontAwesome.ttf */,
-				D9C94D7F1B2CEB4C00E04EB1 /* Launch Screen.xib */,
 				D9842A2B1B51C71C0056455D /* 2015 */,
 				D9046EF5198C65F40013CCF4 /* 2014 */,
 				D9046ED2198C65D70013CCF4 /* 2013 */,
@@ -1295,9 +1295,9 @@
 				D962BFFC22D294A300637D8F /* bundle.js in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D962C00222D294DD00637D8F /* MediaFiles in Resources */,
+				D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
-				D9C94D801B2CEB4C00E04EB1 /* Launch Screen.xib in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
 				D9E0DA91210F82530056286B /* YearSettings.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
@@ -1794,7 +1794,6 @@
 			baseConfigurationReference = 72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1824,7 +1823,6 @@
 			baseConfigurationReference = 66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
