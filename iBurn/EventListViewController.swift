@@ -66,6 +66,7 @@ public class EventListViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         searchWillAppear()
+        dayPicker.setColorTheme(Appearance.currentColors, animated: true)
     }
     
     public override func viewDidAppear(_ animated: Bool) {
@@ -170,5 +171,13 @@ extension EventListViewController: BRCEventsFilterTableViewControllerDelegate {
 extension EventListViewController: SearchCooordinator {
     var searchController: UISearchController {
         return listCoordinator.searchDisplayManager.searchController
+    }
+}
+
+extension ASDayPicker: ColorTheme {
+    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        weekdayTextColor = colors.primaryColor
+        dateTextColor = colors.primaryColor
+        selectedWeekdayTextColor = colors.primaryColor
     }
 }
