@@ -79,14 +79,14 @@ extension BRCImageColors {
                                       detailColor: .white)
     
     static let light = BRCImageColors(backgroundColor: .white,
-                                      primaryColor: .darkText,
+                                      primaryColor: UIColor(hex: 0xdb8700),
                                       secondaryColor: .darkText,
                                       detailColor: .lightGray)
     
-    static let dark = BRCImageColors(backgroundColor: .black,
-                                          primaryColor: .white,
+    static let dark = BRCImageColors(backgroundColor: UIColor(hex: 0x202020),
+                                          primaryColor: UIColor(hex: 0xdb8700),
                                           secondaryColor: .white,
-                                          detailColor: .white)
+                                          detailColor: .lightGray)
     
     @objc public static func colors(for eventType: BRCEventType) -> BRCImageColors {
         guard Appearance.contrast == .colorful else {

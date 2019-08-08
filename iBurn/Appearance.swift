@@ -124,7 +124,7 @@ import UIKit
 extension UITableViewCell: ColorTheme {
     public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         backgroundColor = colors.backgroundColor
-        textLabel?.textColor = colors.primaryColor
-        detailTextLabel?.textColor = colors.secondaryColor
+        textLabel?.textColor = colors.secondaryColor
+        detailTextLabel?.textColor = colors.detailColor
     }
 }
