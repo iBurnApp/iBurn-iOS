@@ -34,7 +34,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.navigationBar.setColorTheme(BRCImageColors.plain, animated: animated)
+        tableView.setColorTheme(Appearance.currentColors, animated: animated)
+        self.navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: animated)
         tableView.reloadData()
     }
 
@@ -48,6 +49,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
+        cell.setColorTheme(Appearance.currentColors, animated: false)
+        
         if let cellImage = cell.imageView?.image {
             cell.imageView!.image = cellImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
         }
@@ -60,7 +63,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
                 cell.isUserInteractionEnabled = false
             }
         }
-
+        
         return cell
     }
     
@@ -184,3 +187,4 @@ extension MoreViewController: StoryboardRepresentable {
         return Storyboard.more.instantiateInitialViewController()!
     }
 }
+

@@ -34,6 +34,7 @@ public final class SearchDisplayManager: NSObject {
         // Setup UISearchController
         let src = UITableViewController(style: .plain)
         searchController = UISearchController(searchResultsController: src)
+        searchController.searchBar.barStyle = Appearance.currentBarStyle
         
         tableViewAdapter = YapTableViewAdapter(viewHandler: viewHandler, tableView: src.tableView)
         

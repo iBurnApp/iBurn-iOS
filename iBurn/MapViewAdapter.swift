@@ -140,9 +140,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
         }
     }
     
-    public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
-        DDLogVerbose("New zoom level: \(mapView.zoomLevel)")
-        
+    public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {        
         let labelIsHidden = mapView.zoomLevel <= 14
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden

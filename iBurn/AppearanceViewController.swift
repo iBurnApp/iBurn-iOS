@@ -48,6 +48,7 @@ class AppearanceViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        cell.setColorTheme(Appearance.currentColors, animated: false)
         cell.selectionStyle = .none
         guard let cellTag = CellTag(rawValue: cell.tag) else {
             return cell

@@ -127,7 +127,7 @@ private extension EventListViewController {
     
     @objc func filterButtonPressed(_ sender: Any) {
         let filterVC = BRCEventsFilterTableViewController(delegate: self)
-        let nav = UINavigationController(rootViewController: filterVC)
+        let nav = NavigationController(rootViewController: filterVC)
         present(nav, animated: true, completion: nil)
     }
     

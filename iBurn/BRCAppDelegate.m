@@ -62,6 +62,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [Fabric with:@[Crashlytics.class]];
+    [Appearance setGlobalAppearance];
     
 #if DEBUG
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
@@ -246,23 +247,23 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     BRCDatabaseManager *dbManager = BRCDatabaseManager.shared;
 
     self.mapViewController = [[MainMapViewController alloc] init];
-    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
+    UINavigationController *mapNavController = [[NavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
     NearbyViewController *nearbyVC = [[NearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.rTreeIndex];
     nearbyVC.title = @"Nearby";
-    UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
+    UINavigationController *nearbyNav = [[NavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
     
     self.favoritesViewController = [[FavoritesViewController alloc] initWithViewName:BRCDatabaseManager.shared.everythingFilteredByFavorite searchViewName:BRCDatabaseManager.shared.searchFavoritesView];
     self.favoritesViewController.title = @"Favorites";
-    UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
+    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:self.favoritesViewController];
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
     self.eventsViewController = [[EventListViewController alloc] initWithViewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
     self.eventsViewController.title = @"Events";
-    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
+    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     UIViewController *moreVC = [MoreViewController fromStoryboard];

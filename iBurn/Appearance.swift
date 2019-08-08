@@ -28,6 +28,38 @@ import UIKit
         }
     }
     
+    @objc public static var currentColors: BRCImageColors {
+        let colors: BRCImageColors
+        switch theme {
+        case .light:
+            switch contrast {
+            case .colorful:
+                colors = .light
+            case .highContrast:
+                colors = .plain
+            }
+        case .dark:
+            switch contrast {
+            case .colorful:
+                colors = .dark
+            case .highContrast:
+                colors = .plainDark
+            }
+        }
+        return colors
+    }
+    
+    @objc public static var currentBarStyle: UIBarStyle {
+        let barStyle: UIBarStyle
+        switch theme {
+        case .light:
+            barStyle = .default
+        case .dark:
+            barStyle = .black
+        }
+        return barStyle
+    }
+    
     private static let shared = Appearance()
     private var theme: AppTheme {
         didSet {
@@ -47,17 +79,22 @@ import UIKit
         self.colors = UserSettings.contrast
     }
     
+    @objc public static func setGlobalAppearance() {
+        Appearance.shared.setGlobalAppearance()
+    }
+    
     private func setGlobalAppearance() {
-//        let colors: BRCImageColors
-//        let barStyle: UIBarStyle
-//        switch theme {
-//        case .light:
-//            colors = .plain
-//            barStyle = .default
-//        case .dark:
-//            colors = .plainDark
-//            barStyle = .black
-//        }
+        let colors = Appearance.currentColors
+
+        UINavigationBar.appearance().backgroundColor = colors.backgroundColor
+        UINavigationBar.appearance().tintColor = colors.secondaryColor
+        UINavigationBar.appearance().barTintColor = colors.backgroundColor
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: colors.primaryColor]
+        UITabBar.appearance().backgroundColor = colors.backgroundColor
+        UITabBar.appearance().tintColor = colors.primaryColor
+        UITabBar.appearance().barTintColor = colors.backgroundColor
+        UITableView.appearance().backgroundColor = colors.backgroundColor
+        UITableView.appearance().tintColor = colors.primaryColor
     }
 
 }
@@ -73,4 +110,21 @@ import UIKit
     case highContrast
 }
 
+@objc public final class NavigationController: UINavigationController {
+    override public var preferredStatusBarStyle: UIStatusBarStyle {
+        switch Appearance.theme {
+        case .dark:
+            return .lightContent
+        case .light:
+            return .default
+        }
+    }
+}
 
+extension UITableViewCell: ColorTheme {
+    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        backgroundColor = colors.backgroundColor
+        textLabel?.textColor = colors.primaryColor
+        detailTextLabel?.textColor = colors.secondaryColor
+    }
+}
