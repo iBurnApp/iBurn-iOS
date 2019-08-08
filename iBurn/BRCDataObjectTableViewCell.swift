@@ -34,3 +34,13 @@ extension BRCDataObjectTableViewCell {
         return cell
     }
 }
+
+extension BRCDataObjectTableViewCell {
+    public override func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        backgroundColor = colors.backgroundColor
+        descriptionLabel.textColor = colors.secondaryColor
+        titleLabel.textColor = colors.primaryColor
+        subtitleLabel.textColor = colors.detailColor
+        rightSubtitleLabel.textColor = colors.detailColor
+    }
+}

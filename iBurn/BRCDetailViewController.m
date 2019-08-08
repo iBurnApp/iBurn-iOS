@@ -46,7 +46,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     NSParameterAssert(dataObject);
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
-        _colors = BRCImageColors.plain;
+        _colors = Appearance.currentColors;
         self.dataObject = dataObject;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
 

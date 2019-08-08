@@ -75,6 +75,10 @@ import Onboard
                 weakVC?.moviePlayerController.player?.play()
         })
     }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
 }
 
 // Helper function inserted by Swift 4.2 migrator.
