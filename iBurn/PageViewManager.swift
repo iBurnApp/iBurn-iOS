@@ -25,12 +25,10 @@ import UIKit
                                                 navBar: UINavigationBar? = nil) -> UIViewController {
         let detailVC = BRCDetailViewController(dataObject: dataObject)
         detailVC.indexPath = indexPath
-        detailVC.hidesBottomBarWhenPushed = true
         let colors = detailVC.colors
         let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         pageVC.delegate = self
         pageVC.dataSource = self
-        pageVC.hidesBottomBarWhenPushed = true
         navBar?.isTranslucent = false
         navBar?.setColorTheme(colors, animated: false)
         pageVC.setViewControllers([detailVC], direction: .forward, animated: false, completion: nil)

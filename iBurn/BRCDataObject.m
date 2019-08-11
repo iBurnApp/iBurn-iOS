@@ -12,6 +12,7 @@
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
+#import "iBurn-Swift.h"
 
 @interface BRCDataObject()
 @property (nonatomic, readonly) CLLocationDegrees latitude;
@@ -215,7 +216,7 @@
         markerImage = [UIImage imageNamed:@"BRCBluePin"];
     } else if (dataObjectClass == [BRCEventObject class]) {
         BRCEventObject *eventObject = (BRCEventObject*)self;
-        markerImage = [eventObject markerImageForEventStatus:[NSDate date]];
+        markerImage = [eventObject markerImageForEventStatus:[NSDate now]];
     } else if (dataObjectClass == [BRCCampObject class]) {
         markerImage = [UIImage imageNamed:@"BRCPurplePin"];
     } else {

@@ -16,6 +16,7 @@
 #import "BRCEventObject.h"
 #import "BButton.h"
 #import "BRCSocialButtonsView.h"
+#import "iBurn-Swift.h"
 
 @interface BRCEmbargoPasscodeViewController () <UITextFieldDelegate>
 
@@ -121,7 +122,7 @@
 }
 
 - (BOOL) isDataUnlocked {
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     return timeLeftInterval >= 0 ||
@@ -130,7 +131,7 @@
 
 - (void) refreshCountdownLabel:(id)sender {
     NSMutableAttributedString *fullLabelString = nil;
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     if ([self isDataUnlocked]) {
         fullLabelString = [[NSMutableAttributedString alloc] initWithString:@"Location Data Unlocked!"];

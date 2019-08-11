@@ -181,7 +181,6 @@ extension MainMapViewController: YapTableViewAdapterDelegate {
         let nav = presentingViewController?.navigationController ??
             navigationController
         let detail = BRCDetailViewController(dataObject: object.object)
-        detail.hidesBottomBarWhenPushed = true
         nav?.pushViewController(detail, animated: true)
     }
 }

@@ -149,6 +149,7 @@
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F358EB22A4A9A90022DA0C /* WebViewHelper.swift */; };
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
+		D9F8891C2300BC9D0069FD49 /* Date+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F8891B2300BC9D0069FD49 /* Date+iBurn.swift */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
 /* End PBXBuildFile section */
@@ -496,6 +497,7 @@
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
 		D9F358EB22A4A9A90022DA0C /* WebViewHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHelper.swift; sourceTree = "<group>"; };
 		D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioPlayer.swift; sourceTree = "<group>"; };
+		D9F8891B2300BC9D0069FD49 /* Date+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+iBurn.swift"; sourceTree = "<group>"; };
 		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
 		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
 		D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCArtObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -862,6 +864,7 @@
 		D979CEC7199AF11E007F0313 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				D9F8891B2300BC9D0069FD49 /* Date+iBurn.swift */,
 				D9DEAACB211F74D1007899B9 /* ProcessInfo+iBurn.swift */,
 				D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */,
 				D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */,
@@ -1527,6 +1530,7 @@
 				D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */,
 				D984DFCD210EB0CA00A45922 /* BRCDataObjectTableViewCell.swift in Sources */,
 				D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */,
+				D9F8891C2300BC9D0069FD49 /* Date+iBurn.swift in Sources */,
 				D984DFD3210EC03100A45922 /* PageViewManager.swift in Sources */,
 				6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */,
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,

@@ -164,7 +164,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                 if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete) {
                     return;
                 } else if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusFetching) {
-                    NSTimeInterval intervalSinceLastFetched = [[NSDate date] timeIntervalSinceDate:updateInfo.fetchDate];
+                    NSTimeInterval intervalSinceLastFetched = [[NSDate now] timeIntervalSinceDate:updateInfo.fetchDate];
                     // only re-fetch if fetch takes longer than 5 minutes
                     if (intervalSinceLastFetched <= 5 * 60) {
                         return;
@@ -174,7 +174,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         }
         // We've got some new data!
         updateInfo.fetchStatus = BRCUpdateFetchStatusFetching;
-        updateInfo.fetchDate = [NSDate date];
+        updateInfo.fetchDate = [NSDate now];
         [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
             [transaction setObject:updateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
         }];

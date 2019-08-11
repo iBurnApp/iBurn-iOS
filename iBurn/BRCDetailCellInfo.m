@@ -7,7 +7,6 @@
 //
 
 #import "BRCDetailCellInfo.h"
-
 #import "BRCRelationshipDetailInfoCell.h"
 #import "BRCCampObject.h"
 #import "BRCArtObject.h"
@@ -18,6 +17,7 @@
 #import "BRCAppDelegate.h"
 #import "BRCDataObject+Relationships.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
+#import "iBurn-Swift.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -185,7 +185,7 @@
         NSString *dateString = [NSString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
         NSString *fullString = [NSString stringWithFormat:@"%@\n%@", dateString, timeString];
         fullScheduleString = [[NSMutableAttributedString alloc] initWithString:fullString];
-        UIColor *timeColor = [event colorForEventStatus:[NSDate date]];
+        UIColor *timeColor = [event colorForEventStatus:[NSDate now]];
         NSRange timeRange = NSMakeRange(dateString.length+1, timeString.length);
         [fullScheduleString setAttributes:@{NSForegroundColorAttributeName: timeColor}
                                     range:timeRange];

@@ -27,6 +27,10 @@ class NearbyViewController: SortedViewController {
     let distanceStepper: UIStepper = UIStepper()
     let tableHeaderView: UIView = UIView()
     private let filterControl = UISegmentedControl(items: NearbyFilter.allValues.map { $0.rawValue })
+    private var searchRegion: MKCoordinateRegion? {
+        guard let currentLocation = getCurrentLocation() else { return nil }
+        return MKCoordinateRegion.init(center: currentLocation.coordinate, latitudinalMeters: searchDistance, longitudinalMeters: searchDistance)
+    }
     
     @objc required init(style: UITableView.Style, extensionName ext: String) {
         super.init(style: style, extensionName: ext)
@@ -64,8 +68,8 @@ class NearbyViewController: SortedViewController {
     }
     
     internal override func refreshTableItems(_ completion: @escaping ()->()) {
-        guard let currentLocation = getCurrentLocation() else { return }
-        let region = MKCoordinateRegion.init(center: currentLocation.coordinate, latitudinalMeters: searchDistance, longitudinalMeters: searchDistance)
+        guard let currentLocation = getCurrentLocation(),
+        let region = searchRegion else { return }
         emptyListText = EmptyListLabelText.Loading
         BRCDatabaseManager.shared.queryObjects(in: region, completionQueue: DispatchQueue.main, resultsBlock: { (results) -> Void in
             let nearbyObjects = results
@@ -209,7 +213,6 @@ extension NearbyViewController: MapButtonHelper {
         }
         let dataSource = StaticAnnotationDataSource(annotations: annotations)
         let mapVC = MapListViewController(dataSource: dataSource)
-        mapVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(mapVC, animated: true)
     }
 }

@@ -14,7 +14,7 @@
 #import "BRCEventObject.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "NSData+iBurn.h"
-
+#import "iBurn-Swift.h"
 
 @implementation BRCEmbargo
 
@@ -43,7 +43,7 @@
         return YES;
     }
     //Data is not embargoed after start of festival or if the passcode has been entered
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {

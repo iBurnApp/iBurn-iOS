@@ -31,9 +31,6 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
-#if DEBUG
-#import <Swizzlean/Swizzlean.h>
-#endif
 @import PermissionScope;
 #import "NSDate+iBurn.h"
 @import AVFoundation;
@@ -51,9 +48,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 @property (nonatomic, strong, readonly) BRCMediaDownloader *audioDownloader;
 @property (nonatomic, strong, readonly) BRCMediaDownloader *imageDownloader;
 
-#if DEBUG
-@property (nonatomic, strong) Swizzlean *swizzle;
-#endif
 @end
 
 @implementation BRCAppDelegate
@@ -71,17 +65,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     fileLogger.doNotReuseLogFiles = YES;
     [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
-    // DATE TESTING
-#if DEBUG
-    if (NSProcessInfo.mockDateEnabled) {
-        self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
-        
-        [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
-            return [NSDate brc_testDate];
-        }];
-    }
-#endif
-     
     
     [BRCDataImporter copyBundledTilesIfNeeded];
     
@@ -279,7 +262,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) setupUnlockNotification {
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {
@@ -322,7 +305,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     if ([BRCEmbargo allowEmbargoedData]) {
         return;
     }
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {

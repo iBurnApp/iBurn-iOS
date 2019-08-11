@@ -102,7 +102,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let artVC = ObjectListViewController(viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
         artVC.tableView.separatorStyle = .none
         artVC.title = "Art"
-        artVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(artVC, animated: true)
     }
 
@@ -110,7 +109,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let dbManager = BRCDatabaseManager.shared
         let campsVC = ObjectListViewController(viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
         campsVC.title = "Camps"
-        campsVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(campsVC, animated: true)
     }
 
@@ -125,7 +123,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func pushCreditsView() {
         let creditsVC = CreditsViewController()
         creditsVC.title = "Credits"
-        creditsVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(creditsVC, animated: true)
     }
 
@@ -166,7 +163,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func showAudioTour() {
         let audioTour = AudioTourViewController(style: UITableView.Style.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
-        audioTour.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(audioTour, animated: true)
     }
     

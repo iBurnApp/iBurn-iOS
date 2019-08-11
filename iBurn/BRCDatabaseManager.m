@@ -718,7 +718,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) eventsFilteredByToday {
-    NSDate *validDate = [[NSDate date] brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
+    NSDate *validDate = [[NSDate now] brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
     return [self eventsFilteredByDay:validDate];
 }
 
@@ -742,7 +742,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BOOL showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
-            NSDate *now = [NSDate date];
+            NSDate *now = [NSDate now];
             BRCEventObject *eventObject = (BRCEventObject*)object;
             if (eventObject.isAllDay && !showAllDayEvents) {
                 return NO;

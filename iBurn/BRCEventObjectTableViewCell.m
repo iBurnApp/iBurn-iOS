@@ -19,7 +19,7 @@
 - (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata *)metadata {
     [super setDataObject:dataObject metadata:metadata];
     BRCEventObject *eventObject = (BRCEventObject*)dataObject;
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     if (eventObject.isAllDay) {
         NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventObject.startDate];
         NSString *timeString = nil;
@@ -38,7 +38,7 @@
         }
         self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
     } else if ([eventObject isHappeningRightNow:now]) {
-        NSTimeInterval endDuration = [eventObject timeIntervalUntilEnd:[NSDate date]];
+        NSTimeInterval endDuration = [eventObject timeIntervalUntilEnd:[NSDate now]];
         NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:endDuration];
         if (!minsUntilEndString.length && endDuration == 0) {
             minsUntilEndString = @"0 min";

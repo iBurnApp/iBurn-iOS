@@ -80,7 +80,7 @@ public final class WeekView: UIView {
     }
     
     private func commonInit() {
-        self.startDate = Date()
+        self.startDate = Date.now()
     }
 }
 

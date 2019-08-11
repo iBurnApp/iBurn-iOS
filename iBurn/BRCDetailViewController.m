@@ -221,7 +221,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)didTapMapContainerview:(id)sender
 {
     MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject metadata:self.metadata];
-    mapViewController.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:mapViewController animated:YES];
 }
 

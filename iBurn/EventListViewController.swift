@@ -40,7 +40,7 @@ public class EventListViewController: UIViewController {
         self.listCoordinator = ListCoordinator(viewName: viewName,
                                                searchViewName: searchViewName,
                                                tableView: tableView)
-        self.selectedDay = YearSettings.dayWithinFestival(Date())
+        self.selectedDay = YearSettings.dayWithinFestival(.now())
         super.init(nibName: nil, bundle: nil)
     }
     

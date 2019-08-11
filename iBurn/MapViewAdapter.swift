@@ -12,7 +12,6 @@ import YapDatabase
 import BButton
 import CocoaLumberjack
 
-
 public class MapViewAdapter: NSObject {
     
     enum ButtonTag: Int {
@@ -27,13 +26,12 @@ public class MapViewAdapter: NSObject {
     public var dataSource: AnnotationDataSource?
     public weak var parent: UIViewController?
 
-    var annotations: [MGLAnnotation] = []
     /// key is annotation
     var annotationViews: [AnyHashable: MGLAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
 
     /// for checking if annotations overlap
-    private var overlappingAnnotations: [OverlapCoordinate: Set<DataObjectAnnotation>] = [:]
+    private var overlappingAnnotations: [CLLocationCoordinate2D: Set<DataObjectAnnotation>] = [:]
     
     @objc public init(mapView: MGLMapView,
                       dataSource: AnnotationDataSource? = nil) {
@@ -46,10 +44,8 @@ public class MapViewAdapter: NSObject {
     // MARK: - Public API
     
     @objc public func reloadAnnotations() {
-        mapView.removeAnnotations(self.annotations)
-        let annotations = dataSource?.allAnnotations() ?? []
-        self.annotations = annotations
-        self.mapView.addAnnotations(self.annotations)
+        mapView.removeAnnotations(mapView.annotations ?? [])
+        mapView.addAnnotations(dataSource?.allAnnotations() ?? [])
     }
 }
 
@@ -84,7 +80,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
             
-            let overlapCoordinate = data.originalCoordinate.overlapCoordinate
+            let overlapCoordinate = data.originalCoordinate
             var overlapping = overlappingAnnotations[overlapCoordinate] ?? Set<DataObjectAnnotation>()
             overlapping.insert(data)
             if overlapping.count > 1 {
@@ -133,7 +129,6 @@ extension MapViewAdapter: MGLMapViewDelegate {
             break
         case .info:
             let vc = BRCDetailViewController(dataObject: data.object)
-            vc.hidesBottomBarWhenPushed = true
             parent?.navigationController?.pushViewController(vc, animated: true)
         }
     }
@@ -169,21 +164,6 @@ private struct Offset {
     }
 }
 
-private struct OverlapCoordinate: Hashable, Equatable {
-    var latitude: CLLocationDegrees
-    var longitude: CLLocationDegrees
-    
-    init(latitude: CLLocationDegrees,
-         longitude: CLLocationDegrees) {
-        self.latitude = latitude
-        self.longitude = longitude
-    }
-    
-    init(coordinate: CLLocationCoordinate2D) {
-        self.init(latitude: coordinate.latitude, longitude: coordinate.longitude)
-    }
-}
-
 private extension CLLocationCoordinate2D {
     /// dx/dy in meters
     func offset(by offset: Offset) -> CLLocationCoordinate2D {
@@ -212,8 +192,14 @@ private extension CLLocationCoordinate2D {
     }
 }
 
-private extension CLLocationCoordinate2D {
-    var overlapCoordinate: OverlapCoordinate {
-        return OverlapCoordinate(coordinate: self)
+extension CLLocationCoordinate2D: Hashable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        return lhs.longitude == rhs.longitude &&
+            lhs.latitude == rhs.latitude
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(latitude)
+        hasher.combine(longitude)
     }
 }
