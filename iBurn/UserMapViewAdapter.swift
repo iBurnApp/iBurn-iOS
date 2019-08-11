@@ -36,15 +36,16 @@ public class UserMapViewAdapter: MapViewAdapter {
     // MARK: - MGLMapViewDelegate Overrides
     
     override public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
-        guard let annotationView = super.mapView(mapView, viewFor: annotation) as? ImageAnnotationView,
-        let point = annotation as? BRCMapPoint else { return nil }
+        let annotationView = super.mapView(mapView, viewFor: annotation)
+        guard let imageAnnotationView = annotationView as? ImageAnnotationView,
+        let point = annotation as? BRCMapPoint else { return annotationView }
         if point == editingAnnotation {
-            annotationView.isDraggable = true
-            annotationView.startDragging()
+            imageAnnotationView.isDraggable = true
+            imageAnnotationView.startDragging()
         } else {
-            annotationView.isDraggable = false
+            imageAnnotationView.isDraggable = false
         }
-        return annotationView
+        return imageAnnotationView
     }
     
     override public func mapView(_ mapView: MGLMapView, didDeselect annotation: MGLAnnotation) {
@@ -58,7 +59,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MGLMapView, leftCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
         guard annotation is BRCUserMapPoint else {
-            return nil
+            return super.mapView(mapView, leftCalloutAccessoryViewFor: annotation)
         }
         let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FAPencil, fontSize: 20)
         button?.tag = ButtonTag.edit.rawValue
@@ -67,7 +68,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MGLMapView, rightCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
         guard annotation is BRCUserMapPoint else {
-            return nil
+            return super.mapView(mapView, rightCalloutAccessoryViewFor: annotation)
         }
         let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FATrash, fontSize: 20)
         button?.tag = ButtonTag.delete.rawValue
@@ -78,6 +79,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         guard let point = annotation as? BRCMapPoint,
             let annotationView = annotationViews[point] as? ImageAnnotationView,
             let tag = ButtonTag(rawValue: control.tag) else {
+                super.mapView(mapView, annotation: annotation, calloutAccessoryControlTapped: control)
                 return
         }
         switch tag {

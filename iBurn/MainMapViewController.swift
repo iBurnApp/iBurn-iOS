@@ -31,9 +31,11 @@ public class MainMapViewController: BaseMapViewController {
         sidebarButtons = SidebarButtonsView()
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchEverythingView)
         search.tableViewAdapter.groupTransformer = GroupTransformers.searchGroup
-        let dataSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
-        dataSource.allowedClass = BRCUserMapPoint.self
+        let userSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
+        userSource.allowedClass = BRCUserMapPoint.self
         let mapView = MGLMapView()
+        let favoritesSource = YapViewAnnotationDataSource(viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.everythingFilteredByFavorite))
+        let dataSource = AggregateAnnotationDataSource(dataSources: [userSource, favoritesSource])
         let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(mapViewAdapter: mapViewAdapter)
         title = NSLocalizedString("Map", comment: "title for map view")

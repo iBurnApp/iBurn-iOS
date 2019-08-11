@@ -50,6 +50,18 @@ public class YapCollectionAnnotationDataSource: NSObject {
     }
 }
 
+public class AggregateAnnotationDataSource: NSObject, AnnotationDataSource {
+    let dataSources: [AnnotationDataSource]
+    
+    init(dataSources: [AnnotationDataSource]) {
+        self.dataSources = dataSources
+    }
+    
+    public func allAnnotations() -> [MGLAnnotation] {
+        return dataSources.map { $0.allAnnotations() }.flatMap { $0 }
+    }
+}
+
 extension YapViewAnnotationDataSource: AnnotationDataSource {
     public func allAnnotations() -> [MGLAnnotation] {
         var annotations: [MGLAnnotation] = []

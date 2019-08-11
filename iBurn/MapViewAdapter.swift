@@ -105,9 +105,6 @@ extension MapViewAdapter: MGLMapViewDelegate {
     }
     
     public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
-        guard annotation is ImageAnnotation else {
-            return false
-        }
         return true
     }
     
