@@ -66,6 +66,7 @@ public class EventListViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         searchWillAppear()
+        refreshNavigationBarColors(animated)
         dayPicker.setColorTheme(Appearance.currentColors, animated: true)
     }
     

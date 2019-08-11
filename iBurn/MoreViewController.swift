@@ -35,7 +35,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.setColorTheme(Appearance.currentColors, animated: animated)
-        self.navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: animated)
+        refreshNavigationBarColors(animated)
         tableView.reloadData()
     }
 

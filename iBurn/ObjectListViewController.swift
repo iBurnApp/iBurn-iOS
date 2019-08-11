@@ -57,6 +57,7 @@ public class ObjectListViewController: UIViewController {
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refreshNavigationBarColors(animated)
         searchWillAppear()
     }
     
