@@ -8,12 +8,12 @@
 
 @import Mapbox;
 
-@class BRCDataObject;
+@class BRCDataObject, BRCObjectMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface MGLMapView (iBurn)
 
-- (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject animated:(BOOL)animated padding:(UIEdgeInsets)padding;
+- (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata animated:(BOOL)animated padding:(UIEdgeInsets)padding;
 
 - (void)brc_showDestination:(id<MGLAnnotation>)destination animated:(BOOL)animated padding:(UIEdgeInsets)padding;
 

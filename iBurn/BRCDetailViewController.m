@@ -164,7 +164,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         // Mapbox ignores you if it isn't loaded yet
         UIEdgeInsets padding = UIEdgeInsetsMake(45, 45, 45, 45);
-        [self.mapView brc_showDestinationForDataObject:self.dataObject animated:NO padding:padding];
+        [self.mapView brc_showDestinationForDataObject:self.dataObject metadata:self.metadata animated:NO padding:padding];
     });
 }
 
@@ -220,7 +220,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void)didTapMapContainerview:(id)sender
 {
-    MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject];
+    MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject metadata:self.metadata];
     mapViewController.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:mapViewController animated:YES];
 }
@@ -239,7 +239,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
-        DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject];
+        DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject metadata:self.metadata];
         StaticAnnotationDataSource *dataSource = [[StaticAnnotationDataSource alloc] initWithAnnotation:annotation];
         self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView dataSource:dataSource];
         [self.mapViewAdapter reloadAnnotations];

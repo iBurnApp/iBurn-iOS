@@ -76,11 +76,6 @@
         [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
     }
     
-    // last update from API
-#if DEBUG
-    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
-#endif
-    
     return defaultArray;
 }
 
@@ -239,6 +234,15 @@
     cellInfo.value = metadata.userNotes;
     cellInfo.cellType = BRCDetailCellInfoTypeUserNotes;
     [finalCellInfoArray addObject:cellInfo];
+    
+    // last update from API
+#if DEBUG
+    BRCDetailCellInfo *lastUpdated = [[BRCDetailCellInfo alloc] init];
+    lastUpdated.value = metadata.lastUpdated;
+    lastUpdated.displayName = @"Last Updated";
+    lastUpdated.cellType = BRCDetailCellInfoTypeDate;
+    [finalCellInfoArray addObject:lastUpdated];
+#endif
     
     return finalCellInfoArray;
 }
