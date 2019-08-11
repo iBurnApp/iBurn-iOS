@@ -84,7 +84,7 @@
     return defaultArray;
 }
 
-+ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object
++ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object metadata:(BRCObjectMetadata*)metadata
 {
     NSArray<BRCDetailCellInfo*> *defaultArray = [self defaultInfoArray];
     NSMutableArray<BRCDetailCellInfo*> *finalCellInfoArray = [NSMutableArray new];
@@ -234,6 +234,11 @@
         }
     }
     
+    BRCDetailCellInfo *cellInfo = [[self alloc] init];
+    cellInfo.displayName = @"User Notes";
+    cellInfo.value = metadata.userNotes;
+    cellInfo.cellType = BRCDetailCellInfoTypeUserNotes;
+    [finalCellInfoArray addObject:cellInfo];
     
     return finalCellInfoArray;
 }

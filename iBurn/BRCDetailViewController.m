@@ -76,7 +76,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         _colors = [BRCImageColors colorsFor:event.eventType];
     }
     self.title = dataObject.title;
-    self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
+    self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject metadata:metadata];
     [self setupMapViewWithObject:self.dataObject];
     [self configureColors:self.colors];
     [self.tableView reloadData];
@@ -193,13 +193,28 @@ static CGFloat const kTableViewHeaderHeight = 200;
     BRCObjectMetadata *newMetadata = [self.metadata copy];
     newMetadata.isFavorite = !newMetadata.isFavorite;
     self.metadata = newMetadata;
-    BRCDataObject *tempObject = self.dataObject;
+    BRCDataObject *tempObject = [self.dataObject copy];
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self.dataObject replaceMetadata:newMetadata transaction:transaction];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {
             BRCEventObject *event = (BRCEventObject*)tempObject;
             [event refreshCalendarEntry:transaction];
         }
+    }];
+}
+
+- (void) saveUserNotes:(NSString*)userNotes atIndexPath:(NSIndexPath*)indexPath {
+    if (!self.dataObject) {
+        return;
+    }
+    BRCObjectMetadata *newMetadata = [self.metadata copy];
+    newMetadata.userNotes = userNotes;
+    self.metadata = newMetadata;
+    [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [self.dataObject replaceMetadata:newMetadata transaction:transaction];
+    } completionBlock:^{
+        // force refresh
+        self.dataObject = self.dataObject;
     }];
 }
 
@@ -403,9 +418,25 @@ static CGFloat const kTableViewHeaderHeight = 200;
         if (location) {
             [self didTapMapContainerview:tableView];
         }
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypeUserNotes) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Edit User Notes" message:nil preferredStyle:UIAlertControllerStyleAlert];
+        [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+            NSString *stringValue = cellInfo.value;
+            if (stringValue.length > 0) {
+                textField.text = stringValue;
+            }
+            textField.placeholder = @"Add your own custom notes here...";
+        }];
+        UIAlertAction *save = [UIAlertAction actionWithTitle:@"Save" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            NSString *newNotes = alert.textFields.firstObject.text;
+            [self saveUserNotes:newNotes atIndexPath:indexPath];
+        }];
+        UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:save];
+        [alert addAction:cancel];
+        [self presentViewController:alert animated:YES completion:nil];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
 }
 
 #pragma - mark UIScrollViewDelegate
@@ -431,5 +462,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
+
 
 @end

@@ -175,6 +175,19 @@
             }
             break;
         }
+        case BRCDetailCellInfoTypeUserNotes: {
+            self.selectionStyle = UITableViewCellSelectionStyleDefault;
+            NSString *stringValue = cellInfo.value;
+            if (stringValue.length > 0) {
+                self.textLabel.text = cellInfo.value;
+                self.textLabel.textColor = colors.primaryColor;
+            } else {
+                self.textLabel.text = @"Edit...";
+                self.textLabel.textColor = colors.detailColor;
+
+            }
+            break;
+        }
     }
 }
 

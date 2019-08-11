@@ -21,10 +21,11 @@ typedef NS_ENUM(NSUInteger, BRCDetailCellInfoType) {
     BRCDetailCellInfoTypeDate,
     BRCDetailCellInfoTypeEventRelationship, // for getting events hosted at art/camp
     BRCDetailCellInfoTypeImage,
-    BRCDetailCellInfoTypeAudio
+    BRCDetailCellInfoTypeAudio,
+    BRCDetailCellInfoTypeUserNotes,
 };
 
-@class BRCDataObject;
+@class BRCDataObject, BRCObjectMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCDetailCellInfo : NSObject
@@ -36,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString *key;
 
 
-+ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object;
++ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object metadata:(BRCObjectMetadata*)metadata;
 
 @end
 NS_ASSUME_NONNULL_END
