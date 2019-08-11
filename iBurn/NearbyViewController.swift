@@ -68,7 +68,7 @@ class NearbyViewController: SortedViewController {
         let region = MKCoordinateRegion.init(center: currentLocation.coordinate, latitudinalMeters: searchDistance, longitudinalMeters: searchDistance)
         emptyListText = EmptyListLabelText.Loading
         BRCDatabaseManager.shared.queryObjects(in: region, completionQueue: DispatchQueue.main, resultsBlock: { (results) -> Void in
-            let nearbyObjects = results as! [BRCDataObject]
+            let nearbyObjects = results
             let options = BRCDataSorterOptions()
             options.sortOrder = .distance(currentLocation)
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (_events, _art, _camps) -> (Void) in

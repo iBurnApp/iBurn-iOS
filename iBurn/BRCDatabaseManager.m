@@ -802,7 +802,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  */
 - (void) queryObjectsInRegion:(MKCoordinateRegion)region
               completionQueue:(dispatch_queue_t)completionQueue
-                 resultsBlock:(void (^)(NSArray *results))resultsBlock {
+                 resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock {
     CLLocationCoordinate2D northWestCorner = kCLLocationCoordinate2DInvalid; // max
     CLLocationCoordinate2D southEastCorner = kCLLocationCoordinate2DInvalid; // min
     CLLocationCoordinate2D center = region.center;
@@ -821,14 +821,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 - (void) queryObjectsInMinCoord:(CLLocationCoordinate2D)minCoord
                        maxCoord:(CLLocationCoordinate2D)maxCoord
                 completionQueue:(dispatch_queue_t)completionQueue
-                   resultsBlock:(void (^)(NSArray *results))resultsBlock {
+                   resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock {
     if (!resultsBlock) {
         return;
     }
     if (!completionQueue) {
         completionQueue = dispatch_get_main_queue();
     }
-    NSMutableArray *results = [NSMutableArray array];
+    NSMutableArray<BRCDataObject*> *results = [NSMutableArray array];
     NSString *queryString = [NSString stringWithFormat:@"WHERE %@ >= ? AND %@ <= ? AND %@ >= ? AND %@ <= ?",
                              RTreeMinLon,
                              RTreeMaxLon,

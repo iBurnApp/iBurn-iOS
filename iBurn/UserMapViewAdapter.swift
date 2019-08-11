@@ -93,6 +93,13 @@ public class UserMapViewAdapter: MapViewAdapter {
             break
         }
     }
+    
+    override public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+        let labelIsHidden = mapView.zoomLevel < 13
+        labelViews.forEach { (view) in
+            view.label.isHidden = labelIsHidden
+        }
+    }
 }
 
 // MARK: - Public
