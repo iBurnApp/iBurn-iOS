@@ -277,7 +277,7 @@
     [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
-    NSString *folderName = @"2018";
+    NSString *folderName = @"2019";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
     

@@ -238,14 +238,20 @@ extension YapViewHandler: YapViewHandlerProtocol {
     private let viewHandlers: NSHashTable<YapViewHandlerProtocol>
     private var observer: NSObjectProtocol?
     
+    deinit {
+        if let observer = observer {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
     @objc public init(database: YapDatabase) {
         self.connection = database.newConnection()
         self.viewHandlers = NSHashTable(options: .weakMemory)
         super.init()
         self.connection.beginLongLivedReadTransaction()
-        self.observer = NotificationCenter.default.addObserver(forName: NSNotification.Name.YapDatabaseModified,
+        self.observer = NotificationCenter.default.addObserver(forName: .YapDatabaseModified,
                                                                object: database,
-                                                               queue: OperationQueue.main,
+                                                               queue: .main,
                                                                using: { [weak self] (notification) in
             self?.yapDatabaseModified(notification: notification)
         })

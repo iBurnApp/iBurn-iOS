@@ -133,6 +133,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
             break
         case .info:
             let vc = BRCDetailViewController(dataObject: data.object)
+            vc.hidesBottomBarWhenPushed = true
             parent?.navigationController?.pushViewController(vc, animated: true)
         }
     }

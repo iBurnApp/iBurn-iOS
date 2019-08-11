@@ -21,8 +21,15 @@ public class MainMapViewController: BaseMapViewController {
     let geocoder = PlayaGeocoder.shared
     let search: SearchDisplayManager
     let tapGesture = UITapGestureRecognizer()
+    private var observer: NSObjectProtocol?
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
+    }
+    
+    deinit {
+        if let observer = observer {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     public init() {
@@ -40,6 +47,13 @@ public class MainMapViewController: BaseMapViewController {
         super.init(mapViewAdapter: mapViewAdapter)
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
+        
+        self.observer = NotificationCenter.default.addObserver(forName: .BRCDatabaseExtensionRegistered,
+                                                               object: BRCDatabaseManager.shared,
+                                                               queue: .main,
+                                                               using: { [weak self] (notification) in
+                                                                self?.extensionRegisteredNotification(notification: notification)
+        })
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -71,9 +85,23 @@ public class MainMapViewController: BaseMapViewController {
         mapViewAdapter.reloadAnnotations()
         geocodeNavigationBar()
     }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.tabBarController?.tabBar.isHidden = false
+        self.tabBarController?.tabBar.alpha = 1.0
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+        self.sidebarButtons.isHidden = false
+    }
 }
 
 private extension MainMapViewController {
+    
+    func extensionRegisteredNotification(notification: Notification) {
+        guard let extensionName = notification.userInfo?["extensionName"] as? String,
+            extensionName == BRCDatabaseManager.shared.everythingFilteredByFavorite else { return }
+        self.mapViewAdapter.reloadAnnotations()
+    }
     
     func setupTapGesture() {
         tapGesture.addTarget(self, action: #selector(singleTap(_:)))
@@ -105,7 +133,6 @@ private extension MainMapViewController {
                 self.sidebarButtons.isHidden = true
             }
         }
-
     }
     
     // MARK: - Annotations
@@ -154,6 +181,7 @@ extension MainMapViewController: YapTableViewAdapterDelegate {
         let nav = presentingViewController?.navigationController ??
             navigationController
         let detail = BRCDetailViewController(dataObject: object.object)
+        detail.hidesBottomBarWhenPushed = true
         nav?.pushViewController(detail, animated: true)
     }
 }
