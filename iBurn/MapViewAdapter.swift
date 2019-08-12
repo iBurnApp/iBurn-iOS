@@ -29,9 +29,11 @@ public class MapViewAdapter: NSObject {
     /// key is annotation
     var annotationViews: [AnyHashable: MGLAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
+    /// annotations that this class owns and have been added to this mapview
+    private var annotations: [MGLAnnotation] = []
 
     /// for checking if annotations overlap
-    private var overlappingAnnotations: [CLLocationCoordinate2D: Set<DataObjectAnnotation>] = [:]
+    private var overlappingAnnotations: [CLLocationCoordinate2D: [DataObjectAnnotation]] = [:]
     
     @objc public init(mapView: MGLMapView,
                       dataSource: AnnotationDataSource? = nil) {
@@ -44,8 +46,53 @@ public class MapViewAdapter: NSObject {
     // MARK: - Public API
     
     @objc public func reloadAnnotations() {
-        mapView.removeAnnotations(mapView.annotations ?? [])
-        mapView.addAnnotations(dataSource?.allAnnotations() ?? [])
+        removeAnnotations(self.annotations)
+        self.annotations = dataSource?.allAnnotations() ?? []
+        addAnnotations(self.annotations)
+    }
+    
+    @objc public func removeAnnotations(_ annotations: [MGLAnnotation]) {
+        annotations.forEach { (annotation) in
+            if let data = annotation as? DataObjectAnnotation {
+                let originalCoordinate = data.originalCoordinate
+                var overlapping = overlappingAnnotations[originalCoordinate] ?? []
+                overlapping = overlapping.filter({
+                    if data.object.uniqueID == $0.object.uniqueID {
+                        return false
+                    } else {
+                        return true
+                    }
+                })
+                overlappingAnnotations[originalCoordinate] = overlapping
+            }
+        }
+        mapView.removeAnnotations(annotations)
+    }
+    
+    /// Adds annotations in a way that avoid overlap
+    @objc public func addAnnotations(_ annotations: [MGLAnnotation]) {
+        annotations.forEach { (annotation) in
+            if let data = annotation as? DataObjectAnnotation {
+                let originalCoordinate = data.originalCoordinate
+                var overlapping = overlappingAnnotations[originalCoordinate] ?? []
+                overlapping.append(data)
+                overlappingAnnotations[originalCoordinate] = overlapping
+            }
+        }
+        annotations.forEach {
+            guard let data = $0 as? DataObjectAnnotation else {
+                return
+            }
+            let originalCoordinate = data.originalCoordinate
+            let overlapping = overlappingAnnotations[originalCoordinate] ?? []
+            if overlapping.count > 1 {
+                for (i, annotation) in overlapping.enumerated() {
+                    let percentage = Double(i) / Double(overlapping.count) + 0.18
+                    annotation.coordinate = data.originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
+                }
+            }
+        }
+        mapView.addAnnotations(annotations)
     }
 }
 
@@ -79,17 +126,6 @@ extension MapViewAdapter: MGLMapViewDelegate {
             labelAnnotationView.label.text = data.title
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
-            
-            let overlapCoordinate = data.originalCoordinate
-            var overlapping = overlappingAnnotations[overlapCoordinate] ?? Set<DataObjectAnnotation>()
-            overlapping.insert(data)
-            if overlapping.count > 1 {
-                for (i, annotation) in overlapping.enumerated() {
-                    let percentage = Double(i) / Double(overlapping.count) + 0.18
-                    annotation.coordinate = data.originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
-                }
-            }
-            overlappingAnnotations[overlapCoordinate] = overlapping
         }
         
         if let annotation = annotation as? AnyHashable,

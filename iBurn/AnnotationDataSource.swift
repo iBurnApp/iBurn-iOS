@@ -50,6 +50,14 @@ public class YapCollectionAnnotationDataSource: NSObject {
     }
 }
 
+public class MapRegionDataSource: NSObject, AnnotationDataSource {
+    public var annotations: [MGLAnnotation] = []
+    
+    public func allAnnotations() -> [MGLAnnotation] {
+        return annotations
+    }
+}
+
 public class AggregateAnnotationDataSource: NSObject, AnnotationDataSource {
     let dataSources: [AnnotationDataSource]
     
@@ -130,17 +138,6 @@ public final class DataObjectAnnotation: NSObject {
         self.object = object
         self.metadata = metadata
     }
-    
-    public override var hash: Int {
-        return object.uniqueID.hash
-    }
-    
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let data = object as? DataObjectAnnotation else {
-            return false
-        }
-        return data.object.uniqueID == self.object.uniqueID
-    }
 }
 
 extension DataObjectAnnotation: MGLAnnotation {
@@ -161,6 +158,13 @@ extension DataObjectAnnotation: MGLAnnotation {
         var subtitle = ""
         if let location = object.playaLocation {
             subtitle += location
+        }
+        if let event = object as? BRCEventObject {
+            if event.isHappeningRightNow(.now()) {
+                subtitle += " • \(event.startAndEndString)"
+            } else {
+                subtitle += " • \(event.startWeekdayString) \(event.startAndEndString)"
+            }
         }
         if let userNotes = metadata.userNotes, !userNotes.isEmpty {
             subtitle += " - \(userNotes)"

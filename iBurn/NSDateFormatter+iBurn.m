@@ -41,14 +41,7 @@
 }
 
 + (NSDateFormatter*) brc_timeOnlyDateFormatter {
-    static NSDateFormatter *brc_timeOnlyDateFormatter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        brc_timeOnlyDateFormatter = [[NSDateFormatter alloc] init];
-        brc_timeOnlyDateFormatter.dateFormat = @"h:mma";
-        brc_timeOnlyDateFormatter.timeZone = [NSTimeZone brc_burningManTimeZone];
-    });
-    return brc_timeOnlyDateFormatter;
+    return DateFormatters.timeOnly;
 }
 
 + (NSDateFormatter*) brc_dayOfWeekDateFormatter {

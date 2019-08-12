@@ -106,6 +106,11 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
               completionQueue:(dispatch_queue_t)completionQueue
                  resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock;
 
+- (void) queryObjectsInMinCoord:(CLLocationCoordinate2D)minCoord
+                       maxCoord:(CLLocationCoordinate2D)maxCoord
+                completionQueue:(dispatch_queue_t)completionQueue
+                   resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock;
+
 @end
 
 NS_ASSUME_NONNULL_END

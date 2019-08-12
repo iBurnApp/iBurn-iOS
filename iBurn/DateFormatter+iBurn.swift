@@ -35,6 +35,14 @@ extension DateFormatter {
         df.timeZone = TimeZone.burningManTimeZone
         return df
     }()
+    
+    /// e.g. 4:19 AM
+    static let timeOnly: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "h:mma"
+        df.timeZone = TimeZone.burningManTimeZone
+        return df
+    }()
 }
 
 @objc public final class DateFormatters: NSObject {
@@ -46,5 +54,10 @@ extension DateFormatter {
     /// e.g. "Monday"
     @objc public static var dayOfWeek: DateFormatter {
         return DateFormatter.dayOfWeek
+    }
+    
+    /// e.g. 4:19 AM
+    @objc public static var timeOnly: DateFormatter {
+        return DateFormatter.timeOnly
     }
 }

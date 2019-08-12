@@ -20,6 +20,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
     
     let writeConnection: YapDatabaseConnection = BRCDatabaseManager.shared.readWriteConnection
+    private let mapRegionAnnotations = MapRegionDataSource()
     
     /// Set this if you want draggable
     var editingAnnotation: BRCMapPoint?
@@ -98,6 +99,34 @@ public class UserMapViewAdapter: MapViewAdapter {
         let labelIsHidden = mapView.zoomLevel < 13
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
+        }
+        if mapView.zoomLevel >= 16 {
+            let coordinateBounds = mapView.visibleCoordinateBounds
+            BRCDatabaseManager.shared.queryObjects(inMinCoord: coordinateBounds.sw, maxCoord: coordinateBounds.ne, completionQueue: DispatchQueue.global(qos: .default)) { (objects) in
+                var objects = objects.filter {
+                    if let event = $0 as? BRCEventObject {
+                        // show events starting soon or happening now, but not ending soon
+                        return (event.isStartingSoon(.now()) || event.isHappeningRightNow(.now())) && !event.isEndingSoon(.now())
+                    } else if let _ = $0 as? BRCCampObject {
+                        // nearby camps just clutter the map until we get more precise location data
+                        // from the org
+                        return false
+                    } else {
+                        return true
+                    }
+                }
+                objects.sort { $0.title < $1.title }
+                var annotations: [MGLAnnotation] = []
+                BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (t) in
+                    annotations = objects.compactMap { $0.annotation(transaction: t) }
+                }, completionBlock: {
+                    self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
+                    self.mapRegionAnnotations.annotations = annotations
+                    self.addAnnotations(annotations)
+                })
+            }
+        } else if mapView.zoomLevel <= 13 {
+            removeAnnotations(mapRegionAnnotations.allAnnotations())
         }
     }
 }

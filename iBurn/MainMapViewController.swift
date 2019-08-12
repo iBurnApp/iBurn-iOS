@@ -20,7 +20,6 @@ public class MainMapViewController: BaseMapViewController {
     let sidebarButtons: SidebarButtonsView
     let geocoder = PlayaGeocoder.shared
     let search: SearchDisplayManager
-    let tapGesture = UITapGestureRecognizer()
     private var observer: NSObjectProtocol?
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
@@ -69,7 +68,6 @@ public class MainMapViewController: BaseMapViewController {
         setupSearchButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
-        setupTapGesture()
     }
     
     private func setupSidebarButtons() {
@@ -101,38 +99,6 @@ private extension MainMapViewController {
         guard let extensionName = notification.userInfo?["extensionName"] as? String,
             extensionName == BRCDatabaseManager.shared.everythingFilteredByFavorite else { return }
         self.mapViewAdapter.reloadAnnotations()
-    }
-    
-    func setupTapGesture() {
-        tapGesture.addTarget(self, action: #selector(singleTap(_:)))
-        mapView.gestureRecognizers?.compactMap {
-            $0 as? UITapGestureRecognizer
-        }.forEach {
-            tapGesture.require(toFail: $0)
-        }
-        view.addGestureRecognizer(tapGesture)
-    }
-    
-    // MARK: - User Interaction
-    
-    @objc func singleTap(_ gesture: UITapGestureRecognizer) {
-        guard let nav = self.navigationController else { return }
-        let shouldHide = !nav.isNavigationBarHidden
-        let newAlpha: CGFloat = shouldHide ? 0.0 : 1.0
-        nav.setNavigationBarHidden(shouldHide, animated: true)
-        if !shouldHide {
-            self.tabBarController?.tabBar.isHidden = false
-            self.sidebarButtons.isHidden = false
-        }
-        UIView.animate(withDuration: 0.5, animations: {
-            self.sidebarButtons.alpha = newAlpha
-            self.tabBarController?.tabBar.alpha = newAlpha
-        }) { (finished) in
-            if shouldHide {
-                self.tabBarController?.tabBar.isHidden = true
-                self.sidebarButtons.isHidden = true
-            }
-        }
     }
     
     // MARK: - Annotations

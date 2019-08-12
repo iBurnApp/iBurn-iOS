@@ -173,10 +173,7 @@
             }
         }
         else {
-            NSDateFormatter *timeOnlyDateFormatter = [NSDateFormatter brc_timeOnlyDateFormatter];
-            NSString *startTimeString = [timeOnlyDateFormatter stringFromDate:event.startDate];
-            NSString *endTimeString = [timeOnlyDateFormatter stringFromDate:event.endDate];
-            timeString = [NSString stringWithFormat:@"%@ - %@", startTimeString, endTimeString];
+            timeString = event.startAndEndString;
         }
         NSDateFormatter *dayOfWeekDateFormatter = [NSDateFormatter brc_dayOfWeekDateFormatter];
         NSDateFormatter *shortDateFormatter = [NSDateFormatter brc_shortDateFormatter];
