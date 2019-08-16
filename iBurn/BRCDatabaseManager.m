@@ -851,7 +851,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         YapDatabaseRTreeIndexTransaction *rTree = [transaction ext:self.rTreeIndex];
         [rTree enumerateKeysAndObjectsMatchingQuery:query usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCDataObject class]]) {
-                [results addObject:object];
+                BRCDataObject *data = object;
+                if ([BRCEmbargo canShowLocationForObject:data]) {
+                    [results addObject:object];
+                }
             }
         }];
     } completionQueue:completionQueue completionBlock:^{
