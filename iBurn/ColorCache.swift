@@ -42,6 +42,14 @@ extension UINavigationBar: ColorTheme {
     }
 }
 
+extension UITabBar {
+    @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        backgroundColor = colors.backgroundColor
+        tintColor = colors.primaryColor
+        barTintColor = colors.backgroundColor
+    }
+}
+
 extension UITableView: ColorTheme {
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         self.backgroundColor = colors.backgroundColor

@@ -113,7 +113,7 @@ private extension EventListViewController {
     }
     
     func setupDayPicker() {
-        dayPicker.daysScrollView.isScrollEnabled = false
+        dayPicker.daysScrollView.isScrollEnabled = true
         dayPicker.setStart(YearSettings.eventStart, end: YearSettings.eventEnd)
         dayPicker.weekdayTitles = ASDayPicker.weekdayTitles(withLocaleIdentifier: nil, length: 3, uppercase: true)
         dayPicker.selectedDateBackgroundImage = UIImage(named: "BRCDateSelection")

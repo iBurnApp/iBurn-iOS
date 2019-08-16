@@ -91,7 +91,16 @@ class AppearanceViewController: UITableViewController {
             Appearance.contrast = contrast
         }
         tableView.reloadData()
+        refreshTheme()
     }
+    
+    func refreshTheme() {
+        tabBarController?.tabBar.setColorTheme(Appearance.currentColors, animated: false)
+        navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: false)
+        tableView.setColorTheme(Appearance.currentColors, animated: false)
+        setNeedsStatusBarAppearanceUpdate()
+    }
+
 }
 
 extension AppearanceViewController: StoryboardRepresentable {
