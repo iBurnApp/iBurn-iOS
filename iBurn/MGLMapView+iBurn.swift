@@ -10,6 +10,12 @@ import Foundation
 import Mapbox
 
 extension MGLMapView {
+    static func brcMapView() -> MGLMapView {
+        let mapView = MGLMapView()
+        mapView.brc_setDefaults()
+        return mapView
+    }
+    
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults() {
         styleURL = URL(string: kBRCMapBoxStyleURL)

@@ -150,6 +150,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         [self setupNormalRootViewController];
     }
     
+    [LocationStorage setup:nil];
+    
     [self.window makeKeyAndVisible];
     return YES;
 }

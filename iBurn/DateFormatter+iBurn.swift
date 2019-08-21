@@ -43,6 +43,14 @@ extension DateFormatter {
         df.timeZone = TimeZone.burningManTimeZone
         return df
     }()
+    
+    /// e.g. Monday 8/29 4:19 AM
+    static let annotationDateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "E' 'M/d' 'h:mma"
+        df.timeZone = TimeZone.burningManTimeZone
+        return df
+    }()
 }
 
 @objc public final class DateFormatters: NSObject {

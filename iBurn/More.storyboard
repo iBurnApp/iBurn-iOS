@@ -83,12 +83,33 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell tag="11" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="vve-xF-yxm" imageView="uBM-OP-2Ay" style="IBUITableViewCellStyleDefault" id="qbC-Ku-hXK" userLabel="Location History">
+                                        <rect key="frame" x="0.0" y="167" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="9" contentMode="center" tableViewCell="qbC-Ku-hXK" id="Fhe-s3-89c">
+                                            <rect key="frame" x="0.0" y="0.0" width="341" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Location History" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="vve-xF-yxm">
+                                                    <rect key="frame" x="56" y="0.0" width="284" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="BRCMapIcon" id="uBM-OP-2Ay">
+                                                    <rect key="frame" x="16" y="9" width="25" height="25"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </imageView>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                             <tableViewSection id="cgZ-1a-XXa" userLabel="Customization">
                                 <cells>
                                     <tableViewCell tag="10" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="ZIF-aM-uBQ" imageView="cxe-iD-Rwe" style="IBUITableViewCellStyleDefault" id="VMm-Wj-TtX" userLabel="Appearance">
-                                        <rect key="frame" x="0.0" y="187" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="231" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="VMm-Wj-TtX" id="yOL-Sz-cAd">
                                             <rect key="frame" x="0.0" y="0.0" width="341" height="43.5"/>
@@ -113,7 +134,7 @@
                             <tableViewSection id="2Kd-ci-52i" userLabel="Contact">
                                 <cells>
                                     <tableViewCell tag="5" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="Nck-F4-3cq" detailTextLabel="T1I-pJ-4ER" imageView="N4a-VJ-2kd" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="d7W-4n-Vdp" userLabel="Report Bugs">
-                                        <rect key="frame" x="0.0" y="251" width="375" height="47"/>
+                                        <rect key="frame" x="0.0" y="295" width="375" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="d7W-4n-Vdp" id="Osm-ek-XOa">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="46.5"/>
@@ -141,7 +162,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell tag="6" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="ijK-wI-ChD" detailTextLabel="kpg-vs-Mng" imageView="4b3-Cw-6ww" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="MHY-q0-FwH" userLabel="Share">
-                                        <rect key="frame" x="0.0" y="298" width="375" height="47"/>
+                                        <rect key="frame" x="0.0" y="342" width="375" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="MHY-q0-FwH" id="dI8-b2-aeg">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="46.5"/>
@@ -169,7 +190,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell tag="7" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="mYK-Di-hIo" detailTextLabel="ssY-hk-OnG" imageView="gHX-Og-TU9" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="FYg-0U-Wqj" userLabel="Rate">
-                                        <rect key="frame" x="0.0" y="345" width="375" height="47"/>
+                                        <rect key="frame" x="0.0" y="389" width="375" height="47"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="FYg-0U-Wqj" id="lMH-zN-f4l">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="46.5"/>
@@ -201,7 +222,7 @@
                             <tableViewSection headerTitle="Extras" id="CYp-1C-f9K">
                                 <cells>
                                     <tableViewCell tag="3" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="qUf-i1-WoV" imageView="5dI-nA-c7f" style="IBUITableViewCellStyleDefault" id="dQe-0O-2Ss" userLabel="Unlock Location Data">
-                                        <rect key="frame" x="0.0" y="440" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="484" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dQe-0O-2Ss" id="sz8-fL-0vd">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -222,7 +243,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell tag="4" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="uIL-Yd-fUH" imageView="hJj-q2-YBF" style="IBUITableViewCellStyleDefault" id="YCS-3T-bK8" userLabel="Credits">
-                                        <rect key="frame" x="0.0" y="484" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="528" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="YCS-3T-bK8" id="Q7j-VL-9hO">
                                             <rect key="frame" x="0.0" y="0.0" width="341" height="43.5"/>
@@ -243,7 +264,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell tag="8" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="Ybl-h1-xoS" imageView="Yrb-19-U2O" style="IBUITableViewCellStyleDefault" id="Tv6-E3-Ltk" userLabel="Show Onboarding">
-                                        <rect key="frame" x="0.0" y="528" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="572" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Tv6-E3-Ltk" id="gPV-UK-Zak">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -411,6 +432,7 @@
         <image name="BRCLightStar" width="25" height="25"/>
         <image name="BRCLockIcon" width="25" height="25"/>
         <image name="BRCMailIcon" width="25" height="25"/>
+        <image name="BRCMapIcon" width="25" height="25"/>
         <image name="BRCOnboardingIcon" width="25" height="25"/>
         <image name="BRCThemeIcon" width="25" height="25"/>
     </resources>
