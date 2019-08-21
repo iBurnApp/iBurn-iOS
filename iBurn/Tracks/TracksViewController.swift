@@ -11,10 +11,6 @@ import Mapbox
 import GRDB
 import PlayaGeocoder
 
-protocol UserTrackDataSource {
-    
-}
-
 final class TracksViewController: UIViewController {
     // MARK: - Private Properties
 

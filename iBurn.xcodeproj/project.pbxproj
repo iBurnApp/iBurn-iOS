@@ -149,7 +149,6 @@
 		D9E0DA97210FB46B0056286B /* SearchCooordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA96210FB46B0056286B /* SearchCooordinator.swift */; };
 		D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
-		D9E8D85F22F4E3A300BD78EA /* LocationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E8D85E22F4E3A300BD78EA /* LocationSettingsViewController.swift */; };
 		D9E8D86622F4E43F00BD78EA /* UserDefaults+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E8D86522F4E43F00BD78EA /* UserDefaults+iBurn.swift */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F358EB22A4A9A90022DA0C /* WebViewHelper.swift */; };
@@ -503,7 +502,6 @@
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
-		D9E8D85E22F4E3A300BD78EA /* LocationSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSettingsViewController.swift; sourceTree = "<group>"; };
 		D9E8D86522F4E43F00BD78EA /* UserDefaults+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+iBurn.swift"; sourceTree = "<group>"; };
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
 		D9F358EB22A4A9A90022DA0C /* WebViewHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHelper.swift; sourceTree = "<group>"; };
@@ -791,7 +789,6 @@
 		D92AC55E22F00A6E00C9FE32 /* Tracks */ = {
 			isa = PBXGroup;
 			children = (
-				D9E8D85E22F4E3A300BD78EA /* LocationSettingsViewController.swift */,
 				D92AC56422F00AE700C9FE32 /* TracksViewController.swift */,
 				D92AC56822F0168F00C9FE32 /* LocationStorage.swift */,
 				D92AC56F22F0176B00C9FE32 /* Breadcrumb.swift */,
@@ -1630,7 +1627,6 @@
 				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
 				D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
-				D9E8D85F22F4E3A300BD78EA /* LocationSettingsViewController.swift in Sources */,
 				D92AC56922F0168F00C9FE32 /* LocationStorage.swift in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,

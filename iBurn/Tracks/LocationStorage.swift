@@ -25,8 +25,6 @@ public final class LocationStorage: NSObject {
     private let locationManager: CLLocationManager
     
     init(path: String) throws {
-        // Connect to the database
-        // See https://github.com/groue/GRDB.swift/blob/master/README.md#database-connections
         dbQueue = try DatabaseQueue(path: path)
         
         // Define the database schema
@@ -52,22 +50,13 @@ public final class LocationStorage: NSObject {
     }
     
     func setupDatabase(_ application: UIApplication) throws {
-        
-        
-        // Be a nice iOS citizen, and don't consume too much memory
-        // See https://github.com/groue/GRDB.swift/blob/master/README.md#memory-management
         dbQueue.setupMemoryManagement(in: application)
     }
-    
-    /// The DatabaseMigrator that defines the database schema.
-    ///
-    /// See https://github.com/groue/GRDB.swift/blob/master/README.md#migrations
+
     static var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
         
         migrator.registerMigration("createBreadcrumbs2") { db in
-            // Create a table
-            // See https://github.com/groue/GRDB.swift#create-tables
             try db.create(table: "breadcrumb") { t in
                 t.autoIncrementedPrimaryKey("id")
 
@@ -76,29 +65,8 @@ public final class LocationStorage: NSObject {
                 t.column("timestamp", .datetime).notNull()
             }
         }
-        
-        
-        //        // Migrations for future application versions will be inserted here:
-        //        migrator.registerMigration(...) { db in
-        //            ...
-        //        }
-        
-        return migrator
-    }
-}
 
-extension LocationStorage {
-    func deleteAllBreadcrumbs() {
-        dbQueue.asyncWrite({ (db) in
-            try Breadcrumb.deleteAll(db)
-        }) { (db, result) in
-            switch result {
-            case .success:
-                print("Deleted crumbs")
-            case .failure(let error):
-                print("Error deleting crumbs: \(error)")
-            }
-        }
+        return migrator
     }
 }
 
