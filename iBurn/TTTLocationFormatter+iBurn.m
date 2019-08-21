@@ -7,9 +7,8 @@
 //
 
 #import "TTTLocationFormatter+iBurn.h"
-#import "TTTTimeIntervalFormatter+iBurn.h"
 #import "UIColor+iBurn.h"
-
+#import "iBurn-Swift.h"
 
 static const double kAverageHumanWalkingSpeedFactor = 1.4;
 static const double kAverageHumanBikingSpeedFactor = 0.432258065;
@@ -73,8 +72,8 @@ static NSTimeInterval BRCTimeIntervalForBikingDistance(CLLocationDistance distan
     NSTimeInterval secondsToWalk = BRCTimeIntervalForWalkingDistance(distance);
     NSTimeInterval secondsToBike = BRCTimeIntervalForBikingDistance(distance);
 
-    NSString *walkingTimeString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:secondsToWalk];
-    NSString *bikingTimeString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:secondsToBike];
+    NSString *walkingTimeString = [DateFormatters stringForTimeInterval:secondsToWalk];
+    NSString *bikingTimeString = [DateFormatters stringForTimeInterval:secondsToBike];
     if (!walkingTimeString || !bikingTimeString) {
         return nil;
     }

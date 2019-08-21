@@ -11,7 +11,6 @@
 #import "BRCRelationshipDetailInfoCell.h"
 #import "BRCDataObject.h"
 #import "TTTLocationFormatter.h"
-#import "TTTTimeIntervalFormatter+iBurn.h"
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCEmbargo.h"
 #import "NSDateFormatter+iBurn.h"

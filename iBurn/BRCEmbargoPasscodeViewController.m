@@ -12,7 +12,6 @@
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCAppDelegate.h"
-#import "TTTTimeIntervalFormatter+iBurn.h"
 #import "BRCEventObject.h"
 #import "BButton.h"
 #import "BRCSocialButtonsView.h"

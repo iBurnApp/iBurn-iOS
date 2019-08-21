@@ -9,7 +9,6 @@
 #import "BRCEventObjectTableViewCell.h"
 #import "BRCEventObject.h"
 #import "NSDateFormatter+iBurn.h"
-#import "TTTTimeIntervalFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
 #import "BRCEmbargo.h"
 #import "iBurn-Swift.h"
@@ -30,16 +29,16 @@
         self.rightSubtitleLabel.text = timeString;
     } else if ([eventObject isStartingSoon:now]) {
         NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
-        NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
+        NSString *durationString = [DateFormatters  stringForTimeInterval:eventDuration];
         NSTimeInterval startDuration = [eventObject timeIntervalUntilStart:now];
-        NSString *minsUntilStartString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:startDuration];
+        NSString *minsUntilStartString = [DateFormatters  stringForTimeInterval:startDuration];
         if (!minsUntilStartString.length && startDuration == 0) {
             minsUntilStartString = @"now!";
         }
         self.rightSubtitleLabel.text = [NSString stringWithFormat:@"Starts %@ (%@)", minsUntilStartString, durationString];
     } else if ([eventObject isHappeningRightNow:now]) {
         NSTimeInterval endDuration = [eventObject timeIntervalUntilEnd:[NSDate now]];
-        NSString *minsUntilEndString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:endDuration];
+        NSString *minsUntilEndString = [DateFormatters  stringForTimeInterval:endDuration];
         if (!minsUntilEndString.length && endDuration == 0) {
             minsUntilEndString = @"0 min";
         }
@@ -68,7 +67,7 @@
 - (NSString*) defaultEventText:(BRCEventObject*)eventObject {
     NSString *startTime = [[NSDateFormatter brc_timeOnlyDateFormatter] stringFromDate:eventObject.startDate];
     NSTimeInterval eventDuration = eventObject.timeIntervalForDuration;
-    NSString *durationString = [[TTTTimeIntervalFormatter brc_shortRelativeTimeFormatter] stringForTimeInterval:eventDuration];
+    NSString *durationString = [DateFormatters  stringForTimeInterval:eventDuration];
     NSString *dayOfWeekLetter = [[NSDateFormatter brc_dayOfWeekDateFormatter] stringFromDate:eventObject.startDate];
     NSString *firstLetter = [dayOfWeekLetter substringToIndex:3];
     NSString *timeString = [[NSString stringWithFormat:@"%@ (%@)", startTime, durationString] lowercaseString];

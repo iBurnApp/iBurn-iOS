@@ -95,7 +95,6 @@
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
 		D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */; };
-		D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395AA198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m */; };
 		D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */; };
 		D99415641987222800D245C7 /* BRCDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415631987222800D245C7 /* BRCDataObject.m */; };
 		D9941568198726A700D245C7 /* BRCArtObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941567198726A700D245C7 /* BRCArtObject.m */; };
@@ -423,8 +422,6 @@
 		D9914C521B40D61500F90663 /* BRCUpdateInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCUpdateInfo.m; sourceTree = "<group>"; };
 		D99395A6198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailInfoTableViewCell.h; sourceTree = "<group>"; };
 		D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailInfoTableViewCell.m; sourceTree = "<group>"; };
-		D99395A9198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TTTTimeIntervalFormatter+iBurn.h"; sourceTree = "<group>"; };
-		D99395AA198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TTTTimeIntervalFormatter+iBurn.m"; sourceTree = "<group>"; };
 		D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TTTLocationFormatter+iBurn.h"; sourceTree = "<group>"; };
 		D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TTTLocationFormatter+iBurn.m"; sourceTree = "<group>"; };
 		D99415621987222800D245C7 /* BRCDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDataObject.h; sourceTree = "<group>"; };
@@ -898,8 +895,6 @@
 				D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */,
 				D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */,
 				D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */,
-				D99395A9198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.h */,
-				D99395AA198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m */,
 				D92562CD198A20D600ED6B50 /* MGLMapView+iBurn.h */,
 				D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */,
 				D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */,
@@ -1651,7 +1646,6 @@
 				D984DFC6210D4B3100A45922 /* YapViewHandler.swift in Sources */,
 				D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */,
 				D977E0491B84082D00FFC20F /* BRCEventRelationshipDetailInfoCell.m in Sources */,
-				D99395AB198B986B00E9ADD2 /* TTTTimeIntervalFormatter+iBurn.m in Sources */,
 				D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */,
 				D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */,
 				6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */,

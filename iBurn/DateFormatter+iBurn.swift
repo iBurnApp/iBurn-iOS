@@ -53,6 +53,15 @@ extension DateFormatter {
     }()
 }
 
+extension DateComponentsFormatter {
+    static let shortRelativeTimeFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [ .hour, .minute ]
+        return formatter
+    }()
+}
+
 @objc public final class DateFormatters: NSObject {
     /** e.g. 2015-09-04 */
     @objc public static var eventGroupDateFormatter: DateFormatter {
@@ -67,5 +76,10 @@ extension DateFormatter {
     /// e.g. 4:19 AM
     @objc public static var timeOnly: DateFormatter {
         return DateFormatter.timeOnly
+    }
+    
+    @objc public static func stringForTimeInterval(_ interval: TimeInterval) -> String? {
+        let formatter = DateComponentsFormatter.shortRelativeTimeFormatter
+        return formatter.string(from: interval)
     }
 }
