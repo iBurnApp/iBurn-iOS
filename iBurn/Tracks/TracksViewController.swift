@@ -9,6 +9,7 @@
 import UIKit
 import Mapbox
 import GRDB
+import PlayaGeocoder
 
 protocol UserTrackDataSource {
     
@@ -78,6 +79,29 @@ private extension TracksViewController {
         guard !coordinates.isEmpty else { return }
         let polyLine = MGLPolyline(coordinates: coordinates, count: UInt(coordinates.count))
         mapView.addAnnotation(polyLine)
+        
+        let annotations = crumbs.map { BreadcrumbAnnotation(breadcrumb: $0) }
+        mapView.addAnnotations(annotations)
+    }
+}
+
+private final class BreadcrumbAnnotation: NSObject, MGLAnnotation {
+    let breadcrumb: Breadcrumb
+    
+    init(breadcrumb: Breadcrumb) {
+        self.breadcrumb = breadcrumb
+    }
+    
+    var coordinate: CLLocationCoordinate2D {
+        return breadcrumb.coordinate
+    }
+    
+    var title: String? {
+        return "\(PlayaGeocoder.shared.syncReverseLookup(coordinate) ?? "Address Unknown")"
+    }
+    
+    var subtitle: String? {
+        return "\(DateFormatter.annotationDateFormatter.string(from: breadcrumb.timestamp)) - \(coordinate.latitude), \(coordinate.longitude)"
     }
 }
 
@@ -85,7 +109,7 @@ extension TracksViewController: MGLMapViewDelegate {
     
     func mapView(_ mapView: MGLMapView, alphaForShapeAnnotation annotation: MGLShape) -> CGFloat {
         // Set the alpha for all shape annotations to 1 (full opacity)
-        return 1
+        return 0.25
     }
     
     func mapView(_ mapView: MGLMapView, lineWidthForPolylineAnnotation annotation: MGLPolyline) -> CGFloat {
@@ -94,12 +118,10 @@ extension TracksViewController: MGLMapViewDelegate {
     }
     
     func mapView(_ mapView: MGLMapView, strokeColorForShapeAnnotation annotation: MGLShape) -> UIColor {
-        // Give our polyline a unique color by checking for its `title` property
-        if (annotation.title == "Crema to Council Crest" && annotation is MGLPolyline) {
-            // Mapbox cyan
-            return UIColor(red: 59/255, green: 178/255, blue: 208/255, alpha: 1)
-        } else {
-            return .red
-        }
+        return .red
+    }
+    
+    func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+        return true
     }
 }
