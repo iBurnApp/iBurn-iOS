@@ -7,7 +7,6 @@
 //
 
 #import "BRCDetailCellInfo.h"
-
 #import "BRCRelationshipDetailInfoCell.h"
 #import "BRCCampObject.h"
 #import "BRCArtObject.h"
@@ -18,6 +17,7 @@
 #import "BRCAppDelegate.h"
 #import "BRCDataObject+Relationships.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
+#import "iBurn-Swift.h"
 
 @interface BRCDetailCellInfo ()
 
@@ -76,15 +76,10 @@
         [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
     }
     
-    // last update from API
-#if DEBUG
-    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(lastUpdated)) displayName:@"Last Updated" cellType:BRCDetailCellInfoTypeDate]];
-#endif
-    
     return defaultArray;
 }
 
-+ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object
++ (NSArray<BRCDetailCellInfo*> *)infoArrayForObject:(BRCDataObject *)object metadata:(BRCObjectMetadata*)metadata
 {
     NSArray<BRCDetailCellInfo*> *defaultArray = [self defaultInfoArray];
     NSMutableArray<BRCDetailCellInfo*> *finalCellInfoArray = [NSMutableArray new];
@@ -178,10 +173,7 @@
             }
         }
         else {
-            NSDateFormatter *timeOnlyDateFormatter = [NSDateFormatter brc_timeOnlyDateFormatter];
-            NSString *startTimeString = [timeOnlyDateFormatter stringFromDate:event.startDate];
-            NSString *endTimeString = [timeOnlyDateFormatter stringFromDate:event.endDate];
-            timeString = [NSString stringWithFormat:@"%@ - %@", startTimeString, endTimeString];
+            timeString = event.startAndEndString;
         }
         NSDateFormatter *dayOfWeekDateFormatter = [NSDateFormatter brc_dayOfWeekDateFormatter];
         NSDateFormatter *shortDateFormatter = [NSDateFormatter brc_shortDateFormatter];
@@ -190,7 +182,7 @@
         NSString *dateString = [NSString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
         NSString *fullString = [NSString stringWithFormat:@"%@\n%@", dateString, timeString];
         fullScheduleString = [[NSMutableAttributedString alloc] initWithString:fullString];
-        UIColor *timeColor = [event colorForEventStatus:[NSDate date]];
+        UIColor *timeColor = [event colorForEventStatus:[NSDate now]];
         NSRange timeRange = NSMakeRange(dateString.length+1, timeString.length);
         [fullScheduleString setAttributes:@{NSForegroundColorAttributeName: timeColor}
                                     range:timeRange];
@@ -234,6 +226,20 @@
         }
     }
     
+    BRCDetailCellInfo *cellInfo = [[self alloc] init];
+    cellInfo.displayName = @"User Notes";
+    cellInfo.value = metadata.userNotes;
+    cellInfo.cellType = BRCDetailCellInfoTypeUserNotes;
+    [finalCellInfoArray addObject:cellInfo];
+    
+    // last update from API
+#if DEBUG
+    BRCDetailCellInfo *lastUpdated = [[BRCDetailCellInfo alloc] init];
+    lastUpdated.value = metadata.lastUpdated;
+    lastUpdated.displayName = @"Last Updated";
+    lastUpdated.cellType = BRCDetailCellInfoTypeDate;
+    [finalCellInfoArray addObject:lastUpdated];
+#endif
     
     return finalCellInfoArray;
 }

@@ -12,7 +12,6 @@ import YapDatabase
 import BButton
 import CocoaLumberjack
 
-
 public class MapViewAdapter: NSObject {
     
     enum ButtonTag: Int {
@@ -27,13 +26,14 @@ public class MapViewAdapter: NSObject {
     public var dataSource: AnnotationDataSource?
     public weak var parent: UIViewController?
 
-    var annotations: [MGLAnnotation] = []
     /// key is annotation
     var annotationViews: [AnyHashable: MGLAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
+    /// annotations that this class owns and have been added to this mapview
+    private var annotations: [MGLAnnotation] = []
 
     /// for checking if annotations overlap
-    private var overlappingAnnotations: [OverlapCoordinate: Set<DataObjectAnnotation>] = [:]
+    private var overlappingAnnotations: [CLLocationCoordinate2D: [DataObjectAnnotation]] = [:]
     
     @objc public init(mapView: MGLMapView,
                       dataSource: AnnotationDataSource? = nil) {
@@ -46,10 +46,53 @@ public class MapViewAdapter: NSObject {
     // MARK: - Public API
     
     @objc public func reloadAnnotations() {
-        mapView.removeAnnotations(self.annotations)
-        let annotations = dataSource?.allAnnotations() ?? []
-        self.annotations = annotations
-        self.mapView.addAnnotations(self.annotations)
+        removeAnnotations(self.annotations)
+        self.annotations = dataSource?.allAnnotations() ?? []
+        addAnnotations(self.annotations)
+    }
+    
+    @objc public func removeAnnotations(_ annotations: [MGLAnnotation]) {
+        annotations.forEach { (annotation) in
+            if let data = annotation as? DataObjectAnnotation {
+                let originalCoordinate = data.originalCoordinate
+                var overlapping = overlappingAnnotations[originalCoordinate] ?? []
+                overlapping = overlapping.filter({
+                    if data.object.uniqueID == $0.object.uniqueID {
+                        return false
+                    } else {
+                        return true
+                    }
+                })
+                overlappingAnnotations[originalCoordinate] = overlapping
+            }
+        }
+        mapView.removeAnnotations(annotations)
+    }
+    
+    /// Adds annotations in a way that avoid overlap
+    @objc public func addAnnotations(_ annotations: [MGLAnnotation]) {
+        annotations.forEach { (annotation) in
+            if let data = annotation as? DataObjectAnnotation {
+                let originalCoordinate = data.originalCoordinate
+                var overlapping = overlappingAnnotations[originalCoordinate] ?? []
+                overlapping.append(data)
+                overlappingAnnotations[originalCoordinate] = overlapping
+            }
+        }
+        annotations.forEach {
+            guard let data = $0 as? DataObjectAnnotation else {
+                return
+            }
+            let originalCoordinate = data.originalCoordinate
+            let overlapping = overlappingAnnotations[originalCoordinate] ?? []
+            if overlapping.count > 1 {
+                for (i, annotation) in overlapping.enumerated() {
+                    let percentage = Double(i) / Double(overlapping.count) + 0.18
+                    annotation.coordinate = data.originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
+                }
+            }
+        }
+        mapView.addAnnotations(annotations)
     }
 }
 
@@ -83,17 +126,6 @@ extension MapViewAdapter: MGLMapViewDelegate {
             labelAnnotationView.label.text = data.title
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
-            
-            let overlapCoordinate = data.originalCoordinate.overlapCoordinate
-            var overlapping = overlappingAnnotations[overlapCoordinate] ?? Set<DataObjectAnnotation>()
-            overlapping.insert(data)
-            if overlapping.count > 1 {
-                for (i, annotation) in overlapping.enumerated() {
-                    let percentage = Double(i) / Double(overlapping.count) + 0.18
-                    annotation.coordinate = data.originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
-                }
-            }
-            overlappingAnnotations[overlapCoordinate] = overlapping
         }
         
         if let annotation = annotation as? AnyHashable,
@@ -105,9 +137,6 @@ extension MapViewAdapter: MGLMapViewDelegate {
     }
     
     public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
-        guard annotation is ImageAnnotation else {
-            return false
-        }
         return true
     }
     
@@ -140,9 +169,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
         }
     }
     
-    public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
-        DDLogVerbose("New zoom level: \(mapView.zoomLevel)")
-        
+    public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {        
         let labelIsHidden = mapView.zoomLevel <= 14
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
@@ -170,21 +197,6 @@ private struct Offset {
     /// random offset of some pixels in x/y
     static func randomOffset(radius: Double) -> Offset {
         return .offset(radius: radius, percentage: drand48())
-    }
-}
-
-private struct OverlapCoordinate: Hashable, Equatable {
-    var latitude: CLLocationDegrees
-    var longitude: CLLocationDegrees
-    
-    init(latitude: CLLocationDegrees,
-         longitude: CLLocationDegrees) {
-        self.latitude = latitude
-        self.longitude = longitude
-    }
-    
-    init(coordinate: CLLocationCoordinate2D) {
-        self.init(latitude: coordinate.latitude, longitude: coordinate.longitude)
     }
 }
 
@@ -216,8 +228,14 @@ private extension CLLocationCoordinate2D {
     }
 }
 
-private extension CLLocationCoordinate2D {
-    var overlapCoordinate: OverlapCoordinate {
-        return OverlapCoordinate(coordinate: self)
+extension CLLocationCoordinate2D: Hashable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        return lhs.longitude == rhs.longitude &&
+            lhs.latitude == rhs.latitude
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(latitude)
+        hasher.combine(longitude)
     }
 }

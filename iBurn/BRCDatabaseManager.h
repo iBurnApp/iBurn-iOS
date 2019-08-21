@@ -11,6 +11,7 @@
 @import YapDatabase;
 @import MapKit;
 @class LongLivedConnectionManager;
+@class BRCDataObject;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -103,7 +104,12 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
  */
 - (void) queryObjectsInRegion:(MKCoordinateRegion)region
               completionQueue:(dispatch_queue_t)completionQueue
-                 resultsBlock:(void (^)(NSArray *results))resultsBlock;
+                 resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock;
+
+- (void) queryObjectsInMinCoord:(CLLocationCoordinate2D)minCoord
+                       maxCoord:(CLLocationCoordinate2D)maxCoord
+                completionQueue:(dispatch_queue_t)completionQueue
+                   resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock;
 
 @end
 

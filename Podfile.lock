@@ -31,7 +31,6 @@ PODS:
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
   - PureLayout (3.1.4)
-  - Swizzlean (1.0.2)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
   - UIImageColors (2.1.0)
@@ -121,7 +120,6 @@ DEPENDENCIES:
   - Onboard (~> 2.1)
   - PermissionScope (from `Submodules/PermissionScope/PermissionScope.podspec`)
   - PureLayout (~> 3.0)
-  - Swizzlean
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
   - UIImageColors (~> 2.1)
@@ -145,7 +143,6 @@ SPEC REPOS:
     - Mapbox-iOS-SDK
     - Onboard
     - PureLayout
-    - Swizzlean
     - TTTAttributedLabel
     - TUSafariActivity
     - UIImageColors
@@ -188,7 +185,6 @@ SPEC CHECKSUMS:
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
   PureLayout: f08c01b8dec00bb14a1fefa3de4c7d9c265df85e
-  Swizzlean: 170b7ef9a8b3fbb8e86d4b6379be8191059e4ce9
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   UIImageColors: d2ef3b0877d203cbb06489eeb78ea8b7788caabe

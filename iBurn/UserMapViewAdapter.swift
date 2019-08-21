@@ -20,6 +20,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
     
     let writeConnection: YapDatabaseConnection = BRCDatabaseManager.shared.readWriteConnection
+    private let mapRegionAnnotations = MapRegionDataSource()
     
     /// Set this if you want draggable
     var editingAnnotation: BRCMapPoint?
@@ -36,15 +37,16 @@ public class UserMapViewAdapter: MapViewAdapter {
     // MARK: - MGLMapViewDelegate Overrides
     
     override public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
-        guard let annotationView = super.mapView(mapView, viewFor: annotation) as? ImageAnnotationView,
-        let point = annotation as? BRCMapPoint else { return nil }
+        let annotationView = super.mapView(mapView, viewFor: annotation)
+        guard let imageAnnotationView = annotationView as? ImageAnnotationView,
+        let point = annotation as? BRCMapPoint else { return annotationView }
         if point == editingAnnotation {
-            annotationView.isDraggable = true
-            annotationView.startDragging()
+            imageAnnotationView.isDraggable = true
+            imageAnnotationView.startDragging()
         } else {
-            annotationView.isDraggable = false
+            imageAnnotationView.isDraggable = false
         }
-        return annotationView
+        return imageAnnotationView
     }
     
     override public func mapView(_ mapView: MGLMapView, didDeselect annotation: MGLAnnotation) {
@@ -58,7 +60,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MGLMapView, leftCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
         guard annotation is BRCUserMapPoint else {
-            return nil
+            return super.mapView(mapView, leftCalloutAccessoryViewFor: annotation)
         }
         let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FAPencil, fontSize: 20)
         button?.tag = ButtonTag.edit.rawValue
@@ -67,7 +69,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MGLMapView, rightCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
         guard annotation is BRCUserMapPoint else {
-            return nil
+            return super.mapView(mapView, rightCalloutAccessoryViewFor: annotation)
         }
         let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FATrash, fontSize: 20)
         button?.tag = ButtonTag.delete.rawValue
@@ -78,6 +80,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         guard let point = annotation as? BRCMapPoint,
             let annotationView = annotationViews[point] as? ImageAnnotationView,
             let tag = ButtonTag(rawValue: control.tag) else {
+                super.mapView(mapView, annotation: annotation, calloutAccessoryControlTapped: control)
                 return
         }
         switch tag {
@@ -89,6 +92,41 @@ public class UserMapViewAdapter: MapViewAdapter {
             editMapPoint(point)
         case .info:
             break
+        }
+    }
+    
+    override public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+        let labelIsHidden = mapView.zoomLevel < 13
+        labelViews.forEach { (view) in
+            view.label.isHidden = labelIsHidden
+        }
+        if mapView.zoomLevel >= 16 {
+            let coordinateBounds = mapView.visibleCoordinateBounds
+            BRCDatabaseManager.shared.queryObjects(inMinCoord: coordinateBounds.sw, maxCoord: coordinateBounds.ne, completionQueue: DispatchQueue.global(qos: .default)) { (objects) in
+                var objects = objects.filter {
+                    if let event = $0 as? BRCEventObject {
+                        // show events starting soon or happening now, but not ending soon
+                        return (event.isStartingSoon(.now()) || event.isHappeningRightNow(.now())) && !event.isEndingSoon(.now())
+                    } else if let _ = $0 as? BRCCampObject {
+                        // nearby camps just clutter the map until we get more precise location data
+                        // from the org
+                        return false
+                    } else {
+                        return true
+                    }
+                }
+                objects.sort { $0.title < $1.title }
+                var annotations: [MGLAnnotation] = []
+                BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (t) in
+                    annotations = objects.compactMap { $0.annotation(transaction: t) }
+                }, completionBlock: {
+                    self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
+                    self.mapRegionAnnotations.annotations = annotations
+                    self.addAnnotations(annotations)
+                })
+            }
+        } else if mapView.zoomLevel <= 13 {
+            removeAnnotations(mapRegionAnnotations.allAnnotations())
         }
     }
 }

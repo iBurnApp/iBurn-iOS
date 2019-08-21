@@ -26,15 +26,8 @@ public final class BRCDataSorterOptions {
         showExpiredEvents = false
         showFutureEvents = false
         sortEventsWithExpiration = true
-        now = Date()
+        now = Date.now()
         sortOrder = .title
-        //DATE TESTING
-        #if DEBUG
-        if ProcessInfo.mockDateEnabled {
-            now = NSDate.brc_test()
-        }
-        #endif
- 
     }
 }
 

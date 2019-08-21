@@ -7,12 +7,13 @@
 //
 
 #import "BRCUserMapPoint.h"
+#import "iBurn-Swift.h"
 
 @implementation BRCUserMapPoint
 
 - (instancetype) initWithTitle:(NSString *)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type {
     if (self = [super initWithTitle:title coordinate:coordinate type:type]) {
-        self.modifiedDate = [NSDate date];
+        self.modifiedDate = [NSDate now];
     }
     return self;
 }

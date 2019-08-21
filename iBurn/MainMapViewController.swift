@@ -20,9 +20,15 @@ public class MainMapViewController: BaseMapViewController {
     let sidebarButtons: SidebarButtonsView
     let geocoder = PlayaGeocoder.shared
     let search: SearchDisplayManager
-    let tapGesture = UITapGestureRecognizer()
+    private var observer: NSObjectProtocol?
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
+    }
+    
+    deinit {
+        if let observer = observer {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     public init() {
@@ -31,13 +37,22 @@ public class MainMapViewController: BaseMapViewController {
         sidebarButtons = SidebarButtonsView()
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchEverythingView)
         search.tableViewAdapter.groupTransformer = GroupTransformers.searchGroup
-        let dataSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
-        dataSource.allowedClass = BRCUserMapPoint.self
+        let userSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
+        userSource.allowedClass = BRCUserMapPoint.self
         let mapView = MGLMapView()
+        let favoritesSource = YapViewAnnotationDataSource(viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.everythingFilteredByFavorite))
+        let dataSource = AggregateAnnotationDataSource(dataSources: [userSource, favoritesSource])
         let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(mapViewAdapter: mapViewAdapter)
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
+        
+        self.observer = NotificationCenter.default.addObserver(forName: .BRCDatabaseExtensionRegistered,
+                                                               object: BRCDatabaseManager.shared,
+                                                               queue: .main,
+                                                               using: { [weak self] (notification) in
+                                                                self?.extensionRegisteredNotification(notification: notification)
+        })
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -53,7 +68,6 @@ public class MainMapViewController: BaseMapViewController {
         setupSearchButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
-        setupTapGesture()
     }
     
     private func setupSidebarButtons() {
@@ -69,41 +83,22 @@ public class MainMapViewController: BaseMapViewController {
         mapViewAdapter.reloadAnnotations()
         geocodeNavigationBar()
     }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.tabBarController?.tabBar.isHidden = false
+        self.tabBarController?.tabBar.alpha = 1.0
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+        self.sidebarButtons.isHidden = false
+    }
 }
 
 private extension MainMapViewController {
     
-    func setupTapGesture() {
-        tapGesture.addTarget(self, action: #selector(singleTap(_:)))
-        mapView.gestureRecognizers?.compactMap {
-            $0 as? UITapGestureRecognizer
-        }.forEach {
-            tapGesture.require(toFail: $0)
-        }
-        view.addGestureRecognizer(tapGesture)
-    }
-    
-    // MARK: - User Interaction
-    
-    @objc func singleTap(_ gesture: UITapGestureRecognizer) {
-        guard let nav = self.navigationController else { return }
-        let shouldHide = !nav.isNavigationBarHidden
-        let newAlpha: CGFloat = shouldHide ? 0.0 : 1.0
-        nav.setNavigationBarHidden(shouldHide, animated: true)
-        if !shouldHide {
-            self.tabBarController?.tabBar.isHidden = false
-            self.sidebarButtons.isHidden = false
-        }
-        UIView.animate(withDuration: 0.5, animations: {
-            self.sidebarButtons.alpha = newAlpha
-            self.tabBarController?.tabBar.alpha = newAlpha
-        }) { (finished) in
-            if shouldHide {
-                self.tabBarController?.tabBar.isHidden = true
-                self.sidebarButtons.isHidden = true
-            }
-        }
-
+    func extensionRegisteredNotification(notification: Notification) {
+        guard let extensionName = notification.userInfo?["extensionName"] as? String,
+            extensionName == BRCDatabaseManager.shared.everythingFilteredByFavorite else { return }
+        self.mapViewAdapter.reloadAnnotations()
     }
     
     // MARK: - Annotations
@@ -152,7 +147,7 @@ extension MainMapViewController: YapTableViewAdapterDelegate {
         let nav = presentingViewController?.navigationController ??
             navigationController
         let detail = BRCDetailViewController(dataObject: object.object)
-        nav?.pushViewController(detail, animated: false)
+        nav?.pushViewController(detail, animated: true)
     }
 }
 

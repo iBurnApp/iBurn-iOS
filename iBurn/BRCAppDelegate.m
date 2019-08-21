@@ -31,9 +31,6 @@
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
-#if DEBUG
-#import <Swizzlean/Swizzlean.h>
-#endif
 @import PermissionScope;
 #import "NSDate+iBurn.h"
 @import AVFoundation;
@@ -51,9 +48,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 @property (nonatomic, strong, readonly) BRCMediaDownloader *audioDownloader;
 @property (nonatomic, strong, readonly) BRCMediaDownloader *imageDownloader;
 
-#if DEBUG
-@property (nonatomic, strong) Swizzlean *swizzle;
-#endif
 @end
 
 @implementation BRCAppDelegate
@@ -62,6 +56,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [Fabric with:@[Crashlytics.class]];
+    [Appearance setGlobalAppearance];
     
 #if DEBUG
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
@@ -70,17 +65,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     fileLogger.doNotReuseLogFiles = YES;
     [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
-    // DATE TESTING
-#if DEBUG
-    if (NSProcessInfo.mockDateEnabled) {
-        self.swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[NSDate class]];
-        
-        [self.swizzle swizzleClassMethod:@selector(date) withReplacementImplementation:^(id _self) {
-            return [NSDate brc_testDate];
-        }];
-    }
-#endif
-     
     
     [BRCDataImporter copyBundledTilesIfNeeded];
     
@@ -248,23 +232,23 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     BRCDatabaseManager *dbManager = BRCDatabaseManager.shared;
 
     self.mapViewController = [[MainMapViewController alloc] init];
-    UINavigationController *mapNavController = [[UINavigationController alloc] initWithRootViewController:self.mapViewController];
+    UINavigationController *mapNavController = [[NavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
     NearbyViewController *nearbyVC = [[NearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.rTreeIndex];
     nearbyVC.title = @"Nearby";
-    UINavigationController *nearbyNav = [[UINavigationController alloc] initWithRootViewController:nearbyVC];
+    UINavigationController *nearbyNav = [[NavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
     
     self.favoritesViewController = [[FavoritesViewController alloc] initWithViewName:BRCDatabaseManager.shared.everythingFilteredByFavorite searchViewName:BRCDatabaseManager.shared.searchFavoritesView];
     self.favoritesViewController.title = @"Favorites";
-    UINavigationController *favoritesNavController = [[UINavigationController alloc] initWithRootViewController:self.favoritesViewController];
+    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:self.favoritesViewController];
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
     self.eventsViewController = [[EventListViewController alloc] initWithViewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
     self.eventsViewController.title = @"Events";
-    UINavigationController *eventsNavController = [[UINavigationController alloc] initWithRootViewController:self.eventsViewController];
+    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     UIViewController *moreVC = [MoreViewController fromStoryboard];
@@ -280,7 +264,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) setupUnlockNotification {
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {
@@ -323,7 +307,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     if ([BRCEmbargo allowEmbargoedData]) {
         return;
     }
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate now];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {

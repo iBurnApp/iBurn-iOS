@@ -48,6 +48,12 @@ class AppearanceViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        cell.setColorTheme(Appearance.currentColors, animated: false)
+        cell.contentView.subviews.forEach {
+            if let label = $0 as? UILabel {
+                label.textColor = Appearance.currentColors.primaryColor
+            }
+        }
         cell.selectionStyle = .none
         guard let cellTag = CellTag(rawValue: cell.tag) else {
             return cell
@@ -85,7 +91,16 @@ class AppearanceViewController: UITableViewController {
             Appearance.contrast = contrast
         }
         tableView.reloadData()
+        refreshTheme()
     }
+    
+    func refreshTheme() {
+        tabBarController?.tabBar.setColorTheme(Appearance.currentColors, animated: false)
+        navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: false)
+        tableView.setColorTheme(Appearance.currentColors, animated: false)
+        setNeedsStatusBarAppearanceUpdate()
+    }
+
 }
 
 extension AppearanceViewController: StoryboardRepresentable {

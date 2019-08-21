@@ -33,6 +33,9 @@
         [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
     }
     self.favoriteButton.selected = metadata.isFavorite;
+    
+    BRCImageColors *colors = Appearance.currentColors;
+    [self setColorTheme:colors animated:NO];
 }
 
 - (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {

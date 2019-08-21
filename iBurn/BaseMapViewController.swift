@@ -60,6 +60,7 @@ public class BaseMapViewController: UIViewController {
     
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refreshNavigationBarColors(animated)
     }
     
     override public func viewDidAppear(_ animated: Bool) {

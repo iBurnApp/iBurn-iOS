@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="PlayaBackground" translatesAutoresizingMaskIntoConstraints="NO" id="utY-qm-ZF9">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchSticker" translatesAutoresizingMaskIntoConstraints="NO" id="lm1-D2-57F">
+                                <rect key="frame" x="20" y="227" width="374" height="442.5"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                        <constraints>
+                            <constraint firstItem="utY-qm-ZF9" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="1wA-MY-KRG"/>
+                            <constraint firstItem="lm1-D2-57F" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="2Js-Kt-AQX"/>
+                            <constraint firstAttribute="bottom" secondItem="utY-qm-ZF9" secondAttribute="bottom" id="EM4-u0-swq"/>
+                            <constraint firstItem="utY-qm-ZF9" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="UFW-T9-rYJ"/>
+                            <constraint firstItem="utY-qm-ZF9" firstAttribute="trailing" secondItem="Bcu-3y-fUS" secondAttribute="trailing" id="Z4u-7b-anr"/>
+                            <constraint firstItem="lm1-D2-57F" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="ZTf-pi-8xT"/>
+                            <constraint firstItem="lm1-D2-57F" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" id="twy-Ja-KWe"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="lm1-D2-57F" secondAttribute="trailing" id="zKA-JJ-CAN"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="52.173913043478265" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="LaunchSticker" width="433.5" height="442.5"/>
+        <image name="PlayaBackground" width="1224" height="1632"/>
+    </resources>
+</document>

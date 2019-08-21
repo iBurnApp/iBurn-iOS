@@ -10,6 +10,7 @@
 #import "MTLModel+NSCoding.h"
 #import "BRCUserMapPoint.h"
 #import "BRCBreadcrumbPoint.h"
+#import "iBurn-Swift.h"
 @import PlayaGeocoder;
 
 @interface BRCMapPoint()
@@ -67,7 +68,7 @@
     if (self = [super initWithYapKey:nil]) {
         _title = title;
         self.coordinate = coordinate;
-        _creationDate = [NSDate date];
+        _creationDate = [NSDate now];
         _type = type;
     }
     return self;

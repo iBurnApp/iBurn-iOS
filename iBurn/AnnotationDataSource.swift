@@ -50,15 +50,38 @@ public class YapCollectionAnnotationDataSource: NSObject {
     }
 }
 
+public class MapRegionDataSource: NSObject, AnnotationDataSource {
+    public var annotations: [MGLAnnotation] = []
+    
+    public func allAnnotations() -> [MGLAnnotation] {
+        return annotations
+    }
+}
+
+public class AggregateAnnotationDataSource: NSObject, AnnotationDataSource {
+    let dataSources: [AnnotationDataSource]
+    
+    init(dataSources: [AnnotationDataSource]) {
+        self.dataSources = dataSources
+    }
+    
+    public func allAnnotations() -> [MGLAnnotation] {
+        return dataSources.map { $0.allAnnotations() }.flatMap { $0 }
+    }
+}
+
 extension YapViewAnnotationDataSource: AnnotationDataSource {
     public func allAnnotations() -> [MGLAnnotation] {
         var annotations: [MGLAnnotation] = []
         for section in 0..<viewHandler.numberOfSections {
             for row in 0..<viewHandler.numberOfItemsInSection(section) {
                 let index = IndexPath(row: row, section: section)
-                if let dataObject: BRCDataObject = viewHandler.object(at: index),
-                    BRCEmbargo.canShowLocation(for: dataObject),
-                    let annotation = dataObject.annotation {
+                var annotation: DataObjectAnnotation?
+                if let dataObject: BRCDataObject = viewHandler.object(at: index, readBlock: { (dataObject, t) in
+                    annotation = dataObject.annotation(transaction: t)
+                }),
+                BRCEmbargo.canShowLocation(for: dataObject),
+                    let annotation = annotation {
                     annotations.append(annotation)
                 }
             }
@@ -86,8 +109,13 @@ extension YapCollectionAnnotationDataSource: AnnotationDataSource {
 }
 
 public extension BRCDataObject {
-    var annotation: DataObjectAnnotation? {
-        return DataObjectAnnotation(object: self)
+    func annotation(transaction: YapDatabaseReadTransaction) -> DataObjectAnnotation? {
+        let metadata = self.metadata(with: transaction)
+        return annotation(metadata: metadata)
+    }
+    
+    func annotation(metadata: BRCObjectMetadata) -> DataObjectAnnotation? {
+        return DataObjectAnnotation(object: self, metadata: metadata)
     }
 }
 
@@ -99,7 +127,8 @@ public final class DataObjectAnnotation: NSObject {
     public let originalCoordinate: CLLocationCoordinate2D
 
     let object: BRCDataObject
-    @objc public init?(object: BRCDataObject) {
+    let metadata: BRCObjectMetadata
+    @objc public init?(object: BRCDataObject, metadata: BRCObjectMetadata) {
         guard let location = object.location,
             CLLocationCoordinate2DIsValid(location.coordinate) else {
             return nil
@@ -107,17 +136,7 @@ public final class DataObjectAnnotation: NSObject {
         self.coordinate = location.coordinate
         self.originalCoordinate = location.coordinate
         self.object = object
-    }
-    
-    public override var hash: Int {
-        return object.uniqueID.hash
-    }
-    
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let data = object as? DataObjectAnnotation else {
-            return false
-        }
-        return data.object.uniqueID == self.object.uniqueID
+        self.metadata = metadata
     }
 }
 
@@ -127,16 +146,30 @@ extension DataObjectAnnotation: MGLAnnotation {
         var title = object.title
         if let event = object as? BRCEventObject {
             if let camp = event.campName {
-                title = camp
+                title += " @ \(camp)"
             } else if let art = event.artName {
-                title = art
+                title += " @ \(art)"
             }
         }
         return title
     }
     
     public var subtitle: String? {
-        return object.playaLocation
+        var subtitle = ""
+        if let location = object.playaLocation {
+            subtitle += location
+        }
+        if let event = object as? BRCEventObject {
+            if event.isHappeningRightNow(.now()) {
+                subtitle += " • \(event.startAndEndString)"
+            } else {
+                subtitle += " • \(event.startWeekdayString) \(event.startAndEndString)"
+            }
+        }
+        if let userNotes = metadata.userNotes, !userNotes.isEmpty {
+            subtitle += " - \(userNotes)"
+        }
+        return subtitle
     }
 }
 

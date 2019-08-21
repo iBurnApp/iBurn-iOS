@@ -178,7 +178,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilterTableViewCellIdentifier];
     
-    BRCImageColors *colors = BRCImageColors.plain;
+    BRCImageColors *colors = Appearance.currentColors;
     BOOL showCheckMark = NO;
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {

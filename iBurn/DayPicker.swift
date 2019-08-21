@@ -13,7 +13,7 @@ import Anchorage
 
 public final class DayView: UIView {
     
-    public var didSelect: ((Date)->Void)?
+    public var didSelect: ((DayView, Date)->Void)?
     
     public var date: Date? {
         didSet {
@@ -37,7 +37,7 @@ public final class DayView: UIView {
     
     @IBAction func buttonPressed(_ sender: Any) {
         guard let date = self.date else { return }
-        didSelect?(date)
+        didSelect?(self, date)
     }
     
     public static func fromNib() -> DayView? {
@@ -61,13 +61,16 @@ public final class WeekView: UIView {
             self.dayViews = days.compactMap {
                 let dayView = DayView.fromNib()
                 dayView?.date = $0
+                dayView?.didSelect = didSelect
                 return dayView
             }
         }
     }
+    public var didSelect: ((DayView, Date)->Void)?
     
     private let stackView = UIStackView()
     private var dayViews: [DayView] = []
+    
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -80,21 +83,22 @@ public final class WeekView: UIView {
     }
     
     private func commonInit() {
-        self.startDate = Date()
+        self.startDate = Date.now()
+    }
+    
+    func refresh() {
+        dayViews.forEach { stackView.addArrangedSubview($0) }
     }
 }
 
 public final class DayPicker: UIView {
-    
-    
-    
     private let stackView = UIStackView()
     private let scrollView = UIScrollView()
-
     
-    required public override init(frame: CGRect) {
-        
-        super.init(frame: frame)
+    public let weekView = WeekView()
+
+    init() {
+        super.init(frame: .zero)
     }
     
     required public init?(coder aDecoder: NSCoder) {

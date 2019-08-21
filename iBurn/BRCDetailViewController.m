@@ -46,7 +46,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     NSParameterAssert(dataObject);
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
-        _colors = BRCImageColors.plain;
+        _colors = Appearance.currentColors;
         self.dataObject = dataObject;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(databaseExtensionRegistered:) name:BRCDatabaseExtensionRegisteredNotification object:BRCDatabaseManager.shared];
 
@@ -76,7 +76,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         _colors = [BRCImageColors colorsFor:event.eventType];
     }
     self.title = dataObject.title;
-    self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject];
+    self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject metadata:metadata];
     [self setupMapViewWithObject:self.dataObject];
     [self configureColors:self.colors];
     [self.tableView reloadData];
@@ -164,7 +164,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         // Mapbox ignores you if it isn't loaded yet
         UIEdgeInsets padding = UIEdgeInsetsMake(45, 45, 45, 45);
-        [self.mapView brc_showDestinationForDataObject:self.dataObject animated:NO padding:padding];
+        [self.mapView brc_showDestinationForDataObject:self.dataObject metadata:self.metadata animated:NO padding:padding];
     });
 }
 
@@ -193,7 +193,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     BRCObjectMetadata *newMetadata = [self.metadata copy];
     newMetadata.isFavorite = !newMetadata.isFavorite;
     self.metadata = newMetadata;
-    BRCDataObject *tempObject = self.dataObject;
+    BRCDataObject *tempObject = [self.dataObject copy];
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self.dataObject replaceMetadata:newMetadata transaction:transaction];
         if ([tempObject isKindOfClass:[BRCEventObject class]]) {
@@ -203,10 +203,24 @@ static CGFloat const kTableViewHeaderHeight = 200;
     }];
 }
 
+- (void) saveUserNotes:(NSString*)userNotes atIndexPath:(NSIndexPath*)indexPath {
+    if (!self.dataObject) {
+        return;
+    }
+    BRCObjectMetadata *newMetadata = [self.metadata copy];
+    newMetadata.userNotes = userNotes;
+    self.metadata = newMetadata;
+    [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [self.dataObject replaceMetadata:newMetadata transaction:transaction];
+    } completionBlock:^{
+        // force refresh
+        self.dataObject = self.dataObject;
+    }];
+}
+
 - (void)didTapMapContainerview:(id)sender
 {
-    MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject];
-    mapViewController.hidesBottomBarWhenPushed = YES;
+    MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject metadata:self.metadata];
     [self.navigationController pushViewController:mapViewController animated:YES];
 }
 
@@ -224,7 +238,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
         self.mapView = [[MGLMapView alloc] init];
         [self.mapView brc_setDefaults];
-        DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject];
+        DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject metadata:self.metadata];
         StaticAnnotationDataSource *dataSource = [[StaticAnnotationDataSource alloc] initWithAnnotation:annotation];
         self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView dataSource:dataSource];
         [self.mapViewAdapter reloadAnnotations];
@@ -403,9 +417,25 @@ static CGFloat const kTableViewHeaderHeight = 200;
         if (location) {
             [self didTapMapContainerview:tableView];
         }
+    } else if (cellInfo.cellType == BRCDetailCellInfoTypeUserNotes) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Edit User Notes" message:nil preferredStyle:UIAlertControllerStyleAlert];
+        [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+            NSString *stringValue = cellInfo.value;
+            if (stringValue.length > 0) {
+                textField.text = stringValue;
+            }
+            textField.placeholder = @"Add your own custom notes here...";
+        }];
+        UIAlertAction *save = [UIAlertAction actionWithTitle:@"Save" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            NSString *newNotes = alert.textFields.firstObject.text;
+            [self saveUserNotes:newNotes atIndexPath:indexPath];
+        }];
+        UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:save];
+        [alert addAction:cancel];
+        [self presentViewController:alert animated:YES completion:nil];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
 }
 
 #pragma - mark UIScrollViewDelegate
@@ -431,5 +461,6 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
+
 
 @end

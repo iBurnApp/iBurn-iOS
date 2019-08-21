@@ -78,6 +78,16 @@ extension BRCImageColors {
                                       secondaryColor: .white,
                                       detailColor: .white)
     
+    static let light = BRCImageColors(backgroundColor: .white,
+                                      primaryColor: UIColor(hex: 0xdb8700),
+                                      secondaryColor: .darkText,
+                                      detailColor: .lightGray)
+    
+    static let dark = BRCImageColors(backgroundColor: UIColor(hex: 0x202020),
+                                          primaryColor: UIColor(hex: 0xdb8700),
+                                          secondaryColor: .white,
+                                          detailColor: .lightGray)
+    
     @objc public static func colors(for eventType: BRCEventType) -> BRCImageColors {
         guard Appearance.contrast == .colorful else {
             switch Appearance.theme {
@@ -119,8 +129,8 @@ extension BRCImageColors {
     }
 }
 
-extension BRCEventObjectTableViewCell: ColorTheme {
-    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+extension BRCEventObjectTableViewCell {
+    public override func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
         backgroundColor = colors.backgroundColor
         descriptionLabel.textColor = colors.secondaryColor
         titleLabel.textColor = colors.primaryColor

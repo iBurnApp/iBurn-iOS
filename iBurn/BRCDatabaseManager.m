@@ -718,7 +718,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 }
 
 + (YapDatabaseViewFiltering*) eventsFilteredByToday {
-    NSDate *validDate = [[NSDate date] brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
+    NSDate *validDate = [[NSDate now] brc_dateWithinStartDate:[BRCEventObject festivalStartDate] endDate:[BRCEventObject festivalEndDate]];
     return [self eventsFilteredByDay:validDate];
 }
 
@@ -742,7 +742,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BOOL showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
-            NSDate *now = [NSDate date];
+            NSDate *now = [NSDate now];
             BRCEventObject *eventObject = (BRCEventObject*)object;
             if (eventObject.isAllDay && !showAllDayEvents) {
                 return NO;
@@ -802,7 +802,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
  */
 - (void) queryObjectsInRegion:(MKCoordinateRegion)region
               completionQueue:(dispatch_queue_t)completionQueue
-                 resultsBlock:(void (^)(NSArray *results))resultsBlock {
+                 resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock {
     CLLocationCoordinate2D northWestCorner = kCLLocationCoordinate2DInvalid; // max
     CLLocationCoordinate2D southEastCorner = kCLLocationCoordinate2DInvalid; // min
     CLLocationCoordinate2D center = region.center;
@@ -821,14 +821,14 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 - (void) queryObjectsInMinCoord:(CLLocationCoordinate2D)minCoord
                        maxCoord:(CLLocationCoordinate2D)maxCoord
                 completionQueue:(dispatch_queue_t)completionQueue
-                   resultsBlock:(void (^)(NSArray *results))resultsBlock {
+                   resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock {
     if (!resultsBlock) {
         return;
     }
     if (!completionQueue) {
         completionQueue = dispatch_get_main_queue();
     }
-    NSMutableArray *results = [NSMutableArray array];
+    NSMutableArray<BRCDataObject*> *results = [NSMutableArray array];
     NSString *queryString = [NSString stringWithFormat:@"WHERE %@ >= ? AND %@ <= ? AND %@ >= ? AND %@ <= ?",
                              RTreeMinLon,
                              RTreeMaxLon,
@@ -851,7 +851,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         YapDatabaseRTreeIndexTransaction *rTree = [transaction ext:self.rTreeIndex];
         [rTree enumerateKeysAndObjectsMatchingQuery:query usingBlock:^(NSString *collection, NSString *key, id object, BOOL *stop) {
             if ([object isKindOfClass:[BRCDataObject class]]) {
-                [results addObject:object];
+                BRCDataObject *data = object;
+                if ([BRCEmbargo canShowLocationForObject:data]) {
+                    [results addObject:object];
+                }
             }
         }];
     } completionQueue:completionQueue completionBlock:^{

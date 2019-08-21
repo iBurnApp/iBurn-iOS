@@ -40,7 +40,7 @@ public class EventListViewController: UIViewController {
         self.listCoordinator = ListCoordinator(viewName: viewName,
                                                searchViewName: searchViewName,
                                                tableView: tableView)
-        self.selectedDay = YearSettings.dayWithinFestival(Date())
+        self.selectedDay = YearSettings.dayWithinFestival(.now())
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -66,6 +66,8 @@ public class EventListViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         searchWillAppear()
+        refreshNavigationBarColors(animated)
+        dayPicker.setColorTheme(Appearance.currentColors, animated: true)
     }
     
     public override func viewDidAppear(_ animated: Bool) {
@@ -111,7 +113,7 @@ private extension EventListViewController {
     }
     
     func setupDayPicker() {
-        dayPicker.daysScrollView.isScrollEnabled = false
+        dayPicker.daysScrollView.isScrollEnabled = true
         dayPicker.setStart(YearSettings.eventStart, end: YearSettings.eventEnd)
         dayPicker.weekdayTitles = ASDayPicker.weekdayTitles(withLocaleIdentifier: nil, length: 3, uppercase: true)
         dayPicker.selectedDateBackgroundImage = UIImage(named: "BRCDateSelection")
@@ -127,7 +129,7 @@ private extension EventListViewController {
     
     @objc func filterButtonPressed(_ sender: Any) {
         let filterVC = BRCEventsFilterTableViewController(delegate: self)
-        let nav = UINavigationController(rootViewController: filterVC)
+        let nav = NavigationController(rootViewController: filterVC)
         present(nav, animated: true, completion: nil)
     }
     
@@ -170,5 +172,13 @@ extension EventListViewController: BRCEventsFilterTableViewControllerDelegate {
 extension EventListViewController: SearchCooordinator {
     var searchController: UISearchController {
         return listCoordinator.searchDisplayManager.searchController
+    }
+}
+
+extension ASDayPicker: ColorTheme {
+    public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        weekdayTextColor = colors.primaryColor
+        dateTextColor = colors.primaryColor
+        selectedWeekdayTextColor = colors.primaryColor
     }
 }

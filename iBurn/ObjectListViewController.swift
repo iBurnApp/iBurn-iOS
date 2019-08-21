@@ -57,6 +57,7 @@ public class ObjectListViewController: UIViewController {
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refreshNavigationBarColors(animated)
         searchWillAppear()
     }
     
@@ -76,7 +77,6 @@ extension ObjectListViewController: MapButtonHelper {
     func mapButtonPressed(_ sender: Any) {
         let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler)
         let mapVC = MapListViewController(dataSource: dataSource)
-        mapVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(mapVC, animated: true)
     }
 }

@@ -35,7 +35,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.navigationBar.setColorTheme(BRCImageColors.plain, animated: animated)
+        tableView.setColorTheme(Appearance.currentColors, animated: animated)
+        refreshNavigationBarColors(animated)
         tableView.reloadData()
     }
 
@@ -49,6 +50,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
+        cell.setColorTheme(Appearance.currentColors, animated: false)
+        
         if let cellImage = cell.imageView?.image {
             cell.imageView!.image = cellImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
         }
@@ -61,7 +64,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
                 cell.isUserInteractionEnabled = false
             }
         }
-
+        
         return cell
     }
     
@@ -108,7 +111,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let artVC = ObjectListViewController(viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
         artVC.tableView.separatorStyle = .none
         artVC.title = "Art"
-        artVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(artVC, animated: true)
     }
 
@@ -116,7 +118,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let dbManager = BRCDatabaseManager.shared
         let campsVC = ObjectListViewController(viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
         campsVC.title = "Camps"
-        campsVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(campsVC, animated: true)
     }
 
@@ -131,7 +132,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func pushCreditsView() {
         let creditsVC = CreditsViewController()
         creditsVC.title = "Credits"
-        creditsVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(creditsVC, animated: true)
     }
 
@@ -172,7 +172,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func showAudioTour() {
         let audioTour = AudioTourViewController(style: UITableView.Style.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
-        audioTour.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(audioTour, animated: true)
     }
     
@@ -193,3 +192,4 @@ extension MoreViewController: StoryboardRepresentable {
         return Storyboard.more.instantiateInitialViewController()!
     }
 }
+

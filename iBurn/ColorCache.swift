@@ -16,22 +16,37 @@ extension UIImageColors {
     }
 }
 
+extension UIViewController {
+    func refreshNavigationBarColors(_ animated: Bool) {
+        self.navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: animated)
+
+    }
+}
+
 @objc public protocol ColorTheme {
     func setColorTheme(_ colors: BRCImageColors, animated: Bool)
 }
 
 extension UINavigationBar: ColorTheme {
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        self.titleTextAttributes = [.foregroundColor: colors.primaryColor]
         let theme = {
             self.barTintColor = colors.backgroundColor
             self.tintColor = colors.secondaryColor
-            self.titleTextAttributes = [NSAttributedString.Key.foregroundColor: colors.primaryColor]
         }
         if animated {
             UIView.transition(with: self, duration: 0.25, options: [.beginFromCurrentState, .transitionCrossDissolve], animations: theme, completion: nil)
         } else {
             theme()
         }
+    }
+}
+
+extension UITabBar {
+    @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
+        backgroundColor = colors.backgroundColor
+        tintColor = colors.primaryColor
+        barTintColor = colors.backgroundColor
     }
 }
 

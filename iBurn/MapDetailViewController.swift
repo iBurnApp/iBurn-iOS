@@ -11,11 +11,13 @@ import UIKit
 public class MapDetailViewController: BaseMapViewController {
     
     private let dataObject: BRCDataObject
+    private let metadata: BRCObjectMetadata
     
-    @objc public init(dataObject: BRCDataObject) {
+    @objc public init(dataObject: BRCDataObject, metadata: BRCObjectMetadata) {
         self.dataObject = dataObject
+        self.metadata = metadata
         var dataSource: AnnotationDataSource?
-        if let annotation = dataObject.annotation {
+        if let annotation = dataObject.annotation(metadata: metadata) {
             dataSource = StaticAnnotationDataSource(annotation: annotation)
         }
         super.init(dataSource: dataSource)
@@ -36,7 +38,7 @@ public class MapDetailViewController: BaseMapViewController {
     
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        guard let annotation = dataObject.annotation else {
+        guard let annotation = dataObject.annotation(metadata: metadata) else {
             return
         }
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(100)) {

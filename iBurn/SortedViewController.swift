@@ -133,8 +133,7 @@ public class SortedViewController: UITableViewController {
     
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.navigationBar.setColorTheme(BRCImageColors.plain, animated: animated)
-
+        refreshNavigationBarColors(animated)
         refreshTableItems { () -> Void in
             self.tableView.reloadData();
         }
