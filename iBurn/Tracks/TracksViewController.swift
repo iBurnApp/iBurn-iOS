@@ -20,6 +20,7 @@ final class TracksViewController: UIViewController {
 
     private let mapView = MGLMapView.brcMapView()
     private var storage: LocationStorage?
+    private var annotations: [MGLAnnotation] = []
     
     // MARK: - Init
     
@@ -49,11 +50,50 @@ final class TracksViewController: UIViewController {
         
         try? setupStorage()
         startMonitoring()
-        showLocationHistory()
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Settings", style: .plain, closure: { [weak self] (_) in
+            self?.showAlert()
+        })
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        refreshLocationHistory()
     }
 }
 
 private extension TracksViewController {
+    func showAlert() {
+        let alert = UIAlertController(title: "Location History Settings", message:"Every time you open the app, iBurn will automatically save a pin so know where you've been.", preferredStyle: .actionSheet)
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        let toggleTitle: String = UserDefaults.isLocationHistoryDisabled ? "Resume" : "Pause"
+        let toggle = UIAlertAction(title: toggleTitle, style: .default) { (_) in
+            UserDefaults.isLocationHistoryDisabled.toggle()
+            self.storage?.restart()
+        }
+        let delete = UIAlertAction(title: "Clear History", style: .destructive) { (_) in
+            let confirmation = UIAlertController(title: "Clear History", message: "Are you sure? This will permanently delete all of your location history.", preferredStyle: .alert)
+            let delete = UIAlertAction(title: "Delete", style: .destructive, handler: { (_) in
+                self.storage?.dbQueue.asyncWrite({ (db) in
+                    try Breadcrumb.deleteAll(db)
+                }, completion: { (db, result) in
+                    DispatchQueue.main.async {
+                        self.refreshLocationHistory()
+                    }
+                })
+            })
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            confirmation.addAction(delete)
+            confirmation.addAction(cancel)
+            self.present(confirmation, animated: true, completion: nil)
+        }
+        alert.addAction(toggle)
+        alert.addAction(delete)
+        alert.addAction(cancel)
+        present(alert, animated: true, completion: nil)
+    }
+    
     func setupStorage() throws {
         let databaseURL = try FileManager.default
             .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -65,7 +105,10 @@ private extension TracksViewController {
         storage?.start()
     }
     
-    func showLocationHistory() {
+    func refreshLocationHistory() {
+        mapView.removeAnnotations(annotations)
+        annotations.removeAll()
+        
         var crumbs: [Breadcrumb] = []
         do {
             try storage?.dbQueue.read { db in
@@ -78,10 +121,12 @@ private extension TracksViewController {
         let coordinates = crumbs.map { $0.coordinate }
         guard !coordinates.isEmpty else { return }
         let polyLine = MGLPolyline(coordinates: coordinates, count: UInt(coordinates.count))
+        annotations.append(polyLine)
         mapView.addAnnotation(polyLine)
         
         let annotations = crumbs.map { BreadcrumbAnnotation(breadcrumb: $0) }
         mapView.addAnnotations(annotations)
+        self.annotations += annotations
     }
 }
 

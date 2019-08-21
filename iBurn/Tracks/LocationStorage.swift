@@ -38,7 +38,13 @@ public final class LocationStorage: NSObject {
     }
     
     @objc public func start() {
+        guard !UserDefaults.isLocationHistoryDisabled else { return }
         locationManager.startUpdatingLocation()
+    }
+    
+    func restart() {
+        stop()
+        start()
     }
     
     func stop() {
