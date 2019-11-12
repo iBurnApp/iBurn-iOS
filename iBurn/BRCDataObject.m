@@ -216,7 +216,7 @@
         markerImage = [UIImage imageNamed:@"BRCBluePin"];
     } else if (dataObjectClass == [BRCEventObject class]) {
         BRCEventObject *eventObject = (BRCEventObject*)self;
-        markerImage = [eventObject markerImageForEventStatus:[NSDate now]];
+        markerImage = [eventObject markerImageForEventStatus:[NSDate present]];
     } else if (dataObjectClass == [BRCCampObject class]) {
         markerImage = [UIImage imageNamed:@"BRCPurplePin"];
     } else {

@@ -182,7 +182,7 @@
         NSString *dateString = [NSString stringWithFormat:@"%@ %@", dayOfWeekString, shortDateString];
         NSString *fullString = [NSString stringWithFormat:@"%@\n%@", dateString, timeString];
         fullScheduleString = [[NSMutableAttributedString alloc] initWithString:fullString];
-        UIColor *timeColor = [event colorForEventStatus:[NSDate now]];
+        UIColor *timeColor = [event colorForEventStatus:[NSDate present]];
         NSRange timeRange = NSMakeRange(dateString.length+1, timeString.length);
         [fullScheduleString setAttributes:@{NSForegroundColorAttributeName: timeColor}
                                     range:timeRange];

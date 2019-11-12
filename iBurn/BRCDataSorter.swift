@@ -26,7 +26,7 @@ public final class BRCDataSorterOptions {
         showExpiredEvents = false
         showFutureEvents = false
         sortEventsWithExpiration = true
-        now = Date.now()
+        now = Date.present
         sortOrder = .title
     }
 }

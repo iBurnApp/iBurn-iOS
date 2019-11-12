@@ -106,7 +106,7 @@ public class UserMapViewAdapter: MapViewAdapter {
                 var objects = objects.filter {
                     if let event = $0 as? BRCEventObject {
                         // show events starting soon or happening now, but not ending soon
-                        return (event.isStartingSoon(.now()) || event.isHappeningRightNow(.now())) && !event.isEndingSoon(.now())
+                        return (event.isStartingSoon(.present) || event.isHappeningRightNow(.present)) && !event.isEndingSoon(.present)
                     } else if let _ = $0 as? BRCCampObject {
                         // nearby camps just clutter the map until we get more precise location data
                         // from the org

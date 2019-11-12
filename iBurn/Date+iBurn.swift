@@ -9,8 +9,9 @@
 import Foundation
 
 extension NSDate {
+    
     /// Returns current datetime, or mocked datetime if running test scheme
-    @objc public class func now() -> Date {
+    @objc public class var present: Date {
         #if DEBUG
         if ProcessInfo.mockDateEnabled {
             return NSDate.brc_test()
@@ -25,7 +26,7 @@ extension NSDate {
 
 extension Date {
     /// Returns current datetime, or mocked datetime if running test scheme
-    public static func now() -> Date {
-        return NSDate.now()
+    public static var present: Date {
+        return NSDate.present
     }
 }

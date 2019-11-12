@@ -43,7 +43,7 @@
         return YES;
     }
     //Data is not embargoed after start of festival or if the passcode has been entered
-    NSDate *now = [NSDate now];
+    NSDate *now = [NSDate present];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {

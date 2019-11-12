@@ -160,7 +160,7 @@ extension DataObjectAnnotation: MGLAnnotation {
             subtitle += location
         }
         if let event = object as? BRCEventObject {
-            if event.isHappeningRightNow(.now()) {
+            if event.isHappeningRightNow(.present) {
                 subtitle += " • \(event.startAndEndString)"
             } else {
                 subtitle += " • \(event.startWeekdayString) \(event.startAndEndString)"

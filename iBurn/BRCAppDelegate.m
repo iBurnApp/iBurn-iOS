@@ -264,7 +264,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 }
 
 - (void) setupUnlockNotification {
-    NSDate *now = [NSDate now];
+    NSDate *now = [NSDate present];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {
@@ -307,7 +307,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     if ([BRCEmbargo allowEmbargoedData]) {
         return;
     }
-    NSDate *now = [NSDate now];
+    NSDate *now = [NSDate present];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     if (timeLeftInterval >= 0) {

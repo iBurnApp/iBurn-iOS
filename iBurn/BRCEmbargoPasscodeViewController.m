@@ -121,7 +121,7 @@
 }
 
 - (BOOL) isDataUnlocked {
-    NSDate *now = [NSDate now];
+    NSDate *now = [NSDate present];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
     return timeLeftInterval >= 0 ||
@@ -130,7 +130,7 @@
 
 - (void) refreshCountdownLabel:(id)sender {
     NSMutableAttributedString *fullLabelString = nil;
-    NSDate *now = [NSDate now];
+    NSDate *now = [NSDate present];
     NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
     if ([self isDataUnlocked]) {
         fullLabelString = [[NSMutableAttributedString alloc] initWithString:@"Location Data Unlocked!"];
