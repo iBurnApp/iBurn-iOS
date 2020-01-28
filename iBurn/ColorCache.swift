@@ -102,10 +102,7 @@ public class ColorCache: NSObject {
         DispatchQueue.global(qos: .default).async {
             var objects: [(BRCArtObject, BRCArtMetadata)] = []
             self.backgroundReadConnection.read { transaction in
-                transaction.enumerateRows(inCollection: BRCArtObject.yapCollection, using: { (key, object, metadata, stop) in
-                    guard let art = object as? BRCArtObject else {
-                        return
-                    }
+                transaction.iterateRows(inCollection: BRCArtObject.yapCollection) { (key, art: BRCArtObject, metadata: BRCArtMetadata?, stop) in
                     let artMetadata = art.artMetadata(with: transaction)
                     if artMetadata.thumbnailImageColors != nil {
                         return
@@ -113,7 +110,7 @@ public class ColorCache: NSObject {
                     if art.localThumbnailURL != nil {
                         objects.append((art, artMetadata))
                     }
-                })
+                }
             }
             objects.forEach({ (art, metadata) in
                 guard let image = BRCMediaDownloader.imageForArt(art) else {

@@ -79,11 +79,11 @@ class AudioTourViewController: SortedViewController {
         BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (transaction: YapDatabaseReadTransaction) -> Void in
             if let viewTransaction = transaction.ext(self.extensionName) as? YapDatabaseViewTransaction {
                 viewTransaction.enumerateGroups({ (group, stop) -> Void in
-                    viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in
+                    viewTransaction.iterateKeysAndObjects(inGroup: group) { (collection, key, object, index, stop) in
                         if let dataObject = object as? BRCArtObject {
                             art.append(dataObject)
                         }
-                    })
+                    }
                 })
             }
             }, completionBlock: { () -> Void in

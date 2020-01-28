@@ -208,8 +208,8 @@
     if (self.didAddConstraints) {
         return;
     }
-    [self.containerView autoPinToTopLayoutGuideOfViewController:self withInset:8];
-    self.bottomCostraint = [self.containerView autoPinToBottomLayoutGuideOfViewController:self withInset:0];
+    [self.containerView autoPinEdgeToSuperviewSafeArea:ALEdgeTop withInset:8];
+    self.bottomCostraint = [self.containerView autoPinEdgeToSuperviewSafeArea:ALEdgeBottom];
     [self.containerView autoPinEdgeToSuperviewMargin:ALEdgeLeft];
     [self.containerView autoPinEdgeToSuperviewMargin:ALEdgeRight];
     

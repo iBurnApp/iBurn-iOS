@@ -20,9 +20,8 @@ class UserGuidance {
                             transaction: YapDatabaseReadTransaction) -> BRCMapPoint? {
         let yapCollection = BRCMapPoint.yapCollection(for: mapPointType)
         var distances: [DistanceEntry] = []
-        transaction.enumerateKeysAndObjects(inCollection: yapCollection) { (key, object, stop) in
-            guard let point = object as? BRCMapPoint,
-                point.type == mapPointType,
+        transaction.iterateKeysAndObjects(inCollection: yapCollection) { (key, point: BRCMapPoint, stop) in
+            guard point.type == mapPointType,
                 let location = point.location() else { return }
             let distance = userLocation.distance(from: location)
             let entry = DistanceEntry(point: point, distance: distance)

@@ -94,15 +94,14 @@ extension YapCollectionAnnotationDataSource: AnnotationDataSource {
     public func allAnnotations() -> [MGLAnnotation] {
         var annotations: [MGLAnnotation] = []
         uiConnection.read({ transaction in
-            transaction.enumerateKeysAndObjects(inCollection: self.collection, using: { (key, object, stop) in
-                guard let nsObject = object as? NSObject,
-                    nsObject.isKind(of: self.allowedClass) else {
-                    return
+            transaction.iterateKeysAndObjects(inCollection: self.collection) { (key, nsObject: NSObject, stop) in
+                guard nsObject.isKind(of: self.allowedClass) else {
+                        return
                 }
-                if let annotation = object as? MGLAnnotation {
+                if let annotation = nsObject as? MGLAnnotation {
                     annotations.append(annotation)
                 }
-            })
+            }
         })
         return annotations
     }

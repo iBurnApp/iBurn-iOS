@@ -16,11 +16,7 @@
 #import "NSDate+iBurn.h"
 #import "BRCUpdateInfo.h"
 #import "iBurn-Swift.h"
-@import YapDatabase.YapDatabaseView;
-@import YapDatabase.YapDatabaseFullTextSearch;
-@import YapDatabase.YapDatabaseRTreeIndex;
-@import YapDatabase.YapDatabaseFilteredView;
-@import YapDatabase.YapDatabaseSearchResultsView;
+@import YapDatabase;
 
 /** this is posted when an extension is ready. The userInfo contains
  the extension name under the "extensionName" key */
@@ -92,14 +88,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }
     NSString *databasePath = [[self class] yapDatabasePathWithName:databaseName];
     
-    self.database = [[YapDatabase alloc] initWithPath:databasePath
-                                           serializer:nil
-                                         deserializer:nil
-                                         preSanitizer:nil
-                                        postSanitizer:nil
-                                              options:options];
-    
     NSURL *dbURL = [NSURL fileURLWithPath:databasePath];
+    
+    self.database = [[YapDatabase alloc] initWithURL:dbURL options:options];
+
     NSError *error = nil;
     BOOL success = [dbURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
     if (!success) {
@@ -107,15 +99,12 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }
     
     YapDatabaseConnectionConfig *config = self.database.connectionDefaults;
-    config.objectPolicy = YapDatabasePolicyShare;
     config.objectCacheEnabled = YES;
     config.objectCacheLimit = 10000;
     config.metadataCacheEnabled = YES;
     self.readWriteConnection = [self.database newConnection];
-    self.readWriteConnection.objectPolicy = YapDatabasePolicyShare;
     self.readWriteConnection.name = @"readWriteConnection";
     _backgroundReadConnection = [self.database newConnection];
-    self.backgroundReadConnection.objectPolicy = YapDatabasePolicyShare;
     
     _longLived = [[LongLivedConnectionManager alloc] initWithDatabase:self.database];
 //#if DEBUG

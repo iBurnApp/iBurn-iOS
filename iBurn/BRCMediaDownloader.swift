@@ -165,9 +165,8 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
             }
             var art: [URL: BRCArtObject] = [:]
             viewTransaction.enumerateGroups({ (group, stop) -> Void in
-                viewTransaction.enumerateKeysAndObjects(inGroup: group, with: [], using: { (collection: String, key: String, object: Any, index: UInt, stop: UnsafeMutablePointer<ObjCBool>) in
+                viewTransaction.iterateKeysAndObjects(inGroup: group) { (collection, key, object, index, stop) in
                     if let dataObject = object as? BRCArtObject {
-                        
                         // Only add files that haven't been downloaded
                         var remoteURL: URL? = nil
                         var localURL: URL? = nil
@@ -196,7 +195,7 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
                             //NSLog("Already downloaded media for %@", remoteURL!)
                         }
                     }
-                })
+                }
             })
             self.session.getTasksWithCompletionHandler({ (_, _, downloads) in
                 // Remove things already being downloaded
