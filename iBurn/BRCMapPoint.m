@@ -68,7 +68,7 @@
     if (self = [super initWithYapKey:nil]) {
         _title = title;
         self.coordinate = coordinate;
-        _creationDate = [NSDate now];
+        _creationDate = [NSDate present];
         _type = type;
     }
     return self;

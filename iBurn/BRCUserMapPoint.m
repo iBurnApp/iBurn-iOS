@@ -13,7 +13,7 @@
 
 - (instancetype) initWithTitle:(NSString *)title coordinate:(CLLocationCoordinate2D)coordinate type:(BRCMapPointType)type {
     if (self = [super initWithTitle:title coordinate:coordinate type:type]) {
-        self.modifiedDate = [NSDate now];
+        self.modifiedDate = [NSDate present];
     }
     return self;
 }
