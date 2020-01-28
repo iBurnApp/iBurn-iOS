@@ -127,7 +127,7 @@ DEPENDENCIES:
   - YapDatabase
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Anchorage
     - Appirater
     - BButton
@@ -184,6 +184,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 3bb742da852a5161dc9f4b017e52f926a41ef5d3
   YapDatabase: 36e10c3059d33686951eba566fa15c0fce2497ed
 
-PODFILE CHECKSUM: 65239f69db85023a996dc44961a8caeeeb765a4d
+PODFILE CHECKSUM: 9e0f506ae856d693fed64a8a07115c1fb05ffbc9
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.4
