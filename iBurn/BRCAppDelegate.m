@@ -35,8 +35,7 @@
 #import "NSDate+iBurn.h"
 @import AVFoundation;
 @import CocoaLumberjack;
-#import <Fabric/Fabric.h>
-#import <Crashlytics/Crashlytics.h>
+@import FirebaseCore;
 
 static int ddLogLevel = DDLogLevelVerbose;
 
@@ -55,7 +54,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    [Fabric with:@[Crashlytics.class]];
+    [FIRApp configure];
     [Appearance setGlobalAppearance];
     
 #if DEBUG

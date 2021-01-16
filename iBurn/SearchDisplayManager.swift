@@ -48,7 +48,7 @@ public final class SearchDisplayManager: NSObject {
     }
     
     private func setupDefaults(for searchController: UISearchController) {
-        searchController.dimsBackgroundDuringPresentation = true
+        searchController.obscuresBackgroundDuringPresentation = true
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.searchBar.delegate = self
         searchController.searchResultsUpdater = self

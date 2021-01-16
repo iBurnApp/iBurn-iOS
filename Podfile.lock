@@ -1,142 +1,173 @@
 PODS:
-  - Anchorage (4.3.1)
+  - Anchorage (4.5.0)
   - Appirater (2.3.1)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - CocoaLumberjack/Core (3.6.0)
-  - CocoaLumberjack/Swift (3.6.0):
+  - CocoaLumberjack/Core (3.7.0)
+  - CocoaLumberjack/Swift (3.7.0):
     - CocoaLumberjack/Core
-  - Crashlytics (3.14.0):
-    - Fabric (~> 1.10.2)
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
   - DOFavoriteButton (0.0.4)
-  - Fabric (1.10.2)
+  - FirebaseCore (7.4.0):
+    - FirebaseCoreDiagnostics (~> 7.4)
+    - GoogleUtilities/Environment (~> 7.0)
+    - GoogleUtilities/Logger (~> 7.0)
+  - FirebaseCoreDiagnostics (7.4.0):
+    - GoogleDataTransport (~> 8.0)
+    - GoogleUtilities/Environment (~> 7.0)
+    - GoogleUtilities/Logger (~> 7.0)
+    - nanopb (~> 2.30907.0)
+  - FirebaseCrashlytics (7.4.0):
+    - FirebaseCore (~> 7.0)
+    - FirebaseInstallations (~> 7.0)
+    - GoogleDataTransport (~> 8.0)
+    - nanopb (~> 2.30907.0)
+    - PromisesObjC (~> 1.2)
+  - FirebaseInstallations (7.4.0):
+    - FirebaseCore (~> 7.0)
+    - GoogleUtilities/Environment (~> 7.0)
+    - GoogleUtilities/UserDefaults (~> 7.0)
+    - PromisesObjC (~> 1.2)
   - FormatterKit/LocationFormatter (1.9.0):
     - FormatterKit/Resources
   - FormatterKit/Resources (1.9.0)
   - FormatterKit/TimeIntervalFormatter (1.9.0):
     - FormatterKit/Resources
-  - GRDB.swift (4.9.0):
-    - GRDB.swift/standard (= 4.9.0)
-  - GRDB.swift/standard (4.9.0)
+  - GoogleDataTransport (8.2.0):
+    - nanopb (~> 2.30907.0)
+  - GoogleUtilities/Environment (7.2.0):
+    - PromisesObjC (~> 1.2)
+  - GoogleUtilities/Logger (7.2.0):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/UserDefaults (7.2.0):
+    - GoogleUtilities/Logger
+  - GRDB.swift (5.3.0):
+    - GRDB.swift/standard (= 5.3.0)
+  - GRDB.swift/standard (5.3.0)
   - JTSImageViewController (1.5.1)
   - KVOController (1.2.0)
-  - Mantle (2.1.1):
-    - Mantle/extobjc (= 2.1.1)
-  - Mantle/extobjc (2.1.1)
+  - Mantle (2.1.6):
+    - Mantle/extobjc (= 2.1.6)
+  - Mantle/extobjc (2.1.6)
   - Mapbox-iOS-SDK (5.2.0)
+  - nanopb (2.30907.0):
+    - nanopb/decode (= 2.30907.0)
+    - nanopb/encode (= 2.30907.0)
+  - nanopb/decode (2.30907.0)
+  - nanopb/encode (2.30907.0)
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
-  - PureLayout (3.1.5)
+  - PromisesObjC (1.2.12)
+  - PureLayout (3.1.6)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
-  - UIImageColors (2.1.0)
-  - VTAcknowledgementsViewController (1.5.1)
-  - YapDatabase (4.0):
-    - YapDatabase/Standard (= 4.0)
-  - YapDatabase/Standard (4.0):
-    - YapDatabase/Standard/Core (= 4.0)
-    - YapDatabase/Standard/Extensions (= 4.0)
-  - YapDatabase/Standard-ObjC/Core (4.0)
-  - YapDatabase/Standard-ObjC/Extensions/ActionManager (4.0):
+  - UIImageColors (2.2.0)
+  - VTAcknowledgementsViewController (1.5.3)
+  - YapDatabase (4.0.1):
+    - YapDatabase/Standard (= 4.0.1)
+  - YapDatabase/Standard (4.0.1):
+    - YapDatabase/Standard/Core (= 4.0.1)
+    - YapDatabase/Standard/Extensions (= 4.0.1)
+  - YapDatabase/Standard-ObjC/Core (4.0.1)
+  - YapDatabase/Standard-ObjC/Extensions/ActionManager (4.0.1):
     - YapDatabase/Standard-ObjC/Core
     - YapDatabase/Standard-ObjC/Extensions/AutoView
-  - YapDatabase/Standard-ObjC/Extensions/AutoView (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/AutoView (4.0.1):
     - YapDatabase/Standard-ObjC/Core
     - YapDatabase/Standard-ObjC/Extensions/View
-  - YapDatabase/Standard-ObjC/Extensions/CloudCore (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/CloudCore (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/CloudKit (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/CloudKit (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/CrossProcessNotification (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/CrossProcessNotification (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/FilteredView (4.0):
-    - YapDatabase/Standard-ObjC/Core
-    - YapDatabase/Standard-ObjC/Extensions/View
-  - YapDatabase/Standard-ObjC/Extensions/FullTextSearch (4.0):
-    - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/Hooks (4.0):
-    - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/ManualView (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/FilteredView (4.0.1):
     - YapDatabase/Standard-ObjC/Core
     - YapDatabase/Standard-ObjC/Extensions/View
-  - YapDatabase/Standard-ObjC/Extensions/Relationships (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/FullTextSearch (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/RTreeIndex (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/Hooks (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/SearchResultsView (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/ManualView (4.0.1):
+    - YapDatabase/Standard-ObjC/Core
+    - YapDatabase/Standard-ObjC/Extensions/View
+  - YapDatabase/Standard-ObjC/Extensions/Relationships (4.0.1):
+    - YapDatabase/Standard-ObjC/Core
+  - YapDatabase/Standard-ObjC/Extensions/RTreeIndex (4.0.1):
+    - YapDatabase/Standard-ObjC/Core
+  - YapDatabase/Standard-ObjC/Extensions/SearchResultsView (4.0.1):
     - YapDatabase/Standard-ObjC/Core
     - YapDatabase/Standard-ObjC/Extensions/AutoView
     - YapDatabase/Standard-ObjC/Extensions/FullTextSearch
-  - YapDatabase/Standard-ObjC/Extensions/SecondaryIndex (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/SecondaryIndex (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard-ObjC/Extensions/View (4.0):
+  - YapDatabase/Standard-ObjC/Extensions/View (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard/Core (4.0):
+  - YapDatabase/Standard/Core (4.0.1):
     - YapDatabase/Standard-ObjC/Core
-  - YapDatabase/Standard/Extensions (4.0):
+  - YapDatabase/Standard/Extensions (4.0.1):
     - YapDatabase/Standard/Core
-    - YapDatabase/Standard/Extensions/ActionManager (= 4.0)
-    - YapDatabase/Standard/Extensions/AutoView (= 4.0)
-    - YapDatabase/Standard/Extensions/CloudCore (= 4.0)
-    - YapDatabase/Standard/Extensions/CloudKit (= 4.0)
-    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 4.0)
-    - YapDatabase/Standard/Extensions/FilteredView (= 4.0)
-    - YapDatabase/Standard/Extensions/FullTextSearch (= 4.0)
-    - YapDatabase/Standard/Extensions/Hooks (= 4.0)
-    - YapDatabase/Standard/Extensions/ManualView (= 4.0)
-    - YapDatabase/Standard/Extensions/Relationships (= 4.0)
-    - YapDatabase/Standard/Extensions/RTreeIndex (= 4.0)
-    - YapDatabase/Standard/Extensions/SearchResultsView (= 4.0)
-    - YapDatabase/Standard/Extensions/SecondaryIndex (= 4.0)
-    - YapDatabase/Standard/Extensions/View (= 4.0)
-  - YapDatabase/Standard/Extensions/ActionManager (4.0):
+    - YapDatabase/Standard/Extensions/ActionManager (= 4.0.1)
+    - YapDatabase/Standard/Extensions/AutoView (= 4.0.1)
+    - YapDatabase/Standard/Extensions/CloudCore (= 4.0.1)
+    - YapDatabase/Standard/Extensions/CloudKit (= 4.0.1)
+    - YapDatabase/Standard/Extensions/CrossProcessNotification (= 4.0.1)
+    - YapDatabase/Standard/Extensions/FilteredView (= 4.0.1)
+    - YapDatabase/Standard/Extensions/FullTextSearch (= 4.0.1)
+    - YapDatabase/Standard/Extensions/Hooks (= 4.0.1)
+    - YapDatabase/Standard/Extensions/ManualView (= 4.0.1)
+    - YapDatabase/Standard/Extensions/Relationships (= 4.0.1)
+    - YapDatabase/Standard/Extensions/RTreeIndex (= 4.0.1)
+    - YapDatabase/Standard/Extensions/SearchResultsView (= 4.0.1)
+    - YapDatabase/Standard/Extensions/SecondaryIndex (= 4.0.1)
+    - YapDatabase/Standard/Extensions/View (= 4.0.1)
+  - YapDatabase/Standard/Extensions/ActionManager (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/ActionManager
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/AutoView
-  - YapDatabase/Standard/Extensions/AutoView (4.0):
+  - YapDatabase/Standard/Extensions/AutoView (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/AutoView
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/CloudCore (4.0):
+  - YapDatabase/Standard/Extensions/CloudCore (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/CloudCore
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CloudKit (4.0):
+  - YapDatabase/Standard/Extensions/CloudKit (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/CloudKit
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/CrossProcessNotification (4.0):
+  - YapDatabase/Standard/Extensions/CrossProcessNotification (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/CrossProcessNotification
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/FilteredView (4.0):
+  - YapDatabase/Standard/Extensions/FilteredView (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/FilteredView
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/FullTextSearch (4.0):
+  - YapDatabase/Standard/Extensions/FullTextSearch (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/FullTextSearch
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/Hooks (4.0):
+  - YapDatabase/Standard/Extensions/Hooks (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/Hooks
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/ManualView (4.0):
+  - YapDatabase/Standard/Extensions/ManualView (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/ManualView
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/View
-  - YapDatabase/Standard/Extensions/Relationships (4.0):
+  - YapDatabase/Standard/Extensions/Relationships (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/Relationships
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/RTreeIndex (4.0):
+  - YapDatabase/Standard/Extensions/RTreeIndex (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/RTreeIndex
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/SearchResultsView (4.0):
+  - YapDatabase/Standard/Extensions/SearchResultsView (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/SearchResultsView
     - YapDatabase/Standard/Core
     - YapDatabase/Standard/Extensions/AutoView
     - YapDatabase/Standard/Extensions/FullTextSearch
-  - YapDatabase/Standard/Extensions/SecondaryIndex (4.0):
+  - YapDatabase/Standard/Extensions/SecondaryIndex (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/SecondaryIndex
     - YapDatabase/Standard/Core
-  - YapDatabase/Standard/Extensions/View (4.0):
+  - YapDatabase/Standard/Extensions/View (4.0.1):
     - YapDatabase/Standard-ObjC/Extensions/View
     - YapDatabase/Standard/Core
 
@@ -146,11 +177,10 @@ DEPENDENCIES:
   - ASDayPicker (from `Submodules/ASDayPicker/ASDayPicker.podspec`)
   - BButton (~> 4.0)
   - CocoaLumberjack/Swift
-  - Crashlytics
   - CupertinoYankee (~> 1.0)
   - DAKeyboardControl (~> 2.4)
   - DOFavoriteButton (from `Submodules/DOFavoriteButton/DOFavoriteButton.podspec`)
-  - Fabric
+  - FirebaseCrashlytics
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
   - GRDB.swift
@@ -163,7 +193,7 @@ DEPENDENCIES:
   - PureLayout (~> 3.0)
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
-  - UIImageColors (~> 2.1)
+  - UIImageColors (from `https://github.com/jathu/UIImageColors.git`, tag `2.2.0`)
   - VTAcknowledgementsViewController (~> 1.0)
   - YapDatabase
 
@@ -173,21 +203,26 @@ SPEC REPOS:
     - Appirater
     - BButton
     - CocoaLumberjack
-    - Crashlytics
     - CupertinoYankee
     - DAKeyboardControl
-    - Fabric
+    - FirebaseCore
+    - FirebaseCoreDiagnostics
+    - FirebaseCrashlytics
+    - FirebaseInstallations
     - FormatterKit
+    - GoogleDataTransport
+    - GoogleUtilities
     - GRDB.swift
     - JTSImageViewController
     - KVOController
     - Mantle
     - Mapbox-iOS-SDK
+    - nanopb
     - Onboard
+    - PromisesObjC
     - PureLayout
     - TTTAttributedLabel
     - TUSafariActivity
-    - UIImageColors
     - VTAcknowledgementsViewController
     - YapDatabase
 
@@ -198,33 +233,47 @@ EXTERNAL SOURCES:
     :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
   PermissionScope:
     :path: Submodules/PermissionScope/PermissionScope.podspec
+  UIImageColors:
+    :git: https://github.com/jathu/UIImageColors.git
+    :tag: 2.2.0
+
+CHECKOUT OPTIONS:
+  UIImageColors:
+    :git: https://github.com/jathu/UIImageColors.git
+    :tag: 2.2.0
 
 SPEC CHECKSUMS:
-  Anchorage: a187da0bc9b07440637d42c8744b8c82a4490295
+  Anchorage: 1961bc81c84aeed54ad7ffc697c50cd9de748ba6
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
-  Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
+  CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
-  Fabric: 706c8b8098fff96c33c0db69cbf81f9c551d0d74
+  FirebaseCore: 99c06e5a1e8d6952e75cb1f0a6d0b23c0f5ccdcf
+  FirebaseCoreDiagnostics: 3770093ac4f2be4590fa03cfa1d3a6e5602d4557
+  FirebaseCrashlytics: ef6b0947ab6819b5cb335f8c0a7677cd57d544c5
+  FirebaseInstallations: 30646fc9a61c6f4ee3cd7a8b7231721842b40c95
   FormatterKit: 184db51bf120b633693a73624a4cede89ec51a41
-  GRDB.swift: 4a6aab0c6f492db0ed42c76efdd5733245516db4
+  GoogleDataTransport: 1024b1a4dfbd7a0e92cb20d7e0a6f1fb66b449a4
+  GoogleUtilities: d866834472f1324d080496bc67ab3ce5d0d46027
+  GRDB.swift: 6d44795b19d716e9f09f19018c3bde5b71b67ae9
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
-  Mantle: 35238ae6f2e2b2d474fa7b67fee82a59fea71915
+  Mantle: 4c0ed6ce47c96eccc4dc3bb071deb3def0e2c3be
   Mapbox-iOS-SDK: 3e095b305126d52ba166fe215d847b15b6fbee63
+  nanopb: 59221d7f958fb711001e6a449489542d92ae113e
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
-  PureLayout: 9b4ad47b2f0388c84ff534af23d96e720c1b875a
+  PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
+  PureLayout: bd3c4ec3a3819ad387c99ebb72c6b129c3ed4d2d
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
-  UIImageColors: d2ef3b0877d203cbb06489eeb78ea8b7788caabe
-  VTAcknowledgementsViewController: 3bb742da852a5161dc9f4b017e52f926a41ef5d3
-  YapDatabase: 260b1b0b3e6ae6775383edc923e19813586615eb
+  UIImageColors: 5308752f939fbc3daa1ba4749d268959fbad92cd
+  VTAcknowledgementsViewController: 5bb83eaa344bff2af32291162b15778c080262fe
+  YapDatabase: 350ab72b61f9dcc32504594da1a52a93f5ef1476
 
-PODFILE CHECKSUM: 740449d3e816710f74b77f6552f3a077682a294e
+PODFILE CHECKSUM: f9916ab8dd78be9756799c0eeb944b2fd0f0682e
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.10.1

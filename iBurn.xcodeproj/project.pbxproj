@@ -31,6 +31,7 @@
 		D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7320FBF6B90085C6B9 /* BRCLocations.swift */; };
 		D9038C7620FBFAFD0085C6B9 /* BRCImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9038C7520FBFAFD0085C6B9 /* BRCImageColors.swift */; };
 		D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9071FE61996C4A7005C3639 /* NSData+iBurn.m */; };
+		D90814C125B283CF0011DB56 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D90814C025B283CF0011DB56 /* GoogleService-Info.plist */; };
 		D90FFA371EEFAC10005127D0 /* MapViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA361EEFAC10005127D0 /* MapViewAdapter.swift */; };
 		D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA381EEFAF19005127D0 /* ImageAnnotationView.swift */; };
 		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
@@ -323,6 +324,7 @@
 		D9046F37198C6CDE0013CCF4 /* events.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = events.json; sourceTree = "<group>"; };
 		D9071FE51996C4A7005C3639 /* NSData+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+iBurn.h"; sourceTree = "<group>"; };
 		D9071FE61996C4A7005C3639 /* NSData+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+iBurn.m"; sourceTree = "<group>"; };
+		D90814C025B283CF0011DB56 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D90FFA361EEFAC10005127D0 /* MapViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewAdapter.swift; sourceTree = "<group>"; };
 		D90FFA381EEFAF19005127D0 /* ImageAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAnnotationView.swift; sourceTree = "<group>"; };
 		D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCUserTrackingBarButtonItem.h; sourceTree = "<group>"; };
@@ -708,6 +710,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D90814C025B283CF0011DB56 /* GoogleService-Info.plist */,
 				D913995C22FA88F000CA39A7 /* LaunchScreen.storyboard */,
 				D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */,
 				D962BFF522D2946300637D8F /* 2019 */,
@@ -1132,8 +1135,8 @@
 				63CE2A521987140F00F65B01 /* Resources */,
 				E161ADB7ACA7D83761C1C90B /* [CP] Embed Pods Frameworks */,
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
-				D907AD6821215F20004A255A /* Crashlytics */,
 				53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */,
+				D907AD6821215F20004A255A /* Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -1194,7 +1197,7 @@
 			attributes = {
 				CLASSPREFIX = BRC;
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1220;
 				ORGANIZATIONNAME = iBurn;
 				TargetAttributes = {
 					63CE2A531987140F00F65B01 = {
@@ -1321,6 +1324,7 @@
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
 				D9E0DA91210F82530056286B /* YearSettings.plist in Resources */,
+				D90814C125B283CF0011DB56 /* GoogleService-Info.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
 				D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */,
@@ -1410,13 +1414,15 @@
 			files = (
 			);
 			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
 			name = Crashlytics;
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SCRIPT_PATH=\"$SRCROOT/iBurn/crashlytics.sh\"\n\nif [ ! -f $SCRIPT_PATH ]; then\n  echo \"warning: Crashlytics disabled because crashlytics.sh could not be found.\"\nelse\n  sh $SCRIPT_PATH\nfi\n";
+			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
 		};
 		DB9C5A21BC9017032482FB42 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1683,6 +1689,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1738,6 +1745,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

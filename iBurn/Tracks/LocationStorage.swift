@@ -48,10 +48,6 @@ public final class LocationStorage: NSObject {
     func stop() {
         locationManager.stopUpdatingLocation()
     }
-    
-    func setupDatabase(_ application: UIApplication) throws {
-        dbQueue.setupMemoryManagement(in: application)
-    }
 
     static var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
