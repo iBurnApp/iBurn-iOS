@@ -15,7 +15,8 @@ before_install:
 
 install:
 #  - mkdir Submodules/iBurn-Data/data/2016/2016
-  # - touch iBurn/GoogleService-Info.plist
+  - touch iBurn/GoogleService-Info.plist
+  - echo -e "<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"> <plist version="1.0"> <dict> <key>items</key> <array> <dict> <key>assets</key> <array> <dict> <key>kind</key> <string>software-package</string> <key>url</key> <!-- Change URL bellow to the location of your ipa --> <string>https://LINK-TO-YOUR-FILE-SHARE</string> </dict> </array> <key>metadata</key> <dict> <key>bundle-identifier</key> <!-- change bundle identifer to the one you are using in your app --> <string>com.mallibone.sample</string> <key>bundle-version</key> <!-- change version bellow to the version you are providing --> <string>1.0</string> <key>kind</key> <string>software</string> <key>title</key> <!-- change title to match your app name --> <string>Mobile Friendly</string> </dict> </dict> </array> </dict> </plist>" > iBurn/GoogleService-Info.plist
   - echo -e "#define MAPBOX_ACCESS_TOKEN test\n#define CRASHLYTICS_API_TOKEN test\n" > ./iBurn/InfoPlistSecrets.h
   - echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\nNSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\nNSString * const kBRCMapBoxAccessToken = @\"\";\n" > ./iBurn/BRCSecrets.m
 
