@@ -10,4 +10,4 @@ import Foundation
 
 // Use Swift entry point for better debugging in Xcode 9.1+
 @UIApplicationMain
-class AppDelegate: BRCAppDelegate {}
+final class AppDelegate: BRCAppDelegate {}

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -224,13 +224,6 @@
 			remoteInfo = "PlayaGeocoderTests (iOS)";
 		};
 		D9CB2A562117E7EE00A0F2AE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = D9CB2A232117C56900A0F2AE;
-			remoteInfo = "PlayaGeocoder (iOS)";
-		};
-		D9CB2A6A211897FB00A0F2AE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */;
 			proxyType = 1;
@@ -1142,7 +1135,6 @@
 			);
 			dependencies = (
 				D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */,
-				D9CB2A6B211897FB00A0F2AE /* PBXTargetDependency */,
 			);
 			name = iBurn;
 			productName = iBurn;
@@ -1227,7 +1219,7 @@
 				};
 			};
 			buildConfigurationList = 63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */;
-			compatibilityVersion = "Xcode 11.0";
+			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1649,11 +1641,6 @@
 			name = "PlayaGeocoder (iOS)";
 			targetProxy = D9CB2A562117E7EE00A0F2AE /* PBXContainerItemProxy */;
 		};
-		D9CB2A6B211897FB00A0F2AE /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "PlayaGeocoder (iOS)";
-			targetProxy = D9CB2A6A211897FB00A0F2AE /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -1715,7 +1702,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1765,7 +1752,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LLVM_LTO = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
