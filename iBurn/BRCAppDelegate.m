@@ -73,7 +73,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 //                                                         liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
 //    [[BITHockeyManager sharedHockeyManager] startManager];
     
-    [MGLAccountManager setAccessToken:kBRCMapBoxAccessToken];
+//    [MGLAccountManager setAccessToken:kBRCMapBoxAccessToken];
     
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     [UIApplication sharedApplication].statusBarHidden = NO;
