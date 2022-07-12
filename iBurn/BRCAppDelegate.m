@@ -287,7 +287,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 - (void) preloadExistingData {
     NSBundle *dataBundle = [NSBundle brc_dataBundle];
     
-    NSURL *updateURL = [dataBundle URLForResource:@"update.json" withExtension:@"js"];
+    NSURL *updateURL = [dataBundle URLForResource:@"update" withExtension:@"json"];
 
     [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:^(UIBackgroundFetchResult result) {
         NSLog(@"Attempted to load pre-existing data with result %d", (int)result);

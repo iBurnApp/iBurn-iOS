@@ -131,12 +131,12 @@
 
 - (void) testLoadCamps {
     Class dataClass = [BRCCampObject class];
-    [self loadDataFromFile:@"camps.json" dataClass:dataClass];
+    [self loadDataFromFile:@"camp" dataClass:dataClass];
 }
 
 - (void) testLoadEvents {
     Class dataClass = [BRCRecurringEventObject class];
-    [self loadDataFromFile:@"events.json" dataClass:dataClass];
+    [self loadDataFromFile:@"event" dataClass:dataClass];
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         [transaction enumerateKeysAndObjectsInCollection:[dataClass yapCollection] usingBlock:^(NSString * __nonnull key, BRCEventObject *event, BOOL * __nonnull stop) {
             XCTAssertNotNil(event.startDate);
@@ -147,12 +147,12 @@
 
 - (void) testLoadArt {
     Class dataClass = [BRCArtObject class];
-    [self loadDataFromFile:@"art.json" dataClass:dataClass];
+    [self loadDataFromFile:@"art" dataClass:dataClass];
 }
 
 - (void) testLoadPoints {
     Class dataClass = [BRCMapPoint class];
-    [self loadDataFromFile:@"points.json" dataClass:dataClass];
+    [self loadDataFromFile:@"points" dataClass:dataClass];
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
         NSUInteger numObjects = [transaction numberOfKeysInCollection:[dataClass yapCollection]];
         XCTAssert(numObjects > 0);
@@ -277,11 +277,11 @@
     [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
-    NSString *folderName = @"2019";
+    NSString *folderName = @"APIData";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
     
-    NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"js"];
+    NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"json"];
     NSData *jsonData = [[NSData alloc] initWithContentsOfURL:dataURL];
     NSError *error = nil;
     [self.importer loadDataFromJSONData:jsonData dataClass:dataClass updateInfo:updateInfo error:&error];
