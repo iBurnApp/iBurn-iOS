@@ -29,12 +29,16 @@ class BRCDataSorterTests: BRCDataImportTests {
         importer.loadUpdates(from: type(of: self).testDataURL(), fetchResultBlock: { (fetchResult: UIBackgroundFetchResult) -> Void in
             self.importer.waitForDataUpdatesToFinish()
             var dataObjects: [BRCDataObject] = []
-            self.connection.read { (transaction: YapDatabaseReadTransaction) -> Void in
-                transaction.enumerateKeysAndObjectsInAllCollections { (collection, key, object, stop) in
-                    if let dataObject = object as? BRCDataObject {
-                        dataObjects.append(dataObject)
+            self.connection.read { transaction in
+                transaction.allCollections()
+                    .forEach {
+                        let keys = transaction.allKeys(inCollection: $0)
+                        transaction.enumerateObjects(forKeys: keys, inCollection: $0) { row, object, stop in
+                            if let dataObject = object as? BRCDataObject {
+                                dataObjects.append(dataObject)
+                            }
+                        }
                     }
-                }
             }
             NSLog("Found %d objects", dataObjects.count)
             XCTAssert(dataObjects.count > 0 , "Incorrect object count!")

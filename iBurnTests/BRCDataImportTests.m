@@ -18,6 +18,7 @@
 #import "BRCDataImportTests.h"
 #import "BRCMapPoint.h"
 #import "BRCDataObject+Relationships.h"
+@import YapDatabase;
 
 @interface BRCDataImportTests()
 @property (nonatomic, strong, readonly) NSString *relationshipsName;
@@ -35,7 +36,11 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath:tmpDbPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:tmpDbPath error:nil];
     }
-    _database = [[YapDatabase alloc] initWithPath:tmpDbPath];
+    YapDatabaseOptions *options = [[YapDatabaseOptions alloc] init];
+    options.corruptAction = YapDatabaseCorruptAction_Fail;
+    NSURL *dbURL = [NSURL fileURLWithPath:tmpDbPath];
+    
+    _database = [[YapDatabase alloc] initWithURL:dbURL options:options];
     XCTAssertNotNil(self.database);
     _connection = [self.database newConnection];
     XCTAssertNotNil(self.connection);
@@ -67,11 +72,11 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    NSString *dbPath = [self.database.databasePath copy];
+    NSURL *dbURL = [self.database.databaseURL copy];
     _connection = nil;
     _importer = nil;
     _database = nil;
-    [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
+    [[NSFileManager defaultManager] removeItemAtURL:dbURL error:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super tearDown];
 }

@@ -9,7 +9,7 @@
 import Foundation
 
 public extension YapDatabaseConnection {
-    func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
+    func readReturning<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
         var object: T? = nil
         read { transaction in
             object = block(transaction)

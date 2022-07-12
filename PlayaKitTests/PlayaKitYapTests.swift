@@ -20,10 +20,13 @@ class PlayaKitTests: XCTestCase {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
         let dbPath = "\(NSTemporaryDirectory())/\(UUID().uuidString)"
+        let dbURL = URL(fileURLWithPath: dbPath)
         let encoder = PropertyListEncoder()
         let decoder = PropertyListDecoder()
-        DDLog.add(DDTTYLogger.sharedInstance)
-        self.database = YapDatabase(path: dbPath, serializer: { (collection, key, object) -> Data in
+        let options = YapDatabaseOptions()
+        DDTTYLogger.sharedInstance.flatMap { DDLog.add($0) }
+        self.database = YapDatabase(url: dbURL, options: options)
+        self.database.registerDefaultSerializer { (collection, key, object) -> Data in
             if let encodableObject = object as? APIObject {
                 var data: Data? = nil
                 do {
@@ -36,7 +39,8 @@ class PlayaKitTests: XCTestCase {
                 }
             }
             fatalError("Could not encode object \(object)")
-        }, deserializer: { (collection, key, data) -> Any? in
+        }
+        self.database.registerDefaultDeserializer { (collection, key, data) -> Any? in
             var object: Any? = nil
             do {
                 object = try decoder.decode(APIObject.self, from: data)
@@ -44,7 +48,7 @@ class PlayaKitTests: XCTestCase {
                 fatalError("Could not decode object \(err)")
             }
             return object
-        })
+        }
         self.connection = database.newConnection()
         
     }
