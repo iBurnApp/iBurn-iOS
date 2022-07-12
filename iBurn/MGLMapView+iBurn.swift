@@ -28,7 +28,7 @@ extension MGLMapView {
         styleJSON["sources"] = [
             "composite": [
                 "type": "vector",
-                "tiles": ["mbtiles://\(mbtilesURL!.path)"]
+                "url": "mbtiles://\(mbtilesURL!.path)"
             ]
         ]
         let outData = try! JSONSerialization.data(withJSONObject: styleJSON, options: [.prettyPrinted, .withoutEscapingSlashes, .sortedKeys])
