@@ -20,22 +20,19 @@ extension MGLMapView {
     @objc public func brc_setDefaults() {
         MGLLoggingConfiguration.shared.loggingLevel = .verbose
         // FIXME: Clean this up big time
-        let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map")
+        let spritesURL = Bundle.main.url(forResource: "sprites", withExtension: "", subdirectory: "Map")!
+        let glyphsURL = Bundle.main.url(forResource: "glyphs", withExtension: "", subdirectory: "Map")!
+
+        let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map")!
         let styleJSONURL = Bundle.main.url(forResource: "style", withExtension: "json", subdirectory: "Map")
-        let styleData = try! Data(contentsOf: styleJSONURL!)
-        var styleJSON = try! JSONSerialization.jsonObject(with: styleData, options: .allowFragments) as! [String: Any]
-        // maybe this? https://github.com/maplibre/maplibre-gl-native/issues/17#issuecomment-883869688
-        styleJSON["sources"] = [
-            "composite": [
-                "type": "vector",
-                "url": "mbtiles://\(mbtilesURL!.path)"
-            ]
-        ]
-        let outData = try! JSONSerialization.data(withJSONObject: styleJSON, options: [.prettyPrinted, .withoutEscapingSlashes, .sortedKeys])
+        let styleJSONString = try! String(contentsOf: styleJSONURL!)
+            .replacingOccurrences(of: "{{mbtiles_path}}", with: mbtilesURL.path)
+            .replacingOccurrences(of: "{{sprites_path}}", with: spritesURL.path)
+            .replacingOccurrences(of: "{{glyphs_path}}", with: glyphsURL.path)
         let outStyleURL = try! FileManager.default
             .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent("style.json")
-        try! outData.write(to: outStyleURL)
+        try! styleJSONString.write(to: outStyleURL, atomically: true, encoding: .utf8)
         print("wrote styleJSON to: \(outStyleURL.path)")
         self.styleURL = outStyleURL
         showsUserLocation = true
