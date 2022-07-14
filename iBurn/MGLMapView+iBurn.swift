@@ -18,27 +18,37 @@ extension MGLMapView {
     
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults() {
-        MGLLoggingConfiguration.shared.loggingLevel = .verbose
-        // FIXME: Clean this up big time
-        let spritesURL = Bundle.main.url(forResource: "sprites", withExtension: "", subdirectory: "Map")!
-        let glyphsURL = Bundle.main.url(forResource: "glyphs", withExtension: "", subdirectory: "Map")!
-
-        let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map")!
-        let styleJSONURL = Bundle.main.url(forResource: "style", withExtension: "json", subdirectory: "Map")
-        let styleJSONString = try! String(contentsOf: styleJSONURL!)
-            .replacingOccurrences(of: "{{mbtiles_path}}", with: mbtilesURL.path)
-            .replacingOccurrences(of: "{{sprites_path}}", with: spritesURL.path)
-            .replacingOccurrences(of: "{{glyphs_path}}", with: glyphsURL.path)
-        let outStyleURL = try! FileManager.default
-            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            .appendingPathComponent("style.json")
-        try! styleJSONString.write(to: outStyleURL, atomically: true, encoding: .utf8)
-        print("wrote styleJSON to: \(outStyleURL.path)")
-        self.styleURL = outStyleURL
+        guard let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map"),
+              let styleJSONURL = Bundle.main.url(forResource: "styles", withExtension: "", subdirectory: "Map")?.appendingPathComponent("iburn-2022.json") else {
+            print("Couldn't find mbtiles!")
+            return
+        }
+        do {
+            let styleJSONString = try String(contentsOf: styleJSONURL)
+                .replacingOccurrences(of: "{{mbtiles_path}}", with: mbtilesURL.path)
+            let outStyleURL = try FileManager.default
+                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                .appendingPathComponent("style.json")
+            try styleJSONString.write(to: outStyleURL, atomically: true, encoding: .utf8)
+            self.styleURL = outStyleURL
+        } catch {
+            print("Error loading map tiles! \(error)")
+        }
+        
         showsUserLocation = true
         minimumZoomLevel = 12
         backgroundColor = UIColor.brc_mapBackground
         translatesAutoresizingMaskIntoConstraints = false
         brc_moveToBlackRockCityCenter(animated: false)
+        
+        #if DEBUG
+        MGLLoggingConfiguration.shared.loggingLevel = .verbose
+        #endif
+//        debugMask = [
+//            MGLMapDebugMaskOptions.tileBoundariesMask,
+//            MGLMapDebugMaskOptions.tileInfoMask,
+//            MGLMapDebugMaskOptions.timestampsMask,
+//            MGLMapDebugMaskOptions.collisionBoxesMask,
+//        ]
     }
 }
