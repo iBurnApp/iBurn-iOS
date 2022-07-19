@@ -83,19 +83,31 @@ NSString * const kBRCEventArtEdgeName = @"art";
 }
 
 + (NSValueTransformer *)eventTypeJSONTransformer {
-    NSDictionary *transformDict = @{@"":     @(BRCEventTypeUnknown),
-                                    @"none": @(BRCEventTypeNone),
-                                    @"work": @(BRCEventTypeWorkshop),
-                                    @"perf": @(BRCEventTypePerformance),
-                                    @"care": @(BRCEventTypeSupport),
-                                    @"prty": @(BRCEventTypeParty),
-                                    @"cere": @(BRCEventTypeCeremony),
-                                    @"game": @(BRCEventTypeGame),
-                                    @"fire": @(BRCEventTypeFire),
-                                    @"adlt": @(BRCEventTypeAdult),
-                                    @"kid":  @(BRCEventTypeKid),
-                                    @"para": @(BRCEventTypeParade),
-                                    @"food": @(BRCEventTypeFood)};
+    NSDictionary *transformDict = @{
+        @"":     @(BRCEventTypeUnknown),
+        @"none": @(BRCEventTypeNone),
+        @"work": @(BRCEventTypeWorkshop),
+        @"perf": @(BRCEventTypePerformance),
+        @"care": @(BRCEventTypeSupport),
+        @"prty": @(BRCEventTypeParty),
+        @"cere": @(BRCEventTypeCeremony),
+        @"game": @(BRCEventTypeGame),
+        @"fire": @(BRCEventTypeFire),
+        @"adlt": @(BRCEventTypeAdult),
+        @"kid":  @(BRCEventTypeKid),
+        @"para": @(BRCEventTypeParade),
+        @"food": @(BRCEventTypeFood),
+        @"othr": @(BRCEventTypeOther),
+        @"arts": @(BRCEventTypeCrafts),
+        @"tea":  @(BRCEventTypeCoffee),
+        @"heal": @(BRCEventTypeHealing),
+        @"LGBT": @(BRCEventTypeLGBT),
+        @"live": @(BRCEventTypeLiveMusic),
+        @"RIDE": @(BRCEventTypeRIDE),
+        @"repr": @(BRCEventTypeRepair),
+        @"sust": @(BRCEventTypeSustainability),
+        @"yoga": @(BRCEventTypeMeditation),
+    };
     return [NSValueTransformer mtl_valueMappingTransformerWithDictionary:transformDict];
 }
 
@@ -187,32 +199,38 @@ NSString * const kBRCEventArtEdgeName = @"art";
 + (NSString *)stringForEventType:(BRCEventType)type
 {
     switch (type) {
+        case BRCEventTypeUnknown:
+            return @"🤷 Unknown";
+            break;
+        case BRCEventTypeNone:
+            return @"🤷 Unknown";
+            break;
         case BRCEventTypeWorkshop:
-            return @"🔨 Workshop";
+            return @"🧑‍🏫 Class/Workshop";
             break;
         case BRCEventTypePerformance:
             return @"💃 Performance";
             break;
         case BRCEventTypeSupport:
-            return @"🏥 Support";
+            return @"🏥 Care/Support";
             break;
         case BRCEventTypeParty:
-            return @"🍺 Party";
+            return @"🍺 Gathering/Party";
             break;
         case BRCEventTypeCeremony:
-            return @"🌜Ceremony";
+            return @"🌜 Ritual/Ceremony";
             break;
         case BRCEventTypeGame:
-            return @"🎲 Game";
+            return @"🎲 Games";
             break;
         case BRCEventTypeFire:
-            return @"🔥 Fire";
+            return @"🔥 Fire/Spectacle";
             break;
         case BRCEventTypeAdult:
-            return @"💋 Adult";
+            return @"💋 Mature Audiences";
             break;
         case BRCEventTypeKid:
-            return @"👨‍👩‍👧‍👦 Kid";
+            return @"👨‍👩‍👧‍👦 Kid-friendly";
             break;
         case BRCEventTypeParade:
             return @"🎉 Parade";
@@ -220,8 +238,35 @@ NSString * const kBRCEventArtEdgeName = @"art";
         case BRCEventTypeFood:
             return @"🍔 Food";
             break;
-        default:
-            return @"";
+        case BRCEventTypeCrafts:
+            return @"🎨 Arts/Crafts/Making";
+            break;
+        case BRCEventTypeCoffee:
+            return @"☕️ Coffee/Tea";
+            break;
+        case BRCEventTypeHealing:
+            return @"💆 Healing/Massage/Spa";
+            break;
+        case BRCEventTypeLGBT:
+            return @"🏳️‍🌈 LGBTQIA2S+";
+            break;
+        case BRCEventTypeLiveMusic:
+            return @"🎺 Live Music";
+            break;
+        case BRCEventTypeRIDE:
+            return @"🌈 Radical Inclusion, Diversity and Equity";
+            break;
+        case BRCEventTypeRepair:
+            return @"🔨 Repair";
+            break;
+        case BRCEventTypeSustainability:
+            return @"♻️ Sustainability/Greening Your Burn";
+            break;
+        case BRCEventTypeMeditation:
+            return @"🧘 Meditation/Movement/Yoga";
+            break;
+        case BRCEventTypeOther:
+            return @"🤷 Other";
             break;
     }
 }

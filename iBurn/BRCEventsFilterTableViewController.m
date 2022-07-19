@@ -91,17 +91,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     self.showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     
     //All the event types to select from
-    NSArray *eventTypes = @[@(BRCEventTypeWorkshop),
-                            @(BRCEventTypePerformance),
-                            @(BRCEventTypeSupport),
-                            @(BRCEventTypeParty),
-                            @(BRCEventTypeCeremony),
-                            @(BRCEventTypeGame),
-                            @(BRCEventTypeFire),
-                            @(BRCEventTypeAdult),
-                            @(BRCEventTypeKid),
-                            @(BRCEventTypeParade),
-                            @(BRCEventTypeFood)];
+    NSArray *eventTypes = BRCEventObject.allVisibleEventTypes;
     
     NSMutableArray *eventTypeMutableArray = [NSMutableArray new];
     

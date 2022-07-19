@@ -122,6 +122,26 @@ extension BRCImageColors {
             return support
         case .workshop:
             return workshop
+        case .crafts:
+            return plain
+        case .coffee:
+            return plain
+        case .healing:
+            return plain
+        case .LGBT:
+            return plain
+        case .liveMusic:
+            return plain
+        case .RIDE:
+            return plain
+        case .repair:
+            return plain
+        case .sustainability:
+            return plain
+        case .meditation:
+            return plain
+        case .other:
+            return plain
         @unknown default:
             return plain
         }

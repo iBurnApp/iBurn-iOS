@@ -24,7 +24,17 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeAdult,
     BRCEventTypeKid,
     BRCEventTypeParade,
-    BRCEventTypeFood
+    BRCEventTypeOther,
+    BRCEventTypeFood,
+    BRCEventTypeCrafts,
+    BRCEventTypeCoffee,
+    BRCEventTypeHealing,
+    BRCEventTypeLGBT,
+    BRCEventTypeLiveMusic,
+    BRCEventTypeRIDE,
+    BRCEventTypeRepair,
+    BRCEventTypeSustainability,
+    BRCEventTypeMeditation,
 };
 
 NS_ASSUME_NONNULL_BEGIN
