@@ -64,9 +64,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     fileLogger.doNotReuseLogFiles = YES;
     [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
-    
-    [BRCDataImporter copyBundledTilesIfNeeded];
-    
+        
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
     
 //    [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
@@ -81,9 +79,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Can we set a better interval?
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
-    
-    [self.dataImporter doubleCheckMapTiles:nil];
-    
+        
     [BRCDatabaseManager.shared.backgroundReadConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject yapCollection]];
         NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject yapCollection]];

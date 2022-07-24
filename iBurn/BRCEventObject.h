@@ -72,6 +72,11 @@ extern NSString * const kBRCEventArtEdgeName;
  */
 @property (nonatomic, readonly) BOOL checkLocation;
 
+/**
+ *  Free form text entry for events hosted in weird places
+ */
+@property (nonatomic, strong, readonly, nullable) NSString *otherLocation;
+
 - (NSTimeInterval)timeIntervalUntilStart:(NSDate*)currentDate;
 - (NSTimeInterval)timeIntervalUntilEnd:(NSDate*)currentDate;
 

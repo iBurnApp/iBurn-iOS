@@ -89,6 +89,15 @@ extension BRCImageColors {
                                           detailColor: .lightGray)
     
     @objc public static func colors(for eventType: BRCEventType) -> BRCImageColors {
+        switch Appearance.theme {
+        case .light:
+            return plain
+        case .dark:
+            return plainDark
+        }
+    }
+    
+    @objc public static func oldColors(for eventType: BRCEventType) -> BRCImageColors {
         guard Appearance.contrast == .colorful else {
             switch Appearance.theme {
             case .light:

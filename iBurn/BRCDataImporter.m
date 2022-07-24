@@ -156,7 +156,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             // check tiles for errors
             if (oldUpdateInfo.dataType == BRCUpdateDataTypeTiles) {
                 oldUpdateInfo = [oldUpdateInfo copy];
-                [self doubleCheckMapTiles:oldUpdateInfo];
             }
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
             if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus != BRCUpdateFetchStatusFailed) {

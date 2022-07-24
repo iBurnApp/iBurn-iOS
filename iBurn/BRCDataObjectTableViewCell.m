@@ -43,7 +43,14 @@
     if (!playaLocation.length) {
         playaLocation = dataObject.burnerMapLocationString;
         if (!playaLocation.length) {
-            playaLocation = @"Location Unknown";
+            if ([dataObject isKindOfClass:BRCEventObject.class]) {
+                BRCEventObject *event = (BRCEventObject*)dataObject;
+                if (event.otherLocation.length > 0) {
+                    playaLocation = @"Other Location";
+                }
+            } else {
+                playaLocation = @"Location Unknown";
+            }
         }
     }
     if ([BRCEmbargo canShowLocationForObject:dataObject]) {

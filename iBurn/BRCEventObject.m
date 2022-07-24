@@ -76,6 +76,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(title)): @"title",
                                NSStringFromSelector(@selector(checkLocation)): @"check_location",
+                               NSStringFromSelector(@selector(otherLocation)): @"other_location",
                                NSStringFromSelector(@selector(hostedByCampUniqueID)): @"hosted_by_camp",
                                NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art",
                                NSStringFromSelector(@selector(eventType)): @"event_type.abbr"};
@@ -215,10 +216,10 @@ NSString * const kBRCEventArtEdgeName = @"art";
             return @"🏥 Care/Support";
             break;
         case BRCEventTypeParty:
-            return @"🍺 Gathering/Party";
+            return @"🎉 Gathering/Party";
             break;
         case BRCEventTypeCeremony:
-            return @"🌜 Ritual/Ceremony";
+            return @"🔮 Ritual/Ceremony";
             break;
         case BRCEventTypeGame:
             return @"🎲 Games";
@@ -233,7 +234,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
             return @"👨‍👩‍👧‍👦 Kid-friendly";
             break;
         case BRCEventTypeParade:
-            return @"🎉 Parade";
+            return @"🎏 Parade";
             break;
         case BRCEventTypeFood:
             return @"🍔 Food";
@@ -248,13 +249,13 @@ NSString * const kBRCEventArtEdgeName = @"art";
             return @"💆 Healing/Massage/Spa";
             break;
         case BRCEventTypeLGBT:
-            return @"🏳️‍🌈 LGBTQIA2S+";
+            return @"🌈 LGBTQIA2S+";
             break;
         case BRCEventTypeLiveMusic:
             return @"🎺 Live Music";
             break;
         case BRCEventTypeRIDE:
-            return @"🌈 Radical Inclusion, Diversity and Equity";
+            return @"💗 Radical Inclusion, Diversity and Equity";
             break;
         case BRCEventTypeRepair:
             return @"🔨 Repair";

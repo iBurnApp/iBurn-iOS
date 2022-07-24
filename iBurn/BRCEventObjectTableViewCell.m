@@ -95,6 +95,9 @@
     } else if (art) {
         host = art;
         hostName = art.title;
+    } else {
+        host = eventObject;
+        hostName = eventObject.otherLocation;
     }
     self.hostLabel.text = hostName;
     
