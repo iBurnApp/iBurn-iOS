@@ -126,6 +126,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         unlockVC.dismissAction = {
             unlockVC.dismiss(animated: true, completion: nil)
         }
+        unlockVC.modalPresentationStyle = .fullScreen
         present(unlockVC, animated: true, completion: nil)
     }
 
@@ -166,6 +167,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         onboardingVC = BRCOnboardingViewController(completion: { () -> Void in
             onboardingVC!.dismiss(animated: true, completion: nil)
         })
+        onboardingVC?.modalPresentationStyle = .fullScreen
         present(onboardingVC!, animated: true, completion: nil)
     }
     
