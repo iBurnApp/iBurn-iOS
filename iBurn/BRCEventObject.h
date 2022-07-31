@@ -124,10 +124,6 @@ extern NSString * const kBRCEventArtEdgeName;
  */
 - (UIImage *)markerImageForEventStatus:(NSDate*)currentDate;
 
-/** convert BRCEventType to display string */
-+ (NSString *)stringForEventType:(BRCEventType)type;
-
-
 /** Updates calendar entry. Note: this will also re-save the object. */
 - (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction;
 
