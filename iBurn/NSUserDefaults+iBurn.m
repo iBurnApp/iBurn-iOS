@@ -11,43 +11,15 @@
 static NSString *const kBRCSelectedEventsTypesKey    = @"kBRCSelectedEventsTypesKey";
 static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKey";
 static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
-static NSString *const kBRCEntered2019EmbargoPasscodeKey = @"kBRCEntered2019EmbargoPasscodeKey";
+static NSString *const kBRCEntered2022EmbargoPasscodeKey = @"kBRCEntered2022EmbargoPasscodeKey";
 static NSString *const kBRCHasViewedOnboardingKey = @"kBRCHasViewedOnboardingKey";
 static NSString *const kBRCShowAllDayEventsKey = @"kBRCShowAllDayEventsKey";
 
-NSString *const kBRCGateUnlockNotificationKey = @"kBRCGateUnlockNotificationKey";
 NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 
 
 @implementation NSUserDefaults (iBurn)
 @dynamic showAllDayEvents;
-
-- (UILocalNotification*) scheduledLocalNotificationForGateUnlock {
-    NSData *localNotificationData = [self objectForKey:kBRCGateUnlockNotificationKey];
-    if (localNotificationData) {
-        UILocalNotification *localNotification = [NSKeyedUnarchiver unarchiveObjectWithData:localNotificationData];
-        return localNotification;
-    }
-    return nil;
-}
-
-- (void) scheduleLocalNotificationForGateUnlock:(UILocalNotification*)localNotification {
-    UILocalNotification *existingNotification = [self scheduledLocalNotificationForGateUnlock];
-    if (existingNotification) {
-        [[UIApplication sharedApplication] cancelLocalNotification:existingNotification];
-        [self removeObjectForKey:kBRCGateUnlockNotificationKey];
-    }
-    if (localNotification) {
-        [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
-        NSData *localNotificationData = [NSKeyedArchiver archivedDataWithRootObject:localNotification];
-        [self setObject:localNotificationData forKey:kBRCGateUnlockNotificationKey];
-    } else {
-        [self removeObjectForKey:kBRCGateUnlockNotificationKey];
-    }
-    [self synchronize];
-}
-
-
 
 - (NSArray *)selectedEventTypes
 {
@@ -75,7 +47,11 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 }
 
 - (void) setRecentLocation:(CLLocation *)recentLocation {
-    NSData *locationData = [NSKeyedArchiver archivedDataWithRootObject:recentLocation];
+    NSError *error = nil;
+    NSData *locationData = [NSKeyedArchiver archivedDataWithRootObject:recentLocation requiringSecureCoding:YES error:&error];
+    if (error) {
+        NSLog(@"Error serializing location: %@", error);
+    }
     [self setObject:locationData forKey:kBRCRecentLocationKey];
     [self synchronize];
 }
@@ -85,18 +61,22 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
     if (!locationData) {
         return nil;
     }
-    CLLocation *location = [NSKeyedUnarchiver unarchiveObjectWithData:locationData];
+    NSError *error = nil;
+    CLLocation *location = [NSKeyedUnarchiver unarchivedObjectOfClass:CLLocation.class fromData:locationData error:&error];
+    if (error) {
+        NSLog(@"Error deserializing location: %@", error);
+    }
     return location;
 }
 
 - (BOOL)enteredEmbargoPasscode
 {
-    return [self boolForKey:kBRCEntered2019EmbargoPasscodeKey];
+    return [self boolForKey:kBRCEntered2022EmbargoPasscodeKey];
 }
 
 - (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode
 {
-    [self setBool:enteredEmbargoPasscode forKey:kBRCEntered2019EmbargoPasscodeKey];
+    [self setBool:enteredEmbargoPasscode forKey:kBRCEntered2022EmbargoPasscodeKey];
     [self synchronize];
 }
 
