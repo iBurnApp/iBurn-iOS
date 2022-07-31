@@ -130,6 +130,11 @@ private extension EventListViewController {
     @objc func filterButtonPressed(_ sender: Any) {
         let filterVC = BRCEventsFilterTableViewController(delegate: self)
         let nav = NavigationController(rootViewController: filterVC)
+        // this is needed to fix a crash on iOS 16 beta 4
+        // [<_UISheetActiveDetent 0x600001391140> valueForUndefinedKey:]: this class is not key value coding-compliant for the key _type.
+        if #available(iOS 16.0, *) {
+            nav.modalPresentationStyle = .fullScreen
+        }
         present(nav, animated: true, completion: nil)
     }
     
