@@ -62,6 +62,8 @@
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
 		D962BFFC22D294A300637D8F /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D962BFFB22D294A300637D8F /* bundle.js */; };
+		D966561428A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D966561528A9970B002FA471 /* FirebaseCrashlytics */; };
 		D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */; };
 		D969E5AF21100B9200FF6700 /* Storyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AE21100B9200FF6700 /* Storyboard.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
@@ -527,7 +529,9 @@
 				D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */,
 				63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */,
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
+				D966561428A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
+				D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */,
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				D9592D522858560B00C90542 /* Mapbox in Frameworks */,
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
@@ -1153,6 +1157,8 @@
 			name = iBurn;
 			packageProductDependencies = (
 				D9592D512858560B00C90542 /* Mapbox */,
+				D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */,
+				D966561528A9970B002FA471 /* FirebaseCrashlytics */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -1245,6 +1251,7 @@
 			mainGroup = 63CE2A4B1987140F00F65B01;
 			packageReferences = (
 				D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
+				D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
 			projectDirPath = "";
@@ -1432,7 +1439,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
 		E9C3145650DF2A650019858A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1976,6 +1983,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1983,6 +1998,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
 			productName = Mapbox;
+		};
+		D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		D966561528A9970B002FA471 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
