@@ -28,7 +28,7 @@ static NSString * const RTreeMinLon = @"RTreeMinLon";
 static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
 NSString * const kBRCDatabaseName = @"iBurn-2022.sqlite";
-static NSString * const kBRCDatabaseFolderName = @"iBurn-2022";
+NSString * const kBRCDatabaseFolderName = @"iBurn-2022";
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
@@ -73,7 +73,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         return nil;
     }
     if (![[self class] existsDatabaseWithName:databaseName]) {
-        BOOL copySuccessful = [[self class] copyDatabaseFromBundle];
+        BOOL copySuccessful = [BRCDataImporter copyDatabaseFromBundle];
         if (!copySuccessful) {
             NSLog(@"DB copy from bundle unsuccessful!");
         }
@@ -120,33 +120,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     } else {
         return nil;
     }
-}
-
-+ (BOOL)copyDatabaseFromBundle
-{
-    /// copy database iburn-database.zip -> Application Support -> iBurn -> iBurn-2015.sqlite/-shm/-wal
-    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:kBRCDatabaseFolderName];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:bundlePath]) {
-        return NO;
-    }
-    
-    NSString *databaseDirectory = [[self class] yapDatabaseDirectory];
-    
-    NSString *containingDirectory = [databaseDirectory stringByDeletingLastPathComponent];
-    
-    NSError *error = nil;
-    if (![[NSFileManager defaultManager] fileExistsAtPath:containingDirectory]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:containingDirectory withIntermediateDirectories:YES attributes:nil error:&error];
-        if (error) {
-            return NO;
-        }
-    }
-    
-    [[NSFileManager defaultManager] copyItemAtPath:bundlePath toPath:databaseDirectory error:&error];
-    if (error) {
-        return NO;
-    }
-    return YES;
 }
 
  + (BOOL)existsDatabaseWithName:(NSString *)databaseName

@@ -64,6 +64,8 @@
 		D962BFFC22D294A300637D8F /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D962BFFB22D294A300637D8F /* bundle.js */; };
 		D966561428A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D966561528A9970B002FA471 /* FirebaseCrashlytics */; };
+		D966562928A9B86F002FA471 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = D966562828A9B86E002FA471 /* Zip */; };
+		D966562B28A9B9FF002FA471 /* iBurn-2022.zip in Resources */ = {isa = PBXBuildFile; fileRef = D966562A28A9B9FF002FA471 /* iBurn-2022.zip */; };
 		D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */; };
 		D969E5AF21100B9200FF6700 /* Storyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AE21100B9200FF6700 /* Storyboard.swift */; };
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
@@ -374,6 +376,7 @@
 		D962C00122D294DD00637D8F /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2019/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D962C00322D294EF00637D8F /* 2019 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2019; path = "Submodules/iBurn-Data/data/2019/2019"; sourceTree = SOURCE_ROOT; };
 		D965BFE41F2EB6E700D496FF /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2017/MediaFiles"; sourceTree = SOURCE_ROOT; };
+		D966562A28A9B9FF002FA471 /* iBurn-2022.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = "iBurn-2022.zip"; path = "Submodules/iBurn-Data/data/2022/iBurn-2022.zip"; sourceTree = SOURCE_ROOT; };
 		D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 		D969E5AE21100B9200FF6700 /* Storyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storyboard.swift; sourceTree = "<group>"; };
 		D972BD2319934037008057DB /* iBurn-database */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iBurn-database"; sourceTree = "<group>"; };
@@ -522,6 +525,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D966562928A9B86F002FA471 /* Zip in Frameworks */,
 				D9D12F621B5AF5070048229A /* Social.framework in Frameworks */,
 				D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */,
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
@@ -955,6 +959,7 @@
 		D9903DC1287D0B6100578B18 /* 2022 */ = {
 			isa = PBXGroup;
 			children = (
+				D966562A28A9B9FF002FA471 /* iBurn-2022.zip */,
 				D9903DCB287D0BA800578B18 /* MediaFiles */,
 				D9903DC9287D0BA100578B18 /* Map */,
 				D9903DC7287D0B8700578B18 /* APIData */,
@@ -1159,6 +1164,7 @@
 				D9592D512858560B00C90542 /* Mapbox */,
 				D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				D966561528A9970B002FA471 /* FirebaseCrashlytics */,
+				D966562828A9B86E002FA471 /* Zip */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -1252,6 +1258,7 @@
 			packageReferences = (
 				D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 				D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */,
 			);
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
 			projectDirPath = "";
@@ -1336,6 +1343,7 @@
 				D962BFFC22D294A300637D8F /* bundle.js in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */,
+				D966562B28A9B9FF002FA471 /* iBurn-2022.zip in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9903DCC287D0BA800578B18 /* MediaFiles in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
@@ -1427,6 +1435,7 @@
 		};
 		D907AD6821215F20004A255A /* Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -1991,6 +2000,14 @@
 				minimumVersion = 9.0.0;
 			};
 		};
+		D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/Zip.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -2008,6 +2025,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCrashlytics;
+		};
+		D966562828A9B86E002FA471 /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */;
+			productName = Zip;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
