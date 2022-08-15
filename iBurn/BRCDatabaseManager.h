@@ -35,9 +35,6 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 /** Check to see if a file exists at the correct path */
 + (BOOL)existsDatabaseWithName:(NSString *)databaseName;
 
-/** move pre-polulated database from bundle to correct directory of the same name */
-+ (BOOL)copyDatabaseFromBundle;
-
 - (instancetype) initWithDatabaseName:(NSString*)databaseName;
 
 /** Default database */
