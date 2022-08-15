@@ -11,11 +11,10 @@ import Foundation
 
 class AppearanceViewController: UITableViewController {
     
-    enum CellTag: Int {
-        case light = 1,
-        dark = 2,
-        colorful = 3,
-        highContrast = 4
+    enum CellTag: Int, CaseIterable {
+        case system
+        case light
+        case dark
         
         var theme: AppTheme? {
             switch self {
@@ -23,19 +22,8 @@ class AppearanceViewController: UITableViewController {
                 return .light
             case .dark:
                 return .dark
-            default:
-                return nil
-            }
-        }
-        
-        var contrast: AppColors? {
-            switch self {
-            case .colorful:
-                return .colorful
-            case .highContrast:
-                return .highContrast
-            default:
-                return nil
+            case .system:
+                return .system
             }
         }
     }
@@ -64,10 +52,8 @@ class AppearanceViewController: UITableViewController {
             toggled = Appearance.theme == .light
         case .dark:
             toggled = Appearance.theme == .dark
-        case .colorful:
-            toggled = Appearance.contrast == .colorful
-        case .highContrast:
-            toggled = Appearance.contrast == .highContrast
+        case .system:
+            toggled = Appearance.theme == .system
         }
         if toggled {
             cell.accessoryType = .checkmark
@@ -83,25 +69,35 @@ class AppearanceViewController: UITableViewController {
             return
         }
         switch cellTag {
-        case .light, .dark:
+        case .light, .dark, .system:
             guard let theme = cellTag.theme else { return }
             Appearance.theme = theme
-        case .colorful, .highContrast:
-            guard let contrast = cellTag.contrast else { return }
-            Appearance.contrast = contrast
         }
         tableView.reloadData()
         refreshTheme()
     }
-    
+}
+
+extension AppearanceViewController {
     func refreshTheme() {
+        tableView.setColorTheme(Appearance.currentColors, animated: false)
+        refreshGlobalTheme()
+    }
+}
+
+protocol ThemeRefreshable: UIViewController {
+    func refreshGlobalTheme()
+}
+
+extension ThemeRefreshable {
+    func refreshGlobalTheme() {
         tabBarController?.tabBar.setColorTheme(Appearance.currentColors, animated: false)
         navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: false)
-        tableView.setColorTheme(Appearance.currentColors, animated: false)
         setNeedsStatusBarAppearanceUpdate()
     }
-
 }
+
+extension AppearanceViewController: ThemeRefreshable {}
 
 extension AppearanceViewController: StoryboardRepresentable {
     static func fromStoryboard() -> UIViewController {

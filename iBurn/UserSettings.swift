@@ -64,7 +64,7 @@ public final class UserSettings: NSObject {
         }
         get {
             let rawValue = UserDefaults.standard.integer(forKey: Keys.theme)
-            return AppTheme(rawValue: rawValue) ?? .light
+            return AppTheme(rawValue: rawValue) ?? .system
         }
     }
     

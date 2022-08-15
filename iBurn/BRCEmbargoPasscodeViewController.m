@@ -42,7 +42,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
+    BRCImageColors *colors = Appearance.currentColors;
+    self.view.backgroundColor = colors.backgroundColor;
     self.didAddConstraints = NO;
     
     self.containerView = [[UIView alloc] initForAutoLayout];
@@ -52,19 +53,27 @@
     [self.noPasscodeButton addTarget:self action:@selector(nopasscodeButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.noPasscodeButton setTitle:@"Skip" forState:UIControlStateNormal];
     self.noPasscodeButton.titleLabel.font = [UIFont systemFontOfSize:18];
+    self.noPasscodeButton.titleLabel.textColor = colors.primaryColor;
 
     self.unlockBotton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     self.unlockBotton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.unlockBotton addTarget:self action:@selector(unlockButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.unlockBotton setTitle:@"Unlock" forState:UIControlStateNormal];
     self.unlockBotton.titleLabel.font = [UIFont boldSystemFontOfSize:18];
+    self.unlockBotton.titleLabel.textColor = colors.primaryColor;
     
     self.socialButtonsView = [[BRCSocialButtonsView alloc] initWithFrame:CGRectZero];
+    typeof(self) __weak weakSelf = self;
+    self.socialButtonsView.buttonPressed = ^(NSURL * _Nonnull url) {
+        typeof(self) strongSelf = weakSelf;
+        [WebViewHelper presentWebViewWithUrl:url from:strongSelf];
+    };
     
     self.descriptionLabel = [[UILabel alloc] initForAutoLayout];
-    self.descriptionLabel.text = @"Camp locations are restricted until the gates open due to BMorg regulations. The passcode will be released to the public at 12am on Sunday 8/27. Don't worry, the app will automatically unlock itself once you're there. Please don't ask us for the code in advance.\n\nFollow @iBurnApp on Twitter or Facebook for this year's passcode, or ask a Black Rock Ranger, Playa Info or Burning Man Staffer.";
+    self.descriptionLabel.text = @"Location data is restricted until gates open due to an embargo imposed by the Burning Man organization. The app will automatically unlock itself after gates open at 12:01am Sunday and you're on playa. \n\nWe will post the passcode publicly after gates open. Please do not ask us for the passcode, thanks!";
     self.descriptionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:16];
     self.descriptionLabel.numberOfLines = 0;
+    self.descriptionLabel.textColor = colors.primaryColor;
     
     self.passcodeTextField = [[UITextField alloc] initForAutoLayout];
     self.passcodeTextField.secureTextEntry = YES;
@@ -72,12 +81,19 @@
     self.passcodeTextField.borderStyle = UITextBorderStyleRoundedRect;
     self.passcodeTextField.returnKeyType = UIReturnKeyDone;
     self.passcodeTextField.delegate = self;
-    self.passcodeTextField.placeholder = @"Passcode";
-    
+    self.passcodeTextField.textColor = colors.primaryColor;
+    self.passcodeTextField.backgroundColor = colors.backgroundColor;
+    self.passcodeTextField.attributedPlaceholder = [[NSAttributedString alloc]
+                                                    initWithString:@"Passcode"
+                                                    attributes:@{
+        NSForegroundColorAttributeName: colors.secondaryColor
+    }];
     self.countdownLabel = [[UILabel alloc] initForAutoLayout];
     self.countdownLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self.countdownLabel.textAlignment = NSTextAlignmentCenter;
     self.countdownLabel.numberOfLines = 0;
+    self.countdownLabel.textColor = colors.primaryColor;
+
     self.timerFormatter = [[TTTTimeIntervalFormatter alloc] init];
     
     self.countdownTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(refreshCountdownLabel:) userInfo:nil repeats:YES];

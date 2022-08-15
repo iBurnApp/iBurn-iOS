@@ -45,6 +45,17 @@ import UIKit
             case .highContrast:
                 colors = .plainDark
             }
+        case .system:
+            switch UIScreen.main.traitCollection.userInterfaceStyle {
+            case .unspecified:
+                colors = .dark
+            case .light:
+                colors = .light
+            case .dark:
+                colors = .dark
+            @unknown default:
+                colors = .dark
+            }
         }
         return colors
     }
@@ -56,6 +67,8 @@ import UIKit
             barStyle = .default
         case .dark:
             barStyle = .black
+        case .system:
+            barStyle = .default
         }
         return barStyle
     }
@@ -85,6 +98,15 @@ import UIKit
     
     private func setGlobalAppearance() {
         let colors = Appearance.currentColors
+        
+        let coloredAppearance = UINavigationBarAppearance()
+        coloredAppearance.configureWithOpaqueBackground()
+        coloredAppearance.backgroundColor = colors.backgroundColor
+        coloredAppearance.titleTextAttributes = [.foregroundColor: colors.secondaryColor]
+        coloredAppearance.largeTitleTextAttributes = [.foregroundColor: colors.secondaryColor]
+               
+        UINavigationBar.appearance().standardAppearance = coloredAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = coloredAppearance
 
         UINavigationBar.appearance().backgroundColor = colors.backgroundColor
         UINavigationBar.appearance().tintColor = colors.secondaryColor
@@ -103,6 +125,7 @@ import UIKit
 @objc public enum AppTheme: Int {
     case light
     case dark
+    case system
 }
 
 @objc public enum AppColors: Int {
@@ -117,6 +140,8 @@ import UIKit
             return .lightContent
         case .light:
             return .default
+        case .system:
+            return super.preferredStatusBarStyle
         }
     }
 }

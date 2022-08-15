@@ -79,6 +79,12 @@
     }
 }
 
+- (void) traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    BRCImageColors *colors = Appearance.currentColors;
+    [self setColorTheme:colors animated:NO];
+}
+
 + (NSString*) cellIdentifier {
     return NSStringFromClass(self.class);
 }

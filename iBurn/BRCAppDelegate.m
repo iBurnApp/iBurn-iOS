@@ -234,7 +234,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     moreVC.title = @"More";
     moreVC.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
     
-    self.tabBarController = [[UITabBarController alloc] init];
+    self.tabBarController = [[TabController alloc] init];
     
     self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreVC];
     

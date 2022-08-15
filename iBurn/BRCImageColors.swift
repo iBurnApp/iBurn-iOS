@@ -94,18 +94,21 @@ extension BRCImageColors {
             return plain
         case .dark:
             return plainDark
-        }
-    }
-    
-    @objc public static func oldColors(for eventType: BRCEventType) -> BRCImageColors {
-        guard Appearance.contrast == .colorful else {
-            switch Appearance.theme {
+        case .system:
+            switch UIScreen.main.traitCollection.userInterfaceStyle {
+            case .unspecified:
+                return plainDark
             case .light:
                 return plain
             case .dark:
                 return plainDark
+            @unknown default:
+                return plainDark
             }
         }
+    }
+    
+    @objc public static func oldColors(for eventType: BRCEventType) -> BRCImageColors {
         switch eventType {
         case .adult:
             return adult

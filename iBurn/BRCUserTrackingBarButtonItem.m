@@ -110,7 +110,7 @@ typedef enum : NSUInteger {
     
     [self.customView addSubview:_buttonImageView];
     
-    _activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:(RMPreVersion7 ? UIActivityIndicatorViewStyleWhite : UIActivityIndicatorViewStyleGray)];
+    _activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleMedium];
     _activityView.hidesWhenStopped = YES;
     _activityView.center = self.customView.center;
     _activityView.userInteractionEnabled = NO;

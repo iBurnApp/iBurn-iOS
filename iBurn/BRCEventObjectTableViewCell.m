@@ -59,9 +59,6 @@
     }
     self.eventTypeLabel.text = eventType;
     [self setupLocationLabelFromEvent:eventObject];
-    
-    BRCImageColors *colors = [BRCImageColors colorsFor:eventObject.eventType];
-    [self setColorTheme:colors animated:NO];
 }
 
 - (NSString*) defaultEventText:(BRCEventObject*)eventObject {

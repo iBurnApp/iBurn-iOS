@@ -13,12 +13,13 @@
 @class FavoritesViewController;
 @class MainMapViewController;
 @class EventListViewController;
+@class TabController;
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-@property (nonatomic, strong) UITabBarController *tabBarController;
+@property (nonatomic, strong) TabController *tabBarController;
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
 

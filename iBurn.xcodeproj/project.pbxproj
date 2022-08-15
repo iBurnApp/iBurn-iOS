@@ -136,6 +136,7 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */; };
+		D9D8C4FA28A9FF09009DDBE7 /* TabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9D8C4F928A9FF09009DDBE7 /* TabController.swift */; };
 		D9DE7BB01EF25C11007A983E /* MainMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BAF1EF25C11007A983E /* MainMapViewController.swift */; };
 		D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */; };
 		D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE9E181F39966700906F64 /* ColorCache.swift */; };
@@ -481,6 +482,7 @@
 		D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		D9D12F611B5AF5070048229A /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		D9D42BFC1D59439C0002AC96 /* BRCMediaDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCMediaDownloader.swift; sourceTree = "<group>"; };
+		D9D8C4F928A9FF09009DDBE7 /* TabController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabController.swift; sourceTree = "<group>"; };
 		D9DE7BAF1EF25C11007A983E /* MainMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMapViewController.swift; sourceTree = "<group>"; };
 		D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarButtonsView.swift; sourceTree = "<group>"; };
 		D9DE9E181F39966700906F64 /* ColorCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCache.swift; sourceTree = "<group>"; };
@@ -663,6 +665,7 @@
 				D979CEC7199AF11E007F0313 /* Categories */,
 				D994157B1987278400D245C7 /* Data */,
 				D9CC7E0920806FA600A6E502 /* AppDelegate.swift */,
+				D9D8C4F928A9FF09009DDBE7 /* TabController.swift */,
 				63CE2A661987140F00F65B01 /* BRCAppDelegate.h */,
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
 				63D270F61987157900204954 /* ViewControllers */,
@@ -1529,6 +1532,7 @@
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
 				D9774B1C2118DEE200BE3CC8 /* MapListViewController.swift in Sources */,
 				D9DE9E191F39966700906F64 /* ColorCache.swift in Sources */,
+				D9D8C4FA28A9FF09009DDBE7 /* TabController.swift in Sources */,
 				D984DFD5210EC84200A45922 /* DataObject.swift in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */,
 				D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */,
@@ -1779,7 +1783,7 @@
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				INFOPLIST_PREFIX_HEADER = iBurn/InfoPlistSecrets.h;
 				INFOPLIST_PREPROCESS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1814,7 +1818,7 @@
 				INFOPLIST_FILE = "iBurn/iBurn-Info.plist";
 				INFOPLIST_PREFIX_HEADER = iBurn/InfoPlistSecrets.h;
 				INFOPLIST_PREPROCESS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

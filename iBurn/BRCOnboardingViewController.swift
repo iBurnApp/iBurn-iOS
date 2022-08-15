@@ -18,13 +18,13 @@ import Onboard
     
     /** Returns newly configured onboarding view */
     @objc init(completion completionBlock: @escaping () -> ()) {
-        let firstPage = OnboardingContentViewController.content(withTitle: "Welcome to iBurn", body: "\nLet's get started!", image: nil, buttonText: "📍 Enable Location", action: {
+        let firstPage = OnboardingContentViewController.content(withTitle: "Welcome to iBurn", body: "\nLet's get started!", image: nil, buttonText: "📍 Continue with Location", action: {
             BRCPermissions.promptForLocation({
                 print("BRCPermissions promptForLocation")
             })
         })
         firstPage.movesToNextViewController = true
-        let secondPage = OnboardingContentViewController.content(withTitle: "Reminders", body: "When you favorite events we can remind you about them later.", image: nil, buttonText: "⏰ Enable Notifications", action: {
+        let secondPage = OnboardingContentViewController.content(withTitle: "Reminders", body: "When you favorite events we can remind you about them later.", image: nil, buttonText: "⏰ Continue with Notifications", action: {
             BRCPermissions.promptForPush({
                 print("BRCPermissions promptForPush")
             })

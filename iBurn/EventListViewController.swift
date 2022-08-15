@@ -29,7 +29,7 @@ public class EventListViewController: UIViewController {
         }
     }
     private var dayObserver: NSKeyValueObservation?
-    private var loadingIndicator = UIActivityIndicatorView(style: .gray)
+    private var loadingIndicator = UIActivityIndicatorView(style: .medium)
     
     // MARK: - Init
     
@@ -73,6 +73,12 @@ public class EventListViewController: UIViewController {
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         searchDidAppear()
+    }
+    
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        refreshNavigationBarColors(false)
+        dayPicker.setColorTheme(Appearance.currentColors, animated: false)
     }
 }
 
