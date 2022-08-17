@@ -26,8 +26,8 @@ public class MapViewAdapter: NSObject {
     public var dataSource: AnnotationDataSource?
     public weak var parent: UIViewController?
 
-    /// key is annotation
-    var annotationViews: [AnyHashable: MGLAnnotationView] = [:]
+    /// key is annotation ObjectIdentifier
+    var annotationViews: [ObjectIdentifier: MGLAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
     /// annotations that this class owns and have been added to this mapview
     private var annotations: [MGLAnnotation] = []
@@ -128,9 +128,9 @@ extension MapViewAdapter: MGLMapViewDelegate {
             annotationView = labelAnnotationView
         }
         
-        if let annotation = annotation as? AnyHashable,
-            let annotationView = annotationView {
-            annotationViews[annotation] = annotationView
+        if let annotationView = annotationView {
+            let identifier = ObjectIdentifier(annotation)
+            annotationViews[identifier] = annotationView
         }
 
         return annotationView

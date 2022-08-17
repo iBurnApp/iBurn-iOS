@@ -123,9 +123,9 @@ import UIKit
 
 
 @objc public enum AppTheme: Int {
+    case system
     case light
     case dark
-    case system
 }
 
 @objc public enum AppColors: Int {

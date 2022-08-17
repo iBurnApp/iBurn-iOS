@@ -26,16 +26,12 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
         if let colors = artMetadata.thumbnailImageColors {
             setupLabelColors(colors)
         }
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            guard let image = BRCMediaDownloader.imageForArt(art) else {
-                return
-            }
-            DispatchQueue.main.async {
-                guard self.objectUniqueId == dataObject.uniqueID else { return }
-                self.thumbnailView.image = image
-            }
-            guard artMetadata.thumbnailImageColors == nil else { return }
+        guard let image = BRCMediaDownloader.imageForArt(art) else {
+            return
+        }
+        self.thumbnailView.image = image
+        guard artMetadata.thumbnailImageColors == nil else { return }
+        DispatchQueue.global(qos: .default).async {
             ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
                 guard self.objectUniqueId == dataObject.uniqueID else { return }
                 UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
