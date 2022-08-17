@@ -19,7 +19,6 @@ extension UIImageColors {
 extension UIViewController {
     func refreshNavigationBarColors(_ animated: Bool) {
         self.navigationController?.navigationBar.setColorTheme(Appearance.currentColors, animated: animated)
-
     }
 }
 

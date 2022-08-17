@@ -64,26 +64,13 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     fileLogger.doNotReuseLogFiles = YES;
     [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
-    
-    [BRCDataImporter copyBundledTilesIfNeeded];
-    
+        
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-    
-//    [[BITHockeyManager sharedHockeyManager] configureWithBetaIdentifier:kBRCHockeyBetaIdentifier
-//                                                         liveIdentifier:kBRCHockeyLiveIdentifier delegate:self];
-//    [[BITHockeyManager sharedHockeyManager] startManager];
-    
-    [MGLAccountManager setAccessToken:kBRCMapBoxAccessToken];
-    
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    [UIApplication sharedApplication].statusBarHidden = NO;
     
     // Can we set a better interval?
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
-    
-    [self.dataImporter doubleCheckMapTiles:nil];
-    
+        
     [BRCDatabaseManager.shared.backgroundReadConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject yapCollection]];
         NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject yapCollection]];
@@ -101,9 +88,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         }];
         [ColorCache.shared prefetchAllColors];
     });
-    
-    //[RMConfiguration sharedInstance].accessToken = @"";
-    
+        
     UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     if (launchNotification) {
         [self application:application didReceiveLocalNotification:launchNotification];
@@ -125,7 +110,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Appirater setDebug:NO];
     [Appirater setOpenInAppStore:NO];
     [Appirater appLaunched:YES];
-    [self setupUnlockNotification];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
@@ -156,10 +140,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 }
 
 - (void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-    if ([notification.userInfo objectForKey:kBRCGateUnlockNotificationKey]) {
-        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
-        [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
-    }
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleCancel handler:nil];
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:notification.alertBody preferredStyle:UIAlertControllerStyleAlert];
     [alertController addAction:cancelAction];
@@ -254,7 +234,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     moreVC.title = @"More";
     moreVC.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
     
-    self.tabBarController = [[UITabBarController alloc] init];
+    self.tabBarController = [[TabController alloc] init];
     
     self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreVC];
     
@@ -262,32 +242,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
     self.tabBarController.delegate = self;
 }
 
-- (void) setupUnlockNotification {
-    NSDate *now = [NSDate present];
-    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
-        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:nil];
-    } else {
-        UILocalNotification *existingNotification = [[NSUserDefaults standardUserDefaults] scheduledLocalNotificationForGateUnlock];
-        if (existingNotification) {
-            return;
-        }
-        UILocalNotification *unlockNotification = [[UILocalNotification alloc] init];
-        unlockNotification.fireDate = festivalStartDate;
-        unlockNotification.alertBody = @"Gates are open! Embargoed data can now be unlocked.";
-        unlockNotification.soundName = UILocalNotificationDefaultSoundName;
-        unlockNotification.alertAction = @"Unlock Now";
-        unlockNotification.applicationIconBadgeNumber = 1;
-        unlockNotification.userInfo = @{kBRCGateUnlockNotificationKey: @YES};
-        [[NSUserDefaults standardUserDefaults] scheduleLocalNotificationForGateUnlock:unlockNotification];
-    }
-}
-
 - (void) preloadExistingData {
     NSBundle *dataBundle = [NSBundle brc_dataBundle];
     
-    NSURL *updateURL = [dataBundle URLForResource:@"update.json" withExtension:@"js"];
+    NSURL *updateURL = [dataBundle URLForResource:@"update" withExtension:@"json"];
 
     [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:^(UIBackgroundFetchResult result) {
         NSLog(@"Attempted to load pre-existing data with result %d", (int)result);

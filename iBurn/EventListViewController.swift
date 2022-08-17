@@ -29,7 +29,7 @@ public class EventListViewController: UIViewController {
         }
     }
     private var dayObserver: NSKeyValueObservation?
-    private var loadingIndicator = UIActivityIndicatorView(style: .gray)
+    private var loadingIndicator = UIActivityIndicatorView(style: .medium)
     
     // MARK: - Init
     
@@ -73,6 +73,12 @@ public class EventListViewController: UIViewController {
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         searchDidAppear()
+    }
+    
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        refreshNavigationBarColors(false)
+        dayPicker.setColorTheme(Appearance.currentColors, animated: false)
     }
 }
 
@@ -130,6 +136,11 @@ private extension EventListViewController {
     @objc func filterButtonPressed(_ sender: Any) {
         let filterVC = BRCEventsFilterTableViewController(delegate: self)
         let nav = NavigationController(rootViewController: filterVC)
+        // this is needed to fix a crash on iOS 16 beta 4
+        // [<_UISheetActiveDetent 0x600001391140> valueForUndefinedKey:]: this class is not key value coding-compliant for the key _type.
+        if #available(iOS 16.0, *) {
+            nav.modalPresentationStyle = .fullScreen
+        }
         present(nav, animated: true, completion: nil)
     }
     

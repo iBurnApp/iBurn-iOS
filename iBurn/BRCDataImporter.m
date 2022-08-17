@@ -109,7 +109,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     // parse update JSON
     NSError *error = nil;
     NSData *jsonData = updateData;
-    NSDictionary *updateJSON = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    NSDictionary *updateJSON = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:&error];
     if (error) {
         NSLog(@"JSON serialization error: %@", error);
         if (fetchResultBlock) {
@@ -156,7 +156,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             // check tiles for errors
             if (oldUpdateInfo.dataType == BRCUpdateDataTypeTiles) {
                 oldUpdateInfo = [oldUpdateInfo copy];
-                [self doubleCheckMapTiles:oldUpdateInfo];
             }
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
             if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus != BRCUpdateFetchStatusFailed) {

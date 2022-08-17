@@ -65,6 +65,12 @@ public class ObjectListViewController: UIViewController {
         super.viewDidAppear(animated)
         searchDidAppear()
     }
+    
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        tableView.setColorTheme(Appearance.currentColors, animated: false)
+        setColorTheme(Appearance.currentColors, animated: false)
+    }
 }
 
 extension ObjectListViewController: SearchCooordinator {

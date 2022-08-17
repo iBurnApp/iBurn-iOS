@@ -91,17 +91,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     self.showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     
     //All the event types to select from
-    NSArray *eventTypes = @[@(BRCEventTypeWorkshop),
-                            @(BRCEventTypePerformance),
-                            @(BRCEventTypeSupport),
-                            @(BRCEventTypeParty),
-                            @(BRCEventTypeCeremony),
-                            @(BRCEventTypeGame),
-                            @(BRCEventTypeFire),
-                            @(BRCEventTypeAdult),
-                            @(BRCEventTypeKid),
-                            @(BRCEventTypeParade),
-                            @(BRCEventTypeFood)];
+    NSArray *eventTypes = BRCEventObject.allVisibleEventTypes;
     
     NSMutableArray *eventTypeMutableArray = [NSMutableArray new];
     
@@ -116,8 +106,6 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     }];
     
     self.eventTypeArray = [eventTypeMutableArray copy];
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
-    self.eventTypeArray = [self.eventTypeArray sortedArrayUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
     
     UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButtonPressed:)];
     UIBarButtonItem *done = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneButtonPressed:)];

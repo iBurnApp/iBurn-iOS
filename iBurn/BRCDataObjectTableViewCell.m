@@ -43,7 +43,14 @@
     if (!playaLocation.length) {
         playaLocation = dataObject.burnerMapLocationString;
         if (!playaLocation.length) {
-            playaLocation = @"Location Unknown";
+            if ([dataObject isKindOfClass:BRCEventObject.class]) {
+                BRCEventObject *event = (BRCEventObject*)dataObject;
+                if (event.otherLocation.length > 0) {
+                    playaLocation = @"Other Location";
+                }
+            } else {
+                playaLocation = @"Location Unknown";
+            }
         }
     }
     if ([BRCEmbargo canShowLocationForObject:dataObject]) {
@@ -70,6 +77,12 @@
     } else {
         self.subtitleLabel.attributedText = [TTTLocationFormatter brc_humanizedStringForDistance:distance];
     }
+}
+
+- (void) traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    BRCImageColors *colors = Appearance.currentColors;
+    [self setColorTheme:colors animated:NO];
 }
 
 + (NSString*) cellIdentifier {

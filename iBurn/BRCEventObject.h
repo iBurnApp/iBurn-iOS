@@ -24,7 +24,17 @@ typedef NS_ENUM(NSUInteger, BRCEventType) {
     BRCEventTypeAdult,
     BRCEventTypeKid,
     BRCEventTypeParade,
-    BRCEventTypeFood
+    BRCEventTypeOther,
+    BRCEventTypeFood,
+    BRCEventTypeCrafts,
+    BRCEventTypeCoffee,
+    BRCEventTypeHealing,
+    BRCEventTypeLGBT,
+    BRCEventTypeLiveMusic,
+    BRCEventTypeRIDE,
+    BRCEventTypeRepair,
+    BRCEventTypeSustainability,
+    BRCEventTypeMeditation,
 };
 
 NS_ASSUME_NONNULL_BEGIN
@@ -61,6 +71,11 @@ extern NSString * const kBRCEventArtEdgeName;
  *  From PlayaEvents API, not sure what its for
  */
 @property (nonatomic, readonly) BOOL checkLocation;
+
+/**
+ *  Free form text entry for events hosted in weird places
+ */
+@property (nonatomic, strong, readonly, nullable) NSString *otherLocation;
 
 - (NSTimeInterval)timeIntervalUntilStart:(NSDate*)currentDate;
 - (NSTimeInterval)timeIntervalUntilEnd:(NSDate*)currentDate;
@@ -108,10 +123,6 @@ extern NSString * const kBRCEventArtEdgeName;
  *  isEndingSoon, and isStartingSoon.
  */
 - (UIImage *)markerImageForEventStatus:(NSDate*)currentDate;
-
-/** convert BRCEventType to display string */
-+ (NSString *)stringForEventType:(BRCEventType)type;
-
 
 /** Updates calendar entry. Note: this will also re-save the object. */
 - (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction;

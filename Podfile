@@ -1,6 +1,6 @@
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '12.0'
+platform :ios, '14.0'
 inhibit_all_warnings!
 use_modular_headers!
 
@@ -14,7 +14,7 @@ target 'iBurn' do
 
 	pod 'Anchorage'
 
-	pod 'Mapbox-iOS-SDK', '~> 5.2.0'
+	# pod 'Mapbox-iOS-SDK', '~> 5.2.0'
 	pod 'YapDatabase'
 
 	pod 'CocoaLumberjack/Swift'
@@ -37,7 +37,6 @@ target 'iBurn' do
 	pod 'JTSImageViewController'
 	# pod 'UIImageColors', '~> 2.1'
 	pod 'UIImageColors', :git => 'https://github.com/jathu/UIImageColors.git', :tag => '2.2.0'
-	pod 'FirebaseCrashlytics'
 	pod 'GRDB.swift'
 end
 

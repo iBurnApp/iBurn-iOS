@@ -76,6 +76,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(title)): @"title",
                                NSStringFromSelector(@selector(checkLocation)): @"check_location",
+                               NSStringFromSelector(@selector(otherLocation)): @"other_location",
                                NSStringFromSelector(@selector(hostedByCampUniqueID)): @"hosted_by_camp",
                                NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art",
                                NSStringFromSelector(@selector(eventType)): @"event_type.abbr"};
@@ -83,19 +84,31 @@ NSString * const kBRCEventArtEdgeName = @"art";
 }
 
 + (NSValueTransformer *)eventTypeJSONTransformer {
-    NSDictionary *transformDict = @{@"":     @(BRCEventTypeUnknown),
-                                    @"none": @(BRCEventTypeNone),
-                                    @"work": @(BRCEventTypeWorkshop),
-                                    @"perf": @(BRCEventTypePerformance),
-                                    @"care": @(BRCEventTypeSupport),
-                                    @"prty": @(BRCEventTypeParty),
-                                    @"cere": @(BRCEventTypeCeremony),
-                                    @"game": @(BRCEventTypeGame),
-                                    @"fire": @(BRCEventTypeFire),
-                                    @"adlt": @(BRCEventTypeAdult),
-                                    @"kid":  @(BRCEventTypeKid),
-                                    @"para": @(BRCEventTypeParade),
-                                    @"food": @(BRCEventTypeFood)};
+    NSDictionary *transformDict = @{
+        @"":     @(BRCEventTypeUnknown),
+        @"none": @(BRCEventTypeNone),
+        @"work": @(BRCEventTypeWorkshop),
+        @"perf": @(BRCEventTypePerformance),
+        @"care": @(BRCEventTypeSupport),
+        @"prty": @(BRCEventTypeParty),
+        @"cere": @(BRCEventTypeCeremony),
+        @"game": @(BRCEventTypeGame),
+        @"fire": @(BRCEventTypeFire),
+        @"adlt": @(BRCEventTypeAdult),
+        @"kid":  @(BRCEventTypeKid),
+        @"para": @(BRCEventTypeParade),
+        @"food": @(BRCEventTypeFood),
+        @"othr": @(BRCEventTypeOther),
+        @"arts": @(BRCEventTypeCrafts),
+        @"tea":  @(BRCEventTypeCoffee),
+        @"heal": @(BRCEventTypeHealing),
+        @"LGBT": @(BRCEventTypeLGBT),
+        @"live": @(BRCEventTypeLiveMusic),
+        @"RIDE": @(BRCEventTypeRIDE),
+        @"repr": @(BRCEventTypeRepair),
+        @"sust": @(BRCEventTypeSustainability),
+        @"yoga": @(BRCEventTypeMeditation),
+    };
     return [NSValueTransformer mtl_valueMappingTransformerWithDictionary:transformDict];
 }
 
@@ -182,48 +195,6 @@ NSString * const kBRCEventArtEdgeName = @"art";
         return [UIColor brc_greenColor];
     }
     return colors.primaryColor;
-}
-
-+ (NSString *)stringForEventType:(BRCEventType)type
-{
-    switch (type) {
-        case BRCEventTypeWorkshop:
-            return @"🔨 Workshop";
-            break;
-        case BRCEventTypePerformance:
-            return @"💃 Performance";
-            break;
-        case BRCEventTypeSupport:
-            return @"🏥 Support";
-            break;
-        case BRCEventTypeParty:
-            return @"🍺 Party";
-            break;
-        case BRCEventTypeCeremony:
-            return @"🌜Ceremony";
-            break;
-        case BRCEventTypeGame:
-            return @"🎲 Game";
-            break;
-        case BRCEventTypeFire:
-            return @"🔥 Fire";
-            break;
-        case BRCEventTypeAdult:
-            return @"💋 Adult";
-            break;
-        case BRCEventTypeKid:
-            return @"👨‍👩‍👧‍👦 Kid";
-            break;
-        case BRCEventTypeParade:
-            return @"🎉 Parade";
-            break;
-        case BRCEventTypeFood:
-            return @"🍔 Food";
-            break;
-        default:
-            return @"";
-            break;
-    }
 }
 
 + (EKEventStore*)eventStore {

@@ -48,6 +48,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>iBurn does not use Bluetooth.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>iBurn does not use Bluetooth.</string>
 	<key>NSCalendarsUsageDescription</key>

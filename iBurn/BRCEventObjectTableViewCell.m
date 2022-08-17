@@ -59,9 +59,6 @@
     }
     self.eventTypeLabel.text = eventType;
     [self setupLocationLabelFromEvent:eventObject];
-    
-    BRCImageColors *colors = [BRCImageColors colorsFor:eventObject.eventType];
-    [self setColorTheme:colors animated:NO];
 }
 
 - (NSString*) defaultEventText:(BRCEventObject*)eventObject {
@@ -95,6 +92,9 @@
     } else if (art) {
         host = art;
         hostName = art.title;
+    } else {
+        host = eventObject;
+        hostName = eventObject.otherLocation;
     }
     self.hostLabel.text = hostName;
     

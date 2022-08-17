@@ -156,7 +156,7 @@ import CocoaLumberjack
     }
     
     public func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
-        return connection.read(block)
+        return connection.readReturning(block)
     }
     
     @objc public func read(block: @escaping ((YapDatabaseReadTransaction) -> Any?)) -> Any? {

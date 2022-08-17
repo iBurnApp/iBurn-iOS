@@ -18,6 +18,7 @@
 #import "BRCDataImportTests.h"
 #import "BRCMapPoint.h"
 #import "BRCDataObject+Relationships.h"
+@import YapDatabase;
 
 @interface BRCDataImportTests()
 @property (nonatomic, strong, readonly) NSString *relationshipsName;
@@ -35,7 +36,11 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath:tmpDbPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:tmpDbPath error:nil];
     }
-    _database = [[YapDatabase alloc] initWithPath:tmpDbPath];
+    YapDatabaseOptions *options = [[YapDatabaseOptions alloc] init];
+    options.corruptAction = YapDatabaseCorruptAction_Fail;
+    NSURL *dbURL = [NSURL fileURLWithPath:tmpDbPath];
+    
+    _database = [[YapDatabase alloc] initWithURL:dbURL options:options];
     XCTAssertNotNil(self.database);
     _connection = [self.database newConnection];
     XCTAssertNotNil(self.connection);
@@ -67,11 +72,11 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    NSString *dbPath = [self.database.databasePath copy];
+    NSURL *dbURL = [self.database.databaseURL copy];
     _connection = nil;
     _importer = nil;
     _database = nil;
-    [[NSFileManager defaultManager] removeItemAtPath:dbPath error:nil];
+    [[NSFileManager defaultManager] removeItemAtURL:dbURL error:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super tearDown];
 }
@@ -131,12 +136,12 @@
 
 - (void) testLoadCamps {
     Class dataClass = [BRCCampObject class];
-    [self loadDataFromFile:@"camps.json" dataClass:dataClass];
+    [self loadDataFromFile:@"camp" dataClass:dataClass];
 }
 
 - (void) testLoadEvents {
     Class dataClass = [BRCRecurringEventObject class];
-    [self loadDataFromFile:@"events.json" dataClass:dataClass];
+    [self loadDataFromFile:@"event" dataClass:dataClass];
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         [transaction enumerateKeysAndObjectsInCollection:[dataClass yapCollection] usingBlock:^(NSString * __nonnull key, BRCEventObject *event, BOOL * __nonnull stop) {
             XCTAssertNotNil(event.startDate);
@@ -147,12 +152,12 @@
 
 - (void) testLoadArt {
     Class dataClass = [BRCArtObject class];
-    [self loadDataFromFile:@"art.json" dataClass:dataClass];
+    [self loadDataFromFile:@"art" dataClass:dataClass];
 }
 
 - (void) testLoadPoints {
     Class dataClass = [BRCMapPoint class];
-    [self loadDataFromFile:@"points.json" dataClass:dataClass];
+    [self loadDataFromFile:@"points" dataClass:dataClass];
     [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
         NSUInteger numObjects = [transaction numberOfKeysInCollection:[dataClass yapCollection]];
         XCTAssert(numObjects > 0);
@@ -277,11 +282,11 @@
     [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
-    NSString *folderName = @"2019";
+    NSString *folderName = @"APIData";
     NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
     NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
     
-    NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"js"];
+    NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"json"];
     NSData *jsonData = [[NSData alloc] initWithContentsOfURL:dataURL];
     NSError *error = nil;
     [self.importer loadDataFromJSONData:jsonData dataClass:dataClass updateInfo:updateInfo error:&error];

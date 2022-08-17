@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** iBurn.sqlite */
 extern NSString * const kBRCDatabaseName;
+extern NSString * const kBRCDatabaseFolderName;
 
 /** this is posted when an extension is ready. The userInfo contains
  the extension name under the "extensionName" key */
@@ -33,9 +34,6 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 
 /** Check to see if a file exists at the correct path */
 + (BOOL)existsDatabaseWithName:(NSString *)databaseName;
-
-/** move pre-polulated database from bundle to correct directory of the same name */
-+ (BOOL)copyDatabaseFromBundle;
 
 - (instancetype) initWithDatabaseName:(NSString*)databaseName;
 
@@ -97,7 +95,7 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 /** YapDatabaseRelationship to link events to their host camps/art */
 @property (nonatomic, strong, readonly) NSString *relationships;
 
-
+@property (nonatomic, strong, class, readonly) NSString *yapDatabaseDirectory;
 /** 
  * Query for objects in bounded region.
  * @see MKCoordinateRegionMakeWithDistance

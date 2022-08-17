@@ -78,7 +78,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MGLMapView, annotation: MGLAnnotation, calloutAccessoryControlTapped control: UIControl) {
         guard let point = annotation as? BRCMapPoint,
-            let annotationView = annotationViews[point] as? ImageAnnotationView,
+            let annotationView = annotationViews[ObjectIdentifier(point)] as? ImageAnnotationView,
             let tag = ButtonTag(rawValue: control.tag) else {
                 super.mapView(mapView, annotation: annotation, calloutAccessoryControlTapped: control)
                 return

@@ -9,17 +9,12 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
-extern NSString *const kBRCGateUnlockNotificationKey;
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSUserDefaults (iBurn)
 
-/** Existing notification */
-- (UILocalNotification*) scheduledLocalNotificationForGateUnlock;
-/** This will automatically schedule the notification too. */
-- (void) scheduleLocalNotificationForGateUnlock:(UILocalNotification*)localNotification;
-
-- (NSArray *)selectedEventTypes;
-- (void)setSelectedEventTypes:(NSArray *)selectedEventTypes;
+- (nullable NSArray *)selectedEventTypes;
+- (void)setSelectedEventTypes:(nullable NSArray *)selectedEventTypes;
 
 - (BOOL)showExpiredEvents;
 - (void)setShowExpiredEvents:(BOOL)showEpiredEvents;
@@ -33,6 +28,8 @@ extern NSString *const kBRCGateUnlockNotificationKey;
 - (BOOL)hasViewedOnboarding;
 - (void)setHasViewedOnboarding:(BOOL)hasViewedOnboarding;
 
-@property (nonatomic, strong, readwrite) CLLocation *recentLocation;
+@property (nonatomic, strong, readwrite, nullable) CLLocation *recentLocation;
 
 @end
+
+NS_ASSUME_NONNULL_END
