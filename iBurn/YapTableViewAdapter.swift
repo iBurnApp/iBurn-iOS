@@ -119,8 +119,8 @@ extension YapTableViewAdapter: YapViewHandlerDelegate {
     }
     
     public func didReceiveChanges(_ handler: YapViewHandler, sectionChanges: [YapDatabaseViewSectionChange], rowChanges: [YapDatabaseViewRowChange]) {
-        tableView.handleYapViewChanges(sectionChanges: sectionChanges, rowChanges: rowChanges)
+        tableView.reloadData()
+        // still seeing a lot of crashes
+//        tableView.handleYapViewChanges(sectionChanges: sectionChanges, rowChanges: rowChanges)
     }
 }
-
-
