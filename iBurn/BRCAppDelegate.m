@@ -112,7 +112,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Appirater appLaunched:YES];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.backgroundColor = [UIColor whiteColor];
+    self.window.backgroundColor = UIColor.systemBackgroundColor;
     _audioDownloader = [[BRCMediaDownloader alloc] initWithConnection:[BRCDatabaseManager.shared.database newConnection] viewName:BRCDatabaseManager.shared.audioTourViewName downloadType:BRCMediaDownloadTypeAudio];
     _imageDownloader = [[BRCMediaDownloader alloc] initWithConnection:[BRCDatabaseManager.shared.database newConnection] viewName:BRCDatabaseManager.shared.artImagesViewName downloadType:BRCMediaDownloadTypeImage];
     
