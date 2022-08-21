@@ -102,7 +102,12 @@ public class MapViewAdapter: NSObject {
 extension MapViewAdapter: MGLMapViewDelegate {
     
     public func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
-        for imageName in ["airport", "bus", "centerCamp", "firstAid", "ice", "info", "ranger", "recycle", "temple", "toilet"] {
+        let imageNames = [
+            "airport", "bus", "centerCamp", "center",
+            "firstAid", "EmergencyClinic", "ice", "info", "ranger",
+            "recycle", "temple", "toilet"
+        ]
+        for imageName in imageNames {
             guard let image = UIImage(named: "pin_" + imageName) else {
                 assertionFailure()
                 continue

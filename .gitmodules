@@ -13,6 +13,3 @@
 [submodule "Submodules/PermissionScope"]
 	path = Submodules/PermissionScope
 	url = git@github.com:Burning-Man-Earth/PermissionScope.git
-[submodule "Submodules/Mapbox-Pod"]
-	path = Submodules/Mapbox-Pod
-	url = https://github.com/iBurnApp/Mapbox-Pod.git
