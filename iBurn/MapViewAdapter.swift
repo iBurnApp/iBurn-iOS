@@ -100,6 +100,17 @@ public class MapViewAdapter: NSObject {
 // MARK: - MGLMapViewDelegate
 
 extension MapViewAdapter: MGLMapViewDelegate {
+    
+    public func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
+        for imageName in ["airport", "bus", "centerCamp", "firstAid", "ice", "info", "ranger", "recycle", "temple", "toilet"] {
+            guard let image = UIImage(named: "pin_" + imageName) else {
+                assertionFailure()
+                continue
+            }
+            style.setImage(image, forName: imageName)
+        }
+    }
+    
     public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
         guard let imageAnnotation = annotation as? ImageAnnotation,
             let image = imageAnnotation.markerImage ?? UIImage(named: "BRCPurplePin") else {
