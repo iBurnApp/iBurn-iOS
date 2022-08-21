@@ -47,7 +47,11 @@ private extension PageViewManager {
         }
         let newDetailVC = BRCDetailViewController(dataObject: dataObject.object)
         newDetailVC.indexPath = newIndex
-        self.tableView.scrollToRow(at: newIndex, at: .middle, animated: false)
+        // there was a crash sometimes when the index isn't found
+        // i am guessing it's happening when filters are applied so the indices don't match up
+        if tableView.hasRow(at: newIndex) {
+            self.tableView.scrollToRow(at: newIndex, at: .middle, animated: false)
+        }
         return newDetailVC
     }
 }
@@ -65,5 +69,12 @@ extension PageViewManager: UIPageViewControllerDataSource {
     
     public func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         return self.pageViewController(pageViewController, viewControllerNear: viewController, direction: .after)
+    }
+}
+
+extension UITableView {
+    /// https://stackoverflow.com/a/36884941
+    func hasRow(at indexPath: IndexPath) -> Bool {
+        return indexPath.section < self.numberOfSections && indexPath.row < self.numberOfRows(inSection: indexPath.section)
     }
 }
