@@ -17,6 +17,11 @@ final class TracksViewController: UIViewController {
     private let mapView = MGLMapView.brcMapView()
     private var storage: LocationStorage?
     private var annotations: [MGLAnnotation] = []
+    private lazy var settingsBarButtonItem: UIBarButtonItem = {
+        UIBarButtonItem(title: "Settings", style: .plain, closure: { [weak self] (_) in
+            self?.showAlert()
+        })
+    }()
     
     // MARK: - Init
     
@@ -47,9 +52,7 @@ final class TracksViewController: UIViewController {
         try? setupStorage()
         startMonitoring()
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Settings", style: .plain, closure: { [weak self] (_) in
-            self?.showAlert()
-        })
+        navigationItem.rightBarButtonItem = settingsBarButtonItem
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -87,6 +90,7 @@ private extension TracksViewController {
         alert.addAction(toggle)
         alert.addAction(delete)
         alert.addAction(cancel)
+        alert.popoverPresentationController?.barButtonItem = settingsBarButtonItem
         present(alert, animated: true, completion: nil)
     }
     
