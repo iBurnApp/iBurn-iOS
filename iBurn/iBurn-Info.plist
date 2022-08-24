@@ -53,7 +53,7 @@
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>iBurn does not use Bluetooth.</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>iBurn can automatically add favorited events to your calendar.</string>
+	<string>iBurn can automatically add favorited events to your default calendar. Please double check your default calendar in iOS Settings -&gt; Calendar -&gt; Default Calendar!</string>
 	<key>NSContactsUsageDescription</key>
 	<string>iBurn does not use your contacts.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

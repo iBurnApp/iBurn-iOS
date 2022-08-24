@@ -31,7 +31,7 @@ public final class BRCPermissions: NSObject {
         let pscope = PermissionScope()
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"
-        pscope.addPermission(EventsPermission(), message: "You can see your favorited events in the Calendar app.")
+        pscope.addEventsPermission()
         pscope.show({ (finished, results) -> Void in
             print("got results \(results)")
             completion()
@@ -46,12 +46,21 @@ public final class BRCPermissions: NSObject {
         pscope.headerLabel.text = "Reminders"
         pscope.bodyLabel.text = "Don't you want reminders?"
         pscope.addPermission(NotificationsPermission(), message: "Don't forget to live in the moment.")
-        pscope.addPermission(EventsPermission(), message: "You can see your favorited events in the Calendar app.")
+        pscope.addEventsPermission()
         pscope.show({ (finished, results) -> Void in
             print("got results \(results)")
             completion()
             }) { (results) -> Void in
             print("thing was cancelled")
         }
+    }
+}
+
+extension PermissionScope {
+    func addEventsPermission() {
+        addPermission(
+            EventsPermission(),
+            message: "⚠️ Favorited events are added to your device's default calendar. ⚠️"
+        )
     }
 }
