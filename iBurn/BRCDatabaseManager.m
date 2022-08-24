@@ -91,7 +91,11 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     NSURL *dbURL = [NSURL fileURLWithPath:databasePath];
     
     self.database = [[YapDatabase alloc] initWithURL:dbURL options:options];
-
+    
+#if DEBUG
+    NSLog(@"Using database at path: %@", dbURL);
+#endif
+    
     NSError *error = nil;
     BOOL success = [dbURL setResourceValue:@YES forKey: NSURLIsExcludedFromBackupKey error:&error];
     if (!success) {
