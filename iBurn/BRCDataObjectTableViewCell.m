@@ -29,6 +29,9 @@
     // strip those newlines rull good
     NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
     detailString = [detailString stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+    if (detailString == nil) {
+        detailString = @"";
+    }
     
     NSMutableAttributedString *detailAttributedString = [[NSMutableAttributedString alloc] init];
     if (metadata.userNotes.length > 0) {
