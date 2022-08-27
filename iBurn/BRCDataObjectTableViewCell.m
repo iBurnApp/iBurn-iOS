@@ -21,11 +21,29 @@
 @implementation BRCDataObjectTableViewCell
 
 - (void) setDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata {
+    BRCImageColors *colors = Appearance.currentColors;
+    [self setColorTheme:colors animated:NO];
+    self.descriptionLabel.textColor = nil;
+
     self.titleLabel.text = dataObject.title;
     // strip those newlines rull good
     NSString *detailString = [dataObject.detailDescription stringByReplacingOccurrencesOfString:@"\r\n" withString:@" "];
     detailString = [detailString stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    self.descriptionLabel.text = detailString;
+    
+    NSMutableAttributedString *detailAttributedString = [[NSMutableAttributedString alloc] init];
+    if (metadata.userNotes.length > 0) {
+        NSString *userNotes = [NSString stringWithFormat:@"%@\n", metadata.userNotes];
+        [detailAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:userNotes attributes:@{
+            NSFontAttributeName: [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1],
+            NSForegroundColorAttributeName: colors.detailColor
+        }]];
+    }
+    [detailAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:detailString attributes:@{
+        NSFontAttributeName:[UIFont preferredFontForTextStyle:UIFontTextStyleCaption1],
+        NSForegroundColorAttributeName: colors.secondaryColor
+    }]];
+    self.descriptionLabel.attributedText = detailAttributedString;
+    
     if ([dataObject isKindOfClass:[BRCArtObject class]]) {
         BRCArtObject *art = (BRCArtObject*)dataObject;
         self.rightSubtitleLabel.text = art.artistName;
@@ -33,9 +51,6 @@
         [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
     }
     self.favoriteButton.selected = metadata.isFavorite;
-    
-    BRCImageColors *colors = Appearance.currentColors;
-    [self setColorTheme:colors animated:NO];
 }
 
 - (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {
