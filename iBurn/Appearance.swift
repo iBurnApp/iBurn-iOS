@@ -29,35 +29,7 @@ import UIKit
     }
     
     @objc public static var currentColors: BRCImageColors {
-        let colors: BRCImageColors
-        switch theme {
-        case .light:
-            switch contrast {
-            case .colorful:
-                colors = .light
-            case .highContrast:
-                colors = .plain
-            }
-        case .dark:
-            switch contrast {
-            case .colorful:
-                colors = .dark
-            case .highContrast:
-                colors = .plainDark
-            }
-        case .system:
-            switch UIScreen.main.traitCollection.userInterfaceStyle {
-            case .unspecified:
-                colors = .dark
-            case .light:
-                colors = .light
-            case .dark:
-                colors = .dark
-            @unknown default:
-                colors = .dark
-            }
-        }
-        return colors
+        .dynamic
     }
     
     @objc public static var currentBarStyle: UIBarStyle {

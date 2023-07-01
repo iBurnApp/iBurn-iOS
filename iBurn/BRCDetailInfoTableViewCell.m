@@ -35,12 +35,12 @@
 
 - (void) setSelectableAppearance:(BRCImageColors*)colors {
     self.selectionStyle = UITableViewCellSelectionStyleDefault;
-    self.textLabel.textColor = colors.secondaryColor;
+    self.textLabel.textColor = colors.primaryColor;
 }
 
 - (void) setPlainTextApperance:(BRCImageColors*)colors {
     self.selectionStyle = UITableViewCellSelectionStyleNone;
-    self.textLabel.textColor = colors.primaryColor;
+    self.textLabel.textColor = colors.secondaryColor;
 }
 
 - (void) prepareForReuse {
