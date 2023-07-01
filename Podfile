@@ -24,7 +24,7 @@ target 'iBurn' do
 	pod 'PureLayout', '~> 3.0'
 	pod 'DAKeyboardControl', '~> 2.4'
 	pod 'BButton', '~> 4.0'
-	pod 'VTAcknowledgementsViewController', '~> 1.0'
+	pod 'VTAcknowledgementsViewController', '~> 2.0'
 	pod 'TTTAttributedLabel', '~> 2.0'
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'

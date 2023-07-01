@@ -3,8 +3,8 @@ PODS:
   - Appirater (2.3.1)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - CocoaLumberjack/Core (3.7.4)
-  - CocoaLumberjack/Swift (3.7.4):
+  - CocoaLumberjack/Core (3.8.0)
+  - CocoaLumberjack/Swift (3.8.0):
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DAKeyboardControl (2.4.0)
@@ -14,9 +14,9 @@ PODS:
   - FormatterKit/Resources (1.9.0)
   - FormatterKit/TimeIntervalFormatter (1.9.0):
     - FormatterKit/Resources
-  - GRDB.swift (5.25.0):
-    - GRDB.swift/standard (= 5.25.0)
-  - GRDB.swift/standard (5.25.0)
+  - GRDB.swift (6.15.1):
+    - GRDB.swift/standard (= 6.15.1)
+  - GRDB.swift/standard (6.15.1)
   - JTSImageViewController (1.5.1)
   - KVOController (1.2.0)
   - Mantle (2.2.0):
@@ -28,7 +28,7 @@ PODS:
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
   - UIImageColors (2.2.0)
-  - VTAcknowledgementsViewController (1.5.3)
+  - VTAcknowledgementsViewController (2.0.1)
   - YapDatabase (4.0.1):
     - YapDatabase/Standard (= 4.0.1)
   - YapDatabase/Standard (4.0.1):
@@ -157,7 +157,7 @@ DEPENDENCIES:
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
   - UIImageColors (from `https://github.com/jathu/UIImageColors.git`, tag `2.2.0`)
-  - VTAcknowledgementsViewController (~> 1.0)
+  - VTAcknowledgementsViewController (~> 2.0)
   - YapDatabase
 
 SPEC REPOS:
@@ -201,12 +201,12 @@ SPEC CHECKSUMS:
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
+  CocoaLumberjack: 78abfb691154e2a9df8ded4350d504ee19d90732
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 184db51bf120b633693a73624a4cede89ec51a41
-  GRDB.swift: 39b3ff769afde87a840ced4e3a327d5c6f6a6e4f
+  GRDB.swift: a6b7e9900aa300d0cbf1f1c5f47b8f32ae51e30c
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
@@ -216,9 +216,9 @@ SPEC CHECKSUMS:
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
   UIImageColors: 5308752f939fbc3daa1ba4749d268959fbad92cd
-  VTAcknowledgementsViewController: 5bb83eaa344bff2af32291162b15778c080262fe
+  VTAcknowledgementsViewController: 2cae5539fb84081196ab00d267caad390f418ce6
   YapDatabase: 350ab72b61f9dcc32504594da1a52a93f5ef1476
 
-PODFILE CHECKSUM: e0763a0504948c5cdb56602edbcb15ead5423644
+PODFILE CHECKSUM: a6680d17959f35673db13d8d9a28eef85916ed4d
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1
