@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -1218,9 +1218,10 @@
 		63CE2A4C1987140F00F65B01 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = BRC;
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 1220;
+				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = iBurn;
 				TargetAttributes = {
 					63CE2A531987140F00F65B01 = {
@@ -1250,7 +1251,7 @@
 				};
 			};
 			buildConfigurationList = 63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */;
-			compatibilityVersion = "Xcode 13.0";
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
