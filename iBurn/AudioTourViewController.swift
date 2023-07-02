@@ -34,7 +34,7 @@ class AudioTourViewController: SortedViewController {
     }
     
     func setupSoundcloudButton() {
-        soundcloudButton.setTitleColor(.darkText, for: .normal)
+        soundcloudButton.setTitleColor(.label, for: .normal)
         soundcloudButton.setTitle("Open in SoundCloud", for: .normal)
         soundcloudButton.addTarget(self, action: #selector(soundcloudButtonPressed(_:)), for: .touchUpInside)
     }

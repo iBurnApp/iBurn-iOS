@@ -52,11 +52,11 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
 
     public override func prepareForReuse() {
         super.prepareForReuse()
-        self.backgroundColor = UIColor.white
+        self.backgroundColor = UIColor.systemBackground
         thumbnailView.image = nil
-        self.titleLabel.textColor = UIColor.darkText
+        self.titleLabel.textColor = UIColor.label
         //self.subtitleLabel.textColor = UIColor.lightGray
-        self.rightSubtitleLabel.textColor = UIColor.lightGray
-        self.descriptionLabel.textColor = UIColor.darkText
+        self.rightSubtitleLabel.textColor = UIColor.secondaryLabel
+        self.descriptionLabel.textColor = UIColor.label
     }
 }

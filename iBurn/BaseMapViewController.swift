@@ -52,6 +52,7 @@ public class BaseMapViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(mapView)
+        view.tintColor = Appearance.currentColors.primaryColor
         mapView.autoPinEdgesToSuperviewEdges()
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
@@ -81,6 +82,11 @@ public class BaseMapViewController: UIViewController {
     @objc public func centerMapAtManCoordinatesAnimated(_ animated: Bool) {
         mapView.brc_moveToBlackRockCityCenter(animated: animated)
     }
+    
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        navigationItem.rightBarButtonItem?.tintColor = view.tintColor
+    }
 }
 
 // MARK: - Private
@@ -93,6 +99,7 @@ private extension BaseMapViewController {
     
     func setupTrackingButton(mapView: MGLMapView) {
         let button = BRCUserTrackingBarButtonItem(mapView: mapView)
+        button.tintColor = view.tintColor
         navigationItem.rightBarButtonItem = button
     }
 }

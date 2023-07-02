@@ -23,13 +23,4 @@
     return self;
 }
 
-+ (BRCImageColors*) plain {
-    // Supposedly the default tint on iOS
-    // https://stackoverflow.com/a/19033293/805882
-    UIColor *defaultTint = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
-    
-    BRCImageColors *colors = [[BRCImageColors alloc] initWithBackgroundColor:UIColor.whiteColor primaryColor:UIColor.darkTextColor secondaryColor:defaultTint detailColor:UIColor.lightGrayColor];
-    return colors;
-}
-
 @end

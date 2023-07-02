@@ -18,15 +18,15 @@ extension UIColor {
 }
 
 extension BRCImageColors {
-    private static let light = BRCImageColors(backgroundColor: .white,
+    private static let light = BRCImageColors(backgroundColor: .systemBackground,
                                       primaryColor: UIColor(hex: 0xdb8700),
-                                      secondaryColor: .darkText,
-                                      detailColor: .lightGray)
+                                      secondaryColor: .label,
+                                      detailColor: .secondaryLabel)
     
     private static let dark = BRCImageColors(backgroundColor: UIColor(hex: 0x202020),
                                           primaryColor: UIColor(hex: 0xdb8700),
-                                          secondaryColor: .white,
-                                          detailColor: .lightGray)
+                                          secondaryColor: .label,
+                                          detailColor: .secondaryLabel)
     
     static let dynamic = BRCImageColors(
         backgroundColor: .init(dynamicProvider: { traitCollection in
@@ -72,7 +72,7 @@ extension BRCEventObjectTableViewCell {
         descriptionLabel.textColor = colors.secondaryColor
         titleLabel.textColor = colors.primaryColor
         hostLabel?.textColor = colors.detailColor
-        eventTypeLabel.textColor = colors.primaryColor
+        eventTypeLabel.textColor = colors.detailColor
         locationLabel.textColor = colors.detailColor
         subtitleLabel.textColor = colors.detailColor
         rightSubtitleLabel.textColor = colors.detailColor

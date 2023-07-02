@@ -188,8 +188,9 @@ extension EventListViewController: SearchCooordinator {
 
 extension ASDayPicker: ColorTheme {
     public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
-        weekdayTextColor = colors.primaryColor
+        weekdayTextColor = colors.detailColor
         dateTextColor = colors.primaryColor
         selectedWeekdayTextColor = colors.primaryColor
+        outOfRangeDateTextColor = colors.detailColor
     }
 }

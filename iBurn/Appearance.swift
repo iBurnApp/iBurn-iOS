@@ -81,7 +81,7 @@ import UIKit
         UINavigationBar.appearance().scrollEdgeAppearance = coloredAppearance
 
         UINavigationBar.appearance().backgroundColor = colors.backgroundColor
-        UINavigationBar.appearance().tintColor = colors.secondaryColor
+        UINavigationBar.appearance().tintColor = colors.primaryColor
         UINavigationBar.appearance().barTintColor = colors.backgroundColor
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: colors.primaryColor]
         UITabBar.appearance().backgroundColor = colors.backgroundColor
