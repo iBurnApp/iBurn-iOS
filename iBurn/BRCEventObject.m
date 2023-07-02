@@ -274,6 +274,9 @@ NSString * const kBRCEventArtEdgeName = @"art";
     // Remind 1.5 hrs in advance
     EKAlarm *alarm = [EKAlarm alarmWithRelativeOffset:-90 * 60];
     [calendarEvent addAlarm:alarm];
+    // Also remind 10 min in advance
+    EKAlarm *alarm2 = [EKAlarm alarmWithRelativeOffset:-10 * 60];
+    [calendarEvent addAlarm:alarm2];
     
     NSError *error = nil;
     BOOL success = [store saveEvent:calendarEvent span:EKSpanThisEvent error:&error];
