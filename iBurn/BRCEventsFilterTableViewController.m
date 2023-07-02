@@ -185,7 +185,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
         cell.textLabel.text = container.title;
         colors = [BRCImageColors colorsFor:container.type];
     }
-    cell.textLabel.textColor = colors.primaryColor;
+    cell.textLabel.textColor = colors.secondaryColor;
     cell.backgroundColor = colors.backgroundColor;
     
     if (showCheckMark) {
