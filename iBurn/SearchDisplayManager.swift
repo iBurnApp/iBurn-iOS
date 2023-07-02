@@ -9,6 +9,7 @@
 import UIKit
 import YapDatabase
 import CocoaLumberjack
+import Combine
 
 public final class SearchDisplayManager: NSObject {
     let viewName: String
@@ -18,6 +19,8 @@ public final class SearchDisplayManager: NSObject {
     let writeConnection: YapDatabaseConnection
     let searchConnection: YapDatabaseConnection
     let searchQueue = YapDatabaseSearchQueue()
+    private let searchText = PassthroughSubject<String, Never>()
+    private var cancellables: Set<AnyCancellable> = .init()
     
     private var tableViewController: UITableViewController? {
         return searchController.searchResultsController as? UITableViewController
@@ -41,6 +44,11 @@ public final class SearchDisplayManager: NSObject {
         super.init()
         setupDefaults(for: src.tableView)
         setupDefaults(for: searchController)
+        searchText
+            .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] value in
+                self?.updateSearchResults(searchText: value)
+        }).store(in: &cancellables)
     }
 
     private func setupDefaults(for tableView: UITableView) {
@@ -54,14 +62,12 @@ public final class SearchDisplayManager: NSObject {
         searchController.searchResultsUpdater = self
         searchController.delegate = self
     }
-}
-
-extension SearchDisplayManager: UISearchResultsUpdating {
-    public func updateSearchResults(for searchController: UISearchController) {
-        guard var searchString = searchController.searchBar.text, searchString.count > 0 else {
+    
+    private func updateSearchResults(searchText: String) {
+        guard searchText.count > 0 else {
             return
         }
-        searchString = "\(searchString)*"
+        let searchString = "\(searchText)*"
         searchQueue.enqueueQuery(searchString)
         searchConnection.asyncReadWrite { transaction in
             guard let searchView = transaction.ext(self.viewName) as? YapDatabaseSearchResultsViewTransaction else {
@@ -70,6 +76,12 @@ extension SearchDisplayManager: UISearchResultsUpdating {
             }
             searchView.performSearch(with: self.searchQueue)
         }
+    }
+}
+
+extension SearchDisplayManager: UISearchResultsUpdating {
+    public func updateSearchResults(for searchController: UISearchController) {
+        searchText.send(searchController.searchBar.text ?? "")
     }
 }
 
