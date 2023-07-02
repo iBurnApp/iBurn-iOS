@@ -200,7 +200,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
 + (EKEventStore*)eventStore {
     EKEventStore *store = [[EKEventStore alloc] init];
     EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
-    if (status != EKAuthorizationStatusAuthorized) {
+    if (status == EKAuthorizationStatusNotDetermined) {
         NSLog(@"Not authorized to modify calendar");
         dispatch_async(dispatch_get_main_queue(), ^{
             [BRCPermissions promptForEvents:^{
