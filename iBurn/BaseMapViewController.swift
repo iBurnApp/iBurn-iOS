@@ -66,11 +66,14 @@ public class BaseMapViewController: UIViewController {
     override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         isVisible = true
+        // keeps the screen on for folks navigating in vehicles
+        UIApplication.shared.isIdleTimerDisabled = true
     }
     
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         isVisible = false
+        UIApplication.shared.isIdleTimerDisabled = false
     }
     
     // MARK: - Public API

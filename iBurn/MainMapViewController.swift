@@ -82,8 +82,6 @@ public class MainMapViewController: BaseMapViewController {
         super.viewWillAppear(animated)
         mapViewAdapter.reloadAnnotations()
         geocodeNavigationBar()
-        // keeps the screen on for folks navigating in vehicles
-        UIApplication.shared.isIdleTimerDisabled = true
     }
     
     public override func viewWillDisappear(_ animated: Bool) {
@@ -92,7 +90,6 @@ public class MainMapViewController: BaseMapViewController {
         self.tabBarController?.tabBar.alpha = 1.0
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         self.sidebarButtons.isHidden = false
-        UIApplication.shared.isIdleTimerDisabled = false
     }
 }
 
