@@ -9,17 +9,26 @@
 import Foundation
 import Mapbox
 
+private final class BRCMapView: MGLMapView {
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.brc_setDefaults()
+    }
+}
+
 extension MGLMapView {
-    static func brcMapView() -> MGLMapView {
-        let mapView = MGLMapView()
+    @objc public static func brcMapView() -> MGLMapView {
+        let mapView = BRCMapView()
         mapView.brc_setDefaults()
         return mapView
     }
     
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults() {
+        let styleJSON = traitCollection.userInterfaceStyle == .light ? "iburn-2022.json" : "iburn-2022-dark.json"
+        
         guard let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map"),
-              let styleJSONURL = Bundle.main.url(forResource: "styles", withExtension: "", subdirectory: "Map")?.appendingPathComponent("iburn-2022.json") else {
+              let styleJSONURL = Bundle.main.url(forResource: "styles", withExtension: "", subdirectory: "Map")?.appendingPathComponent(styleJSON) else {
             print("Couldn't find mbtiles!")
             return
         }
@@ -37,7 +46,7 @@ extension MGLMapView {
         
         showsUserLocation = true
         minimumZoomLevel = 12
-        backgroundColor = UIColor.brc_mapBackground
+        backgroundColor = UIColor.brc_mapBackgroundColor
         translatesAutoresizingMaskIntoConstraints = false
         brc_moveToBlackRockCityCenter(animated: false)
         

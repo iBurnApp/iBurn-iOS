@@ -15,6 +15,10 @@ extension UIColor {
         let b = CGFloat(hex & 0xFF)
         self.init(red: r/255.0, green: g/255.0, blue: b/255.0, alpha: alpha)
     }
+    
+    @objc public static let brc_mapBackgroundColor: UIColor = .init { traitCollection in
+        return traitCollection.userInterfaceStyle == .light ? .init(hex: 0xE8E0D8) : .init(hex: 0x1C1B1B)
+    }
 }
 
 extension BRCImageColors {

@@ -42,8 +42,7 @@ final class LabelAnnotationView: MGLAnnotationView {
         imageView.sizeAnchors == CGSize(width: 30, height: 30)
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 10)
-        // Replace this with dynamic color when we support dark theme for the map itself
-        label.textColor = .darkText
+        label.textColor = .label
         
         imageView.centerAnchors == centerAnchors
         label.topAnchor == imageView.bottomAnchor - 10

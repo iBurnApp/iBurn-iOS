@@ -39,7 +39,7 @@ public class MainMapViewController: BaseMapViewController {
         search.tableViewAdapter.groupTransformer = GroupTransformers.searchGroup
         let userSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
         userSource.allowedClass = BRCUserMapPoint.self
-        let mapView = MGLMapView()
+        let mapView = MGLMapView.brcMapView()
         let favoritesSource = YapViewAnnotationDataSource(viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.everythingFilteredByFavorite))
         let dataSource = AggregateAnnotationDataSource(dataSources: [userSource, favoritesSource])
         let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)

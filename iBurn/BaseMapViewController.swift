@@ -30,14 +30,14 @@ public class BaseMapViewController: UIViewController {
     
     /// Using default MapViewAdapter
     public init(dataSource: AnnotationDataSource? = nil) {
-        let mapView = MGLMapView()
+        let mapView = MGLMapView.brcMapView()
         self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(nibName: nil, bundle: nil)
         self.mapViewAdapter.parent = self
     }
     
     public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        let mapView = MGLMapView()
+        let mapView = MGLMapView.brcMapView()
         self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: nil)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         self.mapViewAdapter.parent = self

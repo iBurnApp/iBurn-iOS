@@ -17,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, nonatomic, readonly) UIColor *brc_lightGreenColor;
 
 @property (class, nonatomic, readonly) UIColor *brc_navBarColor;
-@property (class, nonatomic, readonly) UIColor *brc_mapBackgroundColor;
 
 @end
 NS_ASSUME_NONNULL_END
