@@ -25,7 +25,7 @@ extension MGLMapView {
     
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults() {
-        let styleJSON = traitCollection.userInterfaceStyle == .light ? "iburn-2022.json" : "iburn-2022-dark.json"
+        let styleJSON = traitCollection.userInterfaceStyle == .light ? "iburn-light.json" : "iburn-dark.json"
         
         guard let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map"),
               let styleJSONURL = Bundle.main.url(forResource: "styles", withExtension: "", subdirectory: "Map")?.appendingPathComponent(styleJSON) else {

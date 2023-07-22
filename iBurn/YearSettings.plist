@@ -3,14 +3,14 @@
 <plist version="1.0">
 <dict>
 	<key>PlayaYear</key>
-	<string>2022</string>
+	<string>2023</string>
 	<key>EventStart</key>
-	<date>2022-08-28T07:00:00Z</date>
+	<date>2023-08-29T07:00:00Z</date>
 	<key>EventEnd</key>
-	<date>2022-09-05T07:00:00Z</date>
+	<date>2023-09-04T07:00:00Z</date>
 	<key>ManCenterLatitude</key>
-	<real>40.78703</real>
+	<real>40.7864</real>
 	<key>ManCenterLongitude</key>
-	<real>-119.20274</real>
+	<real>-119.2035</real>
 </dict>
 </plist>
