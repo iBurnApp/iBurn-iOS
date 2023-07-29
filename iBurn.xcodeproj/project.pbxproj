@@ -1797,7 +1797,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 64;
+				CURRENT_PROJECT_VERSION = 65;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
@@ -1834,7 +1834,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 64;
+				CURRENT_PROJECT_VERSION = 65;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iBurn/iBurn-Prefix.pch";
