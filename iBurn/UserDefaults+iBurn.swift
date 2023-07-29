@@ -12,6 +12,7 @@ extension UserDefaults {
     private enum Keys: String {
         case locationHistoryDisabled
         case downloadsDisabled
+        case navigationModeDisabled
     }
     
     static var isLocationHistoryDisabled: Bool {
@@ -29,6 +30,16 @@ extension UserDefaults {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: Keys.downloadsDisabled.rawValue)
+        }
+    }
+    
+    
+    @objc static var isNavigationModeDisabled: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: Keys.navigationModeDisabled.rawValue)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.navigationModeDisabled.rawValue)
         }
     }
 }

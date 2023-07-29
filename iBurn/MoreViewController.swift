@@ -23,17 +23,19 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         debugShowOnboarding = 8,
         audioTour = 9,
         appearance = 10,
-        locationHistory = 11
+        locationHistory = 11,
+        navigationMode = 12,
+        dataUpdates = 13
     }
     
-    @IBOutlet var downloadsSwitch: UISwitch!
+    private let navigationModeSwitch = UISwitch()
     
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "More"
-        self.downloadsSwitch.isOn = !UserDefaults.areDownloadsDisabled
+        navigationModeSwitch.addTarget(self, action: #selector(navigationModeToggled(sender:)), for: .valueChanged)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -41,6 +43,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         tableView.setColorTheme(Appearance.currentColors, animated: animated)
         refreshNavigationBarColors(animated)
         tableView.reloadData()
+        navigationModeSwitch.isOn = !UserDefaults.isNavigationModeDisabled
     }
 
     override func didReceiveMemoryWarning() {
@@ -59,13 +62,19 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             cell.imageView!.image = cellImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
         }
         
-        if cell.tag == CellTag.unlock.rawValue {
+        switch CellTag(rawValue: cell.tag) {
+        case .unlock:
             if BRCEmbargo.allowEmbargoedData() {
                 cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
                 cell.textLabel!.text = "Location Data Unlocked"
                 cell.textLabel!.textColor = UIColor.lightGray
                 cell.isUserInteractionEnabled = false
             }
+        case .navigationMode:
+            // should we be resetting the other reused cells?
+            cell.accessoryView = navigationModeSwitch
+        default:
+            break
         }
         
         return cell
@@ -100,24 +109,24 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             pushAppearanceView()
         case .locationHistory:
             pushTracksView()
+        case .navigationMode:
+            break
+        case .dataUpdates:
+            pushDataUpdatesView()
         }
     }
     
     @IBAction func updatesToggled(sender: UISwitch) {
         UserDefaults.areDownloadsDisabled = !sender.isOn
         if sender.isOn {
-            guard let updateURL = URL(string: kBRCUpdatesURLString) else {
-                return
-            }
-            BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { result in
-                NSLog("UPDATE COMPLETE: \(result)")
-            }
+            
         } else {
-            DispatchQueue.global().async {
-                BRCAppDelegate.shared.dataImporter.resetUpdates()
-                BRCAppDelegate.shared.preloadExistingData()
-            }
+            
         }
+    }
+    
+    @objc func navigationModeToggled(sender: UISwitch) {
+        UserDefaults.isNavigationModeDisabled = !sender.isOn
     }
     
     func pushTracksView() {
@@ -199,6 +208,11 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     func pushAppearanceView() {
         let vc = AppearanceViewController.fromStoryboard()
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func pushDataUpdatesView() {
+        let vc = DataUpdatesFactory.makeViewController()
         navigationController?.pushViewController(vc, animated: true)
     }
     

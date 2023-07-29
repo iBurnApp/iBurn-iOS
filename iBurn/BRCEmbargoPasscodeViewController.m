@@ -8,7 +8,6 @@
 
 #import "BRCEmbargoPasscodeViewController.h"
 #import "PureLayout.h"
-#import "DAKeyboardControl.h"
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCAppDelegate.h"
@@ -31,6 +30,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *textFieldAxisConstraint;
 @property (nonatomic, strong) TTTTimeIntervalFormatter *timerFormatter;
 @property (nonatomic, strong) BRCSocialButtonsView *socialButtonsView;
+
 @end
 
 @implementation BRCEmbargoPasscodeViewController
@@ -42,6 +42,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
     BRCImageColors *colors = Appearance.currentColors;
     self.view.backgroundColor = colors.backgroundColor;
     self.didAddConstraints = NO;
@@ -112,28 +113,6 @@
     [self.view addGestureRecognizer:tapRecognizer];
     
     [self.view updateConstraintsIfNeeded];
-    
-    __weak BRCEmbargoPasscodeViewController *welf = self;
-    [self.view addKeyboardNonpanningWithFrameBasedActionHandler:nil constraintBasedActionHandler:^(CGRect keyboardFrameInView, BOOL opening, BOOL closing) {
-        if (opening)
-        {
-            welf.bottomCostraint.constant = -keyboardFrameInView.size.height;
-            [UIView animateWithDuration:0.2 animations:^{
-                CGFloat newAlpha = 0.0f;
-                welf.descriptionLabel.alpha = newAlpha;
-                welf.socialButtonsView.alpha = newAlpha;
-            }];
-        }
-        else if (closing)
-        {
-            welf.bottomCostraint.constant = 0.0;
-            [UIView animateWithDuration:0.5 animations:^{
-                CGFloat newAlpha = 1.0f;
-                welf.descriptionLabel.alpha = newAlpha;
-                welf.socialButtonsView.alpha = newAlpha;
-            }];
-        }
-    }];
 }
 
 - (BOOL) isDataUnlocked {
@@ -228,7 +207,7 @@
     self.bottomCostraint = [self.containerView autoPinEdgeToSuperviewSafeArea:ALEdgeBottom];
     [self.containerView autoPinEdgeToSuperviewMargin:ALEdgeLeft];
     [self.containerView autoPinEdgeToSuperviewMargin:ALEdgeRight];
-    
+        
     [self.descriptionLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(0, 0, 0, 0) excludingEdge:ALEdgeBottom];
     
     [self.socialButtonsView autoPinEdge:ALEdgeTop toEdge:ALEdgeBottom ofView:self.descriptionLabel withOffset:10];
@@ -307,7 +286,6 @@
 
 - (void)showTabBarController
 {
-    [self.view removeKeyboardControl];
     if (self.dismissAction) {
         self.dismissAction();
     }
@@ -321,11 +299,32 @@
     return NO;
 }
 
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    [self.view layoutIfNeeded];
+    [UIView animateWithDuration:0.2 animations:^{
+        self.bottomCostraint.constant = -(self.view.frame.size.height / 2);
+        CGFloat newAlpha = 0.0f;
+        self.descriptionLabel.alpha = newAlpha;
+        self.socialButtonsView.alpha = newAlpha;
+        [self.view layoutIfNeeded];
+    }];
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    [self.view layoutIfNeeded];
+    [UIView animateWithDuration:0.5 animations:^{
+        self.bottomCostraint.constant = 0.0;
+        CGFloat newAlpha = 1.0f;
+        self.descriptionLabel.alpha = newAlpha;
+        self.socialButtonsView.alpha = newAlpha;
+        [self.view layoutIfNeeded];
+    }];
+}
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return UIInterfaceOrientationMaskPortrait;
 }
-
 
 - (void) setUnlocked {
     [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];

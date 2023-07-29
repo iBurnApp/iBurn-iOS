@@ -4,7 +4,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -283,41 +282,53 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell tag="8" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="4wF-aT-fBh" userLabel="Download Updates">
+                                    <tableViewCell tag="13" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="VBj-0m-rqf" imageView="mYJ-RZ-iv4" style="IBUITableViewCellStyleDefault" id="4wF-aT-fBh" userLabel="Data Updates">
                                         <rect key="frame" x="0.0" y="591" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="4wF-aT-fBh" id="KDU-fC-h6J">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="348.5" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Download Updates" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="q8K-yu-gTe">
-                                                    <rect key="frame" x="58" y="11.5" width="145" height="21"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Data Updates" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="VBj-0m-rqf">
+                                                    <rect key="frame" x="55" y="0.0" width="285.5" height="44"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="BRCRefreshIcon" translatesAutoresizingMaskIntoConstraints="NO" id="agc-U5-fbT">
-                                                    <rect key="frame" x="17" y="7" width="30" height="30"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="30" id="ya9-tR-cB0"/>
-                                                        <constraint firstAttribute="height" constant="30" id="yoI-QY-6UG"/>
-                                                    </constraints>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" image="arrow.clockwise" catalog="system" id="mYJ-RZ-iv4">
+                                                    <rect key="frame" x="19" y="11" width="18" height="20"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="VOw-tz-1Vt">
-                                                    <rect key="frame" x="310" y="6" width="51" height="31"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                                    <color key="tintColor" name="AccentColor"/>
-                                                    <connections>
-                                                        <action selector="updatesToggledWithSender:" destination="f28-vZ-tnd" eventType="valueChanged" id="trj-cZ-pMw"/>
-                                                    </connections>
-                                                </switch>
                                             </subviews>
-                                            <constraints>
-                                                <constraint firstItem="q8K-yu-gTe" firstAttribute="leading" secondItem="agc-U5-fbT" secondAttribute="trailing" constant="11" id="9Z3-vh-Kzy"/>
-                                                <constraint firstItem="agc-U5-fbT" firstAttribute="centerY" secondItem="KDU-fC-h6J" secondAttribute="centerY" id="XjN-t2-oim"/>
-                                                <constraint firstItem="q8K-yu-gTe" firstAttribute="centerY" secondItem="KDU-fC-h6J" secondAttribute="centerY" id="p26-pj-FhT"/>
-                                                <constraint firstItem="agc-U5-fbT" firstAttribute="leading" secondItem="KDU-fC-h6J" secondAttribute="leading" constant="17" id="pZM-83-gIx"/>
-                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell tag="12" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" textLabel="Oxt-oh-pme" detailTextLabel="4zG-SK-DGY" imageView="mZO-Rh-Wk8" rowHeight="47" style="IBUITableViewCellStyleSubtitle" id="UCN-2U-ImT" userLabel="Navigation">
+                                        <rect key="frame" x="0.0" y="635" width="375" height="47"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="UCN-2U-ImT" id="Upr-He-RsT">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="47"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Navigation Mode" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Oxt-oh-pme">
+                                                    <rect key="frame" x="55" y="7" width="122.5" height="19.5"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="location.circle" catalog="system" id="mZO-Rh-Wk8">
+                                                    <rect key="frame" x="18" y="14" width="20" height="19"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </imageView>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Keep screen on when map is visible" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4zG-SK-DGY">
+                                                    <rect key="frame" x="55" y="26.5" width="186.5" height="13.5"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                 </cells>
@@ -329,9 +340,6 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="More" id="2BA-et-9af"/>
-                    <connections>
-                        <outlet property="downloadsSwitch" destination="VOw-tz-1Vt" id="LYU-Rq-9Vi"/>
-                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="siJ-b0-95I" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -449,11 +457,9 @@
         <image name="BRCMailIcon" width="25" height="25"/>
         <image name="BRCMapIcon" width="25" height="25"/>
         <image name="BRCOnboardingIcon" width="25" height="25"/>
-        <image name="BRCRefreshIcon" width="48" height="48"/>
         <image name="BRCThemeIcon" width="25" height="25"/>
-        <namedColor name="AccentColor">
-            <color red="1" green="0.79199999570846558" blue="0.15700000524520874" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
+        <image name="arrow.clockwise" catalog="system" width="113" height="128"/>
+        <image name="location.circle" catalog="system" width="128" height="123"/>
         <systemColor name="groupTableViewBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>

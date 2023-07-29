@@ -74,7 +74,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
 
 - (void) resetUpdates {
     [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
-        
         [transaction setObject: nil
                         forKey: @"art"
                   inCollection: [BRCUpdateInfo yapCollection]];

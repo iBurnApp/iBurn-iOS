@@ -22,7 +22,6 @@ target 'iBurn' do
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
 	pod 'PureLayout', '~> 3.0'
-	pod 'DAKeyboardControl', '~> 2.4'
 	pod 'BButton', '~> 4.0'
 	pod 'VTAcknowledgementsViewController', '~> 2.0'
 	pod 'TTTAttributedLabel', '~> 2.0'

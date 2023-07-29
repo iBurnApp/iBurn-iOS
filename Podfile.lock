@@ -7,7 +7,6 @@ PODS:
   - CocoaLumberjack/Swift (3.8.0):
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
-  - DAKeyboardControl (2.4.0)
   - DOFavoriteButton (0.0.4)
   - FormatterKit/LocationFormatter (1.9.0):
     - FormatterKit/Resources
@@ -143,7 +142,6 @@ DEPENDENCIES:
   - BButton (~> 4.0)
   - CocoaLumberjack/Swift
   - CupertinoYankee (~> 1.0)
-  - DAKeyboardControl (~> 2.4)
   - DOFavoriteButton (from `Submodules/DOFavoriteButton/DOFavoriteButton.podspec`)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
@@ -167,7 +165,6 @@ SPEC REPOS:
     - BButton
     - CocoaLumberjack
     - CupertinoYankee
-    - DAKeyboardControl
     - FormatterKit
     - GRDB.swift
     - JTSImageViewController
@@ -203,7 +200,6 @@ SPEC CHECKSUMS:
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
   CocoaLumberjack: 78abfb691154e2a9df8ded4350d504ee19d90732
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
-  DAKeyboardControl: 9d9bca22a5cc3c1d3cc61e24fbd208c3e84a3d2d
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 184db51bf120b633693a73624a4cede89ec51a41
   GRDB.swift: a6b7e9900aa300d0cbf1f1c5f47b8f32ae51e30c
@@ -219,6 +215,6 @@ SPEC CHECKSUMS:
   VTAcknowledgementsViewController: 2cae5539fb84081196ab00d267caad390f418ce6
   YapDatabase: 350ab72b61f9dcc32504594da1a52a93f5ef1476
 
-PODFILE CHECKSUM: a6680d17959f35673db13d8d9a28eef85916ed4d
+PODFILE CHECKSUM: ef2cd91ffc4d90735aa454687b142db7a81c3b1a
 
 COCOAPODS: 1.12.1

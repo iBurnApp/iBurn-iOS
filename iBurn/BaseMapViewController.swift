@@ -57,6 +57,7 @@ public class BaseMapViewController: UIViewController {
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
         mapViewAdapter.reloadAnnotations()
+        NotificationCenter.default.addObserver(self, selector: #selector(powerStateDidChange(notification:)), name: .NSProcessInfoPowerStateDidChange, object: nil)
     }
     
     override public func viewWillAppear(_ animated: Bool) {
@@ -67,14 +68,13 @@ public class BaseMapViewController: UIViewController {
     override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         isVisible = true
-        // keeps the screen on for folks navigating in vehicles
-        UIApplication.shared.isIdleTimerDisabled = true
+        updateIdleTimer()
     }
     
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         isVisible = false
-        UIApplication.shared.isIdleTimerDisabled = false
+        updateIdleTimer()
     }
     
     // MARK: - Public API
@@ -92,6 +92,23 @@ public class BaseMapViewController: UIViewController {
 // MARK: - Private
 
 private extension BaseMapViewController {
+    @objc func powerStateDidChange(notification: Notification) {
+        updateIdleTimer()
+    }
+    
+    /// keeps the screen on for folks navigating in vehicles
+    func updateIdleTimer() {
+        if !UserDefaults.isNavigationModeDisabled,
+           !ProcessInfo.processInfo.isLowPowerModeEnabled,
+           isVisible {
+            UIApplication.shared.isIdleTimerDisabled = true
+            print("Navigation mode enabled, map screen will stay on.")
+        } else {
+            UIApplication.shared.isIdleTimerDisabled = false
+            print("Navigation mode disabled, map screen will dim as usual.")
+        }
+    }
+    
     func setupMapView(_ mapView: MGLMapView) {
         mapView.brc_setDefaults()
         centerMapAtManCoordinatesAnimated(false)
