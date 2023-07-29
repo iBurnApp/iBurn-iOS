@@ -277,7 +277,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObjects:[BRCArtObject yapCollection], [BRCCampObject yapCollection], [BRCEventObject yapCollection], nil]];
     YapDatabaseViewOptions *searchObjectsViewOptions = [[YapDatabaseViewOptions alloc] init];
     searchObjectsViewOptions.allowedCollections = allowedCollections;
-    YapDatabaseView *searchObjectsView = [[YapDatabaseAutoView alloc] initWithGrouping:searchObjectsGrouping sorting:[[self class] sortingForClass:[BRCDataObject class]] versionTag:@"1" options:searchObjectsViewOptions];
+    YapDatabaseView *searchObjectsView = [[YapDatabaseAutoView alloc] initWithGrouping:searchObjectsGrouping sorting:[[self class] sorting] versionTag:@"2" options:searchObjectsViewOptions];
     BOOL success = [self.database registerExtension:searchObjectsView withName:self.searchObjectsViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.searchObjectsViewName];
@@ -383,7 +383,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         
         YapDatabaseSearchResultsView *searchResultsView = [[YapDatabaseSearchResultsView alloc] initWithFullTextSearchName:ftsName
                                                                                                             parentViewName:parentViewName
-                                                                                                                versionTag:@"6"
+                                                                                                                versionTag:@"7"
                                                                                                                    options:searchViewOptions];
         
         BOOL success = [self.database registerExtension:searchResultsView withName:searchViewName];
@@ -496,42 +496,32 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return [@(distance1) compare:@(distance2)];
 }
 
-+ (YapDatabaseViewSorting*)sortingForClass:(Class)viewClass {
-    YapDatabaseViewSorting* sorting = nil;
-    if (viewClass == [BRCEventObject class]) {
-        sorting = [YapDatabaseViewSorting withObjectBlock:^(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection1, NSString *key1, id obj1,
-                         NSString *collection2, NSString *key2, id obj2){
-            if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
-                BRCEventObject *event1 = (BRCEventObject *)obj1;
-                BRCEventObject *event2 = (BRCEventObject *)obj2;
-                
-                if (event1.isAllDay && !event2.isAllDay) {
-                    return NSOrderedDescending;
-                }
-                else if (!event1.isAllDay && event2.isAllDay) {
-                    return NSOrderedAscending;
-                }
-                NSComparisonResult dateComparison = NSOrderedSame;
-                dateComparison = [event1.startDate compare:event2.startDate];
-                if (dateComparison == NSOrderedSame) {
-                    return [event1.title compare:event2.title];
-                }
-                return dateComparison;
++ (YapDatabaseViewSorting*)sorting {
+    return [YapDatabaseViewSorting withObjectBlock:^(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection1, NSString *key1, id obj1,
+                                                                                          NSString *collection2, NSString *key2, id obj2){
+        if ([obj1 isKindOfClass:[BRCEventObject class]] && [obj2 isKindOfClass:[BRCEventObject class]]) {
+            BRCEventObject *event1 = (BRCEventObject *)obj1;
+            BRCEventObject *event2 = (BRCEventObject *)obj2;
+            
+            if (event1.isAllDay && !event2.isAllDay) {
+                return NSOrderedDescending;
             }
-            return NSOrderedSame;
-        }];
-    } else {
-        sorting = [YapDatabaseViewSorting withObjectBlock:^(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection1, NSString *key1, id obj1,
-                         NSString *collection2, NSString *key2, id obj2){
-            if ([obj1 isKindOfClass:viewClass] && [obj2 isKindOfClass:viewClass]) {
-                BRCDataObject *data1 = (BRCDataObject *)obj1;
-                BRCDataObject *data2 = (BRCDataObject *)obj2;
-                return [data1.title compare:data2.title];
+            else if (!event1.isAllDay && event2.isAllDay) {
+                return NSOrderedAscending;
             }
-            return NSOrderedSame;
-        }];
-    }
-    return sorting;
+            NSComparisonResult dateComparison = NSOrderedSame;
+            dateComparison = [event1.startDate compare:event2.startDate];
+            if (dateComparison == NSOrderedSame) {
+                return [event1.title compare:event2.title];
+            }
+            return dateComparison;
+        } else if ([obj1 isKindOfClass:BRCDataObject.class] && [obj2 isKindOfClass:BRCDataObject.class]) {
+            BRCDataObject *data1 = (BRCDataObject *)obj1;
+            BRCDataObject *data2 = (BRCDataObject *)obj2;
+            return [data1.title compare:data2.title];
+        }
+        return NSOrderedSame;
+    }];
 }
 
 /**
@@ -541,9 +531,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 + (YapDatabaseView*) databaseViewForClass:(Class)viewClass allowedCollections:(YapWhitelistBlacklist*)allowedCollections
 {
     YapDatabaseViewGrouping *grouping = [[self class] groupingForClass:viewClass];
-    YapDatabaseViewSorting *sorting = [[self class] sortingForClass:viewClass];
+    YapDatabaseViewSorting *sorting = [[self class] sorting];
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
-    NSString *versionTag = @"6";
+    NSString *versionTag = @"7";
     if (options.allowedCollections) {
         options.allowedCollections = allowedCollections;
     }
@@ -560,7 +550,9 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
              NSStringFromSelector(@selector(artistName)),
              NSStringFromSelector(@selector(detailDescription)),
              NSStringFromSelector(@selector(campName)),
-             NSStringFromSelector(@selector(artName))];
+             NSStringFromSelector(@selector(artName)),
+             NSStringFromSelector(@selector(artistLocation))
+    ];
 }
 
 + (NSString*) fullTextSearchNameForClass:(Class)viewClass
@@ -757,7 +749,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         }
         Class viewClass = [BRCEventObject class];
         YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass];
-        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sortingForClass:viewClass];
+        YapDatabaseViewSorting *sorting = [BRCDatabaseManager sorting];
         [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:completionBlock];
 }
