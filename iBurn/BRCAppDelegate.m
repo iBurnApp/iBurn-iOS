@@ -36,6 +36,7 @@
 @import AVFoundation;
 @import CocoaLumberjack;
 @import FirebaseCore;
+#import "iBurn-Swift.h"
 
 static int ddLogLevel = DDLogLevelVerbose;
 
@@ -43,7 +44,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 @interface BRCAppDelegate() <UINavigationControllerDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
-@property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
 @property (nonatomic, strong, readonly) BRCMediaDownloader *audioDownloader;
 @property (nonatomic, strong, readonly) BRCMediaDownloader *imageDownloader;
 
@@ -81,6 +81,9 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSLog(@"Loading bundled data...");
         [self preloadExistingData];
+        if ([NSUserDefaults areDownloadsDisabled]) {
+            return;
+        }
         NSLog(@"Loading data from internet...");
         NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
         [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
@@ -153,6 +156,9 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 - (void)application:(UIApplication *)application
 didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
+    if ([NSUserDefaults areDownloadsDisabled]) {
+        return;
+    }
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
     [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
 }
@@ -187,6 +193,10 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
 
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
+    if ([NSUserDefaults areDownloadsDisabled]) {
+        completionHandler(UIBackgroundFetchResultNoData);
+        return;
+    }
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
     [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:completionHandler];
 }

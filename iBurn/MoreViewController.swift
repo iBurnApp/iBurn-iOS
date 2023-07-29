@@ -26,11 +26,14 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         locationHistory = 11
     }
     
+    @IBOutlet var downloadsSwitch: UISwitch!
+    
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "More"
+        self.downloadsSwitch.isOn = !UserDefaults.areDownloadsDisabled
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -97,6 +100,23 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             pushAppearanceView()
         case .locationHistory:
             pushTracksView()
+        }
+    }
+    
+    @IBAction func updatesToggled(sender: UISwitch) {
+        UserDefaults.areDownloadsDisabled = !sender.isOn
+        if sender.isOn {
+            guard let updateURL = URL(string: kBRCUpdatesURLString) else {
+                return
+            }
+            BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { result in
+                NSLog("UPDATE COMPLETE: \(result)")
+            }
+        } else {
+            DispatchQueue.global().async {
+                BRCAppDelegate.shared.dataImporter.resetUpdates()
+                BRCAppDelegate.shared.preloadExistingData()
+            }
         }
     }
     

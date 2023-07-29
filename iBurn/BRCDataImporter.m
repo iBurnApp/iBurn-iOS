@@ -72,6 +72,21 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
     return self;
 }
 
+- (void) resetUpdates {
+    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
+        
+        [transaction setObject: nil
+                        forKey: @"art"
+                  inCollection: [BRCUpdateInfo yapCollection]];
+        [transaction setObject: nil
+                        forKey: @"camps"
+                  inCollection: [BRCUpdateInfo yapCollection]];
+        [transaction setObject: nil
+                        forKey: @"events"
+                  inCollection: [BRCUpdateInfo yapCollection]];
+    }];
+}
+
 - (void) loadUpdatesFromURL:(NSURL*)updateURL
            fetchResultBlock:(void (^)(UIBackgroundFetchResult result))fetchResultBlock {
     if (self.isUpdating) {
