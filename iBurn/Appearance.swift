@@ -89,6 +89,8 @@ import UIKit
         UITabBar.appearance().barTintColor = colors.backgroundColor
         UITableView.appearance().backgroundColor = colors.backgroundColor
         UITableView.appearance().tintColor = colors.primaryColor
+        UISwitch.appearance().tintColor = colors.primaryColor
+        UISwitch.appearance().onTintColor = colors.primaryColor
     }
 
 }

@@ -42,5 +42,7 @@ extern NSString * const BRCDataImporterMapTilesUpdatedNotification;
 /** Double-checks that the map tiles exist on each launch */
 - (void) doubleCheckMapTiles:(nullable BRCUpdateInfo*)updateInfo;
 
+- (void) resetUpdates;
+
 @end
 NS_ASSUME_NONNULL_END
