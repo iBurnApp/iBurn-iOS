@@ -36,7 +36,7 @@ extension BRCEventObject {
     /// Boxed `BRCEventType` values that are selectable within `BRCEventsFilterTableViewController`
     @objc public static var allVisibleEventTypes: [NSNumber] {
         BRCEventType.allCases
-            .filter { $0 != .unknown && $0 != .none }
+            .filter { $0.isVisible }
             .sorted {
                 $0.displayString < $1.displayString
             }
@@ -45,6 +45,17 @@ extension BRCEventObject {
 }
 
 extension BRCEventType {
+    var isVisible: Bool {
+        switch self {
+        case .unknown, .none:
+            return false
+        case .coffee, .healing, .LGBT: // no longer used in 2023
+            return false
+        default:
+            return true
+        }
+    }
+    
     var emoji: String {
         switch self {
         case .unknown, .none, .other:
@@ -99,14 +110,16 @@ extension BRCEventType {
     /// org-defined display string
     var displayString: String {
         switch self {
-        case .unknown, .none, .other:
+        case .unknown, .none:
             return "Unknown"
+        case .other:
+            return "Miscellaneous"
         case .workshop:
             return "Class/Workshop"
         case .performance:
             return "Performance"
         case .support:
-            return "Care/Support"
+            return "Self Care"
         case .party:
             return "Gathering/Party"
         case .ceremony:
@@ -118,13 +131,13 @@ extension BRCEventType {
         case .adult:
             return "Mature Audiences"
         case .kid:
-            return "Kid-friendly"
+            return "For Kids"
         case .parade:
             return "Parade"
         case .food:
-            return "Food"
+            return "Food & Drink"
         case .crafts:
-            return "Arts/Crafts/Making"
+            return "Arts & Crafts"
         case .coffee:
             return "Coffee/Tea"
         case .healing:
@@ -134,13 +147,13 @@ extension BRCEventType {
         case .liveMusic:
             return "Live Music"
         case .RIDE:
-            return "Radical Inclusion, Diversity and Equity"
+            return "Diversity & Inclusion"
         case .repair:
             return "Repair"
         case .sustainability:
             return "Sustainability/Greening Your Burn"
         case .meditation:
-            return "Meditation/Movement/Yoga"
+            return "Yoga/Movement/Fitness"
         @unknown default:
             return "Unknown"
         }

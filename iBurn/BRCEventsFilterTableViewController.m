@@ -13,6 +13,16 @@
 #import "iBurn-Swift.h"
 @import YapDatabase;
 
+typedef NS_ENUM(NSUInteger, BRCTableSection) {
+    BRCTableSectionTime,
+    BRCTableSectionActions,
+    BRCTableSectionType
+};
+
+typedef NS_ENUM(NSUInteger, BRCTableAction) {
+    BRCTableActionSelectAll,
+    BRCTableActionSelectNone
+};
 
 NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdentifier";
 
@@ -43,7 +53,8 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 @property (nonatomic, strong) NSArray *tableViewDataSource;
 @property (nonatomic, weak) id <BRCEventsFilterTableViewControllerDelegate> delegate;
 @property (nonatomic, strong) NSArray *timeStrings;
-@property (nonatomic, strong) NSArray *eventTypeArray;
+@property (nonatomic, strong, readonly) NSArray<NSString*> *actionsArray;
+@property (nonatomic, strong) NSArray<BRCEventTypeContainer*> *eventTypeArray;
 
 @property (nonatomic) BOOL showExpiredEvents;
 @property (nonatomic) BOOL searchSelectedDayOnly;
@@ -85,6 +96,7 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:BRCFilterTableViewCellIdentifier];
     
     self.timeStrings = @[@"Show Expired Events", @"Search Selected Day Only", @"Show All Day Events"];
+    _actionsArray = @[@"Select All", @"Select None"];
     
     self.showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
     self.searchSelectedDayOnly = UserSettings.searchSelectedDayOnly;
@@ -119,8 +131,6 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-
-    
     [self.delegate didSetNewFilterSettings:self];    
 }
 
@@ -152,38 +162,47 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 ////// Required //////
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (section == 0) {
-        return [self.timeStrings count];
+    switch ((BRCTableSection)section) {
+        case BRCTableSectionTime:
+            return [self.timeStrings count];
+        case BRCTableSectionActions:
+            return self.actionsArray.count;
+        case BRCTableSectionType:
+            return [self.eventTypeArray count];
     }
-    else if (section == 1) {
-        return [self.eventTypeArray count];
-    }
-    return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BRCFilterTableViewCellIdentifier];
     
     BRCImageColors *colors = Appearance.currentColors;
     BOOL showCheckMark = NO;
-    if (indexPath.section == 0) {
-        if (indexPath.row == 0) {
-            showCheckMark = self.showExpiredEvents;
-        } else if (indexPath.row == 1) {
-            showCheckMark = self.searchSelectedDayOnly;
-        } else if (indexPath.row == 2) {
-            showCheckMark = self.showAllDayEvents;
+    switch ((BRCTableSection)indexPath.section) {
+        case BRCTableSectionTime: {
+            if (indexPath.row == 0) {
+                showCheckMark = self.showExpiredEvents;
+            } else if (indexPath.row == 1) {
+                showCheckMark = self.searchSelectedDayOnly;
+            } else if (indexPath.row == 2) {
+                showCheckMark = self.showAllDayEvents;
+            }
+            NSString *text = self.timeStrings[indexPath.row];
+            cell.textLabel.text = text;
+            break;
         }
-        NSString *text = self.timeStrings[indexPath.row];
-        cell.textLabel.text = text;
-        
-    } else if (indexPath.section == 1) {
-        BRCEventTypeContainer *container = self.eventTypeArray[indexPath.row];
-        showCheckMark = container.isSelected;
-        cell.textLabel.text = container.title;
-        colors = [BRCImageColors colorsFor:container.type];
+        case BRCTableSectionActions: {
+            NSString *action = self.actionsArray[indexPath.row];
+            cell.textLabel.text = action;
+            break;
+        }
+        case BRCTableSectionType: {
+            BRCEventTypeContainer *container = self.eventTypeArray[indexPath.row];
+            showCheckMark = container.isSelected;
+            cell.textLabel.text = container.title;
+            colors = [BRCImageColors colorsFor:container.type];
+            break;
+        }
     }
     cell.textLabel.textColor = colors.secondaryColor;
     cell.backgroundColor = colors.backgroundColor;
@@ -200,18 +219,19 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 2;
+    return 3;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    if (section == 0) {
-        return @"Time";
+    switch ((BRCTableSection)section) {
+        case BRCTableSectionTime:
+            return @"Time";
+        case BRCTableSectionActions:
+            return nil;
+        case BRCTableSectionType:
+            return @"Type";
     }
-    else if (section == 1) {
-        return @"Type";
-    }
-    return @"";
 }
 
 
@@ -219,27 +239,41 @@ NSString *const BRCFilterTableViewCellIdentifier = @"BRCFilterTableViewCellIdent
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 0) {
-        if (indexPath.row == 0) {
-            self.showExpiredEvents = !self.showExpiredEvents;
-        } else if (indexPath.row == 1) {
-            self.searchSelectedDayOnly = !self.searchSelectedDayOnly;
-        } else if (indexPath.row == 2) {
-            self.showAllDayEvents = !self.showAllDayEvents;
-        }
-    }
-    else if (indexPath.section == 1) {
-        BRCEventTypeContainer *container = self.eventTypeArray[indexPath.row];
-        container.isSelected = !container.isSelected;
-    }
-    
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    if (cell.accessoryType == UITableViewCellAccessoryCheckmark) {
-        cell.accessoryType = UITableViewCellAccessoryNone;
-    }
-    else {
-        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    switch ((BRCTableSection)indexPath.section) {
+        case BRCTableSectionTime: {
+            if (indexPath.row == 0) {
+                self.showExpiredEvents = !self.showExpiredEvents;
+            } else if (indexPath.row == 1) {
+                self.searchSelectedDayOnly = !self.searchSelectedDayOnly;
+            } else if (indexPath.row == 2) {
+                self.showAllDayEvents = !self.showAllDayEvents;
+            }
+            [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+            break;
+        }
+        case BRCTableSectionActions: {
+            BOOL shouldSelect = NO;
+            switch ((BRCTableAction)indexPath.row) {
+                case BRCTableActionSelectAll:
+                    shouldSelect = YES;
+                    break;
+                case BRCTableActionSelectNone:
+                    shouldSelect = NO;
+                    break;
+            }
+            [self.eventTypeArray enumerateObjectsUsingBlock:^(BRCEventTypeContainer *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                obj.isSelected = shouldSelect;
+            }];
+            [tableView reloadSections:[[NSIndexSet alloc] initWithIndex:BRCTableSectionType] withRowAnimation:UITableViewRowAnimationAutomatic];
+            break;
+        }
+        case BRCTableSectionType: {
+            BRCEventTypeContainer *container = self.eventTypeArray[indexPath.row];
+            container.isSelected = !container.isSelected;
+            [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+            break;
+        }
     }
 }
 
