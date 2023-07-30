@@ -70,6 +70,7 @@
 		D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */; };
 		D9774B172118DB4500BE3CC8 /* MapButtonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9774B162118DB4500BE3CC8 /* MapButtonHelper.swift */; };
 		D9774B1C2118DEE200BE3CC8 /* MapListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */; };
+		D977C85F2A76468800341CBF /* BRCUpdateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85E2A76468800341CBF /* BRCUpdateInfo.swift */; };
 		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
 		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
 		D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8631EF23994007766A9 /* MapDetailViewController.swift */; };
@@ -386,6 +387,7 @@
 		D975CAF1198DAB5A00CC8226 /* BRCSecrets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCSecrets.m; sourceTree = "<group>"; };
 		D9774B162118DB4500BE3CC8 /* MapButtonHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapButtonHelper.swift; sourceTree = "<group>"; };
 		D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapListViewController.swift; sourceTree = "<group>"; };
+		D977C85E2A76468800341CBF /* BRCUpdateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCUpdateInfo.swift; sourceTree = "<group>"; };
 		D977C85F1EF23036007766A9 /* BaseMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMapViewController.swift; sourceTree = "<group>"; };
 		D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MGLMapView+iBurn.swift"; sourceTree = "<group>"; };
 		D977C8631EF23994007766A9 /* MapDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDetailViewController.swift; sourceTree = "<group>"; };
@@ -990,6 +992,7 @@
 		D9914C541B40D7B700F90663 /* iBurn Update API */ = {
 			isa = PBXGroup;
 			children = (
+				D977C85E2A76468800341CBF /* BRCUpdateInfo.swift */,
 				D9914C511B40D61500F90663 /* BRCUpdateInfo.h */,
 				D9914C521B40D61500F90663 /* BRCUpdateInfo.m */,
 			);
@@ -1597,6 +1600,7 @@
 				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
 				D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
+				D977C85F2A76468800341CBF /* BRCUpdateInfo.swift in Sources */,
 				D92AC56922F0168F00C9FE32 /* LocationStorage.swift in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,
 				63CE2A681987140F00F65B01 /* BRCAppDelegate.m in Sources */,

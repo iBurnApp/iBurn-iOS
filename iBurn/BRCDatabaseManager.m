@@ -247,6 +247,12 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }
     NSLog(@"Registered %@ %d", self.dataObjectsViewName, success);
     
+    success = [self registerUpdateInfoView];
+    if (success) {
+        [self postExtensionRegisteredNotification:BRCDatabaseManager.updateInfoViewName];
+    }
+    NSLog(@"Registered %@ %d", BRCDatabaseManager.updateInfoViewName, success);
+    
     [self registerSearchObjectsView];
 }
 

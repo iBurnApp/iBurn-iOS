@@ -31,6 +31,12 @@ private final class DataUpdatesViewController: UIHostingController<DataUpdatesVi
 
 private struct DataUpdatesView: View {
     @ObservedObject var viewModel: DataUpdatesViewModel
+    static let dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateStyle = .short
+        df.timeStyle = .short
+        return df
+    }()
     
     var body: some View {
         List {
@@ -46,16 +52,31 @@ private struct DataUpdatesView: View {
                 Toggle(isOn: $viewModel.dataUpdatesEnabled) {
                     Text("Automatic Updates")
                 }
+                .toggleStyle(SwitchToggleStyle(tint: .primary))
                 Button("Check for Updates") {
                     viewModel.didTapCheckForUpdates()
                 }
             }
             Section {
-                Button("Reset To Bundled Data") {
+                ForEach(viewModel.allUpdateInfo, id: \.self) { update in
+                    VStack(alignment: .leading) {
+                        Text("\(update.fileName)")
+                        Group {
+                            Text("Last updated: \(Self.dateFormatter.string(from: update.lastUpdated))")
+                            Text("Last fetched: \(Self.dateFormatter.string(from: update.fetchDate))")
+                            Text("Status: \(update.fetchStatus.description)")
+                        }
+                        .font(.caption2)
+                    }
+                }
+            }
+            Section {
+                Button("Reset to Bundled Data") {
                     viewModel.didTapReset()
                 }.accentColor(Color(.systemRed))
             }
         }
+        .accentColor(.primary)
         .onAppear {
             viewModel.onAppear()
         }
@@ -78,8 +99,12 @@ private final class DataUpdatesViewModel: ObservableObject {
     @Published var dataUpdatesEnabled: Bool = false
     @Published var isLoading: Bool = false
     private var cancellables: Set<AnyCancellable> = .init()
+    private var handlerDelegate: YapViewHandlerDelegateHandler?
+    private let handler: YapViewHandler
+    @Published var allUpdateInfo: [BRCUpdateInfo] = []
     
     init() {
+        handler = YapViewHandler(viewName: BRCDatabaseManager.updateInfoViewName)
         $dataUpdatesEnabled
             .dropFirst()
             .removeDuplicates()
@@ -87,6 +112,13 @@ private final class DataUpdatesViewModel: ObservableObject {
                 UserDefaults.areDownloadsDisabled = !value
             }
             .store(in: &cancellables)
+        self.handlerDelegate = .init(didSetupMappingsBlock: { [weak self] handler in
+            self?.refreshFromDatabase()
+        }, didReceiveChangesBlock: { [weak self] handler, sectionChanges, rowChanges in
+            self?.refreshFromDatabase()
+        })
+        handler.delegate = handlerDelegate
+        refreshFromDatabase()
     }
 
     
@@ -120,6 +152,30 @@ private final class DataUpdatesViewModel: ObservableObject {
     
     func onAppear() {
         dataUpdatesEnabled = !UserDefaults.areDownloadsDisabled
+    }
+    
+    func refreshFromDatabase() {
+        allUpdateInfo = handler.allObjects(in: 0)
+    }
+}
+
+final class YapViewHandlerDelegateHandler: NSObject, YapViewHandlerDelegate {
+    init(didSetupMappingsBlock: @escaping YapViewHandlerDelegateHandler.SetupMappingsBlock, didReceiveChangesBlock: @escaping YapViewHandlerDelegateHandler.DidReceiveChangesBlock) {
+        self.didSetupMappingsBlock = didSetupMappingsBlock
+        self.didReceiveChangesBlock = didReceiveChangesBlock
+    }
+    
+    typealias SetupMappingsBlock = (_ handler: YapViewHandler) -> Void
+    var didSetupMappingsBlock: SetupMappingsBlock
+    typealias DidReceiveChangesBlock = (_ handler: YapViewHandler, _ sectionChanges: [YapDatabaseViewSectionChange], _ rowChanges: [YapDatabaseViewRowChange]) -> Void
+    var didReceiveChangesBlock: DidReceiveChangesBlock
+    
+    func didSetupMappings(_ handler: YapViewHandler) {
+        didSetupMappingsBlock(handler)
+    }
+    
+    func didReceiveChanges(_ handler: YapViewHandler, sectionChanges: [YapDatabaseViewSectionChange], rowChanges: [YapDatabaseViewRowChange]) {
+        didReceiveChangesBlock(handler, sectionChanges, rowChanges)
     }
 }
 

@@ -29,6 +29,23 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     private let navigationModeSwitch = UISwitch()
+    private let versionLabel: UILabel = {
+        let label = UILabel()
+        label.text = {
+            guard let dictionary = Bundle.main.infoDictionary,
+                  let version = dictionary["CFBundleShortVersionString"] as? String,
+                  let build = dictionary["CFBundleVersion"] as? String else {
+                return ""
+            }
+            return "Version \(version) (\(build))"
+        }()
+        label.sizeToFit()
+        label.frame.size.height += 20
+        label.font = UIFont.preferredFont(forTextStyle: .caption2)
+        label.textColor = .systemGray
+        label.textAlignment = .center
+        return label
+    }()
     
     // MARK: - View Lifecycle
     
@@ -36,6 +53,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         super.viewDidLoad()
         self.title = "More"
         navigationModeSwitch.addTarget(self, action: #selector(navigationModeToggled(sender:)), for: .valueChanged)
+        self.tableView.tableFooterView = versionLabel
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -113,15 +131,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             break
         case .dataUpdates:
             pushDataUpdatesView()
-        }
-    }
-    
-    @IBAction func updatesToggled(sender: UISwitch) {
-        UserDefaults.areDownloadsDisabled = !sender.isOn
-        if sender.isOn {
-            
-        } else {
-            
         }
     }
     

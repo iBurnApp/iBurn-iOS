@@ -155,6 +155,29 @@ import CocoaLumberjack
         return object
     }
     
+    public func allObjects<T>(in section: Int) -> [T] {
+        guard let mappings = self.mappings else { return [] }
+        let count = mappings.numberOfItems(inSection: UInt(section))
+        var objects: [T] = .init()
+        objects.reserveCapacity(Int(count))
+        connection.read {
+            guard let viewTransaction = $0.ext(self.viewName) as? YapDatabaseViewTransaction else {
+                return
+            }
+            for i in 0..<count {
+                let object = viewTransaction.object(
+                    atRow: i,
+                    inSection: UInt(section),
+                    with: mappings
+                )
+                if let object = object as? T {
+                    objects.append(object)
+                }
+            }
+        }
+        return objects
+    }
+    
     public func read<T>(_ block: @escaping ((YapDatabaseReadTransaction) -> T?)) -> T? {
         return connection.readReturning(block)
     }

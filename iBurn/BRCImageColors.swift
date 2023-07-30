@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 extension UIColor {
     public convenience init(hex: UInt32, alpha: CGFloat = 1.0) {
@@ -19,6 +20,20 @@ extension UIColor {
     @objc public static let brc_mapBackgroundColor: UIColor = .init { traitCollection in
         return traitCollection.userInterfaceStyle == .light ? .init(hex: 0xE8E0D8) : .init(hex: 0x1C1B1B)
     }
+}
+
+extension UIColor {
+    static let primary = BRCImageColors.dynamic.primaryColor
+    static let background = BRCImageColors.dynamic.backgroundColor
+    static let secondary = BRCImageColors.dynamic.secondaryColor
+    static let detail = BRCImageColors.dynamic.detailColor
+}
+
+extension Color {
+    static let primary = Color(.primary)
+    static let background = Color(.background)
+    static let secondary = Color(.secondary)
+    static let detail = Color(.detail)
 }
 
 extension BRCImageColors {
