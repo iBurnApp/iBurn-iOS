@@ -7,7 +7,14 @@
 //
 
 import Foundation
+import Siren
 
 // Use Swift entry point for better debugging in Xcode 9.1+
 @main
-final class AppDelegate: BRCAppDelegate {}
+final class AppDelegate: BRCAppDelegate {
+    override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        Siren.shared.wail()
+        return result
+    }
+}

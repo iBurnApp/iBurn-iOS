@@ -95,6 +95,7 @@
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
+		D9915F592A76C35E0015C87D /* Siren in Frameworks */ = {isa = PBXBuildFile; productRef = D9915F582A76C35E0015C87D /* Siren */; };
 		D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */; };
 		D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */; };
 		D99415641987222800D245C7 /* BRCDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415631987222800D245C7 /* BRCDataObject.m */; };
@@ -538,6 +539,7 @@
 				D966562928A9B86F002FA471 /* Zip in Frameworks */,
 				D9D12F621B5AF5070048229A /* Social.framework in Frameworks */,
 				D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */,
+				D9915F592A76C35E0015C87D /* Siren in Frameworks */,
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
 				D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */,
 				D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */,
@@ -1190,6 +1192,7 @@
 				D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				D966561528A9970B002FA471 /* FirebaseCrashlytics */,
 				D966562828A9B86E002FA471 /* Zip */,
+				D9915F582A76C35E0015C87D /* Siren */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -1285,6 +1288,7 @@
 				D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 				D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */,
+				D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */,
 			);
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
 			projectDirPath = "";
@@ -2043,6 +2047,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ArtSabintsev/Siren.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -2065,6 +2077,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */;
 			productName = Zip;
+		};
+		D9915F582A76C35E0015C87D /* Siren */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */;
+			productName = Siren;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
