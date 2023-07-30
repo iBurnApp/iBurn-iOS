@@ -105,7 +105,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
         let imageNames = [
             "airport", "bus", "centerCamp", "center",
             "firstAid", "EmergencyClinic", "ice", "info", "ranger",
-            "recycle", "temple", "toilet"
+            "recycle", "temple"
         ]
         for imageName in imageNames {
             guard let image = UIImage(named: "pin_" + imageName) else {
