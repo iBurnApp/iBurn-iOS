@@ -64,6 +64,7 @@ private struct DataUpdatesView: View {
                         Group {
                             Text("Last updated: \(Self.dateFormatter.string(from: update.lastUpdated))")
                             Text("Last fetched: \(Self.dateFormatter.string(from: update.fetchDate))")
+                            Text("Last ingested: \(update.ingestionDate.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
                             Text("Status: \(update.fetchStatus.description)")
                         }
                         .font(.caption2)

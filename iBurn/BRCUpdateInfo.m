@@ -13,6 +13,7 @@
 #import "BRCEventObject.h"
 #import "BRCRecurringEventObject.h"
 #import "BRCMapPoint.h"
+#import "iBurn-Swift.h"
 
 static NSString * const kBRCUpdateTypeCamps = @"camps";
 static NSString * const kBRCUpdateTypeArt = @"art";
@@ -94,6 +95,13 @@ static NSString * const kBRCUpdateTypePoints = @"points";
         return BRCUpdateDataTypePoints;
     }
     return BRCUpdateDataTypeUnknown;
+}
+
+- (void) setFetchStatus:(BRCUpdateFetchStatus)fetchStatus {
+    _fetchStatus = fetchStatus;
+    if (fetchStatus == BRCUpdateFetchStatusComplete) {
+        _ingestionDate = [NSDate present];
+    }
 }
 
 + (NSString*) stringFromDataType:(BRCUpdateDataType)dataType {

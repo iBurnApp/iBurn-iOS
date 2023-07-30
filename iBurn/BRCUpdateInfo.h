@@ -32,10 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// This can be a remote URL or a relative path file name
 @property (nonatomic, strong, readonly) NSString *fileName;
+/// When it was last updated on the server itself
 @property (nonatomic, strong, readonly) NSDate *lastUpdated;
 @property (nonatomic) BRCUpdateDataType dataType;
 @property (nonatomic) BRCUpdateFetchStatus fetchStatus;
+/// when we last fetched from the server
 @property (nonatomic, strong) NSDate *fetchDate;
+/// When the data was last succesfully loaded into the app
+@property (nonatomic, strong, nullable) NSDate *ingestionDate;
+
 
 /** Returns MTLModel subclass for dataType. Not valid for
  * tiles of course. */

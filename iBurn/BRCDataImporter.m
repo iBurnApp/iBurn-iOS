@@ -192,8 +192,10 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             [transaction setObject:updateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
         }];
         fetchResult = UIBackgroundFetchResultNewData;
-        NSURL *dataURL = [NSURL URLWithString:updateInfo.fileName];
-        if (!dataURL) {
+        NSURL *dataURL = nil;
+        if ([updateInfo.fileName containsString:@"https"]) {
+            dataURL = [NSURL URLWithString:updateInfo.fileName];
+        } else {
             dataURL = [folderURL URLByAppendingPathComponent:updateInfo.fileName];
         }
         if ([dataURL isFileURL]) {
