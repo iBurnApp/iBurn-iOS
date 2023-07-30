@@ -23,7 +23,7 @@ target 'iBurn' do
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
 	pod 'PureLayout', '~> 3.0'
 	pod 'BButton', '~> 4.0'
-	pod 'VTAcknowledgementsViewController', '~> 2.0'
+	pod 'LicensePlist', '~> 3.24'
 	pod 'TTTAttributedLabel', '~> 2.0'
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'

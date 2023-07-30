@@ -83,7 +83,9 @@ static CGFloat kBRCSocialTotalWidth = 300.0f;
 - (void) twitterButtonPressed:(id)sender {
     NSURL *twitterURL = [NSURL brc_twitterAppURL];
     if ([[UIApplication sharedApplication] canOpenURL:twitterURL]) {
-        [[UIApplication sharedApplication] openURL:twitterURL];
+        [[UIApplication sharedApplication] openURL:twitterURL options:[NSDictionary new] completionHandler:^(BOOL success) {
+            NSLog(@"Opened %@", twitterURL);
+        }];
     } else {
         self.buttonPressed([NSURL brc_twitterWebURL]);
     }
@@ -92,7 +94,9 @@ static CGFloat kBRCSocialTotalWidth = 300.0f;
 - (void) facebookButtonPressed:(id)sender {
     NSURL *facebookURL = [NSURL brc_facebookAppURL];
     if ([[UIApplication sharedApplication] canOpenURL:facebookURL]) {
-        [[UIApplication sharedApplication] openURL:facebookURL];
+        [[UIApplication sharedApplication] openURL:facebookURL options:[NSDictionary new] completionHandler:^(BOOL success) {
+            NSLog(@"Opened %@", facebookURL);
+        }];
     } else {
         self.buttonPressed([NSURL brc_facebookWebURL]);
     }

@@ -8,7 +8,6 @@
 
 import UIKit
 import Mantle
-import VTAcknowledgementsViewController
 
 open class SubtitleCell: UITableViewCell {
     static let kReuseIdentifier = "kSubtitleIdentifier"
@@ -124,8 +123,8 @@ class CreditsViewController: UITableViewController {
                 WebViewHelper.presentWebView(url: url, from: self)
             }
         } else if indexPath.section == SectionInfo.licenses.rawValue {
-            let ackVC = BRCAcknowledgementsViewController(headerLabel: nil)
-            self.navigationController?.pushViewController(ackVC!, animated: true)
+            guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(settingsURL)
         }
     }
 

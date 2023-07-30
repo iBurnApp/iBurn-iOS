@@ -96,6 +96,7 @@
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
 		D9915F592A76C35E0015C87D /* Siren in Frameworks */ = {isa = PBXBuildFile; productRef = D9915F582A76C35E0015C87D /* Siren */; };
+		D9915F652A76D3120015C87D /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D9915F642A76D3110015C87D /* Settings.bundle */; };
 		D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */; };
 		D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */; };
 		D99415641987222800D245C7 /* BRCDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415631987222800D245C7 /* BRCDataObject.m */; };
@@ -112,7 +113,6 @@
 		D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
-		D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
 		D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */; };
 		D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B9199AB5320093B441 /* BRCMapPoint.m */; };
@@ -428,6 +428,7 @@
 		D9914C4C1B40C54600F90663 /* updated_data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = updated_data; path = TestData/updated_data; sourceTree = "<group>"; };
 		D9914C511B40D61500F90663 /* BRCUpdateInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCUpdateInfo.h; sourceTree = "<group>"; };
 		D9914C521B40D61500F90663 /* BRCUpdateInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCUpdateInfo.m; sourceTree = "<group>"; };
+		D9915F642A76D3110015C87D /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D99395A6198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCDetailInfoTableViewCell.h; sourceTree = "<group>"; };
 		D99395A7198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailInfoTableViewCell.m; sourceTree = "<group>"; };
 		D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TTTLocationFormatter+iBurn.h"; sourceTree = "<group>"; };
@@ -454,8 +455,6 @@
 		D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDatabaseManager.swift; sourceTree = "<group>"; };
 		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObject.swift; sourceTree = "<group>"; };
-		D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCAcknowledgementsViewController.h; sourceTree = "<group>"; };
-		D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCAcknowledgementsViewController.m; sourceTree = "<group>"; };
 		D9B362B2199821EB0093B441 /* NSURL+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+iBurn.h"; sourceTree = "<group>"; };
 		D9B362B3199821EB0093B441 /* NSURL+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+iBurn.m"; sourceTree = "<group>"; };
 		D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCSocialButtonsView.h; sourceTree = "<group>"; };
@@ -714,8 +713,6 @@
 				D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */,
 				D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */,
 				D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */,
-				D9B362AF1998157B0093B441 /* BRCAcknowledgementsViewController.h */,
-				D9B362B01998157B0093B441 /* BRCAcknowledgementsViewController.m */,
 				6322830219881E27009E472B /* DetailViewControllers */,
 				D994155E19871D9000D245C7 /* Filtered Tables */,
 				D99395A5198B806800E9ADD2 /* MapViewControllers */,
@@ -729,6 +726,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D9915F642A76D3110015C87D /* Settings.bundle */,
 				D9BB3BE02A6C3F6700777AEE /* 2023 */,
 				D9903DC1287D0B6100578B18 /* 2022 */,
 				D90814C025B283CF0011DB56 /* GoogleService-Info.plist */,
@@ -1180,6 +1178,7 @@
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
 				53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */,
 				D907AD6821215F20004A255A /* Crashlytics */,
+				D9915F632A76D2D40015C87D /* LicensePlist */,
 			);
 			buildRules = (
 			);
@@ -1380,6 +1379,7 @@
 				D9A364702A75B49D0008CCFB /* iBurn-2023.zip in Resources */,
 				D9BB3BE22A6C3F8E00777AEE /* APIData in Resources */,
 				D9BB3BE42A6C3F9D00777AEE /* Map in Resources */,
+				D9915F652A76D3120015C87D /* Settings.bundle in Resources */,
 				D90814C125B283CF0011DB56 /* GoogleService-Info.plist in Resources */,
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
@@ -1480,6 +1480,25 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
+		D9915F632A76D2D40015C87D /* LicensePlist */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = LicensePlist;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${PODS_ROOT}/LicensePlist/license-plist --output-path $PRODUCT_NAME/Settings.bundle --add-version-numbers --suppress-opening-directory || true\n";
+		};
 		E9C3145650DF2A650019858A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1570,7 +1589,6 @@
 				D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9DEAACE211F9558007899B9 /* LabelAnnotationView.swift in Sources */,
-				D9B362B11998157B0093B441 /* BRCAcknowledgementsViewController.m in Sources */,
 				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
 				D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */,
 				D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */,

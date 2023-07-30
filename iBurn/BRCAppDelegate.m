@@ -24,7 +24,6 @@
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
 @import TTTAttributedLabel;
-#import "BRCAcknowledgementsViewController.h"
 #import "BRCEmbargoPasscodeViewController.h"
 #import "iBurn-Swift.h"
 #import "NSBundle+iBurn.h"
