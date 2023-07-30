@@ -15,7 +15,7 @@
       "scale" : "1x"
     },
     {
-      "filename" : "bus.png",
+      "filename" : "bus_2x_black.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -26,11 +26,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "bus_white.png",
+      "filename" : "bus_2x_white.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "bus_3x_black.png",
       "idiom" : "universal",
       "scale" : "3x"
     },
@@ -41,6 +42,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "bus_3x_white.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
