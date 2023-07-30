@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** Metadata parsed from update.json */
 @interface BRCUpdateInfo : BRCYapDatabaseObject <MTLJSONSerializing>
 
+/// This can be a remote URL or a relative path file name
 @property (nonatomic, strong, readonly) NSString *fileName;
 @property (nonatomic, strong, readonly) NSDate *lastUpdated;
 @property (nonatomic) BRCUpdateDataType dataType;

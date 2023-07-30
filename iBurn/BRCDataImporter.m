@@ -192,7 +192,10 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             [transaction setObject:updateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
         }];
         fetchResult = UIBackgroundFetchResultNewData;
-        NSURL *dataURL = [folderURL URLByAppendingPathComponent:updateInfo.fileName];
+        NSURL *dataURL = [NSURL URLWithString:updateInfo.fileName];
+        if (!dataURL) {
+            dataURL = [folderURL URLByAppendingPathComponent:updateInfo.fileName];
+        }
         if ([dataURL isFileURL]) {
             [self loadDataFromLocalURL:dataURL updateInfo:updateInfo];
         } else {
