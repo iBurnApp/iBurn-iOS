@@ -31,12 +31,7 @@ private final class DataUpdatesViewController: UIHostingController<DataUpdatesVi
 
 private struct DataUpdatesView: View {
     @ObservedObject var viewModel: DataUpdatesViewModel
-    static let dateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.dateStyle = .short
-        df.timeStyle = .short
-        return df
-    }()
+    static let dateFormatter: DateFormatter = .shortDateAndTime
     
     var body: some View {
         List {
@@ -58,18 +53,13 @@ private struct DataUpdatesView: View {
                 }
             }
             Section {
-                ForEach(viewModel.allUpdateInfo, id: \.self) { update in
-                    VStack(alignment: .leading) {
-                        Text("\(update.fileName)")
-                        Group {
-                            Text("Last updated: \(Self.dateFormatter.string(from: update.lastUpdated))")
-                            Text("Last fetched: \(Self.dateFormatter.string(from: update.fetchDate))")
-                            Text("Last ingested: \(update.ingestionDate.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
-                            Text("Status: \(update.fetchStatus.description)")
-                        }
-                        .font(.caption2)
-                    }
+                Toggle(isOn: $viewModel.showNerdyStats.animation()) {
+                    Text("Show Nerdy Stats")
                 }
+                .toggleStyle(SwitchToggleStyle(tint: .primary))
+            }
+            if viewModel.showNerdyStats {
+                nerdyStats
             }
             Section {
                 Button("Reset to Bundled Data") {
@@ -95,10 +85,32 @@ private struct DataUpdatesView: View {
     }
 }
 
+private extension DataUpdatesView {
+    @ViewBuilder
+    var nerdyStats: some View {
+        Section {
+            ForEach(viewModel.allUpdateInfo, id: \.self) { update in
+                VStack(alignment: .leading) {
+                    Text("\(update.fileName)")
+                    Group {
+                        Text("Updated in update.json: \(Self.dateFormatter.string(from: update.lastUpdated))")
+                        Text("Fetched from server:  \(update.fetchDate.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
+                        Text("Checked for update: \(update.lastCheckedDate.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
+                        Text("Loaded into app: \(update.ingestionDate.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
+                        Text("Status: \(update.fetchStatus.description)")
+                    }
+                    .font(.caption2)
+                }
+            }
+        }
+    }
+}
+
 private final class DataUpdatesViewModel: ObservableObject {
     @Published var showConfirmationAlert: Bool = false
     @Published var dataUpdatesEnabled: Bool = false
     @Published var isLoading: Bool = false
+    @Published var showNerdyStats: Bool = false
     private var cancellables: Set<AnyCancellable> = .init()
     private var handlerDelegate: YapViewHandlerDelegateHandler?
     private let handler: YapViewHandler

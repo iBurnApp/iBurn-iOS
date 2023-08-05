@@ -16,6 +16,7 @@
 #import "NSDateFormatter+iBurn.h"
 #import "BRCEventRelationshipDetailInfoCell.h"
 #import <PureLayout/PureLayout.h>
+#import "iBurn-Swift.h"
 
 @interface BRCDetailInfoTableViewCell()
 @property (nonatomic, strong) NSLayoutConstraint *aspectConstraint;
@@ -137,7 +138,7 @@
         }
         case BRCDetailCellInfoTypeDate: {
             NSDate *date = cellInfo.value;
-            self.textLabel.text = [[NSDateFormatter brc_playaEventsAPIDateFormatter] stringFromDate:date];
+            self.textLabel.text = [DateFormatters.shortDateAndTime stringFromDate:date];
             [self setPlainTextApperance:colors];
             break;
         }

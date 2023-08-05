@@ -144,6 +144,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         NSParameterAssert(updateInfo.lastUpdated != nil);
         NSParameterAssert(updateInfo.fileName != nil);
         updateInfo.dataType = [BRCUpdateInfo dataTypeFromString:key];
+        updateInfo.lastCheckedDate = [NSDate present];
         [newUpdateInfo addObject:updateInfo];
     }];
     if (parseError) {
@@ -167,19 +168,26 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         
         
         if (oldUpdateInfo) {
-            // check tiles for errors
+            oldUpdateInfo = [oldUpdateInfo copy];
             if (oldUpdateInfo.dataType == BRCUpdateDataTypeTiles) {
-                oldUpdateInfo = [oldUpdateInfo copy];
+                // TODO: check tiles for errors
             }
+            oldUpdateInfo.lastCheckedDate = [NSDate present];
             NSTimeInterval intervalSinceLastUpdated = [updateInfo.lastUpdated timeIntervalSinceDate:oldUpdateInfo.lastUpdated];
             if (intervalSinceLastUpdated <= 0 && oldUpdateInfo.fetchStatus != BRCUpdateFetchStatusFailed) {
                 // already updated, skip update
                 if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusComplete) {
+                    [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
+                        [transaction setObject:oldUpdateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
+                    }];
                     return;
                 } else if (oldUpdateInfo.fetchStatus == BRCUpdateFetchStatusFetching) {
                     NSTimeInterval intervalSinceLastFetched = [[NSDate present] timeIntervalSinceDate:updateInfo.fetchDate];
                     // only re-fetch if fetch takes longer than 5 minutes
                     if (intervalSinceLastFetched <= 5 * 60) {
+                        [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
+                            [transaction setObject:oldUpdateInfo forKey:key inCollection:[BRCUpdateInfo yapCollection]];
+                        }];
                         return;
                     }
                 }
@@ -236,7 +244,6 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             if (object) {
                 [objects addObject:object];
             } else if (parseError) {
-#warning There will be missing items due to JSON parsing errors
                 NSLog(@"Error parsing JSON: %@ %@", jsonDictionary, parseError);
             }
         }

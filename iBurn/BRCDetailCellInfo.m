@@ -236,11 +236,13 @@
     
     // last update from API
 #if DEBUG
-    BRCDetailCellInfo *lastUpdated = [[BRCDetailCellInfo alloc] init];
-    lastUpdated.value = metadata.lastUpdated;
-    lastUpdated.displayName = @"Last Updated";
-    lastUpdated.cellType = BRCDetailCellInfoTypeDate;
-    [finalCellInfoArray addObject:lastUpdated];
+    if (metadata.lastUpdated) {
+        BRCDetailCellInfo *lastUpdated = [[BRCDetailCellInfo alloc] init];
+        lastUpdated.value = metadata.lastUpdated; 
+        lastUpdated.displayName = @"Last Updated";
+        lastUpdated.cellType = BRCDetailCellInfoTypeDate;
+        [finalCellInfoArray addObject:lastUpdated];
+    }
 #endif
     
     return finalCellInfoArray;

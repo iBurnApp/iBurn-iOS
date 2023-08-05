@@ -112,7 +112,36 @@
 }
 
 + (NSValueTransformer *)urlJSONTransformer {
-    return [NSValueTransformer valueTransformerForName:MTLURLValueTransformerName];
+    /// why don't we use `[NSValueTransformer valueTransformerForName:MTLURLValueTransformerName]`?
+    /// because some camps put invalid stuff in here and the default one fails the whole object instaed of just nilling out the field
+    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        if ([value isKindOfClass:NSString.class]) {
+            NSString *stringValue = value;
+            NSURL *url = [NSURL URLWithString:stringValue];
+            if (!url) {
+                NSLog(@"Invalid URL: %@", stringValue);
+            }
+            return url;
+        } else {
+            return value;
+        }
+    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        return value;
+    }];
+}
+
++ (NSValueTransformer *)titleJSONTransformer {
+    // why is this here? because the API JSON sometimes returns numbers instead of strings for camp names like `3907` instead of `"3907"`
+    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        if ([value isKindOfClass:NSNumber.class]) {
+            NSNumber *numberValue = value;
+            return numberValue.description;
+        } else {
+            return value;
+        }
+    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
+        return value;
+    }];
 }
 
 - (CLLocationDistance) distanceFromLocation:(CLLocation*)location {

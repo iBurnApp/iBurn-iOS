@@ -51,6 +51,15 @@ extension DateFormatter {
         df.timeZone = TimeZone.burningManTimeZone
         return df
     }()
+    
+    /// e.g. 8/5/23, 11:16 AM
+    static let shortDateAndTime: DateFormatter = {
+        let df = DateFormatter()
+        df.dateStyle = .short
+        df.timeStyle = .short
+        df.timeZone = TimeZone.burningManTimeZone
+        return df
+    }()
 }
 
 extension DateComponentsFormatter {
@@ -76,6 +85,11 @@ extension DateComponentsFormatter {
     /// e.g. 4:19 AM
     @objc public static var timeOnly: DateFormatter {
         return DateFormatter.timeOnly
+    }
+    
+    /// e.g. 8/5/23, 11:16 AM
+    @objc public static var shortDateAndTime: DateFormatter {
+        return DateFormatter.shortDateAndTime
     }
     
     @objc public static func stringForTimeInterval(_ interval: TimeInterval) -> String? {

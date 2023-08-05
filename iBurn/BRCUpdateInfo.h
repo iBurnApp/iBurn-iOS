@@ -36,8 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSDate *lastUpdated;
 @property (nonatomic) BRCUpdateDataType dataType;
 @property (nonatomic) BRCUpdateFetchStatus fetchStatus;
+/// when we last checked update.json
+@property (nonatomic, strong, nullable) NSDate *lastCheckedDate;
 /// when we last fetched from the server
-@property (nonatomic, strong) NSDate *fetchDate;
+@property (nonatomic, strong, nullable) NSDate *fetchDate;
 /// When the data was last succesfully loaded into the app
 @property (nonatomic, strong, nullable) NSDate *ingestionDate;
 
