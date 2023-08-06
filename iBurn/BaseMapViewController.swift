@@ -93,7 +93,9 @@ public class BaseMapViewController: UIViewController {
 
 private extension BaseMapViewController {
     @objc func powerStateDidChange(notification: Notification) {
-        updateIdleTimer()
+        DispatchQueue.main.async {
+            self.updateIdleTimer()
+        }
     }
     
     /// keeps the screen on for folks navigating in vehicles
