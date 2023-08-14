@@ -22,10 +22,6 @@ public final class SearchDisplayManager: NSObject {
     private let searchText = PassthroughSubject<String, Never>()
     private var cancellables: Set<AnyCancellable> = .init()
     
-    private var tableViewController: UITableViewController? {
-        return searchController.searchResultsController as? UITableViewController
-    }
-    
     public init(viewName: String) {
         self.viewName = viewName
         
@@ -35,7 +31,7 @@ public final class SearchDisplayManager: NSObject {
         searchConnection = BRCDatabaseManager.shared.database.newConnection()
         
         // Setup UISearchController
-        let src = UITableViewController(style: .plain)
+        let src = UITableViewController()
         searchController = UISearchController(searchResultsController: src)
         searchController.searchBar.barStyle = Appearance.currentBarStyle
         
@@ -57,7 +53,8 @@ public final class SearchDisplayManager: NSObject {
     
     private func setupDefaults(for searchController: UISearchController) {
         searchController.obscuresBackgroundDuringPresentation = true
-        searchController.hidesNavigationBarDuringPresentation = true
+        // works around a bug introduced in iOS 16(?) https://github.com/iBurnApp/iBurn-iOS/issues/139
+        searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.delegate = self
         searchController.searchResultsUpdater = self
         searchController.delegate = self

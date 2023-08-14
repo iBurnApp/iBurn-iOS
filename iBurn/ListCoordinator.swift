@@ -45,10 +45,22 @@ extension ListCoordinator: UISearchControllerDelegate {
     func didPresentSearchController(_ searchController: UISearchController) {
         pageViewManager.tableView = self.searchDisplayManager.tableViewAdapter.tableView
         pageViewManager.objectProvider = self.searchDisplayManager.viewHandler
+        // hack to fix https://github.com/iBurnApp/iBurn-iOS/issues/139
+        if #available(iOS 16.0, *) {
+            parent?.navigationItem.rightBarButtonItem?.isHidden = true
+        } else {
+            parent?.navigationItem.rightBarButtonItem?.isEnabled = false
+        }
     }
     
     func didDismissSearchController(_ searchController: UISearchController) {
         pageViewManager.tableView = self.tableViewAdapter.tableView
         pageViewManager.objectProvider = self.tableViewAdapter.viewHandler
+        // hack to fix https://github.com/iBurnApp/iBurn-iOS/issues/139
+        if #available(iOS 16.0, *) {
+            parent?.navigationItem.rightBarButtonItem?.isHidden = false
+        } else {
+            parent?.navigationItem.rightBarButtonItem?.isEnabled = true
+        }
     }
 }
