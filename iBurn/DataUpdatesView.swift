@@ -122,7 +122,7 @@ private final class DataUpdatesViewModel: ObservableObject {
             .dropFirst()
             .removeDuplicates()
             .sink { value in
-                UserDefaults.areDownloadsDisabled = !value
+                UserDefaults.areDownloadsEnabled = value
             }
             .store(in: &cancellables)
         self.handlerDelegate = .init(didSetupMappingsBlock: { [weak self] handler in
@@ -164,7 +164,7 @@ private final class DataUpdatesViewModel: ObservableObject {
     }
     
     func onAppear() {
-        dataUpdatesEnabled = !UserDefaults.areDownloadsDisabled
+        dataUpdatesEnabled = UserDefaults.areDownloadsEnabled
     }
     
     func refreshFromDatabase() {

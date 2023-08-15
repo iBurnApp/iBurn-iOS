@@ -11,7 +11,7 @@ import Foundation
 extension UserDefaults {
     private enum Keys: String {
         case locationHistoryDisabled
-        case downloadsDisabled
+        case downloadsEnabled
         case navigationModeDisabled
     }
     
@@ -24,12 +24,12 @@ extension UserDefaults {
         }
     }
     
-    @objc static var areDownloadsDisabled: Bool {
+    @objc static var areDownloadsEnabled: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: Keys.downloadsDisabled.rawValue)
+            return UserDefaults.standard.bool(forKey: Keys.downloadsEnabled.rawValue)
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: Keys.downloadsDisabled.rawValue)
+            UserDefaults.standard.set(newValue, forKey: Keys.downloadsEnabled.rawValue)
         }
     }
     

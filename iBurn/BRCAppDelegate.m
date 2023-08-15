@@ -80,14 +80,16 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSLog(@"Loading bundled data...");
         [self preloadExistingData];
-        if ([NSUserDefaults areDownloadsDisabled]) {
-            return;
+        
+        if ([NSUserDefaults areDownloadsEnabled]) {
+            NSLog(@"Loading data from internet...");
+            NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+            [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
+                NSLog(@"Fetched data from internet with result: %d", (int)result);
+            }];
+        } else {
+            NSLog(@"Automatic data updates disabled, skipping data update...");
         }
-        NSLog(@"Loading data from internet...");
-        NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-        [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
-            NSLog(@"Fetched data from internet with result: %d", (int)result);
-        }];
         [ColorCache.shared prefetchAllColors];
     });
         
@@ -155,11 +157,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 - (void)application:(UIApplication *)application
 didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
-    if ([NSUserDefaults areDownloadsDisabled]) {
-        return;
+    if ([NSUserDefaults areDownloadsEnabled]) {
+        NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+        [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
     }
-    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -192,7 +193,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
 
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-    if ([NSUserDefaults areDownloadsDisabled]) {
+    if (![NSUserDefaults areDownloadsEnabled]) {
         completionHandler(UIBackgroundFetchResultNoData);
         return;
     }
