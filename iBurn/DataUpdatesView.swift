@@ -46,8 +46,13 @@ private struct DataUpdatesView: View {
             Section {
                 Toggle(isOn: $viewModel.dataUpdatesEnabled) {
                     Text("Automatic Updates")
+                    if YearSettings.isEventOver {
+                        Text("Event is over, auto-updates disabled.")
+                            .font(.caption2)
+                    }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: .primary))
+                .disabled(YearSettings.isEventOver)
                 Button("Check for Updates") {
                     viewModel.didTapCheckForUpdates()
                 }
@@ -89,6 +94,11 @@ private extension DataUpdatesView {
     @ViewBuilder
     var nerdyStats: some View {
         Section {
+            VStack(alignment: .leading) {
+                Text("update.json")
+                Text("Last checked: \(viewModel.lastUpdateCheck.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
+                    .font(.caption2)
+            }
             ForEach(viewModel.allUpdateInfo, id: \.self) { update in
                 VStack(alignment: .leading) {
                     Text("\(update.fileName)")
@@ -111,6 +121,7 @@ private final class DataUpdatesViewModel: ObservableObject {
     @Published var dataUpdatesEnabled: Bool = false
     @Published var isLoading: Bool = false
     @Published var showNerdyStats: Bool = false
+    @Published var lastUpdateCheck: Date?
     private var cancellables: Set<AnyCancellable> = .init()
     private var handlerDelegate: YapViewHandlerDelegateHandler?
     private let handler: YapViewHandler
@@ -154,17 +165,25 @@ private final class DataUpdatesViewModel: ObservableObject {
         guard let updateURL = URL(string: kBRCUpdatesURLString) else {
             return
         }
+        // allow forcing update check
+        UserDefaults.lastUpdateCheck = nil
         self.isLoading = true
-        BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { result in
+        BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { [weak self] result in
             NSLog("UPDATE COMPLETE: \(result)")
             DispatchQueue.main.async {
-                self.isLoading = false
+                self?.isLoading = false
+                self?.refreshLastUpdateCheck()
             }
         }
     }
     
     func onAppear() {
         dataUpdatesEnabled = !UserDefaults.areDownloadsDisabled
+        refreshLastUpdateCheck()
+    }
+    
+    func refreshLastUpdateCheck() {
+        lastUpdateCheck = UserDefaults.lastUpdateCheck
     }
     
     func refreshFromDatabase() {

@@ -31,6 +31,11 @@ public final class YearSettings: NSObject {
         return YearSettings.shared.festivalDays
     }
     
+    /// If current date is after the event end
+    @objc public static var isEventOver: Bool {
+        Date.present > YearSettings.eventEnd
+    }
+    
     /** Returns date if within range, or eventStart if out of range. */
     @objc public static func dayWithinFestival(_ date: Date) -> Date {
         guard (self.eventStart ... self.eventEnd).contains(date) else {

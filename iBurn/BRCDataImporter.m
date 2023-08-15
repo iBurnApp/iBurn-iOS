@@ -101,6 +101,20 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
         [self loadUpdatesFromData:updateData folderURL:folderURL fetchResultBlock:fetchResultBlock];
         return;
     }
+    
+    NSDate *lastUpdateCheck = [NSUserDefaults lastUpdateCheck];
+    NSTimeInterval lastDayInterval = 60 * 60 * 24;
+    if (lastUpdateCheck) {
+        NSTimeInterval intervalSinceLastUpdateCheck = [[NSDate present] timeIntervalSinceDate:lastUpdateCheck];
+        if (intervalSinceLastUpdateCheck < lastDayInterval) {
+            NSLog(@"Skipping remote data update, last checked %@: intervalSinceLastUpdateCheck %f < lastDayInterval %f", lastUpdateCheck, intervalSinceLastUpdateCheck, lastDayInterval);
+            self.isUpdating = NO;
+            fetchResultBlock(UIBackgroundFetchResultNoData);
+            return;
+        }
+    }
+    NSUserDefaults.lastUpdateCheck = [NSDate present];
+    
     NSURLSession *tempSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
     NSURLSessionDataTask *dataTask = [tempSession dataTaskWithRequest:[NSURLRequest requestWithURL:updateURL] completionHandler:^(NSData * __nullable data, NSURLResponse * __nullable response, NSError * __nullable error) {
         if (error) {

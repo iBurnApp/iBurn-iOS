@@ -9,10 +9,11 @@
 import Foundation
 
 extension UserDefaults {
-    private enum Keys: String {
+    enum Keys: String {
         case locationHistoryDisabled
         case downloadsDisabled
         case navigationModeDisabled
+        case lastUpdateCheck
     }
     
     static var isLocationHistoryDisabled: Bool {
@@ -24,8 +25,13 @@ extension UserDefaults {
         }
     }
     
+    /// Whether or not automatic data updates are disabled. Always returns false after the event is over
     @objc static var areDownloadsDisabled: Bool {
         get {
+            if YearSettings.isEventOver {
+                print("Event is over, disabling remote data updates")
+                return true
+            }
             return UserDefaults.standard.bool(forKey: Keys.downloadsDisabled.rawValue)
         }
         set {
@@ -33,13 +39,22 @@ extension UserDefaults {
         }
     }
     
-    
     @objc static var isNavigationModeDisabled: Bool {
         get {
             return UserDefaults.standard.bool(forKey: Keys.navigationModeDisabled.rawValue)
         }
         set {
             UserDefaults.standard.set(newValue, forKey: Keys.navigationModeDisabled.rawValue)
+        }
+    }
+    
+    /// Used for rate-limiting remote API data update checks to every 24 hours
+    @objc static var lastUpdateCheck: Date? {
+        get {
+            return UserDefaults.standard.object(forKey: Keys.lastUpdateCheck.rawValue) as? Date
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.lastUpdateCheck.rawValue)
         }
     }
 }

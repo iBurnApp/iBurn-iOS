@@ -81,6 +81,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         NSLog(@"Loading bundled data...");
         [self preloadExistingData];
         if ([NSUserDefaults areDownloadsDisabled]) {
+            NSLog(@"Downloads are disabled, skipping.");
             return;
         }
         NSLog(@"Loading data from internet...");
@@ -156,6 +157,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
     if ([NSUserDefaults areDownloadsDisabled]) {
+        NSLog(@"Downloads are disabled, skipping.");
         return;
     }
     NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
@@ -193,6 +195,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
     if ([NSUserDefaults areDownloadsDisabled]) {
+        NSLog(@"Downloads are disabled, skipping.");
         completionHandler(UIBackgroundFetchResultNoData);
         return;
     }
