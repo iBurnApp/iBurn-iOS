@@ -54,7 +54,8 @@
 - (NSString*) playaLocation {
     // Filter out empty locations returned from the API as "&"
     if (_playaLocation.length > 1) {
-        return _playaLocation;
+        // attempting to fix https://github.com/iBurnApp/BlackRockCityPlanner/issues/6
+        return [_playaLocation stringByReplacingOccurrencesOfString:@" None None" withString:@""];
     }
     return nil;
 }
