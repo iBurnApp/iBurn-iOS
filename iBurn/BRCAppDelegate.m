@@ -63,9 +63,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     fileLogger.doNotReuseLogFiles = YES;
     [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
-        
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-    
+            
     // Can we set a better interval?
     NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
     [application setMinimumBackgroundFetchInterval:dailyInterval];
