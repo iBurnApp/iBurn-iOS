@@ -64,9 +64,10 @@ public final class BRCAudioPlayer: NSObject {
         }
     }
     fileprivate var queuedObjects: [BRCArtObject] = []
-    private var itemObserver: NSKeyValueObservation!
-    private var rateObserver: NSKeyValueObservation!
-    private var statusObserver: NSObjectProtocol!
+    private var itemObserver: NSKeyValueObservation?
+    private var rateObserver: NSKeyValueObservation?
+    private var interruptionObserver: NSObjectProtocol?
+    private var statusObserver: NSKeyValueObservation?
     
     deinit {
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
@@ -75,6 +76,13 @@ public final class BRCAudioPlayer: NSObject {
     public override init() {
         super.init()
         NotificationCenter.default.addObserver(self, selector: #selector(BRCAudioPlayer.didFinishPlayingNotification(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
+        
+        interruptionObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification,
+                                                                      object: AVAudioSession.sharedInstance(),
+                                                                      queue: .main) {
+            [weak self] notification in
+            self?.handleAudioSessionInterruption(notification: notification)
+        }
         setupRemoteTransportControls()
     }
     
@@ -263,6 +271,31 @@ public final class BRCAudioPlayer: NSObject {
                     }
                 })
             }
+            
+            if let playerItem = player?.currentItem {
+                var allItems: [AVMetadataItem] = []
+                if let metadata = self.metadataItem(identifier: .commonIdentifierTitle, value: nowPlaying.title as NSString) {
+                    allItems.append(metadata)
+                }
+                // https://stackoverflow.com/a/41837833
+                var description = nowPlaying.detailDescription ?? " "
+                if description.isEmpty {
+                    description = " "
+                }
+                if let metadata = self.metadataItem(identifier: .commonIdentifierDescription, value: description as NSString) {
+                    allItems.append(metadata)
+                }
+                
+                if let localThumbnailURL = nowPlaying.localThumbnailURL,
+                   let jpegData = try? Data(contentsOf: localThumbnailURL),
+                   let artworkItem = self.metadataArtworkItem(jepgData: jpegData) {
+                    allItems.append(artworkItem)
+                }
+                
+                playerItem.externalMetadata = allItems
+            }
+            
+            
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
         } else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
@@ -351,3 +384,69 @@ public final class BRCAudioPlayer: NSObject {
         }
     }
 }
+
+// https://stackoverflow.com/q/41557731
+private extension BRCAudioPlayer {
+    func metadataItem(identifier: AVMetadataIdentifier, value: (NSCopying & NSObjectProtocol)?) -> AVMetadataItem? {
+        if let actualValue = value {
+            let item = AVMutableMetadataItem()
+            item.value = actualValue
+            item.identifier = identifier
+            item.extendedLanguageTag = "und"
+            return item.copy() as? AVMetadataItem
+        }
+        return nil
+    }
+    
+    func metadataArtworkItem(jepgData: Data) -> AVMetadataItem? {
+        let item = AVMutableMetadataItem()
+        item.value = jepgData as NSData
+        item.dataType = kCMMetadataBaseDataType_JPEG as String
+        item.identifier = .commonIdentifierArtwork
+        item.extendedLanguageTag = "und"
+        return item.copy() as? AVMetadataItem
+    }
+    
+    private func handleAudioSessionInterruption(notification: Notification) {
+        // Retrieve the interruption type from the notification.
+        guard let userInfo = notification.userInfo,
+              let interruptionTypeUInt = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let interruptionType = AVAudioSession.InterruptionType(rawValue: interruptionTypeUInt) else { return }
+        
+        // Begin or end an interruption.
+        
+        switch interruptionType {
+        case .began:
+            break
+        case .ended:
+            // When an interruption ends, determine whether playback should resume
+            // automatically, and reactivate the audio session if necessary.
+            
+            do {
+                
+                try AVAudioSession.sharedInstance().setActive(true)
+                
+                var shouldResume = false
+                
+                if let optionsUInt = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt,
+                   AVAudioSession.InterruptionOptions(rawValue: optionsUInt).contains(.shouldResume) {
+                    shouldResume = true
+                }
+                if shouldResume {
+                    play()
+                }
+            }
+            
+            // When the audio session cannot be resumed after an interruption,
+            // invoke the handler with error information.
+            
+            catch {
+                print("Could not resume audio session: \(error)")
+            }
+            
+        @unknown default:
+            break
+        }
+    }
+}
+
