@@ -220,6 +220,9 @@ public final class BRCAudioPlayer: NSObject {
             self?.player?.advanceToNextItem()
             return .success
         }
+        commandCenter.previousTrackCommand.addTarget { [weak self] event in
+            return self?.goBack() ?? .noSuchContent
+        }
     }
     
     func enableRemoteTransportControls() {
@@ -227,7 +230,8 @@ public final class BRCAudioPlayer: NSObject {
         commandCenter.playCommand.isEnabled = true
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.changePlaybackPositionCommand.isEnabled = true
-        commandCenter.nextTrackCommand.isEnabled = true
+        commandCenter.nextTrackCommand.isEnabled = queuedObjects.count > 1
+        commandCenter.previousTrackCommand.isEnabled = true
     }
     
     func disableRemoteTransportControls() {
@@ -236,6 +240,7 @@ public final class BRCAudioPlayer: NSObject {
         commandCenter.pauseCommand.isEnabled = false
         commandCenter.changePlaybackPositionCommand.isEnabled = false
         commandCenter.nextTrackCommand.isEnabled = false
+        commandCenter.previousTrackCommand.isEnabled = false
     }
     
     func handlePlayerItemChange() {
@@ -306,5 +311,43 @@ public final class BRCAudioPlayer: NSObject {
         }
         
         fireChangeNotification()
+    }
+    
+    private func goBack() -> MPRemoteCommandHandlerStatus{
+        var currentIndex = -1
+        for (i, item) in queuedObjects.enumerated() {
+            guard let asset = player?.currentItem?.asset as? AVURLAsset else {
+                continue
+            }
+            if item.audioURL == asset.url {
+                currentIndex = i
+                break
+            }
+        }
+        if let currentDuration = player?.currentItem?.currentTime(), currentDuration.seconds > 4 || queuedObjects.count == 1 {
+            restartCurrentTrack()
+            return .success
+        }
+        if currentIndex == 0 {
+            currentIndex = queuedObjects.count
+        }
+        guard let newURL = queuedObjects[currentIndex - 1].audioURL,
+              let currentItem = player?.currentItem else {
+            return .noSuchContent
+        }
+        let newItem = AVPlayerItem(url: newURL)
+        player?.replaceCurrentItem(with: newItem)
+        player?.insert(currentItem, after: newItem)
+        nowPlaying = queuedObjects[currentIndex - 1]
+        restartCurrentTrack()
+        return .success
+    }
+    
+    func restartCurrentTrack() {
+        player?.seek(to: CMTime(seconds: 0, preferredTimescale: 1)) { finished in
+            if finished {
+                self.handlePlaybackChange()
+            }
+        }
     }
 }
