@@ -26,6 +26,9 @@ extension IndexPath {
     // Inspired by https://akosma.com/2012/04/20/getting-the-next-and-the-previous-nsindexpath-instances/
     public func nextIndexPath(direction: IndexPathDirection, tableView: UITableView) -> IndexPath? {
         let sectionCount = tableView.numberOfSections
+        if self.section >= sectionCount {
+            return nil
+        }
         let rowCount = tableView.numberOfRows(inSection: self.section)
         switch direction {
         case .after:
