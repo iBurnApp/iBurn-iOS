@@ -244,6 +244,13 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                    updateInfo:(BRCUpdateInfo*)updateInfo
                         error:(NSError**)error {
     NSParameterAssert(jsonData != nil);
+    if (jsonData == nil) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"com.iburnapp.iburn" code:404 userInfo:@{
+                NSLocalizedDescriptionKey: @"jsonData cannot be nil"}];
+        }
+        return NO;
+    }
     id jsonObjects = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:error];
     if (*error) {
         return NO;
