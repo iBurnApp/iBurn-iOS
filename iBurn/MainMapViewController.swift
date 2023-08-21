@@ -24,11 +24,18 @@ public class MainMapViewController: BaseMapViewController {
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
     }
+    private var geocoderTimer: Timer? {
+        didSet {
+            oldValue?.invalidate()
+            geocoderTimer?.tolerance = 1
+        }
+    }
     
     deinit {
         if let observer = observer {
             NotificationCenter.default.removeObserver(observer)
         }
+        geocoderTimer?.invalidate()
     }
     
     public init() {
@@ -68,6 +75,7 @@ public class MainMapViewController: BaseMapViewController {
         setupSearchButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
+        
     }
     
     private func setupSidebarButtons() {
@@ -82,6 +90,9 @@ public class MainMapViewController: BaseMapViewController {
         super.viewWillAppear(animated)
         mapViewAdapter.reloadAnnotations()
         geocodeNavigationBar()
+        geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            self?.geocodeNavigationBar()
+        }
     }
     
     public override func viewWillDisappear(_ animated: Bool) {
@@ -90,6 +101,7 @@ public class MainMapViewController: BaseMapViewController {
         self.tabBarController?.tabBar.alpha = 1.0
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         self.sidebarButtons.isHidden = false
+        geocoderTimer = nil
     }
 }
 

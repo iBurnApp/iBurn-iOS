@@ -69,6 +69,16 @@ public class SortedViewController: UITableViewController {
         let pvm = PageViewManager(objectProvider: self, tableView: tableView)
         return pvm
     }()
+    private var geocoderTimer: Timer? {
+        didSet {
+            oldValue?.invalidate()
+            geocoderTimer?.tolerance = 1
+        }
+    }
+    
+    deinit {
+        geocoderTimer?.invalidate()
+    }
     
     public override init(style: UITableView.Style) {
         super.init(style: style)
@@ -138,6 +148,14 @@ public class SortedViewController: UITableViewController {
             self.tableView.reloadData();
         }
         geocodeNavigationBar()
+        geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            self?.geocodeNavigationBar()
+        }
+    }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        geocoderTimer = nil
     }
     
     
