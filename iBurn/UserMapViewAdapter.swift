@@ -97,11 +97,11 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
         let zoomLevel = mapView.zoomLevel
-        let labelIsHidden = mapView.zoomLevel < 13
+        let labelIsHidden = mapView.zoomLevel < 13.0
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
         }
-        if mapView.zoomLevel >= 16 {
+        if mapView.zoomLevel >= 16.0 {
             let coordinateBounds = mapView.visibleCoordinateBounds
             BRCDatabaseManager.shared.queryObjects(inMinCoord: coordinateBounds.sw, maxCoord: coordinateBounds.ne, completionQueue: DispatchQueue.global(qos: .default)) { (objects) in
                 var objects = objects.filter {
@@ -111,7 +111,7 @@ public class UserMapViewAdapter: MapViewAdapter {
                     } else if let _ = $0 as? BRCCampObject {
                         // nearby camps just clutter the map until we get more precise location data
                         // from the org
-                        if zoomLevel > 16 {
+                        if zoomLevel > 16.0 {
                             return true
                         } else {
                             return false
@@ -130,7 +130,7 @@ public class UserMapViewAdapter: MapViewAdapter {
                     self.addAnnotations(annotations)
                 })
             }
-        } else if mapView.zoomLevel <= 13 {
+        } else {
             removeAnnotations(mapRegionAnnotations.allAnnotations())
         }
     }
