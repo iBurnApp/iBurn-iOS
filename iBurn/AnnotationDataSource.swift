@@ -82,7 +82,13 @@ extension YapViewAnnotationDataSource: AnnotationDataSource {
                 }),
                 BRCEmbargo.canShowLocation(for: dataObject),
                     let annotation = annotation {
-                    annotations.append(annotation)
+                    if let event = dataObject as? BRCEventObject {
+                        if event.shouldShowOnMap() {
+                            annotations.append(annotation)
+                        }
+                    } else {
+                        annotations.append(annotation)
+                    }
                 }
             }
         }
@@ -180,7 +186,11 @@ public protocol ImageAnnotation: MGLAnnotation {
 
 extension DataObjectAnnotation: ImageAnnotation {
     public var markerImage: UIImage? {
-        return object.brc_markerImage
+        if metadata.isFavorite {
+            return UIImage(named: "BRCPinkPin")
+        } else {
+            return object.brc_markerImage
+        }
     }
 }
 

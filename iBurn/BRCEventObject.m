@@ -123,10 +123,10 @@ NSString * const kBRCEventArtEdgeName = @"art";
 }
 
 /**
- *  Whether or not the event starts within the next hour
+ *  Whether or not the event starts within the next 30 min
  */
 - (BOOL)isStartingSoon:(NSDate*)currentDate {
-    NSTimeInterval startingSoonTimeThreshold = 60 * 60; // one hour
+    NSTimeInterval startingSoonTimeThreshold = 60 * 30; // 30 min
     NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStart:currentDate];
     if (![self hasStarted:currentDate] && timeIntervalUntilEventStarts < startingSoonTimeThreshold) { // event starting soon
         return YES;

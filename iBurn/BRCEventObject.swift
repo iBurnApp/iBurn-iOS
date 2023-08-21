@@ -172,3 +172,12 @@ extension BRCEventObject {
         type.description
     }
 }
+
+extension BRCEventObject {
+    /// Whether or not an event pin should show up on the main map screen
+    public func shouldShowOnMap(_ now: Date = .present) -> Bool {
+        let event = self
+        // show events starting soon or happening now, but not ending soon
+        return !event.hasEnded(.present) && (event.isStartingSoon(.present) || event.isHappeningRightNow(.present)) && !event.isEndingSoon(.present)
+    }
+}

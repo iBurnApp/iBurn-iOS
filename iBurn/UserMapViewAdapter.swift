@@ -106,12 +106,11 @@ public class UserMapViewAdapter: MapViewAdapter {
             BRCDatabaseManager.shared.queryObjects(inMinCoord: coordinateBounds.sw, maxCoord: coordinateBounds.ne, completionQueue: DispatchQueue.global(qos: .default)) { (objects) in
                 var objects = objects.filter {
                     if let event = $0 as? BRCEventObject {
-                        // show events starting soon or happening now, but not ending soon
-                        return (event.isStartingSoon(.present) || event.isHappeningRightNow(.present)) && !event.isEndingSoon(.present)
+                        return event.shouldShowOnMap()
                     } else if let _ = $0 as? BRCCampObject {
                         // nearby camps just clutter the map until we get more precise location data
                         // from the org
-                        if zoomLevel > 16.0 {
+                        if zoomLevel >= 18.0 {
                             return true
                         } else {
                             return false

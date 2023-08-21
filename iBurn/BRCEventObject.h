@@ -94,7 +94,7 @@ extern NSString * const kBRCEventArtEdgeName;
 - (BOOL)isEndingSoon:(NSDate*)currentDate;
 
 /**
- *  Whether or not the event starts within the next hour
+ *  Whether or not the event starts within the next 30 min
  */
 - (BOOL)isStartingSoon:(NSDate*)currentDate;
 
