@@ -21,6 +21,7 @@
 #import "iBurn-Swift.h"
 @import CoreLocation;
 @import PlayaGeocoder;
+@import FirebaseCrashlytics;
 
 static NSString * const kBRCLocalTilesName = @"Cache.db";
 
@@ -464,6 +465,9 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                                                 error:&error];
             if (!success) {
                 NSLog(@"Error loading JSON for %@: %@", NSStringFromClass(dataClass), error);
+                if (error) {
+                    [FIRCrashlytics.crashlytics recordError:error];
+                }
                 updateInfo.fetchStatus = BRCUpdateFetchStatusFailed;
                 [self.readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
                     [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
