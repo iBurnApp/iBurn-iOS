@@ -96,6 +96,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
     
     override public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+        let zoomLevel = mapView.zoomLevel
         let labelIsHidden = mapView.zoomLevel < 13
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
@@ -110,7 +111,11 @@ public class UserMapViewAdapter: MapViewAdapter {
                     } else if let _ = $0 as? BRCCampObject {
                         // nearby camps just clutter the map until we get more precise location data
                         // from the org
-                        return false
+                        if zoomLevel > 16 {
+                            return true
+                        } else {
+                            return false
+                        }
                     } else {
                         return true
                     }
