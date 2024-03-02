@@ -11,6 +11,7 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 ![Screenshot 1](http://i.imgur.com/wmHHgiYl.jpg) ![Screenshot 2](http://i.imgur.com/39IHGN0l.jpg)
 
 ## Installation
+**Note:** If you are looking to do development work, start by forking this project
 
 * Install [Cocoapods](http://cocoapods.org) and the most recent version of Xcode.
 * Fetch submodules and install Pods.
@@ -70,6 +71,10 @@ CRASHLYTICS_API_TOKEN=""
 "${PODS_ROOT}/Fabric/run" $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET
 ```
 
+* Copy test firebase config file into correct path (this will need to be updated for any deploys)
+```
+cp GoogleService-Info+test.plist iBurn/GoogleService-Info.plist
+````
 
 * Compile and Run!
 
