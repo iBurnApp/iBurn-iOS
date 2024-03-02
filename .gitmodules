@@ -10,3 +10,6 @@
 [submodule "Submodules/PermissionScope"]
 	path = Submodules/PermissionScope
 	url = git@github.com:Burning-Man-Earth/PermissionScope.git
+[submodule "Submodules/iBurn-Data"]
+	path = Submodules/iBurn-Data
+	url = https://github.com/iBurnApp/iBurn-Data.git
