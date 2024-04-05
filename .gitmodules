@@ -1,6 +1,3 @@
-[submodule "Submodules/iBurn-Data"]
-	path = Submodules/iBurn-Data
-	url = git@github.com:iBurnApp/iBurn-Data-Private.git
 [submodule "Submodules/DOFavoriteButton"]
 	path = Submodules/DOFavoriteButton
 	url = git@github.com:chrisballinger/DOFavoriteButton.git
@@ -13,3 +10,6 @@
 [submodule "Submodules/PermissionScope"]
 	path = Submodules/PermissionScope
 	url = git@github.com:Burning-Man-Earth/PermissionScope.git
+[submodule "Submodules/iBurn-Data"]
+	path = Submodules/iBurn-Data
+	url = https://github.com/iBurnApp/iBurn-Data.git

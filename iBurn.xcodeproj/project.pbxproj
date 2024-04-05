@@ -109,7 +109,6 @@
 		D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */; };
 		D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A27ADD210FFC0F000BD535 /* Appearance.swift */; };
 		D9A364672A759BD20008CCFB /* DataUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A364662A759BD20008CCFB /* DataUpdatesView.swift */; };
-		D9A364702A75B49D0008CCFB /* iBurn-2023.zip in Resources */ = {isa = PBXBuildFile; fileRef = D9A3646F2A75B49D0008CCFB /* iBurn-2023.zip */; };
 		D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
@@ -451,7 +450,6 @@
 		D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDisplayManager.swift; sourceTree = "<group>"; };
 		D9A27ADD210FFC0F000BD535 /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
 		D9A364662A759BD20008CCFB /* DataUpdatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUpdatesView.swift; sourceTree = "<group>"; };
-		D9A3646F2A75B49D0008CCFB /* iBurn-2023.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = "iBurn-2023.zip"; path = "Submodules/iBurn-Data/data/2023/iBurn-2023.zip"; sourceTree = SOURCE_ROOT; };
 		D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDatabaseManager.swift; sourceTree = "<group>"; };
 		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObject.swift; sourceTree = "<group>"; };
@@ -1082,7 +1080,6 @@
 		D9BB3BE02A6C3F6700777AEE /* 2023 */ = {
 			isa = PBXGroup;
 			children = (
-				D9A3646F2A75B49D0008CCFB /* iBurn-2023.zip */,
 				D9BB3BE52A6C3FA700777AEE /* MediaFiles */,
 				D9BB3BE32A6C3F9D00777AEE /* Map */,
 				D9BB3BE12A6C3F8E00777AEE /* APIData */,
@@ -1376,7 +1373,6 @@
 				D9BB3BE62A6C3FA700777AEE /* MediaFiles in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
 				D9E0DA91210F82530056286B /* YearSettings.plist in Resources */,
-				D9A364702A75B49D0008CCFB /* iBurn-2023.zip in Resources */,
 				D9BB3BE22A6C3F8E00777AEE /* APIData in Resources */,
 				D9BB3BE42A6C3F9D00777AEE /* Map in Resources */,
 				D9915F652A76D3120015C87D /* Settings.bundle in Resources */,
