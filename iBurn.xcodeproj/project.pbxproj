@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		40DA72712BBFD912003D742B /* EventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72702BBFD912003D742B /* EventView.swift */; };
+		40DA72732BBFE0C0003D742B /* EventViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72722BBFE0C0003D742B /* EventViewModel.swift */; };
+		40DA72752BBFE248003D742B /* EventViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72742BBFE248003D742B /* EventViewModelTests.swift */; };
+		40DA72772BBFE2EA003D742B /* BRCEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72762BBFE2EA003D742B /* BRCEvent.swift */; };
+		40DA72792BBFE33D003D742B /* FavoriteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72782BBFE33D003D742B /* FavoriteButton.swift */; };
+		40DA727B2BBFE6D6003D742B /* BRCMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA727A2BBFE6D6003D742B /* BRCMetadata.swift */; };
+		40DA727D2BBFE76F003D742B /* BRCData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA727C2BBFE76F003D742B /* BRCData.swift */; };
+		40DA727F2BBFEDF6003D742B /* BRCCamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA727E2BBFEDF6003D742B /* BRCCamp.swift */; };
+		40DA72812BBFEDFD003D742B /* BRCArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72802BBFEDFD003D742B /* BRCArt.swift */; };
+		40DA72832BBFF4BC003D742B /* BRCEmbargo+swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72822BBFF4BC003D742B /* BRCEmbargo+swift.swift */; };
+		40DA72852BBFF59C003D742B /* DataViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72842BBFF59C003D742B /* DataViewModel.swift */; };
+		40DA72882BBFF674003D742B /* DataViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72862BBFF5D6003D742B /* DataViewModelTests.swift */; };
+		40DA728D2BBFFEDC003D742B /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA728C2BBFFEDC003D742B /* MockData.swift */; };
+		40DA72902BBFFEF3003D742B /* MockEmbargo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA728E2BBFFEEA003D742B /* MockEmbargo.swift */; };
+		40DA72972BBFFF0A003D742B /* MockArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72932BBFFF01003D742B /* MockArt.swift */; };
+		40DA72982BBFFF0A003D742B /* MockEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72952BBFFF07003D742B /* MockEvent.swift */; };
+		40DA72992BBFFF0A003D742B /* MockCamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA72912BBFFEFC003D742B /* MockCamp.swift */; };
+		40DA729C2BBFFF2F003D742B /* MockMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DA729A2BBFFF2B003D742B /* MockMetadata.swift */; };
 		63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 63010EFE1B72DEEA000A847C /* BRCGeocoder.m */; };
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
@@ -260,6 +278,24 @@
 		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		40DA72702BBFD912003D742B /* EventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventView.swift; sourceTree = "<group>"; };
+		40DA72722BBFE0C0003D742B /* EventViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventViewModel.swift; sourceTree = "<group>"; };
+		40DA72742BBFE248003D742B /* EventViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventViewModelTests.swift; sourceTree = "<group>"; };
+		40DA72762BBFE2EA003D742B /* BRCEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCEvent.swift; sourceTree = "<group>"; };
+		40DA72782BBFE33D003D742B /* FavoriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteButton.swift; sourceTree = "<group>"; };
+		40DA727A2BBFE6D6003D742B /* BRCMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCMetadata.swift; sourceTree = "<group>"; };
+		40DA727C2BBFE76F003D742B /* BRCData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCData.swift; sourceTree = "<group>"; };
+		40DA727E2BBFEDF6003D742B /* BRCCamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCCamp.swift; sourceTree = "<group>"; };
+		40DA72802BBFEDFD003D742B /* BRCArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCArt.swift; sourceTree = "<group>"; };
+		40DA72822BBFF4BC003D742B /* BRCEmbargo+swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BRCEmbargo+swift.swift"; sourceTree = "<group>"; };
+		40DA72842BBFF59C003D742B /* DataViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewModel.swift; sourceTree = "<group>"; };
+		40DA72862BBFF5D6003D742B /* DataViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewModelTests.swift; sourceTree = "<group>"; };
+		40DA728C2BBFFEDC003D742B /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
+		40DA728E2BBFFEEA003D742B /* MockEmbargo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockEmbargo.swift; sourceTree = "<group>"; };
+		40DA72912BBFFEFC003D742B /* MockCamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCamp.swift; sourceTree = "<group>"; };
+		40DA72932BBFFF01003D742B /* MockArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockArt.swift; sourceTree = "<group>"; };
+		40DA72952BBFFF07003D742B /* MockEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockEvent.swift; sourceTree = "<group>"; };
+		40DA729A2BBFFF2B003D742B /* MockMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMetadata.swift; sourceTree = "<group>"; };
 		58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C938B49996428877731060F /* Pods-iBurnAbstract-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
@@ -596,6 +632,37 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		40DA72892BBFFEA9003D742B /* Testing */ = {
+			isa = PBXGroup;
+			children = (
+				40DA728B2BBFFEBE003D742B /* View */,
+				40DA728A2BBFFEB6003D742B /* Mocks */,
+			);
+			name = Testing;
+			sourceTree = "<group>";
+		};
+		40DA728A2BBFFEB6003D742B /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				40DA728C2BBFFEDC003D742B /* MockData.swift */,
+				40DA728E2BBFFEEA003D742B /* MockEmbargo.swift */,
+				40DA72912BBFFEFC003D742B /* MockCamp.swift */,
+				40DA72932BBFFF01003D742B /* MockArt.swift */,
+				40DA72952BBFFF07003D742B /* MockEvent.swift */,
+				40DA729A2BBFFF2B003D742B /* MockMetadata.swift */,
+			);
+			name = Mocks;
+			sourceTree = "<group>";
+		};
+		40DA728B2BBFFEBE003D742B /* View */ = {
+			isa = PBXGroup;
+			children = (
+				40DA72862BBFF5D6003D742B /* DataViewModelTests.swift */,
+				40DA72742BBFE248003D742B /* EventViewModelTests.swift */,
+			);
+			name = View;
+			sourceTree = "<group>";
+		};
 		6322830219881E27009E472B /* DetailViewControllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -676,6 +743,7 @@
 				63CE2A661987140F00F65B01 /* BRCAppDelegate.h */,
 				63CE2A671987140F00F65B01 /* BRCAppDelegate.m */,
 				63D270F61987157900204954 /* ViewControllers */,
+				40DA72892BBFFEA9003D742B /* Testing */,
 				63D270FA198716C600204954 /* Resources */,
 				63CE2A5E1987140F00F65B01 /* Supporting Files */,
 			);
@@ -799,6 +867,9 @@
 				D92562BF19886EBF00ED6B50 /* BRCDataObjectTableViewCell.h */,
 				D92562C019886EBF00ED6B50 /* BRCDataObjectTableViewCell.m */,
 				D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */,
+				40DA72842BBFF59C003D742B /* DataViewModel.swift */,
+				40DA72702BBFD912003D742B /* EventView.swift */,
+				40DA72722BBFE0C0003D742B /* EventViewModel.swift */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1056,6 +1127,12 @@
 				D9914C541B40D7B700F90663 /* iBurn Update API */,
 				D9BD4C001B7876E800313FB5 /* BRCCreditsInfo.h */,
 				D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */,
+				40DA72762BBFE2EA003D742B /* BRCEvent.swift */,
+				40DA727E2BBFEDF6003D742B /* BRCCamp.swift */,
+				40DA72802BBFEDFD003D742B /* BRCArt.swift */,
+				40DA727C2BBFE76F003D742B /* BRCData.swift */,
+				40DA727A2BBFE6D6003D742B /* BRCMetadata.swift */,
+				40DA72822BBFF4BC003D742B /* BRCEmbargo+swift.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -1128,6 +1205,7 @@
 				D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */,
 				D9B362B51998253A0093B441 /* BRCSocialButtonsView.h */,
 				D9B362B61998253A0093B441 /* BRCSocialButtonsView.m */,
+				40DA72782BBFE33D003D742B /* FavoriteButton.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1537,6 +1615,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40DA72852BBFF59C003D742B /* DataViewModel.swift in Sources */,
 				D97D7A31198ADBE400CA7828 /* NSDateFormatter+iBurn.m in Sources */,
 				639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */,
 				D9E0DA95210F95330056286B /* DateFormatter+iBurn.swift in Sources */,
@@ -1607,17 +1686,21 @@
 				D9E0DA93210F830A0056286B /* YearSettings.swift in Sources */,
 				D9E0DA8F210F81920056286B /* UserSettings.swift in Sources */,
 				D9071FE71996C4A7005C3639 /* NSData+iBurn.m in Sources */,
+				40DA72772BBFE2EA003D742B /* BRCEvent.swift in Sources */,
 				D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */,
 				D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */,
 				D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */,
 				D97EB5EC21122A7D001B4351 /* DayPicker.swift in Sources */,
 				D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */,
 				D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */,
+				40DA72812BBFEDFD003D742B /* BRCArt.swift in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
 				D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */,
 				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
+				40DA72712BBFD912003D742B /* EventView.swift in Sources */,
 				D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
+				40DA727F2BBFEDF6003D742B /* BRCCamp.swift in Sources */,
 				D977C85F2A76468800341CBF /* BRCUpdateInfo.swift in Sources */,
 				D92AC56922F0168F00C9FE32 /* LocationStorage.swift in Sources */,
 				D9DE7BB21EF27AE9007A983E /* SidebarButtonsView.swift in Sources */,
@@ -1626,11 +1709,13 @@
 				D975CAF2198DAB5A00CC8226 /* BRCSecrets.m in Sources */,
 				D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
+				40DA727B2BBFE6D6003D742B /* BRCMetadata.swift in Sources */,
 				D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */,
 				D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */,
 				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,
 				D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */,
 				D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */,
+				40DA727D2BBFE76F003D742B /* BRCData.swift in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
 				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
@@ -1638,6 +1723,8 @@
 				D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
 				D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */,
+				40DA72792BBFE33D003D742B /* FavoriteButton.swift in Sources */,
+				40DA72732BBFE0C0003D742B /* EventViewModel.swift in Sources */,
 				D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */,
 				D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */,
 				D984DFC6210D4B3100A45922 /* YapViewHandler.swift in Sources */,
@@ -1646,6 +1733,7 @@
 				D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */,
 				D9DEC5FC1F2EB2B400F536ED /* BRCDataImporter.swift in Sources */,
 				6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */,
+				40DA72832BBFF4BC003D742B /* BRCEmbargo+swift.swift in Sources */,
 				D9DEAACC211F74D2007899B9 /* ProcessInfo+iBurn.swift in Sources */,
 				D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */,
 				D9DE9E1C1F3A447100906F64 /* BRCImageColors.m in Sources */,
@@ -1665,8 +1753,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40DA72972BBFFF0A003D742B /* MockArt.swift in Sources */,
+				40DA72882BBFF674003D742B /* DataViewModelTests.swift in Sources */,
+				40DA72902BBFFEF3003D742B /* MockEmbargo.swift in Sources */,
 				D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */,
+				40DA72992BBFFF0A003D742B /* MockCamp.swift in Sources */,
 				D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */,
+				40DA72752BBFE248003D742B /* EventViewModelTests.swift in Sources */,
+				40DA72982BBFFF0A003D742B /* MockEvent.swift in Sources */,
+				40DA729C2BBFFF2F003D742B /* MockMetadata.swift in Sources */,
+				40DA728D2BBFFEDC003D742B /* MockData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
