@@ -624,6 +624,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         filtering = [[self class] eventsFilteredByExpirationAndType];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventSelectedDayOnly) {
         filtering = [[self class] eventsFilteredByToday];
+    } else {
+        filtering = [[self class] allItemsFiltering];
     }
     
     YapDatabaseViewOptions *options = [[YapDatabaseViewOptions alloc] init];
