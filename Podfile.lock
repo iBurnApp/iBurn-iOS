@@ -3,8 +3,8 @@ PODS:
   - Appirater (2.3.1)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - CocoaLumberjack/Core (3.8.0)
-  - CocoaLumberjack/Swift (3.8.0):
+  - CocoaLumberjack/Core (3.8.5)
+  - CocoaLumberjack/Swift (3.8.5):
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DOFavoriteButton (0.0.4)
@@ -13,12 +13,12 @@ PODS:
   - FormatterKit/Resources (1.9.0)
   - FormatterKit/TimeIntervalFormatter (1.9.0):
     - FormatterKit/Resources
-  - GRDB.swift (6.15.1):
-    - GRDB.swift/standard (= 6.15.1)
-  - GRDB.swift/standard (6.15.1)
+  - GRDB.swift (6.24.1):
+    - GRDB.swift/standard (= 6.24.1)
+  - GRDB.swift/standard (6.24.1)
   - JTSImageViewController (1.5.1)
   - KVOController (1.2.0)
-  - LicensePlist (3.24.10)
+  - LicensePlist (3.25.1)
   - Mantle (2.2.0):
     - Mantle/extobjc (= 2.2.0)
   - Mantle/extobjc (2.2.0)
@@ -198,14 +198,14 @@ SPEC CHECKSUMS:
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  CocoaLumberjack: 78abfb691154e2a9df8ded4350d504ee19d90732
+  CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 184db51bf120b633693a73624a4cede89ec51a41
-  GRDB.swift: a6b7e9900aa300d0cbf1f1c5f47b8f32ae51e30c
+  GRDB.swift: 136dcb5d8dddca50aae3ba7d77475f79e7232cd8
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
-  LicensePlist: 2e5c975314d2d2ee35cec141d57cc482d61b93c9
+  LicensePlist: 8a2019452d6a6376d2b5a40e4170af6b62f51ee5
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
@@ -217,4 +217,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 47277d2a3535d8f2d09ed76ff544a36661a0e768
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.15.2

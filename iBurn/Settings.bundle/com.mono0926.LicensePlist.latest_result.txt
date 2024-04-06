@@ -32,15 +32,15 @@ version: 4.0.2
 
 name: CocoaLumberjack, nameSpecified: 
 body: BSD 3-Clause License…
-version: 3.8.0
+version: 3.8.5
 
 name: CocoaLumberjack, nameSpecified: 
 body: BSD 3-Clause License…
-version: 3.8.0
+version: 3.8.5
 
 name: CocoaLumberjack, nameSpecified: 
 body: BSD 3-Clause License…
-version: 3.8.0
+version: 3.8.5
 
 name: CupertinoYankee, nameSpecified: 
 body: Copyright (c) 2012–2…
@@ -68,11 +68,11 @@ version: 1.9.0
 
 name: GRDB.swift, nameSpecified: 
 body: Copyright (C) 2015-2…
-version: 6.15.1
+version: 6.24.1
 
 name: GRDB.swift, nameSpecified: 
 body: Copyright (C) 2015-2…
-version: 6.15.1
+version: 6.24.1
 
 name: JTSImageViewController, nameSpecified: 
 body: The MIT License (MIT…
@@ -98,13 +98,13 @@ name: LicensePlist, nameSpecified:
 body: MIT License
 
 Copyrig…
-version: 3.24.10
+version: 3.25.1
 
 name: LicensePlist, nameSpecified: 
 body: MIT License
 
 Copyrig…
-version: 3.24.10
+version: 3.25.1
 
 name: Mantle, nameSpecified: 
 body: **Copyright (c) GitH…
@@ -208,4 +208,4 @@ name: Zip, nameSpecified: Zip, owner: marmelroy, version: 2.1.2, source: https:/
 
 add-version-numbers: true
 
-LicensePlist Version: 3.24.10
+LicensePlist Version: 3.25.1
