@@ -28,12 +28,16 @@ extension UIBarButtonItem {
     
     private var targetClosure: UIBarButtonItemTargetClosure? {
         get {
-            guard let closureWrapper = objc_getAssociatedObject(self, &AssociatedKeys.targetClosure) as? UIBarButtonItemClosureWrapper else { return nil }
-            return closureWrapper.closure
+            withUnsafePointer(to: AssociatedKeys.targetClosure) {
+                guard let closureWrapper = objc_getAssociatedObject(self, $0) as? UIBarButtonItemClosureWrapper else { return nil }
+                return closureWrapper.closure
+            }
         }
         set(newValue) {
             guard let newValue = newValue else { return }
-            objc_setAssociatedObject(self, &AssociatedKeys.targetClosure, UIBarButtonItemClosureWrapper(newValue), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            withUnsafePointer(to: AssociatedKeys.targetClosure) {
+                objc_setAssociatedObject(self, $0, UIBarButtonItemClosureWrapper(newValue), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            }
         }
     }
     
