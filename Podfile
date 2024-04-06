@@ -14,7 +14,6 @@ target 'iBurn' do
 
 	pod 'Anchorage'
 
-	# pod 'Mapbox-iOS-SDK', '~> 5.2.0'
 	pod 'YapDatabase'
 
 	pod 'CocoaLumberjack/Swift'
