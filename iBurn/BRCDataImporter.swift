@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import Mapbox
+import MapLibre
 import CocoaLumberjack
 import Zip
 

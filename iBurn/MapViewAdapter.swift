@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Mapbox
+import MapLibre
 import YapDatabase
 import BButton
 import CocoaLumberjack
@@ -22,20 +22,20 @@ public class MapViewAdapter: NSObject {
 
     // MARK: - Properties
 
-    public let mapView: MGLMapView
+    public let mapView: MLNMapView
     public var dataSource: AnnotationDataSource?
     public weak var parent: UIViewController?
 
     /// key is annotation ObjectIdentifier
-    var annotationViews: [ObjectIdentifier: MGLAnnotationView] = [:]
+    var annotationViews: [ObjectIdentifier: MLNAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
     /// annotations that this class owns and have been added to this mapview
-    private var annotations: [MGLAnnotation] = []
+    private var annotations: [MLNAnnotation] = []
 
     /// for checking if annotations overlap
     private var overlappingAnnotations: [CLLocationCoordinate2D: [DataObjectAnnotation]] = [:]
     
-    @objc public init(mapView: MGLMapView,
+    @objc public init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
         self.mapView = mapView
         self.dataSource = dataSource
@@ -51,7 +51,7 @@ public class MapViewAdapter: NSObject {
         addAnnotations(self.annotations)
     }
     
-    @objc public func removeAnnotations(_ annotations: [MGLAnnotation]) {
+    @objc public func removeAnnotations(_ annotations: [MLNAnnotation]) {
         annotations.forEach { (annotation) in
             if let data = annotation as? DataObjectAnnotation {
                 let originalCoordinate = data.originalCoordinate
@@ -70,7 +70,7 @@ public class MapViewAdapter: NSObject {
     }
     
     /// Adds annotations in a way that avoid overlap
-    @objc public func addAnnotations(_ annotations: [MGLAnnotation]) {
+    @objc public func addAnnotations(_ annotations: [MLNAnnotation]) {
         annotations.forEach { (annotation) in
             if let data = annotation as? DataObjectAnnotation {
                 let originalCoordinate = data.originalCoordinate
@@ -97,11 +97,11 @@ public class MapViewAdapter: NSObject {
 }
 
 
-// MARK: - MGLMapViewDelegate
+// MARK: - MLNMapViewDelegate
 
-extension MapViewAdapter: MGLMapViewDelegate {
+extension MapViewAdapter: MLNMapViewDelegate {
     
-    public func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
+    public func mapView(_ mapView: MLNMapView, didFinishLoading style: MLNStyle) {
         let imageNames = [
             "airport", "bus", "centerCamp", "center",
             "firstAid", "EmergencyClinic", "ice", "info", "ranger",
@@ -116,12 +116,12 @@ extension MapViewAdapter: MGLMapViewDelegate {
         }
     }
     
-    public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
+    public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
         guard let imageAnnotation = annotation as? ImageAnnotation,
             let image = imageAnnotation.markerImage ?? UIImage(named: "BRCPurplePin") else {
                 return nil
         }
-        var annotationView: MGLAnnotationView?
+        var annotationView: MLNAnnotationView?
         if let _ = annotation as? BRCMapPoint {
             let imageAnnotationView: ImageAnnotationView
             if let view = mapView.dequeueReusableAnnotationView(withIdentifier: ImageAnnotationView.reuseIdentifier) as? ImageAnnotationView {
@@ -152,17 +152,17 @@ extension MapViewAdapter: MGLMapViewDelegate {
         return annotationView
     }
     
-    public func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+    public func mapView(_ mapView: MLNMapView, annotationCanShowCallout annotation: MLNAnnotation) -> Bool {
         return true
     }
     
-    public func mapView(_ mapView: MGLMapView, didDeselect annotation: MGLAnnotation) {}
+    public func mapView(_ mapView: MLNMapView, didDeselect annotation: MLNAnnotation) {}
     
-    public func mapView(_ mapView: MGLMapView, leftCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
+    public func mapView(_ mapView: MLNMapView, leftCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
         return nil
     }
     
-    public func mapView(_ mapView: MGLMapView, rightCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
+    public func mapView(_ mapView: MLNMapView, rightCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
         guard annotation is DataObjectAnnotation else {
             return nil
         }
@@ -171,7 +171,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
         return infoButton
     }
     
-    public func mapView(_ mapView: MGLMapView, annotation: MGLAnnotation, calloutAccessoryControlTapped control: UIControl) {
+    public func mapView(_ mapView: MLNMapView, annotation: MLNAnnotation, calloutAccessoryControlTapped control: UIControl) {
         guard let data = annotation as? DataObjectAnnotation,
             let tag = ButtonTag(rawValue: control.tag) else {
                 return
@@ -185,7 +185,7 @@ extension MapViewAdapter: MGLMapViewDelegate {
         }
     }
     
-    public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {        
+    public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {        
         let labelIsHidden = mapView.zoomLevel <= 14
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden

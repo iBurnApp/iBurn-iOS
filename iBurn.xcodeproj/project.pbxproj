@@ -37,6 +37,7 @@
 		D90FFA3E1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */; };
 		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
 		D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D913995C22FA88F000CA39A7 /* LaunchScreen.storyboard */; };
+		D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = D91879A32BC1058E0099EFAA /* MapLibre */; };
 		D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9251483211519A2007A7904 /* AnnotationDataSource.swift */; };
 		D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D925148521151F17007A7904 /* UserMapViewAdapter.swift */; };
 		D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */; };
@@ -44,7 +45,7 @@
 		D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C119886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib */; };
 		D92562C6198876C400ED6B50 /* BRCEventObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */; };
 		D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */; };
-		D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */; };
+		D92562CF198A20D600ED6B50 /* MLNMapView+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D92562CE198A20D600ED6B50 /* MLNMapView+iBurn.m */; };
 		D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D927BDB11EF4778000B7324D /* UserGuidance.swift */; };
 		D92AC56522F00AE700C9FE32 /* TracksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AC56422F00AE700C9FE32 /* TracksViewController.swift */; };
 		D92AC56922F0168F00C9FE32 /* LocationStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AC56822F0168F00C9FE32 /* LocationStorage.swift */; };
@@ -57,7 +58,6 @@
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
-		D9592D522858560B00C90542 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = D9592D512858560B00C90542 /* Mapbox */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
@@ -72,7 +72,7 @@
 		D9774B1C2118DEE200BE3CC8 /* MapListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */; };
 		D977C85F2A76468800341CBF /* BRCUpdateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85E2A76468800341CBF /* BRCUpdateInfo.swift */; };
 		D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C85F1EF23036007766A9 /* BaseMapViewController.swift */; };
-		D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */; };
+		D977C8621EF238F7007766A9 /* MLNMapView+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8611EF238F7007766A9 /* MLNMapView+iBurn.swift */; };
 		D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977C8631EF23994007766A9 /* MapDetailViewController.swift */; };
 		D977E0431B83F43900FFC20F /* HostedEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D977E0421B83F43900FFC20F /* HostedEventsViewController.swift */; };
 		D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */ = {isa = PBXBuildFile; fileRef = D977E0451B83F6E900FFC20F /* BRCDataObject+Relationships.m */; };
@@ -348,8 +348,8 @@
 		D92562C4198876C400ED6B50 /* BRCEventObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventObjectTableViewCell.h; sourceTree = "<group>"; };
 		D92562C5198876C400ED6B50 /* BRCEventObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventObjectTableViewCell.m; sourceTree = "<group>"; };
 		D92562C71988771400ED6B50 /* BRCEventObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCEventObjectTableViewCell.xib; sourceTree = "<group>"; };
-		D92562CD198A20D600ED6B50 /* MGLMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MGLMapView+iBurn.h"; sourceTree = "<group>"; };
-		D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MGLMapView+iBurn.m"; sourceTree = "<group>"; };
+		D92562CD198A20D600ED6B50 /* MLNMapView+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MLNMapView+iBurn.h"; sourceTree = "<group>"; };
+		D92562CE198A20D600ED6B50 /* MLNMapView+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MLNMapView+iBurn.m"; sourceTree = "<group>"; };
 		D927BDB11EF4778000B7324D /* UserGuidance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuidance.swift; sourceTree = "<group>"; };
 		D92AC56422F00AE700C9FE32 /* TracksViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracksViewController.swift; sourceTree = "<group>"; };
 		D92AC56822F0168F00C9FE32 /* LocationStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStorage.swift; sourceTree = "<group>"; };
@@ -390,7 +390,7 @@
 		D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapListViewController.swift; sourceTree = "<group>"; };
 		D977C85E2A76468800341CBF /* BRCUpdateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCUpdateInfo.swift; sourceTree = "<group>"; };
 		D977C85F1EF23036007766A9 /* BaseMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMapViewController.swift; sourceTree = "<group>"; };
-		D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MGLMapView+iBurn.swift"; sourceTree = "<group>"; };
+		D977C8611EF238F7007766A9 /* MLNMapView+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MLNMapView+iBurn.swift"; sourceTree = "<group>"; };
 		D977C8631EF23994007766A9 /* MapDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDetailViewController.swift; sourceTree = "<group>"; };
 		D977E0421B83F43900FFC20F /* HostedEventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostedEventsViewController.swift; sourceTree = "<group>"; };
 		D977E0441B83F6E900FFC20F /* BRCDataObject+Relationships.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRCDataObject+Relationships.h"; sourceTree = "<group>"; };
@@ -536,6 +536,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D966562928A9B86F002FA471 /* Zip in Frameworks */,
+				D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */,
 				D9D12F621B5AF5070048229A /* Social.framework in Frameworks */,
 				D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */,
 				D9915F592A76C35E0015C87D /* Siren in Frameworks */,
@@ -548,7 +549,6 @@
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
 				D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */,
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
-				D9592D522858560B00C90542 /* Mapbox in Frameworks */,
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -917,8 +917,8 @@
 				D9BD4C071B787A4400313FB5 /* NSBundle+iBurn.m */,
 				D99395AC198B991900E9ADD2 /* TTTLocationFormatter+iBurn.h */,
 				D99395AD198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m */,
-				D92562CD198A20D600ED6B50 /* MGLMapView+iBurn.h */,
-				D92562CE198A20D600ED6B50 /* MGLMapView+iBurn.m */,
+				D92562CD198A20D600ED6B50 /* MLNMapView+iBurn.h */,
+				D92562CE198A20D600ED6B50 /* MLNMapView+iBurn.m */,
 				D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */,
 				D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */,
 				D9794B72198BBFB400D7FDA7 /* UIColor+iBurn.h */,
@@ -1006,7 +1006,7 @@
 				D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */,
 				D9DE7BAF1EF25C11007A983E /* MainMapViewController.swift */,
 				D977C8631EF23994007766A9 /* MapDetailViewController.swift */,
-				D977C8611EF238F7007766A9 /* MGLMapView+iBurn.swift */,
+				D977C8611EF238F7007766A9 /* MLNMapView+iBurn.swift */,
 				D977C85F1EF23036007766A9 /* BaseMapViewController.swift */,
 				D90FFA3C1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.h */,
 				D90FFA3D1EEFB279005127D0 /* BRCUserTrackingBarButtonItem.m */,
@@ -1187,11 +1187,11 @@
 			);
 			name = iBurn;
 			packageProductDependencies = (
-				D9592D512858560B00C90542 /* Mapbox */,
 				D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				D966561528A9970B002FA471 /* FirebaseCrashlytics */,
 				D966562828A9B86E002FA471 /* Zip */,
 				D9915F582A76C35E0015C87D /* Siren */,
+				D91879A32BC1058E0099EFAA /* MapLibre */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -1608,7 +1608,7 @@
 				D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */,
 				D99415641987222800D245C7 /* BRCDataObject.m in Sources */,
 				D9DEAACE211F9558007899B9 /* LabelAnnotationView.swift in Sources */,
-				D977C8621EF238F7007766A9 /* MGLMapView+iBurn.swift in Sources */,
+				D977C8621EF238F7007766A9 /* MLNMapView+iBurn.swift in Sources */,
 				D9E0DA8B210F78850056286B /* ListCoordinator.swift in Sources */,
 				D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */,
 				D9E0DA97210FB46B0056286B /* SearchCooordinator.swift in Sources */,
@@ -1650,7 +1650,7 @@
 				D9BD4C081B787A4400313FB5 /* NSBundle+iBurn.m in Sources */,
 				D92562C219886EBF00ED6B50 /* BRCDataObjectTableViewCell.m in Sources */,
 				D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */,
-				D92562CF198A20D600ED6B50 /* MGLMapView+iBurn.m in Sources */,
+				D92562CF198A20D600ED6B50 /* MLNMapView+iBurn.m in Sources */,
 				D97D7A34198AF7BD00CA7828 /* NSDate+iBurn.m in Sources */,
 				D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */,
 				D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */,
@@ -2071,7 +2071,7 @@
 			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
+				minimumVersion = 6.0.0;
 			};
 		};
 		D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
@@ -2101,10 +2101,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D9592D512858560B00C90542 /* Mapbox */ = {
+		D91879A32BC1058E0099EFAA /* MapLibre */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
+			productName = MapLibre;
 		};
 		D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -8,7 +8,7 @@
 
 @import Mantle;
 @import CoreLocation;
-@import Mapbox;
+@import MapLibre;
 @import YapDatabase;
 #import "BRCYapDatabaseObject.h"
 #import "BRCObjectMetadata.h"

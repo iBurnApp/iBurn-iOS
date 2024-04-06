@@ -198,7 +198,7 @@ name: interop-ios-for-google-sdks, nameSpecified: InteropForGoogle, owner: googl
 
 name: leveldb, nameSpecified: leveldb, owner: firebase, version: 1.22.4, source: https://github.com/firebase/leveldb
 
-name: maplibre-gl-native-distribution, nameSpecified: MapLibre GL Native, owner: maplibre, version: 5.13.0, source: https://github.com/maplibre/maplibre-gl-native-distribution
+name: maplibre-gl-native-distribution, nameSpecified: MapLibre Native, owner: maplibre, version: 6.3.1, source: https://github.com/maplibre/maplibre-gl-native-distribution
 
 name: nanopb, nameSpecified: nanopb, owner: firebase, version: 2.30910.0, source: https://github.com/firebase/nanopb
 

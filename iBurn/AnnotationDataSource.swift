@@ -9,23 +9,23 @@
 import Foundation
 
 @objc public protocol AnnotationDataSource: NSObjectProtocol {
-    func allAnnotations() -> [MGLAnnotation]
+    func allAnnotations() -> [MLNAnnotation]
 }
 
 public class StaticAnnotationDataSource: NSObject {
-    public let annotations: [MGLAnnotation]
+    public let annotations: [MLNAnnotation]
     
-    @objc public init(annotations: [MGLAnnotation]) {
+    @objc public init(annotations: [MLNAnnotation]) {
         self.annotations = annotations
     }
     
-    @objc public convenience init(annotation: MGLAnnotation) {
+    @objc public convenience init(annotation: MLNAnnotation) {
         self.init(annotations: [annotation])
     }
 }
 
 extension StaticAnnotationDataSource: AnnotationDataSource {
-    public func allAnnotations() -> [MGLAnnotation] {
+    public func allAnnotations() -> [MLNAnnotation] {
         return annotations
     }
 }
@@ -51,9 +51,9 @@ public class YapCollectionAnnotationDataSource: NSObject {
 }
 
 public class MapRegionDataSource: NSObject, AnnotationDataSource {
-    public var annotations: [MGLAnnotation] = []
+    public var annotations: [MLNAnnotation] = []
     
-    public func allAnnotations() -> [MGLAnnotation] {
+    public func allAnnotations() -> [MLNAnnotation] {
         return annotations
     }
 }
@@ -65,14 +65,14 @@ public class AggregateAnnotationDataSource: NSObject, AnnotationDataSource {
         self.dataSources = dataSources
     }
     
-    public func allAnnotations() -> [MGLAnnotation] {
+    public func allAnnotations() -> [MLNAnnotation] {
         return dataSources.map { $0.allAnnotations() }.flatMap { $0 }
     }
 }
 
 extension YapViewAnnotationDataSource: AnnotationDataSource {
-    public func allAnnotations() -> [MGLAnnotation] {
-        var annotations: [MGLAnnotation] = []
+    public func allAnnotations() -> [MLNAnnotation] {
+        var annotations: [MLNAnnotation] = []
         for section in 0..<viewHandler.numberOfSections {
             for row in 0..<viewHandler.numberOfItemsInSection(section) {
                 let index = IndexPath(row: row, section: section)
@@ -97,14 +97,14 @@ extension YapViewAnnotationDataSource: AnnotationDataSource {
 }
 
 extension YapCollectionAnnotationDataSource: AnnotationDataSource {
-    public func allAnnotations() -> [MGLAnnotation] {
-        var annotations: [MGLAnnotation] = []
+    public func allAnnotations() -> [MLNAnnotation] {
+        var annotations: [MLNAnnotation] = []
         uiConnection.read({ transaction in
             transaction.iterateKeysAndObjects(inCollection: self.collection) { (key, nsObject: NSObject, stop) in
                 guard nsObject.isKind(of: self.allowedClass) else {
                         return
                 }
-                if let annotation = nsObject as? MGLAnnotation {
+                if let annotation = nsObject as? MLNAnnotation {
                     annotations.append(annotation)
                 }
             }
@@ -124,7 +124,7 @@ public extension BRCDataObject {
     }
 }
 
-/// This wrapper is required because MGLAnnotation has
+/// This wrapper is required because MLNAnnotation has
 /// different optionality requirements than BRCDataObject for `title`
 public final class DataObjectAnnotation: NSObject {
     /// this value may be slightly changed to prevent data overlap
@@ -145,7 +145,7 @@ public final class DataObjectAnnotation: NSObject {
     }
 }
 
-extension DataObjectAnnotation: MGLAnnotation {
+extension DataObjectAnnotation: MLNAnnotation {
     
     public var title: String? {
         var title = object.title
@@ -180,7 +180,7 @@ extension DataObjectAnnotation: MGLAnnotation {
 
 
 /// Protocol for iBurn-specific annotations
-public protocol ImageAnnotation: MGLAnnotation {
+public protocol ImageAnnotation: MLNAnnotation {
     var markerImage: UIImage? { get }
 }
 

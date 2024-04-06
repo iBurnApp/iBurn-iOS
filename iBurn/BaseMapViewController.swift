@@ -7,13 +7,13 @@
 //
 
 import UIKit
-import Mapbox
+import MapLibre
 import PureLayout
 import CocoaLumberjack
 
 public class BaseMapViewController: UIViewController {
     
-    var mapView: MGLMapView {
+    var mapView: MLNMapView {
         return mapViewAdapter.mapView
     }
     var mapViewAdapter: MapViewAdapter
@@ -30,14 +30,14 @@ public class BaseMapViewController: UIViewController {
     
     /// Using default MapViewAdapter
     public init(dataSource: AnnotationDataSource? = nil) {
-        let mapView = MGLMapView.brcMapView()
+        let mapView = MLNMapView.brcMapView()
         self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(nibName: nil, bundle: nil)
         self.mapViewAdapter.parent = self
     }
     
     public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        let mapView = MGLMapView.brcMapView()
+        let mapView = MLNMapView.brcMapView()
         self.mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: nil)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         self.mapViewAdapter.parent = self
@@ -111,12 +111,12 @@ private extension BaseMapViewController {
         }
     }
     
-    func setupMapView(_ mapView: MGLMapView) {
+    func setupMapView(_ mapView: MLNMapView) {
         mapView.brc_setDefaults()
         centerMapAtManCoordinatesAnimated(false)
     }
     
-    func setupTrackingButton(mapView: MGLMapView) {
+    func setupTrackingButton(mapView: MLNMapView) {
         let button = BRCUserTrackingBarButtonItem(mapView: mapView)
         button.tintColor = view.tintColor
         navigationItem.rightBarButtonItem = button

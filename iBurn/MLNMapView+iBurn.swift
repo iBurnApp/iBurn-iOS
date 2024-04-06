@@ -1,5 +1,5 @@
 //
-//  MGLMapView+iBurn.swift
+//  MLNMapView+iBurn.swift
 //  iBurn
 //
 //  Created by Chris Ballinger on 6/14/17.
@@ -7,17 +7,17 @@
 //
 
 import Foundation
-import Mapbox
+import MapLibre
 
-private final class BRCMapView: MGLMapView {
+private final class BRCMapView: MLNMapView {
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         self.brc_setDefaults()
     }
 }
 
-extension MGLMapView {
-    @objc public static func brcMapView() -> MGLMapView {
+extension MLNMapView {
+    @objc public static func brcMapView() -> MLNMapView {
         let mapView = BRCMapView()
         mapView.brc_setDefaults()
         return mapView
@@ -51,13 +51,13 @@ extension MGLMapView {
         brc_moveToBlackRockCityCenter(animated: false)
         
         #if DEBUG
-        MGLLoggingConfiguration.shared.loggingLevel = .verbose
+        MLNLoggingConfiguration.shared.loggingLevel = .verbose
         #endif
 //        debugMask = [
-//            MGLMapDebugMaskOptions.tileBoundariesMask,
-//            MGLMapDebugMaskOptions.tileInfoMask,
-//            MGLMapDebugMaskOptions.timestampsMask,
-//            MGLMapDebugMaskOptions.collisionBoxesMask,
+//            MLNMapDebugMaskOptions.tileBoundariesMask,
+//            MLNMapDebugMaskOptions.tileInfoMask,
+//            MLNMapDebugMaskOptions.timestampsMask,
+//            MLNMapDebugMaskOptions.collisionBoxesMask,
 //        ]
     }
 }

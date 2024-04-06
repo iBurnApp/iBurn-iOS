@@ -32,11 +32,11 @@
 #define RMPreVersion7  (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
 
 typedef enum : NSUInteger {
-    MGLUserTrackingButtonStateNone     = 0,
-    MGLUserTrackingButtonStateActivity = 1,
-    MGLUserTrackingButtonStateLocation = 2,
-    MGLUserTrackingButtonStateHeading  = 3
-} MGLUserTrackingButtonState;
+    MLNUserTrackingButtonStateNone     = 0,
+    MLNUserTrackingButtonStateActivity = 1,
+    MLNUserTrackingButtonStateLocation = 2,
+    MLNUserTrackingButtonStateHeading  = 3
+} MLNUserTrackingButtonState;
 
 #pragma mark -
 
@@ -45,7 +45,7 @@ typedef enum : NSUInteger {
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
 @property (nonatomic, strong) UIImageView *buttonImageView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityView;
-@property (nonatomic, assign) MGLUserTrackingButtonState state;
+@property (nonatomic, assign) MLNUserTrackingButtonState state;
 @property (nonatomic, assign) UIViewTintAdjustmentMode tintAdjustmentMode;
 
 - (void)createBarButtonItem;
@@ -64,7 +64,7 @@ typedef enum : NSUInteger {
 @synthesize activityView = _activityView;
 @synthesize state = _state;
 
-- (id)initWithMapView:(MGLMapView *)mapView
+- (id)initWithMapView:(MLNMapView *)mapView
 {
     if ( ! (self = [super initWithCustomView:[[UIControl alloc] initWithFrame:CGRectMake(0, 0, 32, 32)]]))
         return nil;
@@ -119,7 +119,7 @@ typedef enum : NSUInteger {
     
     [((UIControl *)self.customView) addTarget:self action:@selector(changeMode:) forControlEvents:UIControlEventTouchUpInside];
     
-    _state = MGLUserTrackingButtonStateNone;
+    _state = MLNUserTrackingButtonStateNone;
     
     [self updateSize:nil];
     
@@ -136,7 +136,7 @@ typedef enum : NSUInteger {
 
 #pragma mark -
 
-- (void)setMapView:(MGLMapView *)newMapView
+- (void)setMapView:(MLNMapView *)newMapView
 {
     if ( ! [newMapView isEqual:_mapView])
     {
@@ -189,7 +189,7 @@ typedef enum : NSUInteger {
 {
     if (RMPreVersion7)
     {
-        if (_mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading)
+        if (_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading)
             _buttonImageView.image = [UIImage imageNamed:@"TrackingHeading.png"];
         else
             _buttonImageView.image = [UIImage imageNamed:@"TrackingLocation.png"];
@@ -204,11 +204,11 @@ typedef enum : NSUInteger {
         
         UIImage *image;
         
-        if (_mapView.userTrackingMode == MGLUserTrackingModeNone || ! _mapView)
+        if (_mapView.userTrackingMode == MLNUserTrackingModeNone || ! _mapView)
             image = [UIImage imageNamed:@"TrackingLocationOffMask.png"];
-        else if (_mapView.userTrackingMode == MGLUserTrackingModeFollow)
+        else if (_mapView.userTrackingMode == MLNUserTrackingModeFollow)
             image = [UIImage imageNamed:@"TrackingLocationMask.png"];
-        else if (_mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading)
+        else if (_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading)
             image = [UIImage imageNamed:@"TrackingHeadingMask.png"];
         
         UIGraphicsPushContext(context);
@@ -234,7 +234,7 @@ typedef enum : NSUInteger {
         CGFloat onRadius  = 4.0;
         CGFloat offRadius = 0;
         
-        if (_mapView.userTrackingMode != MGLUserTrackingModeNone && self.customView.layer.cornerRadius != onRadius)
+        if (_mapView.userTrackingMode != MLNUserTrackingModeNone && self.customView.layer.cornerRadius != onRadius)
         {
             backgroundColorAnimation.fromValue = (__bridge id)clearColor;
             backgroundColorAnimation.toValue   = (__bridge id)filledColor;
@@ -245,7 +245,7 @@ typedef enum : NSUInteger {
             self.customView.layer.backgroundColor = filledColor;
             self.customView.layer.cornerRadius    = onRadius;
         }
-        else if (_mapView.userTrackingMode == MGLUserTrackingModeNone && self.customView.layer.cornerRadius != offRadius)
+        else if (_mapView.userTrackingMode == MLNUserTrackingModeNone && self.customView.layer.cornerRadius != offRadius)
         {
             backgroundColorAnimation.fromValue = (__bridge id)filledColor;
             backgroundColorAnimation.toValue   = (__bridge id)clearColor;
@@ -267,11 +267,11 @@ typedef enum : NSUInteger {
     // "selection" state
     //
     if (RMPreVersion7)
-        _segmentedControl.selectedSegmentIndex = (_mapView.userTrackingMode == MGLUserTrackingModeNone ? UISegmentedControlNoSegment : 0);
+        _segmentedControl.selectedSegmentIndex = (_mapView.userTrackingMode == MLNUserTrackingModeNone ? UISegmentedControlNoSegment : 0);
     
     // activity/image state
     //
-    if (_mapView.userTrackingMode != MGLUserTrackingModeNone && ( ! _mapView.userLocation || ! _mapView.userLocation.location || (_mapView.userLocation.location.coordinate.latitude == 0 && _mapView.userLocation.location.coordinate.longitude == 0)))
+    if (_mapView.userTrackingMode != MLNUserTrackingModeNone && ( ! _mapView.userLocation || ! _mapView.userLocation.location || (_mapView.userLocation.location.coordinate.latitude == 0 && _mapView.userLocation.location.coordinate.longitude == 0)))
     {
         // if we should be tracking but don't yet have a location, show activity
         //
@@ -296,32 +296,32 @@ typedef enum : NSUInteger {
               }];
          }];
         
-        _state = MGLUserTrackingButtonStateActivity;
+        _state = MLNUserTrackingButtonStateActivity;
     }
     else
     {
-        if ((_mapView.userTrackingMode == MGLUserTrackingModeNone              && _state != MGLUserTrackingButtonStateNone)     ||
-            (_mapView.userTrackingMode == MGLUserTrackingModeFollow            && _state != MGLUserTrackingButtonStateLocation) ||
-            (_mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading && _state != MGLUserTrackingButtonStateHeading))
+        if ((_mapView.userTrackingMode == MLNUserTrackingModeNone              && _state != MLNUserTrackingButtonStateNone)     ||
+            (_mapView.userTrackingMode == MLNUserTrackingModeFollow            && _state != MLNUserTrackingButtonStateLocation) ||
+            (_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading && _state != MLNUserTrackingButtonStateHeading))
         {
             // we'll always animate if leaving activity state
             //
-            __block BOOL animate = (_state == MGLUserTrackingButtonStateActivity);
+            __block BOOL animate = (_state == MLNUserTrackingButtonStateActivity);
             
             [UIView animateWithDuration:0.25
                                   delay:0.0
                                 options:UIViewAnimationOptionBeginFromCurrentState
                              animations:^(void)
              {
-                 if (self->_state == MGLUserTrackingButtonStateHeading &&
-                     self->_mapView.userTrackingMode != MGLUserTrackingModeFollowWithHeading)
+                 if (self->_state == MLNUserTrackingButtonStateHeading &&
+                     self->_mapView.userTrackingMode != MLNUserTrackingModeFollowWithHeading)
                  {
                      // coming out of heading mode
                      //
                      animate = YES;
                  }
-                 else if ((self->_state != MGLUserTrackingButtonStateHeading) &&
-                          self->_mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading)
+                 else if ((self->_state != MLNUserTrackingButtonStateHeading) &&
+                          self->_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading)
                  {
                      // going into heading mode
                      //
@@ -331,7 +331,7 @@ typedef enum : NSUInteger {
                  if (animate)
                      self->_buttonImageView.transform = CGAffineTransformMakeScale(0.01, 0.01);
                  
-                 if (self->_state == MGLUserTrackingButtonStateActivity)
+                 if (self->_state == MLNUserTrackingButtonStateActivity)
                      self->_activityView.transform = CGAffineTransformMakeScale(0.01, 0.01);
              }
                              completion:^(BOOL finished)
@@ -340,7 +340,7 @@ typedef enum : NSUInteger {
                  
                  self->_buttonImageView.hidden = NO;
                  
-                 if (self->_state == MGLUserTrackingButtonStateActivity)
+                 if (self->_state == MLNUserTrackingButtonStateActivity)
                      [self->_activityView stopAnimating];
                  
                  [UIView animateWithDuration:0.25 animations:^(void)
@@ -348,17 +348,17 @@ typedef enum : NSUInteger {
                       if (animate)
                           self->_buttonImageView.transform = CGAffineTransformIdentity;
                       
-                      if (self->_state == MGLUserTrackingButtonStateActivity)
+                      if (self->_state == MLNUserTrackingButtonStateActivity)
                           self->_activityView.transform = CGAffineTransformIdentity;
                   }];
              }];
             
-            if (_mapView.userTrackingMode == MGLUserTrackingModeNone)
-                _state = MGLUserTrackingButtonStateNone;
-            else if (_mapView.userTrackingMode == MGLUserTrackingModeFollow)
-                _state = MGLUserTrackingButtonStateLocation;
-            else if (_mapView.userTrackingMode == MGLUserTrackingModeFollowWithHeading)
-                _state = MGLUserTrackingButtonStateHeading;
+            if (_mapView.userTrackingMode == MLNUserTrackingModeNone)
+                _state = MLNUserTrackingButtonStateNone;
+            else if (_mapView.userTrackingMode == MLNUserTrackingModeFollow)
+                _state = MLNUserTrackingButtonStateLocation;
+            else if (_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading)
+                _state = MLNUserTrackingButtonStateHeading;
         }
     }
 }
@@ -369,25 +369,25 @@ typedef enum : NSUInteger {
     {
         switch (_mapView.userTrackingMode)
         {
-            case MGLUserTrackingModeNone:
+            case MLNUserTrackingModeNone:
             default:
             {
-                _mapView.userTrackingMode = MGLUserTrackingModeFollow;
+                _mapView.userTrackingMode = MLNUserTrackingModeFollow;
                 
                 break;
             }
-            case MGLUserTrackingModeFollow:
+            case MLNUserTrackingModeFollow:
             {
                 if ([CLLocationManager headingAvailable])
-                    _mapView.userTrackingMode = MGLUserTrackingModeFollowWithHeading;
+                    _mapView.userTrackingMode = MLNUserTrackingModeFollowWithHeading;
                 else
-                    _mapView.userTrackingMode = MGLUserTrackingModeNone;
+                    _mapView.userTrackingMode = MLNUserTrackingModeNone;
                 
                 break;
             }
-            case MGLUserTrackingModeFollowWithHeading:
+            case MLNUserTrackingModeFollowWithHeading:
             {
-                _mapView.userTrackingMode = MGLUserTrackingModeNone;
+                _mapView.userTrackingMode = MLNUserTrackingModeNone;
                 
                 break;
             }

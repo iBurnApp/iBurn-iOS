@@ -12,8 +12,8 @@
 #import "BRCDataObject.h"
 #import "BRCDatabaseManager.h"
 #import <MessageUI/MessageUI.h>
-#import "MGLMapView+iBurn.h"
-@import Mapbox;
+#import "MLNMapView+iBurn.h"
+@import MapLibre;
 #import "BRCDetailInfoTableViewCell.h"
 #import "PureLayout.h"
 #import "BRCEmbargo.h"
@@ -32,7 +32,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 @property (nonatomic, strong, readwrite, nullable) BRCObjectMetadata *metadata;
 @property (nonatomic, strong) NSArray<BRCDetailCellInfo*> *detailCellInfoArray;
 @property (nonatomic, strong) UIBarButtonItem *favoriteBarButtonItem;
-@property (nonatomic, strong) MGLMapView *mapView;
+@property (nonatomic, strong) MLNMapView *mapView;
 @property (nonatomic, strong) MapViewAdapter *mapViewAdapter;
 @end
 
@@ -236,7 +236,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 - (void)setupMapViewWithObject:(BRCDataObject *)dataObject
 {
     if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
-        self.mapView = [MGLMapView brcMapView];
+        self.mapView = [MLNMapView brcMapView];
         [self.mapView brc_setDefaults];
         DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject metadata:self.metadata];
         StaticAnnotationDataSource *dataSource = [[StaticAnnotationDataSource alloc] initWithAnnotation:annotation];
@@ -251,16 +251,16 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 //#pragma - mark RMMapviewDelegate Methods
 //
-//- (nullable MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id <MGLAnnotation>)annotation {
+//- (nullable MLNAnnotationImage *)mapView:(MLNMapView *)mapView imageForAnnotation:(id <MLNAnnotation>)annotation {
 //    NSString *reuseIdentifier = @"Pin";
-//    MGLAnnotationImage *annotationImage = [mapView dequeueReusableAnnotationImageWithIdentifier:reuseIdentifier];
+//    MLNAnnotationImage *annotationImage = [mapView dequeueReusableAnnotationImageWithIdentifier:reuseIdentifier];
 //    UIImage *image = [UIImage imageNamed:@"BRCPurplePin"];
 //    if ([annotation isKindOfClass:[BRCDataObject class]]) {
 //        BRCDataObject *dataObject = (BRCDataObject*)annotation;
 //        image = dataObject.markerImage;
 //    }
 //    if (!annotationImage) {
-//        annotationImage = [MGLAnnotationImage annotationImageWithImage:image reuseIdentifier:reuseIdentifier];
+//        annotationImage = [MLNAnnotationImage annotationImageWithImage:image reuseIdentifier:reuseIdentifier];
 //    } else {
 //        annotationImage.image = image;
 //    }

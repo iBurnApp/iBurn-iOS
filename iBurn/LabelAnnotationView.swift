@@ -9,7 +9,7 @@
 import Foundation
 import Anchorage
 
-final class LabelAnnotationView: MGLAnnotationView {
+final class LabelAnnotationView: MLNAnnotationView {
 
     // MARK: Properties
     

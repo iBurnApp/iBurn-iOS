@@ -9,7 +9,7 @@
 import UIKit
 import PureLayout
 
-final class ImageAnnotationView: MGLAnnotationView {
+final class ImageAnnotationView: MLNAnnotationView {
     
     // MARK: Properties
     
@@ -56,7 +56,7 @@ final class ImageAnnotationView: MGLAnnotationView {
         }
     }
     
-    override func setDragState(_ dragState: MGLAnnotationViewDragState, animated: Bool) {
+    override func setDragState(_ dragState: MLNAnnotationViewDragState, animated: Bool) {
         super.setDragState(dragState, animated: animated)
         switch dragState {
         case .starting:

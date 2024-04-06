@@ -29,7 +29,7 @@
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 
-@import Mapbox;
+@import MapLibre;
 
 /** An RMUserTrackingBarButtonItem object is a specialized bar button item that allows the user to toggle through the user tracking modes. For example, when the user taps the button, the map view toggles between tracking the user with and without heading. The button also reflects the current user tracking mode if set elsewhere. This bar button item is associated to a single map view. */
 @interface BRCUserTrackingBarButtonItem : UIBarButtonItem
@@ -39,12 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
 /** Initializes a newly created bar button item with the specified map view.
  *   @param mapView The map view used by this bar button item.
  *   @return The initialized bar button item. */
-- (instancetype)initWithMapView:(nullable MGLMapView *)mapView;
+- (instancetype)initWithMapView:(nullable MLNMapView *)mapView;
 
 /** @name Accessing Properties */
 
 /** The map view associated with this bar button item. */
-@property (nonatomic, strong, nullable) IBOutlet MGLMapView *mapView;
+@property (nonatomic, strong, nullable) IBOutlet MLNMapView *mapView;
 
 @end
 NS_ASSUME_NONNULL_END

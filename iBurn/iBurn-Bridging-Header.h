@@ -22,7 +22,7 @@
 #import "BRCMapPoint.h"
 #import "BRCSecrets.h"
 #import "UIColor+iBurn.h"
-#import "MGLMapView+iBurn.h"
+#import "MLNMapView+iBurn.h"
 #import "BRCDataImporter.h"
 #import "BRCUserTrackingBarButtonItem.h"
 #import "BRCUserMapPoint.h"

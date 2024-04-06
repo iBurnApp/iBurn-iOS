@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-#import "MGLMapView+iBurn.h"
+#import "MLNMapView+iBurn.h"
 #import "BRCDataImporter.h"
 #import "BRCSecrets.h"
 #import "UIColor+iBurn.h"
@@ -14,7 +14,7 @@
 #import "BRCEmbargo.h"
 #import "iBurn-Swift.h"
 
-@implementation MGLMapView (iBurn)
+@implementation MLNMapView (iBurn)
 
 - (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject metadata:(nonnull BRCObjectMetadata *)metadata animated:(BOOL)animated padding:(UIEdgeInsets)padding {
     DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject metadata:metadata];
@@ -22,7 +22,7 @@
     [self brc_showDestination:annotation animated:animated padding:padding];
 }
 
-- (void)brc_showDestination:(id<MGLAnnotation>)destination animated:(BOOL) animated padding:(UIEdgeInsets)padding {
+- (void)brc_showDestination:(id<MLNAnnotation>)destination animated:(BOOL) animated padding:(UIEdgeInsets)padding {
     NSParameterAssert(destination);
     if (!destination) { return; }
     CLLocationCoordinate2D userCoord = [BRCLocations blackRockCityCenter];
@@ -52,15 +52,15 @@
     }
 }
 
-+ (MGLCoordinateBounds) brc_bounds {
++ (MLNCoordinateBounds) brc_bounds {
     CLLocationCoordinate2D sw = CLLocationCoordinate2DMake(40.7413, -119.267);
     CLLocationCoordinate2D ne = CLLocationCoordinate2DMake(40.8365, -119.1465);
-    return MGLCoordinateBoundsMake(sw, ne);
+    return MLNCoordinateBoundsMake(sw, ne);
 }
 
 - (void)brc_zoomToFullTileSourceAnimated:(BOOL)animated
 {
-    MGLCoordinateBounds bounds = MGLMapView.brc_bounds;
+    MLNCoordinateBounds bounds = MLNMapView.brc_bounds;
     [self setVisibleCoordinateBounds:bounds animated:animated];
 }
 

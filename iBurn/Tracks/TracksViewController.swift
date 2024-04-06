@@ -7,16 +7,16 @@
 //
 
 import UIKit
-import Mapbox
+import MapLibre
 import GRDB
 import PlayaGeocoder
 
 final class TracksViewController: UIViewController {
     // MARK: - Private Properties
 
-    private let mapView = MGLMapView.brcMapView()
+    private let mapView = MLNMapView.brcMapView()
     private var storage: LocationStorage?
-    private var annotations: [MGLAnnotation] = []
+    private var annotations: [MLNAnnotation] = []
     private lazy var settingsBarButtonItem: UIBarButtonItem = {
         UIBarButtonItem(title: "Settings", style: .plain, closure: { [weak self] (_) in
             self?.showAlert()
@@ -120,7 +120,7 @@ private extension TracksViewController {
 
         let coordinates = crumbs.map { $0.coordinate }
         guard !coordinates.isEmpty else { return }
-        let polyLine = MGLPolyline(coordinates: coordinates, count: UInt(coordinates.count))
+        let polyLine = MLNPolyline(coordinates: coordinates, count: UInt(coordinates.count))
         annotations.append(polyLine)
         mapView.addAnnotation(polyLine)
         
@@ -130,7 +130,7 @@ private extension TracksViewController {
     }
 }
 
-private final class BreadcrumbAnnotation: NSObject, MGLAnnotation {
+private final class BreadcrumbAnnotation: NSObject, MLNAnnotation {
     let breadcrumb: Breadcrumb
     
     init(breadcrumb: Breadcrumb) {
@@ -150,23 +150,23 @@ private final class BreadcrumbAnnotation: NSObject, MGLAnnotation {
     }
 }
 
-extension TracksViewController: MGLMapViewDelegate {
+extension TracksViewController: MLNMapViewDelegate {
     
-    func mapView(_ mapView: MGLMapView, alphaForShapeAnnotation annotation: MGLShape) -> CGFloat {
+    func mapView(_ mapView: MLNMapView, alphaForShapeAnnotation annotation: MLNShape) -> CGFloat {
         // Set the alpha for all shape annotations to 1 (full opacity)
         return 0.25
     }
     
-    func mapView(_ mapView: MGLMapView, lineWidthForPolylineAnnotation annotation: MGLPolyline) -> CGFloat {
+    func mapView(_ mapView: MLNMapView, lineWidthForPolylineAnnotation annotation: MLNPolyline) -> CGFloat {
         // Set the line width for polyline annotations
         return 2.0
     }
     
-    func mapView(_ mapView: MGLMapView, strokeColorForShapeAnnotation annotation: MGLShape) -> UIColor {
+    func mapView(_ mapView: MLNMapView, strokeColorForShapeAnnotation annotation: MLNShape) -> UIColor {
         return .red
     }
     
-    func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+    func mapView(_ mapView: MLNMapView, annotationCanShowCallout annotation: MLNAnnotation) -> Bool {
         return true
     }
 }

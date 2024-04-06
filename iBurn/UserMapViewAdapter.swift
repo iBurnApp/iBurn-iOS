@@ -14,7 +14,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     // MARK: - Private
     
-    @objc public override init(mapView: MGLMapView,
+    @objc public override init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
         super.init(mapView: mapView, dataSource: dataSource)
     }
@@ -34,9 +34,9 @@ public class UserMapViewAdapter: MapViewAdapter {
         mapView.selectAnnotation(mapPoint, animated: true, completionHandler: nil)
     }
     
-    // MARK: - MGLMapViewDelegate Overrides
+    // MARK: - MLNMapViewDelegate Overrides
     
-    override public func mapView(_ mapView: MGLMapView, viewFor annotation: MGLAnnotation) -> MGLAnnotationView? {
+    override public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
         let annotationView = super.mapView(mapView, viewFor: annotation)
         guard let imageAnnotationView = annotationView as? ImageAnnotationView,
         let point = annotation as? BRCMapPoint else { return annotationView }
@@ -49,7 +49,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         return imageAnnotationView
     }
     
-    override public func mapView(_ mapView: MGLMapView, didDeselect annotation: MGLAnnotation) {
+    override public func mapView(_ mapView: MLNMapView, didDeselect annotation: MLNAnnotation) {
         guard let mapPoint = editingAnnotation,
             let deselected = annotation as? BRCMapPoint,
             mapPoint == deselected else {
@@ -58,7 +58,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         saveMapPoint(mapPoint)
     }
     
-    override public func mapView(_ mapView: MGLMapView, leftCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
+    override public func mapView(_ mapView: MLNMapView, leftCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
         guard annotation is BRCUserMapPoint else {
             return super.mapView(mapView, leftCalloutAccessoryViewFor: annotation)
         }
@@ -67,7 +67,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         return button
     }
     
-    override public func mapView(_ mapView: MGLMapView, rightCalloutAccessoryViewFor annotation: MGLAnnotation) -> UIView? {
+    override public func mapView(_ mapView: MLNMapView, rightCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
         guard annotation is BRCUserMapPoint else {
             return super.mapView(mapView, rightCalloutAccessoryViewFor: annotation)
         }
@@ -76,7 +76,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         return button
     }
     
-    override public func mapView(_ mapView: MGLMapView, annotation: MGLAnnotation, calloutAccessoryControlTapped control: UIControl) {
+    override public func mapView(_ mapView: MLNMapView, annotation: MLNAnnotation, calloutAccessoryControlTapped control: UIControl) {
         guard let point = annotation as? BRCMapPoint,
             let annotationView = annotationViews[ObjectIdentifier(point)] as? ImageAnnotationView,
             let tag = ButtonTag(rawValue: control.tag) else {
@@ -95,7 +95,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         }
     }
     
-    override public func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+    override public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
         let zoomLevel = mapView.zoomLevel
         let labelIsHidden = mapView.zoomLevel < 13.0
         labelViews.forEach { (view) in
@@ -120,7 +120,7 @@ public class UserMapViewAdapter: MapViewAdapter {
                     }
                 }
                 objects.sort { $0.title < $1.title }
-                var annotations: [MGLAnnotation] = []
+                var annotations: [MLNAnnotation] = []
                 BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (t) in
                     annotations = objects.compactMap { $0.annotation(transaction: t) }
                 }, completionBlock: {

@@ -8,7 +8,7 @@
 
 @import Mantle;
 @import CoreLocation;
-@import Mapbox;
+@import MapLibre;
 #import "BRCYapDatabaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -62,7 +62,7 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
  
  */
 
-@interface BRCMapPoint : BRCYapDatabaseObject <MTLJSONSerializing, MGLAnnotation>
+@interface BRCMapPoint : BRCYapDatabaseObject <MTLJSONSerializing, MLNAnnotation>
 
 /** yap key */
 @property (nonatomic, strong, readwrite) NSDate *creationDate;

@@ -202,7 +202,7 @@ private extension NearbyViewController {
 
 extension NearbyViewController: MapButtonHelper {
     func mapButtonPressed(_ sender: Any) {
-        var annotations: [MGLAnnotation] = []
+        var annotations: [MLNAnnotation] = []
         BRCDatabaseManager.shared.uiConnection.read { (t) in
             sections.forEach { (section) in
                 section.objects.forEach({ (object) in
