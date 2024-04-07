@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import OSLog
 
 protocol BRCEvent: BRCData {
     var type: BRCEventType { get }
@@ -40,17 +39,8 @@ extension BRCEvent {
 }
 
 extension BRCEventObject: BRCEvent {
-    /// Threshold close to end-time which means 'soon' (seconds)
-    static let endSoonThreshold: TimeInterval = 15 * 60
-    /// Threshold close to start-time which means 'soon' (seconds)
-    static let startSoonThreshold: TimeInterval = 30 * 60
-    
     var type: BRCEventType {
         eventType
-    }
-    
-    var isAllDay: Bool {
-        duration > 23 * 60 * 60
     }
     
     var start: Date {
@@ -66,75 +56,46 @@ extension BRCEventObject: BRCEvent {
     }
     
     var durationUntilStart: TimeInterval {
-        start.timeIntervalSinceNow
+        timeInterval(untilStart: Date())
     }
     
     var durationUntilEnd: TimeInterval {
-        end.timeIntervalSinceNow
+        timeInterval(untilEnd: Date())
     }
     
     var isHappeningNow: Bool {
-        hasStarted & !hasEnded
+        isHappeningRightNow(Date())
     }
     
     var isEndingSoon: Bool {
-        !hasEnded && end.timeIntervalSinceNow < Self.endSoonThreshold
+        isEndingSoon(Date())
     }
     
     var isStartingSoon: Bool {
-        !hasStarted && start.timeIntervalSinceNow < Self.endSoonThreshold
+        isStartingSoon(Date())
     }
     
     var hasStarted: Bool {
-        start.timeIntervalSinceNow < 0
+        hasStarted(Date())
     }
     
     var hasEnded: Bool {
-        end.timeIntervalSinceNow < 0
+        hasEnded(Date())
     }
     
     var statusColor: UIColor {
-        let colors = BRCImageColors.colors(for: type)
-        if isStartingSoon {
-            return .brc_green
-        } else if hasStarted {
-            return colors.primaryColor
-        } else if isEndingSoon {
-            return .brc_orange
-        } else if hasEnded {
-            return .brc_red
-        } else if isHappeningNow {
-            return .brc_green
-        } else {
-            return colors.primaryColor
-        }
+        color(forEventStatus: Date())
     }
     
     var locationName: String? {
         otherLocation
     }
-}
-
-// Persistence
-extension BRCEvent {
-    func metadata(from transaction: YapDatabaseReadTransaction) -> BRCMetadata {
-        guard let metadata = transaction.metadata(forKey: yapKey, inCollection: yapCollection) as? BRCEventMetadata else {
-            return BRCMetadata()
-        }
-        return metadata
-    }
     
     func camp(from transaction: YapDatabaseReadTransaction) -> BRCCamp? {
-        guard let campID = hostedByCampID else {
-            return nil
-        }
-        return transaction.object(forKey: campID, inCollection: BRCCampObject.yapCollection)
+        hostedByCamp(with: transaction)
     }
     
     func art(from transaction: YapDatabaseReadTransaction) -> BRCArt? {
-        guard let artID = hostedByArtID else {
-            return nil
-        }
-        return transaction.object(forKey: artID, inCollection: BRCArtObject.yapCollection)
+        hostedByArt(with: transaction)
     }
 }

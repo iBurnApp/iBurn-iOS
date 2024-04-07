@@ -9,7 +9,7 @@
 import Foundation
 @testable import iBurn
 
-class MockEvent: BRCEvent {
+struct MockEvent: BRCEvent {
     // BRCData
     var playaLocationDescription: String?
     var burnerMapLocationDescription: String?

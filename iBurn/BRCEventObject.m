@@ -43,6 +43,35 @@ NSString * const kBRCEventArtEdgeName = @"art";
     return NO;
 }
 
+- (NSTimeInterval)timeIntervalUntilStart:(NSDate*)date
+{
+    if (self.startDate) {
+        return [self.startDate timeIntervalSinceDate:date];
+    }
+    return DBL_MAX;
+}
+
+- (NSTimeInterval)timeIntervalUntilEnd:(NSDate*)date
+{
+    if (self.endDate) {
+        return [self.endDate timeIntervalSinceDate:date];
+    }
+    return DBL_MAX;
+}
+
+- (NSTimeInterval)timeIntervalForDuration {
+    NSTimeInterval duration = [self.endDate timeIntervalSinceDate:self.startDate];
+    return duration;
+}
+
+- (BOOL)isHappeningRightNow:(NSDate*)currentDate
+{
+    if ([self hasStarted:currentDate] && ![self hasEnded:currentDate]) {
+        return YES;
+    }
+    return NO;
+}
+
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(title)): @"title",
@@ -52,6 +81,73 @@ NSString * const kBRCEventArtEdgeName = @"art";
                                NSStringFromSelector(@selector(hostedByArtUniqueID)): @"located_at_art",
                                NSStringFromSelector(@selector(eventType)): @"event_type.abbr"};
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:artPaths];
+}
+
++ (NSValueTransformer *)eventTypeJSONTransformer {
+    NSDictionary *transformDict = @{
+        @"":     @(BRCEventTypeUnknown),
+        @"none": @(BRCEventTypeNone),
+        @"work": @(BRCEventTypeWorkshop),
+        @"perf": @(BRCEventTypePerformance),
+        @"care": @(BRCEventTypeSupport),
+        @"prty": @(BRCEventTypeParty),
+        @"cere": @(BRCEventTypeCeremony),
+        @"game": @(BRCEventTypeGame),
+        @"fire": @(BRCEventTypeFire),
+        @"adlt": @(BRCEventTypeAdult),
+        @"kid":  @(BRCEventTypeKid),
+        @"para": @(BRCEventTypeParade),
+        @"food": @(BRCEventTypeFood),
+        @"othr": @(BRCEventTypeOther),
+        @"arts": @(BRCEventTypeCrafts),
+        @"tea":  @(BRCEventTypeCoffee),
+        @"heal": @(BRCEventTypeHealing),
+        @"LGBT": @(BRCEventTypeLGBT),
+        @"live": @(BRCEventTypeLiveMusic),
+        @"RIDE": @(BRCEventTypeRIDE),
+        @"repr": @(BRCEventTypeRepair),
+        @"sust": @(BRCEventTypeSustainability),
+        @"yoga": @(BRCEventTypeMeditation),
+    };
+    return [NSValueTransformer mtl_valueMappingTransformerWithDictionary:transformDict];
+}
+
+- (BOOL) isEndingSoon:(NSDate*)currentDate {
+    NSTimeInterval endingSoonTimeThreshold = 15 * 60; // 15 minutes
+    // event will end soon
+    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEnd:currentDate];
+    if (timeIntervalUntilEventEnds < endingSoonTimeThreshold && timeIntervalUntilEventEnds > 0) { // event ending soon
+        return YES;
+    }
+    return NO;
+}
+
+/**
+ *  Whether or not the event starts within the next 30 min
+ */
+- (BOOL)isStartingSoon:(NSDate*)currentDate {
+    NSTimeInterval startingSoonTimeThreshold = 60 * 30; // 30 min
+    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStart:currentDate];
+    if (![self hasStarted:currentDate] && timeIntervalUntilEventStarts < startingSoonTimeThreshold) { // event starting soon
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)hasStarted:(NSDate*)currentDate {
+    NSTimeInterval timeIntervalUntilEventStarts = [self timeIntervalUntilStart:currentDate];
+    if (timeIntervalUntilEventStarts < 0) { // event started
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)hasEnded:(NSDate*)currentDate {
+    NSTimeInterval timeIntervalUntilEventEnds = [self timeIntervalUntilEnd:currentDate];
+    if (timeIntervalUntilEventEnds < 0) { // event ended
+        return YES;
+    }
+    return NO;
 }
 
 + (NSDate*) festivalStartDate {
@@ -81,12 +177,62 @@ NSString * const kBRCEventArtEdgeName = @"art";
     return [UIImage imageNamed:@"BRCPurplePin"];
 }
 
+- (UIColor*) colorForEventStatus:(NSDate*)currentDate {
+    BRCImageColors *colors = [BRCImageColors colorsFor:self.eventType];
+    if ([self isStartingSoon:currentDate]) {
+        return [UIColor brc_greenColor];
+    }
+    if (![self hasStarted:currentDate]) {
+        return colors.primaryColor;
+    }
+    if ([self isEndingSoon:currentDate]) {
+        return [UIColor brc_orangeColor];
+    }
+    if ([self hasEnded:currentDate]) {
+        return [UIColor brc_redColor];
+    }
+    if ([self isHappeningRightNow:currentDate]) {
+        return [UIColor brc_greenColor];
+    }
+    return colors.primaryColor;
+}
+
++ (EKEventStore*)eventStore {
+    EKEventStore *store = [[EKEventStore alloc] init];
+    EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
+    if (status == EKAuthorizationStatusNotDetermined) {
+        NSLog(@"Not authorized to modify calendar");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [BRCPermissions promptForEvents:^{
+                
+            }];
+        });
+        return nil;
+    }
+    return store;
+}
+
 - (BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
     BRCDataObject *host = [self hostedByCampWithTransaction:readTransaction];
     if (!host) {
         host = [self hostedByArtWithTransaction:readTransaction];
     }
     return host;
+}
+
+/** Updates calendar entry */
+- (void) refreshCalendarEntry:(YapDatabaseReadWriteTransaction*)transaction {
+    NSParameterAssert(transaction);
+    if (!transaction) { return; }
+    BRCEventMetadata *metadata = (BRCEventMetadata*)[self metadataWithTransaction:transaction];
+    if (![metadata isKindOfClass:BRCEventMetadata.class]) {
+        return;
+    }
+    if (metadata.isFavorite) {
+        [self scheduleNotification:transaction metadata:metadata];
+    } else {
+        [self cancelNotification:transaction metadata:metadata];
+    }
 }
 
 - (void) scheduleNotification:(YapDatabaseReadWriteTransaction*)transaction metadata:(BRCEventMetadata*)metadata {
@@ -141,6 +287,55 @@ NSString * const kBRCEventArtEdgeName = @"art";
     metadata = [metadata copy];
     metadata.calendarEventIdentifier = calendarEvent.eventIdentifier;
     [self replaceMetadata:metadata transaction:transaction];
+}
+
+- (void) cancelNotification:(YapDatabaseReadWriteTransaction*)transaction metadata:(BRCEventMetadata*)metadata  {
+    NSParameterAssert(!metadata.isFavorite);
+    EKEventStore *store = [[self class] eventStore];
+    if (!store) {
+        return;
+    }
+    if (metadata.calendarEventIdentifier) {
+        EKEvent *existingEvent = [store eventWithIdentifier:metadata.calendarEventIdentifier];
+        if (existingEvent) {
+            NSError *error = nil;
+            BOOL success = [store removeEvent:existingEvent span:EKSpanThisEvent error:&error];
+            if (!success) {
+                NSLog(@"Couldn't remove event: %@ %@ %@", self, existingEvent, error);
+            }
+        }
+    }
+    metadata = [metadata copy];
+    metadata.calendarEventIdentifier = nil;
+    [self replaceMetadata:metadata transaction:transaction];
+}
+
+- (BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
+    if (!self.hostedByArtUniqueID) {
+        return nil;
+    }
+    BRCArtObject *artObject = [readTransaction objectForKey:self.hostedByArtUniqueID inCollection:BRCArtObject.yapCollection];
+    return artObject;
+}
+
+- (BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
+    if (!self.hostedByCampUniqueID) {
+        return nil;
+    }
+    BRCCampObject *campObject = [readTransaction objectForKey:self.hostedByCampUniqueID inCollection:BRCCampObject.yapCollection];
+    return campObject;
+}
+
+- (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    return [self eventMetadataWithTransaction:transaction];
+}
+
+- (BRCEventMetadata*) eventMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
+    id metadata = [transaction metadataForKey:self.yapKey inCollection:self.yapCollection];
+    if ([metadata isKindOfClass:BRCEventMetadata.class]) {
+        return metadata;
+    }
+    return [BRCEventMetadata new];
 }
 
 #pragma mark YapDatabaseRelationshipNode
