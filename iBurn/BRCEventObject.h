@@ -11,32 +11,6 @@
 #import "BRCArtObject.h"
 #import "BRCCampObject.h"
 
-typedef NS_ENUM(NSUInteger, BRCEventType) {
-    BRCEventTypeUnknown,
-    BRCEventTypeNone,
-    BRCEventTypeWorkshop,
-    BRCEventTypePerformance,
-    BRCEventTypeSupport,
-    BRCEventTypeParty,
-    BRCEventTypeCeremony,
-    BRCEventTypeGame,
-    BRCEventTypeFire,
-    BRCEventTypeAdult,
-    BRCEventTypeKid,
-    BRCEventTypeParade,
-    BRCEventTypeOther,
-    BRCEventTypeFood,
-    BRCEventTypeCrafts,
-    BRCEventTypeCoffee,
-    BRCEventTypeHealing,
-    BRCEventTypeLGBT,
-    BRCEventTypeLiveMusic,
-    BRCEventTypeRIDE,
-    BRCEventTypeRepair,
-    BRCEventTypeSustainability,
-    BRCEventTypeMeditation,
-};
-
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString * const kBRCEventCampEdgeName;
