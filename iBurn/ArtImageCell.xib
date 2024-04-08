@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -13,11 +16,11 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="180"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="293.5" height="180"/>
+                <rect key="frame" x="0.0" y="0.0" width="287" height="179.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Astral Headwash" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3h-Fa-FKh">
-                        <rect key="frame" x="41" y="13" width="134.5" height="20"/>
+                        <rect key="frame" x="33" y="10" width="135.5" height="20"/>
                         <constraints>
                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="129" id="2gW-nO-CEb"/>
                             <constraint firstAttribute="height" constant="20" id="8P0-zX-HZB"/>
@@ -32,7 +35,7 @@
                         </variation>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="5:00 &amp; Donut" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mdq-aF-SDa">
-                        <rect key="frame" x="195.5" y="145" width="92" height="19"/>
+                        <rect key="frame" x="189" y="142" width="92" height="19"/>
                         <constraints>
                             <constraint firstAttribute="width" relation="lessThanOrEqual" constant="155" id="si7-Qh-l0C"/>
                         </constraints>
@@ -40,8 +43,8 @@
                         <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xr6-XH-xRR" customClass="DOFavoriteButton" customModule="DOFavoriteButton">
-                        <rect key="frame" x="8" y="5.5" width="35" height="35"/>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xr6-XH-xRR" customClass="DOFavoriteButton" customModule="DOFavoriteButton">
+                        <rect key="frame" x="0.0" y="3" width="35" height="35"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="35" id="4WO-Se-qoY"/>
                             <constraint firstAttribute="width" constant="35" id="IN0-WS-piN"/>
@@ -70,8 +73,8 @@
                             <action selector="favoriteButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="TKa-FB-7yH"/>
                         </connections>
                     </button>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="clip" translatesAutoresizingMaskIntoConstraints="NO" id="ant-aj-o32">
-                        <rect key="frame" x="225.5" y="8" width="50" height="30"/>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="clip" translatesAutoresizingMaskIntoConstraints="NO" id="ant-aj-o32">
+                        <rect key="frame" x="219" y="5" width="50" height="30"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="50" id="47A-zG-B1w"/>
                         </constraints>
@@ -81,7 +84,7 @@
                         </connections>
                     </button>
                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="3Ae-SF-DWh">
-                        <rect key="frame" x="8" y="37" width="277.5" height="100"/>
+                        <rect key="frame" x="8" y="34" width="271" height="100"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="BRCArtIcon" translatesAutoresizingMaskIntoConstraints="NO" id="EBX-hF-I8z">
                                 <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
@@ -92,7 +95,7 @@
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dIs-6g-Ive">
-                                <rect key="frame" x="108" y="0.0" width="169.5" height="100"/>
+                                <rect key="frame" x="108" y="0.0" width="163" height="100"/>
                                 <string key="text">Greetings dirty desert dwellers!  We are Astral Headwash and we do the amazing!  We will wash your head for you again this year.  That's right, clean, fresh water warmed in the desert sun with wonderful smelling shampoo and a bit of leave-in condition to send you on your way!  Bring your happy selves to us Monday - Friday noon until 4 pm</string>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -101,7 +104,7 @@
                         </subviews>
                     </stackView>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="20m🚶🏽 5m 🚴🏽" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jJk-MV-Kf7">
-                        <rect key="frame" x="18" y="145" width="103" height="19"/>
+                        <rect key="frame" x="10" y="142" width="103" height="19"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="19" id="Mat-xS-PR4"/>
                         </constraints>
@@ -145,14 +148,9 @@
                 <outlet property="thumbnailView" destination="EBX-hF-I8z" id="5NM-wB-Cpb"/>
                 <outlet property="titleLabel" destination="X3h-Fa-FKh" id="erM-1W-1hN"/>
             </connections>
-            <point key="canvasLocation" x="140.80000000000001" y="15.292353823088456"/>
+            <point key="canvasLocation" x="88" y="17"/>
         </tableViewCell>
     </objects>
-    <designables>
-        <designable name="Xr6-XH-xRR">
-            <size key="intrinsicContentSize" width="30" height="30"/>
-        </designable>
-    </designables>
     <resources>
         <image name="BRCArtIcon" width="25" height="25"/>
         <image name="BRCHeartCell" width="64" height="64"/>
