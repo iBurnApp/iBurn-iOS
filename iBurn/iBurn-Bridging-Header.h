@@ -26,7 +26,6 @@
 #import "BRCDataImporter.h"
 #import "BRCUserTrackingBarButtonItem.h"
 #import "BRCUserMapPoint.h"
-#import "BRCEventObjectTableViewCell.h"
 #import "BRCImageColors.h"
 #import "YapDatabaseViewConnection+iBurn.h"
 #import "BRCUpdateInfo.h"

@@ -10,10 +10,11 @@ import Foundation
 
 extension BRCDataObjectTableViewCell {
     /** Mapping between cell identifiers and cell classes */
-    public static let cellIdentifiers = [BRCDataObjectTableViewCell.cellIdentifier: BRCDataObjectTableViewCell.self,
-                                     BRCArtObjectTableViewCell.cellIdentifier: BRCArtObjectTableViewCell.self,
-                                     BRCEventObjectTableViewCell.cellIdentifier: BRCEventObjectTableViewCell.self,
-                                     ArtImageCell.cellIdentifier: ArtImageCell.self]
+    public static let cellIdentifiers = [
+        BRCDataObjectTableViewCell.cellIdentifier: BRCDataObjectTableViewCell.self,
+        BRCArtObjectTableViewCell.cellIdentifier: BRCArtObjectTableViewCell.self,
+        EventTableViewCell.cellIdentifier: EventTableViewCell.self,
+        ArtImageCell.cellIdentifier: ArtImageCell.self]
 }
 
 extension BRCDataObject {
@@ -28,7 +29,7 @@ extension BRCDataObject {
                 cellIdentifier = BRCArtObjectTableViewCell.cellIdentifier
             }
         } else if let _ = self as? BRCEventObject {
-            cellIdentifier = BRCEventObjectTableViewCell.cellIdentifier
+            cellIdentifier = EventTableViewCell.cellIdentifier
         } else if let _ = self as? BRCCampObject {
             cellIdentifier = BRCDataObjectTableViewCell.cellIdentifier
         }

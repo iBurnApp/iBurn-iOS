@@ -11,7 +11,6 @@
 #import "TTTLocationFormatter+iBurn.h"
 #import "BRCArtObject.h"
 #import "BRCEventObject.h"
-#import "BRCEventObjectTableViewCell.h"
 #import "BRCArtObjectTableViewCell.h"
 #import "BRCDatabaseManager.h"
 #import "BRCEmbargo.h"
@@ -56,6 +55,7 @@
     self.favoriteButton.selected = metadata.isFavorite;
 }
 
+// TODO: Consider migrating to DataViewModel.setupLocationLabel
 - (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {
     NSString *playaLocation = dataObject.playaLocation;
     if (!playaLocation.length) {
