@@ -18,9 +18,9 @@ final class TracksViewController: UIViewController {
     private var storage: LocationStorage?
     private var annotations: [MLNAnnotation] = []
     private lazy var settingsBarButtonItem: UIBarButtonItem = {
-        UIBarButtonItem(title: "Settings", style: .plain, closure: { [weak self] (_) in
+        UIBarButtonItem(title: "Settings", primaryAction: .init(handler: { [weak self] _ in
             self?.showAlert()
-        })
+        }))
     }()
     
     // MARK: - Init

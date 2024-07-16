@@ -191,7 +191,7 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
                         }
                         
                         if remoteURL != nil && localURL == nil {
-                            DDLogInfo("Downloading media for \(String(describing: remoteURL))")
+                            DDLogInfo("Downloading media for \(dataObject.self) \(dataObject.uniqueID)  \(String(describing: remoteURL))")
                             art[remoteURL!] = dataObject
                         } else {
                             //NSLog("Already downloaded media for %@", remoteURL!)
