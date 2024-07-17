@@ -198,7 +198,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/maplibre-gl-native-distribution</string>
 			<key>Title</key>
-			<string>MapLibre Native (6.5.1)</string>
+			<string>MapLibre Native (6.5.2)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
