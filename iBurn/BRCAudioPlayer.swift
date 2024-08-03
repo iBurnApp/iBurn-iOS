@@ -313,7 +313,7 @@ public final class BRCAudioPlayer: NSObject {
         fireChangeNotification()
     }
     
-    private func goBack() -> MPRemoteCommandHandlerStatus{
+    private func goBack() -> MPRemoteCommandHandlerStatus {
         var currentIndex = -1
         for (i, item) in queuedObjects.enumerated() {
             guard let asset = player?.currentItem?.asset as? AVURLAsset else {
@@ -330,6 +330,9 @@ public final class BRCAudioPlayer: NSObject {
         }
         if currentIndex == 0 {
             currentIndex = queuedObjects.count
+        }
+        guard currentIndex >= 0, currentIndex < queuedObjects.count else {
+            return .noSuchContent
         }
         guard let newURL = queuedObjects[currentIndex - 1].audioURL,
               let currentItem = player?.currentItem else {
