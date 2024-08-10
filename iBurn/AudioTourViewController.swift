@@ -98,7 +98,7 @@ class AudioTourViewController: SortedViewController {
 
 private extension AudioTourViewController {
     @objc func soundcloudButtonPressed(_ sender: Any) {
-        let url = URL(string: "https://soundcloud.com/burningman/sets/2023-art-audio-guide")!
+        let url = URL(string: "https://soundcloud.com/burningman/sets/2024-art-audio-guide")!
         WebViewHelper.presentWebView(url: url, from: self)
     }
 }

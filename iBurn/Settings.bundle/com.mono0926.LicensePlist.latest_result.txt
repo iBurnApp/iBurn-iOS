@@ -178,11 +178,11 @@ name: YapDatabase, nameSpecified:
 body: Software License Agr…
 version: 4.0.1
 
-name: abseil-cpp-binary, nameSpecified: abseil-cpp-binary, owner: google, version: 1.2024011601.1, source: https://github.com/google/abseil-cpp-binary
+name: abseil-cpp-binary, nameSpecified: abseil, owner: google, version: 1.2024011601.1, source: https://github.com/google/abseil-cpp-binary
 
-name: app-check, nameSpecified: app-check, owner: google, version: 10.19.2, source: https://github.com/google/app-check
+name: app-check, nameSpecified: AppCheck, owner: google, version: 10.19.2, source: https://github.com/google/app-check
 
-name: firebase-ios-sdk, nameSpecified: firebase-ios-sdk, owner: firebase, version: 10.29.0, source: https://github.com/firebase/firebase-ios-sdk
+name: firebase-ios-sdk, nameSpecified: Firebase, owner: firebase, version: 10.29.0, source: https://github.com/firebase/firebase-ios-sdk
 
 name: GoogleAppMeasurement, nameSpecified: GoogleAppMeasurement, owner: google, version: 10.28.0, source: https://github.com/google/GoogleAppMeasurement
 
@@ -190,23 +190,23 @@ name: GoogleDataTransport, nameSpecified: GoogleDataTransport, owner: google, ve
 
 name: GoogleUtilities, nameSpecified: GoogleUtilities, owner: google, version: 7.13.3, source: https://github.com/google/GoogleUtilities
 
-name: grpc-binary, nameSpecified: grpc-binary, owner: google, version: 1.62.2, source: https://github.com/google/grpc-binary
+name: grpc-binary, nameSpecified: gRPC, owner: google, version: 1.62.2, source: https://github.com/google/grpc-binary
 
 name: gtm-session-fetcher, nameSpecified: gtm-session-fetcher, owner: google, version: 3.5.0, source: https://github.com/google/gtm-session-fetcher
 
-name: interop-ios-for-google-sdks, nameSpecified: interop-ios-for-google-sdks, owner: google, version: 100.0.0, source: https://github.com/google/interop-ios-for-google-sdks
+name: interop-ios-for-google-sdks, nameSpecified: InteropForGoogle, owner: google, version: 100.0.0, source: https://github.com/google/interop-ios-for-google-sdks
 
 name: leveldb, nameSpecified: leveldb, owner: firebase, version: 1.22.5, source: https://github.com/firebase/leveldb
 
-name: maplibre-gl-native-distribution, nameSpecified: maplibre-gl-native-distribution, owner: maplibre, version: 6.5.2, source: https://github.com/maplibre/maplibre-gl-native-distribution
+name: maplibre-gl-native-distribution, nameSpecified: MapLibre Native, owner: maplibre, version: 6.5.2, source: https://github.com/maplibre/maplibre-gl-native-distribution
 
 name: nanopb, nameSpecified: nanopb, owner: firebase, version: 2.30910.0, source: https://github.com/firebase/nanopb
 
-name: promises, nameSpecified: promises, owner: google, version: 2.4.0, source: https://github.com/google/promises
+name: promises, nameSpecified: Promises, owner: google, version: 2.4.0, source: https://github.com/google/promises
 
 name: Siren, nameSpecified: Siren, owner: ArtSabintsev, version: 6.1.3, source: https://github.com/ArtSabintsev/Siren
 
-name: swift-protobuf, nameSpecified: swift-protobuf, owner: apple, version: 1.27.0, source: https://github.com/apple/swift-protobuf
+name: swift-protobuf, nameSpecified: SwiftProtobuf, owner: apple, version: 1.27.0, source: https://github.com/apple/swift-protobuf
 
 name: Zip, nameSpecified: Zip, owner: marmelroy, version: 2.1.2, source: https://github.com/marmelroy/Zip
 
