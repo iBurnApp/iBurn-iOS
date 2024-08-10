@@ -101,7 +101,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
         }
-        if mapView.zoomLevel >= 16.0 {
+        if mapView.zoomLevel >= 15.0 {
             let coordinateBounds = mapView.visibleCoordinateBounds
             BRCDatabaseManager.shared.queryObjects(inMinCoord: coordinateBounds.sw, maxCoord: coordinateBounds.ne, completionQueue: DispatchQueue.global(qos: .default)) { (objects) in
                 var objects = objects.filter {
@@ -110,7 +110,7 @@ public class UserMapViewAdapter: MapViewAdapter {
                     } else if let _ = $0 as? BRCCampObject {
                         // nearby camps just clutter the map until we get more precise location data
                         // from the org
-                        if zoomLevel >= 18.0 {
+                        if zoomLevel >= 15.0 {
                             return true
                         } else {
                             return false
