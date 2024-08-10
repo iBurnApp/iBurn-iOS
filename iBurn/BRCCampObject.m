@@ -9,6 +9,17 @@
 #import "BRCCampObject.h"
 
 @implementation BRCCampObject
+
++ (NSDictionary *)JSONKeyPathsByPropertyKey {
+    NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
+    NSDictionary *campPaths = @{
+        NSStringFromSelector(@selector(hometown)): @"hometown",
+        NSStringFromSelector(@selector(landmark)): @"landmark",
+        NSStringFromSelector(@selector(frontage)): @"location.exact_location"
+    };
+    return [paths mtl_dictionaryByAddingEntriesFromDictionary:campPaths];
+}
+
 - (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {
     return [self campMetadataWithTransaction:transaction];
 }

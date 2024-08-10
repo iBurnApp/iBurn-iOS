@@ -338,7 +338,7 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                     if (CLLocationCoordinate2DIsValid(coordinate)) {
                         object.coordinate = coordinate;
                     } else {
-                        NSLog(@"Geocode Error %@ %@: \"%@\"", NSStringFromClass(dataClass), object.uniqueID, object.playaLocation);
+                        NSLog(@"Geocode Error %@ %@ %@: \"%@\"", NSStringFromClass(dataClass), object.uniqueID, object.title, object.playaLocation);
                     }
                 }
                 ///////////////

@@ -8,10 +8,14 @@
 
 #import "BRCDataObject.h"
 
+NS_ASSUME_NONNULL_BEGIN
 @interface BRCCampObject : BRCDataObject
 
-@property (nonatomic, strong, readonly) NSString *hometown;
+@property (nonatomic, strong, readonly, nullable) NSString *hometown;
+@property (nonatomic, strong, readonly, nullable) NSString *landmark;
+@property (nonatomic, strong, readonly, nullable) NSString *frontage;
 
-- (BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
+- (nullable BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
 
 @end
+NS_ASSUME_NONNULL_END

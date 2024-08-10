@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -43,7 +43,7 @@
 		D9CB2A2C2117C56900A0F2AE /* PlayaGeocoder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PlayaGeocoder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CB2A392117C5C900A0F2AE /* PlayaGeocoderTests (iOS).xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PlayaGeocoderTests (iOS).xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CB2A3F2117C63800A0F2AE /* PlayaGeocoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayaGeocoder.swift; sourceTree = "<group>"; };
-		D9CB2A422117C70600A0F2AE /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "../../Submodules/iBurn-Data/data/2023/geocoder/bundle.js"; sourceTree = "<group>"; };
+		D9CB2A422117C70600A0F2AE /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "../../Submodules/iBurn-Data/data/2024/geocoder/bundle.js"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
