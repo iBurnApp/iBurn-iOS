@@ -100,6 +100,7 @@ Your contributions will need to be licensed to us under the [MPL 2.0](https://ww
 * [Andrew Johnstone](http://architecturalartsguild.com/about/) - Map Data (thank you!!)
 * [Andrew Johnson](http://gaiagps.appspot.com/contact) - iBurn 2009-2013
 * [Icons8](http://icons8.com) - Various icons used throughout the app.
+* [Icooon Mono](https://www.svgrepo.com/svg/479837/toilet-paper-4) - Toilet icon
 * [William Keller](http://www.wkeller.net/BRC-GPS/) - Last minute 2014 Map fixes
 
 ## License

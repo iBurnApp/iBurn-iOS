@@ -119,6 +119,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
             "Arctica Center Camp": "ice",
             "Ice Cubed Arctica 3": "ice",
             "The Temple": "temple",
+            "toilet": "toilet",
         ]
         for (key, imageName) in imageMap {
             guard let image = UIImage(named: "pin_" + imageName) else {
