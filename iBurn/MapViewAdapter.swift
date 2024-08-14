@@ -120,6 +120,14 @@ extension MapViewAdapter: MLNMapViewDelegate {
             "Ice Cubed Arctica 3": "ice",
             "The Temple": "temple",
             "toilet": "toilet",
+            "Artery": "artery",
+            "Yellow Bike Project": "bike",
+            "Hell Station": "fuel",
+            "Census Checkpoint": "census",
+            "BLM LE Substation": "police",
+            "Gate Actual": "gate",
+            "Box Office": "boxOffice",
+            "Greeters": "greeters",
         ]
         for (key, imageName) in imageMap {
             guard let image = UIImage(named: "pin_" + imageName) else {
