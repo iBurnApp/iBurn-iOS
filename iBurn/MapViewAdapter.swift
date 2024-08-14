@@ -102,17 +102,30 @@ public class MapViewAdapter: NSObject {
 extension MapViewAdapter: MLNMapViewDelegate {
     
     public func mapView(_ mapView: MLNMapView, didFinishLoading style: MLNStyle) {
-        let imageNames = [
-            "airport", "bus", "centerCamp", "center",
-            "firstAid", "EmergencyClinic", "ice", "info", "ranger",
-            "recycle", "temple"
+        
+        let imageMap = [
+            "Airport": "airport",
+            "Rampart": "EmergencyClinic",
+            "Center Camp Plaza": "centerCamp",
+            "center": "center",
+            "Burner Express Bus Depot": "bus",
+            "Station 3": "firstAid",
+            "Station 9": "firstAid",
+            "Playa Info": "info",
+            "Ranger Station Berlin": "ranger",
+            "Ranger Station Tokyo": "ranger",
+            "Ranger HQ": "ranger",
+            "Ice Nine Arctica": "ice",
+            "Arctica Center Camp": "ice",
+            "Ice Cubed Arctica 3": "ice",
+            "The Temple": "temple",
         ]
-        for imageName in imageNames {
+        for (key, imageName) in imageMap {
             guard let image = UIImage(named: "pin_" + imageName) else {
                 assertionFailure()
                 continue
             }
-            style.setImage(image, forName: imageName)
+            style.setImage(image, forName: key)
         }
     }
     
