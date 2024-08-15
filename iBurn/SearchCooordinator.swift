@@ -11,7 +11,7 @@ import Foundation
 protocol SearchCooordinator: NSObjectProtocol {
     var searchController: UISearchController { get }
     func setupSearchButton()
-    func searchButtonPressed(_ sender: Any)
+    func searchButtonPressed(_ sender: Any?)
 }
 
 extension SearchCooordinator where Self: UIViewController {

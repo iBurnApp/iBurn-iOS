@@ -10,7 +10,7 @@ import Foundation
 
 protocol MapButtonHelper: NSObjectProtocol {
     func setupMapButton()
-    func mapButtonPressed(_ sender: Any)
+    func mapButtonPressed(_ sender: Any?)
 }
 
 extension MapButtonHelper where Self: UIViewController {
