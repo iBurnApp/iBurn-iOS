@@ -28,7 +28,7 @@ extension SearchCooordinator where Self: UIViewController {
         }
     }
     
-    func searchButtonPressed(_ sender: Any) {
+    func searchButtonPressed(_ sender: Any?) {
         present(searchController, animated: true, completion: nil)
     }
     
