@@ -12,19 +12,19 @@ import MapLibre
 private final class BRCMapView: MLNMapView {
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        self.brc_setDefaults()
+        self.brc_setDefaults(moveToCenter: false)
     }
 }
 
 extension MLNMapView {
     @objc public static func brcMapView() -> MLNMapView {
         let mapView = BRCMapView()
-        mapView.brc_setDefaults()
+        mapView.brc_setDefaults(moveToCenter: true)
         return mapView
     }
     
     /// Sets default iBurn behavior for mapView
-    @objc public func brc_setDefaults() {
+    @objc public func brc_setDefaults(moveToCenter: Bool) {
         let styleJSON = traitCollection.userInterfaceStyle == .light ? "iburn-light.json" : "iburn-dark.json"
         
         guard let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map"),
@@ -48,7 +48,9 @@ extension MLNMapView {
         minimumZoomLevel = 12
         backgroundColor = UIColor.brc_mapBackgroundColor
         translatesAutoresizingMaskIntoConstraints = false
-        brc_moveToBlackRockCityCenter(animated: false)
+        if moveToCenter {
+            brc_moveToBlackRockCityCenter(animated: false)
+        }
         
         #if DEBUG
         MLNLoggingConfiguration.shared.loggingLevel = .verbose

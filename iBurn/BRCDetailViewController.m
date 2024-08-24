@@ -237,7 +237,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     if ((dataObject.location && [BRCEmbargo canShowLocationForObject:dataObject]) || dataObject.burnerMapLocation) {
         self.mapView = [MLNMapView brcMapView];
-        [self.mapView brc_setDefaults];
+        [self.mapView brc_setDefaultsWithMoveToCenter:YES];
         DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject metadata:self.metadata];
         StaticAnnotationDataSource *dataSource = [[StaticAnnotationDataSource alloc] initWithAnnotation:annotation];
         self.mapViewAdapter = [[MapViewAdapter alloc] initWithMapView:self.mapView dataSource:dataSource];

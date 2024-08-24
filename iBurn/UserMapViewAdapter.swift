@@ -97,7 +97,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
         let zoomLevel = mapView.zoomLevel
-        let labelIsHidden = mapView.zoomLevel < 13.0
+        let labelIsHidden = mapView.zoomLevel <= 13.0
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
         }

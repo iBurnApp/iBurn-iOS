@@ -112,7 +112,7 @@ private extension BaseMapViewController {
     }
     
     func setupMapView(_ mapView: MLNMapView) {
-        mapView.brc_setDefaults()
+        mapView.brc_setDefaults(moveToCenter: true)
         centerMapAtManCoordinatesAnimated(false)
     }
     
