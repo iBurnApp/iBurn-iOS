@@ -99,3 +99,6 @@ iBurn/InfoPlistSecrets.h
 iBurn/GoogleService-Info.plist
 .env
 iBurn/crashlytics.sh
+
+.vscode/
+buildServer.json

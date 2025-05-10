@@ -11,9 +11,9 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCCampObject : BRCDataObject
 
-@property (nonatomic, strong, readonly, nullable) NSString *hometown;
-@property (nonatomic, strong, readonly, nullable) NSString *landmark;
-@property (nonatomic, strong, readonly, nullable) NSString *frontage;
+@property (nonatomic, copy, readonly, nullable) NSString *hometown;
+@property (nonatomic, copy, readonly, nullable) NSString *landmark;
+@property (nonatomic, copy, readonly, nullable) NSString *frontage;
 
 - (nullable BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
 

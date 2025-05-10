@@ -53,5 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 /** Passing nil yapKey will result in a randomly generated UUID */
 - (instancetype) initWithYapKey:(nullable NSString*)yapKey;
 
+/** Debug description for this object */
+@property (nonatomic, copy, readonly) NSString *debugDescription;
+
 @end
 NS_ASSUME_NONNULL_END

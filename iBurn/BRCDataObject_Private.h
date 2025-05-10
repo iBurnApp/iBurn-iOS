@@ -9,6 +9,6 @@
 #import "BRCDataObject.h"
 
 @interface BRCDataObject ()
-@property (nonatomic, strong, readwrite) NSString *uniqueID;
+@property (nonatomic, copy, readwrite) NSString *uniqueID;
 + (NSArray<NSString*>*) excludedPropertyKeysArray;
 @end

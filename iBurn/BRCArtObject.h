@@ -11,16 +11,15 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCArtObject : BRCDataObject
 
-@property (nonatomic, strong, readonly) NSString *artistName;
-@property (nonatomic, strong, readonly) NSString *artistLocation;
+@property (nonatomic, copy, readonly) NSString *artistName;
+@property (nonatomic, copy, readonly) NSString *artistLocation;
 
 /** use thumbnail_url key in dict */
-@property (nonatomic, strong, readonly) NSArray<NSDictionary*> *imageURLs;
+@property (nonatomic, copy, readonly) NSArray<NSDictionary*> *imageURLs;
 /** Returns local URL if present, otherwise remote */
 @property (nonatomic, strong, readonly, nullable) NSURL *thumbnailURL;
 @property (nonatomic, strong, readonly, nullable) NSURL *remoteThumbnailURL;
 @property (nonatomic, strong, readonly, nullable) NSURL *localThumbnailURL;
-
 
 /** Returns local URL if present, otherwise remote */
 @property (nonatomic, strong, readonly, nullable) NSURL *audioURL;

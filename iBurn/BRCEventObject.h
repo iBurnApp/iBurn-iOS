@@ -47,15 +47,14 @@ extern NSString * const kBRCEventArtEdgeName;
 @property (nonatomic, readonly) BRCEventType eventType;
 
 /** Camp hosting event. (To assist our full-text search indexing) */
-@property (nonatomic, strong, nullable) NSString *campName;
+@property (nonatomic, copy, nullable) NSString *campName;
 /** Art hosting event. (To assist our full-text search indexing) */
-@property (nonatomic, strong, nullable) NSString *artName;
+@property (nonatomic, copy, nullable) NSString *artName;
 
 /** PlayaEvents ID of event's camp */
-@property (nonatomic, strong, nullable) NSString *hostedByCampUniqueID;
+@property (nonatomic, copy, nullable) NSString *hostedByCampUniqueID;
 /** PlayaEvents ID of event's art */
-@property (nonatomic, strong, nullable) NSString *hostedByArtUniqueID;
-
+@property (nonatomic, copy, nullable) NSString *hostedByArtUniqueID;
 
 - (nullable BRCArtObject*) hostedByArtWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
 - (nullable BRCCampObject*) hostedByCampWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
@@ -75,7 +74,7 @@ extern NSString * const kBRCEventArtEdgeName;
 /**
  *  Free form text entry for events hosted in weird places
  */
-@property (nonatomic, strong, readonly, nullable) NSString *otherLocation;
+@property (nonatomic, copy, readonly, nullable) NSString *otherLocation;
 
 - (NSTimeInterval)timeIntervalUntilStart:(NSDate*)currentDate;
 - (NSTimeInterval)timeIntervalUntilEnd:(NSDate*)currentDate;

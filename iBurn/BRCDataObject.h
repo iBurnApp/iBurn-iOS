@@ -26,11 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Object description (from the PlayaEvents API)
  */
-@property (nonatomic, strong, readonly, nullable) NSString *detailDescription;
+@property (nonatomic, copy, readonly, nullable) NSString *detailDescription;
 /**
  *  Email (from the PlayaEvents API)
  */
-@property (nonatomic, strong, readonly, nullable) NSString *email;
+@property (nonatomic, copy, readonly, nullable) NSString *email;
 
 /**
  *  Homepage (from the PlayaEvents API)
@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Unique 'id' from PlayaEvents API
  */
-@property (nonatomic, strong, readonly) NSString *uniqueID;
+@property (nonatomic, copy, readonly) NSString *uniqueID;
 
 /**
  *  Year of data's origin e.g. "2014"
@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Playa Coordinates
  */
-@property (nonatomic, strong, nullable) NSString *playaLocation;
+@property (nonatomic, copy, nullable) NSString *playaLocation;
 
 /** Calculates distance from location */
 - (CLLocationDistance) distanceFromLocation:(CLLocation*)location;
@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Playa Coordinates e.g. 7:30 & Inspirit
  */
-@property (nonatomic, readwrite, nullable) NSString *burnerMapLocationString;
+@property (nonatomic, copy, nullable) NSString *burnerMapLocationString;
 
 @end
 

@@ -123,7 +123,7 @@ typedef enum : NSUInteger {
     
     [self updateSize:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateSize:) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
+    [self setupNotifications];
 }
 
 - (void)dealloc
@@ -131,7 +131,7 @@ typedef enum : NSUInteger {
     [_mapView removeObserver:self forKeyPath:@"userTrackingMode"];
     [_mapView removeObserver:self forKeyPath:@"userLocation.location"];
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
+    [self removeNotifications];
 }
 
 #pragma mark -
@@ -170,17 +170,45 @@ typedef enum : NSUInteger {
 
 #pragma mark -
 
-- (void)updateSize:(NSNotification *)notification
-{
-    NSInteger orientation = (notification ? [[notification.userInfo objectForKey:UIApplicationStatusBarOrientationUserInfoKey] integerValue] : [[UIApplication sharedApplication] statusBarOrientation]);
+- (void)setupNotifications {
+    // Add view transition notification instead
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                           selector:@selector(handleViewTransition:) 
+                                               name:UIViewControllerShowDetailTargetDidChangeNotification 
+                                             object:nil];
+}
+
+- (void)removeNotifications {
+    // Remove view transition notification
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                  name:UIViewControllerShowDetailTargetDidChangeNotification 
+                                                object:nil];
+}
+
+- (void)handleViewTransition:(NSNotification *)notification {
+    [self updateSize:nil];
+}
+
+- (void)updateSize:(NSNotification *)notification {
+    // Get the current interface orientation from the window scene
+    UIWindowScene *windowScene = nil;
+    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            windowScene = (UIWindowScene *)scene;
+            break;
+        }
+    }
     
-    CGFloat dimension = (UIInterfaceOrientationIsPortrait(orientation) ? (RMPostVersion7 ? 36 : 32) : 24);
+    UIInterfaceOrientation orientation = windowScene.interfaceOrientation;
+    
+    // Update the button size based on orientation
+    CGFloat dimension = UIInterfaceOrientationIsLandscape(orientation) ? 32 : 44;
     
     self.customView.bounds = _buttonImageView.bounds = _segmentedControl.bounds = CGRectMake(0, 0, dimension, dimension);
     [_segmentedControl setWidth:dimension forSegmentAtIndex:0];
     self.width = dimension;
     
-    _segmentedControl.center = _buttonImageView.center = _activityView.center = CGPointMake(dimension / 2, dimension / 2 - (RMPostVersion7 ? 1 : 0));
+    _segmentedControl.center = _buttonImageView.center = _activityView.center = CGPointMake(dimension / 2, dimension / 2);
     
     [self updateImage];
 }

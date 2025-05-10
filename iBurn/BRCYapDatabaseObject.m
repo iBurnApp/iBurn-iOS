@@ -93,4 +93,12 @@
     return behaviors;
 }
 
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"<%@: %p> yapKey: %@, yapCollection: %@", 
+            NSStringFromClass([self class]), 
+            self, 
+            self.yapKey, 
+            self.yapCollection];
+}
+
 @end

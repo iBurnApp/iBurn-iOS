@@ -36,12 +36,14 @@
 @import CocoaLumberjack;
 @import FirebaseCore;
 #import "iBurn-Swift.h"
+@import UserNotifications;
+@import BackgroundTasks;
 
 static int ddLogLevel = DDLogLevelVerbose;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
-@interface BRCAppDelegate() <UINavigationControllerDelegate>
+@interface BRCAppDelegate() <UINavigationControllerDelegate, UNUserNotificationCenterDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 @property (nonatomic, strong, readonly) BRCMediaDownloader *audioDownloader;
 @property (nonatomic, strong, readonly) BRCMediaDownloader *imageDownloader;
@@ -56,6 +58,26 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [FIRApp configure];
     [Appearance setGlobalAppearance];
     
+    // Set up notification center delegate
+    UNUserNotificationCenter.currentNotificationCenter.delegate = self;
+    
+    // Request notification authorization
+    [UNUserNotificationCenter.currentNotificationCenter requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionBadge | UNAuthorizationOptionSound) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+        if (granted) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[UIApplication sharedApplication] registerForRemoteNotifications];
+            });
+        }
+    }];
+    
+    // Register background fetch task
+    [[BGTaskScheduler sharedScheduler] registerForTaskWithIdentifier:kBRCBackgroundFetchIdentifier usingQueue:nil launchHandler:^(__kindof BGTask * _Nonnull task) {
+        [self handleBackgroundFetch:(BGAppRefreshTask *)task];
+    }];
+    
+    // Schedule background fetch
+    [self scheduleBackgroundFetch];
+    
 #if DEBUG
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
@@ -64,9 +86,8 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [DDLog addLogger:fileLogger withLevel:DDLogLevelAll];
 #endif
             
-    // Can we set a better interval?
-    NSTimeInterval dailyInterval = 24 * 60 * 60; // 24 hours
-    [application setMinimumBackgroundFetchInterval:dailyInterval];
+    // Background fetch is now handled by BackgroundTasks framework
+    // [application setMinimumBackgroundFetchInterval:dailyInterval];
         
     [BRCDatabaseManager.shared.backgroundReadConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
         NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject yapCollection]];
@@ -89,10 +110,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         }];
         [ColorCache.shared prefetchAllColors];
     });
-        
-    UILocalNotification *launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
-    if (launchNotification) {
-        [self application:application didReceiveLocalNotification:launchNotification];
+    
+    // Handle launch from notification
+    if (launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]) {
+        [self handleNotification:launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]];
     }
     
     self.locationManager = [CLLocationManager brc_locationManager];
@@ -140,26 +161,51 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     return YES;
 }
 
-- (void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleCancel handler:nil];
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:notification.alertBody preferredStyle:UIAlertControllerStyleAlert];
-    [alertController addAction:cancelAction];
+#pragma mark - UNUserNotificationCenterDelegate
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
+{
+    // Show notification even when app is in foreground
+    completionHandler(UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+         withCompletionHandler:(void(^)(void))completionHandler
+{
+    [self handleNotification:response.notification];
+    completionHandler();
+}
+
+- (void)handleNotification:(UNNotification *)notification {
+    // Handle notification content
+    UNNotificationContent *content = notification.request.content;
+    NSString *title = content.title;
+    NSString *body = content.body;
     
-    [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
-}
-
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-}
-
-- (void)application:(UIApplication *)application
-didReceiveRemoteNotification:(NSDictionary *)userInfo
-fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
-    if ([NSUserDefaults areDownloadsDisabled]) {
-        NSLog(@"Downloads are disabled, skipping.");
-        return;
+    // Present alert
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                 message:body
+                                                          preferredStyle:UIAlertControllerStyleAlert];
+    
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
+                                                      style:UIAlertActionStyleDefault
+                                                    handler:nil];
+    [alert addAction:okAction];
+    
+    // Get the active window scene and its root view controller
+    UIWindowScene *windowScene = nil;
+    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            windowScene = (UIWindowScene *)scene;
+            break;
+        }
     }
-    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:handler];
+    
+    UIViewController *rootVC = windowScene.windows.firstObject.rootViewController;
+    [rootVC presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -188,17 +234,6 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     DDLogInfo(@"applicationWillTerminate");
-}
-
-- (void)application:(UIApplication *)application
-performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-    if ([NSUserDefaults areDownloadsDisabled]) {
-        NSLog(@"Downloads are disabled, skipping.");
-        completionHandler(UIBackgroundFetchResultNoData);
-        return;
-    }
-    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:completionHandler];
 }
 
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
@@ -303,9 +338,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))comp
 
 #pragma mark CLLocationManagerDelegate
 
-- (void)locationManager:(CLLocationManager *)manager
-didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-    if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
+- (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager {
+    CLAuthorizationStatus status = manager.authorizationStatus;
+    if (status == kCLAuthorizationStatusAuthorizedWhenInUse || status == kCLAuthorizationStatusAuthorizedAlways) {
         [manager startUpdatingLocation];
     } else if (status == kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted) {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Location Services Unavailable" message:@"Please press your iPhone's Home button and go into Settings -> Privacy -> Location and enable location services for iBurn. The app is way better with GPS.\n\np.s. GPS still works during Airplane Mode on iOS 8.3 and higher. Save that battery!" preferredStyle:UIAlertControllerStyleAlert];
@@ -365,13 +400,7 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
 
 /** Asks for remotification permission */
 + (void) registerForRemoteNotifications {
-    // Register for Push Notitications
-    UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
-                                                    UIUserNotificationTypeBadge |
-                                                    UIUserNotificationTypeSound);
-    UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
-                                                                             categories:nil];
-    [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+    // Register for Push Notifications
     [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
 
@@ -397,6 +426,32 @@ didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     [self setupNormalRootViewController];
 }
 
+- (void)scheduleBackgroundFetch {
+    BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:kBRCBackgroundFetchIdentifier];
+    request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:24 * 60 * 60]; // 24 hours
+    
+    NSError *error = nil;
+    [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
+    if (error) {
+        DDLogError(@"Could not schedule background fetch: %@", error);
+    }
+}
 
+- (void)handleBackgroundFetch:(BGAppRefreshTask *)task {
+    // Schedule the next background fetch
+    [self scheduleBackgroundFetch];
+    
+    if ([NSUserDefaults areDownloadsDisabled]) {
+        DDLogInfo(@"Downloads are disabled, skipping.");
+        [task setTaskCompletedWithSuccess:YES];
+        return;
+    }
+    
+    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
+    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
+        BOOL success = (result == UIBackgroundFetchResultNewData);
+        [task setTaskCompletedWithSuccess:success];
+    }];
+}
 
 @end
