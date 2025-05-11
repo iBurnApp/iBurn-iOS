@@ -14,7 +14,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/abseil-cpp-binary</string>
 			<key>Title</key>
-			<string>abseil (1.2024011602.0)</string>
+			<string>abseil (1.2024072200.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -30,7 +30,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/app-check</string>
 			<key>Title</key>
-			<string>AppCheck (11.0.1)</string>
+			<string>AppCheck (11.2.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -86,7 +86,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/firebase-ios-sdk</string>
 			<key>Title</key>
-			<string>Firebase (11.0.0)</string>
+			<string>Firebase (11.12.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -102,7 +102,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/GoogleAppMeasurement</string>
 			<key>Title</key>
-			<string>GoogleAppMeasurement (11.0.0)</string>
+			<string>GoogleAppMeasurement (11.12.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -118,7 +118,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/GoogleUtilities</string>
 			<key>Title</key>
-			<string>GoogleUtilities (8.0.2)</string>
+			<string>GoogleUtilities (8.1.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -134,7 +134,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/grpc-binary</string>
 			<key>Title</key>
-			<string>gRPC (1.65.1)</string>
+			<string>gRPC (1.69.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -142,7 +142,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/gtm-session-fetcher</string>
 			<key>Title</key>
-			<string>gtm-session-fetcher (3.5.0)</string>
+			<string>gtm-session-fetcher (4.5.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -150,7 +150,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/interop-ios-for-google-sdks</string>
 			<key>Title</key>
-			<string>InteropForGoogle (100.0.0)</string>
+			<string>InteropForGoogle (101.0.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -182,7 +182,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/LicensePlist</string>
 			<key>Title</key>
-			<string>LicensePlist (3.25.1)</string>
+			<string>LicensePlist (3.27.1)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -198,7 +198,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/maplibre-gl-native-distribution</string>
 			<key>Title</key>
-			<string>MapLibre Native (6.5.4)</string>
+			<string>MapLibre Native (6.13.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -254,7 +254,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/swift-protobuf</string>
 			<key>Title</key>
-			<string>SwiftProtobuf (1.27.1)</string>
+			<string>SwiftProtobuf (1.29.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>

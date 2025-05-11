@@ -56,12 +56,10 @@
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject
 {
     if (![BRCEmbargo allowEmbargoedData]) {
-#warning warning! camp data is unlocked, change me back for 2025
-        // camp data is allowed
-//        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
-//            [dataObject isKindOfClass:[BRCArtObject class]]) {
-//            return NO;
-//        }
+        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
+            [dataObject isKindOfClass:[BRCArtObject class]]) {
+            return NO;
+        }
         if ([dataObject isKindOfClass:[BRCArtObject class]]) {
             return NO;
         }
