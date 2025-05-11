@@ -8,7 +8,7 @@
 
 import UIKit
 import StoreKit
-
+import SwiftUI
 
 class MoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
     
@@ -83,16 +83,22 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         switch CellTag(rawValue: cell.tag) {
         case .unlock:
             if BRCEmbargo.allowEmbargoedData() {
-                cell.imageView!.image = UIImage(named: "BRCUnlockIcon")!.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
+                cell.imageView!.image = UIImage(systemName: "lock.open.fill")
                 cell.textLabel!.text = "Location Data Unlocked"
                 cell.textLabel!.textColor = UIColor.lightGray
                 cell.isUserInteractionEnabled = false
+            } else {
+                cell.imageView!.image = UIImage(systemName: "lock.fill")
+                cell.textLabel!.text = "Unlock Location Data"
+                cell.textLabel!.textColor = Appearance.currentColors.primaryColor
+                cell.isUserInteractionEnabled = true
             }
         case .navigationMode:
-            // should we be resetting the other reused cells?
             cell.accessoryView = navigationModeSwitch
+            cell.selectionStyle = .none
         default:
-            break
+            cell.accessoryView = nil
+            cell.selectionStyle = .default
         }
         
         return cell
@@ -160,9 +166,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func showUnlockView() {
-        let unlockVC = BRCEmbargoPasscodeViewController()
-        unlockVC.dismissAction = {
-            unlockVC.dismiss(animated: true, completion: nil)
+        let unlockVC = EmbargoPasscodeHostingViewController { [weak self] in
+            self?.dismiss(animated: true, completion: nil)
         }
         unlockVC.modalPresentationStyle = .fullScreen
         present(unlockVC, animated: true, completion: nil)
@@ -237,4 +242,3 @@ extension MoreViewController: StoryboardRepresentable {
         return Storyboard.more.instantiateInitialViewController()!
     }
 }
-

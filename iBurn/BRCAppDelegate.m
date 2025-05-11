@@ -24,7 +24,6 @@
 #import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
 @import TTTAttributedLabel;
-#import "BRCEmbargoPasscodeViewController.h"
 #import "iBurn-Swift.h"
 #import "NSBundle+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
@@ -216,7 +215,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
+    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
 }
 
@@ -419,6 +418,15 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     // do it again just in case
     [[self class] registerForRemoteNotifications];
     [self requestLocationPermission];
+
+    // Present Embargo Screen if needed
+    if (![BRCEmbargo allowEmbargoedData]) {
+        UIViewController *hostingController = [EmbargoPasscodeFactory makeViewControllerWithDismissAction:^{
+            [self.tabBarController dismissViewControllerAnimated:YES completion:nil];
+        }];
+        hostingController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [self.tabBarController presentViewController:hostingController animated:YES completion:nil];
+    }
 }
 
 - (void)handleOnboardingCompletion {

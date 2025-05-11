@@ -12,7 +12,6 @@
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
 		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
-		632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */; };
 		639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */ = {isa = PBXBuildFile; fileRef = 639E638C1994178500B62A92 /* BRCEmbargo.m */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
@@ -92,6 +91,8 @@
 		D984DFD5210EC84200A45922 /* DataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFD4210EC84200A45922 /* DataObject.swift */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
 		D98FFEB02DD032F800107B9F /* EventsFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98FFEAF2DD032F800107B9F /* EventsFilterView.swift */; };
+		D98FFEB32DD0568900107B9F /* EmbargoPasscodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98FFEB22DD0568900107B9F /* EmbargoPasscodeViewModel.swift */; };
+		D98FFEB42DD0568900107B9F /* EmbargoPasscodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98FFEB12DD0568900107B9F /* EmbargoPasscodeView.swift */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
@@ -273,8 +274,6 @@
 		6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRelationshipDetailInfoCell.m; sourceTree = "<group>"; };
 		63228329198C2B48009E472B /* NSUserDefaults+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+iBurn.h"; sourceTree = "<group>"; };
 		6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+iBurn.m"; sourceTree = "<group>"; };
-		632F77551993FC8100707FAF /* BRCEmbargoPasscodeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEmbargoPasscodeViewController.h; sourceTree = "<group>"; };
-		632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEmbargoPasscodeViewController.m; sourceTree = "<group>"; };
 		639E638B1994178500B62A92 /* BRCEmbargo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEmbargo.h; sourceTree = "<group>"; };
 		639E638C1994178500B62A92 /* BRCEmbargo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEmbargo.m; sourceTree = "<group>"; };
 		63C11EB31B7C580400428FB8 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/scripts/2015/geocoder/bundle.js"; sourceTree = SOURCE_ROOT; };
@@ -419,6 +418,8 @@
 		D984DFD4210EC84200A45922 /* DataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataObject.swift; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
 		D98FFEAF2DD032F800107B9F /* EventsFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsFilterView.swift; sourceTree = "<group>"; };
+		D98FFEB12DD0568900107B9F /* EmbargoPasscodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbargoPasscodeView.swift; sourceTree = "<group>"; };
+		D98FFEB22DD0568900107B9F /* EmbargoPasscodeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbargoPasscodeViewModel.swift; sourceTree = "<group>"; };
 		D9903DC7287D0B8700578B18 /* APIData */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = APIData; path = "Submodules/iBurn-Data/data/2022/APIData"; sourceTree = SOURCE_ROOT; };
 		D9903DC9287D0BA100578B18 /* Map */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Map; path = "Submodules/iBurn-Data/data/2022/Map"; sourceTree = SOURCE_ROOT; };
 		D9903DCB287D0BA800578B18 /* MediaFiles */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MediaFiles; path = "Submodules/iBurn-Data/data/2022/MediaFiles"; sourceTree = SOURCE_ROOT; };
@@ -718,8 +719,6 @@
 				6322830219881E27009E472B /* DetailViewControllers */,
 				D994155E19871D9000D245C7 /* Filtered Tables */,
 				D99395A5198B806800E9ADD2 /* MapViewControllers */,
-				632F77551993FC8100707FAF /* BRCEmbargoPasscodeViewController.h */,
-				632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */,
 				D9BD4C031B78788D00313FB5 /* iBurn-Bridging-Header.h */,
 			);
 			name = ViewControllers;
@@ -1004,6 +1003,8 @@
 		D99395A5198B806800E9ADD2 /* MapViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				D98FFEB12DD0568900107B9F /* EmbargoPasscodeView.swift */,
+				D98FFEB22DD0568900107B9F /* EmbargoPasscodeViewModel.swift */,
 				D9774B1B2118DEE200BE3CC8 /* MapListViewController.swift */,
 				D9DE7BB11EF27AE9007A983E /* SidebarButtonsView.swift */,
 				D9DE7BAF1EF25C11007A983E /* MainMapViewController.swift */,
@@ -1598,7 +1599,6 @@
 				D92AC57022F0176B00C9FE32 /* Breadcrumb.swift in Sources */,
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
 				D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */,
-				632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */,
 				D9F889252300D18C0069FD49 /* BRCEventObject.swift in Sources */,
 				D984DFCF210EB38F00A45922 /* NSCopying+iBurn.swift in Sources */,
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
@@ -1681,6 +1681,8 @@
 				D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
+				D98FFEB32DD0568900107B9F /* EmbargoPasscodeViewModel.swift in Sources */,
+				D98FFEB42DD0568900107B9F /* EmbargoPasscodeView.swift in Sources */,
 				D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */,
 				D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */,
 				D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */,
@@ -1798,7 +1800,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1850,7 +1852,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LLVM_LTO = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1880,7 +1882,6 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_PREFIX_HEADER = iBurn/InfoPlistSecrets.h;
 				INFOPLIST_PREPROCESS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1918,7 +1919,6 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_PREFIX_HEADER = iBurn/InfoPlistSecrets.h;
 				INFOPLIST_PREPROCESS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

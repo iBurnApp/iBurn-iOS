@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>PlayaYear</key>
-	<string>2024</string>
+	<string>2025</string>
 	<key>EventStart</key>
-	<date>2024-08-25T07:00:00Z</date>
+	<date>2025-08-24T07:00:00Z</date>
 	<key>EventEnd</key>
-	<date>2024-09-02T07:00:00Z</date>
+	<date>2025-09-01T07:00:00Z</date>
 	<key>ManCenterLatitude</key>
 	<real>40.786969</real>
 	<key>ManCenterLongitude</key>

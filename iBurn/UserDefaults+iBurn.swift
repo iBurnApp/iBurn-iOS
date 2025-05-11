@@ -3,7 +3,7 @@
 //  iBurn
 //
 //  Created by Chris Ballinger on 8/2/19.
-//  Copyright © 2019 Burning Man Earth. All rights reserved.
+//  Copyright 2019 Burning Man Earth. All rights reserved.
 //
 
 import Foundation
@@ -14,6 +14,7 @@ extension UserDefaults {
         case downloadsDisabled
         case navigationModeDisabled
         case lastUpdateCheck
+        case enteredEmbargoPasscode
     }
     
     static var isLocationHistoryDisabled: Bool {
@@ -55,6 +56,15 @@ extension UserDefaults {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: Keys.lastUpdateCheck.rawValue)
+        }
+    }
+
+    @objc static var enteredEmbargoPasscode: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: Keys.enteredEmbargoPasscode.rawValue)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.enteredEmbargoPasscode.rawValue)
         }
     }
 }
