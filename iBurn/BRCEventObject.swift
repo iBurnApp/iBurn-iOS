@@ -75,7 +75,7 @@ extension BRCEventType {
         case .fire:
             return "🔥"
         case .adult:
-            return "💋"
+            return "🔞"
         case .kid:
             return "👨‍👩‍👧‍👦"
         case .parade:

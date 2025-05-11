@@ -134,7 +134,9 @@ private extension EventListViewController {
 
     
     @objc func filterButtonPressed(_ sender: Any) {
-        let filterVC = BRCEventsFilterTableViewController(delegate: self)
+        let filterVC = EventsFilterViewController {
+            self.updateFilteredViews()
+        }
         let nav = NavigationController(rootViewController: filterVC)
         // this is needed to fix a crash on iOS 16 beta 4
         // [<_UISheetActiveDetent 0x600001391140> valueForUndefinedKey:]: this class is not key value coding-compliant for the key _type.
@@ -171,12 +173,6 @@ private extension EventListViewController {
         }, { (group1, group2, transaction) -> ComparisonResult in
             return group1.compare(group2)
         })
-    }
-}
-
-extension EventListViewController: BRCEventsFilterTableViewControllerDelegate {
-    public func didSetNewFilterSettings(_ viewController: BRCEventsFilterTableViewController) {
-        updateFilteredViews()
     }
 }
 

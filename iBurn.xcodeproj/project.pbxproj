@@ -11,7 +11,6 @@
 		6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830019881DDE009E472B /* BRCDetailViewController.m */; };
 		6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830419881F41009E472B /* BRCDetailCellInfo.m */; };
 		6322830B19882153009E472B /* BRCRelationshipDetailInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */; };
-		63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */; };
 		6322832B198C2B48009E472B /* NSUserDefaults+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */; };
 		632F77571993FC8100707FAF /* BRCEmbargoPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 632F77561993FC8100707FAF /* BRCEmbargoPasscodeViewController.m */; };
 		639E638D1994178500B62A92 /* BRCEmbargo.m in Sources */ = {isa = PBXBuildFile; fileRef = 639E638C1994178500B62A92 /* BRCEmbargo.m */; };
@@ -92,6 +91,7 @@
 		D984DFD3210EC03100A45922 /* PageViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFD2210EC03100A45922 /* PageViewManager.swift */; };
 		D984DFD5210EC84200A45922 /* DataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D984DFD4210EC84200A45922 /* DataObject.swift */; };
 		D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */; };
+		D98FFEB02DD032F800107B9F /* EventsFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98FFEAF2DD032F800107B9F /* EventsFilterView.swift */; };
 		D9914C4D1B40C54600F90663 /* initial_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4B1B40C54600F90663 /* initial_data */; };
 		D9914C4E1B40C54600F90663 /* updated_data in Resources */ = {isa = PBXBuildFile; fileRef = D9914C4C1B40C54600F90663 /* updated_data */; };
 		D9914C531B40D61500F90663 /* BRCUpdateInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9914C521B40D61500F90663 /* BRCUpdateInfo.m */; };
@@ -271,8 +271,6 @@
 		6322830419881F41009E472B /* BRCDetailCellInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDetailCellInfo.m; sourceTree = "<group>"; };
 		6322830919882153009E472B /* BRCRelationshipDetailInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCRelationshipDetailInfoCell.h; sourceTree = "<group>"; };
 		6322830A19882153009E472B /* BRCRelationshipDetailInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRelationshipDetailInfoCell.m; sourceTree = "<group>"; };
-		63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventsFilterTableViewController.h; sourceTree = "<group>"; };
-		63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventsFilterTableViewController.m; sourceTree = "<group>"; };
 		63228329198C2B48009E472B /* NSUserDefaults+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+iBurn.h"; sourceTree = "<group>"; };
 		6322832A198C2B48009E472B /* NSUserDefaults+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+iBurn.m"; sourceTree = "<group>"; };
 		632F77551993FC8100707FAF /* BRCEmbargoPasscodeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEmbargoPasscodeViewController.h; sourceTree = "<group>"; };
@@ -420,6 +418,7 @@
 		D984DFD2210EC03100A45922 /* PageViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewManager.swift; sourceTree = "<group>"; };
 		D984DFD4210EC84200A45922 /* DataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataObject.swift; sourceTree = "<group>"; };
 		D9895E7F1B7E7CA800A63F92 /* onboarding_loop_final.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = onboarding_loop_final.mp4; path = Media/onboarding_loop_final.mp4; sourceTree = SOURCE_ROOT; };
+		D98FFEAF2DD032F800107B9F /* EventsFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsFilterView.swift; sourceTree = "<group>"; };
 		D9903DC7287D0B8700578B18 /* APIData */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = APIData; path = "Submodules/iBurn-Data/data/2022/APIData"; sourceTree = SOURCE_ROOT; };
 		D9903DC9287D0BA100578B18 /* Map */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Map; path = "Submodules/iBurn-Data/data/2022/Map"; sourceTree = SOURCE_ROOT; };
 		D9903DCB287D0BA800578B18 /* MediaFiles */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MediaFiles; path = "Submodules/iBurn-Data/data/2022/MediaFiles"; sourceTree = SOURCE_ROOT; };
@@ -886,8 +885,7 @@
 		D972BD281993423E008057DB /* Events */ = {
 			isa = PBXGroup;
 			children = (
-				63228325198C1BF7009E472B /* BRCEventsFilterTableViewController.h */,
-				63228326198C1BF7009E472B /* BRCEventsFilterTableViewController.m */,
+				D98FFEAF2DD032F800107B9F /* EventsFilterView.swift */,
 			);
 			name = Events;
 			sourceTree = "<group>";
@@ -1619,6 +1617,7 @@
 				D92AC56522F00AE700C9FE32 /* TracksViewController.swift in Sources */,
 				D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */,
 				6322830519881F41009E472B /* BRCDetailCellInfo.m in Sources */,
+				D98FFEB02DD032F800107B9F /* EventsFilterView.swift in Sources */,
 				D99395AE198B991900E9ADD2 /* TTTLocationFormatter+iBurn.m in Sources */,
 				D977E0461B83F6E900FFC20F /* BRCDataObject+Relationships.m in Sources */,
 				D9774B1C2118DEE200BE3CC8 /* MapListViewController.swift in Sources */,
@@ -1681,7 +1680,6 @@
 				D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */,
 				D9B362BA199AB5320093B441 /* BRCMapPoint.m in Sources */,
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
-				63228327198C1BF7009E472B /* BRCEventsFilterTableViewController.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
 				D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */,
 				D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */,

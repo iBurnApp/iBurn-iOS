@@ -5,7 +5,6 @@
 #import "NSBundle+iBurn.h"
 #import "BRCCreditsInfo.h"
 #import "BRCAppDelegate.h"
-#import "BRCEventsFilterTableViewController.h"
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
 #import "BRCEventObject.h"
