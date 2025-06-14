@@ -7,6 +7,7 @@
 //
 
 #import "BRCDataObject.h"
+#import "BRCCampImage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCCampObject : BRCDataObject
@@ -14,6 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly, nullable) NSString *hometown;
 @property (nonatomic, copy, readonly, nullable) NSString *landmark;
 @property (nonatomic, copy, readonly, nullable) NSString *frontage;
+@property (nonatomic, copy, readonly, nullable) NSString *intersection;
+@property (nonatomic, copy, readonly, nullable) NSString *intersectionType;
+@property (nonatomic, copy, readonly, nullable) NSString *dimensions;
+@property (nonatomic, copy, readonly, nullable) NSString *exactLocation;
+@property (nonatomic, copy, readonly, nullable) NSArray<BRCCampImage*> *images;
 
 - (nullable BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
 

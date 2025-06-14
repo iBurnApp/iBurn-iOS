@@ -106,6 +106,8 @@
 		D994156E198726C100D245C7 /* BRCEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D994156D198726C100D245C7 /* BRCEventObject.m */; };
 		D994157A1987277500D245C7 /* BRCDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99415791987277500D245C7 /* BRCDatabaseManager.m */; };
 		D994157F1987399F00D245C7 /* BRCEventTime.m in Sources */ = {isa = PBXBuildFile; fileRef = D994157E1987399F00D245C7 /* BRCEventTime.m */; };
+		D99754D52DFE24AB007716F4 /* BRCCampImage.m in Sources */ = {isa = PBXBuildFile; fileRef = D99754D42DFE24AB007716F4 /* BRCCampImage.m */; };
+		D99754D62DFE24AB007716F4 /* BRCArtImage.m in Sources */ = {isa = PBXBuildFile; fileRef = D99754D22DFE24AB007716F4 /* BRCArtImage.m */; };
 		D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */ = {isa = PBXBuildFile; fileRef = D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */; };
 		D99C06621EF5E1D100D82A2E /* SearchDisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */; };
 		D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A27ADD210FFC0F000BD535 /* Appearance.swift */; };
@@ -446,6 +448,11 @@
 		D99415791987277500D245C7 /* BRCDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCDatabaseManager.m; sourceTree = "<group>"; };
 		D994157D1987399F00D245C7 /* BRCEventTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCEventTime.h; sourceTree = "<group>"; };
 		D994157E1987399F00D245C7 /* BRCEventTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCEventTime.m; sourceTree = "<group>"; };
+		D99754D02DFE21F4007716F4 /* openapi.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = openapi.json; sourceTree = "<group>"; };
+		D99754D12DFE24AB007716F4 /* BRCArtImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCArtImage.h; sourceTree = "<group>"; };
+		D99754D22DFE24AB007716F4 /* BRCArtImage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCArtImage.m; sourceTree = "<group>"; };
+		D99754D32DFE24AB007716F4 /* BRCCampImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCCampImage.h; sourceTree = "<group>"; };
+		D99754D42DFE24AB007716F4 /* BRCCampImage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCCampImage.m; sourceTree = "<group>"; };
 		D99A61571B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Pods-iBurn-acknowledgements.plist"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn-acknowledgements.plist"; sourceTree = SOURCE_ROOT; };
 		D99C06611EF5E1D100D82A2E /* SearchDisplayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDisplayManager.swift; sourceTree = "<group>"; };
 		D9A27ADD210FFC0F000BD535 /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
@@ -1033,13 +1040,18 @@
 		D99415651987222F00D245C7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D99754D02DFE21F4007716F4 /* openapi.json */,
+				D95AB0EC1B7FC7C800DFC2FD /* POI */,
 				D9F889242300D18C0069FD49 /* BRCEventObject.swift */,
 				D9DE9E1A1F3A447100906F64 /* BRCImageColors.h */,
 				D9DE9E1B1F3A447100906F64 /* BRCImageColors.m */,
 				D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */,
 				D946994E1F3913A000DE8DA6 /* BRCObjectMetadata.h */,
 				D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */,
-				D95AB0EC1B7FC7C800DFC2FD /* POI */,
+				D99754D12DFE24AB007716F4 /* BRCArtImage.h */,
+				D99754D22DFE24AB007716F4 /* BRCArtImage.m */,
+				D99754D32DFE24AB007716F4 /* BRCCampImage.h */,
+				D99754D42DFE24AB007716F4 /* BRCCampImage.m */,
 				D9941566198726A700D245C7 /* BRCArtObject.h */,
 				D9941567198726A700D245C7 /* BRCArtObject.m */,
 				D9941569198726B600D245C7 /* BRCCampObject.h */,
@@ -1260,7 +1272,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = BRC;
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 1640;
 				ORGANIZATIONNAME = iBurn;
 				TargetAttributes = {
 					63CE2A531987140F00F65B01 = {
@@ -1644,6 +1656,8 @@
 				D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */,
 				D984DFD1210EB8C800A45922 /* ObjectListViewController.swift in Sources */,
 				D9A364672A759BD20008CCFB /* DataUpdatesView.swift in Sources */,
+				D99754D52DFE24AB007716F4 /* BRCCampImage.m in Sources */,
+				D99754D62DFE24AB007716F4 /* BRCArtImage.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
@@ -1781,6 +1795,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1947,7 +1962,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = PlayaKitTests/Info.plist;
@@ -1978,7 +1992,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = PlayaKitTests/Info.plist;
@@ -2001,7 +2014,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -2029,7 +2041,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;

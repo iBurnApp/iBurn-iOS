@@ -7,6 +7,8 @@
 //
 
 #import "BRCCampObject.h"
+#import "BRCCampImage.h"
+#import "MTLJSONAdapter.h"
 
 @implementation BRCCampObject
 
@@ -15,9 +17,18 @@
     NSDictionary *campPaths = @{
         NSStringFromSelector(@selector(hometown)): @"hometown",
         NSStringFromSelector(@selector(landmark)): @"landmark",
-        NSStringFromSelector(@selector(frontage)): @"location.exact_location"
+        NSStringFromSelector(@selector(frontage)): @"location.frontage",
+        NSStringFromSelector(@selector(intersection)): @"location.intersection",
+        NSStringFromSelector(@selector(intersectionType)): @"location.intersection_type",
+        NSStringFromSelector(@selector(dimensions)): @"location.dimensions",
+        NSStringFromSelector(@selector(exactLocation)): @"location.exact_location",
+        NSStringFromSelector(@selector(images)): @"images"
     };
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:campPaths];
+}
+
++ (NSValueTransformer *)imagesJSONTransformer {
+    return [MTLJSONAdapter arrayTransformerWithModelClass:BRCCampImage.class];
 }
 
 - (BRCObjectMetadata*) metadataWithTransaction:(YapDatabaseReadTransaction*)transaction {

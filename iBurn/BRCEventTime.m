@@ -20,19 +20,31 @@
 
 + (NSValueTransformer *)uniqueIDJSONTransformer {
     return [MTLValueTransformer transformerUsingForwardBlock:^NSDate*(NSString* dateString, BOOL *success, NSError *__autoreleasing *error) {
-        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
+        if (![dateString isKindOfClass:[NSString class]] || dateString.length == 0) {
+            *success = YES; // Allow nil dates
+            return nil;
+        }
+        return [[NSDateFormatter brc_iso8601DateFormatter] dateFromString:dateString];
     }];
 }
 
 + (NSValueTransformer *)startDateJSONTransformer {
     return [MTLValueTransformer transformerUsingForwardBlock:^NSDate*(NSString* dateString, BOOL *success, NSError *__autoreleasing *error) {
-        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
+        if (![dateString isKindOfClass:[NSString class]] || dateString.length == 0) {
+            *success = YES; // Allow nil dates
+            return nil;
+        }
+        return [[NSDateFormatter brc_iso8601DateFormatter] dateFromString:dateString];
     }];
 }
 
 + (NSValueTransformer *)endDateJSONTransformer {
     return [MTLValueTransformer transformerUsingForwardBlock:^NSDate*(NSString* dateString, BOOL *success, NSError *__autoreleasing *error) {
-        return [[NSDateFormatter brc_playaEventsAPIDateFormatter] dateFromString:dateString];
+        if (![dateString isKindOfClass:[NSString class]] || dateString.length == 0) {
+            *success = YES; // Allow nil dates
+            return nil;
+        }
+        return [[NSDateFormatter brc_iso8601DateFormatter] dateFromString:dateString];
     }];
 }
 

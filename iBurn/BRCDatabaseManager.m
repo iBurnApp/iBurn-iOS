@@ -347,6 +347,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         }
         return NO;
     }];
+    // The previous diff for this line looked correct, so I'm re-stating it to be sure.
+    // If the error was on this specific line, it implies the string might have been malformed here.
     YapDatabaseFilteredView *audioTour = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:audioTourFiltering versionTag:@"2"];
     success = [self.database registerExtension:audioTour withName:self.audioTourViewName];
     if (success) {
@@ -397,7 +399,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             [self postExtensionRegisteredNotification:searchViewName];
         }
         NSLog(@"%@ %d", searchViewName, success);
-    }]; 
+    }];
 }
 
 - (void) registerRTreeIndex {

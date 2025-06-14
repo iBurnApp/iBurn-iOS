@@ -10,6 +10,7 @@
 #import "NSDictionary+MTLManipulationAdditions.h"
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
 #import "iBurn-Swift.h"
+#import "BRCArtImage.h"
 
 @implementation BRCArtObject
 
@@ -17,9 +18,22 @@
     NSDictionary *paths = [super JSONKeyPathsByPropertyKey];
     NSDictionary *artPaths = @{NSStringFromSelector(@selector(artistName)): @"artist",
              NSStringFromSelector(@selector(artistLocation)): @"hometown",
-             NSStringFromSelector(@selector(imageURLs)): @"images",
-                               NSStringFromSelector(@selector(remoteAudioURL)): @"audio_tour_url"};
+             NSStringFromSelector(@selector(images)): @"images",
+             NSStringFromSelector(@selector(category)): @"category",
+             NSStringFromSelector(@selector(program)): @"program",
+             NSStringFromSelector(@selector(donationLink)): @"donation_link",
+             NSStringFromSelector(@selector(guidedTours)): @"guided_tours",
+             NSStringFromSelector(@selector(selfGuidedTourMap)): @"self_guided_tour_map",
+             NSStringFromSelector(@selector(remoteAudioURL)): @"audio_tour_url"};
     return [paths mtl_dictionaryByAddingEntriesFromDictionary:artPaths];
+}
+
++ (NSValueTransformer *)donationLinkJSONTransformer {
+    return [NSValueTransformer valueTransformerForName:MTLURLValueTransformerName];
+}
+
++ (NSValueTransformer *)imagesJSONTransformer {
+    return [MTLJSONAdapter arrayTransformerWithModelClass:BRCArtImage.class];
 }
 
 + (NSValueTransformer *)remoteAudioURLJSONTransformer {
@@ -36,11 +50,11 @@
  */
 
 - (NSURL*) remoteThumbnailURL {
-    NSString *urlString = self.imageURLs.firstObject[@"thumbnail_url"];
-    if (![urlString isKindOfClass:NSString.class]) {
+    BRCArtImage *firstImage = self.images.firstObject;
+    if (![firstImage isKindOfClass:BRCArtImage.class]) {
         return nil;
     }
-    return [NSURL URLWithString:urlString];
+    return firstImage.thumbnailURL;
 }
 
 - (NSURL*) localThumbnailURL {

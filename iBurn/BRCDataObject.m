@@ -37,7 +37,7 @@
              NSStringFromSelector(@selector(year)): @"year",
              NSStringFromSelector(@selector(latitude)): @"location.gps_latitude",
              NSStringFromSelector(@selector(longitude)): @"location.gps_longitude",
-             NSStringFromSelector(@selector(playaLocation)): @"location.string",
+             NSStringFromSelector(@selector(playaLocation)): @"location_string",
              NSStringFromSelector(@selector(burnerMapLatitude)): @"burnermap_location.gps_latitude",
              NSStringFromSelector(@selector(burnerMapLongitude)): @"burnermap_location.gps_longitude",
              NSStringFromSelector(@selector(burnerMapLocationString)): @"burnermap_location.string"};
@@ -52,9 +52,7 @@
 }
 
 - (NSString*) playaLocation {
-    // Filter out empty locations returned from the API as "&"
-    if (_playaLocation.length > 1) {
-        // attempting to fix https://github.com/iBurnApp/BlackRockCityPlanner/issues/6
+    if (_playaLocation && ![_playaLocation isEqualToString:@"&"] && _playaLocation.length > 0) {
         return [_playaLocation stringByReplacingOccurrencesOfString:@" None None" withString:@""];
     }
     return nil;
@@ -99,14 +97,21 @@
 }
 
 - (void)setNilValueForKey:(NSString *)key {
-    if (NSStringFromSelector(@selector(latitude))) {
+    if ([key isEqualToString:NSStringFromSelector(@selector(latitude))]) {
         _latitude = 0;
-    } else if (NSStringFromSelector(@selector(longitude))) {
+    } else if ([key isEqualToString:NSStringFromSelector(@selector(longitude))]) {
         _longitude = 0;
-    } else if (NSStringFromSelector(@selector(burnerMapLatitude))) {
+    } else if ([key isEqualToString:NSStringFromSelector(@selector(burnerMapLatitude))]) {
         _burnerMapLatitude = 0;
-    } else if (NSStringFromSelector(@selector(burnerMapLongitude))) {
+    } else if ([key isEqualToString:NSStringFromSelector(@selector(burnerMapLongitude))]) {
         _burnerMapLongitude = 0;
+    } else if ([key isEqualToString:NSStringFromSelector(@selector(guidedTours))]) {
+        // Bool properties need to be handled if they can be nil in JSON but are non-pointer in ObjC
+        // Assuming Mantle handles default false for BOOL if JSON field is null/missing
+    } else if ([key isEqualToString:NSStringFromSelector(@selector(selfGuidedTourMap))]) {
+        // Same as above
+    } else if ([key isEqualToString:NSStringFromSelector(@selector(isAllDay))]) {
+        // Same as above
     } else {
         [super setNilValueForKey:key];
     }

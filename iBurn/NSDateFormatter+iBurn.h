@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDateFormatter (iBurn)
 
+/** e.g. 2024-08-27T13:00:00-07:00 */
+@property (nonatomic, class, readonly) NSISO8601DateFormatter* brc_iso8601DateFormatter;
+
 /** e.g. 2015-09-04T11:00:00-07:00 */
 @property (nonatomic, class, readonly) NSDateFormatter* brc_playaEventsAPIDateFormatter;
 

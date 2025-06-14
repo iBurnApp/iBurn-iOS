@@ -400,6 +400,12 @@ static CGFloat const kTableViewHeaderHeight = 200;
     } else if (cellInfo.cellType == BRCDetailCellInfoTypeAudio) {
         if ([self.dataObject isKindOfClass:[BRCArtObject class]]) {
             BRCArtObject *art = (BRCArtObject*)self.dataObject;
+            // if ([[BRCAudioPlayer sharedInstance] isPlaying:art]) {
+            //     [[BRCAudioPlayer sharedInstance] togglePlayPause];
+            // } else if (art.audioURL) { // This line causes the build error
+            //     [[BRCAudioPlayer sharedInstance] playAudioTour:@[art]];
+            // }
+            // If audio playback is still desired, a new mechanism to obtain audio URLs is needed.
             if ([[BRCAudioPlayer sharedInstance] isPlaying:art]) {
                 [[BRCAudioPlayer sharedInstance] togglePlayPause];
             } else if (art.audioURL) {
@@ -455,7 +461,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
 //}
 
 
-#pragma - mark MFMailComposeViewControllerDelegate 
+#pragma - mark MFMailComposeViewControllerDelegate
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
 {

@@ -150,7 +150,7 @@
     if ([object isKindOfClass:[BRCCampObject class]] ||
         [object isKindOfClass:[BRCArtObject class]]) {
         __block NSArray *events = @[];
-        [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
+        [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             events = [object eventsWithTransaction:transaction];
         }];
         if (events.count > 0) {
@@ -242,7 +242,7 @@
 #if DEBUG
     if (metadata.lastUpdated) {
         BRCDetailCellInfo *lastUpdated = [[BRCDetailCellInfo alloc] init];
-        lastUpdated.value = metadata.lastUpdated; 
+        lastUpdated.value = metadata.lastUpdated;
         lastUpdated.displayName = @"Last Updated";
         lastUpdated.cellType = BRCDetailCellInfoTypeDate;
         [finalCellInfoArray addObject:lastUpdated];

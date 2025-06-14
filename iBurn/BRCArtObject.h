@@ -7,6 +7,7 @@
 //
 
 #import "BRCDataObject.h"
+#import "BRCArtImage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCArtObject : BRCDataObject
@@ -14,8 +15,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *artistName;
 @property (nonatomic, copy, readonly) NSString *artistLocation;
 
+@property (nonatomic, copy, readonly, nullable) NSString *category;
+@property (nonatomic, copy, readonly, nullable) NSString *program;
+@property (nonatomic, strong, readonly, nullable) NSURL *donationLink;
+@property (nonatomic, readonly) BOOL guidedTours;
+@property (nonatomic, readonly) BOOL selfGuidedTourMap;
+
 /** use thumbnail_url key in dict */
-@property (nonatomic, copy, readonly) NSArray<NSDictionary*> *imageURLs;
+@property (nonatomic, copy, readonly, nullable) NSArray<BRCArtImage*> *images;
 /** Returns local URL if present, otherwise remote */
 @property (nonatomic, strong, readonly, nullable) NSURL *thumbnailURL;
 @property (nonatomic, strong, readonly, nullable) NSURL *remoteThumbnailURL;
@@ -23,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** Returns local URL if present, otherwise remote */
 @property (nonatomic, strong, readonly, nullable) NSURL *audioURL;
-/** Remote audio tour URL */
+/** Remote audio tour URL - Note: Not directly mapped from new API spec */
 @property (nonatomic, strong, readonly, nullable) NSURL *remoteAudioURL;
 /** If cached, returns local URL otherwise nil */
 @property (nonatomic, strong, readonly, nullable) NSURL *localAudioURL;

@@ -61,6 +61,11 @@ extern NSString * const kBRCEventArtEdgeName;
 /** Returns either camp or art */
 - (nullable BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction;
 
+@property (nonatomic, strong, readonly, nullable) NSNumber *eventID; // Was event_id
+@property (nonatomic, copy, readonly, nullable) NSString *printDescription;
+@property (nonatomic, copy, readonly, nullable) NSString *slug;
+@property (nonatomic, copy, readonly, nullable) NSString *contact; // New contact field
+
 @property (nonatomic, readonly) BOOL isAllDay;
 
 @property (nonatomic, strong, readonly) NSDate *startDate;
@@ -131,4 +136,3 @@ extern NSString * const kBRCEventArtEdgeName;
 @end
 
 NS_ASSUME_NONNULL_END
-
