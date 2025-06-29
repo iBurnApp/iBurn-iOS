@@ -91,3 +91,44 @@ Before building, create these files:
 - Mix of programmatic UI and Interface Builder (XIB files)
 - Database views are used extensively for filtered/sorted data presentation
 - Location data is embargoed by Burning Man organization until gates open each year
+
+## Submodule Dependencies
+
+### iBurn-Data (`/Submodules/iBurn-Data/`)
+Data repository containing yearly festival datasets, geospatial data, and processing scripts for offline map tiles, art/camp/event data, and Black Rock City layout geometry.
+
+**Key Features:**
+- Year-based data structure (`data/YYYY/`) with APIData, geo/, layouts/, Map/, and MediaFiles/
+- Burning Man's unique time-based addressing system (12:00, 1:00, etc.)
+- GeoJSON generation for streets, plazas, toilets, and city boundaries
+- Offline MBTiles for mobile map consumption
+- Data embargo system (location data restricted until gates open)
+
+**Common Commands:**
+```bash
+cd Submodules/iBurn-Data/scripts/BlackRockCityPlanner
+npm install
+node src/cli/generate_all.js -d ../../data/2024
+```
+
+### BlackRockCityPlanner (`/Submodules/iBurn-Data/scripts/BlackRockCityPlanner/`)
+Node.js geospatial tool that generates GeoJSON files for Black Rock City's unique radial layout and provides geocoding for Burning Man addresses.
+
+**Key Features:**
+- Generates radial street grids based on clock positions (3:00 & 500')
+- Geocodes user addresses to coordinates with fuzzy matching
+- Creates city geometry: streets, polygons, fence, toilets
+- Handles special locations (Center Camp Plaza, Man Base)
+- Uses Turf.js v3.x and JSTS for geospatial operations
+
+**Common Commands:**
+```bash
+npm test  # Run geocoding and geometry tests
+node src/cli/api.js -l layout.json -f camp.json -k location_string -o camp-location.json
+browserify src/geocoder/index.js -o bundle.js
+```
+
+**Address Formats Supported:**
+- Time-based: "3:00 & 500'" (radial position + distance)
+- Intersections: "Esplanade & 6:00" (named street + time)
+- Special locations: "Center Camp Plaza", "9:00 Portal"
