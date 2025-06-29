@@ -84,9 +84,9 @@ static CGFloat const kTableViewHeaderHeight = 200;
 
 - (void) setMetadata:(BRCObjectMetadata * _Nullable)metadata {
     _metadata = metadata;
-    if ([metadata isKindOfClass:BRCArtMetadata.class]) {
-        BRCArtMetadata *art = (BRCArtMetadata*)metadata;
-        BRCImageColors *colors = art.thumbnailImageColors;
+    if ([metadata conformsToProtocol:@protocol(BRCThumbnailImageColorsProtocol)]) {
+        id<BRCThumbnailImageColorsProtocol> metadataWithColors = (id<BRCThumbnailImageColorsProtocol>)metadata;
+        BRCImageColors *colors = metadataWithColors.thumbnailImageColors;
         if (colors) {
             _colors = colors;
         }

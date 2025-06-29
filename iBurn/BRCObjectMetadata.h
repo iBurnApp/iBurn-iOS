@@ -21,6 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) touchMetadataWithTransaction:(YapDatabaseReadWriteTransaction*)transaction;
 @end
 
+@protocol BRCThumbnailImageColorsProtocol
+@required
+/** Cached image colors from thumbnail */
+@property (nonatomic, strong, readwrite, nullable) BRCImageColors *thumbnailImageColors;
+@end
+
 @interface BRCObjectMetadata : MTLModel
 /**
  *  Whether or not user has favorited this object in the app.
@@ -34,9 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype) metadataCopy;
 @end
 
-@interface BRCCampMetadata : BRCObjectMetadata
-/** Cached image colors from thumbnail */
-@property (nonatomic, strong, readwrite, nullable) BRCImageColors *thumbnailImageColors;
+@interface BRCCampMetadata : BRCObjectMetadata <BRCThumbnailImageColorsProtocol>
 @end
 
 @interface BRCEventMetadata : BRCObjectMetadata
@@ -44,9 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite, nullable) NSString *calendarEventIdentifier;
 @end
 
-@interface BRCArtMetadata : BRCObjectMetadata
-/** Cached image colors from thumbnail */
-@property (nonatomic, strong, readwrite, nullable) BRCImageColors *thumbnailImageColors;
+@interface BRCArtMetadata : BRCObjectMetadata <BRCThumbnailImageColorsProtocol>
 @end
 
 

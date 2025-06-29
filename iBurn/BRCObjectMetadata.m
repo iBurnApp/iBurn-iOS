@@ -18,7 +18,9 @@
 @end
 
 @implementation BRCArtMetadata
+@synthesize thumbnailImageColors;
 @end
 
 @implementation BRCCampMetadata
+@synthesize thumbnailImageColors;
 @end
