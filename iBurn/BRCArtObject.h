@@ -10,7 +10,7 @@
 #import "BRCArtImage.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@interface BRCArtObject : BRCDataObject
+@interface BRCArtObject : BRCDataObject <BRCThumbnailProtocol>
 
 @property (nonatomic, copy, readonly) NSString *artistName;
 @property (nonatomic, copy, readonly) NSString *artistLocation;

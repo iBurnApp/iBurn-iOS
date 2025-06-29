@@ -18,26 +18,81 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
     override public func setDataObject(_ dataObject: BRCDataObject, metadata: BRCObjectMetadata) {
         super.setDataObject(dataObject, metadata: metadata)
         objectUniqueId = dataObject.uniqueID
-        guard let art = dataObject as? BRCArtObject,
-        let artMetadata = metadata as? BRCArtMetadata else {
-                return
-        }
-
-        if let colors = artMetadata.thumbnailImageColors {
-            setupLabelColors(colors)
-        }
-        guard let image = BRCMediaDownloader.imageForArt(art) else {
+        
+        // Check if object supports thumbnails
+        guard dataObject is BRCThumbnailProtocol else {
             return
         }
-        self.thumbnailView.image = image
-        guard artMetadata.thumbnailImageColors == nil else { return }
+        
+        // Get image from object (works for any thumbnail-capable object)
+        guard let thumbnailImage = getImageForObject(dataObject) else {
+            return
+        }
+        
+        // Get cached colors from metadata
+        let imageColors = getImageColorsFromMetadata(metadata)
+        if let colors = imageColors {
+            setupLabelColors(colors)
+        }
+        
+        self.thumbnailView.image = thumbnailImage
+        
+        // Process colors if not cached
+        if imageColors == nil {
+            processImageColors(for: dataObject, metadata: metadata, image: thumbnailImage)
+        }
+    }
+    
+    private func getImageForObject(_ dataObject: BRCDataObject) -> UIImage? {
+        guard let thumbnailObject = dataObject as? BRCThumbnailProtocol,
+              let localURL = thumbnailObject.localThumbnailURL else {
+            return nil
+        }
+        return UIImage(contentsOfFile: localURL.path)
+    }
+    
+    private func getImageColorsFromMetadata(_ metadata: BRCObjectMetadata) -> BRCImageColors? {
+        if let artMetadata = metadata as? BRCArtMetadata {
+            return artMetadata.thumbnailImageColors
+        } else if let campMetadata = metadata as? BRCCampMetadata {
+            return campMetadata.thumbnailImageColors
+        }
+        return nil
+    }
+    
+    private func processImageColors(for dataObject: BRCDataObject, metadata: BRCObjectMetadata, image: UIImage) {
         DispatchQueue.global(qos: .default).async {
-            ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
-                guard self.objectUniqueId == dataObject.uniqueID else { return }
-                UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
-                    self.setupLabelColors(colors)
+            // Use ColorCache for art objects, fallback to simple extraction for others
+            if let art = dataObject as? BRCArtObject,
+               let artMetadata = metadata as? BRCArtMetadata {
+                ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
+                    guard self.objectUniqueId == dataObject.uniqueID else { return }
+                    DispatchQueue.main.async {
+                        UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
+                            self.setupLabelColors(colors)
+                        })
+                    }
                 })
-            })
+            } else {
+                // Use simple color extraction for non-art objects
+                let colors = image.getColors()?.brc_ImageColors ?? Appearance.currentColors
+                
+                // Update metadata with colors
+                if let campMetadata = metadata as? BRCCampMetadata {
+                    campMetadata.thumbnailImageColors = colors
+                    let metadataObject = dataObject as BRCMetadataProtocol
+                    BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+                        metadataObject.replace(campMetadata, transaction: transaction)
+                    }
+                }
+                
+                guard self.objectUniqueId == dataObject.uniqueID else { return }
+                DispatchQueue.main.async {
+                    UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {
+                        self.setupLabelColors(colors)
+                    })
+                }
+            }
         }
     }
 

@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface BRCCampMetadata : BRCObjectMetadata
+/** Cached image colors from thumbnail */
+@property (nonatomic, strong, readwrite, nullable) BRCImageColors *thumbnailImageColors;
 @end
 
 @interface BRCEventMetadata : BRCObjectMetadata

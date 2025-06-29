@@ -33,13 +33,16 @@
 
 - (void) setDataObject:(BRCDataObject *)dataObject metadata:(nonnull BRCObjectMetadata *)metadata {
     [super setDataObject:dataObject metadata:metadata];
-    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
-        BRCArtObject *art = (BRCArtObject*)dataObject;
-        if (art.audioURL) {
-            self.playPauseButton.hidden = NO;
-        } else {
-            self.playPauseButton.hidden = YES;
-        }
+    // Check if any data object has audio, regardless of type
+    NSURL *audioURL = nil;
+    if ([dataObject respondsToSelector:@selector(audioURL)]) {
+        audioURL = [dataObject performSelector:@selector(audioURL)];
+    }
+    
+    if (audioURL) {
+        self.playPauseButton.hidden = NO;
+    } else {
+        self.playPauseButton.hidden = YES;
     }
 }
 

@@ -121,7 +121,15 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
     }
     
     public static func imageForArt(_ art: BRCArtObject) -> UIImage? {
-        let filename = self.fileName(art, type: .image)
+        return imageForThumbnailObject(art)
+    }
+    
+    public static func imageForCamp(_ camp: BRCCampObject) -> UIImage? {
+        return imageForThumbnailObject(camp)
+    }
+    
+    private static func imageForThumbnailObject(_ object: BRCDataObject & BRCThumbnailProtocol) -> UIImage? {
+        let filename = self.fileName(object, type: .image)
         guard let bundle = Bundle.bundledMedia else {
             return nil
         }
@@ -164,22 +172,25 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
             guard let viewTransaction = transaction.ext(self.viewName) as? YapDatabaseViewTransaction else {
                 return
             }
-            var art: [URL: BRCArtObject] = [:]
+            var dataObjects: [URL: BRCDataObject] = [:]
             viewTransaction.enumerateGroups({ (group, stop) -> Void in
                 viewTransaction.iterateKeysAndObjects(inGroup: group) { (collection, key, object, index, stop) in
-                    if let dataObject = object as? BRCArtObject {
+                    if let dataObject = object as? BRCDataObject {
                         // Only add files that haven't been downloaded
                         var remoteURL: URL? = nil
                         var localURL: URL? = nil
                         switch self.downloadType {
                         case .image:
-                            remoteURL = dataObject.remoteThumbnailURL
-                            localURL = dataObject.localThumbnailURL
-                            
+                            if let thumbnailObject = dataObject as? BRCThumbnailProtocol {
+                                remoteURL = thumbnailObject.remoteThumbnailURL
+                                localURL = thumbnailObject.localThumbnailURL
+                            }
                             break
                         case .audio:
-                            remoteURL = dataObject.remoteAudioURL
-                            localURL = dataObject.localAudioURL
+                            if let artObject = dataObject as? BRCArtObject {
+                                remoteURL = artObject.remoteAudioURL
+                                localURL = artObject.localAudioURL
+                            }
                             break
                         default:
                             break
@@ -191,7 +202,7 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
                         
                         if remoteURL != nil && localURL == nil {
                             DDLogInfo("Downloading media for \(dataObject.self) \(dataObject.uniqueID)  \(String(describing: remoteURL))")
-                            art[remoteURL!] = dataObject
+                            dataObjects[remoteURL!] = dataObject
                         } else {
                             //NSLog("Already downloaded media for %@", remoteURL!)
                         }
@@ -204,23 +215,29 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
                     DDLogWarn("canceling existing download: \(download)")
                     download.cancel()
                 }
-                self.downloadFiles(Array(art.values))
+                self.downloadFiles(Array(dataObjects.values))
             })
         }
     }
     
-    fileprivate func remoteURL(_ file: BRCArtObject) -> URL? {
+    fileprivate func remoteURL(_ file: BRCDataObject) -> URL? {
         switch downloadType {
         case .audio:
-            return file.remoteAudioURL
+            if let artObject = file as? BRCArtObject {
+                return artObject.remoteAudioURL
+            }
+            return nil
         case .image:
-            return file.remoteThumbnailURL
+            if let thumbnailObject = file as? BRCThumbnailProtocol {
+                return thumbnailObject.remoteThumbnailURL
+            }
+            return nil
         case .unknown:
             return nil
         }
     }
     
-    fileprivate func downloadFiles(_ files: [BRCArtObject]) {
+    fileprivate func downloadFiles(_ files: [BRCDataObject]) {
         backgroundTaskQueue.async {
             for file in files {
                 guard let remoteURL = self.remoteURL(file) else {

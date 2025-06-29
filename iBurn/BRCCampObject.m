@@ -9,6 +9,7 @@
 #import "BRCCampObject.h"
 #import "BRCCampImage.h"
 #import "MTLJSONAdapter.h"
+#import "iBurn-Swift.h"
 
 @implementation BRCCampObject
 
@@ -42,4 +43,41 @@
     }
     return [BRCCampMetadata new];
 }
+
+- (NSURL*) remoteThumbnailURL {
+    BRCCampImage *firstImage = self.images.firstObject;
+    if (![firstImage isKindOfClass:BRCCampImage.class]) {
+        return nil;
+    }
+    return firstImage.thumbnailURL;
+}
+
+- (NSURL*) localThumbnailURL {
+    return [self localMediaURLForType:BRCMediaDownloadTypeImage];
+}
+
+- (NSURL*) thumbnailURL {
+    NSURL *localURL = self.localThumbnailURL;
+    if (localURL) {
+        return localURL;
+    }
+    return self.remoteThumbnailURL;
+}
+
+- (NSURL*) localMediaURLForType:(BRCMediaDownloadType)type {
+    NSString *fileName = [BRCMediaDownloader fileName:self type:type];
+    NSURL *url = [BRCMediaDownloader localMediaURL:fileName];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
+        return url;
+    }
+    return nil;
+}
+
+- (NSURL*) remoteMediaURLForType:(BRCMediaDownloadType)type {
+    if (type == BRCMediaDownloadTypeImage) {
+        return self.remoteThumbnailURL;
+    }
+    return nil;
+}
+
 @end

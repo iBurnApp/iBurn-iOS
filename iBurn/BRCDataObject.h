@@ -15,6 +15,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol BRCThumbnailProtocol
+@required
+/** Returns the thumbnail URL (local if available, otherwise remote) */
+@property (nonatomic, strong, readonly, nullable) NSURL *thumbnailURL;
+/** Returns the remote thumbnail URL */
+@property (nonatomic, strong, readonly, nullable) NSURL *remoteThumbnailURL;
+/** Returns the local thumbnail URL if file exists */
+@property (nonatomic, strong, readonly, nullable) NSURL *localThumbnailURL;
+@end
+
 @interface BRCDataObject : BRCYapDatabaseObject <MTLJSONSerializing, BRCMetadataProtocol>
 
 #pragma mark Constant Properties

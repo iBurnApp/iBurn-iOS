@@ -27,8 +27,8 @@ static NSString * const RTreeMaxLat = @"RTreeMaxLat";
 static NSString * const RTreeMinLon = @"RTreeMinLon";
 static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
-NSString * const kBRCDatabaseName = @"iBurn-2024.sqlite";
-NSString * const kBRCDatabaseFolderName = @"iBurn-2024";
+NSString * const kBRCDatabaseName = @"iBurn-2025.sqlite";
+NSString * const kBRCDatabaseFolderName = @"iBurn-2025";
 
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
@@ -149,7 +149,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _dataObjectsViewName = [[self class] databaseViewNameForClass:[BRCDataObject class]];
     _searchObjectsViewName = [[[self class] databaseViewNameForClass:[BRCDataObject class]] stringByAppendingString:@"SearchObjects"];
     _audioTourViewName = @"AudioTour";
-    _artImagesViewName = @"ArtWithImages";
+    _artImagesViewName = @"ObjectsWithImages";
     
     _ftsArtName = [[self class] fullTextSearchNameForClass:[BRCArtObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
     _ftsCampsName = [[self class] fullTextSearchNameForClass:[BRCCampObject class] withIndexedProperties:[[self class] fullTextSearchIndexProperties]];
@@ -356,18 +356,23 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }
     NSLog(@"%@ %d", self.audioTourViewName, success);
     
-    // Art with images
-    YapDatabaseViewFiltering *artWithImagesFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+    // Art and camps with images
+    YapDatabaseViewFiltering *objectsWithImagesFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
         if ([object isKindOfClass:[BRCArtObject class]]) {
             BRCArtObject *art = (BRCArtObject*)object;
             if (art.remoteThumbnailURL) {
                 return YES;
             }
+        } else if ([object isKindOfClass:[BRCCampObject class]]) {
+            BRCCampObject *camp = (BRCCampObject*)object;
+            if (camp.remoteThumbnailURL) {
+                return YES;
+            }
         }
         return NO;
     }];
-    YapDatabaseFilteredView *artWithImages = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:artWithImagesFiltering versionTag:@"2"];
-    success = [self.database registerExtension:artWithImages withName:self.artImagesViewName];
+    YapDatabaseFilteredView *objectsWithImages = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.dataObjectsViewName filtering:objectsWithImagesFiltering versionTag:@"3"];
+    success = [self.database registerExtension:objectsWithImages withName:self.artImagesViewName];
     if (success) {
         [self postExtensionRegisteredNotification:self.artImagesViewName];
     }

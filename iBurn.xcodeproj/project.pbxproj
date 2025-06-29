@@ -113,10 +113,6 @@
 		D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A27ADD210FFC0F000BD535 /* Appearance.swift */; };
 		D9A364672A759BD20008CCFB /* DataUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A364662A759BD20008CCFB /* DataUpdatesView.swift */; };
 		D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */; };
-		D9AB87272C46201D004DEB50 /* Map in Resources */ = {isa = PBXBuildFile; fileRef = D9AB87242C46201D004DEB50 /* Map */; };
-		D9AB87282C46201D004DEB50 /* MediaFiles in Resources */ = {isa = PBXBuildFile; fileRef = D9AB87252C46201D004DEB50 /* MediaFiles */; };
-		D9AB87292C46201D004DEB50 /* APIData in Resources */ = {isa = PBXBuildFile; fileRef = D9AB87262C46201D004DEB50 /* APIData */; };
-		D9AB872A2C462024004DEB50 /* APIData in Resources */ = {isa = PBXBuildFile; fileRef = D9AB87262C46201D004DEB50 /* APIData */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
@@ -135,6 +131,10 @@
 		D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; };
 		D9CB2A69211897FB00A0F2AE /* PlayaGeocoder.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D9CC7E0A20806FA600A6E502 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CC7E0920806FA600A6E502 /* AppDelegate.swift */; };
+		D9CD368B2E10D1DB00B49AC7 /* APIData in Resources */ = {isa = PBXBuildFile; fileRef = D9CD36882E10D1CC00B49AC7 /* APIData */; };
+		D9CD368C2E10D1DB00B49AC7 /* Map in Resources */ = {isa = PBXBuildFile; fileRef = D9CD36892E10D1CF00B49AC7 /* Map */; };
+		D9CD368D2E10D1DB00B49AC7 /* MediaFiles in Resources */ = {isa = PBXBuildFile; fileRef = D9CD368A2E10D1D200B49AC7 /* MediaFiles */; };
+		D9CD368E2E10D1E000B49AC7 /* APIData in Resources */ = {isa = PBXBuildFile; fileRef = D9CD36882E10D1CC00B49AC7 /* APIData */; };
 		D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */; };
 		D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5B1B5AF4EE0048229A /* Accounts.framework */; };
 		D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5D1B5AF4F70048229A /* SystemConfiguration.framework */; };
@@ -493,6 +493,9 @@
 		D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreViewController.swift; sourceTree = "<group>"; };
 		D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaGeocoder.xcodeproj; path = PlayaGeocoder/PlayaGeocoder.xcodeproj; sourceTree = "<group>"; };
 		D9CC7E0920806FA600A6E502 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D9CD36882E10D1CC00B49AC7 /* APIData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = APIData; path = "Submodules/iBurn-Data/data/2025/APIData"; sourceTree = SOURCE_ROOT; };
+		D9CD36892E10D1CF00B49AC7 /* Map */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Map; path = "Submodules/iBurn-Data/data/2025/Map"; sourceTree = SOURCE_ROOT; };
+		D9CD368A2E10D1D200B49AC7 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2025/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iBurn.entitlements; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		D9D12F5B1B5AF4EE0048229A /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
@@ -734,6 +737,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D9CD345D2E10D03F00B49AC7 /* 2025 */,
 				D9AB87212C461FF0004DEB50 /* 2024 */,
 				D9915F642A76D3110015C87D /* Settings.bundle */,
 				D9BB3BE02A6C3F6700777AEE /* 2023 */,
@@ -1148,6 +1152,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		D9CD345D2E10D03F00B49AC7 /* 2025 */ = {
+			isa = PBXGroup;
+			children = (
+				D9CD36882E10D1CC00B49AC7 /* APIData */,
+				D9CD36892E10D1CF00B49AC7 /* Map */,
+				D9CD368A2E10D1D200B49AC7 /* MediaFiles */,
+			);
+			path = 2025;
+			sourceTree = "<group>";
+		};
 		D9EC0E5A1B7DE02F0042B596 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -1396,9 +1410,11 @@
 			files = (
 				D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */,
 				D962BFFC22D294A300637D8F /* bundle.js in Resources */,
+				D9CD368B2E10D1DB00B49AC7 /* APIData in Resources */,
+				D9CD368C2E10D1DB00B49AC7 /* Map in Resources */,
+				D9CD368D2E10D1DB00B49AC7 /* MediaFiles in Resources */,
 				D9C9D2BD1B7D58F1002C95E4 /* More.storyboard in Resources */,
 				D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */,
-				D9AB87292C46201D004DEB50 /* APIData in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
@@ -1408,11 +1424,9 @@
 				63CE2A621987140F00F65B01 /* InfoPlist.strings in Resources */,
 				D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */,
 				D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */,
-				D9AB87272C46201D004DEB50 /* Map in Resources */,
 				D92562C81988771400ED6B50 /* BRCEventObjectTableViewCell.xib in Resources */,
 				63CE2A6A1987140F00F65B01 /* Images.xcassets in Resources */,
 				D97EB5EE21122EF1001B4351 /* DayView.xib in Resources */,
-				D9AB87282C46201D004DEB50 /* MediaFiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1420,7 +1434,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9AB872A2C462024004DEB50 /* APIData in Resources */,
+				D9CD368E2E10D1E000B49AC7 /* APIData in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1887,7 +1901,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 88;
+				CURRENT_PROJECT_VERSION = 89;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1902,7 +1916,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 2024.5;
+				MARKETING_VERSION = 2025.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" -D DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1924,7 +1938,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 88;
+				CURRENT_PROJECT_VERSION = 89;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1939,7 +1953,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 2024.5;
+				MARKETING_VERSION = 2025.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

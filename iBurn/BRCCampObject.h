@@ -10,7 +10,7 @@
 #import "BRCCampImage.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@interface BRCCampObject : BRCDataObject
+@interface BRCCampObject : BRCDataObject <BRCThumbnailProtocol>
 
 @property (nonatomic, copy, readonly, nullable) NSString *hometown;
 @property (nonatomic, copy, readonly, nullable) NSString *landmark;
@@ -20,6 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly, nullable) NSString *dimensions;
 @property (nonatomic, copy, readonly, nullable) NSString *exactLocation;
 @property (nonatomic, copy, readonly, nullable) NSArray<BRCCampImage*> *images;
+
+/** Returns local URL if present, otherwise remote */
+@property (nonatomic, strong, readonly, nullable) NSURL *thumbnailURL;
+@property (nonatomic, strong, readonly, nullable) NSURL *remoteThumbnailURL;
+@property (nonatomic, strong, readonly, nullable) NSURL *localThumbnailURL;
 
 - (nullable BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
 
