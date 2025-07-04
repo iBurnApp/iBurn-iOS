@@ -90,6 +90,11 @@
     NSArray<BRCDetailCellInfo*> *defaultArray = [self defaultInfoArray];
     NSMutableArray<BRCDetailCellInfo*> *finalCellInfoArray = [NSMutableArray new];
     [defaultArray enumerateObjectsUsingBlock:^(BRCDetailCellInfo *cellInfo, NSUInteger idx, BOOL *stop) {
+        // Skip Official Location for events - we'll add it manually at the right position
+        if ([object isKindOfClass:[BRCEventObject class]] && [cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
+            return;
+        }
+        
         if ([object respondsToSelector:NSSelectorFromString(cellInfo.key)]) {
             id cellValue = nil;
             // Distance is a 'special' case
@@ -249,6 +254,78 @@
             scheduleCellInfo.value = fullScheduleString;
             scheduleCellInfo.cellType = BRCDetailCellInfoTypeSchedule;
             [finalCellInfoArray insertObject:scheduleCellInfo atIndex:index];
+            index++;
+        }
+        
+        // Add Official Location after Schedule for events
+        NSString *playaLocation = event.playaLocation;
+        NSString *locationValue = nil;
+        if (![BRCEmbargo canShowLocationForObject:event]) {
+            locationValue = @"Restricted";
+        } else if (!playaLocation.length) {
+            locationValue = @"Unknown";
+        } else {
+            locationValue = playaLocation;
+        }
+        
+        if (locationValue) {
+            BRCDetailCellInfo *locationCellInfo = [[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(playaLocation)) displayName:@"Official Location" cellType:BRCDetailCellInfoTypePlayaAddress];
+            locationCellInfo.value = locationValue;
+            [finalCellInfoArray insertObject:locationCellInfo atIndex:index];
+            index++;
+        }
+        
+        // Add host description as separate cell
+        __block BRCCampObject *camp = nil;
+        __block BRCArtObject *art = nil;
+        [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            camp = [event hostedByCampWithTransaction:transaction];
+            if (!camp) {
+                art = [event hostedByArtWithTransaction:transaction];
+            }
+        }];
+        
+        NSString *hostDescription = nil;
+        NSString *hostType = nil;
+        if (camp && camp.detailDescription && camp.detailDescription.length > 0) {
+            hostDescription = camp.detailDescription;
+            hostType = @"Camp";
+        } else if (art && art.detailDescription && art.detailDescription.length > 0) {
+            hostDescription = art.detailDescription;
+            hostType = @"Art";
+        }
+        
+        if (hostDescription && hostType) {
+            BRCDetailCellInfo *hostDescriptionCellInfo = [[self alloc] init];
+            hostDescriptionCellInfo.displayName = [NSString stringWithFormat:@"%@ Description", hostType];
+            hostDescriptionCellInfo.value = hostDescription;
+            hostDescriptionCellInfo.cellType = BRCDetailCellInfoTypeText;
+            [finalCellInfoArray insertObject:hostDescriptionCellInfo atIndex:index];
+            index++;
+        }
+        
+        // Add "Other Events" section for events hosted by the same camp/art
+        if (camp || art) {
+            BRCDataObject *hostObject = camp ? (BRCDataObject *)camp : (BRCDataObject *)art;
+            __block NSArray *allHostEvents = @[];
+            [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                allHostEvents = [hostObject eventsWithTransaction:transaction];
+            }];
+            
+            // Filter out the current event and check if there are other events
+            NSMutableArray *otherEvents = [NSMutableArray array];
+            for (BRCEventObject *hostEvent in allHostEvents) {
+                if (![hostEvent.uniqueID isEqualToString:event.uniqueID]) {
+                    [otherEvents addObject:hostEvent];
+                }
+            }
+            
+            if (otherEvents.count > 0) {
+                BRCEventRelationshipDetailInfoCell *otherEventsListCell = [[BRCEventRelationshipDetailInfoCell alloc] init];
+                otherEventsListCell.dataObject = hostObject;
+                otherEventsListCell.displayName = @"Other Events";
+                [finalCellInfoArray insertObject:otherEventsListCell atIndex:index];
+            }
         }
     }
     
