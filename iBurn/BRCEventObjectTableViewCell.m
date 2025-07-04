@@ -100,6 +100,25 @@
     }
     self.hostLabel.text = hostName;
     
+    // Append host description (camp or art) to event description
+    NSString *eventDescription = eventObject.detailDescription;
+    NSString *hostDescription = nil;
+    
+    if (camp && camp.detailDescription && camp.detailDescription.length > 0) {
+        hostDescription = camp.detailDescription;
+    } else if (art && art.detailDescription && art.detailDescription.length > 0) {
+        hostDescription = art.detailDescription;
+    }
+    
+    if (hostDescription) {
+        if (eventDescription && eventDescription.length > 0) {
+            eventDescription = [NSString stringWithFormat:@"%@\n%@", eventDescription, hostDescription];
+        } else {
+            eventDescription = hostDescription;
+        }
+    }
+    self.descriptionLabel.text = eventDescription;
+    
     [self setupLocationLabel:self.locationLabel dataObject:host];
     [self setupCampThumbnailFromCamp:camp];
 }
