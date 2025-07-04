@@ -86,7 +86,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/firebase-ios-sdk</string>
 			<key>Title</key>
-			<string>Firebase (11.12.0)</string>
+			<string>Firebase (11.15.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -100,9 +100,17 @@
 		</dict>
 		<dict>
 			<key>File</key>
+			<string>com.mono0926.LicensePlist/google-ads-on-device-conversion-ios-sdk</string>
+			<key>Title</key>
+			<string>GoogleAdsOnDeviceConversion (2.1.0)</string>
+			<key>Type</key>
+			<string>PSChildPaneSpecifier</string>
+		</dict>
+		<dict>
+			<key>File</key>
 			<string>com.mono0926.LicensePlist/GoogleAppMeasurement</string>
 			<key>Title</key>
-			<string>GoogleAppMeasurement (11.12.0)</string>
+			<string>GoogleAppMeasurement (11.15.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -198,7 +206,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/maplibre-gl-native-distribution</string>
 			<key>Title</key>
-			<string>MapLibre Native (6.13.0)</string>
+			<string>MapLibre Native (6.16.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -254,7 +262,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/swift-protobuf</string>
 			<key>Title</key>
-			<string>SwiftProtobuf (1.29.0)</string>
+			<string>SwiftProtobuf (1.30.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>

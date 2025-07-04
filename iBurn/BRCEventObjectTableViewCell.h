@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UILabel *hostLabel;
 @property (strong, nonatomic) IBOutlet UILabel *eventTypeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *campThumbnailView;
 
 @end
 NS_ASSUME_NONNULL_END

@@ -73,7 +73,26 @@ static CGFloat const kTableViewHeaderHeight = 200;
     self.metadata = metadata;
     if ([dataObject isKindOfClass:BRCEventObject.class]) {
         BRCEventObject *event = (BRCEventObject*)dataObject;
-        _colors = [BRCImageColors colorsFor:event.eventType];
+        
+        // Try to get colors from hosting camp's image first
+        __block BRCImageColors *campImageColors = nil;
+        [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
+            BRCCampObject *camp = [event hostedByCampWithTransaction:transaction];
+            if (camp) {
+                BRCObjectMetadata *campMetadata = [camp metadataWithTransaction:transaction];
+                if ([campMetadata conformsToProtocol:@protocol(BRCThumbnailImageColorsProtocol)]) {
+                    id<BRCThumbnailImageColorsProtocol> metadataWithColors = (id<BRCThumbnailImageColorsProtocol>)campMetadata;
+                    campImageColors = metadataWithColors.thumbnailImageColors;
+                }
+            }
+        }];
+        
+        // Use camp image colors if available, otherwise fallback to event type colors
+        if (campImageColors) {
+            _colors = campImageColors;
+        } else {
+            _colors = [BRCImageColors colorsFor:event.eventType];
+        }
     }
     self.title = dataObject.title;
     self.detailCellInfoArray = [BRCDetailCellInfo infoArrayForObject:self.dataObject metadata:metadata];

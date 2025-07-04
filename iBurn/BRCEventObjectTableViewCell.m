@@ -11,6 +11,8 @@
 #import "NSDateFormatter+iBurn.h"
 #import "BRCDatabaseManager.h"
 #import "BRCEmbargo.h"
+#import "BRCCampObject.h"
+#import <QuartzCore/QuartzCore.h>
 #import "iBurn-Swift.h"
 
 @implementation BRCEventObjectTableViewCell
@@ -99,6 +101,70 @@
     self.hostLabel.text = hostName;
     
     [self setupLocationLabel:self.locationLabel dataObject:host];
+    [self setupCampThumbnailFromCamp:camp];
+}
+
+- (void)setupCampThumbnailFromCamp:(BRCCampObject *)camp {
+    if (!self.campThumbnailView) {
+        return;
+    }
+    
+    if (camp && camp.localThumbnailURL) {
+        UIImage *image = [UIImage imageWithContentsOfFile:camp.localThumbnailURL.path];
+        if (image) {
+            self.campThumbnailView.image = image;
+            self.campThumbnailView.hidden = NO;
+            self.campThumbnailView.contentMode = UIViewContentModeScaleAspectFill;
+            
+            // Apply image colors for theming
+            [self applyCampImageColorsFromCamp:camp withImage:image];
+        } else {
+            self.campThumbnailView.hidden = YES;
+        }
+    } else {
+        self.campThumbnailView.hidden = YES;
+    }
+}
+
+- (void)applyCampImageColorsFromCamp:(BRCCampObject *)camp withImage:(UIImage *)image {
+    // Only use cached colors, don't extract new ones
+    __block BRCImageColors *imageColors = nil;
+    [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        BRCObjectMetadata *metadata = [camp metadataWithTransaction:transaction];
+        if ([metadata conformsToProtocol:@protocol(BRCThumbnailImageColorsProtocol)]) {
+            id<BRCThumbnailImageColorsProtocol> metadataWithColors = (id<BRCThumbnailImageColorsProtocol>)metadata;
+            imageColors = metadataWithColors.thumbnailImageColors;
+        }
+    }];
+    
+    if (imageColors) {
+        // Use cached colors
+        [self setupLabelColorsWithImageColors:imageColors];
+    }
+    // If no cached colors, just don't apply any theming
+}
+
+- (void)setupLabelColorsWithImageColors:(BRCImageColors *)imageColors {
+    if (!imageColors) return;
+    
+    // Apply theme colors to labels with animation
+    [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
+        // Main content labels
+        self.titleLabel.textColor = imageColors.primaryColor;
+        self.hostLabel.textColor = imageColors.secondaryColor;
+        
+        // Event details labels - use detail color for better readability
+        self.eventTypeLabel.textColor = imageColors.detailColor;
+        self.locationLabel.textColor = imageColors.detailColor;
+        self.descriptionLabel.textColor = imageColors.detailColor;
+        
+        // Time and distance labels
+        self.rightSubtitleLabel.textColor = imageColors.secondaryColor;
+        self.subtitleLabel.textColor = imageColors.detailColor; // Walk/bike distance
+        
+        // Background
+        self.backgroundColor = imageColors.backgroundColor;
+    } completion:nil];
 }
 
 @end

@@ -216,11 +216,31 @@
             }];
         }
         
+        // Add camp image if available
+        BRCDetailCellInfo *campImageCellInfo = nil;
+        if ([event.hostedByCampUniqueID length]) {
+            __block BRCCampObject *camp = nil;
+            [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                camp = [transaction objectForKey:event.hostedByCampUniqueID inCollection:BRCCampObject.yapCollection];
+            }];
+            
+            if (camp && camp.localThumbnailURL) {
+                campImageCellInfo = [[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(localThumbnailURL)) displayName:@"Camp Image" cellType:BRCDetailCellInfoTypeImage];
+                campImageCellInfo.value = camp.localThumbnailURL;
+            }
+        }
         
         NSUInteger index = 1;
         
+        // Insert camp image at the top (index 0) like art/camp objects
+        if (campImageCellInfo) {
+            [finalCellInfoArray insertObject:campImageCellInfo atIndex:0];
+            index++; // Adjust index for subsequent insertions
+        }
+        
         if (relationshipDetailInfoCell) {
             [finalCellInfoArray insertObject:relationshipDetailInfoCell atIndex:index];
+            index++;
         }
         
         if (fullScheduleString) {
