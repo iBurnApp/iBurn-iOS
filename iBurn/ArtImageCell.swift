@@ -29,16 +29,19 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
             return
         }
         
-        // Get cached colors from metadata
-        let imageColors = getImageColorsFromMetadata(metadata)
+        // Get cached colors from metadata if image colors theming is enabled
+        let imageColors = Appearance.useImageColorsTheming ? getImageColorsFromMetadata(metadata) : nil
         if let colors = imageColors {
             setupLabelColors(colors)
+        } else if !Appearance.useImageColorsTheming {
+            // Use global theme colors when toggle is disabled
+            setupLabelColors(Appearance.currentColors)
         }
         
         self.thumbnailView.image = thumbnailImage
         
-        // Process colors if not cached
-        if imageColors == nil {
+        // Process colors if not cached and image colors theming is enabled
+        if imageColors == nil && Appearance.useImageColorsTheming {
             processImageColors(for: dataObject, metadata: metadata, image: thumbnailImage)
         }
     }

@@ -122,6 +122,16 @@ public class ColorCache: NSObject {
     
     /** Only works for art objects at the moment. If processingQueue is nil, it will execute block on current queue */
     func getColors(art: BRCArtObject, artMetadata: BRCArtMetadata, image: UIImage, downscaleSize: CGSize, processingQueue: DispatchQueue?, completion: ((BRCImageColors)->Void)?) {
+        // If image colors theming is disabled, return global theme colors
+        if !Appearance.useImageColorsTheming {
+            if let completion = completion {
+                self.completionQueue.async {
+                    completion(Appearance.currentColors)
+                }
+            }
+            return
+        }
+        
         // Found colors in cache
         if let colors = artMetadata.thumbnailImageColors {
             if let completion = completion {

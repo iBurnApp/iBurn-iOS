@@ -83,6 +83,17 @@ extension BRCImageColors {
     @objc public static func colors(for eventType: BRCEventType) -> BRCImageColors {
         .dynamic
     }
+    
+    /// Returns colors for a specific object, respecting the image colors theming toggle
+    @objc public static func colors(for object: Any?, fallback: BRCImageColors? = nil) -> BRCImageColors {
+        // If image colors theming is disabled, always return global theme colors
+        if !Appearance.useImageColorsTheming {
+            return .dynamic
+        }
+        
+        // Return the fallback colors if provided, otherwise use global theme
+        return fallback ?? .dynamic
+    }
 }
 
 extension BRCEventObjectTableViewCell {

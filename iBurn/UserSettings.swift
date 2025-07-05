@@ -17,6 +17,7 @@ public final class UserSettings: NSObject {
         static let contrast = "Contrast"
         static let favoritesFilter = "FavoritesFilter"
         static let nearbyFilter = "NearbyFilter"
+        static let useImageColorsTheming = "UseImageColorsTheming"
     }
     
     /// Selected favorites filter
@@ -76,6 +77,20 @@ public final class UserSettings: NSObject {
         get {
             let rawValue = UserDefaults.standard.integer(forKey: Keys.contrast)
             return AppColors(rawValue: rawValue) ?? .colorful
+        }
+    }
+    
+    /// Whether to use image colors theming for cells and detail screens
+    @objc public static var useImageColorsTheming: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.useImageColorsTheming)
+        }
+        get {
+            // Default to true if not set
+            if UserDefaults.standard.object(forKey: Keys.useImageColorsTheming) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.useImageColorsTheming)
         }
     }
 }

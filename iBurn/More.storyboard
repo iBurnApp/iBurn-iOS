@@ -418,6 +418,30 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="Image Colors" footerTitle="When enabled, uses colors extracted from art images for theming. When disabled, uses the global theme colors." id="ImageColorsSection" userLabel="Image Colors">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" tag="3" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" id="ImageColorsToggleCell" userLabel="Use Image Colors">
+                                        <rect key="frame" x="0.0" y="243" width="375" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ImageColorsToggleCell" id="ImageColorsToggleCellContent">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use Image Colors" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ImageColorsLabel">
+                                                    <rect key="frame" x="16" y="11.5" width="139" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="ImageColorsLabel" firstAttribute="centerY" secondItem="ImageColorsToggleCellContent" secondAttribute="centerY" id="ImageColorsLabelCenterY"/>
+                                                <constraint firstItem="ImageColorsLabel" firstAttribute="leading" secondItem="ImageColorsToggleCellContent" secondAttribute="leadingMargin" id="ImageColorsLabelLeading"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="0Vh-MW-rJT" id="ayx-iU-v0Y"/>

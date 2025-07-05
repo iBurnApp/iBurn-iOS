@@ -88,7 +88,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         }];
         
         // Use camp image colors if available, otherwise fallback to event type colors
-        if (campImageColors) {
+        if (campImageColors && Appearance.useImageColorsTheming) {
             _colors = campImageColors;
         } else {
             _colors = [BRCImageColors colorsFor:event.eventType];
@@ -106,7 +106,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
     if ([metadata conformsToProtocol:@protocol(BRCThumbnailImageColorsProtocol)]) {
         id<BRCThumbnailImageColorsProtocol> metadataWithColors = (id<BRCThumbnailImageColorsProtocol>)metadata;
         BRCImageColors *colors = metadataWithColors.thumbnailImageColors;
-        if (colors) {
+        if (colors && Appearance.useImageColorsTheming) {
             _colors = colors;
         }
     }

@@ -146,6 +146,11 @@
 }
 
 - (void)applyCampImageColorsFromCamp:(BRCCampObject *)camp withImage:(UIImage *)image {
+    // If image colors theming is disabled, don't apply camp image colors
+    if (!Appearance.useImageColorsTheming) {
+        return;
+    }
+    
     // Only use cached colors, don't extract new ones
     __block BRCImageColors *imageColors = nil;
     [BRCDatabaseManager.shared.uiConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {

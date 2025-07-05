@@ -28,6 +28,15 @@ import UIKit
         }
     }
     
+    @objc public static var useImageColorsTheming: Bool {
+        set {
+            UserSettings.useImageColorsTheming = newValue
+        }
+        get {
+            return UserSettings.useImageColorsTheming
+        }
+    }
+    
     @objc public static var currentColors: BRCImageColors {
         .dynamic
     }

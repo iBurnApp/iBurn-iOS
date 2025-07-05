@@ -15,6 +15,7 @@ class AppearanceViewController: UITableViewController {
         case system
         case light
         case dark
+        case imageColorsToggle
         
         var theme: AppTheme? {
             switch self {
@@ -24,6 +25,8 @@ class AppearanceViewController: UITableViewController {
                 return .dark
             case .system:
                 return .system
+            case .imageColorsToggle:
+                return nil
             }
         }
     }
@@ -46,19 +49,21 @@ class AppearanceViewController: UITableViewController {
         guard let cellTag = CellTag(rawValue: cell.tag) else {
             return cell
         }
-        var toggled = false
+        
         switch cellTag {
         case .light:
-            toggled = Appearance.theme == .light
+            cell.accessoryType = Appearance.theme == .light ? .checkmark : .none
         case .dark:
-            toggled = Appearance.theme == .dark
+            cell.accessoryType = Appearance.theme == .dark ? .checkmark : .none
         case .system:
-            toggled = Appearance.theme == .system
-        }
-        if toggled {
-            cell.accessoryType = .checkmark
-        } else {
-            cell.accessoryType = .none
+            cell.accessoryType = Appearance.theme == .system ? .checkmark : .none
+        case .imageColorsToggle:
+            // Configure the switch for image colors toggle
+            let switchControl = UISwitch()
+            switchControl.isOn = Appearance.useImageColorsTheming
+            switchControl.onTintColor = Appearance.currentColors.primaryColor
+            switchControl.addTarget(self, action: #selector(imageColorsToggleChanged(_:)), for: .valueChanged)
+            cell.accessoryView = switchControl
         }
         return cell
     }
@@ -72,8 +77,16 @@ class AppearanceViewController: UITableViewController {
         case .light, .dark, .system:
             guard let theme = cellTag.theme else { return }
             Appearance.theme = theme
+            tableView.reloadData()
+            refreshTheme()
+        case .imageColorsToggle:
+            // Don't handle selection for toggle cell, handled by switch
+            break
         }
-        tableView.reloadData()
+    }
+    
+    @objc private func imageColorsToggleChanged(_ sender: UISwitch) {
+        Appearance.useImageColorsTheming = sender.isOn
         refreshTheme()
     }
 }
