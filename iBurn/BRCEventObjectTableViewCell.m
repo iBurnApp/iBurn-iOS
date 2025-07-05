@@ -55,9 +55,9 @@
     }
     UIColor *eventStatusColor = [eventObject colorForEventStatus:now];
     self.rightSubtitleLabel.textColor = eventStatusColor;
-    NSString *eventType = [BRCEventObject stringForEventType:eventObject.eventType];
+    NSString *eventType = [BRCEventObject emojiForEventType:eventObject.eventType];
     if (!eventType.length) {
-        eventType = @"None";
+        eventType = [BRCEventObject emojiForEventType:BRCEventTypeUnknown];
     }
     self.eventTypeLabel.text = eventType;
     [self setupLocationLabelFromEvent:eventObject];

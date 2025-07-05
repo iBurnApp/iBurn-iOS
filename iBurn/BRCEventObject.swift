@@ -171,6 +171,11 @@ extension BRCEventObject {
     @objc public static func stringForEventType(_ type: BRCEventType) -> String {
         type.description
     }
+    
+    /** convert BRCEventType to display string */
+    @objc public static func emojiForEventType(_ type: BRCEventType) -> String {
+        type.emoji
+    }
 }
 
 extension BRCEventObject {
