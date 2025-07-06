@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Overall Guidance
+
+* When you exit plan mode, ask if you should write your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as (optionally) the entire conversation context and file snippets. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. If exporting the entire context, also include `YYYY-MM-dd-summarized-title-full-context.md` file that contains the full context.
+
+
 ## Project Overview
 
 iBurn is an offline map and guide for the Burning Man art festival. It's a native iOS application built primarily with Swift and Objective-C, featuring offline map tiles, art/camp/event data management, and location tracking capabilities.
@@ -11,7 +16,7 @@ iBurn is an offline map and guide for the Burning Man art festival. It's a nativ
 ### Building and Dependencies
 - `pod install` - Install CocoaPods dependencies (required after cloning)
 - `git submodule update --init` - Initialize git submodules (required after cloning)
-- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file)
+- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file). Use xcodebuild and pass the -quiet flag
 
 ### Fastlane Commands
 - `fastlane ios beta` - Build and upload to TestFlight
