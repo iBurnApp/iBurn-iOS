@@ -10,22 +10,29 @@ public enum MockAPIData {
     [
         {
             "uid": "a2IVI000000yWeZ2AU",
-            "name": "Temple of the Deep",
+            "name": "Burning Questions",
             "year": 2025,
-            "url": "https://www.2025temple.com/",
-            "contact_email": "miguel@2025temple.com",
-            "hometown": "Valencia, Spain",
-            "description": "The Temple of the Deep is a sanctuary for grief, love, and introspection.",
-            "artist": "Miguel Arraiz",
+            "url": "https://www.burningquestions.com/",
+            "contact_email": "artist@burningquestions.com",
+            "hometown": "San Francisco, CA",
+            "description": "An interactive art installation exploring curiosity and wonder.",
+            "artist": "Jane Smith",
             "category": "Open Playa",
             "program": "Honorarium",
-            "donation_link": "https://crowdfundr.com/2025temple",
-            "location": null,
-            "location_string": null,
+            "donation_link": "https://crowdfundr.com/burningquestions",
+            "location": {
+                "hour": 12,
+                "minute": 0,
+                "distance": 2500,
+                "category": "Open Playa",
+                "gps_latitude": 40.79179890754886,
+                "gps_longitude": -119.1976993927176
+            },
+            "location_string": "12:00 2500', Open Playa",
             "images": [
                 {
-                    "thumbnail_url": "https://burningman.widen.net/content/jiicnlpjwu/jpeg/a2IVI000000yWeZ2AU-1.jpeg",
-                    "gallery_ref": null
+                    "thumbnail_url": "https://example.com/art-image.jpeg",
+                    "gallery_ref": "gallery-123"
                 }
             ],
             "guided_tours": false,
@@ -37,21 +44,23 @@ public enum MockAPIData {
     public static let campJSON = """
     [
         {
-            "uid": "a1XVI000008yf262AA",
-            "name": "Bag o' Dicks",
+            "uid": "a1XVI000008zSaf2AE",
+            "name": "Camp ASL Support Services HUB",
             "year": 2025,
             "url": null,
-            "contact_email": "bagodicks.bm1@gmail.com",
-            "hometown": "chicago",
-            "description": "Free spirited camp with good beats, booze, and the friendliest bag o' dicks around!",
-            "landmark": "3 neon dicks in the sky with sparkly come shots",
-            "location": null,
-            "location_string": null,
-            "images": [
-                {
-                    "thumbnail_url": "https://burningman.widen.net/content/3ggbw9ehze/jpeg/a1XVI000008yf262AA-1.jpeg"
-                }
-            ]
+            "contact_email": "ddhplanb@gmail.com",
+            "hometown": "All over, north, and, South America",
+            "description": "American sign language Support services. Centralized services for the Deaf.",
+            "landmark": "American sign language support services sign",
+            "location": {
+                "frontage": "Esplanade",
+                "intersection": "6:30",
+                "intersection_type": "&",
+                "dimensions": "75 x 110",
+                "exact_location": "Mid-block facing 10:00"
+            },
+            "location_string": "Esplanade & 6:30",
+            "images": []
         }
     ]
     """.data(using: .utf8)!
@@ -59,18 +68,18 @@ public enum MockAPIData {
     public static let eventJSON = """
     [
         {
-            "uid": "6Fzgz5paNv8ZbedcCQRw",
-            "title": "Meowiokie",
-            "event_id": 51387,
-            "description": "Its karaoke but with meows. Come by and try",
+            "uid": "78ZvNxSeeZQbaeHuughD",
+            "title": "Fairycore Tarot Meetup",
+            "event_id": 51138,
+            "description": "First time picking up cards? A professional reader? All levels welcome",
             "event_type": {
-                "label": "Music/Party",
-                "abbr": "prty"
+                "label": "Class/Workshop",
+                "abbr": "work"
             },
             "year": 2025,
             "print_description": "",
-            "slug": "6Fzgz5paNv8ZbedcCQRw-meowiokie",
-            "hosted_by_camp": "a1XVI000009qe5p2AA",
+            "slug": "78ZvNxSeeZQbaeHuughD-fairycore-tarot-meetup",
+            "hosted_by_camp": "a1XVI000009t6XR2AY",
             "located_at_art": null,
             "other_location": "",
             "check_location": false,
@@ -79,8 +88,8 @@ public enum MockAPIData {
             "contact": null,
             "occurrence_set": [
                 {
-                    "start_time": "2025-08-27T12:00:00-07:00",
-                    "end_time": "2025-08-27T13:00:00-07:00"
+                    "start_time": "2025-08-28T12:00:00-07:00",
+                    "end_time": "2025-08-28T13:30:00-07:00"
                 }
             ]
         }
@@ -108,48 +117,66 @@ public enum MockAPIData {
     
     public static let mockArt = Art(
         uid: "a2IVI000000yWeZ2AU",
-        name: "Temple of the Deep",
+        name: "Burning Questions",
         year: 2025,
-        url: URL(string: "https://www.2025temple.com/"),
-        contactEmail: "miguel@2025temple.com",
-        hometown: "Valencia, Spain",
-        description: "The Temple of the Deep is a sanctuary for grief, love, and introspection.",
-        artist: "Miguel Arraiz",
+        url: URL(string: "https://www.burningquestions.com/"),
+        contactEmail: "artist@burningquestions.com",
+        hometown: "San Francisco, CA",
+        description: "An interactive art installation exploring curiosity and wonder.",
+        artist: "Jane Smith",
         category: "Open Playa",
         program: "Honorarium",
-        donationLink: URL(string: "https://crowdfundr.com/2025temple"),
+        donationLink: URL(string: "https://crowdfundr.com/burningquestions"),
+        location: ArtLocation(
+            hour: 12,
+            minute: 0,
+            distance: 2500,
+            category: "Open Playa",
+            gpsLatitude: 40.79179890754886,
+            gpsLongitude: -119.1976993927176
+        ),
+        locationString: "12:00 2500', Open Playa",
         images: [
-            Image(thumbnailUrl: URL(string: "https://burningman.widen.net/content/jiicnlpjwu/jpeg/a2IVI000000yWeZ2AU-1.jpeg")!)
+            ArtImage(
+                thumbnailUrl: URL(string: "https://example.com/art-image.jpeg"),
+                galleryRef: "gallery-123"
+            )
         ],
         selfGuidedTourMap: true
     )
     
     public static let mockCamp = Camp(
-        uid: "a1XVI000008yf262AA",
-        name: "Bag o' Dicks",
+        uid: "a1XVI000008zSaf2AE",
+        name: "Camp ASL Support Services HUB",
         year: 2025,
-        contactEmail: "bagodicks.bm1@gmail.com",
-        hometown: "chicago",
-        description: "Free spirited camp with good beats, booze, and the friendliest bag o' dicks around!",
-        landmark: "3 neon dicks in the sky with sparkly come shots",
-        images: [
-            Image(thumbnailUrl: URL(string: "https://burningman.widen.net/content/3ggbw9ehze/jpeg/a1XVI000008yf262AA-1.jpeg")!)
-        ]
+        contactEmail: "ddhplanb@gmail.com",
+        hometown: "All over, north, and, South America",
+        description: "American sign language Support services. Centralized services for the Deaf.",
+        landmark: "American sign language support services sign",
+        location: CampLocation(
+            frontage: "Esplanade",
+            intersection: "6:30",
+            intersectionType: "&",
+            dimensions: "75 x 110",
+            exactLocation: "Mid-block facing 10:00"
+        ),
+        locationString: "Esplanade & 6:30",
+        images: []
     )
     
     public static let mockEvent = Event(
-        uid: "6Fzgz5paNv8ZbedcCQRw",
-        title: "Meowiokie",
-        eventId: 51387,
-        description: "Its karaoke but with meows. Come by and try",
-        eventType: EventType.musicParty,
+        uid: "78ZvNxSeeZQbaeHuughD",
+        title: "Fairycore Tarot Meetup",
+        eventId: 51138,
+        description: "First time picking up cards? A professional reader? All levels welcome",
+        eventType: EventTypeInfo(label: "Class/Workshop", type: .classAndWorkshop),
         year: 2025,
-        slug: "6Fzgz5paNv8ZbedcCQRw-meowiokie",
-        hostedByCamp: "a1XVI000009qe5p2AA",
+        slug: "78ZvNxSeeZQbaeHuughD-fairycore-tarot-meetup",
+        hostedByCamp: "a1XVI000009t6XR2AY",
         occurrenceSet: [
             EventOccurrence(
-                startTime: ISO8601DateFormatter().date(from: "2025-08-27T12:00:00-07:00")!,
-                endTime: ISO8601DateFormatter().date(from: "2025-08-27T13:00:00-07:00")!
+                startTime: ISO8601DateFormatter().date(from: "2025-08-28T12:00:00-07:00"),
+                endTime: ISO8601DateFormatter().date(from: "2025-08-28T13:30:00-07:00")
             )
         ]
     )

@@ -39,7 +39,7 @@ final class ModelTests: XCTestCase {
         let art = MockAPIData.mockArt
         
         XCTAssertTrue(art.hasImages)
-        XCTAssertFalse(art.hasLocation) // Mock data has no location
+        XCTAssertTrue(art.hasLocation) // Mock data has location
         XCTAssertTrue(art.hasTours) // selfGuidedTourMap is true
         XCTAssertTrue(art.hasContact) // Has email and URL
     }
@@ -62,8 +62,8 @@ final class ModelTests: XCTestCase {
     func testCamp_ComputedProperties() {
         let camp = MockAPIData.mockCamp
         
-        XCTAssertTrue(camp.hasImages)
-        XCTAssertFalse(camp.hasLocation) // Mock data has no location
+        XCTAssertFalse(camp.hasImages) // Mock camp has empty images array
+        XCTAssertTrue(camp.hasLocation) // Mock data has location
         XCTAssertTrue(camp.hasLandmark)
         XCTAssertTrue(camp.hasContact) // Has email
         XCTAssertTrue(camp.hasDescription)
@@ -100,7 +100,7 @@ final class ModelTests: XCTestCase {
             uid: "test-id",
             title: "Test Event",
             eventId: 123,
-            eventType: EventType.musicParty,
+            eventType: EventTypeInfo(label: "Music/Party", type: .musicAndParty),
             year: 2025,
             slug: "test-event",
             occurrenceSet: [
@@ -109,7 +109,7 @@ final class ModelTests: XCTestCase {
             ]
         )
         
-        XCTAssertEqual(event.nextOccurrence?.startTime, futureDate1)
+        XCTAssertEqual(event.nextOccurrence(now)?.startTime, futureDate1)
     }
     
     func testEvent_CurrentOccurrence() {
@@ -121,7 +121,7 @@ final class ModelTests: XCTestCase {
             uid: "test-id",
             title: "Test Event",
             eventId: 123,
-            eventType: EventType.musicParty,
+            eventType: EventTypeInfo(label: "Music/Party", type: .musicAndParty),
             year: 2025,
             slug: "test-event",
             occurrenceSet: [
@@ -129,8 +129,8 @@ final class ModelTests: XCTestCase {
             ]
         )
         
-        XCTAssertNotNil(event.currentOccurrence)
-        XCTAssertTrue(event.isCurrentlyHappening)
+        XCTAssertNotNil(event.currentOccurrence(now))
+        XCTAssertTrue(event.isCurrentlyHappening(now))
     }
     
     // MARK: - EventOccurrence Tests
@@ -141,9 +141,9 @@ final class ModelTests: XCTestCase {
         let occurrence = EventOccurrence(startTime: start, endTime: end)
         
         XCTAssertEqual(occurrence.duration, 3600)
-        XCTAssertTrue(occurrence.isCurrentlyHappening)
-        XCTAssertFalse(occurrence.hasEnded)
-        XCTAssertFalse(occurrence.isFuture)
+        XCTAssertTrue(occurrence.isCurrentlyHappening())
+        XCTAssertFalse(occurrence.hasEnded())
+        XCTAssertFalse(occurrence.isFuture())
     }
     
     func testEventOccurrence_PastEvent() {
@@ -151,9 +151,9 @@ final class ModelTests: XCTestCase {
         let end = Date().addingTimeInterval(-3600) // 1 hour ago
         let occurrence = EventOccurrence(startTime: start, endTime: end)
         
-        XCTAssertFalse(occurrence.isCurrentlyHappening)
-        XCTAssertTrue(occurrence.hasEnded)
-        XCTAssertFalse(occurrence.isFuture)
+        XCTAssertFalse(occurrence.isCurrentlyHappening())
+        XCTAssertTrue(occurrence.hasEnded())
+        XCTAssertFalse(occurrence.isFuture())
     }
     
     func testEventOccurrence_FutureEvent() {
@@ -161,9 +161,9 @@ final class ModelTests: XCTestCase {
         let end = Date().addingTimeInterval(7200) // 2 hours from now
         let occurrence = EventOccurrence(startTime: start, endTime: end)
         
-        XCTAssertFalse(occurrence.isCurrentlyHappening)
-        XCTAssertFalse(occurrence.hasEnded)
-        XCTAssertTrue(occurrence.isFuture)
+        XCTAssertFalse(occurrence.isCurrentlyHappening())
+        XCTAssertFalse(occurrence.hasEnded())
+        XCTAssertTrue(occurrence.isFuture())
     }
     
     // MARK: - UpdateInfo Tests
@@ -188,21 +188,26 @@ final class ModelTests: XCTestCase {
     
     // MARK: - EventType Tests
     
-    func testEventType_PredefinedTypes() {
-        XCTAssertEqual(EventType.musicParty.label, "Music/Party")
-        XCTAssertEqual(EventType.musicParty.abbreviation, "prty")
-        
-        XCTAssertEqual(EventType.classWorkshop.label, "Class/Workshop")
-        XCTAssertEqual(EventType.classWorkshop.abbreviation, "work")
+    func testEventType_StringEnumValues() {
+        XCTAssertEqual(EventType.musicAndParty.rawValue, "prty")
+        XCTAssertEqual(EventType.classAndWorkshop.rawValue, "work")
+        XCTAssertEqual(EventType.artsAndCrafts.rawValue, "arts")
     }
     
     // MARK: - Image Tests
     
-    func testImage_Initialization() {
+    func testArtImage_Initialization() {
         let url = URL(string: "https://example.com/image.jpg")!
-        let image = Image(thumbnailUrl: url, galleryRef: "gallery-123")
+        let image = ArtImage(thumbnailUrl: url, galleryRef: "gallery-123")
         
         XCTAssertEqual(image.thumbnailUrl, url)
         XCTAssertEqual(image.galleryRef, "gallery-123")
+    }
+    
+    func testCampImage_Initialization() {
+        let url = URL(string: "https://example.com/image.jpg")!
+        let image = CampImage(thumbnailUrl: url)
+        
+        XCTAssertEqual(image.thumbnailUrl, url)
     }
 }

@@ -6,7 +6,7 @@ public struct Event: Codable, Hashable, Sendable {
     public let title: String
     public let eventId: Int?
     public let description: String?
-    public let eventType: EventType?
+    public let eventType: EventTypeInfo?
     public let year: Int
     public let printDescription: String
     public let slug: String?
@@ -24,7 +24,7 @@ public struct Event: Codable, Hashable, Sendable {
         title: String,
         eventId: Int? = nil,
         description: String? = nil,
-        eventType: EventType? = nil,
+        eventType: EventTypeInfo? = nil,
         year: Int,
         printDescription: String = "",
         slug: String? = nil,
@@ -61,7 +61,7 @@ public struct Event: Codable, Hashable, Sendable {
 public extension Event {
     /// Whether this event has any scheduled occurrences
     var hasOccurrences: Bool {
-        occurrenceSet?.isEmpty == false
+        !occurrenceSet.isEmpty
     }
     
     /// Whether this event has location information
@@ -80,20 +80,19 @@ public extension Event {
     }
     
     /// The next occurrence of this event (if any)
-    var nextOccurrence: EventOccurrence? {
-        let now = Date()
-        return occurrenceSet?
+    func nextOccurrence(_ now: Date = Date()) -> EventOccurrence? {
+        return occurrenceSet
             .filter { $0.startTime != nil && $0.startTime! > now }
             .min { ($0.startTime ?? Date.distantFuture) < ($1.startTime ?? Date.distantFuture) }
     }
     
     /// The current occurrence of this event (if any)
-    var currentOccurrence: EventOccurrence? {
-        occurrenceSet?.first { $0.isCurrentlyHappening }
+    func currentOccurrence(_ now: Date = Date()) -> EventOccurrence? {
+        occurrenceSet.first { $0.isCurrentlyHappening(now) }
     }
     
     /// Whether this event is currently happening
-    var isCurrentlyHappening: Bool {
-        currentOccurrence != nil
+    func isCurrentlyHappening(_ now: Date = Date()) -> Bool {
+        currentOccurrence(now) != nil
     }
 }
