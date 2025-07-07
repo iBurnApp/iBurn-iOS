@@ -20,7 +20,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // No external dependencies - pure Swift Codable
+        .package(path: "../../Submodules/iBurn-Data")
     ],
     targets: [
         .target(
@@ -33,7 +33,11 @@ let package = Package(
         ),
         .testTarget(
             name: "PlayaAPITests",
-            dependencies: ["PlayaAPI", "PlayaAPITestHelpers"]
+            dependencies: [
+                "PlayaAPI", 
+                "PlayaAPITestHelpers",
+                .product(name: "iBurn2025APIData", package: "iBurn-Data")
+            ]
         ),
     ]
 )
