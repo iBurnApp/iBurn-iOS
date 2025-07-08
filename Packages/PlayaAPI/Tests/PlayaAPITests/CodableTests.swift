@@ -67,7 +67,7 @@ final class CodableTests: XCTestCase {
         XCTAssertEqual(decodedEvent.uid, originalEvent.uid)
         XCTAssertEqual(decodedEvent.title, originalEvent.title)
         XCTAssertEqual(decodedEvent.eventId, originalEvent.eventId)
-        XCTAssertEqual(decodedEvent.eventType?.label, originalEvent.eventType?.label)
+        XCTAssertEqual(decodedEvent.eventType.label, originalEvent.eventType.label)
         XCTAssertEqual(decodedEvent.hostedByCamp, originalEvent.hostedByCamp)
         XCTAssertEqual(decodedEvent.occurrenceSet.count, originalEvent.occurrenceSet.count)
     }
@@ -120,8 +120,8 @@ final class CodableTests: XCTestCase {
         let decoded = try decoder.decode(EventOccurrence.self, from: encoded)
         
         // Allow for small differences due to encoding/decoding precision
-        XCTAssertEqual(decoded.startTime?.timeIntervalSince1970 ?? 0, startTime.timeIntervalSince1970, accuracy: 1.0)
-        XCTAssertEqual(decoded.endTime?.timeIntervalSince1970 ?? 0, endTime.timeIntervalSince1970, accuracy: 1.0)
+        XCTAssertEqual(decoded.startTime.timeIntervalSince1970, startTime.timeIntervalSince1970, accuracy: 1.0)
+        XCTAssertEqual(decoded.endTime.timeIntervalSince1970, endTime.timeIntervalSince1970, accuracy: 1.0)
     }
     
     // MARK: - URL Coding Tests

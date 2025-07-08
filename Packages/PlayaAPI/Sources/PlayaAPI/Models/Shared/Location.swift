@@ -28,24 +28,33 @@ public struct ArtLocation: Codable, Hashable, Sendable {
 
 /// Represents camp location with detailed positioning
 public struct CampLocation: Codable, Hashable, Sendable {
+    public let string: String?
     public let frontage: String?
     public let intersection: String?
     public let intersectionType: String?
     public let dimensions: String?
     public let exactLocation: String?
+    public let gpsLatitude: Double?
+    public let gpsLongitude: Double?
     
     public init(
+        string: String? = nil,
         frontage: String? = nil,
         intersection: String? = nil,
         intersectionType: String? = nil,
         dimensions: String? = nil,
-        exactLocation: String? = nil
+        exactLocation: String? = nil,
+        gpsLatitude: Double? = nil,
+        gpsLongitude: Double? = nil
     ) {
+        self.string = string
         self.frontage = frontage
         self.intersection = intersection
         self.intersectionType = intersectionType
         self.dimensions = dimensions
         self.exactLocation = exactLocation
+        self.gpsLatitude = gpsLatitude
+        self.gpsLongitude = gpsLongitude
     }
 }
 
@@ -67,5 +76,10 @@ public extension CampLocation {
     /// Whether this location has complete addressing
     var hasCompleteAddress: Bool {
         frontage != nil && intersection != nil
+    }
+    
+    /// Whether this location has GPS coordinates
+    var hasGPSCoordinates: Bool {
+        gpsLatitude != nil && gpsLongitude != nil
     }
 }

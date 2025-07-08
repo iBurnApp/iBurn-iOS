@@ -6,7 +6,7 @@ public struct Event: Codable, Hashable, Sendable {
     public let title: String
     public let eventId: Int?
     public let description: String?
-    public let eventType: EventTypeInfo?
+    public let eventType: EventTypeInfo
     public let year: Int
     public let printDescription: String
     public let slug: String?
@@ -24,7 +24,7 @@ public struct Event: Codable, Hashable, Sendable {
         title: String,
         eventId: Int? = nil,
         description: String? = nil,
-        eventType: EventTypeInfo? = nil,
+        eventType: EventTypeInfo,
         year: Int,
         printDescription: String = "",
         slug: String? = nil,
@@ -82,8 +82,8 @@ public extension Event {
     /// The next occurrence of this event (if any)
     func nextOccurrence(_ now: Date = Date()) -> EventOccurrence? {
         return occurrenceSet
-            .filter { $0.startTime != nil && $0.startTime! > now }
-            .min { ($0.startTime ?? Date.distantFuture) < ($1.startTime ?? Date.distantFuture) }
+            .filter { $0.startTime > now }
+            .min { $0.startTime < $1.startTime }
     }
     
     /// The current occurrence of this event (if any)

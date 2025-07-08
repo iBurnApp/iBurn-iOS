@@ -71,10 +71,10 @@ public enum EventType: String, Codable, CaseIterable, Sendable {
 
 /// Represents the type/category of an event
 public struct EventTypeInfo: Codable, Hashable, Sendable {
-    public let label: String?
-    public let type: EventType?
+    public let label: String
+    public let type: EventType
     
-    public init(label: String? = nil, type: EventType? = nil) {
+    public init(label: String, type: EventType) {
         self.label = label
         self.type = type
     }

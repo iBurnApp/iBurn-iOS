@@ -175,8 +175,8 @@ public enum MockAPIData {
         hostedByCamp: "a1XVI000009t6XR2AY",
         occurrenceSet: [
             EventOccurrence(
-                startTime: ISO8601DateFormatter().date(from: "2025-08-28T12:00:00-07:00"),
-                endTime: ISO8601DateFormatter().date(from: "2025-08-28T13:30:00-07:00")
+                startTime: ISO8601DateFormatter().date(from: "2025-08-28T12:00:00-07:00")!,
+                endTime: ISO8601DateFormatter().date(from: "2025-08-28T13:30:00-07:00")!
             )
         ]
     )
