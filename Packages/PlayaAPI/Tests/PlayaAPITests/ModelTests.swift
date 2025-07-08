@@ -100,7 +100,7 @@ final class ModelTests: XCTestCase {
             uid: "test-id",
             title: "Test Event",
             eventId: 123,
-            eventType: EventTypeInfo(label: "Music/Party", type: .musicAndParty),
+            eventType: EventTypeInfo(label: "Music/Party", type: .gatheringParty),
             year: 2025,
             slug: "test-event",
             occurrenceSet: [
@@ -121,7 +121,7 @@ final class ModelTests: XCTestCase {
             uid: "test-id",
             title: "Test Event",
             eventId: 123,
-            eventType: EventTypeInfo(label: "Music/Party", type: .musicAndParty),
+            eventType: EventTypeInfo(label: "Music/Party", type: .gatheringParty),
             year: 2025,
             slug: "test-event",
             occurrenceSet: [
@@ -189,9 +189,28 @@ final class ModelTests: XCTestCase {
     // MARK: - EventType Tests
     
     func testEventType_StringEnumValues() {
-        XCTAssertEqual(EventType.musicAndParty.rawValue, "prty")
-        XCTAssertEqual(EventType.classAndWorkshop.rawValue, "work")
+        XCTAssertEqual(EventType.gatheringParty.rawValue, "prty")
+        XCTAssertEqual(EventType.classWorkshop.rawValue, "work")
         XCTAssertEqual(EventType.artsAndCrafts.rawValue, "arts")
+        XCTAssertEqual(EventType.matureAudiences.rawValue, "adlt")
+        XCTAssertEqual(EventType.forKids.rawValue, "kid")
+        XCTAssertEqual(EventType.foodAndDrink.rawValue, "food")
+        XCTAssertEqual(EventType.coffeeTea.rawValue, "tea")
+        XCTAssertEqual(EventType.miscellaneous.rawValue, "othr")
+        XCTAssertEqual(EventType.ritualCeremony.rawValue, "cere")
+        XCTAssertEqual(EventType.games.rawValue, "game")
+        XCTAssertEqual(EventType.performance.rawValue, "perf")
+        XCTAssertEqual(EventType.selfCare.rawValue, "care")
+        XCTAssertEqual(EventType.fireSpectacle.rawValue, "fire")
+        XCTAssertEqual(EventType.parade.rawValue, "para")
+        XCTAssertEqual(EventType.none.rawValue, "none")
+        XCTAssertEqual(EventType.healingMassageSpa.rawValue, "heal")
+        XCTAssertEqual(EventType.lgbtqia2s.rawValue, "LGBT")
+        XCTAssertEqual(EventType.liveMusic.rawValue, "live")
+        XCTAssertEqual(EventType.diversityInclusion.rawValue, "RIDE")
+        XCTAssertEqual(EventType.repair.rawValue, "repr")
+        XCTAssertEqual(EventType.sustainabilityGreening.rawValue, "sust")
+        XCTAssertEqual(EventType.yogaMovementFitness.rawValue, "yoga")
     }
     
     // MARK: - Image Tests

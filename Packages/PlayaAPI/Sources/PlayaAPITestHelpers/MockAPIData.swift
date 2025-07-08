@@ -169,7 +169,7 @@ public enum MockAPIData {
         title: "Fairycore Tarot Meetup",
         eventId: 51138,
         description: "First time picking up cards? A professional reader? All levels welcome",
-        eventType: EventTypeInfo(label: "Class/Workshop", type: .classAndWorkshop),
+        eventType: EventTypeInfo(label: "Class/Workshop", type: .classWorkshop),
         year: 2025,
         slug: "78ZvNxSeeZQbaeHuughD-fairycore-tarot-meetup",
         hostedByCamp: "a1XVI000009t6XR2AY",

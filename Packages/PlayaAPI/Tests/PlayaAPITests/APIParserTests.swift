@@ -101,7 +101,7 @@ final class APIParserTests: XCTestCase {
         XCTAssertEqual(event.eventId, 51138)
         XCTAssertEqual(event.description, "First time picking up cards? A professional reader? All levels welcome")
         XCTAssertEqual(event.eventType?.label, "Class/Workshop")
-        XCTAssertEqual(event.eventType?.type, .classAndWorkshop)
+        XCTAssertEqual(event.eventType?.type, .classWorkshop)
         XCTAssertEqual(event.year, 2025)
         XCTAssertEqual(event.slug, "78ZvNxSeeZQbaeHuughD-fairycore-tarot-meetup")
         XCTAssertEqual(event.hostedByCamp?.value, "a1XVI000009t6XR2AY")

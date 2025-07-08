@@ -2,14 +2,71 @@ import Foundation
 
 /// Event type abbreviations used by the Burning Man API
 public enum EventType: String, Codable, CaseIterable, Sendable {
-    case artsAndCrafts = "arts"
-    case adultOriented = "adlt"
-    case beverages = "tea"
+    /// Ritual/Ceremony
+    case ritualCeremony = "cere"
+    
+    /// Gathering/Party
+    case gatheringParty = "prty"
+    
+    /// Class/Workshop
+    case classWorkshop = "work"
+    
+    /// Games
+    case games = "game"
+    
+    /// Food & Drink
     case foodAndDrink = "food"
-    case kidsEvent = "kid"
-    case musicAndParty = "prty"
-    case other = "othr"
-    case classAndWorkshop = "work"
+    
+    /// Mature Audiences
+    case matureAudiences = "adlt"
+    
+    /// Performance
+    case performance = "perf"
+    
+    /// Self Care
+    case selfCare = "care"
+    
+    /// Fire/Spectacle
+    case fireSpectacle = "fire"
+    
+    /// Parade
+    case parade = "para"
+    
+    /// For Kids
+    case forKids = "kid"
+    
+    /// None
+    case none = "none"
+    
+    /// Miscellaneous
+    case miscellaneous = "othr"
+    
+    /// Arts & Crafts
+    case artsAndCrafts = "arts"
+    
+    /// Coffee/Tea
+    case coffeeTea = "tea"
+    
+    /// Healing/Massage/Spa
+    case healingMassageSpa = "heal"
+    
+    /// LGBTQIA2S+
+    case lgbtqia2s = "LGBT"
+    
+    /// Live Music
+    case liveMusic = "live"
+    
+    /// Diversity & Inclusion
+    case diversityInclusion = "RIDE"
+    
+    /// Repair
+    case repair = "repr"
+    
+    /// Sustainability/Greening Your Burn
+    case sustainabilityGreening = "sust"
+    
+    /// Yoga/Movement/Fitness
+    case yogaMovementFitness = "yoga"
 }
 
 /// Represents the type/category of an event
