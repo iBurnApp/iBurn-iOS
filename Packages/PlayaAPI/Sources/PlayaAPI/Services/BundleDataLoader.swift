@@ -92,12 +92,20 @@ public enum BundleDataLoader {
     private static func loadDataFile(named filename: String, from bundle: Bundle?) throws -> Data {
         let targetBundle = bundle ?? Bundle.main
         
-        guard let url = targetBundle.url(forResource: filename, withExtension: "json") else {
+        // First try to find the file in the Resources subdirectory (for iBurn2025APIData bundle)
+        var url = targetBundle.url(forResource: filename, withExtension: "json", subdirectory: "Resources")
+        
+        // If not found in Resources, try the bundle root (for main bundle compatibility)
+        if url == nil {
+            url = targetBundle.url(forResource: filename, withExtension: "json")
+        }
+        
+        guard let fileURL = url else {
             throw LoadError.fileNotFound("\(filename).json")
         }
         
         do {
-            return try Data(contentsOf: url)
+            return try Data(contentsOf: fileURL)
         } catch {
             throw LoadError.invalidData("Failed to load \(filename).json: \(error.localizedDescription)")
         }

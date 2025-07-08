@@ -135,7 +135,7 @@ final class BundleDataIntegrationTests: XCTestCase {
     
     func testBundleDataLoaderWithAPIDataBundle() throws {
         // Test that BundleDataLoader can work with the iBurn2025APIData bundle
-        let data = try BundleDataLoader.loadArt(from: Bundle.module)
+        let data = try BundleDataLoader.loadArt(from: iBurn2025APIData.bundle)
         XCTAssertFalse(data.isEmpty, "Should load art data from bundle")
         
         // Verify it matches the direct bundle access
@@ -145,12 +145,12 @@ final class BundleDataIntegrationTests: XCTestCase {
     
     func testBundleDataLoaderAllMethods() throws {
         // Test all BundleDataLoader methods with the iBurn2025APIData bundle
-        XCTAssertNoThrow(try BundleDataLoader.loadArt(from: Bundle.module))
-        XCTAssertNoThrow(try BundleDataLoader.loadCamps(from: Bundle.module))
-        XCTAssertNoThrow(try BundleDataLoader.loadEvents(from: Bundle.module))
-        XCTAssertNoThrow(try BundleDataLoader.loadUpdateInfo(from: Bundle.module))
-        XCTAssertNoThrow(try BundleDataLoader.loadCredits(from: Bundle.module))
-        XCTAssertNoThrow(try BundleDataLoader.loadDatesInfo(from: Bundle.module))
-        XCTAssertNoThrow(try BundleDataLoader.loadPoints(from: Bundle.module))
+        XCTAssertNoThrow(try BundleDataLoader.loadArt(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadCamps(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadEvents(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadUpdateInfo(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadCredits(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadDatesInfo(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadPoints(from: iBurn2025APIData.bundle))
     }
 }

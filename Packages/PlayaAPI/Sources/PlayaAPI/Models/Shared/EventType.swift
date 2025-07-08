@@ -3,16 +3,12 @@ import Foundation
 /// Event type abbreviations used by the Burning Man API
 public enum EventType: String, Codable, CaseIterable, Sendable {
     case artsAndCrafts = "arts"
-    case adultOriented = "adul"
-    case burningCeremony = "burn"
+    case adultOriented = "adlt"
+    case beverages = "tea"
     case foodAndDrink = "food"
-    case gamesAndCompetition = "game"
-    case kidsEvent = "kids"
-    case parade = "para"
-    case performanceAndTheater = "perf"
+    case kidsEvent = "kid"
     case musicAndParty = "prty"
-    case socialMeet = "soci"
-    case wellness = "well"
+    case other = "othr"
     case classAndWorkshop = "work"
 }
 
