@@ -45,7 +45,7 @@ class CreditsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let dataBundle = Bundle.brc_data
+        let dataBundle = Bundle.brc_dataBundle
         let creditsURL = dataBundle.url(forResource: "credits", withExtension:"json")
         let creditsData = try? Data(contentsOf: creditsURL!)
         do {

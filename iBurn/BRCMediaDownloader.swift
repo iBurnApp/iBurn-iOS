@@ -21,13 +21,7 @@ extension Bundle {
     
     /** Media files bundled w/ the app */
     static var bundledMedia: Bundle? {
-        let folderName = BRCMediaDownloader.mediaFolderName
-        let mainBundlePath = Bundle.main.resourcePath as NSString?
-        guard let bundlePath =  mainBundlePath?.appendingPathComponent(folderName) else {
-            return nil
-        }
-        let bundle = Bundle(path: bundlePath)
-        return bundle
+        return Bundle.brc_mediaBundle
     }
 }
 

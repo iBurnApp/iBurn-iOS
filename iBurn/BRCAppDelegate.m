@@ -25,7 +25,6 @@
 #import <WebKit/WebKit.h>
 @import TTTAttributedLabel;
 #import "iBurn-Swift.h"
-#import "NSBundle+iBurn.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"

@@ -17,7 +17,6 @@
 #import "BRCGeocoder.h"
 #import "BRCMapPoint.h"
 #import "BRCDatabaseManager.h"
-#import "NSBundle+iBurn.h"
 #import "iBurn-Swift.h"
 @import CoreLocation;
 @import PlayaGeocoder;

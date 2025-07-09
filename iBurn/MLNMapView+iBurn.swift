@@ -25,10 +25,8 @@ extension MLNMapView {
     
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults(moveToCenter: Bool) {
-        let styleJSON = traitCollection.userInterfaceStyle == .light ? "iburn-light.json" : "iburn-dark.json"
-        
-        guard let mbtilesURL = Bundle.main.url(forResource: "map", withExtension: "mbtiles", subdirectory: "Map"),
-              let styleJSONURL = Bundle.main.url(forResource: "styles", withExtension: "", subdirectory: "Map")?.appendingPathComponent(styleJSON) else {
+        guard let mbtilesURL = Bundle.brc_mbtilesURL,
+              let styleJSONURL = Bundle.brc_mapStyleURL(for: traitCollection.userInterfaceStyle) else {
             print("Couldn't find mbtiles!")
             return
         }
@@ -53,7 +51,7 @@ extension MLNMapView {
         }
         
         #if DEBUG
-        MLNLoggingConfiguration.shared.loggingLevel = .verbose
+        MLNLoggingConfiguration.shared.loggingLevel = .debug
         #endif
 //        debugMask = [
 //            MLNMapDebugMaskOptions.tileBoundariesMask,
