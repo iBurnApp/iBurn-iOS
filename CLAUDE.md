@@ -4,7 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overall Guidance
 
-* When you exit plan mode, ask if you should write your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as (optionally) the entire conversation context and file snippets. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. If exporting the entire context, also include `YYYY-MM-dd-summarized-title-full-context.md` file that contains the full context.
+### Documentation Workflow
+* When you exit plan mode, you should always write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings.
+* When resuming work, utilize these files to gather additional context about what we were working on.
+
+### Documentation Structure
+Each document should include:
+1. **High-Level Plan** - Problem statement, solution overview, key changes
+2. **Technical Details** - File modifications, code snippets, command outputs
+3. **Context Preservation** - Error messages, debugging steps, decision rationale
+4. **Cross-References** - Links to related work sessions or files
+5. **Expected Outcomes** - What should work after implementation
+
+### Content Guidelines
+* Include full file paths for all modifications
+* Preserve exact code snippets and command outputs
+* Document both successful and failed approaches
+* Capture the reasoning behind technical decisions
+* Note any dependencies or prerequisites discovered
+
+### Update Workflow
+* **New Session**: Create new document for distinct features/fixes
+* **Continuing Work**: Update existing document with latest progress
+* **Related Work**: Reference previous documents and build upon them
+* **Completion**: Mark final outcomes and any remaining work
 
 
 ## Project Overview

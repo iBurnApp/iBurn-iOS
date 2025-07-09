@@ -14,38 +14,24 @@ let package = Package(
             name: "PlayaDB",
             targets: ["PlayaDB"]
         ),
-        .library(
-            name: "PlayaDBTestHelpers",
-            targets: ["PlayaDBTestHelpers"]
-        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
+        .package(url: "https://github.com/pointfreeco/sharing-grdb", from: "0.1.0"),
         .package(path: "../PlayaAPI"),
     ],
     targets: [
         .target(
             name: "PlayaDB",
             dependencies: [
-                .product(name: "GRDB", package: "GRDB.swift"),
+                .product(name: "SharingGRDB", package: "sharing-grdb"),
                 "PlayaAPI"
-            ]
-        ),
-        .target(
-            name: "PlayaDBTestHelpers",
-            dependencies: [
-                "PlayaDB",
-                "PlayaAPI",
-                .product(name: "PlayaAPITestHelpers", package: "PlayaAPI")
             ]
         ),
         .testTarget(
             name: "PlayaDBTests",
             dependencies: [
                 "PlayaDB",
-                "PlayaDBTestHelpers",
-                "PlayaAPI",
-                .product(name: "PlayaAPITestHelpers", package: "PlayaAPI")
+                "PlayaAPI"
             ]
         ),
     ]
