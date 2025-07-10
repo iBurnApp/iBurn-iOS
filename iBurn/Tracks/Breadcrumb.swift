@@ -34,7 +34,7 @@ struct Breadcrumb {
 // See https://github.com/groue/GRDB.swift/blob/master/README.md#records
 extension Breadcrumb: Codable, FetchableRecord, MutablePersistableRecord {
     // Define database columns from CodingKeys
-    private enum Columns {
+    internal enum Columns {
         static let id = Column(CodingKeys.id)
         static let latitude = Column(CodingKeys.latitude)
         static let longitude = Column(CodingKeys.longitude)

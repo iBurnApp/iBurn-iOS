@@ -1,9 +1,21 @@
 import Foundation
-import SharingGRDB
+import GRDB
 
 /// Information about data updates and versioning
-@Table("update_info")
-public struct UpdateInfo {
+public struct UpdateInfo: Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "update_info"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case dataType = "data_type"
+        case lastUpdated = "last_updated"
+        case version
+        case totalCount = "total_count"
+        case createdAt = "created_at"
+    }
     /// Type of data (art, camp, event)
     public var dataType: String
     

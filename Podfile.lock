@@ -13,9 +13,6 @@ PODS:
   - FormatterKit/Resources (1.9.0)
   - FormatterKit/TimeIntervalFormatter (1.9.0):
     - FormatterKit/Resources
-  - GRDB.swift (6.24.1):
-    - GRDB.swift/standard (= 6.24.1)
-  - GRDB.swift/standard (6.24.1)
   - JTSImageViewController (1.5.1)
   - KVOController (1.2.0)
   - LicensePlist (3.27.1)
@@ -145,7 +142,6 @@ DEPENDENCIES:
   - DOFavoriteButton (from `Submodules/DOFavoriteButton/DOFavoriteButton.podspec`)
   - FormatterKit/LocationFormatter (~> 1.8)
   - FormatterKit/TimeIntervalFormatter (~> 1.8)
-  - GRDB.swift
   - JTSImageViewController
   - KVOController (~> 1.0)
   - LicensePlist (~> 3.24)
@@ -166,7 +162,6 @@ SPEC REPOS:
     - CocoaLumberjack
     - CupertinoYankee
     - FormatterKit
-    - GRDB.swift
     - JTSImageViewController
     - KVOController
     - LicensePlist
@@ -202,7 +197,6 @@ SPEC CHECKSUMS:
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 184db51bf120b633693a73624a4cede89ec51a41
-  GRDB.swift: 136dcb5d8dddca50aae3ba7d77475f79e7232cd8
   JTSImageViewController: 1f8ce1cc93dab0d0af8e53badeea7528560cfec9
   KVOController: d72ace34afea42468329623b3379ab3cd1d286b6
   LicensePlist: 5a4ff2e9e038a1203cc058b6335d2eebd3313491
@@ -215,6 +209,6 @@ SPEC CHECKSUMS:
   UIImageColors: 5308752f939fbc3daa1ba4749d268959fbad92cd
   YapDatabase: 350ab72b61f9dcc32504594da1a52a93f5ef1476
 
-PODFILE CHECKSUM: 41cebea204bd89be3fd1301285048caf3e7d1106
+PODFILE CHECKSUM: fd8cd4164e29437c3d29ae4a3d41eddbb59b977e
 
 COCOAPODS: 1.16.2

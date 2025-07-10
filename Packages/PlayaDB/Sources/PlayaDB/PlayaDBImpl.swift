@@ -1,7 +1,7 @@
 import Foundation
 import CoreLocation
 import MapKit
-import SharingGRDB
+import GRDB
 import PlayaAPI
 
 /// Internal implementation of PlayaDB using GRDB
@@ -179,19 +179,19 @@ internal class PlayaDBImpl: PlayaDB {
     
     func fetchArt() async throws -> [ArtObject] {
         return try await dbQueue.read { db in
-            try ArtObject.all.fetchAll(db)
+            try ArtObject.fetchAll(db)
         }
     }
     
     func fetchCamps() async throws -> [CampObject] {
         return try await dbQueue.read { db in
-            try CampObject.all.fetchAll(db)
+            try CampObject.fetchAll(db)
         }
     }
     
     func fetchEvents() async throws -> [EventObject] {
         return try await dbQueue.read { db in
-            try EventObject.all.fetchAll(db)
+            try EventObject.fetchAll(db)
         }
     }
     
@@ -207,19 +207,28 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Fetch art objects in region
             let artObjects = try ArtObject
-                .where { $0.gpsLatitude >= minLat && $0.gpsLatitude <= maxLat && $0.gpsLongitude >= minLon && $0.gpsLongitude <= maxLon }
+                .filter(Column("gps_latitude") >= minLat)
+                .filter(Column("gps_latitude") <= maxLat)
+                .filter(Column("gps_longitude") >= minLon)
+                .filter(Column("gps_longitude") <= maxLon)
                 .fetchAll(db)
             objects.append(contentsOf: artObjects)
             
             // Fetch camp objects in region
             let campObjects = try CampObject
-                .where { $0.gpsLatitude >= minLat && $0.gpsLatitude <= maxLat && $0.gpsLongitude >= minLon && $0.gpsLongitude <= maxLon }
+                .filter(Column("gps_latitude") >= minLat)
+                .filter(Column("gps_latitude") <= maxLat)
+                .filter(Column("gps_longitude") >= minLon)
+                .filter(Column("gps_longitude") <= maxLon)
                 .fetchAll(db)
             objects.append(contentsOf: campObjects)
             
             // Fetch event objects in region
             let eventObjects = try EventObject
-                .where { $0.gpsLatitude >= minLat && $0.gpsLatitude <= maxLat && $0.gpsLongitude >= minLon && $0.gpsLongitude <= maxLon }
+                .filter(Column("gps_latitude") >= minLat)
+                .filter(Column("gps_latitude") <= maxLat)
+                .filter(Column("gps_longitude") >= minLon)
+                .filter(Column("gps_longitude") <= maxLon)
                 .fetchAll(db)
             objects.append(contentsOf: eventObjects)
             
@@ -235,19 +244,19 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Search art objects
             let artObjects = try ArtObject
-                .where { $0.name.like(searchPattern) || $0.description.like(searchPattern) || $0.artist.like(searchPattern) }
+                .filter(Column("name").like(searchPattern) || Column("description").like(searchPattern) || Column("artist").like(searchPattern))
                 .fetchAll(db)
             objects.append(contentsOf: artObjects)
             
             // Search camp objects
             let campObjects = try CampObject
-                .where { $0.name.like(searchPattern) || $0.description.like(searchPattern) || $0.landmark.like(searchPattern) }
+                .filter(Column("name").like(searchPattern) || Column("description").like(searchPattern) || Column("landmark").like(searchPattern))
                 .fetchAll(db)
             objects.append(contentsOf: campObjects)
             
             // Search event objects
             let eventObjects = try EventObject
-                .where { $0.name.like(searchPattern) || $0.description.like(searchPattern) || $0.eventTypeLabel.like(searchPattern) }
+                .filter(Column("name").like(searchPattern) || Column("description").like(searchPattern) || Column("event_type_label").like(searchPattern))
                 .fetchAll(db)
             objects.append(contentsOf: eventObjects)
             
@@ -263,22 +272,22 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Get favorite metadata  
             let favoriteMetadata = try ObjectMetadata
-                .where { $0.isFavorite == true }
+                .filter(Column("is_favorite") == true)
                 .fetchAll(db)
             
             // Fetch corresponding objects
             for metadata in favoriteMetadata {
                 switch metadata.dataObjectType {
                 case .art:
-                    if let artObject = try ArtObject.where { $0.uid == metadata.objectId }.fetchOne(db) {
+                    if let artObject = try ArtObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
                         objects.append(artObject)
                     }
                 case .camp:
-                    if let campObject = try CampObject.where { $0.uid == metadata.objectId }.fetchOne(db) {
+                    if let campObject = try CampObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
                         objects.append(campObject)
                     }
                 case .event:
-                    if let eventObject = try EventObject.where { $0.uid == metadata.objectId }.fetchOne(db) {
+                    if let eventObject = try EventObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
                         objects.append(eventObject)
                     }
                 case .none:
@@ -297,23 +306,20 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Get existing metadata
             let existingMetadata = try ObjectMetadata
-                .where { $0.objectType == objectType && $0.objectId == objectId }
+                .filter(Column("object_type") == objectType && Column("object_id") == objectId)
                 .fetchOne(db)
             
             if let metadata = existingMetadata {
                 // Update existing metadata
                 let newFavoriteStatus = !metadata.isFavorite
                 let now = Date()
-                try ObjectMetadata
-                    .where { $0.objectType == objectType && $0.objectId == objectId }
-                    .update {
-                        $0.isFavorite = newFavoriteStatus
-                        $0.updatedAt = now
-                    }
-                    .execute(db)
+                var updatedMetadata = metadata
+                updatedMetadata.isFavorite = newFavoriteStatus
+                updatedMetadata.updatedAt = now
+                try updatedMetadata.update(db)
             } else {
                 // Create new metadata
-                let newMetadata = ObjectMetadata(
+                var newMetadata = ObjectMetadata(
                     objectType: objectType,
                     objectId: objectId,
                     isFavorite: true
@@ -329,7 +335,7 @@ internal class PlayaDBImpl: PlayaDB {
             let objectId = object.uid
             
             let metadata = try ObjectMetadata
-                .where { $0.objectType == objectType && $0.objectId == objectId }
+                .filter(Column("object_type") == objectType && Column("object_id") == objectId)
                 .fetchOne(db)
             
             return metadata?.isFavorite ?? false
@@ -351,16 +357,16 @@ internal class PlayaDBImpl: PlayaDB {
             let apiArtObjects = try apiParser.parseArt(from: artData)
             
             // Clear existing art data
-            try ArtImage.delete().execute(db)
-            try ArtObject.delete().execute(db)
+            try ArtImage.deleteAll(db)
+            try ArtObject.deleteAll(db)
             
             for apiArt in apiArtObjects {
-                let artObject = try self.convertArtObject(from: apiArt)
+                var artObject = try self.convertArtObject(from: apiArt)
                 try artObject.insert(db)
                 
                 // Insert art images
-                for (index, apiImage) in apiArt.images.enumerated() {
-                    let artImage = ArtImage(
+                for apiImage in apiArt.images {
+                    var artImage = ArtImage(
                         id: nil,
                         artId: apiArt.uid.value,
                         thumbnailUrl: apiImage.thumbnailUrl,
@@ -374,16 +380,16 @@ internal class PlayaDBImpl: PlayaDB {
             let apiCampObjects = try apiParser.parseCamps(from: campData)
             
             // Clear existing camp data
-            try CampImage.delete().execute(db)
-            try CampObject.delete().execute(db)
+            try CampImage.deleteAll(db)
+            try CampObject.deleteAll(db)
             
             for apiCamp in apiCampObjects {
-                let campObject = try self.convertCampObject(from: apiCamp)
+                var campObject = try self.convertCampObject(from: apiCamp)
                 try campObject.insert(db)
                 
                 // Insert camp images
                 for apiImage in apiCamp.images {
-                    let campImage = CampImage(
+                    var campImage = CampImage(
                         id: nil,
                         campId: apiCamp.uid.value,
                         thumbnailUrl: apiImage.thumbnailUrl
@@ -396,14 +402,14 @@ internal class PlayaDBImpl: PlayaDB {
             let apiEventObjects = try apiParser.parseEvents(from: eventData)
             
             // Clear existing event data
-            try EventOccurrence.delete().execute(db)
-            try EventObject.delete().execute(db)
+            try EventOccurrence.deleteAll(db)
+            try EventObject.deleteAll(db)
             
             for apiEvent in apiEventObjects {
                 var eventObject = try self.convertEventObject(from: apiEvent)
                 
                 // Resolve camp relationship and copy GPS coordinates
-                if let campId = apiEvent.hostedByCamp?.rawValue {
+                if let campId = apiEvent.hostedByCamp?.value {
                     if let campObject = try CampObject.fetchOne(db, key: campId) {
                         eventObject.gpsLatitude = campObject.gpsLatitude
                         eventObject.gpsLongitude = campObject.gpsLongitude
@@ -411,7 +417,7 @@ internal class PlayaDBImpl: PlayaDB {
                 }
                 
                 // Resolve art relationship and copy GPS coordinates
-                if let artId = apiEvent.locatedAtArt?.rawValue {
+                if let artId = apiEvent.locatedAtArt?.value {
                     if let artObject = try ArtObject.fetchOne(db, key: artId) {
                         eventObject.gpsLatitude = artObject.gpsLatitude
                         eventObject.gpsLongitude = artObject.gpsLongitude
@@ -422,7 +428,7 @@ internal class PlayaDBImpl: PlayaDB {
                 
                 // Insert event occurrences
                 for apiOccurrence in apiEvent.occurrenceSet {
-                    let eventOccurrence = EventOccurrence(
+                    var eventOccurrence = EventOccurrence(
                         id: nil,
                         eventId: apiEvent.uid.value,
                         startTime: apiOccurrence.startTime,
@@ -435,7 +441,7 @@ internal class PlayaDBImpl: PlayaDB {
             // Step 4: Update import info
             let now = Date()
             
-            let artUpdateInfo = UpdateInfo(
+            var artUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.art.rawValue,
                 lastUpdated: now,
                 version: nil,
@@ -444,7 +450,7 @@ internal class PlayaDBImpl: PlayaDB {
             )
             try artUpdateInfo.insert(db)
             
-            let campUpdateInfo = UpdateInfo(
+            var campUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.camp.rawValue,
                 lastUpdated: now,
                 version: nil,
@@ -453,7 +459,7 @@ internal class PlayaDBImpl: PlayaDB {
             )
             try campUpdateInfo.insert(db)
             
-            let eventUpdateInfo = UpdateInfo(
+            var eventUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.event.rawValue,
                 lastUpdated: now,
                 version: nil,
@@ -538,7 +544,7 @@ internal class PlayaDBImpl: PlayaDB {
     
     func getUpdateInfo() async throws -> [UpdateInfo] {
         return try await dbQueue.read { db in
-            try UpdateInfo.all.fetchAll(db)
+            try UpdateInfo.fetchAll(db)
         }
     }
     

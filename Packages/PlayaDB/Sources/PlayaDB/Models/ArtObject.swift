@@ -1,74 +1,102 @@
 import Foundation
 import CoreLocation
-import SharingGRDB
+import GRDB
 
 /// Art installation object with complete API field mapping
-@Table("art_objects")
-public struct ArtObject: DataObject {
+public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "art_objects"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case uid
+        case name
+        case year
+        case url
+        case contactEmail = "contact_email"
+        case hometown
+        case description
+        case artist
+        case category
+        case program
+        case donationLink = "donation_link"
+        case locationString = "location_string"
+        case locationHour = "location_hour"
+        case locationMinute = "location_minute"
+        case locationDistance = "location_distance"
+        case locationCategory = "location_category"
+        case gpsLatitude = "gps_latitude"
+        case gpsLongitude = "gps_longitude"
+        case guidedTours = "guided_tours"
+        case selfGuidedTourMap = "self_guided_tour_map"
+    }
+    
     // MARK: - Primary Data (from PlayaAPI.Art)
     
-    /// Unique identifier (auto-mapped to uid column)
+    /// Unique identifier
     public var uid: String
     
-    /// Name of the art installation (auto-mapped to name column)
+    /// Name of the art installation
     public var name: String
     
-    /// Year of the installation (auto-mapped to year column)
+    /// Year of the installation
     public var year: Int
     
-    /// Website URL (auto-mapped to url column)
+    /// Website URL
     public var url: URL?
     
-    /// Contact email (auto-mapped to contact_email column)
+    /// Contact email
     public var contactEmail: String?
     
-    /// Artist's hometown (auto-mapped to hometown column)
+    /// Artist's hometown
     public var hometown: String?
     
-    /// Description of the installation (auto-mapped to description column)
+    /// Description of the installation
     public var description: String?
     
-    /// Artist name (auto-mapped to artist column)
+    /// Artist name
     public var artist: String?
     
-    /// Category of the installation (auto-mapped to category column)
+    /// Category of the installation
     public var category: String?
     
-    /// Program information (auto-mapped to program column)
+    /// Program information
     public var program: String?
     
-    /// Donation link (auto-mapped to donation_link column)
+    /// Donation link
     public var donationLink: URL?
     
-    /// Location string description (auto-mapped to location_string column)
+    /// Location string description
     public var locationString: String?
     
     // MARK: - Location Data (from PlayaAPI.ArtLocation)
     
-    /// Time-based hour position (auto-mapped to location_hour column)
+    /// Time-based hour position
     public var locationHour: Int?
     
-    /// Time-based minute position (auto-mapped to location_minute column)
+    /// Time-based minute position
     public var locationMinute: Int?
     
-    /// Distance from center in feet (auto-mapped to location_distance column)
+    /// Distance from center in feet
     public var locationDistance: Int?
     
-    /// Location category (auto-mapped to location_category column)
+    /// Location category
     public var locationCategory: String?
     
-    /// GPS latitude (auto-mapped to gps_latitude column)
+    /// GPS latitude
     public var gpsLatitude: Double?
     
-    /// GPS longitude (auto-mapped to gps_longitude column)
+    /// GPS longitude
     public var gpsLongitude: Double?
     
     // MARK: - Tour Information
     
-    /// Whether guided tours are available (auto-mapped to guided_tours column)
+    /// Whether guided tours are available
     public var guidedTours: Bool
     
-    /// Whether self-guided tour map is available (auto-mapped to self_guided_tour_map column)
+    /// Whether self-guided tour map is available
     public var selfGuidedTourMap: Bool
     
     public init(
@@ -195,18 +223,29 @@ public extension ArtObject {
 }
 
 /// Art image model
-@Table("art_images")
-public struct ArtImage {
-    /// Auto-incremented ID (auto-mapped to id column)
+public struct ArtImage: Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "art_images"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case id
+        case artId = "art_id"
+        case thumbnailUrl = "thumbnail_url"
+        case galleryRef = "gallery_ref"
+    }
+    /// Auto-incremented ID
     public var id: Int64?
     
-    /// Reference to parent art object (auto-mapped to art_id column)
+    /// Reference to parent art object
     public var artId: String
     
-    /// Thumbnail image URL (auto-mapped to thumbnail_url column)
+    /// Thumbnail image URL
     public var thumbnailUrl: URL?
     
-    /// Gallery reference (auto-mapped to gallery_ref column)
+    /// Gallery reference
     public var galleryRef: String?
     
     public init(
@@ -219,6 +258,11 @@ public struct ArtImage {
         self.artId = artId
         self.thumbnailUrl = thumbnailUrl
         self.galleryRef = galleryRef
+    }
+    
+    // Update id after insertion
+    public mutating func didInsert(_ inserted: InsertionSuccess) {
+        id = inserted.rowID
     }
 }
 

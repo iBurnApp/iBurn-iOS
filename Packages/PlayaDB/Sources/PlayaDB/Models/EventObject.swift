@@ -1,66 +1,92 @@
 import Foundation
 import CoreLocation
-import SharingGRDB
+import GRDB
 
 /// Event object with complete API field mapping
-@Table("event_objects")
-public struct EventObject: DataObject {
+public struct EventObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "event_objects"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case uid
+        case name
+        case year
+        case eventId = "event_id"
+        case description
+        case eventTypeLabel = "event_type_label"
+        case eventTypeCode = "event_type_code"
+        case printDescription = "print_description"
+        case slug
+        case hostedByCamp = "hosted_by_camp"
+        case locatedAtArt = "located_at_art"
+        case otherLocation = "other_location"
+        case checkLocation = "check_location"
+        case url
+        case allDay = "all_day"
+        case contact
+        case gpsLatitude = "gps_latitude"
+        case gpsLongitude = "gps_longitude"
+    }
+    
     // MARK: - Primary Data (from PlayaAPI.Event)
     
-    /// Unique identifier (auto-mapped to uid column)
+    /// Unique identifier
     public var uid: String
     
-    /// Event title (auto-mapped to name column) - using title as name for DataObject protocol
+    /// Event title - using title as name for DataObject protocol
     public var name: String
     
-    /// Year of the event (auto-mapped to year column)
+    /// Year of the event
     public var year: Int
     
-    /// Event ID (auto-mapped to event_id column)
+    /// Event ID
     public var eventId: Int?
     
-    /// Description of the event (auto-mapped to description column)
+    /// Description of the event
     public var description: String?
     
-    /// Event type label (auto-mapped to event_type_label column)
+    /// Event type label
     public var eventTypeLabel: String
     
-    /// Event type code (auto-mapped to event_type_code column)
+    /// Event type code
     public var eventTypeCode: String
     
-    /// Print description (auto-mapped to print_description column)
+    /// Print description
     public var printDescription: String
     
-    /// URL slug (auto-mapped to slug column)
+    /// URL slug
     public var slug: String?
     
-    /// Hosted by camp ID (auto-mapped to hosted_by_camp column)
+    /// Hosted by camp ID
     public var hostedByCamp: String?
     
-    /// Located at art ID (auto-mapped to located_at_art column)
+    /// Located at art ID
     public var locatedAtArt: String?
     
-    /// Other location string (auto-mapped to other_location column)
+    /// Other location string
     public var otherLocation: String
     
-    /// Check location flag (auto-mapped to check_location column)
+    /// Check location flag
     public var checkLocation: Bool
     
-    /// Website URL (auto-mapped to url column)
+    /// Website URL
     public var url: URL?
     
-    /// All day event flag (auto-mapped to all_day column)
+    /// All day event flag
     public var allDay: Bool
     
-    /// Contact information (auto-mapped to contact column)
+    /// Contact information
     public var contact: String?
     
     // MARK: - GPS Coordinates (copied from host camp/art during import)
     
-    /// GPS latitude (auto-mapped to gps_latitude column)
+    /// GPS latitude
     public var gpsLatitude: Double?
     
-    /// GPS longitude (auto-mapped to gps_longitude column)
+    /// GPS longitude
     public var gpsLongitude: Double?
     
     public init(
@@ -207,18 +233,29 @@ public extension EventObject {
 }
 
 /// Event occurrence model
-@Table("event_occurrences")
-public struct EventOccurrence {
-    /// Auto-incremented ID (auto-mapped to id column)
+public struct EventOccurrence: Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "event_occurrences"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case id
+        case eventId = "event_id"
+        case startTime = "start_time"
+        case endTime = "end_time"
+    }
+    /// Auto-incremented ID
     public var id: Int64?
     
-    /// Reference to parent event object (auto-mapped to event_id column)
+    /// Reference to parent event object
     public var eventId: String
     
-    /// Start time of the occurrence (auto-mapped to start_time column)
+    /// Start time of the occurrence
     public var startTime: Date
     
-    /// End time of the occurrence (auto-mapped to end_time column)
+    /// End time of the occurrence
     public var endTime: Date
     
     public init(
@@ -231,6 +268,11 @@ public struct EventOccurrence {
         self.eventId = eventId
         self.startTime = startTime
         self.endTime = endTime
+    }
+    
+    // Update id after insertion
+    public mutating func didInsert(_ inserted: InsertionSuccess) {
+        id = inserted.rowID
     }
 }
 

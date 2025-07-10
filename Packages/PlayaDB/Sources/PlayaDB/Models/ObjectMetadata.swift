@@ -1,9 +1,23 @@
 import Foundation
-import SharingGRDB
+import GRDB
 
 /// Metadata for data objects (app-specific data like favorites, notes, etc.)
-@Table("object_metadata")
-public struct ObjectMetadata {
+public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "object_metadata"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case objectType = "object_type"
+        case objectId = "object_id"
+        case isFavorite = "is_favorite"
+        case lastViewed = "last_viewed"
+        case userNotes = "user_notes"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
     /// Type of object this metadata belongs to
     public var objectType: String
     

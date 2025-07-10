@@ -66,14 +66,6 @@ name: FormatterKit, nameSpecified:
 body: Copyright (c) 2011–2…
 version: 1.9.0
 
-name: GRDB.swift, nameSpecified: 
-body: Copyright (C) 2015-2…
-version: 6.24.1
-
-name: GRDB.swift, nameSpecified: 
-body: Copyright (C) 2015-2…
-version: 6.24.1
-
 name: JTSImageViewController, nameSpecified: 
 body: The MIT License (MIT…
 version: 1.5.1
@@ -191,6 +183,8 @@ name: GoogleAppMeasurement, nameSpecified: GoogleAppMeasurement, owner: google, 
 name: GoogleDataTransport, nameSpecified: GoogleDataTransport, owner: google, version: 10.1.0, source: https://github.com/google/GoogleDataTransport
 
 name: GoogleUtilities, nameSpecified: GoogleUtilities, owner: google, version: 8.1.0, source: https://github.com/google/GoogleUtilities
+
+name: GRDB.swift, nameSpecified: GRDB.swift, owner: groue, version: , source: https://github.com/groue/GRDB.swift
 
 name: grpc-binary, nameSpecified: gRPC, owner: google, version: 1.69.0, source: https://github.com/google/grpc-binary
 

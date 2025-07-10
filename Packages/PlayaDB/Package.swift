@@ -16,14 +16,14 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/sharing-grdb", from: "0.1.0"),
+        .package(url: "https://github.com/groue/GRDB.swift", from: "6.24.0"),
         .package(path: "../PlayaAPI"),
     ],
     targets: [
         .target(
             name: "PlayaDB",
             dependencies: [
-                .product(name: "SharingGRDB", package: "sharing-grdb"),
+                .product(name: "GRDB", package: "GRDB.swift"),
                 "PlayaAPI"
             ]
         ),

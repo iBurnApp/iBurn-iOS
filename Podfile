@@ -35,7 +35,6 @@ target 'iBurn' do
 	pod 'JTSImageViewController'
 	# pod 'UIImageColors', '~> 2.1'
 	pod 'UIImageColors', :git => 'https://github.com/jathu/UIImageColors.git', :tag => '2.2.0'
-	pod 'GRDB.swift'
 end
 
 # https://github.com/CocoaPods/CocoaPods/issues/8069#issuecomment-420044112

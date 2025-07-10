@@ -1,63 +1,88 @@
 import Foundation
 import CoreLocation
-import SharingGRDB
+import GRDB
 
 /// Theme camp object with complete API field mapping
-@Table("camp_objects")
-public struct CampObject: DataObject {
+public struct CampObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "camp_objects"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case uid
+        case name
+        case year
+        case url
+        case contactEmail = "contact_email"
+        case hometown
+        case description
+        case landmark
+        case locationString = "location_string"
+        case locationLocationString = "location_location_string"
+        case frontage
+        case intersection
+        case intersectionType = "intersection_type"
+        case dimensions
+        case exactLocation = "exact_location"
+        case gpsLatitude = "gps_latitude"
+        case gpsLongitude = "gps_longitude"
+    }
+    
     // MARK: - Primary Data (from PlayaAPI.Camp)
     
-    /// Unique identifier (auto-mapped to uid column)
+    /// Unique identifier
     public var uid: String
     
-    /// Name of the camp (auto-mapped to name column)
+    /// Name of the camp
     public var name: String
     
-    /// Year of the camp (auto-mapped to year column)
+    /// Year of the camp
     public var year: Int
     
-    /// Website URL (auto-mapped to url column)
+    /// Website URL
     public var url: URL?
     
-    /// Contact email (auto-mapped to contact_email column)
+    /// Contact email
     public var contactEmail: String?
     
-    /// Camp's hometown (auto-mapped to hometown column)
+    /// Camp's hometown
     public var hometown: String?
     
-    /// Description of the camp (auto-mapped to description column)
+    /// Description of the camp
     public var description: String?
     
-    /// Landmark information (auto-mapped to landmark column)
+    /// Landmark information
     public var landmark: String?
     
-    /// Location string description (auto-mapped to location_string column)
+    /// Location string description
     public var locationString: String?
     
     // MARK: - Location Data (from PlayaAPI.CampLocation)
     
-    /// Location string (auto-mapped to location_location_string column)
+    /// Location string
     public var locationLocationString: String?
     
-    /// Frontage information (auto-mapped to frontage column)
+    /// Frontage information
     public var frontage: String?
     
-    /// Street intersection (auto-mapped to intersection column)
+    /// Street intersection
     public var intersection: String?
     
-    /// Intersection type (auto-mapped to intersection_type column)
+    /// Intersection type
     public var intersectionType: String?
     
-    /// Camp dimensions (auto-mapped to dimensions column)
+    /// Camp dimensions
     public var dimensions: String?
     
-    /// Exact location details (auto-mapped to exact_location column)
+    /// Exact location details
     public var exactLocation: String?
     
-    /// GPS latitude (auto-mapped to gps_latitude column)
+    /// GPS latitude
     public var gpsLatitude: Double?
     
-    /// GPS longitude (auto-mapped to gps_longitude column)
+    /// GPS longitude
     public var gpsLongitude: Double?
     
     public init(
@@ -206,15 +231,25 @@ public extension CampObject {
 }
 
 /// Camp image model
-@Table("camp_images")
-public struct CampImage {
-    /// Auto-incremented ID (auto-mapped to id column)
+public struct CampImage: Codable, FetchableRecord, MutablePersistableRecord {
+    // MARK: - Table Configuration
+    
+    public static let databaseTableName = "camp_images"
+    
+    // MARK: - Column Mapping
+    
+    private enum CodingKeys: String, CodingKey, ColumnExpression {
+        case id
+        case campId = "camp_id"
+        case thumbnailUrl = "thumbnail_url"
+    }
+    /// Auto-incremented ID
     public var id: Int64?
     
-    /// Reference to parent camp object (auto-mapped to camp_id column)
+    /// Reference to parent camp object
     public var campId: String
     
-    /// Thumbnail image URL (auto-mapped to thumbnail_url column)
+    /// Thumbnail image URL
     public var thumbnailUrl: URL?
     
     public init(
@@ -225,6 +260,11 @@ public struct CampImage {
         self.id = id
         self.campId = campId
         self.thumbnailUrl = thumbnailUrl
+    }
+    
+    // Update id after insertion
+    public mutating func didInsert(_ inserted: InsertionSuccess) {
+        id = inserted.rowID
     }
 }
 
