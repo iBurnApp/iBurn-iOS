@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -52,6 +52,8 @@
 		D92AC57022F0176B00C9FE32 /* Breadcrumb.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AC56F22F0176B00C9FE32 /* Breadcrumb.swift */; };
 		D92C740F2255C24C00FCD532 /* PlayaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D92C740E2255C24300FCD532 /* PlayaKit.framework */; };
 		D92C74102255C2B500FCD532 /* YapProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F23D1F74B86500144290 /* YapProtocols.swift */; };
+		D93176772E222D2E003636CB /* DetailServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93176752E222D2E003636CB /* DetailServicesTests.swift */; };
+		D93176782E222D2E003636CB /* DetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93176762E222D2E003636CB /* DetailViewModelTests.swift */; };
 		D93402352250811300318A7E /* PlayaKitYapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitYapTests.swift */; };
 		D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */; };
 		D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */; };
@@ -356,6 +358,8 @@
 		D92AC56F22F0176B00C9FE32 /* Breadcrumb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Breadcrumb.swift; sourceTree = "<group>"; };
 		D92B95991B7B0CC300116781 /* 2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2015; path = "Submodules/iBurn-Data/data/2015/2015"; sourceTree = SOURCE_ROOT; };
 		D92C73EA2255C06F00FCD532 /* PlayaKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaKit.xcodeproj; path = PlayaKit/PlayaKit.xcodeproj; sourceTree = "<group>"; };
+		D93176752E222D2E003636CB /* DetailServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailServicesTests.swift; sourceTree = "<group>"; };
+		D93176762E222D2E003636CB /* DetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewModelTests.swift; sourceTree = "<group>"; };
 		D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IndexPath+iBurn.swift"; sourceTree = "<group>"; };
 		D946994E1F3913A000DE8DA6 /* BRCObjectMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCObjectMetadata.h; sourceTree = "<group>"; };
 		D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCObjectMetadata.m; sourceTree = "<group>"; };
@@ -541,6 +545,10 @@
 		F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D93176642E2228AF003636CB /* Detail */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Detail; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		63CE2A511987140F00F65B01 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -682,6 +690,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D93176642E2228AF003636CB /* Detail */,
 				D92AC55E22F00A6E00C9FE32 /* Tracks */,
 				D9251483211519A2007A7904 /* AnnotationDataSource.swift */,
 				D9CED3DA1F31526300FCB6D1 /* iBurn.entitlements */,
@@ -955,6 +964,8 @@
 		D980A90B1B3F5A6400BE3682 /* iBurnTests */ = {
 			isa = PBXGroup;
 			children = (
+				D93176752E222D2E003636CB /* DetailServicesTests.swift */,
+				D93176762E222D2E003636CB /* DetailViewModelTests.swift */,
 				D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */,
 				D9914C4A1B40C52E00F90663 /* TestData */,
 				D980A9151B3F5AA300BE3682 /* BRCDataImportTests.m */,
@@ -1224,6 +1235,9 @@
 			);
 			dependencies = (
 				D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D93176642E2228AF003636CB /* Detail */,
 			);
 			name = iBurn;
 			packageProductDependencies = (
@@ -1749,6 +1763,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */,
+				D93176772E222D2E003636CB /* DetailServicesTests.swift in Sources */,
+				D93176782E222D2E003636CB /* DetailViewModelTests.swift in Sources */,
 				D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1983,6 +1999,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = PlayaKitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2013,6 +2030,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = PlayaKitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2035,6 +2053,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = iBurnTests/Info.plist;
@@ -2062,6 +2081,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = iBurnTests/Info.plist;
