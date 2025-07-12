@@ -23,16 +23,19 @@ protocol DetailActionCoordinator: AnyObject {
 struct DetailActionCoordinatorDependencies {
     weak var presenter: Presentable?
     weak var navigator: Navigable?
+    let eventEditService: EventEditService
     
     init(viewController: UIViewController) {
         self.presenter = viewController
         self.navigator = viewController.navigationController
+        self.eventEditService = EventEditServiceFactory.makeService()
     }
     
     // For testing
-    init(presenter: Presentable?, navigator: Navigable?) {
+    init(presenter: Presentable?, navigator: Navigable?, eventEditService: EventEditService? = nil) {
         self.presenter = presenter
         self.navigator = navigator
+        self.eventEditService = eventEditService ?? EventEditServiceFactory.makeService()
     }
 }
 
@@ -73,7 +76,7 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
             }
             
         case .showEventEditor(let event):
-            let eventEditController = createEventEditController(for: event)
+            let eventEditController = dependencies.eventEditService.createEventEditController(for: event)
             dependencies.presenter?.present(eventEditController, animated: true, completion: nil)
             
         case .shareCoordinates(let coordinate):
@@ -122,26 +125,6 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
     
     // MARK: - View Controller Creation
     
-    private func createEventEditController(for event: BRCEventObject) -> UIViewController {
-        let eventEditController = EKEventEditViewController()
-        let ekEvent = EKEvent(eventStore: EKEventStore())
-        ekEvent.title = event.title
-        
-        if let startDate = event.startDate as Date?, 
-           let endDate = event.endDate as Date? {
-            ekEvent.startDate = startDate
-            ekEvent.endDate = endDate
-        }
-        
-        if let location = event.playaLocation {
-            ekEvent.location = location
-        }
-        
-        eventEditController.event = ekEvent
-        eventEditController.eventStore = EKEventStore()
-        
-        return eventEditController
-    }
     
     private func createShareController(for coordinate: CLLocationCoordinate2D) -> UIViewController {
         let locationString = String(format: "Location: %.6f, %.6f", coordinate.latitude, coordinate.longitude)

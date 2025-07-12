@@ -44,6 +44,18 @@ class MockNavigable: Navigable {
     }
 }
 
+class MockEventEditService: EventEditService {
+    var createdController: EKEventEditViewController?
+    var lastEvent: BRCEventObject?
+    
+    func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController {
+        self.lastEvent = event
+        let controller = EKEventEditViewController()
+        self.createdController = controller
+        return controller
+    }
+}
+
 // MARK: - Tests
 
 class DetailActionCoordinatorTests: XCTestCase {
@@ -51,15 +63,18 @@ class DetailActionCoordinatorTests: XCTestCase {
     var coordinator: DetailActionCoordinator!
     var mockPresenter: MockPresentable!
     var mockNavigator: MockNavigable!
+    var mockEventEditService: MockEventEditService!
     
     override func setUp() {
         super.setUp()
         mockPresenter = MockPresentable()
         mockNavigator = MockNavigable()
+        mockEventEditService = MockEventEditService()
         
         let dependencies = DetailActionCoordinatorDependencies(
             presenter: mockPresenter,
-            navigator: mockNavigator
+            navigator: mockNavigator,
+            eventEditService: mockEventEditService
         )
         coordinator = DetailActionCoordinatorFactory.makeCoordinator(dependencies: dependencies)
     }
@@ -68,6 +83,7 @@ class DetailActionCoordinatorTests: XCTestCase {
         coordinator = nil
         mockPresenter = nil
         mockNavigator = nil
+        mockEventEditService = nil
         super.tearDown()
     }
     
@@ -116,6 +132,10 @@ class DetailActionCoordinatorTests: XCTestCase {
         XCTAssertNotNil(mockPresenter.presentedViewController)
         XCTAssertTrue(mockPresenter.presentedViewController is EKEventEditViewController)
         XCTAssertEqual(mockPresenter.presentAnimated, true)
+        
+        // Verify the service was called correctly
+        XCTAssertEqual(mockEventEditService.lastEvent?.title, "Test Event")
+        XCTAssertNotNil(mockEventEditService.createdController)
     }
     
     // MARK: - Share Coordinates Tests

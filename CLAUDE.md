@@ -46,7 +46,7 @@ Options:
 
 ## Source Control
 
-After completing a task, we should always commit our changes. Only perform safe operations like `git add` and `git commit`. Never attempt to rewrite history, pull from remote, squash, merge or rebase.
+IMPORTANT: After completing a task (and updating our documentation), we should always commit our changes. Only perform safe operations like `git add` and `git commit`. Never attempt to rewrite history, pull from remote, squash, merge or rebase.
 
 ## Project Overview
 
@@ -93,6 +93,10 @@ Always use the `-quiet` flag to reduce output noise.
 - Test targets: `iBurnTests`, `PlayaKitTests`
 
 ## Architecture Overview
+
+### Guidance
+
+Protocolize dependencies and use dependency injection with factory pattern. For example `protocol FooService` and `class FooServiceImpl: FooService`, where the factory builds and returns a `FooService`, obscuring the underlying Impl.
 
 ### Core Components
 

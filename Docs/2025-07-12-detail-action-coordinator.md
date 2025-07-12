@@ -148,6 +148,37 @@ Comprehensive unit tests with mock implementations:
 - Cleaner coordinator architecture that doesn't rely on UIViewController extensions
 - All tests now passing with coordinator pattern
 
+## Updates - Protocolized EventEditService
+
+### Changes Made
+1. **EventEditService Protocol**: Converted from concrete class to protocol with factory pattern
+2. **Dependency Injection**: Added EventEditService as dependency to DetailActionCoordinatorDependencies
+3. **Mock for Testing**: Created MockEventEditService for comprehensive testing
+4. **Enhanced Tests**: Updated tests to verify service interaction and proper dependency injection
+
+### Technical Implementation
+```swift
+protocol EventEditService {
+    func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController
+}
+
+enum EventEditServiceFactory {
+    static func makeService() -> EventEditService {
+        return EventEditServiceImpl()
+    }
+}
+
+private class EventEditServiceImpl: EventEditService {
+    // Implementation hidden behind protocol
+}
+```
+
+### Benefits
+- **Improved Testability**: Event creation logic can be mocked and tested independently
+- **Better Separation of Concerns**: Coordinator delegates event creation to specialized service
+- **Follows Architecture Guidelines**: Uses protocol + factory pattern consistently
+- **Dependency Injection**: Service is injected rather than created inline
+
 ## Remaining Work
 - Add proper map navigation implementation (currently just logs)
 - Implement events list presentation

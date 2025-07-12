@@ -10,13 +10,31 @@ import Foundation
 import EventKit
 import EventKitUI
 
+// MARK: - Protocol
+
 /// Service for creating calendar event editors without requiring permissions
-class EventEditService {
-    
+protocol EventEditService {
     /// Creates a pre-configured event edit controller for the given event
     /// - Parameter event: The event object to create a calendar entry for
     /// - Returns: A configured EKEventEditViewController ready for presentation
-    static func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController {
+    func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController
+}
+
+// MARK: - Factory
+
+/// Factory for creating EventEditService instances
+enum EventEditServiceFactory {
+    /// Creates an event edit service for production use
+    static func makeService() -> EventEditService {
+        return EventEditServiceImpl()
+    }
+}
+
+// MARK: - Implementation
+
+private class EventEditServiceImpl: EventEditService {
+    
+    func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController {
         let eventStore = EKEventStore()
         let calendarEvent = EKEvent(eventStore: eventStore)
         
