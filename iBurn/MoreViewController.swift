@@ -13,19 +13,22 @@ import SwiftUI
 class MoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
     
     enum CellTag: Int {
-        case art = 1,
-        camps = 2,
-        unlock = 3,
-        credits = 4,
-        feedback = 5,
-        share = 6,
-        rate = 7,
-        debugShowOnboarding = 8,
-        audioTour = 9,
-        appearance = 10,
-        locationHistory = 11,
-        navigationMode = 12,
-        dataUpdates = 13
+        case art = 1
+        case camps = 2
+        case unlock = 3
+        case credits = 4
+        case feedback = 5
+        case share = 6
+        case rate = 7
+        case debugShowOnboarding = 8
+        case audioTour = 9
+        case appearance = 10
+        case locationHistory = 11
+        case navigationMode = 12
+        case dataUpdates = 13
+        #if DEBUG
+        case featureFlags = 14
+        #endif
     }
     
     private let navigationModeSwitch = UISwitch()
@@ -70,6 +73,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     // MARK: - UITableViewDelegate & DataSource
+    
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
@@ -137,6 +141,10 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             break
         case .dataUpdates:
             pushDataUpdatesView()
+        #if DEBUG
+        case .featureFlags:
+            pushFeatureFlagsView()
+        #endif
         }
     }
     
@@ -229,6 +237,14 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let vc = DataUpdatesFactory.makeViewController()
         navigationController?.pushViewController(vc, animated: true)
     }
+    
+    #if DEBUG
+    func pushFeatureFlagsView() {
+        let featureFlagsVC = FeatureFlagsHostingController()
+        featureFlagsVC.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(featureFlagsVC, animated: true)
+    }
+    #endif
     
     // MARK: - SKStoreProductViewControllerDelegate
     

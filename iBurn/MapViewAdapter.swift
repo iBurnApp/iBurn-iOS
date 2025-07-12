@@ -206,7 +206,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
         case .info:
             if let parentVC = parent {
                 let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: parentVC)
-                let vc = DetailViewControllerFactory.create(with: data.object, coordinator: coordinator)
+                let vc = DetailViewControllerFactory.createDetailViewController(for: data.object, coordinator: coordinator)
                 parentVC.navigationController?.pushViewController(vc, animated: true)
             }
         }

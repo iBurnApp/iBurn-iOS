@@ -29,9 +29,19 @@ import EventKitUI
         
         // Create coordinator for the PageViewController
         let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: pageVC)
-        let detailVC = DetailViewControllerFactory.create(with: dataObject, coordinator: coordinator)
-        detailVC.indexPath = indexPath
-        let colors = detailVC.colors
+        let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject, coordinator: coordinator)
+        
+        // Set indexPath and get colors based on controller type
+        let colors: BRCImageColors
+        if let brcDetail = detailVC as? BRCDetailViewController {
+            brcDetail.indexPath = indexPath
+            colors = brcDetail.colors
+        } else if let hostingDetail = detailVC as? DetailHostingController {
+            hostingDetail.indexPath = indexPath
+            colors = hostingDetail.colors
+        } else {
+            colors = Appearance.currentColors
+        }
         
         pageVC.delegate = self
         pageVC.dataSource = self
@@ -54,8 +64,14 @@ private extension PageViewManager {
         
         // Create coordinator for the new detail view
         let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: pageViewController)
-        let newDetailVC = DetailViewControllerFactory.create(with: dataObject.object, coordinator: coordinator)
-        newDetailVC.indexPath = newIndex
+        let newDetailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject.object, coordinator: coordinator)
+        
+        // Set indexPath based on controller type
+        if let brcDetail = newDetailVC as? BRCDetailViewController {
+            brcDetail.indexPath = newIndex
+        } else if let hostingDetail = newDetailVC as? DetailHostingController {
+            hostingDetail.indexPath = newIndex
+        }
         // there was a crash sometimes when the index isn't found
         // i am guessing it's happening when filters are applied so the indices don't match up
         if tableView.hasRow(at: newIndex) {
