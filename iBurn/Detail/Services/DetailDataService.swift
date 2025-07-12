@@ -60,4 +60,48 @@ class DetailDataService: DetailDataServiceProtocol {
         
         return metadata
     }
+    
+    func canShowLocation(for object: BRCDataObject) -> Bool {
+        return BRCEmbargo.canShowLocation(for: object)
+    }
+    
+    func getCamp(withId id: String) -> BRCCampObject? {
+        var camp: BRCCampObject?
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            camp = transaction.object(forKey: id, inCollection: BRCCampObject.yapCollection) as? BRCCampObject
+        }
+        
+        return camp
+    }
+    
+    func getArt(withId id: String) -> BRCArtObject? {
+        var art: BRCArtObject?
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            art = transaction.object(forKey: id, inCollection: BRCArtObject.yapCollection) as? BRCArtObject
+        }
+        
+        return art
+    }
+    
+    func getEvents(for camp: BRCCampObject) -> [BRCEventObject]? {
+        var events: [BRCEventObject] = []
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            events = camp.events(with: transaction)
+        }
+        
+        return events.isEmpty ? nil : events
+    }
+    
+    func getEvents(for art: BRCArtObject) -> [BRCEventObject]? {
+        var events: [BRCEventObject] = []
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            events = art.events(with: transaction)
+        }
+        
+        return events.isEmpty ? nil : events
+    }
 }

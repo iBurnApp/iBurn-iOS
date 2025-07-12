@@ -19,24 +19,38 @@ struct DetailView: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                // Header with image/map if available
+                // Header with image if available
                 if let headerCell = viewModel.cells.first(where: { 
                     if case .image = $0.type { return true }
                     return false
                 }) {
                     DetailHeaderView(cell: headerCell, viewModel: viewModel)
-                }
-                
-                // Content cells
-                ForEach(viewModel.cells) { cell in
-                    DetailCellView(cell: cell, viewModel: viewModel)
                         .onTapGesture {
-                            viewModel.handleCellTap(cell)
+                            viewModel.handleCellTap(headerCell)
                         }
                 }
+                
+                // Content sections
+                LazyVStack(spacing: 8) {
+                    ForEach(viewModel.cells) { cell in
+                        // Skip image cells since they're handled above
+                        if case .image = cell.type {
+                            EmptyView()
+                        } else {
+                            DetailCellView(cell: cell, viewModel: viewModel)
+                                .onTapGesture {
+                                    viewModel.handleCellTap(cell)
+                                }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
             }
         }
+        .background(Color(UIColor.systemBackground))
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(viewModel.dataObject.title)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
@@ -45,6 +59,7 @@ struct DetailView: View {
                             viewModel.showEventEditor()
                         }
                         .font(.caption)
+                        .foregroundColor(.blue)
                     }
                     
                     Button(action: {
@@ -95,7 +110,7 @@ struct DetailCellView: View {
     let viewModel: DetailViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             switch cell.type {
             case .text(let text, let style):
                 DetailTextCell(text: text, style: style)
@@ -139,7 +154,6 @@ struct DetailCellView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(.horizontal)
         .padding(.vertical, 4)
     }
 }
@@ -252,16 +266,24 @@ struct DetailPlayaAddressCell: View {
     let tappable: Bool
     
     var body: some View {
-        HStack {
-            Image(systemName: "map")
-                .foregroundColor(tappable ? .blue : .secondary)
-            Text(address)
-                .foregroundColor(tappable ? .blue : .primary)
-            Spacer()
-            if tappable {
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.blue)
-                    .font(.caption)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("OFFICIAL LOCATION")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+            
+            HStack {
+                Image(systemName: "map")
+                    .foregroundColor(tappable ? .blue : .secondary)
+                Text(address)
+                    .foregroundColor(tappable ? .blue : .primary)
+                Spacer()
+                if tappable {
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.blue)
+                        .font(.caption)
+                }
             }
         }
     }
@@ -285,13 +307,22 @@ struct DetailUserNotesCell: View {
     let notes: String
     
     var body: some View {
-        HStack {
-            Image(systemName: "note.text")
-                .foregroundColor(.blue)
-            VStack(alignment: .leading) {
-                Text("Notes")
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("USER NOTES")
                     .font(.caption)
+                    .fontWeight(.semibold)
                     .foregroundColor(.secondary)
+                    .textCase(.uppercase)
+                Spacer()
+                Image(systemName: "pencil")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
+            
+            HStack {
+                Image(systemName: "note.text")
+                    .foregroundColor(.blue)
                 if notes.isEmpty {
                     Text("Add your notes...")
                         .foregroundColor(.secondary)
@@ -299,10 +330,8 @@ struct DetailUserNotesCell: View {
                 } else {
                     Text(notes)
                 }
+                Spacer()
             }
-            Spacer()
-            Image(systemName: "pencil")
-                .foregroundColor(.blue)
         }
     }
 }
@@ -327,34 +356,38 @@ struct DetailRelationshipCell: View {
     let type: RelationshipType
     
     var body: some View {
-        HStack {
-            Image(systemName: "arrow.right.circle")
-                .foregroundColor(.blue)
-            VStack(alignment: .leading) {
-                Text(titleForRelationshipType(type))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text(object.title)
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundColor(.blue)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(sectionTitle)
                 .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+            
+            HStack {
+                Image(systemName: "arrow.right.circle")
+                    .foregroundColor(.blue)
+                Text(object.title)
+                    .foregroundColor(.blue)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
         }
     }
     
-    private func titleForRelationshipType(_ type: RelationshipType) -> String {
+    private var sectionTitle: String {
         switch type {
-        case .hostedBy(let name):
-            return "Hosted by \(name)"
-        case .presentedBy(let name):
-            return "Presented by \(name)"
+        case .hostedBy:
+            return "HOSTED BY CAMP"
+        case .presentedBy:
+            return "PRESENTED BY"
         case .relatedCamp:
-            return "Related Camp"
+            return "RELATED CAMP"
         case .relatedArt:
-            return "Related Art"
+            return "RELATED ART"
         case .relatedEvent:
-            return "Related Event"
+            return "RELATED EVENT"
         }
     }
 }
@@ -364,19 +397,25 @@ struct DetailEventRelationshipCell: View {
     let hostName: String
     
     var body: some View {
-        HStack {
-            Image(systemName: "calendar")
-                .foregroundColor(.blue)
-            VStack(alignment: .leading) {
-                Text("Events at \(hostName)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text("\(events.count) events")
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundColor(.blue)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("OTHER EVENTS")
                 .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+            
+            HStack {
+                Image(systemName: "calendar")
+                    .foregroundColor(.blue)
+                Text("Hosted Events")
+                    .foregroundColor(.blue)
+                Spacer()
+                Text("\(events.count)")
+                    .foregroundColor(.secondary)
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
         }
     }
 }
@@ -385,17 +424,16 @@ struct DetailScheduleCell: View {
     let attributedString: NSAttributedString
     
     var body: some View {
-        HStack {
-            Image(systemName: "calendar.badge.clock")
+        VStack(alignment: .leading, spacing: 8) {
+            Text("SCHEDULE")
+                .font(.caption)
+                .fontWeight(.semibold)
                 .foregroundColor(.secondary)
-            VStack(alignment: .leading) {
-                Text("Schedule")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text(AttributedString(attributedString))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            Spacer()
+                .textCase(.uppercase)
+            
+            Text(AttributedString(attributedString))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.orange)
         }
     }
 }

@@ -45,6 +45,26 @@ class MockDetailDataService: DetailDataServiceProtocol {
         metadata.userNotes = "Sample notes for preview"
         return metadata
     }
+    
+    func canShowLocation(for object: BRCDataObject) -> Bool {
+        return true // Always allow in mock
+    }
+    
+    func getCamp(withId id: String) -> BRCCampObject? {
+        return MockDataObjects.campObject
+    }
+    
+    func getArt(withId id: String) -> BRCArtObject? {
+        return MockDataObjects.artObject
+    }
+    
+    func getEvents(for camp: BRCCampObject) -> [BRCEventObject]? {
+        return [MockDataObjects.eventObject]
+    }
+    
+    func getEvents(for art: BRCArtObject) -> [BRCEventObject]? {
+        return [MockDataObjects.eventObject]
+    }
 }
 
 

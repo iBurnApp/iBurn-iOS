@@ -159,7 +159,26 @@ class DetailViewModel: ObservableObject {
     private func generateCellTypes() -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
         
-        // Add title as first text cell
+        // Add image header first if available
+        var imageURL: URL?
+        if let artObject = dataObject as? BRCArtObject {
+            imageURL = artObject.localThumbnailURL
+        } else if let campObject = dataObject as? BRCCampObject {
+            imageURL = campObject.localThumbnailURL
+        }
+        
+        if let imageURL = imageURL, let image = loadImage(from: imageURL) {
+            cellTypes.append(.image(image, aspectRatio: 16.0/9.0))
+        }
+        
+        // For events, try to get camp image if event doesn't have one
+        if cellTypes.isEmpty, let eventObject = dataObject as? BRCEventObject {
+            if let campImage = loadHostCampImage(for: eventObject) {
+                cellTypes.append(.image(campImage, aspectRatio: 16.0/9.0))
+            }
+        }
+        
+        // Add title
         let title = dataObject.title
         if !title.isEmpty {
             cellTypes.append(.text(title, style: .title))
@@ -182,6 +201,9 @@ class DetailViewModel: ObservableObject {
         // Add common cells
         cellTypes.append(contentsOf: generateCommonCells())
         
+        // Add metadata section at the end
+        cellTypes.append(contentsOf: generateMetadataCells())
+        
         return cellTypes
     }
     
@@ -194,20 +216,38 @@ class DetailViewModel: ObservableObject {
             cells.append(.text("Artist: \(artistName)", style: .subtitle))
         }
         
+        // Artist location
+        let artistLocation = art.artistLocation
+        if !artistLocation.isEmpty {
+            cells.append(.text("Artist Location: \(artistLocation)", style: .caption))
+        }
+        
         // Audio tour
         if art.audioURL != nil {
             let isPlaying = audioService.isPlaying(artObject: art)
             cells.append(.audio(art, isPlaying: isPlaying))
         }
         
+        // Hosted events
+        if let events = dataService.getEvents(for: art), !events.isEmpty {
+            cells.append(.eventRelationship(events, hostName: art.title))
+        }
+        
         return cells
     }
     
     private func generateCampCells(_ camp: BRCCampObject) -> [DetailCellType] {
-        let cells: [DetailCellType] = []
+        var cells: [DetailCellType] = []
         
-        // Add camp-specific information here
-        // For now, just common cells will be added
+        // Hometown
+        if let hometown = camp.hometown, !hometown.isEmpty {
+            cells.append(.text("Hometown: \(hometown)", style: .caption))
+        }
+        
+        // Hosted events
+        if let events = dataService.getEvents(for: camp), !events.isEmpty {
+            cells.append(.eventRelationship(events, hostName: camp.title))
+        }
         
         return cells
     }
@@ -215,22 +255,97 @@ class DetailViewModel: ObservableObject {
     private func generateEventCells(_ event: BRCEventObject) -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
-        // Schedule information
-        // Note: Despite being declared as non-nullable in Obj-C, these can be nil internally
-        // This is a bridging issue - in production these dates are always valid
+        // Host relationship (camp or art)
+        if let campId = event.hostedByCampUniqueID,
+           let camp = dataService.getCamp(withId: campId) {
+            cells.append(.relationship(camp, type: .hostedBy(camp.title)))
+        } else if let artId = event.hostedByArtUniqueID,
+                  let art = dataService.getArt(withId: artId) {
+            cells.append(.relationship(art, type: .hostedBy(art.title)))
+        }
+        
+        // Schedule information with proper formatting
         if let startDate = event.startDate as Date?,
            let endDate = event.endDate as Date? {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-            
-            var scheduleText = "Starts: \(formatter.string(from: startDate))"
-            scheduleText += "\nEnds: \(formatter.string(from: endDate))"
-            
-            cells.append(.text(scheduleText, style: .caption))
+            let scheduleString = formatEventSchedule(event: event, startDate: startDate, endDate: endDate)
+            cells.append(.schedule(scheduleString))
+        }
+        
+        // Location with embargo handling
+        let locationValue = getLocationValue(for: event)
+        cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: event)))
+        
+        // Add host description if available
+        if let hostDescription = getHostDescription(for: event) {
+            cells.append(.text(hostDescription, style: .body))
         }
         
         return cells
+    }
+    
+    private func formatEventSchedule(event: BRCEventObject, startDate: Date, endDate: Date) -> NSAttributedString {
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEEE M/d"
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .short
+        
+        let dayString = dayFormatter.string(from: startDate)
+        var timeString: String
+        
+        if event.isAllDay {
+            timeString = "All Day"
+        } else {
+            let start = timeFormatter.string(from: startDate)
+            let end = timeFormatter.string(from: endDate)
+            timeString = "\(start) - \(end)"
+        }
+        
+        let fullString = "\(dayString)\n\(timeString)"
+        let attributedString = NSMutableAttributedString(string: fullString)
+        
+        // Color the time portion based on event status
+        let timeColor = getEventTimeColor(for: event, startDate: startDate, endDate: endDate)
+        let timeRange = NSRange(location: dayString.count + 1, length: timeString.count)
+        attributedString.addAttribute(.foregroundColor, value: timeColor, range: timeRange)
+        
+        return attributedString
+    }
+    
+    private func getEventTimeColor(for event: BRCEventObject, startDate: Date, endDate: Date) -> UIColor {
+        let now = Date()
+        if now < startDate {
+            return .systemGreen // Future event
+        } else if now >= startDate && now <= endDate {
+            return .systemOrange // Current event
+        } else {
+            return .systemRed // Past event
+        }
+    }
+    
+    private func getLocationValue(for object: BRCDataObject) -> String {
+        if !dataService.canShowLocation(for: object) {
+            return "Restricted"
+        } else if let location = object.playaLocation, !location.isEmpty {
+            return location
+        } else {
+            return "Unknown"
+        }
+    }
+    
+    private func getHostDescription(for event: BRCEventObject) -> String? {
+        if let campId = event.hostedByCampUniqueID,
+           let camp = dataService.getCamp(withId: campId),
+           let description = camp.detailDescription,
+           !description.isEmpty {
+            return description
+        } else if let artId = event.hostedByArtUniqueID,
+                  let art = dataService.getArt(withId: artId),
+                  let description = art.detailDescription,
+                  !description.isEmpty {
+            return description
+        }
+        return nil
     }
     
     private func generateCommonCells() -> [DetailCellType] {
@@ -246,13 +361,8 @@ class DetailViewModel: ObservableObject {
             cells.append(.url(url, title: "Website"))
         }
         
-        // Playa location
-        if let playaLocation = dataObject.playaLocation, !playaLocation.isEmpty {
-            cells.append(.playaAddress(playaLocation, tappable: true))
-        }
-        
-        // GPS coordinates
-        if let location = dataObject.location {
+        // GPS coordinates - only show if embargo allows
+        if dataService.canShowLocation(for: dataObject), let location = dataObject.location {
             cells.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
         }
         
@@ -266,5 +376,40 @@ class DetailViewModel: ObservableObject {
         cells.append(.userNotes(notes))
         
         return cells
+    }
+    
+    private func generateMetadataCells() -> [DetailCellType] {
+        var cells: [DetailCellType] = []
+        
+        // Last updated
+        if let updateDate = metadata.lastUpdated {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            let dateString = formatter.string(from: updateDate)
+            cells.append(.text("Last Updated: \(dateString)", style: .caption))
+        }
+        
+        return cells
+    }
+    
+    private func loadImage(from url: URL) -> UIImage? {
+        // Check if file exists
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        
+        // Load image from disk
+        return UIImage(contentsOfFile: url.path)
+    }
+    
+    private func loadHostCampImage(for event: BRCEventObject) -> UIImage? {
+        guard let campId = event.hostedByCampUniqueID else { return nil }
+        
+        // Get camp from database
+        if let camp = dataService.getCamp(withId: campId),
+           let imageURL = camp.localThumbnailURL {
+            return loadImage(from: imageURL)
+        }
+        
+        return nil
     }
 }
