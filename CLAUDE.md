@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overall Guidance
 
 ### Documentation Workflow
-* When you exit plan mode, you should always first write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings. If there is already a document for the current day (Pacific Time), let's continue updating the existing document instead of creating a new one.
+* When you exit plan mode (or complete a task), you should always first write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings. If there is already a document for the current day (Pacific Time), let's continue updating the existing document instead of creating a new one.
 * When resuming work, utilize these files to gather additional context about what we were working on. 
 
 ### Documentation Structure
@@ -31,7 +31,7 @@ Each document should include:
 
 ## Planning
 
-When working in plan mode, we can consult Gemini 2.5 Pro using the `gemini -p` command. This model has a large context window and is especially helpful when iterating on architecture decisions. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
+When working in plan mode, we can consult Gemini 2.5 Pro using the `gemini -p` command. This model has a large context window (1M tokens) and is especially helpful when iterating on architecture decisions and proposed code changes. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
 
 ```
 gemini --help
@@ -43,6 +43,10 @@ Options:
   -m, --model                     Model     [string] [default: "gemini-2.5-pro"]
   -p, --prompt                    Prompt. Appended to input on stdin (if any).
  ```
+
+## Source Control
+
+After completing a task, we should always commit our changes. Only perform safe operations like `git add` and `git commit`. Never attempt to rewrite history, pull from remote, squash, merge or rebase.
 
 ## Project Overview
 
