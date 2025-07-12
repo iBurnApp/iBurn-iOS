@@ -10,6 +10,13 @@ import SwiftUI
 
 // MARK: - Preview Factory
 
+// Mock coordinator for previews
+class MockDetailActionCoordinator: DetailActionCoordinator {
+    func handle(_ action: DetailAction) {
+        print("Preview action: \(action)")
+    }
+}
+
 extension DetailViewModel {
     static func createPreview(with dataObject: BRCDataObject) -> DetailViewModel {
         return DetailViewModel(
@@ -17,9 +24,7 @@ extension DetailViewModel {
             dataService: MockDetailDataService(),
             audioService: MockAudioService(),
             locationService: MockLocationService(),
-            actionsHandler: { action in
-                print("Preview action: \(action)")
-            }
+            coordinator: MockDetailActionCoordinator()
         )
     }
 }

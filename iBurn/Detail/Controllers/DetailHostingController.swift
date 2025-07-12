@@ -11,21 +11,28 @@ import SwiftUI
 
 class DetailHostingController: UIHostingController<DetailView> {
     let viewModel: DetailViewModel
+    let colors: BRCImageColors
+    let coordinator: DetailActionCoordinator
+    var indexPath: IndexPath?
     
     init(
         dataObject: BRCDataObject,
         dataService: DetailDataServiceProtocol,
         audioService: AudioServiceProtocol,
         locationService: LocationServiceProtocol,
-        actionsHandler: @escaping (DetailAction) -> Void
+        coordinator: DetailActionCoordinator
     ) {
+        // Determine colors based on data object type (similar to BRCDetailViewController)
+        self.colors = BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
+        self.coordinator = coordinator
+        
         // Create ViewModel without side effects
         self.viewModel = DetailViewModel(
             dataObject: dataObject,
             dataService: dataService,
             audioService: audioService,
             locationService: locationService,
-            actionsHandler: actionsHandler
+            coordinator: coordinator
         )
         
         // Create SwiftUI view

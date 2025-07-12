@@ -40,9 +40,9 @@ struct DetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
-                    if let eventObject = viewModel.dataObject as? BRCEventObject {
+                    if viewModel.dataObject is BRCEventObject {
                         Button("Add to Calendar") {
-                            viewModel.actionsHandler(.showEventEditor(eventObject))
+                            viewModel.showEventEditor()
                         }
                         .font(.caption)
                     }
@@ -126,6 +126,12 @@ struct DetailCellView: View {
                 
             case .eventRelationship(let events, let hostName):
                 DetailEventRelationshipCell(events: events, hostName: hostName)
+                
+            case .schedule(let attributedString):
+                DetailScheduleCell(attributedString: attributedString)
+                
+            case .date(let date, let format):
+                DetailDateCell(date: date, format: format)
                 
             default:
                 // Placeholder for other cell types
@@ -372,5 +378,45 @@ struct DetailEventRelationshipCell: View {
                 .foregroundColor(.blue)
                 .font(.caption)
         }
+    }
+}
+
+struct DetailScheduleCell: View {
+    let attributedString: NSAttributedString
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "calendar.badge.clock")
+                .foregroundColor(.secondary)
+            VStack(alignment: .leading) {
+                Text("Schedule")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(AttributedString(attributedString))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Spacer()
+        }
+    }
+}
+
+struct DetailDateCell: View {
+    let date: Date
+    let format: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "calendar")
+                .foregroundColor(.secondary)
+            Text(formattedDate)
+                .foregroundColor(.primary)
+            Spacer()
+        }
+    }
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.string(from: date)
     }
 }

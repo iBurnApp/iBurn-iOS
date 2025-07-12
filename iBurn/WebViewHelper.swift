@@ -19,4 +19,18 @@ public class WebViewHelper: NSObject {
         let safariVC = SFSafariViewController(url: url)
         viewController.present(safariVC, animated: true, completion: nil)
     }
+    
+    @objc public static func openEmail(to email: String) {
+        guard let emailURL = URL(string: "mailto:\(email)") else {
+            print("Invalid email address: \(email)")
+            return
+        }
+        
+        guard UIApplication.shared.canOpenURL(emailURL) else {
+            print("Cannot open email client")
+            return
+        }
+        
+        UIApplication.shared.open(emailURL)
+    }
 }

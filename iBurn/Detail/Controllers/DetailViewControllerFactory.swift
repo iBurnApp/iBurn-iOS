@@ -14,11 +14,11 @@ class DetailViewControllerFactory {
     /// Creates a detail view controller for the given data object
     /// - Parameters:
     ///   - dataObject: The data object to display
-    ///   - actionsHandler: Closure to handle navigation actions
+    ///   - coordinator: Coordinator to handle actions
     /// - Returns: A UIViewController ready for presentation
     static func create(
         with dataObject: BRCDataObject,
-        actionsHandler: @escaping (DetailAction) -> Void
+        coordinator: DetailActionCoordinator
     ) -> DetailHostingController {
         
         // Create concrete service instances
@@ -31,7 +31,7 @@ class DetailViewControllerFactory {
             dataService: dataService,
             audioService: audioService,
             locationService: locationService,
-            actionsHandler: actionsHandler
+            coordinator: coordinator
         )
     }
     
@@ -41,14 +41,14 @@ class DetailViewControllerFactory {
     ///   - dataService: Custom data service implementation
     ///   - audioService: Custom audio service implementation
     ///   - locationService: Custom location service implementation
-    ///   - actionsHandler: Closure to handle navigation actions
+    ///   - coordinator: Coordinator to handle actions
     /// - Returns: A UIViewController ready for presentation
     static func create(
         with dataObject: BRCDataObject,
         dataService: DetailDataServiceProtocol,
         audioService: AudioServiceProtocol,
         locationService: LocationServiceProtocol,
-        actionsHandler: @escaping (DetailAction) -> Void
+        coordinator: DetailActionCoordinator
     ) -> DetailHostingController {
         
         return DetailHostingController(
@@ -56,7 +56,7 @@ class DetailViewControllerFactory {
             dataService: dataService,
             audioService: audioService,
             locationService: locationService,
-            actionsHandler: actionsHandler
+            coordinator: coordinator
         )
     }
 }

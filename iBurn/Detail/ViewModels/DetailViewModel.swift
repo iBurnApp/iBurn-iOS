@@ -25,9 +25,7 @@ class DetailViewModel: ObservableObject {
     private let dataService: DetailDataServiceProtocol
     private let audioService: AudioServiceProtocol
     private let locationService: LocationServiceProtocol
-    
-    // MARK: - Actions Handler
-    let actionsHandler: (DetailAction) -> Void
+    private let coordinator: DetailActionCoordinator
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -39,13 +37,13 @@ class DetailViewModel: ObservableObject {
         dataService: DetailDataServiceProtocol,
         audioService: AudioServiceProtocol,
         locationService: LocationServiceProtocol,
-        actionsHandler: @escaping (DetailAction) -> Void
+        coordinator: DetailActionCoordinator
     ) {
         self.dataObject = dataObject
         self.dataService = dataService
         self.audioService = audioService
         self.locationService = locationService
-        self.actionsHandler = actionsHandler
+        self.coordinator = coordinator
         
         // Initialize with basic metadata - no side effects in init
         self.metadata = dataService.getMetadata(for: dataObject) ?? BRCObjectMetadata()
@@ -101,27 +99,27 @@ class DetailViewModel: ObservableObject {
     func handleCellTap(_ cell: DetailCell) {
         switch cell.type {
         case .email(let email, _):
-            actionsHandler(.openEmail(email))
+            coordinator.handle(.openEmail(email))
             
         case .url(let url, _):
-            actionsHandler(.openURL(url))
+            coordinator.handle(.openURL(url))
             
         case .coordinates(let coordinate, _):
-            actionsHandler(.shareCoordinates(coordinate))
+            coordinator.handle(.shareCoordinates(coordinate))
             
         case .relationship(let object, _):
-            actionsHandler(.navigateToObject(object))
+            coordinator.handle(.navigateToObject(object))
             
         case .eventRelationship(let events, let hostName):
-            actionsHandler(.showEventsList(events, hostName: hostName))
+            coordinator.handle(.showEventsList(events, hostName: hostName))
             
         case .playaAddress(_, let tappable):
             if tappable {
-                actionsHandler(.showMap(dataObject))
+                coordinator.handle(.showMap(dataObject))
             }
             
         case .image(let image, _):
-            actionsHandler(.showImageViewer(image))
+            coordinator.handle(.showImageViewer(image))
             
         case .audio(let artObject, _):
             if audioService.isPlaying(artObject: artObject) {
@@ -133,7 +131,7 @@ class DetailViewModel: ObservableObject {
             }
             
         case .userNotes(let currentNotes):
-            actionsHandler(.editNotes(current: currentNotes) { [weak self] newNotes in
+            coordinator.handle(.editNotes(current: currentNotes) { [weak self] newNotes in
                 Task { @MainActor in
                     await self?.updateNotes(newNotes)
                 }
@@ -142,6 +140,12 @@ class DetailViewModel: ObservableObject {
         default:
             // Non-interactive cells
             break
+        }
+    }
+    
+    func showEventEditor() {
+        if let eventObject = dataObject as? BRCEventObject {
+            coordinator.handle(.showEventEditor(eventObject))
         }
     }
     

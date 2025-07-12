@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import SafariServices
+import EventKitUI
 
 @objc public final class PageViewManager: NSObject {
     
@@ -23,10 +25,14 @@ import UIKit
     @objc public func pageViewController(for dataObject: BRCDataObject,
                                                 at indexPath: IndexPath,
                                                 navBar: UINavigationBar? = nil) -> UIViewController {
-        let detailVC = BRCDetailViewController(dataObject: dataObject)
+        let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+        
+        // Create coordinator for the PageViewController
+        let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: pageVC)
+        let detailVC = DetailViewControllerFactory.create(with: dataObject, coordinator: coordinator)
         detailVC.indexPath = indexPath
         let colors = detailVC.colors
-        let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+        
         pageVC.delegate = self
         pageVC.dataSource = self
         navBar?.isTranslucent = false
@@ -39,13 +45,16 @@ import UIKit
 
 private extension PageViewManager {
     private func pageViewController(_ pageViewController: UIPageViewController, viewControllerNear viewController: UIViewController, direction: IndexPathDirection) -> UIViewController? {
-        guard let detailVC = viewController as? BRCDetailViewController,
+        guard let detailVC = viewController as? DetailHostingController,
             let oldIndex = detailVC.indexPath,
             let newIndex = oldIndex.nextIndexPath(direction: direction, tableView: tableView),
             let dataObject = objectProvider.dataObjectAtIndexPath(newIndex) else {
                 return nil
         }
-        let newDetailVC = BRCDetailViewController(dataObject: dataObject.object)
+        
+        // Create coordinator for the new detail view
+        let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: pageViewController)
+        let newDetailVC = DetailViewControllerFactory.create(with: dataObject.object, coordinator: coordinator)
         newDetailVC.indexPath = newIndex
         // there was a crash sometimes when the index isn't found
         // i am guessing it's happening when filters are applied so the indices don't match up

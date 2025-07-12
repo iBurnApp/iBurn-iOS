@@ -9,29 +9,37 @@
 import XCTest
 @testable import iBurn
 
+// Mock coordinator for tests
+class MockTestDetailActionCoordinator: DetailActionCoordinator {
+    var handledActions: [DetailAction] = []
+    
+    func handle(_ action: DetailAction) {
+        handledActions.append(action)
+    }
+}
+
 @MainActor
 class DetailViewModelTests: XCTestCase {
     var viewModel: DetailViewModel!
     var mockDataService: MockDetailDataService!
     var mockAudioService: MockAudioService!
     var mockLocationService: MockLocationService!
-    var capturedActions: [DetailAction] = []
+    var mockCoordinator: MockTestDetailActionCoordinator!
+    var capturedActions: [DetailAction] { mockCoordinator.handledActions }
     
     override func setUp() {
         super.setUp()
         mockDataService = MockDetailDataService()
         mockAudioService = MockAudioService()
         mockLocationService = MockLocationService()
-        capturedActions = []
+        mockCoordinator = MockTestDetailActionCoordinator()
         
         viewModel = DetailViewModel(
             dataObject: MockDataObjects.artObject,
             dataService: mockDataService,
             audioService: mockAudioService,
             locationService: mockLocationService,
-            actionsHandler: { action in
-                self.capturedActions.append(action)
-            }
+            coordinator: mockCoordinator
         )
     }
     
@@ -40,7 +48,7 @@ class DetailViewModelTests: XCTestCase {
         mockDataService = nil
         mockAudioService = nil
         mockLocationService = nil
-        capturedActions = []
+        mockCoordinator = nil
         super.tearDown()
     }
     
@@ -61,7 +69,7 @@ class DetailViewModelTests: XCTestCase {
             dataService: mockDataService,
             audioService: mockAudioService,
             locationService: mockLocationService,
-            actionsHandler: { _ in }
+            coordinator: MockTestDetailActionCoordinator()
         )
         
         XCTAssertTrue(newViewModel.metadata.isFavorite)
@@ -156,7 +164,7 @@ class DetailViewModelTests: XCTestCase {
             dataService: mockDataService,
             audioService: mockAudioService,
             locationService: mockLocationService,
-            actionsHandler: { _ in }
+            coordinator: MockTestDetailActionCoordinator()
         )
         
         await campViewModel.loadData()
@@ -172,7 +180,7 @@ class DetailViewModelTests: XCTestCase {
             dataService: mockDataService,
             audioService: mockAudioService,
             locationService: mockLocationService,
-            actionsHandler: { _ in }
+            coordinator: MockTestDetailActionCoordinator()
         )
         
         await eventViewModel.loadData()

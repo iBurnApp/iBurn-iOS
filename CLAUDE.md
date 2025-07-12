@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overall Guidance
 
 ### Documentation Workflow
-* When you exit plan mode, you should always write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings.
-* When resuming work, utilize these files to gather additional context about what we were working on.
+* When you exit plan mode, you should always first write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings. If there is already a document for the current day (Pacific Time), let's continue updating the existing document instead of creating a new one.
+* When resuming work, utilize these files to gather additional context about what we were working on. 
 
 ### Documentation Structure
 Each document should include:
@@ -29,6 +29,20 @@ Each document should include:
 * **Related Work**: Reference previous documents and build upon them
 * **Completion**: Mark final outcomes and any remaining work
 
+## Planning
+
+When working in plan mode, we can consult Gemini 2.5 Pro using the `gemini -p` command. This model has a large context window and is especially helpful when iterating on architecture decisions. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
+
+```
+gemini --help
+gemini [options]
+
+Gemini CLI - Launch an interactive CLI, use -p/--prompt for non-interactive mode
+
+Options:
+  -m, --model                     Model     [string] [default: "gemini-2.5-pro"]
+  -p, --prompt                    Prompt. Appended to input on stdin (if any).
+ ```
 
 ## Project Overview
 
@@ -39,7 +53,32 @@ iBurn is an offline map and guide for the Burning Man art festival. It's a nativ
 ### Building and Dependencies
 - `pod install` - Install CocoaPods dependencies (required after cloning)
 - `git submodule update --init` - Initialize git submodules (required after cloning)
-- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file). Use xcodebuild and pass the -quiet flag
+- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file)
+
+### Building with xcodebuild
+When building to the simulator, always specify iOS 18.5, arch arm64, iPhone 16 Pro:
+
+```bash
+# Build for simulator
+xcodebuild -workspace iBurn.xcworkspace \
+  -scheme iBurn \
+  -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,OS=18.5,arch=arm64,name=iPhone 16 Pro' \
+  -configuration Debug \
+  build \
+  -quiet
+
+# Run tests
+xcodebuild -workspace iBurn.xcworkspace \
+  -scheme iBurn \
+  -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,OS=18.5,arch=arm64,name=iPhone 16 Pro' \
+  -configuration Debug \
+  test \
+  -quiet
+```
+
+Always use the `-quiet` flag to reduce output noise.
 
 ### Fastlane Commands
 - `fastlane ios beta` - Build and upload to TestFlight
