@@ -15,27 +15,29 @@ import EventKitUI
 /// Coordinator responsible for handling detail view actions
 protocol DetailActionCoordinator: AnyObject {
     func handle(_ action: DetailAction)
+    func updateNavigator(_ navigator: Navigable?)
 }
 
 // MARK: - Dependencies
 
 /// Dependencies required for action coordination
 struct DetailActionCoordinatorDependencies {
-    weak var presenter: Presentable?
-    weak var navigator: Navigable?
+    let presenter: Presentable
+    var navigator: Navigable?
     let eventEditService: EventEditService
     
-    init(viewController: UIViewController) {
-        self.presenter = viewController
-        self.navigator = viewController.navigationController
-        self.eventEditService = EventEditServiceFactory.makeService()
-    }
-    
-    // For testing
-    init(presenter: Presentable?, navigator: Navigable?, eventEditService: EventEditService? = nil) {
+    init(presenter: Presentable, navigator: Navigable?, eventEditService: EventEditService) {
         self.presenter = presenter
         self.navigator = navigator
-        self.eventEditService = eventEditService ?? EventEditServiceFactory.makeService()
+        self.eventEditService = eventEditService
+        
+        // Debug logging for navigation issues
+        if navigator == nil {
+            print("⚠️ DetailActionCoordinator: Navigator is nil - navigation will not work")
+            print("   Presenter: \(type(of: presenter))")
+        } else {
+            print("✅ DetailActionCoordinator: Navigator available - \(type(of: navigator!))")
+        }
     }
 }
 
@@ -44,8 +46,18 @@ struct DetailActionCoordinatorDependencies {
 /// Factory for creating DetailActionCoordinator instances
 enum DetailActionCoordinatorFactory {
     /// Creates a coordinator for production use
-    static func makeCoordinator(presenter: UIViewController) -> DetailActionCoordinator {
-        let dependencies = DetailActionCoordinatorDependencies(viewController: presenter)
+    static func makeCoordinator(presenter: Presentable, navigator: Navigable?) -> DetailActionCoordinator {
+        let eventEditService = EventEditServiceFactory.makeService()
+        
+        print("🏗️ Creating DetailActionCoordinator:")
+        print("   Presenter: \(type(of: presenter))")
+        print("   Navigator: \(navigator != nil ? String(describing: type(of: navigator!)) : "nil")")
+        
+        let dependencies = DetailActionCoordinatorDependencies(
+            presenter: presenter,
+            navigator: navigator,
+            eventEditService: eventEditService
+        )
         return DetailActionCoordinatorImpl(dependencies: dependencies)
     }
     
@@ -58,10 +70,20 @@ enum DetailActionCoordinatorFactory {
 // MARK: - Private Implementation
 
 private class DetailActionCoordinatorImpl: DetailActionCoordinator {
-    private let dependencies: DetailActionCoordinatorDependencies
+    private var dependencies: DetailActionCoordinatorDependencies
     
     init(dependencies: DetailActionCoordinatorDependencies) {
         self.dependencies = dependencies
+    }
+    
+    func updateNavigator(_ navigator: Navigable?) {
+        dependencies.navigator = navigator
+        
+        if navigator == nil {
+            print("⚠️ Navigator updated to nil")
+        } else {
+            print("✅ Navigator updated: \(type(of: navigator!))")
+        }
     }
     
     func handle(_ action: DetailAction) {
@@ -77,15 +99,15 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
             
         case .showEventEditor(let event):
             let eventEditController = dependencies.eventEditService.createEventEditController(for: event)
-            dependencies.presenter?.present(eventEditController, animated: true, completion: nil)
+            dependencies.presenter.present(eventEditController, animated: true, completion: nil)
             
         case .shareCoordinates(let coordinate):
             let activityViewController = createShareController(for: coordinate)
-            dependencies.presenter?.present(activityViewController, animated: true, completion: nil)
+            dependencies.presenter.present(activityViewController, animated: true, completion: nil)
             
         case .showImageViewer(let image):
             let imageViewController = createImageViewer(for: image)
-            dependencies.presenter?.present(imageViewController, animated: true, completion: nil)
+            dependencies.presenter.present(imageViewController, animated: true, completion: nil)
             
         case .showMap(let dataObject):
             // This would require navigation to map view with object selected
@@ -93,15 +115,19 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
             print("Show map for object: \(dataObject.yapKey)")
             
         case .navigateToObject(let object):
-            // Create new detail view controller for the related object
-            guard let navigator = dependencies.navigator,
-                  let presenter = dependencies.presenter as? UIViewController else { return }
+            print("🧭 Attempting navigation to object: \(object.title)")
             
-            let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: presenter)
-            let detailVC = DetailViewControllerFactory.create(
-                with: object,
-                coordinator: coordinator
-            )
+            guard let navigator = dependencies.navigator else {
+                print("❌ Navigation FAILED: Navigator is nil")
+                print("   Presenter: \(type(of: dependencies.presenter))")
+                return
+            }
+            
+            print("✅ Navigator found: \(type(of: navigator))")
+            
+            let detailVC = DetailViewControllerFactory.createDetailViewController(for: object)
+            
+            print("🚀 Pushing view controller: \(type(of: detailVC))")
             navigator.pushViewController(detailVC, animated: true)
             
         case .showEventsList(let events, let hostName):
@@ -119,7 +145,7 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
         case .editNotes(let current, let completion):
             // Present notes editor
             let alertController = createNotesEditor(currentNotes: current, completion: completion)
-            dependencies.presenter?.present(alertController, animated: true, completion: nil)
+            dependencies.presenter.present(alertController, animated: true, completion: nil)
         }
     }
     

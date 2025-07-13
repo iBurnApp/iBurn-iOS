@@ -160,8 +160,7 @@ extension MainMapViewController: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
         let nav = presentingViewController?.navigationController ??
             navigationController
-        let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: self)
-        let detail = DetailViewControllerFactory.createDetailViewController(for: object.object, coordinator: coordinator)
+        let detail = DetailViewControllerFactory.createDetailViewController(for: object.object)
         nav?.pushViewController(detail, animated: true)
     }
 }

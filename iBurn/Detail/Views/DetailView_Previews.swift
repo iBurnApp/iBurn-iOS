@@ -15,6 +15,10 @@ class MockDetailActionCoordinator: DetailActionCoordinator {
     func handle(_ action: DetailAction) {
         print("Preview action: \(action)")
     }
+    
+    func updateNavigator(_ navigator: Navigable?) {
+        print("Mock coordinator navigator updated")
+    }
 }
 
 extension DetailViewModel {

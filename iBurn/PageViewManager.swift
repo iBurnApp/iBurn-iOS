@@ -27,9 +27,8 @@ import EventKitUI
                                                 navBar: UINavigationBar? = nil) -> UIViewController {
         let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         
-        // Create coordinator for the PageViewController
-        let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: pageVC)
-        let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject, coordinator: coordinator)
+        // Create detail view controller (coordinator is handled internally)
+        let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
         
         // Set indexPath and get colors based on controller type
         let colors: BRCImageColors
@@ -62,9 +61,8 @@ private extension PageViewManager {
                 return nil
         }
         
-        // Create coordinator for the new detail view
-        let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: pageViewController)
-        let newDetailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject.object, coordinator: coordinator)
+        // Create new detail view controller (coordinator is handled internally)
+        let newDetailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject.object)
         
         // Set indexPath based on controller type
         if let brcDetail = newDetailVC as? BRCDetailViewController {
