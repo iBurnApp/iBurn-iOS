@@ -98,8 +98,8 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
                   let presenter = dependencies.presenter as? UIViewController else { return }
             
             let coordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: presenter)
-            let detailVC = DetailViewControllerFactory.createDetailViewController(
-                for: object,
+            let detailVC = DetailViewControllerFactory.create(
+                with: object,
                 coordinator: coordinator
             )
             navigator.pushViewController(detailVC, animated: true)
