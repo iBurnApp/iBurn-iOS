@@ -56,11 +56,8 @@ struct DetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(viewModel.dataObject.title)
         .sheet(isPresented: imageViewerBinding) {
-            if let selectedImage = viewModel.selectedImage {
-                ZoomableViewer(image: Image(uiImage: selectedImage))
-                    .presentationBackground(.ultraThinMaterial)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+            if let selected = viewModel.selectedImage {
+                ImageViewerSheet(image: selected)
             }
         }
         .toolbar {
@@ -523,80 +520,3 @@ struct DetailDateCell: View {
     }
 }
 
-// MARK: - 1. Zoomable & swipe-dismissable full-screen viewer
-struct ZoomableViewer: View {
-    let image: Image
-    @Environment(\.dismiss) private var dismiss
-    
-    // zoom + pan
-    @State private var scale: CGFloat = 1
-    @GestureState private var gestureScale: CGFloat = 1
-    @State private var offset: CGSize = .zero
-    @GestureState private var dragOffset: CGSize = .zero
-    
-    // constants
-    private let maxScale: CGFloat = 5        // pinch limit
-    
-    var body: some View {
-        ZStack {
-            Color.clear // Full-screen hit area for gestures
-            
-            image
-                .resizable()
-                .scaledToFit()
-                .scaleEffect(scale * gestureScale)
-                .offset(x: offset.width + dragOffset.width,
-                        y: offset.height + dragOffset.height)
-        }
-        .contentShape(Rectangle()) // Make entire area touchable for gestures
-        .gesture(
-                
-                // 1️⃣ Pinch-to-zoom
-                MagnificationGesture()
-                    .updating($gestureScale) { value, state, _ in
-                        state = min(maxScale / scale, value)          // clamp
-                    }
-                    .onEnded { value in
-                        scale = min(maxScale, max(1, scale * value)) // stay within 1…maxScale
-                    }
-            )
-            .simultaneousGesture(
-                // 2️⃣ Drag to pan image (only when zoomed)
-                scale > 1 ? 
-                DragGesture()
-                    .updating($dragOffset) { value, state, _ in
-                        state = value.translation
-                    }
-                    .onEnded { value in
-                        // Add translation to current offset for panning
-                        offset.width += value.translation.width
-                        offset.height += value.translation.height
-                    } : nil
-            )
-            .simultaneousGesture(
-                
-                // 3️⃣ Double-tap to toggle 1× ↔︎ 2× zoom
-                TapGesture(count: 2)
-                    .onEnded {
-                        withAnimation {
-                            if scale > 1 { scale = 1; offset = .zero }
-                            else          { scale = 2 }
-                        }
-                    }
-            )
-            .animation(.spring(), value: gestureScale == 1)          // snap-back
-            .animation(.spring(), value: offset)                     // offset animation
-            .background(.clear)
-            .ignoresSafeArea()
-            .overlay(
-                Button("Done") {
-                    dismiss()
-                }
-                .foregroundColor(.primary)
-                .fontWeight(.semibold)
-                .padding(.top, 8)
-                .padding(.trailing, 16)
-                , alignment: .topTrailing
-            )
-    }
-}
