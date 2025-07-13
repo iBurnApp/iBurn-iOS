@@ -4,7 +4,7 @@ Date: 2025-01-13
 
 ## Summary
 
-Fixed critical issues with ZoomableImageView that were causing runtime errors and preventing the image from displaying properly. The view now correctly centers images, scales them to fit the container width, and provides smooth 2x zoom on double-tap.
+Fixed critical issues with ZoomableImageView that were causing runtime errors and preventing the image from displaying properly. After initial UIKit-based attempts, implemented a pure SwiftUI solution that properly centers images, scales them to fit the container, and provides smooth native scrolling when zoomed.
 
 ## Problems Identified
 
@@ -111,8 +111,37 @@ The implementation now:
 
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/Views/ZoomableImageView.swift` - Complete rewrite of zoom handling
 
+## Pure SwiftUI Implementation
+
+After discovering fundamental integration issues with the UIKit approach, switched to a pure SwiftUI implementation:
+
+### Key Changes:
+1. **Native ScrollView** - Uses SwiftUI's ScrollView for smooth, native panning behavior
+2. **Simplified State Management** - Leverages @GestureState for temporary gesture tracking
+3. **Proper Image Scaling** - Uses frame modifiers to scale image content within ScrollView
+4. **Clean Gesture Handling** - MagnificationGesture for pinch and tap gesture for double-tap
+
+### Implementation Details:
+```swift
+ScrollView([.horizontal, .vertical], showsIndicators: false) {
+    Image(uiImage: uiImage)
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(
+            width: geometry.size.width * max(currentScale, 1.0),
+            height: geometry.size.height * max(currentScale, 1.0)
+        )
+}
+.scrollDisabled(currentScale <= 1.01)
+```
+
+The key insight was to use ScrollView's native panning behavior by:
+- Scaling the image frame rather than using scaleEffect
+- Disabling scroll when at 1x zoom
+- Letting ScrollView handle all pan gestures naturally
+
 ## Future Considerations
 
-- Could add pinch-to-zoom gesture for more precise control
-- Consider adding a loading indicator for large images
+- Could add zoom-to-point functionality for double-tap
+- Consider adding minimum zoom scale based on image aspect ratio
 - Might want to add support for different content modes (fit vs fill)

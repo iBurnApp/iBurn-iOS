@@ -7,27 +7,127 @@
 //
 
 import SwiftUI
-import UIKit
 
 // MARK: - Public SwiftUI View (Reusable Component)
 
-/// A view that displays a UIImage within a zoomable and pannable scroll view.
+/// A view that displays a UIImage within a zoomable and pannable view.
 ///
 /// This view is the core component for displaying the interactive image. It should be
 /// placed inside a container view that provides chrome, like a close button.
 public struct ZoomableImageView: View {
     public let uiImage: UIImage
     
+    // Zoom state
+    @State private var zoomScale: CGFloat = 1.0
+    @State private var previousZoomScale: CGFloat = 1.0
+    @State private var zoomAnchor: UnitPoint = .center
+    
+    // Drag state for panning
+    @State private var dragOffset: CGSize = .zero
+    @State private var previousDragOffset: CGSize = .zero
+    
+    // Gesture states
+    @GestureState private var pinchScale: CGFloat = 1.0
+    @GestureState private var panOffset: CGSize = .zero
+    
     // Internal state to track zoom level for disabling dismiss gestures
-    @State private var isZoomed: Bool = false
+    private var isZoomed: Bool {
+        zoomScale > 1.01
+    }
+    
+    // Container size for calculations
+    @State private var containerSize: CGSize = .zero
+    
+    // Calculate the scale needed to fit width
+    private var fitScale: CGFloat {
+        guard uiImage.size.width > 0, uiImage.size.height > 0, containerSize.width > 0, containerSize.height > 0 else { 
+            return 1.0 
+        }
+        
+        let widthScale = containerSize.width / uiImage.size.width
+        let heightScale = containerSize.height / uiImage.size.height
+        
+        // Use the smaller scale to ensure the entire image fits
+        return min(widthScale, heightScale)
+    }
+    
+    // Current scale including gesture
+    private var currentScale: CGFloat {
+        zoomScale * pinchScale
+    }
+    
+    // Current offset including gesture
+    private var currentOffset: CGSize {
+        CGSize(
+            width: dragOffset.width + panOffset.width,
+            height: dragOffset.height + panOffset.height
+        )
+    }
+    
+    public init(uiImage: UIImage) {
+        self.uiImage = uiImage
+    }
 
     public var body: some View {
-        // The underlying representable that wraps UIScrollView
-        _ZoomableViewer(uiImage: uiImage, isZoomed: $isZoomed)
-            // Disable the sheet's swipe-to-dismiss when zoomed in
-            .interactiveDismissDisabled(isZoomed)
-            // Hide the sheet's drag indicator when zoomed for a cleaner look
-            .presentationDragIndicator(isZoomed ? .hidden : .visible)
+        GeometryReader { geometry in
+            ScrollView([.horizontal, .vertical], showsIndicators: false) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(
+                        width: geometry.size.width * max(currentScale, 1.0),
+                        height: geometry.size.height * max(currentScale, 1.0)
+                    )
+                    .scaleEffect(currentScale / max(currentScale, 1.0))
+                    .frame(
+                        width: geometry.size.width,
+                        height: geometry.size.height
+                    )
+            }
+            .scrollDisabled(currentScale <= 1.01)
+            .background(Color.clear)
+            .onAppear {
+                containerSize = geometry.size
+                // Reset to fit scale
+                zoomScale = 1.0
+            }
+            .onChange(of: geometry.size) { newSize in
+                containerSize = newSize
+            }
+            .gesture(
+                MagnificationGesture()
+                    .updating($pinchScale) { value, scale, _ in
+                        scale = value
+                    }
+                    .onEnded { value in
+                        let newScale = zoomScale * value
+                        zoomScale = max(1.0, min(newScale, 4.0))
+                        previousZoomScale = zoomScale
+                    }
+            )
+            .onTapGesture(count: 2) { location in
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    if zoomScale > 1.01 {
+                        // Zoom out to fit
+                        zoomScale = 1.0
+                        dragOffset = .zero
+                        previousDragOffset = .zero
+                    } else {
+                        // Zoom in to 2x
+                        zoomScale = 2.0
+                        
+                        // Calculate zoom anchor from tap location
+                        let normalizedX = location.x / geometry.size.width
+                        let normalizedY = location.y / geometry.size.height
+                        zoomAnchor = UnitPoint(x: normalizedX, y: normalizedY)
+                    }
+                }
+            }
+        }
+        // Disable the sheet's swipe-to-dismiss when zoomed in
+        .interactiveDismissDisabled(isZoomed)
+        // Hide the sheet's drag indicator when zoomed for a cleaner look
+        .presentationDragIndicator(isZoomed ? .hidden : .visible)
     }
 }
 
@@ -56,176 +156,5 @@ struct ImageViewerSheet: View {
                 }
                 .padding()
             }
-    }
-}
-
-// MARK: - Internal UIViewRepresentable (Implementation Detail)
-
-fileprivate struct _ZoomableViewer: UIViewRepresentable {
-    let uiImage: UIImage
-    @Binding var isZoomed: Bool
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    func makeUIView(context: Context) -> UIScrollView {
-        let scrollView = UIScrollView()
-        scrollView.delegate = context.coordinator
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.bouncesZoom = true
-        scrollView.decelerationRate = .fast
-        
-        let imageView = UIImageView(image: uiImage)
-        imageView.contentMode = .scaleAspectFit
-        imageView.isUserInteractionEnabled = true
-        
-        scrollView.addSubview(imageView)
-        
-        // Store references
-        context.coordinator.imageView = imageView
-        context.coordinator.scrollView = scrollView
-        
-        // Set initial frame for image view
-        imageView.frame = CGRect(origin: .zero, size: uiImage.size)
-        scrollView.contentSize = imageView.frame.size
-        
-        // Configure double tap
-        let doubleTap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleDoubleTap(_:)))
-        doubleTap.numberOfTapsRequired = 2
-        scrollView.addGestureRecognizer(doubleTap)
-        
-        // Mark that we need initial setup
-        context.coordinator.needsInitialSetup = true
-        
-        return scrollView
-    }
-
-    func updateUIView(_ uiView: UIScrollView, context: Context) {
-        // Only update if we have valid bounds
-        if uiView.bounds.size.width > 0 && uiView.bounds.size.height > 0 {
-            context.coordinator.setupZoomScaleIfNeeded()
-        }
-    }
-
-    class Coordinator: NSObject, UIScrollViewDelegate {
-        private var parent: _ZoomableViewer
-        weak var imageView: UIImageView?
-        weak var scrollView: UIScrollView?
-        var needsInitialSetup = true
-
-        init(_ parent: _ZoomableViewer) {
-            self.parent = parent
-        }
-        
-        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-            return imageView
-        }
-        
-        func scrollViewDidZoom(_ scrollView: UIScrollView) {
-            centerImageIfNeeded()
-            
-            // Update zoom state asynchronously to avoid SwiftUI update conflicts
-            let isCurrentlyZoomed = scrollView.zoomScale > scrollView.minimumZoomScale
-            if parent.isZoomed != isCurrentlyZoomed {
-                DispatchQueue.main.async { [weak self] in
-                    self?.parent.isZoomed = isCurrentlyZoomed
-                }
-            }
-        }
-        
-        @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
-            guard let scrollView = self.scrollView,
-                  let imageView = self.imageView else { return }
-            
-            if scrollView.zoomScale > scrollView.minimumZoomScale {
-                // Zoom out to fit
-                scrollView.setZoomScale(scrollView.minimumZoomScale, animated: true)
-            } else {
-                // Zoom in to 2x at the tapped point
-                let tapLocation = gesture.location(in: imageView)
-                let zoomScale = min(scrollView.maximumZoomScale, scrollView.minimumZoomScale * 2.0)
-                let zoomRect = zoomRectForScale(scale: zoomScale, center: tapLocation)
-                scrollView.zoom(to: zoomRect, animated: true)
-            }
-        }
-        
-        private func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
-            guard let scrollView = self.scrollView,
-                  let imageView = self.imageView else { return .zero }
-            
-            var zoomRect = CGRect.zero
-            zoomRect.size.height = scrollView.bounds.height / scale
-            zoomRect.size.width = scrollView.bounds.width / scale
-            
-            // Convert center point from image view to scroll view coordinates
-            let newCenter = imageView.convert(center, to: scrollView)
-            zoomRect.origin.x = newCenter.x - (zoomRect.size.width / 2.0)
-            zoomRect.origin.y = newCenter.y - (zoomRect.size.height / 2.0)
-            
-            return zoomRect
-        }
-        
-        func setupZoomScaleIfNeeded() {
-            guard needsInitialSetup,
-                  let scrollView = self.scrollView,
-                  let imageView = self.imageView,
-                  let image = imageView.image,
-                  scrollView.bounds.width > 0,
-                  scrollView.bounds.height > 0 else { return }
-            
-            needsInitialSetup = false
-            
-            let imageSize = image.size
-            let scrollViewSize = scrollView.bounds.size
-            
-            // Calculate scales
-            let widthScale = scrollViewSize.width / imageSize.width
-            let heightScale = scrollViewSize.height / imageSize.height
-            let minScale = min(widthScale, heightScale)
-            
-            // Configure zoom scales
-            scrollView.minimumZoomScale = minScale
-            scrollView.maximumZoomScale = max(2.0, minScale * 2.0)
-            scrollView.zoomScale = minScale
-            
-            // Update image view frame to match scaled size
-            let scaledImageSize = CGSize(
-                width: imageSize.width * minScale,
-                height: imageSize.height * minScale
-            )
-            imageView.frame = CGRect(origin: .zero, size: scaledImageSize)
-            
-            // Update content size
-            scrollView.contentSize = imageView.frame.size
-            
-            // Center the image
-            centerImageIfNeeded()
-        }
-        
-        func centerImageIfNeeded() {
-            guard let scrollView = self.scrollView,
-                  let imageView = self.imageView else { return }
-            
-            let scrollViewSize = scrollView.bounds.size
-            var frameToCenter = imageView.frame
-            
-            // Center horizontally
-            if frameToCenter.size.width < scrollViewSize.width {
-                frameToCenter.origin.x = (scrollViewSize.width - frameToCenter.size.width) / 2
-            } else {
-                frameToCenter.origin.x = 0
-            }
-            
-            // Center vertically
-            if frameToCenter.size.height < scrollViewSize.height {
-                frameToCenter.origin.y = (scrollViewSize.height - frameToCenter.size.height) / 2
-            } else {
-                frameToCenter.origin.y = 0
-            }
-            
-            imageView.frame = frameToCenter
-        }
     }
 }
