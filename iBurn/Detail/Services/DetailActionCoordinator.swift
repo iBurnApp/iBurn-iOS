@@ -131,8 +131,42 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
             navigator.pushViewController(detailVC, animated: true)
             
         case .showEventsList(let events, let hostName):
-            // This would show a list of events
-            print("Show \(events.count) events for \(hostName)")
+            print("🎪 Attempting to show \(events.count) events for \(hostName)")
+            
+            guard let navigator = dependencies.navigator else {
+                print("❌ Navigation FAILED: Navigator is nil")
+                return
+            }
+            
+            guard let firstEvent = events.first else {
+                print("❌ No events provided for \(hostName)")
+                return
+            }
+            
+            var relatedObject: BRCDataObject?
+            
+            // Use database transaction to get the host object
+            BRCDatabaseManager.shared.uiConnection.read { transaction in
+                relatedObject = firstEvent.host(with: transaction)
+            }
+            
+            guard let host = relatedObject else {
+                print("❌ Could not find host object for events")
+                return
+            }
+            
+            print("✅ Found host object: \(host.title)")
+            
+            // Create and push HostedEventsViewController (matching old BRCDetailViewController pattern)
+            let eventsVC = HostedEventsViewController(
+                style: .grouped,
+                extensionName: BRCDatabaseManager.shared.relationships,
+                relatedObject: host
+            )
+            eventsVC.title = "Events - \(hostName)"
+            
+            print("🚀 Pushing HostedEventsViewController")
+            navigator.pushViewController(eventsVC, animated: true)
             
         case .playAudio(_):
             // Audio is handled directly by AudioService in ViewModel
