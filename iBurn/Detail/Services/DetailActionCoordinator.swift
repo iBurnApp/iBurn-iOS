@@ -132,9 +132,25 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             
             
         case .showMap(let dataObject):
-            // This would require navigation to map view with object selected
-            // For now, just log
-            print("Show map for object: \(dataObject.yapKey)")
+            print("🗺️ Attempting to show map for object: \(dataObject.title)")
+            
+            guard let navigator = dependencies.navigator else {
+                print("❌ Map navigation FAILED: Navigator is nil")
+                return
+            }
+            
+            // Get metadata for the object
+            var metadata: BRCObjectMetadata?
+            BRCDatabaseManager.shared.uiConnection.read { transaction in
+                metadata = dataObject.metadata(with: transaction)
+            }
+            
+            // Create MapDetailViewController following old BRCDetailViewController pattern
+            let mapViewController = MapDetailViewController(dataObject: dataObject, metadata: metadata ?? BRCObjectMetadata())
+            mapViewController.title = "Map - \(dataObject.title)"
+            
+            print("🚀 Pushing MapDetailViewController")
+            navigator.pushViewController(mapViewController, animated: true)
             
         case .navigateToObject(let object):
             print("🧭 Attempting navigation to object: \(object.title)")

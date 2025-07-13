@@ -520,12 +520,161 @@ xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator \
 ### Files Modified (Tappability and Image Architecture)
 1. `iBurn/Detail/Views/DetailView.swift` - Removed TappableCellButtonStyle, added contentShape, simplified image architecture
 
+## Additional Work: MapLibre Integration for SwiftUI DetailView
+
+### Problem
+The SwiftUI DetailView was missing the embedded map functionality that existed in the original `BRCDetailViewController`. Users needed to see a map preview of the object's location and be able to tap it to navigate to a full-screen map.
+
+### Solution: UIViewRepresentable Wrapper
+Implemented MapLibre integration using a UIViewRepresentable wrapper that reuses existing iBurn map infrastructure.
+
+#### 1. Created DetailMapViewRepresentable Component
+**File**: `iBurn/Detail/Views/DetailMapViewRepresentable.swift`
+
+```swift
+struct DetailMapViewRepresentable: UIViewRepresentable {
+    let dataObject: BRCDataObject
+    let metadata: BRCObjectMetadata?
+    let onTap: () -> Void
+    
+    func makeUIView(context: Context) -> MLNMapView {
+        // Create map view with iBurn defaults
+        let mapView = MLNMapView.brcMapView()
+        
+        // Create annotation and data source
+        guard let annotation = DataObjectAnnotation(object: dataObject, metadata: metadata ?? BRCObjectMetadata()) else {
+            return mapView
+        }
+        
+        let dataSource = StaticAnnotationDataSource(annotation: annotation)
+        let mapViewAdapter = MapViewAdapter(mapView: mapView, dataSource: dataSource)
+        mapViewAdapter.reloadAnnotations()
+        
+        // Configure for preview mode
+        mapView.isUserInteractionEnabled = false
+        
+        // Add tap gesture for navigation
+        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
+        mapView.addGestureRecognizer(tapGesture)
+        
+        return mapView
+    }
+}
+```
+
+#### 2. Extended DetailCellType with Map Support
+**File**: `iBurn/Detail/Models/DetailCellType.swift:30`
+
+Added `.mapView(BRCDataObject, metadata: BRCObjectMetadata?)` case to the DetailCellType enum.
+
+#### 3. Updated DetailView Rendering
+**File**: `iBurn/Detail/Views/DetailView.swift:194-201`
+
+```swift
+case .mapView(let dataObject, let metadata):
+    DetailMapViewRepresentable(
+        dataObject: dataObject,
+        metadata: metadata
+    ) {
+        viewModel.handleCellTap(cell)
+    }
+    .frame(height: 200)
+```
+
+#### 4. Added Map Generation Logic
+**File**: `iBurn/Detail/ViewModels/DetailViewModel.swift:244-247,484-498`
+
+**Map cell generation**:
+```swift
+// Add map view if object has location and is not embargoed
+if shouldShowMap() {
+    cellTypes.append(.mapView(dataObject, metadata: metadata))
+}
+```
+
+**Embargo checking logic** (following `BRCDetailViewController.setupMapViewWithObject:`):
+```swift
+private func shouldShowMap() -> Bool {
+    // Check if object has location data and embargo allows showing it
+    if let location = dataObject.location, BRCEmbargo.canShowLocation(for: dataObject) {
+        return true
+    }
+    
+    // Also check for burner map location (user-set location)
+    if let burnerLocation = dataObject.burnerMapLocation {
+        return true
+    }
+    
+    return false
+}
+```
+
+#### 5. Fixed Map Navigation
+**File**: `iBurn/Detail/Services/DetailActionCoordinator.swift:134-153`
+
+```swift
+case .showMap(let dataObject):
+    guard let navigator = dependencies.navigator else {
+        print("❌ Map navigation FAILED: Navigator is nil")
+        return
+    }
+    
+    // Get metadata for the object
+    var metadata: BRCObjectMetadata?
+    BRCDatabaseManager.shared.uiConnection.read { transaction in
+        metadata = dataObject.metadata(with: transaction)
+    }
+    
+    // Create MapDetailViewController following old pattern
+    let mapViewController = MapDetailViewController(dataObject: dataObject, metadata: metadata ?? BRCObjectMetadata())
+    mapViewController.title = "Map - \(dataObject.title)"
+    
+    navigator.pushViewController(mapViewController, animated: true)
+```
+
+### Key Implementation Details
+
+#### Reuses Existing Infrastructure
+- **MLNMapView.brcMapView()**: Uses existing iBurn map configuration with offline mbtiles
+- **DataObjectAnnotation**: Uses existing annotation system
+- **StaticAnnotationDataSource**: Uses existing data source pattern
+- **MapViewAdapter**: Uses existing adapter for annotation management
+- **BRCEmbargo.canShowLocation()**: Respects existing embargo restrictions
+
+#### Matches Original Behavior
+- **200px height**: Same as `kTableViewHeaderHeight` in original
+- **Non-interactive**: `userInteractionEnabled = false` for preview mode
+- **Tap to navigate**: Taps navigate to `MapDetailViewController`
+- **Embargo respect**: Only shows when location data is not embargoed
+
+#### SwiftUI Integration
+- **UIViewRepresentable**: Clean SwiftUI wrapper for UIKit MapLibre components
+- **Coordinator pattern**: Handles tap gestures properly
+- **Cell-based**: Integrates with existing DetailView cell system
+- **Edge-to-edge**: Maps extend to screen edges like images
+
+### Verification
+```bash
+# Build succeeds with map integration
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,OS=18.5,arch=arm64,name=iPhone 16 Pro' \
+  -configuration Debug build -quiet
+```
+
+### Files Created/Modified (Map Integration)
+1. **NEW**: `iBurn/Detail/Views/DetailMapViewRepresentable.swift` - UIViewRepresentable wrapper
+2. **MODIFIED**: `iBurn/Detail/Models/DetailCellType.swift` - Added mapView case
+3. **MODIFIED**: `iBurn/Detail/Views/DetailView.swift` - Map cell rendering and tappability
+4. **MODIFIED**: `iBurn/Detail/ViewModels/DetailViewModel.swift` - Map generation logic and embargo checking
+5. **MODIFIED**: `iBurn/Detail/Services/DetailActionCoordinator.swift` - Fixed showMap navigation
+
 ## Final Status
-All five systems are now complete:
+All six systems are now complete:
 1. ✅ **Initialization cleanup** - Clean dependency injection without temporary objects
 2. ✅ **Navigation item forwarding** - Dynamic navigation support for SwiftUI views  
 3. ✅ **Event creation dismissal** - Proper EKEventEditViewDelegate implementation for calendar events
 4. ✅ **DetailView UI fixes** - Image sizing, theme colors, and cell tappability all working properly
 5. ✅ **Cell tappability and image architecture** - Full-width tappable cells and simplified image handling
+6. ✅ **MapLibre integration** - Embedded map previews with tap-to-navigate functionality
 
-The architecture is properly structured with clean dependency injection, dynamic navigation support, working calendar integration, polished UI behavior, and simplified, maintainable cell rendering architecture.
+The SwiftUI DetailView now has complete feature parity with the original UIKit implementation, including embedded map functionality that respects embargo restrictions and provides seamless navigation to full-screen maps.

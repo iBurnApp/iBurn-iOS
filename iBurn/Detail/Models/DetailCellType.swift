@@ -27,6 +27,7 @@ struct DetailCell: Identifiable {
 /// Enum representing different types of detail cells
 enum DetailCellType {
     case image(UIImage, aspectRatio: CGFloat)
+    case mapView(BRCDataObject, metadata: BRCObjectMetadata?)
     case text(String, style: DetailTextStyle)
     case email(String, label: String?)
     case url(URL, title: String)

@@ -140,6 +140,9 @@ class DetailViewModel: ObservableObject {
         case .image(let image, _):
             selectedImage = image
             
+        case .mapView(let dataObject, _):
+            coordinator.handle(.showMap(dataObject))
+            
         case .audio(let artObject, _):
             if audioService.isPlaying(artObject: artObject) {
                 audioService.pauseAudio()
@@ -239,6 +242,11 @@ class DetailViewModel: ObservableObject {
                 let aspectRatio = campImage.size.width / campImage.size.height
                 cellTypes.append(.image(campImage, aspectRatio: aspectRatio))
             }
+        }
+        
+        // Add map view if object has location and is not embargoed
+        if shouldShowMap() {
+            cellTypes.append(.mapView(dataObject, metadata: metadata))
         }
         
         // Add title
@@ -474,5 +482,21 @@ class DetailViewModel: ObservableObject {
         }
         
         return nil
+    }
+    
+    /// Determines if map should be shown based on location and embargo status
+    /// Following the same logic as BRCDetailViewController.setupMapViewWithObject:
+    private func shouldShowMap() -> Bool {
+        // Check if object has location data and embargo allows showing it
+        if let location = dataObject.location, BRCEmbargo.canShowLocation(for: dataObject) {
+            return true
+        }
+        
+        // Also check for burner map location (user-set location)
+        if let burnerLocation = dataObject.burnerMapLocation {
+            return true
+        }
+        
+        return false
     }
 }

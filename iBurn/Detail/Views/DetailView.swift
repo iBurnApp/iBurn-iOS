@@ -142,8 +142,8 @@ struct DetailCellView: View {
     
     private var shouldAddHorizontalPadding: Bool {
         switch cell.type {
-        case .image:
-            return false // Images should extend to edges
+        case .image, .mapView:
+            return false // Images and maps should extend to edges
         default:
             return true // All other cells get horizontal padding
         }
@@ -190,12 +190,21 @@ struct DetailCellView: View {
             
         case .image(let image, let aspectRatio):
             DetailImageView(image: image, aspectRatio: aspectRatio)
+            
+        case .mapView(let dataObject, let metadata):
+            DetailMapViewRepresentable(
+                dataObject: dataObject,
+                metadata: metadata
+            ) {
+                viewModel.handleCellTap(cell)
+            }
+            .frame(height: 200)
         }
     }
     
     private func isCellTappable(_ cellType: DetailCellType) -> Bool {
         switch cellType {
-        case .email, .url, .coordinates, .relationship, .eventRelationship, .audio, .userNotes:
+        case .email, .url, .coordinates, .relationship, .eventRelationship, .audio, .userNotes, .mapView:
             return true
         case .playaAddress(_, let tappable):
             return tappable
