@@ -11,6 +11,22 @@ import SwiftUI
 import Combine
 import CoreLocation
 
+// MARK: - ImageColors
+
+struct ImageColors {
+    let backgroundColor: Color
+    let primaryColor: Color
+    let secondaryColor: Color
+    let detailColor: Color
+    
+    init(_ brcColors: BRCImageColors) {
+        self.backgroundColor = Color(brcColors.backgroundColor)
+        self.primaryColor = Color(brcColors.primaryColor)
+        self.secondaryColor = Color(brcColors.secondaryColor)
+        self.detailColor = Color(brcColors.detailColor)
+    }
+}
+
 class DetailViewModel: ObservableObject {
     // MARK: - Published State
     @Published var dataObject: BRCDataObject
@@ -149,10 +165,10 @@ class DetailViewModel: ObservableObject {
     }
     
     /// Extract theme colors following the same logic as BRCDetailViewController
-    func getThemeColors() -> BRCImageColors {
+    func getThemeColors() -> ImageColors {
         // If image colors theming is disabled, always return global theme colors
         if !Appearance.useImageColorsTheming {
-            return Appearance.currentColors
+            return ImageColors(Appearance.currentColors)
         }
         
         // Special handling for events - try to get colors from hosting camp first
@@ -163,18 +179,18 @@ class DetailViewModel: ObservableObject {
         // For Art/Camp objects, check if metadata has thumbnail colors
         if let artMetadata = metadata as? BRCArtMetadata,
            let imageColors = artMetadata.thumbnailImageColors {
-            return imageColors
+            return ImageColors(imageColors)
         } else if let campMetadata = metadata as? BRCCampMetadata,
                   let imageColors = campMetadata.thumbnailImageColors {
-            return imageColors
+            return ImageColors(imageColors)
         }
         
         // Fallback to global theme colors
-        return Appearance.currentColors
+        return ImageColors(Appearance.currentColors)
     }
     
     /// Handle event-specific color logic - try hosting camp colors first
-    private func getEventThemeColors(for event: BRCEventObject) -> BRCImageColors {
+    private func getEventThemeColors(for event: BRCEventObject) -> ImageColors {
         // Try to get colors from hosting camp's image first
         if let campId = event.hostedByCampUniqueID,
            let camp = dataService.getCamp(withId: campId) {
@@ -182,12 +198,12 @@ class DetailViewModel: ObservableObject {
             // Get camp metadata and check for image colors
             if let campMetadata = dataService.getMetadata(for: camp) as? BRCCampMetadata,
                let campImageColors = campMetadata.thumbnailImageColors {
-                return campImageColors
+                return ImageColors(campImageColors)
             }
         }
         
         // Fallback to event type colors
-        return BRCImageColors.colors(for: event.eventType)
+        return ImageColors(BRCImageColors.colors(for: event.eventType))
     }
     
     // MARK: - Private Methods

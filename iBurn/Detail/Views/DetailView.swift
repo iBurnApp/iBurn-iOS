@@ -8,17 +8,30 @@
 
 import SwiftUI
 
+// MARK: - Theme Colors Environment
+
+struct ThemeColorsEnvironmentKey: EnvironmentKey {
+    static let defaultValue: ImageColors = ImageColors(Appearance.currentColors)
+}
+
+extension EnvironmentValues {
+    var themeColors: ImageColors {
+        get { self[ThemeColorsEnvironmentKey.self] }
+        set { self[ThemeColorsEnvironmentKey.self] = newValue }
+    }
+}
+
 struct DetailView: View {
     @StateObject private var viewModel: DetailViewModel
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.themeColors) var themeColors
     
     init(viewModel: DetailViewModel) {
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
     
     private var backgroundColor: Color {
-        let themeColors = viewModel.getThemeColors()
-        return Color(themeColors.backgroundColor)
+        return viewModel.getThemeColors().backgroundColor
     }
     
     var body: some View {
@@ -52,6 +65,7 @@ struct DetailView: View {
                 .padding(.top, 8)
             }
         }
+        .environment(\.themeColors, viewModel.getThemeColors())
         .background(backgroundColor)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(viewModel.dataObject.title)
@@ -75,7 +89,7 @@ struct DetailView: View {
                     Image(systemName: viewModel.metadata.isFavorite ? "heart.fill" : "heart")
                         .font(.body)
                         .accessibilityLabel(viewModel.metadata.isFavorite ?  "Remove Favorite" : "Add Favorite")
-                        .foregroundColor(viewModel.metadata.isFavorite ? .pink : .secondary)
+                        .foregroundColor(viewModel.metadata.isFavorite ? .pink : themeColors.detailColor)
                 }
             }
         }
@@ -99,11 +113,13 @@ struct DetailView: View {
 // MARK: - Custom Button Style
 
 struct TappableCellButtonStyle: ButtonStyle {
+    @Environment(\.themeColors) var themeColors
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(configuration.isPressed ? Color.primary.opacity(0.1) : Color.clear)
+                    .fill(configuration.isPressed ? themeColors.primaryColor.opacity(0.1) : Color.clear)
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
@@ -130,6 +146,7 @@ struct DetailHeaderView: View {
 struct DetailCellView: View {
     let cell: DetailCell
     let viewModel: DetailViewModel
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -191,7 +208,7 @@ struct DetailCellView: View {
         default:
             // Placeholder for other cell types
             Text("Cell type not implemented yet")
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
         }
     }
     
@@ -212,6 +229,7 @@ struct DetailCellView: View {
 struct DetailTextCell: View {
     let text: String
     let style: DetailTextStyle
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         Text(text)
@@ -238,15 +256,15 @@ struct DetailTextCell: View {
     private func colorForStyle(_ style: DetailTextStyle) -> Color {
         switch style {
         case .title:
-            return .primary
+            return themeColors.primaryColor
         case .subtitle:
-            return .secondary
+            return themeColors.detailColor
         case .body:
-            return .primary
+            return themeColors.secondaryColor
         case .caption:
-            return .secondary
+            return themeColors.detailColor
         case .headline:
-            return .primary
+            return themeColors.primaryColor
         }
     }
 }
@@ -254,19 +272,20 @@ struct DetailTextCell: View {
 struct DetailEmailCell: View {
     let email: String
     let label: String?
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         HStack {
             Image(systemName: "envelope")
-                .foregroundColor(.blue)
+                .foregroundColor(themeColors.primaryColor)
             VStack(alignment: .leading) {
                 if let label = label {
                     Text(label)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(themeColors.detailColor)
                 }
                 Text(email)
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
             }
             Spacer()
         }
@@ -276,13 +295,14 @@ struct DetailEmailCell: View {
 struct DetailURLCell: View {
     let url: URL
     let title: String
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         HStack {
             Image(systemName: "link")
-                .foregroundColor(.blue)
+                .foregroundColor(themeColors.primaryColor)
             Text(title)
-                .foregroundColor(.blue)
+                .foregroundColor(themeColors.primaryColor)
             Spacer()
         }
     }
@@ -291,21 +311,22 @@ struct DetailURLCell: View {
 struct DetailCoordinatesCell: View {
     let coordinate: CLLocationCoordinate2D
     let label: String
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         HStack {
             Image(systemName: "location")
-                .foregroundColor(.blue)
+                .foregroundColor(themeColors.primaryColor)
             VStack(alignment: .leading) {
                 Text(label)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(themeColors.detailColor)
                 Text("\(coordinate.latitude, specifier: "%.6f"), \(coordinate.longitude, specifier: "%.6f")")
                     .font(.system(.body, design: .monospaced))
             }
             Spacer()
             Image(systemName: "square.and.arrow.up")
-                .foregroundColor(.blue)
+                .foregroundColor(themeColors.primaryColor)
         }
     }
 }
@@ -313,24 +334,25 @@ struct DetailCoordinatesCell: View {
 struct DetailPlayaAddressCell: View {
     let address: String
     let tappable: Bool
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("OFFICIAL LOCATION")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
             
             HStack {
                 Image(systemName: "map")
-                    .foregroundColor(tappable ? .blue : .secondary)
+                    .foregroundColor(tappable ? themeColors.primaryColor : themeColors.detailColor)
                 Text(address)
-                    .foregroundColor(tappable ? .blue : .primary)
+                    .foregroundColor(tappable ? themeColors.primaryColor : themeColors.secondaryColor)
                 Spacer()
                 if tappable {
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.blue)
+                        .foregroundColor(themeColors.primaryColor)
                         .font(.caption)
                 }
             }
@@ -340,13 +362,14 @@ struct DetailPlayaAddressCell: View {
 
 struct DetailDistanceCell: View {
     let distance: CLLocationDistance
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         HStack {
             Image(systemName: "ruler")
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
             Text("Distance: \(distance, specifier: "%.0f") meters")
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
             Spacer()
         }
     }
@@ -354,6 +377,7 @@ struct DetailDistanceCell: View {
 
 struct DetailUserNotesCell: View {
     let notes: String
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -361,20 +385,20 @@ struct DetailUserNotesCell: View {
                 Text("USER NOTES")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(themeColors.detailColor)
                     .textCase(.uppercase)
                 Spacer()
                 Image(systemName: "pencil")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                     .font(.caption)
             }
             
             HStack {
                 Image(systemName: "note.text")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                 if notes.isEmpty {
                     Text("Add your notes...")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(themeColors.detailColor)
                         .italic()
                 } else {
                     Text(notes)
@@ -388,11 +412,12 @@ struct DetailUserNotesCell: View {
 struct DetailAudioCell: View {
     let artObject: BRCArtObject
     let isPlaying: Bool
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         HStack {
             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                .foregroundColor(.blue)
+                .foregroundColor(themeColors.primaryColor)
                 .font(.title2)
             Text("Audio Tour")
             Spacer()
@@ -403,23 +428,24 @@ struct DetailAudioCell: View {
 struct DetailRelationshipCell: View {
     let object: BRCDataObject
     let type: RelationshipType
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(sectionTitle)
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
             
             HStack {
                 Image(systemName: "arrow.right.circle")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                 Text(object.title)
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                     .font(.caption)
             }
         }
@@ -444,25 +470,26 @@ struct DetailRelationshipCell: View {
 struct DetailEventRelationshipCell: View {
     let events: [BRCEventObject]
     let hostName: String
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("OTHER EVENTS")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
             
             HStack {
                 Image(systemName: "calendar")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                 Text("Hosted Events")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                 Spacer()
                 Text("\(events.count)")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(themeColors.detailColor)
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeColors.primaryColor)
                     .font(.caption)
             }
         }
@@ -471,18 +498,19 @@ struct DetailEventRelationshipCell: View {
 
 struct DetailScheduleCell: View {
     let attributedString: NSAttributedString
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("SCHEDULE")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
             
             Text(AttributedString(attributedString))
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundColor(.orange)
+                .foregroundColor(themeColors.primaryColor)
         }
     }
 }
@@ -490,13 +518,14 @@ struct DetailScheduleCell: View {
 struct DetailDateCell: View {
     let date: Date
     let format: String
+    @Environment(\.themeColors) var themeColors
     
     var body: some View {
         HStack {
             Image(systemName: "calendar")
-                .foregroundColor(.secondary)
+                .foregroundColor(themeColors.detailColor)
             Text(formattedDate)
-                .foregroundColor(.primary)
+                .foregroundColor(themeColors.secondaryColor)
             Spacer()
         }
     }
