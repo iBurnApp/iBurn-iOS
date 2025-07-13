@@ -31,18 +31,7 @@ Each document should include:
 
 ## Planning
 
-When working in plan mode, we can consult Gemini 2.5 Pro using the `gemini -p` command. This model has a large context window (1M tokens) and is especially helpful when iterating on architecture decisions and proposed code changes. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
-
-```
-gemini --help
-gemini [options]
-
-Gemini CLI - Launch an interactive CLI, use -p/--prompt for non-interactive mode
-
-Options:
-  -m, --model                     Model     [string] [default: "gemini-2.5-pro"]
-  -p, --prompt                    Prompt. Appended to input on stdin (if any).
- ```
+When working in plan mode, we can consult Gemini 2.5 Pro with `gemini -p "example prompt"` command. This model has a large context window (1M tokens) and is especially helpful when iterating on architecture decisions and proposed code changes. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
 
 ## Source Control
 

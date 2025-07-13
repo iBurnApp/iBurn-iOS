@@ -19,6 +19,10 @@ class MockDetailActionCoordinator: DetailActionCoordinator {
     func updateNavigator(_ navigator: Navigable?) {
         print("Mock coordinator navigator updated")
     }
+    
+    func updatePresenter(_ presenter: Presentable?) {
+        print("Mock coordinator presenter updated")
+    }
 }
 
 extension DetailViewModel {

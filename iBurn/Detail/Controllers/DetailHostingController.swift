@@ -38,57 +38,29 @@ extension UIViewController {
     }
 }
 
-class DetailHostingController: UIHostingController<DetailView> {
-    var viewModel: DetailViewModel!
+class DetailHostingController: UIHostingController<DetailView>, DynamicViewController {
+    let viewModel: DetailViewModel
     let colors: BRCImageColors
-    var coordinator: DetailActionCoordinator!
+    let coordinator: DetailActionCoordinator
     var indexPath: IndexPath?
     private let dataObject: BRCDataObject
     
+    // MARK: - DynamicViewController
+    var eventHandler: DynamicViewControllerEventHandler?
+    
     init(
-        dataObject: BRCDataObject,
-        dataService: DetailDataServiceProtocol,
-        audioService: AudioServiceProtocol,
-        locationService: LocationServiceProtocol
+        viewModel: DetailViewModel,
+        coordinator: DetailActionCoordinator,
+        colors: BRCImageColors,
+        dataObject: BRCDataObject
     ) {
-        // Store dataObject for later use
+        self.viewModel = viewModel
+        self.coordinator = coordinator
+        self.colors = colors
         self.dataObject = dataObject
         
-        // Determine colors based on data object type (similar to BRCDetailViewController)
-        self.colors = BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
+        super.init(rootView: DetailView(viewModel: viewModel))
         
-        // Create a temporary view with placeholder coordinator for super.init
-        let tempCoordinator = DetailActionCoordinatorFactory.makeCoordinator(presenter: UIViewController(), navigator: nil)
-        let tempViewModel = DetailViewModel(
-            dataObject: dataObject,
-            dataService: dataService,
-            audioService: audioService,
-            locationService: locationService,
-            coordinator: tempCoordinator
-        )
-        let tempView = DetailView(viewModel: tempViewModel)
-        
-        super.init(rootView: tempView)
-        
-        // Now create the real coordinator with self as presenter
-        self.coordinator = DetailActionCoordinatorFactory.makeCoordinator(
-            presenter: self,
-            navigator: nil  // Will be set in viewDidLoad
-        )
-        
-        // Create ViewModel with proper coordinator
-        self.viewModel = DetailViewModel(
-            dataObject: dataObject,
-            dataService: dataService,
-            audioService: audioService,
-            locationService: locationService,
-            coordinator: coordinator
-        )
-        
-        // Update the root view
-        self.rootView = DetailView(viewModel: viewModel)
-        
-        // Configure UIKit properties
         self.title = dataObject.title
         self.hidesBottomBarWhenPushed = true
     }
@@ -104,12 +76,19 @@ class DetailHostingController: UIHostingController<DetailView> {
         setupNavigationBarAppearance()
     }
     
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        
+        // Notify event handler about layout changes that might affect navigation items
+        notifyEventHandler(.viewWillLayoutSubviews)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         // Update navigator when view hierarchy is fully established
         let navController = safeNavigationController
-        print("📱 DetailHostingController viewDidAppear - updating navigator")
+        print("📱 DetailHostingController viewDidAppear - updating coordinator")
         print("   safeNavigationController: \(navController != nil ? "exists" : "nil")")
         if let nav = navController {
             print("   Found navigation controller: \(type(of: nav))")
@@ -117,7 +96,12 @@ class DetailHostingController: UIHostingController<DetailView> {
             print("   Parent hierarchy: self -> \(parent?.description ?? "nil") -> \(parent?.parent?.description ?? "nil")")
         }
         
+        // Ensure coordinator has correct presenter and navigator
+        coordinator.updatePresenter(self)
         coordinator.updateNavigator(navController)
+        
+        // Notify event handler that view appeared (navigation items may need updating)
+        notifyEventHandler(.viewDidAppear)
     }
     
     private func setupNavigationBarAppearance() {

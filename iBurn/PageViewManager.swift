@@ -25,7 +25,7 @@ import EventKitUI
     @objc public func pageViewController(for dataObject: BRCDataObject,
                                                 at indexPath: IndexPath,
                                                 navBar: UINavigationBar? = nil) -> UIViewController {
-        let pageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+        let pageVC = DetailPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         
         // Create detail view controller (coordinator is handled internally)
         let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
@@ -47,7 +47,7 @@ import EventKitUI
         navBar?.isTranslucent = false
         navBar?.setColorTheme(colors, animated: false)
         pageVC.setViewControllers([detailVC], direction: .forward, animated: false, completion: nil)
-        pageVC.copyChildParameters()
+        // Navigation item forwarding is now handled automatically by DetailPageViewController
         return pageVC
     }
 }
@@ -81,7 +81,10 @@ private extension PageViewManager {
 
 extension PageViewManager: UIPageViewControllerDelegate {
     public func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        pageViewController.copyChildParameters()
+        guard completed, let current = pageViewController.viewControllers?.first else { return }
+        
+        // Copy navigation items from current child to page view controller
+        pageViewController.copyParameters(from: current)
     }
 }
 

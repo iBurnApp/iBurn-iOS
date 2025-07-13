@@ -77,7 +77,11 @@ extension UIViewController: ColorTheme {
         navigationController?.navigationBar.layer.add(fadeTextAnimation, forKey: "fadeText")
         
         destination.title = source.title
-        destination.navigationItem.rightBarButtonItem = source.navigationItem.rightBarButtonItem
+        if let rightBarButtonItems = source.navigationItem.rightBarButtonItems {
+            destination.navigationItem.rightBarButtonItems = rightBarButtonItems
+        } else {
+            destination.navigationItem.trailingItemGroups = source.navigationItem.trailingItemGroups
+        }
     }
 }
 

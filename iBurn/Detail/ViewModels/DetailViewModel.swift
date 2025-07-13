@@ -11,7 +11,6 @@ import SwiftUI
 import Combine
 import CoreLocation
 
-@MainActor
 class DetailViewModel: ObservableObject {
     // MARK: - Published State
     @Published var dataObject: BRCDataObject
@@ -168,13 +167,15 @@ class DetailViewModel: ObservableObject {
         }
         
         if let imageURL = imageURL, let image = loadImage(from: imageURL) {
-            cellTypes.append(.image(image, aspectRatio: 16.0/9.0))
+            let aspectRatio = image.size.width / image.size.height
+            cellTypes.append(.image(image, aspectRatio: aspectRatio))
         }
         
         // For events, try to get camp image if event doesn't have one
         if cellTypes.isEmpty, let eventObject = dataObject as? BRCEventObject {
             if let campImage = loadHostCampImage(for: eventObject) {
-                cellTypes.append(.image(campImage, aspectRatio: 16.0/9.0))
+                let aspectRatio = campImage.size.width / campImage.size.height
+                cellTypes.append(.image(campImage, aspectRatio: aspectRatio))
             }
         }
         

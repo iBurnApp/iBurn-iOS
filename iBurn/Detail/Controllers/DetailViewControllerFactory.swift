@@ -42,8 +42,8 @@ class DetailViewControllerFactory {
         let audioService = AudioService()
         let locationService = LocationService()
         
-        return DetailHostingController(
-            dataObject: dataObject,
+        return create(
+            with: dataObject,
             dataService: dataService,
             audioService: audioService,
             locationService: locationService
@@ -64,11 +64,32 @@ class DetailViewControllerFactory {
         locationService: LocationServiceProtocol
     ) -> DetailHostingController {
         
-        return DetailHostingController(
+        // Create coordinator without presenter initially
+        let coordinator = DetailActionCoordinatorFactory.makeCoordinator()
+        
+        // Create viewModel with all dependencies
+        let viewModel = DetailViewModel(
             dataObject: dataObject,
             dataService: dataService,
             audioService: audioService,
-            locationService: locationService
+            locationService: locationService,
+            coordinator: coordinator
         )
+        
+        // Determine colors based on data object type
+        let colors = BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
+        
+        // Create controller with all dependencies
+        let controller = DetailHostingController(
+            viewModel: viewModel,
+            coordinator: coordinator,
+            colors: colors,
+            dataObject: dataObject
+        )
+        
+        // Update coordinator with the real presenter
+        coordinator.updatePresenter(controller)
+        
+        return controller
     }
 }

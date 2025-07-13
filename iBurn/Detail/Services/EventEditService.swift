@@ -61,6 +61,8 @@ private class EventEditServiceImpl: EventEditService {
         // Add reminder (1.5 hours before, matching existing behavior)
         let alarm = EKAlarm(relativeOffset: -90 * 60) // 90 minutes in seconds
         calendarEvent.addAlarm(alarm)
+        let alarm2 = EKAlarm(relativeOffset: -10 * 60) // 10 minutes in seconds
+        calendarEvent.addAlarm(alarm2)
         
         // Create and configure the edit controller
         let controller = EKEventEditViewController()

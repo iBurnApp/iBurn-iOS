@@ -47,26 +47,30 @@ struct DetailView: View {
                 .padding(.top, 8)
             }
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color(Appearance.currentColors.backgroundColor))
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(viewModel.dataObject.title)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack {
-                    if viewModel.dataObject is BRCEventObject {
-                        Button("Add to Calendar") {
-                            viewModel.showEventEditor()
-                        }
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                    }
-                    
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                // Add to Calendar button for events
+                if viewModel.dataObject is BRCEventObject {
                     Button(action: {
-                        Task { await viewModel.toggleFavorite() }
+                        viewModel.showEventEditor()
                     }) {
-                        Image(systemName: viewModel.metadata.isFavorite ? "heart.fill" : "heart")
-                            .foregroundColor(.pink)
+                        Image(systemName: "calendar.badge.plus")
+                            .accessibilityLabel("Add to Calendar")
+                            .font(.body)
                     }
+                }
+                
+                // Favorite button for all object types
+                Button(action: {
+                    Task { await viewModel.toggleFavorite() }
+                }) {
+                    Image(systemName: viewModel.metadata.isFavorite ? "heart.fill" : "heart")
+                        .font(.body)
+                        .accessibilityLabel(viewModel.metadata.isFavorite ?  "Remove Favorite" : "Add Favorite")
+                        .foregroundColor(viewModel.metadata.isFavorite ? .pink : .secondary)
                 }
             }
         }
@@ -115,10 +119,12 @@ struct DetailCellView: View {
                     viewModel.handleCellTap(cell)
                 }) {
                     cellContent
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .buttonStyle(PlainButtonStyle())
             } else {
                 cellContent
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.vertical, 4)

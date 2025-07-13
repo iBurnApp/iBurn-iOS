@@ -16,17 +16,18 @@ import EventKitUI
 protocol DetailActionCoordinator: AnyObject {
     func handle(_ action: DetailAction)
     func updateNavigator(_ navigator: Navigable?)
+    func updatePresenter(_ presenter: Presentable?)
 }
 
 // MARK: - Dependencies
 
 /// Dependencies required for action coordination
 struct DetailActionCoordinatorDependencies {
-    let presenter: Presentable
+    var presenter: Presentable?
     var navigator: Navigable?
     let eventEditService: EventEditService
     
-    init(presenter: Presentable, navigator: Navigable?, eventEditService: EventEditService) {
+    init(presenter: Presentable? = nil, navigator: Navigable? = nil, eventEditService: EventEditService) {
         self.presenter = presenter
         self.navigator = navigator
         self.eventEditService = eventEditService
@@ -34,9 +35,14 @@ struct DetailActionCoordinatorDependencies {
         // Debug logging for navigation issues
         if navigator == nil {
             print("⚠️ DetailActionCoordinator: Navigator is nil - navigation will not work")
-            print("   Presenter: \(type(of: presenter))")
         } else {
             print("✅ DetailActionCoordinator: Navigator available - \(type(of: navigator!))")
+        }
+        
+        if presenter == nil {
+            print("⚠️ DetailActionCoordinator: Presenter is nil - presentation will not work")
+        } else {
+            print("✅ DetailActionCoordinator: Presenter available - \(type(of: presenter!))")
         }
     }
 }
@@ -46,11 +52,11 @@ struct DetailActionCoordinatorDependencies {
 /// Factory for creating DetailActionCoordinator instances
 enum DetailActionCoordinatorFactory {
     /// Creates a coordinator for production use
-    static func makeCoordinator(presenter: Presentable, navigator: Navigable?) -> DetailActionCoordinator {
+    static func makeCoordinator(presenter: Presentable? = nil, navigator: Navigable? = nil) -> DetailActionCoordinator {
         let eventEditService = EventEditServiceFactory.makeService()
         
         print("🏗️ Creating DetailActionCoordinator:")
-        print("   Presenter: \(type(of: presenter))")
+        print("   Presenter: \(presenter != nil ? String(describing: type(of: presenter!)) : "nil")")
         print("   Navigator: \(navigator != nil ? String(describing: type(of: navigator!)) : "nil")")
         
         let dependencies = DetailActionCoordinatorDependencies(
@@ -69,7 +75,7 @@ enum DetailActionCoordinatorFactory {
 
 // MARK: - Private Implementation
 
-private class DetailActionCoordinatorImpl: DetailActionCoordinator {
+private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EKEventEditViewDelegate {
     private var dependencies: DetailActionCoordinatorDependencies
     
     init(dependencies: DetailActionCoordinatorDependencies) {
@@ -86,6 +92,16 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
         }
     }
     
+    func updatePresenter(_ presenter: Presentable?) {
+        dependencies.presenter = presenter
+        
+        if presenter == nil {
+            print("⚠️ Presenter updated to nil")
+        } else {
+            print("✅ Presenter updated: \(type(of: presenter!))")
+        }
+    }
+    
     func handle(_ action: DetailAction) {
         switch action {
         case .openEmail(let email):
@@ -98,16 +114,29 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
             }
             
         case .showEventEditor(let event):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot show event editor: No presenter available")
+                return
+            }
             let eventEditController = dependencies.eventEditService.createEventEditController(for: event)
-            dependencies.presenter.present(eventEditController, animated: true, completion: nil)
+            eventEditController.editViewDelegate = self
+            presenter.present(eventEditController, animated: true, completion: nil)
             
         case .shareCoordinates(let coordinate):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot share coordinates: No presenter available")
+                return
+            }
             let activityViewController = createShareController(for: coordinate)
-            dependencies.presenter.present(activityViewController, animated: true, completion: nil)
+            presenter.present(activityViewController, animated: true, completion: nil)
             
         case .showImageViewer(let image):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot show image viewer: No presenter available")
+                return
+            }
             let imageViewController = createImageViewer(for: image)
-            dependencies.presenter.present(imageViewController, animated: true, completion: nil)
+            presenter.present(imageViewController, animated: true, completion: nil)
             
         case .showMap(let dataObject):
             // This would require navigation to map view with object selected
@@ -177,9 +206,13 @@ private class DetailActionCoordinatorImpl: DetailActionCoordinator {
             break
             
         case .editNotes(let current, let completion):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot edit notes: No presenter available")
+                return
+            }
             // Present notes editor
             let alertController = createNotesEditor(currentNotes: current, completion: completion)
-            dependencies.presenter.present(alertController, animated: true, completion: nil)
+            presenter.present(alertController, animated: true, completion: nil)
         }
     }
     
@@ -291,5 +324,28 @@ private class ImageViewerViewController: UIViewController {
     
     @objc private func dismissViewer() {
         presenter?.dismiss(animated: true, completion: nil)
+    }
+}
+
+// MARK: - EKEventEditViewDelegate
+
+extension DetailActionCoordinatorImpl {
+    func eventEditViewController(_ controller: EKEventEditViewController, didCompleteWith action: EKEventEditViewAction) {
+        // Dismiss the event edit controller
+        dependencies.presenter?.dismiss(animated: true, completion: nil)
+        
+        // Log the action for debugging
+        switch action {
+        case .cancelled:
+            print("📅 Event creation cancelled")
+        case .canceled:
+            print("📅 Event creation canceled")
+        case .saved:
+            print("📅 Event saved to calendar")
+        case .deleted:
+            print("📅 Event deleted")
+        @unknown default:
+            print("📅 Unknown event edit action: \(action.rawValue)")
+        }
     }
 }
