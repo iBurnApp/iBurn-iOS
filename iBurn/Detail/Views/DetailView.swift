@@ -24,10 +24,12 @@ struct DetailView: View {
                     if case .image = $0.type { return true }
                     return false
                 }) {
-                    DetailHeaderView(cell: headerCell, viewModel: viewModel)
-                        .onTapGesture {
-                            viewModel.handleCellTap(headerCell)
-                        }
+                    Button(action: {
+                        viewModel.handleCellTap(headerCell)
+                    }) {
+                        DetailHeaderView(cell: headerCell, viewModel: viewModel)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 
                 // Content sections
@@ -38,9 +40,6 @@ struct DetailView: View {
                             EmptyView()
                         } else {
                             DetailCellView(cell: cell, viewModel: viewModel)
-                                .onTapGesture {
-                                    viewModel.handleCellTap(cell)
-                                }
                         }
                     }
                 }
@@ -111,50 +110,75 @@ struct DetailCellView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            switch cell.type {
-            case .text(let text, let style):
-                DetailTextCell(text: text, style: style)
-                
-            case .email(let email, let label):
-                DetailEmailCell(email: email, label: label)
-                
-            case .url(let url, let title):
-                DetailURLCell(url: url, title: title)
-                
-            case .coordinates(let coordinate, let label):
-                DetailCoordinatesCell(coordinate: coordinate, label: label)
-                
-            case .playaAddress(let address, let tappable):
-                DetailPlayaAddressCell(address: address, tappable: tappable)
-                
-            case .distance(let distance):
-                DetailDistanceCell(distance: distance)
-                
-            case .userNotes(let notes):
-                DetailUserNotesCell(notes: notes)
-                
-            case .audio(let artObject, let isPlaying):
-                DetailAudioCell(artObject: artObject, isPlaying: isPlaying)
-                
-            case .relationship(let object, let type):
-                DetailRelationshipCell(object: object, type: type)
-                
-            case .eventRelationship(let events, let hostName):
-                DetailEventRelationshipCell(events: events, hostName: hostName)
-                
-            case .schedule(let attributedString):
-                DetailScheduleCell(attributedString: attributedString)
-                
-            case .date(let date, let format):
-                DetailDateCell(date: date, format: format)
-                
-            default:
-                // Placeholder for other cell types
-                Text("Cell type not implemented yet")
-                    .foregroundColor(.secondary)
+            if isCellTappable(cell.type) {
+                Button(action: {
+                    viewModel.handleCellTap(cell)
+                }) {
+                    cellContent
+                }
+                .buttonStyle(PlainButtonStyle())
+            } else {
+                cellContent
             }
         }
         .padding(.vertical, 4)
+    }
+    
+    @ViewBuilder
+    private var cellContent: some View {
+        switch cell.type {
+        case .text(let text, let style):
+            DetailTextCell(text: text, style: style)
+            
+        case .email(let email, let label):
+            DetailEmailCell(email: email, label: label)
+            
+        case .url(let url, let title):
+            DetailURLCell(url: url, title: title)
+            
+        case .coordinates(let coordinate, let label):
+            DetailCoordinatesCell(coordinate: coordinate, label: label)
+            
+        case .playaAddress(let address, let tappable):
+            DetailPlayaAddressCell(address: address, tappable: tappable)
+            
+        case .distance(let distance):
+            DetailDistanceCell(distance: distance)
+            
+        case .userNotes(let notes):
+            DetailUserNotesCell(notes: notes)
+            
+        case .audio(let artObject, let isPlaying):
+            DetailAudioCell(artObject: artObject, isPlaying: isPlaying)
+            
+        case .relationship(let object, let type):
+            DetailRelationshipCell(object: object, type: type)
+            
+        case .eventRelationship(let events, let hostName):
+            DetailEventRelationshipCell(events: events, hostName: hostName)
+            
+        case .schedule(let attributedString):
+            DetailScheduleCell(attributedString: attributedString)
+            
+        case .date(let date, let format):
+            DetailDateCell(date: date, format: format)
+            
+        default:
+            // Placeholder for other cell types
+            Text("Cell type not implemented yet")
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    private func isCellTappable(_ cellType: DetailCellType) -> Bool {
+        switch cellType {
+        case .email, .url, .coordinates, .relationship, .eventRelationship, .audio, .userNotes:
+            return true
+        case .playaAddress(_, let tappable):
+            return tappable
+        case .text, .distance, .schedule, .date, .image:
+            return false
+        }
     }
 }
 
