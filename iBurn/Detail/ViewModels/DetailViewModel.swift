@@ -148,6 +148,48 @@ class DetailViewModel: ObservableObject {
         }
     }
     
+    /// Extract theme colors following the same logic as BRCDetailViewController
+    func getThemeColors() -> BRCImageColors {
+        // If image colors theming is disabled, always return global theme colors
+        if !Appearance.useImageColorsTheming {
+            return Appearance.currentColors
+        }
+        
+        // Special handling for events - try to get colors from hosting camp first
+        if let eventObject = dataObject as? BRCEventObject {
+            return getEventThemeColors(for: eventObject)
+        }
+        
+        // For Art/Camp objects, check if metadata has thumbnail colors
+        if let artMetadata = metadata as? BRCArtMetadata,
+           let imageColors = artMetadata.thumbnailImageColors {
+            return imageColors
+        } else if let campMetadata = metadata as? BRCCampMetadata,
+                  let imageColors = campMetadata.thumbnailImageColors {
+            return imageColors
+        }
+        
+        // Fallback to global theme colors
+        return Appearance.currentColors
+    }
+    
+    /// Handle event-specific color logic - try hosting camp colors first
+    private func getEventThemeColors(for event: BRCEventObject) -> BRCImageColors {
+        // Try to get colors from hosting camp's image first
+        if let campId = event.hostedByCampUniqueID,
+           let camp = dataService.getCamp(withId: campId) {
+            
+            // Get camp metadata and check for image colors
+            if let campMetadata = dataService.getMetadata(for: camp) as? BRCCampMetadata,
+               let campImageColors = campMetadata.thumbnailImageColors {
+                return campImageColors
+            }
+        }
+        
+        // Fallback to event type colors
+        return BRCImageColors.colors(for: event.eventType)
+    }
+    
     // MARK: - Private Methods
     
     private func generateCells() -> [DetailCell] {

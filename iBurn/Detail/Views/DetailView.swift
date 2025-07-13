@@ -16,6 +16,11 @@ struct DetailView: View {
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
     
+    private var backgroundColor: Color {
+        let themeColors = viewModel.getThemeColors()
+        return Color(themeColors.backgroundColor)
+    }
+    
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
@@ -29,7 +34,7 @@ struct DetailView: View {
                     }) {
                         DetailHeaderView(cell: headerCell, viewModel: viewModel)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(TappableCellButtonStyle())
                 }
                 
                 // Content sections
@@ -47,7 +52,7 @@ struct DetailView: View {
                 .padding(.top, 8)
             }
         }
-        .background(Color(Appearance.currentColors.backgroundColor))
+        .background(backgroundColor)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(viewModel.dataObject.title)
         .toolbar {
@@ -91,6 +96,20 @@ struct DetailView: View {
     }
 }
 
+// MARK: - Custom Button Style
+
+struct TappableCellButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(configuration.isPressed ? Color.primary.opacity(0.1) : Color.clear)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
 // MARK: - Supporting Views
 
 struct DetailHeaderView: View {
@@ -102,7 +121,7 @@ struct DetailHeaderView: View {
             Image(uiImage: image)
                 .resizable()
                 .aspectRatio(aspectRatio, contentMode: .fit)
-                .frame(maxHeight: 300)
+                .frame(maxWidth: .infinity, maxHeight: 300)
                 .clipped()
         }
     }
@@ -121,7 +140,7 @@ struct DetailCellView: View {
                     cellContent
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(TappableCellButtonStyle())
             } else {
                 cellContent
                     .frame(maxWidth: .infinity, alignment: .leading)

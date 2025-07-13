@@ -254,10 +254,155 @@ xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator \
   -configuration Debug build -quiet
 ```
 
+## Additional Work: DetailView UI Bug Fixes
+
+### Problems Identified
+After implementing the SwiftUI DetailView, three UI bugs were discovered:
+
+1. **Image width not resizing**: Small images didn't expand to fill screen width 
+2. **Background not using theme colors**: View used global theme colors instead of object-specific extracted colors
+3. **Cells not completely tappable**: Tappable cells lacked visual feedback
+
+### Root Cause Analysis  
+**File**: `/iBurn/Detail/Views/DetailView.swift`
+
+#### Issue 1: Image Width
+The `DetailHeaderView` used `.frame(maxHeight: 300)` without `.frame(maxWidth: .infinity)`, causing small images to stay at natural size instead of expanding.
+
+#### Issue 2: Theme Colors
+SwiftUI implementation wasn't following the Objective-C pattern from `BRCDetailViewController.m:104-114` for extracting theme colors from metadata. Key missing elements:
+- Not checking `Appearance.useImageColorsTheming` setting
+- Incorrect metadata casting for `BRCThumbnailImageColorsProtocol`
+- Missing event-specific logic to get colors from hosting camp first
+
+#### Issue 3: Cell Tappability  
+Using `PlainButtonStyle()` removed visual feedback, making cells appear non-interactive.
+
+### Solution Implementation
+
+#### 1. Fixed Image Width Sizing
+**File**: `iBurn/Detail/Views/DetailView.swift:104`
+
+**Before**:
+```swift
+.frame(maxHeight: 300)
+```
+
+**After**:
+```swift
+.frame(maxWidth: .infinity, maxHeight: 300)
+```
+
+#### 2. Implemented Proper Theme Color Extraction
+**File**: `iBurn/Detail/ViewModels/DetailViewModel.swift:151-188`
+
+Added `getThemeColors()` method following exact Objective-C logic:
+
+```swift
+func getThemeColors() -> BRCImageColors {
+    // Check user setting first
+    if !Appearance.useImageColorsTheming {
+        return Appearance.currentColors
+    }
+    
+    // Special event handling - try hosting camp colors first
+    if let eventObject = dataObject as? BRCEventObject {
+        return getEventThemeColors(for: eventObject)
+    }
+    
+    // Art/Camp metadata color extraction
+    if let artMetadata = metadata as? BRCArtMetadata,
+       let imageColors = artMetadata.thumbnailImageColors {
+        return imageColors
+    } else if let campMetadata = metadata as? BRCCampMetadata,
+              let imageColors = campMetadata.thumbnailImageColors {
+        return imageColors
+    }
+    
+    // Fallback to global theme
+    return Appearance.currentColors
+}
+```
+
+**Event-specific logic**:
+```swift
+private func getEventThemeColors(for event: BRCEventObject) -> BRCImageColors {
+    // Try hosting camp's image colors first
+    if let campId = event.hostedByCampUniqueID,
+       let camp = dataService.getCamp(withId: campId),
+       let campMetadata = dataService.getMetadata(for: camp) as? BRCCampMetadata,
+       let campImageColors = campMetadata.thumbnailImageColors {
+        return campImageColors
+    }
+    
+    // Fallback to event type colors
+    return BRCImageColors.colors(for: event.eventType)
+}
+```
+
+**Updated background computation**:
+```swift
+private var backgroundColor: Color {
+    let themeColors = viewModel.getThemeColors()
+    return Color(themeColors.backgroundColor)
+}
+```
+
+#### 3. Enhanced Cell Tappability
+**File**: `iBurn/Detail/Views/DetailView.swift:95-107`
+
+Created custom button style with visual feedback:
+
+```swift
+struct TappableCellButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(configuration.isPressed ? Color.primary.opacity(0.1) : Color.clear)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+```
+
+Replaced `.buttonStyle(PlainButtonStyle())` with `.buttonStyle(TappableCellButtonStyle())` for both header and cell buttons.
+
+### Key Implementation Details
+
+#### Theme Color Logic Matches Objective-C
+The implementation now exactly follows `BRCDetailViewController.m` pattern:
+- **Lines 104-114**: Check metadata conformance to `BRCThumbnailImageColorsProtocol`
+- **Lines 74-96**: Special event logic for hosting camp colors
+- **Line 109**: Respect `Appearance.useImageColorsTheming` setting
+
+#### Respects User Preferences
+The theme color extraction properly checks the user's "Use Image Colors" setting, falling back to global theme when disabled.
+
+#### Event Color Priority
+Events now correctly prioritize:
+1. Hosting camp's extracted image colors
+2. Event type colors (if no camp or camp has no colors)
+3. Global theme colors (if image theming disabled)
+
+### Verification
+```bash
+# Build succeeds with all fixes
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,OS=18.5,arch=arm64,name=iPhone 16 Pro' \
+  -configuration Debug build -quiet
+```
+
+### Files Modified (UI Bug Fixes)
+1. `iBurn/Detail/Views/DetailView.swift` - Fixed image width, background colors, cell tappability
+2. `iBurn/Detail/ViewModels/DetailViewModel.swift` - Added proper theme color extraction
+
 ## Final Status
-All three systems are now complete:
+All four systems are now complete:
 1. ✅ **Initialization cleanup** - Clean dependency injection without temporary objects
 2. ✅ **Navigation item forwarding** - Dynamic navigation support for SwiftUI views  
 3. ✅ **Event creation dismissal** - Proper EKEventEditViewDelegate implementation for calendar events
+4. ✅ **DetailView UI fixes** - Image sizing, theme colors, and cell tappability all working properly
 
-The architecture is properly structured with clean dependency injection, dynamic navigation support, and working calendar integration.
+The architecture is properly structured with clean dependency injection, dynamic navigation support, working calendar integration, and polished UI behavior matching the original Objective-C implementation.
