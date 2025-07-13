@@ -11,6 +11,12 @@ import XCTest
 
 // Mock coordinator for tests
 class MockTestDetailActionCoordinator: DetailActionCoordinator {
+    func updateNavigator(_ navigator: (any iBurn.Navigable)?) {
+    }
+    
+    func updatePresenter(_ presenter: (any iBurn.Presentable)?) {
+    }
+    
     var handledActions: [DetailAction] = []
     
     func handle(_ action: DetailAction) {
