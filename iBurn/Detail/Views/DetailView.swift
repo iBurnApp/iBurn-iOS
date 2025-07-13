@@ -34,41 +34,35 @@ struct DetailView: View {
         return viewModel.getThemeColors().backgroundColor
     }
     
+    private var imageViewerBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.selectedImage != nil },
+            set: { if !$0 { viewModel.selectedImage = nil } }
+        )
+    }
+    
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
-                // Header with image if available
-                if let headerCell = viewModel.cells.first(where: { 
-                    if case .image = $0.type { return true }
-                    return false
-                }) {
-                    Button(action: {
-                        viewModel.handleCellTap(headerCell)
-                    }) {
-                        DetailHeaderView(cell: headerCell, viewModel: viewModel)
-                    }
-                    .buttonStyle(TappableCellButtonStyle())
+            // Content sections
+            LazyVStack(spacing: 8) {
+                ForEach(viewModel.cells) { cell in
+                    DetailCellView(cell: cell, viewModel: viewModel)
                 }
-                
-                // Content sections
-                LazyVStack(spacing: 8) {
-                    ForEach(viewModel.cells) { cell in
-                        // Skip image cells since they're handled above
-                        if case .image = cell.type {
-                            EmptyView()
-                        } else {
-                            DetailCellView(cell: cell, viewModel: viewModel)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
             }
+            .padding(.bottom, 8)
         }
         .environment(\.themeColors, viewModel.getThemeColors())
         .background(backgroundColor)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(viewModel.dataObject.title)
+        .sheet(isPresented: imageViewerBinding) {
+            if let selectedImage = viewModel.selectedImage {
+                ZoomableViewer(image: Image(uiImage: selectedImage))
+                    .presentationBackground(.ultraThinMaterial)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 // Add to Calendar button for events
@@ -110,36 +104,18 @@ struct DetailView: View {
     }
 }
 
-// MARK: - Custom Button Style
-
-struct TappableCellButtonStyle: ButtonStyle {
-    @Environment(\.themeColors) var themeColors
-    
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(configuration.isPressed ? themeColors.primaryColor.opacity(0.1) : Color.clear)
-            )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
 
 // MARK: - Supporting Views
 
-struct DetailHeaderView: View {
-    let cell: DetailCell
-    let viewModel: DetailViewModel
+struct DetailImageView: View {
+    let image: UIImage
+    let aspectRatio: CGFloat
     
     var body: some View {
-        if case .image(let image, let aspectRatio) = cell.type {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(aspectRatio, contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: 300)
-                .clipped()
-        }
+        Image(uiImage: image)
+            .resizable()
+            .aspectRatio(aspectRatio, contentMode: .fit)
+            .frame(maxWidth: .infinity)
     }
 }
 
@@ -157,13 +133,23 @@ struct DetailCellView: View {
                     cellContent
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .buttonStyle(TappableCellButtonStyle())
+                .contentShape(Rectangle())
             } else {
                 cellContent
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.vertical, 4)
+        .padding(.horizontal, shouldAddHorizontalPadding ? 16 : 0)
+    }
+    
+    private var shouldAddHorizontalPadding: Bool {
+        switch cell.type {
+        case .image:
+            return false // Images should extend to edges
+        default:
+            return true // All other cells get horizontal padding
+        }
     }
     
     @ViewBuilder
@@ -205,10 +191,8 @@ struct DetailCellView: View {
         case .date(let date, let format):
             DetailDateCell(date: date, format: format)
             
-        default:
-            // Placeholder for other cell types
-            Text("Cell type not implemented yet")
-                .foregroundColor(themeColors.detailColor)
+        case .image(let image, let aspectRatio):
+            DetailImageView(image: image, aspectRatio: aspectRatio)
         }
     }
     
@@ -218,8 +202,10 @@ struct DetailCellView: View {
             return true
         case .playaAddress(_, let tappable):
             return tappable
-        case .text, .distance, .schedule, .date, .image:
+        case .text, .distance, .schedule, .date:
             return false
+        case .image:
+            return true
         }
     }
 }
@@ -534,5 +520,83 @@ struct DetailDateCell: View {
         let formatter = DateFormatter()
         formatter.dateFormat = format
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - 1. Zoomable & swipe-dismissable full-screen viewer
+struct ZoomableViewer: View {
+    let image: Image
+    @Environment(\.dismiss) private var dismiss
+    
+    // zoom + pan
+    @State private var scale: CGFloat = 1
+    @GestureState private var gestureScale: CGFloat = 1
+    @State private var offset: CGSize = .zero
+    @GestureState private var dragOffset: CGSize = .zero
+    
+    // constants
+    private let maxScale: CGFloat = 5        // pinch limit
+    
+    var body: some View {
+        ZStack {
+            Color.clear // Full-screen hit area for gestures
+            
+            image
+                .resizable()
+                .scaledToFit()
+                .scaleEffect(scale * gestureScale)
+                .offset(x: offset.width + dragOffset.width,
+                        y: offset.height + dragOffset.height)
+        }
+        .contentShape(Rectangle()) // Make entire area touchable for gestures
+        .gesture(
+                
+                // 1️⃣ Pinch-to-zoom
+                MagnificationGesture()
+                    .updating($gestureScale) { value, state, _ in
+                        state = min(maxScale / scale, value)          // clamp
+                    }
+                    .onEnded { value in
+                        scale = min(maxScale, max(1, scale * value)) // stay within 1…maxScale
+                    }
+            )
+            .simultaneousGesture(
+                // 2️⃣ Drag to pan image (only when zoomed)
+                scale > 1 ? 
+                DragGesture()
+                    .updating($dragOffset) { value, state, _ in
+                        state = value.translation
+                    }
+                    .onEnded { value in
+                        // Add translation to current offset for panning
+                        offset.width += value.translation.width
+                        offset.height += value.translation.height
+                    } : nil
+            )
+            .simultaneousGesture(
+                
+                // 3️⃣ Double-tap to toggle 1× ↔︎ 2× zoom
+                TapGesture(count: 2)
+                    .onEnded {
+                        withAnimation {
+                            if scale > 1 { scale = 1; offset = .zero }
+                            else          { scale = 2 }
+                        }
+                    }
+            )
+            .animation(.spring(), value: gestureScale == 1)          // snap-back
+            .animation(.spring(), value: offset)                     // offset animation
+            .background(.clear)
+            .ignoresSafeArea()
+            .overlay(
+                Button("Done") {
+                    dismiss()
+                }
+                .foregroundColor(.primary)
+                .fontWeight(.semibold)
+                .padding(.top, 8)
+                .padding(.trailing, 16)
+                , alignment: .topTrailing
+            )
     }
 }

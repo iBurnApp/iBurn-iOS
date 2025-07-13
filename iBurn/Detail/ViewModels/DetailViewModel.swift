@@ -35,6 +35,7 @@ class DetailViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var error: Error?
     @Published var isAudioPlaying = false
+    @Published var selectedImage: UIImage?
     
     // MARK: - Dependencies
     private let dataService: DetailDataServiceProtocol
@@ -66,6 +67,7 @@ class DetailViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
+    @MainActor
     func loadData() async {
         isLoading = true
         defer { isLoading = false }
@@ -79,6 +81,7 @@ class DetailViewModel: ObservableObject {
         self.cells = generateCells()
     }
     
+    @MainActor
     func toggleFavorite() async {
         let newFavoriteStatus = !metadata.isFavorite
         
@@ -96,6 +99,7 @@ class DetailViewModel: ObservableObject {
         }
     }
     
+    @MainActor
     func updateNotes(_ notes: String) async {
         do {
             try await dataService.updateUserNotes(for: dataObject, notes: notes)
@@ -134,7 +138,7 @@ class DetailViewModel: ObservableObject {
             }
             
         case .image(let image, _):
-            coordinator.handle(.showImageViewer(image))
+            selectedImage = image
             
         case .audio(let artObject, _):
             if audioService.isPlaying(artObject: artObject) {

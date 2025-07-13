@@ -70,7 +70,6 @@ enum DetailAction {
     case showMap(BRCDataObject)
     case navigateToObject(BRCDataObject)
     case showEventsList([BRCEventObject], hostName: String)
-    case showImageViewer(UIImage)
     case shareCoordinates(CLLocationCoordinate2D)
     case playAudio(BRCArtObject)
     case pauseAudio

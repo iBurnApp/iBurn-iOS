@@ -130,13 +130,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             let activityViewController = createShareController(for: coordinate)
             presenter.present(activityViewController, animated: true, completion: nil)
             
-        case .showImageViewer(let image):
-            guard let presenter = dependencies.presenter else {
-                print("❌ Cannot show image viewer: No presenter available")
-                return
-            }
-            let imageViewController = createImageViewer(for: image)
-            presenter.present(imageViewController, animated: true, completion: nil)
             
         case .showMap(let dataObject):
             // This would require navigation to map view with object selected
@@ -229,12 +222,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
         )
     }
     
-    private func createImageViewer(for image: UIImage) -> UIViewController {
-        let imageViewController = ImageViewerViewController(image: image, presenter: dependencies.presenter)
-        imageViewController.modalPresentationStyle = .fullScreen
-        imageViewController.modalTransitionStyle = .crossDissolve
-        return imageViewController
-    }
     
     private func createNotesEditor(currentNotes: String, completion: @escaping (String) -> Void) -> UIAlertController {
         let alertController = UIAlertController(
@@ -264,68 +251,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
     }
 }
 
-// MARK: - Image Viewer Controller
-
-private class ImageViewerViewController: UIViewController {
-    private let image: UIImage
-    private weak var presenter: Presentable?
-    
-    init(image: UIImage, presenter: Presentable?) {
-        self.image = image
-        self.presenter = presenter
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-    }
-    
-    private func setupUI() {
-        view.backgroundColor = .black
-        
-        let imageView = UIImageView(image: image)
-        imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .black
-        imageView.isUserInteractionEnabled = true
-        
-        view.addSubview(imageView)
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: view.topAnchor),
-            imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
-        // Add tap gesture to dismiss
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissViewer))
-        imageView.addGestureRecognizer(tapGesture)
-        
-        // Add close button
-        let closeButton = UIButton(type: .system)
-        closeButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
-        closeButton.tintColor = .white
-        closeButton.addTarget(self, action: #selector(dismissViewer), for: .touchUpInside)
-        
-        view.addSubview(closeButton)
-        closeButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            closeButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            closeButton.widthAnchor.constraint(equalToConstant: 44),
-            closeButton.heightAnchor.constraint(equalToConstant: 44)
-        ])
-    }
-    
-    @objc private func dismissViewer() {
-        presenter?.dismiss(animated: true, completion: nil)
-    }
-}
 
 // MARK: - EKEventEditViewDelegate
 
