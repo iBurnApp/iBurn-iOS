@@ -18,49 +18,31 @@ public struct ZoomableImageView: View {
     public let uiImage: UIImage
     
     // Zoom state
-    @State private var zoomScale: CGFloat = 1.0
-    @State private var previousZoomScale: CGFloat = 1.0
-    @State private var zoomAnchor: UnitPoint = .center
+    @State private var steadyStateZoomScale: CGFloat = 1.0
+    @GestureState private var gestureZoomScale: CGFloat = 1.0
     
-    // Drag state for panning
-    @State private var dragOffset: CGSize = .zero
-    @State private var previousDragOffset: CGSize = .zero
-    
-    // Gesture states
-    @GestureState private var pinchScale: CGFloat = 1.0
-    @GestureState private var panOffset: CGSize = .zero
+    // Pan state  
+    @State private var steadyStatePanOffset: CGSize = .zero
+    @GestureState private var gesturePanOffset: CGSize = .zero
     
     // Internal state to track zoom level for disabling dismiss gestures
     private var isZoomed: Bool {
-        zoomScale > 1.01
+        currentZoomScale > 1.01
     }
     
     // Container size for calculations
     @State private var containerSize: CGSize = .zero
     
-    // Calculate the scale needed to fit width
-    private var fitScale: CGFloat {
-        guard uiImage.size.width > 0, uiImage.size.height > 0, containerSize.width > 0, containerSize.height > 0 else { 
-            return 1.0 
-        }
-        
-        let widthScale = containerSize.width / uiImage.size.width
-        let heightScale = containerSize.height / uiImage.size.height
-        
-        // Use the smaller scale to ensure the entire image fits
-        return min(widthScale, heightScale)
+    // Combined zoom scale
+    private var currentZoomScale: CGFloat {
+        steadyStateZoomScale * gestureZoomScale
     }
     
-    // Current scale including gesture
-    private var currentScale: CGFloat {
-        zoomScale * pinchScale
-    }
-    
-    // Current offset including gesture
-    private var currentOffset: CGSize {
+    // Combined pan offset
+    private var currentPanOffset: CGSize {
         CGSize(
-            width: dragOffset.width + panOffset.width,
-            height: dragOffset.height + panOffset.height
+            width: steadyStatePanOffset.width + gesturePanOffset.width,
+            height: steadyStatePanOffset.height + gesturePanOffset.height
         )
     }
     
@@ -70,56 +52,93 @@ public struct ZoomableImageView: View {
 
     public var body: some View {
         GeometryReader { geometry in
-            ScrollView([.horizontal, .vertical], showsIndicators: false) {
+            ZStack {
+                Color.clear
+                
                 Image(uiImage: uiImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(
-                        width: geometry.size.width * max(currentScale, 1.0),
-                        height: geometry.size.height * max(currentScale, 1.0)
+                    .scaleEffect(currentZoomScale)
+                    .offset(currentPanOffset)
+                    .contentShape(Rectangle())
+                    .highPriorityGesture(
+                        steadyStateZoomScale > 1.01 ?
+                        DragGesture()
+                            .updating($gesturePanOffset) { latestDragGestureValue, gesturePanOffset, _ in
+                                gesturePanOffset = latestDragGestureValue.translation
+                            }
+                            .onEnded { dragGestureValue in
+                                steadyStatePanOffset = CGSize(
+                                    width: steadyStatePanOffset.width + dragGestureValue.translation.width,
+                                    height: steadyStatePanOffset.height + dragGestureValue.translation.height
+                                )
+                                
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    validatePanOffset()
+                                }
+                            }
+                        : nil
                     )
-                    .scaleEffect(currentScale / max(currentScale, 1.0))
-                    .frame(
-                        width: geometry.size.width,
-                        height: geometry.size.height
+                    .gesture(
+                        // Magnification for pinch-to-zoom
+                        MagnificationGesture()
+                            .updating($gestureZoomScale) { latestGestureScale, gestureZoomScale, _ in
+                                gestureZoomScale = latestGestureScale
+                            }
+                            .onEnded { gestureScaleAtEnd in
+                                steadyStateZoomScale *= gestureScaleAtEnd
+                                steadyStateZoomScale = max(1.0, min(steadyStateZoomScale, 3.0))
+                                
+                                // If we're back at 1x zoom, reset the pan offset
+                                if steadyStateZoomScale <= 1.01 {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        steadyStatePanOffset = .zero
+                                    }
+                                } else {
+                                    // Validate pan bounds
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        validatePanOffset()
+                                    }
+                                }
+                            }
                     )
+                    .onTapGesture(count: 2) { location in
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            if steadyStateZoomScale > 1.01 {
+                                // Zoom out to fit
+                                steadyStateZoomScale = 1.0
+                                steadyStatePanOffset = .zero
+                            } else {
+                                // Zoom in to 2x at tap location
+                                let zoomPoint = CGPoint(
+                                    x: location.x - geometry.size.width / 2,
+                                    y: location.y - geometry.size.height / 2
+                                )
+                                
+                                steadyStateZoomScale = 2.0
+                                
+                                // Offset to center on tap point
+                                steadyStatePanOffset = CGSize(
+                                    width: -zoomPoint.x,
+                                    height: -zoomPoint.y
+                                )
+                                
+                                validatePanOffset()
+                            }
+                        }
+                    }
             }
-            .scrollDisabled(currentScale <= 1.01)
-            .background(Color.clear)
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .clipped()
             .onAppear {
                 containerSize = geometry.size
-                // Reset to fit scale
-                zoomScale = 1.0
             }
             .onChange(of: geometry.size) { newSize in
                 containerSize = newSize
-            }
-            .gesture(
-                MagnificationGesture()
-                    .updating($pinchScale) { value, scale, _ in
-                        scale = value
-                    }
-                    .onEnded { value in
-                        let newScale = zoomScale * value
-                        zoomScale = max(1.0, min(newScale, 4.0))
-                        previousZoomScale = zoomScale
-                    }
-            )
-            .onTapGesture(count: 2) { location in
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    if zoomScale > 1.01 {
-                        // Zoom out to fit
-                        zoomScale = 1.0
-                        dragOffset = .zero
-                        previousDragOffset = .zero
-                    } else {
-                        // Zoom in to 2x
-                        zoomScale = 2.0
-                        
-                        // Calculate zoom anchor from tap location
-                        let normalizedX = location.x / geometry.size.width
-                        let normalizedY = location.y / geometry.size.height
-                        zoomAnchor = UnitPoint(x: normalizedX, y: normalizedY)
+                // Re-validate pan offset when container size changes
+                if steadyStateZoomScale > 1.01 {
+                    withAnimation {
+                        validatePanOffset()
                     }
                 }
             }
@@ -128,6 +147,42 @@ public struct ZoomableImageView: View {
         .interactiveDismissDisabled(isZoomed)
         // Hide the sheet's drag indicator when zoomed for a cleaner look
         .presentationDragIndicator(isZoomed ? .hidden : .visible)
+    }
+    
+    private func validatePanOffset() {
+        // Calculate the scaled image size
+        let scaledImageWidth = uiImage.size.width * steadyStateZoomScale
+        let scaledImageHeight = uiImage.size.height * steadyStateZoomScale
+        
+        // Calculate the aspect ratios to determine actual displayed size
+        let imageAspectRatio = uiImage.size.width / uiImage.size.height
+        let containerAspectRatio = containerSize.width / containerSize.height
+        
+        var displayedImageSize: CGSize
+        
+        if imageAspectRatio > containerAspectRatio {
+            // Image is wider than container - fit to width
+            let scale = containerSize.width / uiImage.size.width
+            displayedImageSize = CGSize(
+                width: containerSize.width * steadyStateZoomScale,
+                height: uiImage.size.height * scale * steadyStateZoomScale
+            )
+        } else {
+            // Image is taller than container - fit to height
+            let scale = containerSize.height / uiImage.size.height
+            displayedImageSize = CGSize(
+                width: uiImage.size.width * scale * steadyStateZoomScale,
+                height: containerSize.height * steadyStateZoomScale
+            )
+        }
+        
+        // Calculate maximum allowed offset
+        let maxOffsetX = max(0, (displayedImageSize.width - containerSize.width) / 2)
+        let maxOffsetY = max(0, (displayedImageSize.height - containerSize.height) / 2)
+        
+        // Clamp the offset to valid bounds
+        steadyStatePanOffset.width = max(-maxOffsetX, min(steadyStatePanOffset.width, maxOffsetX))
+        steadyStatePanOffset.height = max(-maxOffsetY, min(steadyStatePanOffset.height, maxOffsetY))
     }
 }
 
