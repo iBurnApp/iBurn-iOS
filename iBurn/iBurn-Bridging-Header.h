@@ -28,3 +28,4 @@
 #import "BRCImageColors.h"
 #import "YapDatabaseViewConnection+iBurn.h"
 #import "BRCUpdateInfo.h"
+#import "NSUserDefaults+iBurn.h"

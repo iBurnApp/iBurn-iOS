@@ -397,7 +397,26 @@ class DetailViewModel: ObservableObject {
     private func getLocationValue(for object: BRCDataObject) -> String {
         if !dataService.canShowLocation(for: object) {
             return "Restricted"
-        } else if let location = object.playaLocation, !location.isEmpty {
+        }
+        
+        // Special handling for events - prioritize host location
+        if let event = object as? BRCEventObject {
+            // Try camp host location first
+            if let campId = event.hostedByCampUniqueID,
+               let camp = dataService.getCamp(withId: campId),
+               let campLocation = camp.playaLocation, !campLocation.isEmpty {
+                return campLocation
+            }
+            // Try art host location
+            else if let artId = event.hostedByArtUniqueID,
+                    let art = dataService.getArt(withId: artId),
+                    let artLocation = art.playaLocation, !artLocation.isEmpty {
+                return artLocation
+            }
+        }
+        
+        // Default to object's own location
+        if let location = object.playaLocation, !location.isEmpty {
             return location
         } else {
             return "Unknown"

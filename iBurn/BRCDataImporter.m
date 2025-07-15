@@ -392,6 +392,10 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                     if (camp.location) {
                         event.coordinate = camp.coordinate;
                     }
+                    // Copy playa location from camp
+                    if (camp.playaLocation.length > 0) {
+                        event.playaLocation = camp.playaLocation;
+                    }
                     // Also copy BurnerMap location if available
                     if (camp.burnerMapLocation) {
                         event.burnerMapCoordinate = camp.burnerMapCoordinate;
@@ -408,10 +412,15 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
                     if (art.location) {
                         event.coordinate = art.coordinate;
                     }
+                    // Copy playa location from art
+                    if (art.playaLocation.length > 0) {
+                        event.playaLocation = art.playaLocation;
+                    }
                 } else if (event.hostedByArtUniqueID) {
                     event.hostedByArtUniqueID = nil;
                 }
-                if (event.location && event.playaLocation.length == 0) {
+                // Only reverse geocode events without hosts AND without existing playa location
+                if (!camp && !art && event.location && event.playaLocation.length == 0) {
                     NSString *playaLocation = [geocoder syncReverseLookup:event.location.coordinate];
                     if (playaLocation.length > 0) {
                         event.playaLocation = playaLocation;

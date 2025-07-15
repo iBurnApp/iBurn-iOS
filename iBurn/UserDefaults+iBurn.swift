@@ -14,7 +14,6 @@ extension UserDefaults {
         case downloadsDisabled
         case navigationModeDisabled
         case lastUpdateCheck
-        case enteredEmbargoPasscode
     }
     
     static var isLocationHistoryDisabled: Bool {
@@ -61,10 +60,10 @@ extension UserDefaults {
 
     @objc static var enteredEmbargoPasscode: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: Keys.enteredEmbargoPasscode.rawValue)
+            return UserDefaults.standard.enteredEmbargoPasscode()
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: Keys.enteredEmbargoPasscode.rawValue)
+            UserDefaults.standard.setEnteredEmbargoPasscode(newValue)
         }
     }
 }
