@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MoreSubtitleCell: UITableViewCell {
+class MoreSubtitleCell: UITableViewCell, ReusableCell {
     static let reuseIdentifier = "MoreSubtitleCell"
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -24,6 +24,16 @@ class MoreSubtitleCell: UITableViewCell {
         selectionStyle = .default
         // Subtitle cells don't use disclosure indicators in the storyboard
         accessoryType = .none
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Reset cell state to defaults to prevent reuse issues
+        isUserInteractionEnabled = true
+        accessoryType = .none
+        textLabel?.textColor = nil
+        detailTextLabel?.textColor = nil
+        imageView?.image = nil
     }
     
     func configure(title: String, subtitle: String, imageName: String?, tag: Int) {

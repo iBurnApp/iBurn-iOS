@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MoreTableViewCell: UITableViewCell {
+class MoreTableViewCell: UITableViewCell, ReusableCell {
     static let reuseIdentifier = "MoreTableViewCell"
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -23,6 +23,15 @@ class MoreTableViewCell: UITableViewCell {
     private func setupCell() {
         accessoryType = .disclosureIndicator
         selectionStyle = .default
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Reset cell state to defaults to prevent reuse issues
+        isUserInteractionEnabled = true
+        accessoryType = .disclosureIndicator
+        textLabel?.textColor = nil
+        imageView?.image = nil
     }
     
     func configure(title: String, imageName: String?, tag: Int) {

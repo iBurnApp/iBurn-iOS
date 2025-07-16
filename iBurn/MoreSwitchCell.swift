@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MoreSwitchCell: UITableViewCell {
+class MoreSwitchCell: UITableViewCell, ReusableCell {
     static let reuseIdentifier = "MoreSwitchCell"
     
     private let switchControl = UISwitch()
@@ -25,6 +25,19 @@ class MoreSwitchCell: UITableViewCell {
     private func setupCell() {
         selectionStyle = .none
         accessoryView = switchControl
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Reset cell state to defaults to prevent reuse issues
+        isUserInteractionEnabled = true
+        selectionStyle = .none
+        accessoryView = switchControl
+        textLabel?.textColor = nil
+        detailTextLabel?.textColor = nil
+        imageView?.image = nil
+        // Remove any existing targets to prevent memory issues
+        switchControl.removeTarget(nil, action: nil, for: .allEvents)
     }
     
     func configure(title: String, subtitle: String, imageName: String?, tag: Int, switchTarget: Any?, switchAction: Selector) {

@@ -10,6 +10,19 @@ import UIKit
 import StoreKit
 import SwiftUI
 
+protocol ReusableCell {
+    static var reuseIdentifier: String { get }
+}
+
+extension UITableView {
+    func dequeueReusableCell<T: UITableViewCell & ReusableCell>(_ cellClass: T.Type, for indexPath: IndexPath) -> T {
+        guard let cell = dequeueReusableCell(withIdentifier: T.reuseIdentifier, for: indexPath) as? T else {
+            fatalError("Failed to dequeue cell of type \(T.self) with identifier \(T.reuseIdentifier)")
+        }
+        return cell
+    }
+}
+
 class MoreViewController: UITableViewController, SKStoreProductViewControllerDelegate {
     
     // MARK: - Initialization
@@ -22,24 +35,74 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         fatalError("init(coder:) has not been implemented")
     }
     
-    enum CellTag: Int {
-        case art = 1
-        case camps = 2
-        case unlock = 3
-        case credits = 4
-        case feedback = 5
-        case share = 6
-        case rate = 7
-        case debugShowOnboarding = 8
-        case audioTour = 9
-        case appearance = 10
-        case locationHistory = 11
-        case navigationMode = 12
-        case dataUpdates = 13
+    enum Section: Int, CaseIterable {
+        case detailViews = 0
+        case customization = 1
+        case contact = 2
+        case extras = 3
+        
+        var title: String? {
+            switch self {
+            case .extras: return "Extras"
+            default: return nil
+            }
+        }
+    }
+    
+    enum DetailViewsRow: Int, CaseIterable {
+        case art = 0
+        case camps = 1
+        case audioTour = 2
+        case locationHistory = 3
+    }
+    
+    enum CustomizationRow: Int, CaseIterable {
+        case appearance = 0
+    }
+    
+    enum ContactRow: Int, CaseIterable {
+        case feedback = 0
+        case share = 1
+        case rate = 2
+    }
+    
+    enum ExtrasRow: Int, CaseIterable {
+        case unlock = 0
+        case credits = 1
+        case debugShowOnboarding = 2
+        case dataUpdates = 3
+        case navigationMode = 4
         #if DEBUG
-        case featureFlags = 14
+        case featureFlags = 5
         #endif
     }
+    
+    enum CellType {
+        case detailViews(DetailViewsRow)
+        case customization(CustomizationRow)
+        case contact(ContactRow)
+        case extras(ExtrasRow)
+        
+        init?(indexPath: IndexPath) {
+            guard let section = Section(rawValue: indexPath.section) else { return nil }
+            
+            switch section {
+            case .detailViews:
+                guard let row = DetailViewsRow(rawValue: indexPath.row) else { return nil }
+                self = .detailViews(row)
+            case .customization:
+                guard let row = CustomizationRow(rawValue: indexPath.row) else { return nil }
+                self = .customization(row)
+            case .contact:
+                guard let row = ContactRow(rawValue: indexPath.row) else { return nil }
+                self = .contact(row)
+            case .extras:
+                guard let row = ExtrasRow(rawValue: indexPath.row) else { return nil }
+                self = .extras(row)
+            }
+        }
+    }
+    
     
     private let versionLabel: UILabel = {
         let label = UILabel()
@@ -82,107 +145,108 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     // MARK: - UITableViewDelegate & DataSource
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return Section.allCases.count
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let section = Section(rawValue: section) else { return 0 }
+        
         switch section {
-        case 0: return 4  // Detail Views: Art, Camps, Audio Tour, Location History
-        case 1: return 1  // Customization: Appearance
-        case 2: return 3  // Contact: Report Bugs, Share, Rate
-        case 3:
-            #if DEBUG
-            return 6  // Extras: Unlock, Credits, Show Onboarding, Data Updates, Navigation Mode, Debug
-            #else
-            return 5  // Extras: Unlock, Credits, Show Onboarding, Data Updates, Navigation Mode
-            #endif
-        default: return 0
+        case .detailViews: return DetailViewsRow.allCases.count
+        case .customization: return CustomizationRow.allCases.count
+        case .contact: return ContactRow.allCases.count
+        case .extras: return ExtrasRow.allCases.count
         }
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return section == 3 ? "Extras" : nil
+        guard let section = Section(rawValue: section) else { return nil }
+        return section.title
     }
     
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cellType = CellType(indexPath: indexPath) else {
+            fatalError("Invalid index path")
+        }
+        
         let cell: UITableViewCell
         
-        switch (indexPath.section, indexPath.row) {
-        case (0, 0): // Art
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Art", imageName: "BRCArtIcon", tag: CellTag.art.rawValue)
-            
-        case (0, 1): // Camps
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Camps", imageName: "BRCCampIcon", tag: CellTag.camps.rawValue)
-            
-        case (0, 2): // Audio Tour
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Audio Tour", imageName: "BRCAudioIcon", tag: CellTag.audioTour.rawValue)
-            
-        case (0, 3): // Location History
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Location History", imageName: "BRCMapIcon", tag: CellTag.locationHistory.rawValue)
-            
-        case (1, 0): // Appearance
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Appearance", imageName: "BRCThemeIcon", tag: CellTag.appearance.rawValue)
-            
-        case (2, 0): // Report Bugs
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreSubtitleCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreSubtitleCell).configure(title: "Report Bugs", subtitle: "Found a bug? Too bad!", imageName: "BRCMailIcon", tag: CellTag.feedback.rawValue)
-            
-        case (2, 1): // Share
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreSubtitleCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreSubtitleCell).configure(title: "Share iBurn", subtitle: "Help spread the word!", imageName: "BRCHeart25", tag: CellTag.share.rawValue)
-            
-        case (2, 2): // Rate
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreSubtitleCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreSubtitleCell).configure(title: "Rate on App Store", subtitle: "We Love You", imageName: "BRCLightStar", tag: CellTag.rate.rawValue)
-            
-        case (3, 0): // Unlock Location Data
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            let unlockCell = cell as! MoreTableViewCell
-            if BRCEmbargo.allowEmbargoedData() {
-                unlockCell.configure(title: "Location Data Unlocked", systemImageName: "lock.open.fill", tag: CellTag.unlock.rawValue)
-                unlockCell.textLabel?.textColor = UIColor.lightGray
-                unlockCell.isUserInteractionEnabled = false
-                unlockCell.accessoryType = .none
-            } else {
-                unlockCell.configure(title: "Unlock Location Data", systemImageName: "lock.fill", tag: CellTag.unlock.rawValue)
-                unlockCell.textLabel?.textColor = Appearance.currentColors.primaryColor
-                unlockCell.isUserInteractionEnabled = true
-                unlockCell.accessoryType = .none
+        switch cellType {
+        case .detailViews(let row):
+            let moreCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+            switch row {
+            case .art:
+                moreCell.configure(title: "Art", imageName: "BRCArtIcon", tag: row.rawValue)
+            case .camps:
+                moreCell.configure(title: "Camps", imageName: "BRCCampIcon", tag: row.rawValue)
+            case .audioTour:
+                moreCell.configure(title: "Audio Tour", imageName: "BRCAudioIcon", tag: row.rawValue)
+            case .locationHistory:
+                moreCell.configure(title: "Location History", imageName: "BRCMapIcon", tag: row.rawValue)
             }
+            cell = moreCell
             
-        case (3, 1): // Credits
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Credits", imageName: "BRCCreditsIcon", tag: CellTag.credits.rawValue)
+        case .customization(let row):
+            let moreCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+            switch row {
+            case .appearance:
+                moreCell.configure(title: "Appearance", imageName: "BRCThemeIcon", tag: row.rawValue)
+            }
+            cell = moreCell
             
-        case (3, 2): // Show Onboarding
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            let onboardingCell = cell as! MoreTableViewCell
-            onboardingCell.configure(title: "Show Onboarding", imageName: "BRCOnboardingIcon", tag: CellTag.debugShowOnboarding.rawValue)
-            onboardingCell.accessoryType = .none
+        case .contact(let row):
+            let subtitleCell = tableView.dequeueReusableCell(MoreSubtitleCell.self, for: indexPath)
+            switch row {
+            case .feedback:
+                subtitleCell.configure(title: "Report Bugs", subtitle: "Found a bug? Too bad!", imageName: "BRCMailIcon", tag: row.rawValue)
+            case .share:
+                subtitleCell.configure(title: "Share iBurn", subtitle: "Help spread the word!", imageName: "BRCHeart25", tag: row.rawValue)
+            case .rate:
+                subtitleCell.configure(title: "Rate on App Store", subtitle: "We Love You", imageName: "BRCLightStar", tag: row.rawValue)
+            }
+            cell = subtitleCell
             
-        case (3, 3): // Data Updates
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Data Updates", systemImageName: "arrow.clockwise", tag: CellTag.dataUpdates.rawValue)
-            
-        case (3, 4): // Navigation Mode
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreSwitchCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreSwitchCell).configure(title: "Navigation Mode", subtitle: "Keep screen on when map is visible", systemImageName: "location.circle", tag: CellTag.navigationMode.rawValue, switchTarget: self, switchAction: #selector(navigationModeToggled(sender:)))
-            
-        case (3, 5): // Debug (DEBUG only)
+        case .extras(let row):
+            switch row {
+            case .unlock:
+                let unlockCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+                if BRCEmbargo.allowEmbargoedData() {
+                    unlockCell.configure(title: "Location Data Unlocked", systemImageName: "lock.open.fill", tag: row.rawValue)
+                    unlockCell.textLabel?.textColor = UIColor.lightGray
+                    unlockCell.isUserInteractionEnabled = false
+                    unlockCell.accessoryType = .none
+                } else {
+                    unlockCell.configure(title: "Unlock Location Data", systemImageName: "lock.fill", tag: row.rawValue)
+                    unlockCell.textLabel?.textColor = Appearance.currentColors.primaryColor
+                    unlockCell.isUserInteractionEnabled = true
+                    unlockCell.accessoryType = .none
+                }
+                cell = unlockCell
+            case .credits:
+                let creditsCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+                creditsCell.configure(title: "Credits", imageName: "BRCCreditsIcon", tag: row.rawValue)
+                cell = creditsCell
+            case .debugShowOnboarding:
+                let onboardingCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+                onboardingCell.configure(title: "Show Onboarding", imageName: "BRCOnboardingIcon", tag: row.rawValue)
+                onboardingCell.accessoryType = .none
+                cell = onboardingCell
+            case .dataUpdates:
+                let dataUpdatesCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+                dataUpdatesCell.configure(title: "Data Updates", systemImageName: "arrow.clockwise", tag: row.rawValue)
+                cell = dataUpdatesCell
+            case .navigationMode:
+                let switchCell = tableView.dequeueReusableCell(MoreSwitchCell.self, for: indexPath)
+                switchCell.configure(title: "Navigation Mode", subtitle: "Keep screen on when map is visible", systemImageName: "location.circle", tag: row.rawValue, switchTarget: self, switchAction: #selector(navigationModeToggled(sender:)))
+                cell = switchCell
             #if DEBUG
-            cell = tableView.dequeueReusableCell(withIdentifier: MoreTableViewCell.reuseIdentifier, for: indexPath)
-            (cell as! MoreTableViewCell).configure(title: "Debug", systemImageName: "ladybug", tag: CellTag.featureFlags.rawValue)
-            #else
-            fatalError("Invalid index path")
+            case .featureFlags:
+                let debugCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
+                debugCell.configure(title: "Debug", systemImageName: "ladybug", tag: row.rawValue)
+                cell = debugCell
             #endif
-            
-        default:
-            fatalError("Invalid index path")
+            }
         }
         
         cell.setColorTheme(Appearance.currentColors, animated: false)
@@ -192,41 +256,39 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let cell = tableView.cellForRow(at: indexPath),
-        let cellTag = CellTag(rawValue: cell.tag) else {
-            return
-        }
-        switch cellTag {
-        case .art:
-            pushArtView()
-        case .camps:
-            pushCampsView()
-        case .unlock:
-            showUnlockView()
-        case .credits:
-            pushCreditsView()
-        case .feedback:
-            showFeedbackView()
-        case .share:
-            showShareSheet(cell)
-        case .rate:
-            showRatingsView()
-        case .debugShowOnboarding:
-            showOnboardingView()
-        case .audioTour:
-            showAudioTour()
-        case .appearance:
-            pushAppearanceView()
-        case .locationHistory:
-            pushTracksView()
-        case .navigationMode:
-            break
-        case .dataUpdates:
-            pushDataUpdatesView()
-        #if DEBUG
-        case .featureFlags:
-            pushFeatureFlagsView()
-        #endif
+        guard let cellType = CellType(indexPath: indexPath) else { return }
+        
+        let cell = tableView.cellForRow(at: indexPath)
+        
+        switch cellType {
+        case .detailViews(let row):
+            switch row {
+            case .art: pushArtView()
+            case .camps: pushCampsView()
+            case .audioTour: showAudioTour()
+            case .locationHistory: pushTracksView()
+            }
+        case .customization(let row):
+            switch row {
+            case .appearance: pushAppearanceView()
+            }
+        case .contact(let row):
+            switch row {
+            case .feedback: showFeedbackView()
+            case .share: showShareSheet(cell!)
+            case .rate: showRatingsView()
+            }
+        case .extras(let row):
+            switch row {
+            case .unlock: showUnlockView()
+            case .credits: pushCreditsView()
+            case .debugShowOnboarding: showOnboardingView()
+            case .dataUpdates: pushDataUpdatesView()
+            case .navigationMode: break // Switch cell, no action needed
+            #if DEBUG
+            case .featureFlags: pushFeatureFlagsView()
+            #endif
+            }
         }
     }
     
@@ -247,7 +309,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     private func findNavigationModeCell() -> MoreSwitchCell? {
-        let indexPath = IndexPath(row: 4, section: 3)
+        let indexPath = IndexPath(row: ExtrasRow.navigationMode.rawValue, section: Section.extras.rawValue)
         return tableView.cellForRow(at: indexPath) as? MoreSwitchCell
     }
     
