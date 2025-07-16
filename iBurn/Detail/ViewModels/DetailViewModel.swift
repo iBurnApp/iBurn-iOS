@@ -132,6 +132,24 @@ class DetailViewModel: ObservableObject {
         case .eventRelationship(let events, let hostName):
             coordinator.handle(.showEventsList(events, hostName: hostName))
             
+        case .nextHostEvent(let nextEvent, _):
+            coordinator.handle(.showNextEvent(nextEvent))
+            
+        case .allHostEvents(let count, let hostName):
+            // Get all events for this host and show them
+            if let eventObject = dataObject as? BRCEventObject {
+                let hostId = eventObject.hostedByCampUniqueID ?? eventObject.hostedByArtUniqueID
+                if let hostId = hostId {
+                    var allEvents: [BRCEventObject] = []
+                    if let camp = dataService.getCamp(withId: hostId) {
+                        allEvents = dataService.getEvents(for: camp) ?? []
+                    } else if let art = dataService.getArt(withId: hostId) {
+                        allEvents = dataService.getEvents(for: art) ?? []
+                    }
+                    coordinator.handle(.showEventsList(allEvents, hostName: hostName))
+                }
+            }
+            
         case .playaAddress(_, let tappable):
             if tappable {
                 coordinator.handle(.showMap(dataObject))
@@ -223,25 +241,12 @@ class DetailViewModel: ObservableObject {
     private func generateCellTypes() -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
         
-        // Add image header first if available
-        var imageURL: URL?
-        if let artObject = dataObject as? BRCArtObject {
-            imageURL = artObject.localThumbnailURL
-        } else if let campObject = dataObject as? BRCCampObject {
-            imageURL = campObject.localThumbnailURL
-        }
-        
-        if let imageURL = imageURL, let image = loadImage(from: imageURL) {
+        // Add image header first if available (only for art objects)
+        if let artObject = dataObject as? BRCArtObject,
+           let imageURL = artObject.localThumbnailURL,
+           let image = loadImage(from: imageURL) {
             let aspectRatio = image.size.width / image.size.height
             cellTypes.append(.image(image, aspectRatio: aspectRatio))
-        }
-        
-        // For events, try to get camp image if event doesn't have one
-        if cellTypes.isEmpty, let eventObject = dataObject as? BRCEventObject {
-            if let campImage = loadHostCampImage(for: eventObject) {
-                let aspectRatio = campImage.size.width / campImage.size.height
-                cellTypes.append(.image(campImage, aspectRatio: aspectRatio))
-            }
         }
         
         // Add map view if object has location and is not embargoed
@@ -272,6 +277,9 @@ class DetailViewModel: ObservableObject {
         // Add common cells
         cellTypes.append(contentsOf: generateCommonCells())
         
+        // Add host images for camps and events (after user notes, before metadata)
+        cellTypes.append(contentsOf: generateHostImageCells())
+        
         // Add metadata section at the end
         cellTypes.append(contentsOf: generateMetadataCells())
         
@@ -299,6 +307,11 @@ class DetailViewModel: ObservableObject {
             cells.append(.audio(art, isPlaying: isPlaying))
         }
         
+        // Next event
+        if let nextEvent = dataService.getNextEvent(for: art) {
+            cells.append(.nextHostEvent(nextEvent, hostName: art.title))
+        }
+        
         // Hosted events
         if let events = dataService.getEvents(for: art), !events.isEmpty {
             cells.append(.eventRelationship(events, hostName: art.title))
@@ -315,6 +328,11 @@ class DetailViewModel: ObservableObject {
             cells.append(.text("Hometown: \(hometown)", style: .caption))
         }
         
+        // Next event
+        if let nextEvent = dataService.getNextEvent(for: camp) {
+            cells.append(.nextHostEvent(nextEvent, hostName: camp.title))
+        }
+        
         // Hosted events
         if let events = dataService.getEvents(for: camp), !events.isEmpty {
             cells.append(.eventRelationship(events, hostName: camp.title))
@@ -327,12 +345,33 @@ class DetailViewModel: ObservableObject {
         var cells: [DetailCellType] = []
         
         // Host relationship (camp or art)
+        var hostName: String?
+        var hostId: String?
+        
         if let campId = event.hostedByCampUniqueID,
            let camp = dataService.getCamp(withId: campId) {
             cells.append(.relationship(camp, type: .hostedBy(camp.title)))
+            hostName = camp.title
+            hostId = campId
         } else if let artId = event.hostedByArtUniqueID,
                   let art = dataService.getArt(withId: artId) {
             cells.append(.relationship(art, type: .hostedBy(art.title)))
+            hostName = art.title
+            hostId = artId
+        }
+        
+        // Next event and all events from the same host
+        if let hostId = hostId, let hostName = hostName {
+            // Get next event from the same host
+            if let nextEvent = dataService.getNextEvent(forHostId: hostId, after: event) {
+                cells.append(.nextHostEvent(nextEvent, hostName: hostName))
+            }
+            
+            // Get count of other events and show "see all" if more than just next event
+            let otherEventsCount = dataService.getOtherEventsCount(forHostId: hostId, excluding: event)
+            if otherEventsCount > 0 {
+                cells.append(.allHostEvents(count: otherEventsCount, hostName: hostName))
+            }
         }
         
         // Schedule information with proper formatting
@@ -438,6 +477,30 @@ class DetailViewModel: ObservableObject {
         return nil
     }
     
+    private func generateHostImageCells() -> [DetailCellType] {
+        var cells: [DetailCellType] = []
+        
+        // Add camp image for camp objects
+        if let campObject = dataObject as? BRCCampObject,
+           let imageURL = campObject.localThumbnailURL,
+           let image = loadImage(from: imageURL) {
+            let aspectRatio = image.size.width / image.size.height
+            cells.append(.image(image, aspectRatio: aspectRatio))
+        }
+        // Add host image for event objects (camp or art)
+        else if let eventObject = dataObject as? BRCEventObject {
+            if let campImage = loadHostCampImage(for: eventObject) {
+                let aspectRatio = campImage.size.width / campImage.size.height
+                cells.append(.image(campImage, aspectRatio: aspectRatio))
+            } else if let artImage = loadHostArtImage(for: eventObject) {
+                let aspectRatio = artImage.size.width / artImage.size.height
+                cells.append(.image(artImage, aspectRatio: aspectRatio))
+            }
+        }
+        
+        return cells
+    }
+    
     private func generateCommonCells() -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
@@ -497,6 +560,18 @@ class DetailViewModel: ObservableObject {
         // Get camp from database
         if let camp = dataService.getCamp(withId: campId),
            let imageURL = camp.localThumbnailURL {
+            return loadImage(from: imageURL)
+        }
+        
+        return nil
+    }
+    
+    private func loadHostArtImage(for event: BRCEventObject) -> UIImage? {
+        guard let artId = event.hostedByArtUniqueID else { return nil }
+        
+        // Get art from database
+        if let art = dataService.getArt(withId: artId),
+           let imageURL = art.localThumbnailURL {
             return loadImage(from: imageURL)
         }
         

@@ -104,4 +104,95 @@ class DetailDataService: DetailDataServiceProtocol {
         
         return events.isEmpty ? nil : events
     }
+    
+    func getNextEvent(forHostId hostId: String, after currentEvent: BRCEventObject) -> BRCEventObject? {
+        var nextEvent: BRCEventObject?
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            // Get all events for this host
+            var allEvents: [BRCEventObject] = []
+            
+            // Try to get host as camp first
+            if let camp = transaction.object(forKey: hostId, inCollection: BRCCampObject.yapCollection) as? BRCCampObject {
+                allEvents = camp.events(with: transaction)
+            }
+            // If not found as camp, try as art
+            else if let art = transaction.object(forKey: hostId, inCollection: BRCArtObject.yapCollection) as? BRCArtObject {
+                allEvents = art.events(with: transaction)
+            }
+            
+            // Filter out current event and get events that start after current event
+            let currentStartDate = currentEvent.startDate
+            let futureEvents = allEvents.filter { event in
+                return event.uniqueID != currentEvent.uniqueID && 
+                       event.startDate.compare(currentStartDate) == .orderedDescending
+            }
+            
+            // Sort by start date and get the next one
+            nextEvent = futureEvents.sorted { $0.startDate.compare($1.startDate) == .orderedAscending }.first
+        }
+        
+        return nextEvent
+    }
+    
+    func getOtherEventsCount(forHostId hostId: String, excluding currentEvent: BRCEventObject) -> Int {
+        var count = 0
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            // Get all events for this host
+            var allEvents: [BRCEventObject] = []
+            
+            // Try to get host as camp first
+            if let camp = transaction.object(forKey: hostId, inCollection: BRCCampObject.yapCollection) as? BRCCampObject {
+                allEvents = camp.events(with: transaction)
+            }
+            // If not found as camp, try as art
+            else if let art = transaction.object(forKey: hostId, inCollection: BRCArtObject.yapCollection) as? BRCArtObject {
+                allEvents = art.events(with: transaction)
+            }
+            
+            // Count events excluding the current one
+            count = allEvents.filter { $0.uniqueID != currentEvent.uniqueID }.count
+        }
+        
+        return count
+    }
+    
+    func getNextEvent(for camp: BRCCampObject) -> BRCEventObject? {
+        var nextEvent: BRCEventObject?
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            let allEvents = camp.events(with: transaction)
+            let now = Date()
+            
+            // Get events that start after now
+            let futureEvents = allEvents.filter { event in
+                return event.startDate.compare(now) == .orderedDescending
+            }
+            
+            // Sort by start date and get the next one
+            nextEvent = futureEvents.sorted { $0.startDate.compare($1.startDate) == .orderedAscending }.first
+        }
+        
+        return nextEvent
+    }
+    
+    func getNextEvent(for art: BRCArtObject) -> BRCEventObject? {
+        var nextEvent: BRCEventObject?
+        
+        BRCDatabaseManager.shared.uiConnection.read { transaction in
+            let allEvents = art.events(with: transaction)
+            let now = Date()
+            
+            // Get events that start after now
+            let futureEvents = allEvents.filter { event in
+                return event.startDate.compare(now) == .orderedDescending
+            }
+            
+            // Sort by start date and get the next one
+            nextEvent = futureEvents.sorted { $0.startDate.compare($1.startDate) == .orderedAscending }.first
+        }
+        
+        return nextEvent
+    }
 }

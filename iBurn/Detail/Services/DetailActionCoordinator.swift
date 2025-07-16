@@ -208,6 +208,17 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             print("🚀 Pushing HostedEventsViewController")
             navigator.pushViewController(eventsVC, animated: true)
             
+        case .showNextEvent(let nextEvent):
+            print("⏭️ Attempting to show next event: \(nextEvent.title)")
+            
+            guard let navigator = dependencies.navigator else {
+                print("❌ Navigation FAILED: Navigator is nil")
+                return
+            }
+            
+            // Navigate to the next event's detail view
+            self.handle(.navigateToObject(nextEvent))
+            
         case .playAudio(_):
             // Audio is handled directly by AudioService in ViewModel
             break

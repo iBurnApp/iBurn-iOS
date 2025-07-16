@@ -35,6 +35,8 @@ enum DetailCellType {
     case schedule(NSAttributedString)
     case relationship(BRCDataObject, type: RelationshipType)
     case eventRelationship([BRCEventObject], hostName: String)
+    case nextHostEvent(BRCEventObject, hostName: String)
+    case allHostEvents(count: Int, hostName: String)
     case playaAddress(String, tappable: Bool)
     case distance(CLLocationDistance)
     case audio(BRCArtObject, isPlaying: Bool)
@@ -71,6 +73,7 @@ enum DetailAction {
     case showMap(BRCDataObject)
     case navigateToObject(BRCDataObject)
     case showEventsList([BRCEventObject], hostName: String)
+    case showNextEvent(BRCEventObject)
     case shareCoordinates(CLLocationCoordinate2D)
     case playAudio(BRCArtObject)
     case pauseAudio

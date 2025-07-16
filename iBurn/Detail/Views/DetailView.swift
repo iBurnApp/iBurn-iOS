@@ -182,6 +182,12 @@ struct DetailCellView: View {
         case .eventRelationship(let events, let hostName):
             DetailEventRelationshipCell(events: events, hostName: hostName)
             
+        case .nextHostEvent(let nextEvent, let hostName):
+            DetailNextHostEventCell(nextEvent: nextEvent, hostName: hostName)
+            
+        case .allHostEvents(let count, let hostName):
+            DetailAllHostEventsCell(count: count, hostName: hostName)
+            
         case .schedule(let attributedString):
             DetailScheduleCell(attributedString: attributedString)
             
@@ -204,7 +210,7 @@ struct DetailCellView: View {
     
     private func isCellTappable(_ cellType: DetailCellType) -> Bool {
         switch cellType {
-        case .email, .url, .coordinates, .relationship, .eventRelationship, .audio, .userNotes, .mapView:
+        case .email, .url, .coordinates, .relationship, .eventRelationship, .nextHostEvent, .allHostEvents, .audio, .userNotes, .mapView:
             return true
         case .playaAddress(_, let tappable):
             return tappable
@@ -526,6 +532,110 @@ struct DetailDateCell: View {
         let formatter = DateFormatter()
         formatter.dateFormat = format
         return formatter.string(from: date)
+    }
+}
+
+struct DetailNextHostEventCell: View {
+    let nextEvent: BRCEventObject
+    let hostName: String
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("NEXT EVENT")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(themeColors.detailColor)
+                .textCase(.uppercase)
+            
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(nextEvent.title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(themeColors.primaryColor)
+                        .lineLimit(2)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(themeColors.primaryColor)
+                        .font(.caption)
+                }
+                
+                if let startDate = nextEvent.startDate as Date?,
+                   let endDate = nextEvent.endDate as Date? {
+                    Text(formatEventTimeAndDuration(startDate: startDate, endDate: endDate))
+                        .font(.caption)
+                        .foregroundColor(themeColors.secondaryColor)
+                }
+                
+                if let description = nextEvent.detailDescription, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(themeColors.detailColor)
+                        .lineLimit(1)
+                }
+            }
+        }
+    }
+    
+    private func formatEventTimeAndDuration(startDate: Date, endDate: Date) -> String {
+        let calendar = Calendar.current
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .short
+        
+        var timeString: String
+        
+        // Format day and time
+        if calendar.isDateInToday(startDate) {
+            timeString = "Today at \(timeFormatter.string(from: startDate))"
+        } else if calendar.isDateInTomorrow(startDate) {
+            timeString = "Tomorrow at \(timeFormatter.string(from: startDate))"
+        } else {
+            let dayFormatter = DateFormatter()
+            dayFormatter.dateFormat = "EEEE M/d" // e.g., "Friday 8/25"
+            timeString = "\(dayFormatter.string(from: startDate)) at \(timeFormatter.string(from: startDate))"
+        }
+        
+        // Add duration
+        let durationMinutes = Int(endDate.timeIntervalSince(startDate) / 60)
+        let hours = durationMinutes / 60
+        let minutes = durationMinutes % 60
+        
+        var durationString: String
+        if hours > 0 && minutes > 0 {
+            durationString = "\(hours)h \(minutes)m"
+        } else if hours > 0 {
+            durationString = "\(hours)h"
+        } else {
+            durationString = "\(minutes)m"
+        }
+        
+        return "\(timeString) • \(durationString)"
+    }
+}
+
+struct DetailAllHostEventsCell: View {
+    let count: Int
+    let hostName: String
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "calendar.badge.clock")
+                .foregroundColor(themeColors.primaryColor)
+            
+            Text("See all \(count) events from \(hostName)")
+                .foregroundColor(themeColors.primaryColor)
+                .font(.subheadline)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(themeColors.primaryColor)
+                .font(.caption)
+        }
     }
 }
 

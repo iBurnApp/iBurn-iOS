@@ -51,4 +51,28 @@ protocol DetailDataServiceProtocol {
     /// - Parameter art: The art object
     /// - Returns: Array of events hosted by the art
     func getEvents(for art: BRCArtObject) -> [BRCEventObject]?
+    
+    /// Gets the next chronological event from the same host after the current event
+    /// - Parameters:
+    ///   - hostId: The unique ID of the host (camp or art)
+    ///   - currentEvent: The current event to exclude and use as time reference
+    /// - Returns: The next event from the same host, or nil if none found
+    func getNextEvent(forHostId hostId: String, after currentEvent: BRCEventObject) -> BRCEventObject?
+    
+    /// Gets the count of other events from the same host, excluding the current event
+    /// - Parameters:
+    ///   - hostId: The unique ID of the host (camp or art)  
+    ///   - currentEvent: The current event to exclude from count
+    /// - Returns: Count of other events from the same host
+    func getOtherEventsCount(forHostId hostId: String, excluding currentEvent: BRCEventObject) -> Int
+    
+    /// Gets the next chronological event for a camp
+    /// - Parameter camp: The camp object
+    /// - Returns: The next upcoming event for this camp, or nil if none found
+    func getNextEvent(for camp: BRCCampObject) -> BRCEventObject?
+    
+    /// Gets the next chronological event for an art installation
+    /// - Parameter art: The art object
+    /// - Returns: The next upcoming event for this art, or nil if none found
+    func getNextEvent(for art: BRCArtObject) -> BRCEventObject?
 }

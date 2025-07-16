@@ -65,6 +65,26 @@ class MockDetailDataService: DetailDataServiceProtocol {
     func getEvents(for art: BRCArtObject) -> [BRCEventObject]? {
         return [MockDataObjects.eventObject]
     }
+    
+    func getNextEvent(forHostId hostId: String, after currentEvent: BRCEventObject) -> BRCEventObject? {
+        // Return a mock next event for testing
+        return MockDataObjects.eventObject
+    }
+    
+    func getOtherEventsCount(forHostId hostId: String, excluding currentEvent: BRCEventObject) -> Int {
+        // Return a mock count for testing
+        return 3
+    }
+    
+    func getNextEvent(for camp: BRCCampObject) -> BRCEventObject? {
+        // Return a mock next event for testing
+        return MockDataObjects.eventObject
+    }
+    
+    func getNextEvent(for art: BRCArtObject) -> BRCEventObject? {
+        // Return a mock next event for testing
+        return MockDataObjects.eventObject
+    }
 }
 
 
