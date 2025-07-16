@@ -25,12 +25,10 @@ protocol DetailActionCoordinator: AnyObject {
 struct DetailActionCoordinatorDependencies {
     var presenter: Presentable?
     var navigator: Navigable?
-    let eventEditService: EventEditService
     
-    init(presenter: Presentable? = nil, navigator: Navigable? = nil, eventEditService: EventEditService) {
+    init(presenter: Presentable? = nil, navigator: Navigable? = nil) {
         self.presenter = presenter
         self.navigator = navigator
-        self.eventEditService = eventEditService
         
         // Debug logging for navigation issues
         if navigator == nil {
@@ -53,16 +51,13 @@ struct DetailActionCoordinatorDependencies {
 enum DetailActionCoordinatorFactory {
     /// Creates a coordinator for production use
     static func makeCoordinator(presenter: Presentable? = nil, navigator: Navigable? = nil) -> DetailActionCoordinator {
-        let eventEditService = EventEditServiceFactory.makeService()
-        
         print("🏗️ Creating DetailActionCoordinator:")
         print("   Presenter: \(presenter != nil ? String(describing: type(of: presenter!)) : "nil")")
         print("   Navigator: \(navigator != nil ? String(describing: type(of: navigator!)) : "nil")")
         
         let dependencies = DetailActionCoordinatorDependencies(
             presenter: presenter,
-            navigator: navigator,
-            eventEditService: eventEditService
+            navigator: navigator
         )
         return DetailActionCoordinatorImpl(dependencies: dependencies)
     }
@@ -118,7 +113,14 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
                 print("❌ Cannot show event editor: No presenter available")
                 return
             }
-            let eventEditController = dependencies.eventEditService.createEventEditController(for: event)
+            
+            // Get the host object for location formatting
+            var host: BRCDataObject?
+            BRCDatabaseManager.shared.uiConnection.read { transaction in
+                host = event.host(with: transaction)
+            }
+            
+            let eventEditController = EventEditControllerFactory.createEventEditController(for: event, host: host)
             eventEditController.editViewDelegate = self
             presenter.present(eventEditController, animated: true, completion: nil)
             

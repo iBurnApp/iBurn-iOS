@@ -10,31 +10,16 @@ import Foundation
 import EventKit
 import EventKitUI
 
-// MARK: - Protocol
-
-/// Service for creating calendar event editors without requiring permissions
-protocol EventEditService {
-    /// Creates a pre-configured event edit controller for the given event
-    /// - Parameter event: The event object to create a calendar entry for
-    /// - Returns: A configured EKEventEditViewController ready for presentation
-    func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController
-}
-
 // MARK: - Factory
 
-/// Factory for creating EventEditService instances
-enum EventEditServiceFactory {
-    /// Creates an event edit service for production use
-    static func makeService() -> EventEditService {
-        return EventEditServiceImpl()
-    }
-}
-
-// MARK: - Implementation
-
-private class EventEditServiceImpl: EventEditService {
-    
-    func createEventEditController(for event: BRCEventObject) -> EKEventEditViewController {
+/// Factory for creating calendar event edit controllers
+enum EventEditControllerFactory {
+    /// Creates a pre-configured event edit controller for the given event and host
+    /// - Parameters:
+    ///   - event: The event object to create a calendar entry for
+    ///   - host: The host object (camp or art) that provides location and name
+    /// - Returns: A configured EKEventEditViewController ready for presentation
+    static func createEventEditController(for event: BRCEventObject, host: BRCDataObject?) -> EKEventEditViewController {
         let eventStore = EKEventStore()
         let calendarEvent = EKEvent(eventStore: eventStore)
         
@@ -43,15 +28,11 @@ private class EventEditServiceImpl: EventEditService {
         calendarEvent.startDate = event.startDate
         calendarEvent.endDate = event.endDate
         
-        // Add location information
-        if let playaLocation = event.playaLocation, !playaLocation.isEmpty {
-            calendarEvent.location = playaLocation
-        }
+        // Add location information (playa address + host name)
+        calendarEvent.location = formatLocationString(event: event, host: host)
         
-        // Add description
-        if let description = event.detailDescription, !description.isEmpty {
-            calendarEvent.notes = description
-        }
+        // Add description (event + host information)
+        calendarEvent.notes = formatNotesString(event: event, host: host)
         
         // Add URL if available
         if let url = event.url {
@@ -70,5 +51,76 @@ private class EventEditServiceImpl: EventEditService {
         controller.eventStore = eventStore
         
         return controller
+    }
+    
+    // MARK: - Private Helpers
+    
+    /// Formats location string to include both playa address and host name
+    /// Uses same logic as legacy calendar system in BRCEventObject.m
+    private static func formatLocationString(event: BRCEventObject, host: BRCDataObject?) -> String {
+        var locationString = ""
+        
+        // Get playa location from host (camp/art) or fall back to event's otherLocation
+        var playaLocation: String?
+        if let host = host {
+            playaLocation = host.playaLocation
+            if playaLocation?.isEmpty ?? true {
+                playaLocation = host.burnerMapLocationString
+            }
+        }
+        
+        // If no host location, fall back to event's otherLocation
+        if playaLocation?.isEmpty ?? true {
+            playaLocation = event.otherLocation
+        }
+        
+        // Build location string: "[Playa Address] - [Host Name]"
+        if let playaLocation = playaLocation, !playaLocation.isEmpty {
+            locationString += playaLocation
+            if let hostTitle = host?.title, !hostTitle.isEmpty {
+                locationString += " - \(hostTitle)"
+            }
+        } else if let hostTitle = host?.title, !hostTitle.isEmpty {
+            // If no playa location but we have a host, just use host name
+            locationString = hostTitle
+        }
+        
+        return locationString
+    }
+    
+    /// Formats comprehensive notes string including event description, host description, and camp landmarks
+    /// Uses same pattern as existing UI components that combine event + host information
+    private static func formatNotesString(event: BRCEventObject, host: BRCDataObject?) -> String {
+        var notesComponents: [String] = []
+        
+        // Start with event's own description
+        if let eventDescription = event.detailDescription, !eventDescription.isEmpty {
+            notesComponents.append(eventDescription)
+        }
+        
+        // Add host information if available
+        if let host = host {
+            var hostSection = ""
+            
+            // Add host name and type
+            let hostType = (host is BRCCampObject) ? "Camp" : "Art"
+            hostSection += "\(host.title) (\(hostType))"
+            
+            // Add host description if available
+            if let hostDescription = host.detailDescription, !hostDescription.isEmpty {
+                hostSection += "\n\(hostDescription)"
+            }
+            
+            // Add camp landmark if this is a camp and landmark exists
+            if let camp = host as? BRCCampObject,
+               let landmark = camp.landmark, !landmark.isEmpty {
+                hostSection += "\n\nCamp Landmark: \(landmark)"
+            }
+            
+            notesComponents.append(hostSection)
+        }
+        
+        // Join components with double newlines for clear separation
+        return notesComponents.joined(separator: "\n\n")
     }
 }
