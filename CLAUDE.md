@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overall Guidance
 
 ### Documentation Workflow
-* When you exit plan mode, you should always write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings.
-* When resuming work, utilize these files to gather additional context about what we were working on.
+* When you exit plan mode (or complete a task), you should always first write (or update) your plan to a file in the Docs/ directory. The plan should include both our high level plan at the top of the file, as well as the entire conversation context, file snippets, etc. The high level plan document title should be in the format `YYYY-MM-dd-summarized-title.md`. Ensure that we are always keeping the documents up-to-date with our latest findings. If there is already a document for the current day (Pacific Time), let's continue updating the existing document instead of creating a new one.
+* When resuming work, utilize these files to gather additional context about what we were working on. 
 
 ### Documentation Structure
 Each document should include:
@@ -29,27 +29,98 @@ Each document should include:
 * **Related Work**: Reference previous documents and build upon them
 * **Completion**: Mark final outcomes and any remaining work
 
+## Planning
+
+When working in plan mode, we can consult Gemini 2.5 Pro with `gemini -p "example prompt"` command. This model has a large context window (1M tokens) and is especially helpful when iterating on architecture decisions and proposed code changes. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
+
+## Source Control
+
+IMPORTANT: After completing a task (and updating our documentation), we should always commit our changes. Only perform safe operations like `git add` and `git commit`. Never attempt to rewrite history, pull from remote, squash, merge or rebase.
 
 ## Project Overview
 
 iBurn is an offline map and guide for the Burning Man art festival. It's a native iOS application built primarily with Swift and Objective-C, featuring offline map tiles, art/camp/event data management, and location tracking capabilities.
+
+## Xcode MCP Integration
+
+This project uses Claude Code's Xcode MCP integration for build automation. When starting a new session:
+
+1. **Health Check**: Run `mcp__XcodeMCP__xcode_health_check` to verify MCP is working
+2. **Project Discovery**: Use the project discovery commands to learn about schemes and destinations
+3. **Build/Test**: Use MCP commands instead of manual xcodebuild commands
+
+**Key Project Details**:
+- **Workspace Path**: `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace`
+- **Main Scheme**: `iBurn` (for building the app)
+- **Test Schemes**: `iBurnTests`, `PlayaKitTests` 
+- **Default Destination**: iPhone 16 Pro (arm64 simulator)
+- **Active Branch**: Check with `git status` as development happens on feature branches
 
 ## Development Commands
 
 ### Building and Dependencies
 - `pod install` - Install CocoaPods dependencies (required after cloning)
 - `git submodule update --init` - Initialize git submodules (required after cloning)
-- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file). Use xcodebuild and pass the -quiet flag
+- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file)
+
+### Building with Claude Code MCP (Xcode Integration)
+Claude Code includes Xcode MCP integration for seamless iOS development. These commands provide better error reporting and simpler syntax than xcodebuild.
+
+**Project Discovery Commands** (for Claude to learn about the project):
+```bash
+# Open workspace and get project info
+mcp__XcodeMCP__xcode_open_project --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+mcp__XcodeMCP__xcode_get_schemes --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+mcp__XcodeMCP__xcode_get_run_destinations --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+mcp__XcodeMCP__xcode_get_workspace_info --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+```
+
+**Build Commands**:
+```bash
+# Build main app (uses iPhone 16 Pro simulator by default)
+mcp__XcodeMCP__xcode_build --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn --destination "iPhone 16 Pro"
+
+# Run tests (will show precise error locations if tests fail)
+mcp__XcodeMCP__xcode_test --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+
+# Set active scheme for testing
+mcp__XcodeMCP__xcode_set_active_scheme --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --schemeName iBurnTests
+```
+
+**Test Analysis Commands**:
+```bash
+# Find recent test results
+mcp__XcodeMCP__find_xcresults --xcodeproj /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+
+# Get test summary
+mcp__XcodeMCP__xcresult_summary --xcresult_path /path/to/result.xcresult
+
+# Browse detailed test results
+mcp__XcodeMCP__xcresult_browse --xcresult_path /path/to/result.xcresult
+```
+
+**Key Benefits over xcodebuild**:
+- Automatic workspace and destination management
+- Precise error locations with file paths and line numbers
+- Built-in XCResult analysis for test failures
+- Simplified command syntax
+- Better integration with Claude Code workflows
 
 ### Fastlane Commands
 - `fastlane ios beta` - Build and upload to TestFlight
 - `fastlane ios refresh_dsyms` - Download and upload crash symbols
 
 ### Testing
-- Run tests through Xcode Test Navigator or `Cmd+U`
-- Test targets: `iBurnTests`, `PlayaKitTests`
+- **Claude Code MCP**: Use `mcp__XcodeMCP__xcode_test` command for automated testing
+- **Xcode GUI**: Run tests through Xcode Test Navigator or `Cmd+U`  
+- **Test targets**: `iBurnTests`, `PlayaKitTests`
+- **Test Analysis**: Use `mcp__XcodeMCP__xcresult_browse` for detailed test failure analysis with UI hierarchy and console output
 
 ## Architecture Overview
+
+### Guidance
+
+Protocolize dependencies and use dependency injection with factory pattern. For example `protocol FooService` and `class FooServiceImpl: FooService`, where the factory builds and returns a `FooService`, obscuring the underlying Impl.
 
 ### Core Components
 

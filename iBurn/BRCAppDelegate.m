@@ -273,13 +273,14 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:self.eventsViewController];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
-    UIViewController *moreVC = [MoreViewController fromStoryboard];
-    moreVC.title = @"More";
-    moreVC.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
+    MoreViewController *moreViewController = [[MoreViewController alloc] init];
+    moreViewController.title = @"More";
+    UINavigationController *moreNavController = [[NavigationController alloc] initWithRootViewController:moreViewController];
+    moreNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
     
     self.tabBarController = [[TabController alloc] init];
     
-    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreVC];
+    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreNavController];
     
     self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;

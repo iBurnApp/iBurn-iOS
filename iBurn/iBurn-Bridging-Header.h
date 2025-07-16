@@ -7,6 +7,7 @@
 #import "BRCDatabaseManager.h"
 #import "BRCDataObject.h"
 #import "BRCEventObject.h"
+#import "BRCRecurringEventObject.h"
 #import "BRCDataObjectTableViewCell.h"
 #import "BRCGeocoder.h"
 #import "BRCDetailViewController.h"
@@ -27,3 +28,4 @@
 #import "BRCImageColors.h"
 #import "YapDatabaseViewConnection+iBurn.h"
 #import "BRCUpdateInfo.h"
+#import "NSUserDefaults+iBurn.h"

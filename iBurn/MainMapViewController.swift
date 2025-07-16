@@ -12,6 +12,8 @@ import CoreLocation
 import BButton
 import CocoaLumberjack
 import PlayaGeocoder
+import SafariServices
+import EventKitUI
 
 public class MainMapViewController: BaseMapViewController {
     let uiConnection: YapDatabaseConnection
@@ -158,7 +160,7 @@ extension MainMapViewController: YapTableViewAdapterDelegate {
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
         let nav = presentingViewController?.navigationController ??
             navigationController
-        let detail = BRCDetailViewController(dataObject: object.object)
+        let detail = DetailViewControllerFactory.createDetailViewController(for: object.object)
         nav?.pushViewController(detail, animated: true)
     }
 }

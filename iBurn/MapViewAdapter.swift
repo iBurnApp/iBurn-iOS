@@ -11,6 +11,8 @@ import MapLibre
 import YapDatabase
 import BButton
 import CocoaLumberjack
+import SafariServices
+import EventKitUI
 
 public class MapViewAdapter: NSObject {
     
@@ -202,8 +204,10 @@ extension MapViewAdapter: MLNMapViewDelegate {
         case .delete, .edit:
             break
         case .info:
-            let vc = BRCDetailViewController(dataObject: data.object)
-            parent?.navigationController?.pushViewController(vc, animated: true)
+            if let parentVC = parent {
+                let vc = DetailViewControllerFactory.createDetailViewController(for: data.object)
+                parentVC.navigationController?.pushViewController(vc, animated: true)
+            }
         }
     }
     
