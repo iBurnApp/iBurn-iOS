@@ -40,11 +40,16 @@ public class UserMapViewAdapter: MapViewAdapter {
         let annotationView = super.mapView(mapView, viewFor: annotation)
         guard let imageAnnotationView = annotationView as? ImageAnnotationView,
         let point = annotation as? BRCMapPoint else { return annotationView }
-        if point == editingAnnotation {
+        if point is BRCUserMapPoint {
             imageAnnotationView.isDraggable = true
-            imageAnnotationView.startDragging()
-        } else {
-            imageAnnotationView.isDraggable = false
+            imageAnnotationView.isUserInteractionEnabled = true
+            if imageAnnotationView.gestureRecognizers?.first(where: { $0 is UILongPressGestureRecognizer }) == nil {
+                let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleCalloutLongPress(_:)))
+                longPressGesture.minimumPressDuration = 0.5
+                longPressGesture.cancelsTouchesInView = false
+                longPressGesture.delaysTouchesBegan = false
+                imageAnnotationView.addGestureRecognizer(longPressGesture)
+            }
         }
         return imageAnnotationView
     }
@@ -165,6 +170,40 @@ private extension UserMapViewAdapter {
             self.mapView.removeAnnotation(mapPoint)
             DDLogInfo("Deleted user annotation: \(mapPoint)")
             self.reloadAnnotations()
+        }
+    }
+}
+
+// MARK: // Private
+
+private extension UserMapViewAdapter {
+    
+    @objc func handleCalloutLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began,
+              let annotationView = gesture.view as? ImageAnnotationView else { return }
+        
+        // If there's a selected annotation with callout showing, dismiss it to allow dragging
+        if let selectedAnnotation = mapView.selectedAnnotations.first {
+            DDLogInfo("Long press detected with callout showing - dismissing callout to enable dragging")
+            mapView.deselectAnnotation(selectedAnnotation, animated: false)
+            
+            // Find the annotation for this view and set it as editing
+            for (identifier, view) in annotationViews {
+                if view == annotationView {
+                    for annotation in mapView.annotations ?? [] {
+                        if ObjectIdentifier(annotation) == identifier,
+                           let mapPoint = annotation as? BRCMapPoint {
+                            self.editingAnnotation = mapPoint
+                            DDLogInfo("Set editing annotation after callout dismissal: \(mapPoint.title ?? "Untitled")")
+                            
+                            // Force the annotation to enter drag mode
+                            annotationView.setDragState(.starting, animated: true)
+                            break
+                        }
+                    }
+                    break
+                }
+            }
         }
     }
 }
