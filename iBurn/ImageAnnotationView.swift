@@ -72,7 +72,7 @@ final class ImageAnnotationView: MLNAnnotationView {
         }
     }
     
-    func addLongPressGesture(target: Any?, action: Selector, minimumPressDuration: TimeInterval = 0.5) {
+    func addLongPressGestureIfNeeded(target: Any?, action: Selector, minimumPressDuration: TimeInterval = 0.5) {
         guard gestureRecognizers?.first(where: { $0 is UILongPressGestureRecognizer }) == nil else {
             return
         }
