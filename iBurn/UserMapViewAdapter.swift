@@ -32,6 +32,13 @@ public class UserMapViewAdapter: MapViewAdapter {
         self.editingAnnotation = mapPoint
         mapView.addAnnotation(mapPoint)
         mapView.selectAnnotation(mapPoint, animated: true, completionHandler: nil)
+        showEditMapPointTitleAlert(for: mapPoint)
+    }
+    
+    func createMapPoint(_ mapPoint: BRCMapPoint) {
+        clearEditingAnnotation()
+        mapView.addAnnotation(mapPoint)
+        mapView.selectAnnotation(mapPoint, animated: true, completionHandler: nil)
     }
     
     // MARK: - MLNMapViewDelegate Overrides
@@ -44,6 +51,8 @@ public class UserMapViewAdapter: MapViewAdapter {
             imageAnnotationView.isDraggable = true
             imageAnnotationView.isUserInteractionEnabled = true
             imageAnnotationView.addLongPressGesture(target: self, action: #selector(handleCalloutLongPress(_:)), minimumPressDuration: 0.5)
+        } else {
+            imageAnnotationView.isDraggable = false
         }
         return imageAnnotationView
     }
@@ -182,5 +191,49 @@ private extension UserMapViewAdapter {
         
         self.editingAnnotation = mapPoint
         annotationView.setDragState(.starting, animated: true)
+    }
+    
+    func showEditMapPointTitleAlert(for mapPoint: BRCMapPoint) {
+        guard let parentViewController = parent else {
+            return
+        }
+        
+        let alertController = UIAlertController(
+            title: "Edit Favorite",
+            message: "Enter a new name for this location",
+            preferredStyle: .alert
+        )
+        
+        alertController.addTextField { textField in
+            textField.text = mapPoint.title
+            textField.autocapitalizationType = .words
+            textField.returnKeyType = .done
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            guard let self else { return }
+            self.clearEditingAnnotation()
+        }
+        
+        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self,
+                  let textField = alertController.textFields?.first,
+                  let newTitle = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !newTitle.isEmpty else {
+                guard let self else { return }
+                self.clearEditingAnnotation()
+                return
+            }
+            
+            mapPoint.title = newTitle
+            
+            self.saveMapPoint(mapPoint)
+        }
+        
+        alertController.addAction(cancelAction)
+        alertController.addAction(saveAction)
+        
+        // Present the alert
+        parentViewController.present(alertController, animated: true)
     }
 }
