@@ -35,12 +35,6 @@ public class UserMapViewAdapter: MapViewAdapter {
         showEditMapPointTitleAlert(for: mapPoint)
     }
     
-    func createMapPoint(_ mapPoint: BRCMapPoint) {
-        clearEditingAnnotation()
-        mapView.addAnnotation(mapPoint)
-        mapView.selectAnnotation(mapPoint, animated: true, completionHandler: nil)
-    }
-    
     // MARK: - MLNMapViewDelegate Overrides
     
     override public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
