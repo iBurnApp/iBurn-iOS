@@ -44,7 +44,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         if point is BRCUserMapPoint {
             imageAnnotationView.isDraggable = true
             imageAnnotationView.isUserInteractionEnabled = true
-            imageAnnotationView.addLongPressGesture(target: self, action: #selector(handleCalloutLongPress(_:)), minimumPressDuration: 0.5)
+            imageAnnotationView.addLongPressGestureIfNeeded(target: self, action: #selector(handleCalloutLongPress(_:)), minimumPressDuration: 0.5)
         } else {
             imageAnnotationView.isDraggable = false
         }
