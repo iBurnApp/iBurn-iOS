@@ -1,6 +1,6 @@
 # [iBurn-iOS](https://github.com/iBurnApp/iBurn-iOS)
 
-[![Build Status](https://travis-ci.org/iBurnApp/iBurn-iOS.svg?branch=master)](https://travis-ci.org/iBurnApp/iBurn-iOS)
+[![CI](https://github.com/iBurnApp/iBurn-iOS/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/iBurnApp/iBurn-iOS/actions/workflows/ci.yml)
 
 iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. Following the 2014 rewrite, the 2015 release has been updated for iOS 8 and we're starting to write new code in Swift. We decided to use [YapDatabase](https://github.com/yaptv/YapDatabase)+[Mantle](https://github.com/Mantle/Mantle) instead of Core Data, and [Mapbox](https://github.com/mapbox/mapbox-ios-sdk) instead of MapKit for our [offline map tiles](https://github.com/iBurnApp/iBurn-Maps). For a more complete list check out our `Podfile`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/iBurnApp/iBurn-Android).
 
