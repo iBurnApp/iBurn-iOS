@@ -1,0 +1,144 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer
+
+jobs:
+  validate:
+    name: Build & Test
+    runs-on: macos-14
+    timeout-minutes: 45
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        token: ${{ secrets.GITHUB_TOKEN }}
+        # For PRs, we want to checkout the merge commit
+        ref: ${{ github.event.pull_request.head.sha }}
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.4'
+    
+    - name: Cache Ruby Gems
+      uses: actions/cache@v4
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    
+    - name: Cache CocoaPods
+      uses: actions/cache@v4
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+    
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+        
+    - name: Setup Dependencies
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+        bundle exec pod repo update --silent
+        bundle exec pod install
+    
+    - name: Create Required Secret Files (Mock)
+      run: |
+        # Create placeholder GoogleService-Info.plist
+        touch iBurn/GoogleService-Info.plist
+        
+        # Create mock InfoPlistSecrets.h
+        cat > ./iBurn/InfoPlistSecrets.h << EOF
+        #define MAPBOX_ACCESS_TOKEN test
+        #define CRASHLYTICS_API_TOKEN test
+        EOF
+        
+        # Create mock BRCSecrets.m
+        cat > ./iBurn/BRCSecrets.m << EOF
+        NSString * const kBRCHockeyBetaIdentifier = @"";
+        NSString * const kBRCHockeyLiveIdentifier = @"";
+        NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
+        NSString * const kBRCUpdatesURLString = @"";
+        NSString * const kBRCMapBoxStyleURL = @"https://example.com";
+        NSString * const kBRCMapBoxAccessToken = @"";
+        EOF
+    
+    - name: Build App
+      run: |
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -scheme iBurn \
+                   -sdk iphonesimulator \
+                   -destination "platform=iOS Simulator,name=iPhone 15 Pro,OS=latest" \
+                   build | xcpretty -c
+    
+    - name: Run Tests
+      run: |
+        # Run iBurnTests
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -scheme iBurnTests \
+                   -sdk iphonesimulator \
+                   -destination "platform=iOS Simulator,name=iPhone 15 Pro,OS=latest" \
+                   test | xcpretty -c
+        
+        # Run PlayaKitTests
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -scheme PlayaKitTests \
+                   -sdk iphonesimulator \
+                   -destination "platform=iOS Simulator,name=iPhone 15 Pro,OS=latest" \
+                   test | xcpretty -c
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr-test-results-${{ github.event.pull_request.number }}
+        path: |
+          ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/
+          *.xcresult
+        retention-days: 7
+        
+    - name: Comment PR
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const { context } = github;
+          
+          const success = '${{ job.status }}' === 'success';
+          const emoji = success ? '✅' : '❌';
+          const status = success ? 'passed' : 'failed';
+          
+          const body = `${emoji} Pull Request validation ${status}
+          
+          **Build Status:** ${status}
+          **Commit:** ${context.sha.substring(0, 7)}
+          **Workflow:** [${context.runId}](${context.payload.repository.html_url}/actions/runs/${context.runId})
+          
+          ${success ? 'All checks passed! 🎉' : 'Some checks failed. Please review the logs.'}`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });

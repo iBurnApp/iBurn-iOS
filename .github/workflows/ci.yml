@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: macos-14
+    timeout-minutes: 60
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        scheme: [iBurn, iBurnTests, PlayaKitTests]
+        
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.4'
+    
+    - name: Cache Ruby Gems
+      uses: actions/cache@v4
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    
+    - name: Cache CocoaPods
+      uses: actions/cache@v4
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+    
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+        
+    - name: Setup Dependencies
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+        bundle exec pod repo update --silent
+        bundle exec pod install
+    
+    - name: Create Required Secret Files
+      env:
+        MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+        CRASHLYTICS_API_TOKEN: ${{ secrets.CRASHLYTICS_API_TOKEN }}
+        HOCKEY_BETA_IDENTIFIER: ${{ secrets.HOCKEY_BETA_IDENTIFIER }}
+        HOCKEY_LIVE_IDENTIFIER: ${{ secrets.HOCKEY_LIVE_IDENTIFIER }}
+        EMBARGO_PASSCODE_SHA256: ${{ secrets.EMBARGO_PASSCODE_SHA256 }}
+        UPDATES_URL: ${{ secrets.UPDATES_URL }}
+        MAPBOX_STYLE_URL: ${{ secrets.MAPBOX_STYLE_URL }}
+      run: |
+        # Create GoogleService-Info.plist (placeholder)
+        touch iBurn/GoogleService-Info.plist
+        
+        # Create InfoPlistSecrets.h
+        cat > ./iBurn/InfoPlistSecrets.h << EOF
+        #define MAPBOX_ACCESS_TOKEN ${MAPBOX_ACCESS_TOKEN:-test}
+        #define CRASHLYTICS_API_TOKEN ${CRASHLYTICS_API_TOKEN:-test}
+        EOF
+        
+        # Create BRCSecrets.m
+        cat > ./iBurn/BRCSecrets.m << EOF
+        NSString * const kBRCHockeyBetaIdentifier = @"${HOCKEY_BETA_IDENTIFIER:-}";
+        NSString * const kBRCHockeyLiveIdentifier = @"${HOCKEY_LIVE_IDENTIFIER:-}";
+        NSString * const kBRCEmbargoPasscodeSHA256Hash = @"${EMBARGO_PASSCODE_SHA256:-}";
+        NSString * const kBRCUpdatesURLString = @"${UPDATES_URL:-}";
+        NSString * const kBRCMapBoxStyleURL = @"${MAPBOX_STYLE_URL:-https://example.com}";
+        NSString * const kBRCMapBoxAccessToken = @"${MAPBOX_ACCESS_TOKEN:-}";
+        EOF
+    
+    - name: Build App
+      if: matrix.scheme == 'iBurn'
+      run: |
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -scheme iBurn \
+                   -sdk iphonesimulator \
+                   -destination "platform=iOS Simulator,name=iPhone 15 Pro,OS=latest" \
+                   build | xcpretty -c
+    
+    - name: Run Tests
+      if: matrix.scheme != 'iBurn'
+      run: |
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -scheme ${{ matrix.scheme }} \
+                   -sdk iphonesimulator \
+                   -destination "platform=iOS Simulator,name=iPhone 15 Pro,OS=latest" \
+                   test | xcpretty -c
+    
+    - name: Archive Test Results
+      if: always() && matrix.scheme != 'iBurn'
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.scheme }}
+        path: |
+          ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/
+          *.xcresult
+        retention-days: 30

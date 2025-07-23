@@ -1,0 +1,170 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: 'Fastlane lane to run'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - refresh_dsyms
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer
+
+jobs:
+  deploy:
+    name: Deploy to TestFlight
+    runs-on: macos-14
+    timeout-minutes: 120
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.4'
+    
+    - name: Cache Ruby Gems
+      uses: actions/cache@v4
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    
+    - name: Cache CocoaPods
+      uses: actions/cache@v4
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+    
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+        
+    - name: Setup Dependencies
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+        bundle exec pod repo update --silent
+        bundle exec pod install
+    
+    - name: Create Required Secret Files
+      env:
+        MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+        CRASHLYTICS_API_TOKEN: ${{ secrets.CRASHLYTICS_API_TOKEN }}
+        HOCKEY_BETA_IDENTIFIER: ${{ secrets.HOCKEY_BETA_IDENTIFIER }}
+        HOCKEY_LIVE_IDENTIFIER: ${{ secrets.HOCKEY_LIVE_IDENTIFIER }}
+        EMBARGO_PASSCODE_SHA256: ${{ secrets.EMBARGO_PASSCODE_SHA256 }}
+        UPDATES_URL: ${{ secrets.UPDATES_URL }}
+        MAPBOX_STYLE_URL: ${{ secrets.MAPBOX_STYLE_URL }}
+      run: |
+        # Create GoogleService-Info.plist from secret
+        echo '${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}' > iBurn/GoogleService-Info.plist
+        
+        # Create InfoPlistSecrets.h
+        cat > ./iBurn/InfoPlistSecrets.h << EOF
+        #define MAPBOX_ACCESS_TOKEN ${MAPBOX_ACCESS_TOKEN}
+        #define CRASHLYTICS_API_TOKEN ${CRASHLYTICS_API_TOKEN}
+        EOF
+        
+        # Create BRCSecrets.m
+        cat > ./iBurn/BRCSecrets.m << EOF
+        NSString * const kBRCHockeyBetaIdentifier = @"${HOCKEY_BETA_IDENTIFIER}";
+        NSString * const kBRCHockeyLiveIdentifier = @"${HOCKEY_LIVE_IDENTIFIER}";
+        NSString * const kBRCEmbargoPasscodeSHA256Hash = @"${EMBARGO_PASSCODE_SHA256}";
+        NSString * const kBRCUpdatesURLString = @"${UPDATES_URL}";
+        NSString * const kBRCMapBoxStyleURL = @"${MAPBOX_STYLE_URL}";
+        NSString * const kBRCMapBoxAccessToken = @"${MAPBOX_ACCESS_TOKEN}";
+        EOF
+    
+    - name: Setup App Store Connect API Key
+      env:
+        APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      run: |
+        # Create App Store Connect API key directory
+        mkdir -p ~/private_keys
+        
+        # Create the API key file
+        echo '${{ secrets.APP_STORE_CONNECT_API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+        
+        # Set environment variables for Fastlane
+        echo "APP_STORE_CONNECT_API_KEY_ID=${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" >> $GITHUB_ENV
+        echo "APP_STORE_CONNECT_API_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}" >> $GITHUB_ENV
+        echo "APP_STORE_CONNECT_API_KEY_PATH=~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8" >> $GITHUB_ENV
+    
+    - name: Import Code Signing Certificates
+      env:
+        BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+        KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      run: |
+        # Create variables
+        CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+        PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+        KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+        
+        # Import certificate and provisioning profile from secrets
+        echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+        echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output $PP_PATH
+        
+        # Create temporary keychain
+        security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+        security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+        
+        # Import certificate to keychain
+        security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+        security list-keychain -d user -s $KEYCHAIN_PATH
+        
+        # Apply provisioning profile
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+    
+    - name: Run Fastlane
+      env:
+        FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+        FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      run: |
+        LANE="${{ github.event.inputs.lane || 'beta' }}"
+        bundle exec fastlane ios $LANE
+    
+    - name: Upload Build Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: fastlane-logs
+        path: |
+          fastlane/logs/
+          ~/Library/Logs/gym/
+        retention-days: 30
+    
+    - name: Clean up keychain and provisioning profile
+      if: always()
+      run: |
+        security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+        rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision

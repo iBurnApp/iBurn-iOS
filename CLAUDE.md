@@ -231,3 +231,95 @@ browserify src/geocoder/index.js -o bundle.js
 - Time-based: "3:00 & 500'" (radial position + distance)
 - Intersections: "Esplanade & 6:00" (named street + time)
 - Special locations: "Center Camp Plaza", "9:00 Portal"
+
+## CI/CD with GitHub Actions
+
+The project uses GitHub Actions for continuous integration and deployment. This replaced the legacy Travis CI setup in July 2025 with modern macOS runners and enhanced security.
+
+### Workflow Overview
+
+**Three main workflows handle different aspects of CI/CD:**
+
+1. **`.github/workflows/ci.yml`** - Main CI pipeline for master/develop branches
+2. **`.github/workflows/pr.yml`** - Lightweight validation for pull requests  
+3. **`.github/workflows/deploy.yml`** - Deployment to TestFlight
+
+### Infrastructure Details
+
+- **Runners:** macOS 14 with Xcode 15.4 (latest stable)
+- **Simulators:** iPhone 15 Pro with latest iOS
+- **Ruby:** Version 3.1 with bundler caching
+- **Dependencies:** CocoaPods with intelligent caching
+- **Parallel Execution:** Build and test schemes run concurrently
+
+### Security & Secrets
+
+All sensitive data is managed through GitHub Secrets:
+
+```bash
+# Required Secrets for CI
+MAPBOX_ACCESS_TOKEN
+CRASHLYTICS_API_TOKEN
+HOCKEY_BETA_IDENTIFIER
+HOCKEY_LIVE_IDENTIFIER
+EMBARGO_PASSCODE_SHA256
+UPDATES_URL
+MAPBOX_STYLE_URL
+
+# Additional Secrets for Deployment
+APP_STORE_CONNECT_API_KEY
+APP_STORE_CONNECT_API_KEY_ID
+APP_STORE_CONNECT_API_ISSUER_ID
+GOOGLE_SERVICE_INFO_PLIST
+BUILD_CERTIFICATE_BASE64
+P12_PASSWORD
+BUILD_PROVISION_PROFILE_BASE64
+KEYCHAIN_PASSWORD
+FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD
+FASTLANE_SESSION
+MATCH_PASSWORD
+```
+
+### Workflow Triggers
+
+**Automatic Triggers:**
+- **CI:** All pushes to master/develop, all pull requests
+- **PR:** Pull request open/sync/reopen (lightweight validation only)
+- **Deploy:** Git tags starting with 'v' (e.g., v1.2.3)
+
+**Manual Triggers:**
+- All workflows support manual dispatch via "Run workflow" button
+- Deploy workflow allows choosing Fastlane lane (beta, refresh_dsyms)
+
+### Performance Optimizations
+
+- **Intelligent Caching:** Ruby gems and CocoaPods cached across runs
+- **Parallel Execution:** Build matrix allows concurrent scheme testing
+- **Artifact Storage:** Test results and build logs preserved for debugging
+- **Optimized Dependencies:** Concurrent installation with retry logic
+
+### Monitoring & Debugging
+
+**Workflow Monitoring:**
+- View all workflows in repository Actions tab
+- Real-time logs with timestamps and step-by-step execution
+- Build artifacts and test results preserved (30 days for CI, 7 days for PRs)
+
+**Test Analysis:**
+- XCResult files uploaded as artifacts for detailed analysis
+- Test failures include full logs and error context
+- PR workflows automatically comment build status
+
+**Common Debugging Steps:**
+1. Check workflow logs in GitHub Actions tab
+2. Download test result artifacts for detailed analysis
+3. Verify GitHub Secrets are properly configured
+4. Check for CocoaPods or dependency issues in setup steps
+
+### Migration Notes
+
+**Replaced:** Legacy `.travis.yml` configuration (Xcode 12.3, basic security)
+**Enhanced:** Modern infrastructure, secure secrets, parallel execution, comprehensive testing
+**Added:** PR validation, automated deployment, intelligent caching, detailed reporting
+
+For complete migration details, see `Docs/2025-07-23-github-actions-migration.md`.
