@@ -18,6 +18,7 @@
 #import "BRCDataImportTests.h"
 #import "BRCMapPoint.h"
 #import "BRCDataObject+Relationships.h"
+#import "iBurnTests-Swift.h"
 @import YapDatabase;
 
 @interface BRCDataImportTests()
@@ -92,7 +93,7 @@
 /** update.json URL within initial_data or updated_data */
 + (NSURL*) testDataURLForDirectory:(NSString*)directory {
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSString *initialDataPath = [bundle pathForResource:@"update.json" ofType:@"js" inDirectory:directory];
+    NSString *initialDataPath = [bundle pathForResource:@"update" ofType:@"json" inDirectory:directory];
     NSURL *initialUpdateURL = [NSURL fileURLWithPath:initialDataPath];
     return initialUpdateURL;
 }
@@ -189,8 +190,8 @@
         __block NSArray<BRCEventObject*> *events1 = nil;
         
         [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-            art1 = [transaction objectForKey:@"a2I0V000001RLHeUAO" inCollection:[BRCArtObject yapCollection]];
-            camp1 = [transaction objectForKey:@"a1X0V000003WK4xUAG" inCollection:[BRCCampObject yapCollection]];
+            art1 = [transaction objectForKey:@"a2IVI000000yWeZ2AU" inCollection:[BRCArtObject yapCollection]];
+            camp1 = [transaction objectForKey:@"a1XVI000008yf262AA" inCollection:[BRCCampObject yapCollection]];
             
             artMetadata1.isFavorite = YES;
             campMetadata1.isFavorite = YES;
@@ -238,9 +239,9 @@
             __block NSArray<BRCEventObject*> *events2 = nil;
             
             [self.connection readWithBlock:^(YapDatabaseReadTransaction * transaction) {
-                art2 = [transaction objectForKey:@"a2I0V000001RLHeUAO" inCollection:[BRCArtObject yapCollection]];
+                art2 = [transaction objectForKey:@"a2IVI000000yWeZ2AU" inCollection:[BRCArtObject yapCollection]];
                 artMetadata2 = [art2 artMetadataWithTransaction:transaction];
-                camp2 = [transaction objectForKey:@"a1X0V000003WK4xUAG" inCollection:[BRCCampObject yapCollection]];
+                camp2 = [transaction objectForKey:@"a1XVI000008yf262AA" inCollection:[BRCCampObject yapCollection]];
                 campMetadata2 = [camp2 campMetadataWithTransaction:transaction];
                 events2 = [camp2 eventsWithTransaction:transaction];
             }];
@@ -282,12 +283,15 @@
     [self.connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * __nonnull transaction) {
         [transaction setObject:updateInfo forKey:updateInfo.yapKey inCollection:[BRCUpdateInfo yapCollection]];
     }];
-    NSString *folderName = @"APIData";
-    NSString *bundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:folderName];
-    NSBundle *dataBundle = [NSBundle bundleWithPath:bundlePath];
+    NSBundle *dataBundle = [TestBundleHelper dataBundle];
+    NSLog(@"Bundle path: %@", [dataBundle bundlePath]);
+    NSLog(@"Bundle resources: %@", [[dataBundle pathsForResourcesOfType:@"json" inDirectory:@"initial_data"] componentsJoinedByString:@", "]);
     
-    NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"json"];
+    NSURL *dataURL = [dataBundle URLForResource:file withExtension:@"json" subdirectory:@"initial_data"];
+    NSLog(@"loadDataFromFile: Looking for %@ -> dataURL: %@", file, dataURL);
     NSData *jsonData = [[NSData alloc] initWithContentsOfURL:dataURL];
+    XCTAssertNotNil(jsonData, @"Failed to load JSON data for file: %@", file);
+    
     NSError *error = nil;
     [self.importer loadDataFromJSONData:jsonData dataClass:dataClass updateInfo:updateInfo error:&error];
     XCTAssertNil(error);

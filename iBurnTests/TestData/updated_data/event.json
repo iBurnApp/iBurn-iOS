@@ -1,0 +1,330 @@
+[
+  {
+    "uid": "6Fzgz5paNv8ZbedcCQRw",
+    "title": "Meowiokie",
+    "event_id": 51387,
+    "description": "Its karaoke but with meows. Come by and try",
+    "event_type": {
+      "label": "Music/Party",
+      "abbr": "prty"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "6Fzgz5paNv8ZbedcCQRw-meowiokie",
+    "hosted_by_camp": "a1XVI000009qe5p2AA",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-27T12:00:00-07:00",
+        "end_time": "2025-08-27T13:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "78ZvNxSeeZQbaeHuughD",
+    "title": "Fairycore Tarot Meetup",
+    "event_id": 51138,
+    "description": "First time picking up cards? A professional reader? All levels welcome",
+    "event_type": {
+      "label": "Class/Workshop",
+      "abbr": "work"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "78ZvNxSeeZQbaeHuughD-fairycore-tarot-meetup",
+    "hosted_by_camp": "a1XVI000009t6XR2AY",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-28T12:00:00-07:00",
+        "end_time": "2025-08-28T13:30:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "43sGjqeMeRXNU6Ad9Ssh",
+    "title": "All Day Jam",
+    "event_id": 51471,
+    "description": "Off The Dome is the original musical imagination sanctuary! We Jam All Day",
+    "event_type": {
+      "label": "Music/Party",
+      "abbr": "prty"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "43sGjqeMeRXNU6Ad9Ssh-all-day-jam",
+    "hosted_by_camp": "a1XVI000009o3C12AI",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-25T08:00:00-07:00",
+        "end_time": "2025-08-25T23:45:00-07:00"
+      },
+      {
+        "start_time": "2025-08-26T08:00:00-07:00",
+        "end_time": "2025-08-26T23:45:00-07:00"
+      },
+      {
+        "start_time": "2025-08-27T08:00:00-07:00",
+        "end_time": "2025-08-27T23:45:00-07:00"
+      },
+      {
+        "start_time": "2025-08-28T08:00:00-07:00",
+        "end_time": "2025-08-28T23:45:00-07:00"
+      },
+      {
+        "start_time": "2025-08-29T08:00:00-07:00",
+        "end_time": "2025-08-29T23:45:00-07:00"
+      },
+      {
+        "start_time": "2025-08-30T08:00:00-07:00",
+        "end_time": "2025-08-30T23:45:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "6cPXPkUGgqeaFMnGMUZD",
+    "title": "Topless Tarot & Tacos",
+    "event_id": 51543,
+    "description": "Have your cards read by a topless beauty, and stick around for street tacos.",
+    "event_type": {
+      "label": "Mature Audiences",
+      "abbr": "adlt"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "6cPXPkUGgqeaFMnGMUZD-topless-tarot-tacos",
+    "hosted_by_camp": "a1XVI000009lpSg2AI",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": "sloan8997@gmail.com",
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-26T17:00:00-07:00",
+        "end_time": "2025-08-26T19:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "3sj4bysJNShqpy5WFRAg",
+    "title": "It’s ok to grieve",
+    "event_id": 51146,
+    "description": "A sacred space to explore and find some relief to our dusty heart pains.",
+    "event_type": {
+      "label": "Class/Workshop",
+      "abbr": "work"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "3sj4bysJNShqpy5WFRAg-its-ok-to-grieve",
+    "hosted_by_camp": "a1XVI000009t6XR2AY",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-26T10:00:00-07:00",
+        "end_time": "2025-08-26T11:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "4EybeJyDE7FjDHTP6kU2",
+    "title": "Dinner: 3-Course Sit-Down Banquet",
+    "event_id": 51627,
+    "description": "Cuisines by day: Italian, Greek, Spanish, Indian, Japanese (Mon–Fri). Come early!",
+    "event_type": {
+      "label": "Food",
+      "abbr": "food"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "4EybeJyDE7FjDHTP6kU2-dinner-3-course-sit-down-banquet",
+    "hosted_by_camp": "a1XVI000009Cdq12AC",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-25T19:00:00-07:00",
+        "end_time": "2025-08-25T21:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "44G7uPkSZJ4fKiYDJvdD",
+    "title": "Playa Mart",
+    "event_id": 53435,
+    "description": "What did you forget? chapstick, batteries, waterbottle,hat, sunglasses, we have it all! Come shop in our Playa Mart",
+    "event_type": {
+      "label": "Other",
+      "abbr": "othr"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "44G7uPkSZJ4fKiYDJvdD-playa-mart",
+    "hosted_by_camp": "a1XVI000009rx812AA",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-24T10:00:00-07:00",
+        "end_time": "2025-08-24T17:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-25T10:00:00-07:00",
+        "end_time": "2025-08-25T17:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-26T10:00:00-07:00",
+        "end_time": "2025-08-26T17:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-27T10:00:00-07:00",
+        "end_time": "2025-08-27T17:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-28T10:00:00-07:00",
+        "end_time": "2025-08-28T17:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-29T10:00:00-07:00",
+        "end_time": "2025-08-29T17:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "5xZax6D9jorR3dVoiE6L",
+    "title": "Goth Night",
+    "event_id": 51943,
+    "description": "Step into the shadows for our annual Goth Night. Libations and the darkest music on playa.",
+    "event_type": {
+      "label": "Music/Party",
+      "abbr": "prty"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "5xZax6D9jorR3dVoiE6L-goth-night",
+    "hosted_by_camp": "a1XVI000009byJN2AY",
+    "located_at_art": null,
+    "other_location": "7:15 & E",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-27T19:00:00-07:00",
+        "end_time": "2025-08-27T22:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "7ajFzn5DGYjy5pPY4wBo",
+    "title": "Disco Never Dies",
+    "event_id": 53663,
+    "description": "We open with Mules, Mojitos, Mimosas and \"Marys\". fostering an environment where burners engage and belly laugh",
+    "event_type": {
+      "label": "Music/Party",
+      "abbr": "prty"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "7ajFzn5DGYjy5pPY4wBo-disco-never-dies",
+    "hosted_by_camp": "a1XVI000009qPFS2A2",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-28T09:00:00-07:00",
+        "end_time": "2025-08-24T14:00:00-07:00"
+      }
+    ]
+  },
+  {
+    "uid": "5nz2J6nDUFJZD7Yi4ruR",
+    "title": "Dear Dad",
+    "event_id": 53307,
+    "description": "Reflect on fatherhood & write a letter to your dad to mail, take, or burn!",
+    "event_type": {
+      "label": "Other",
+      "abbr": "othr"
+    },
+    "year": 2025,
+    "print_description": "",
+    "slug": "5nz2J6nDUFJZD7Yi4ruR-dear-dad",
+    "hosted_by_camp": "a1XVI000009l8hh2AA",
+    "located_at_art": null,
+    "other_location": "",
+    "check_location": false,
+    "url": null,
+    "all_day": false,
+    "contact": null,
+    "occurrence_set": [
+      {
+        "start_time": "2025-08-24T10:00:00-07:00",
+        "end_time": "2025-08-24T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-25T10:00:00-07:00",
+        "end_time": "2025-08-25T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-26T10:00:00-07:00",
+        "end_time": "2025-08-26T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-27T10:00:00-07:00",
+        "end_time": "2025-08-27T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-28T10:00:00-07:00",
+        "end_time": "2025-08-28T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-29T10:00:00-07:00",
+        "end_time": "2025-08-29T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-30T10:00:00-07:00",
+        "end_time": "2025-08-30T22:00:00-07:00"
+      },
+      {
+        "start_time": "2025-08-31T10:00:00-07:00",
+        "end_time": "2025-08-31T22:00:00-07:00"
+      }
+    ]
+  }
+]

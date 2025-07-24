@@ -121,6 +121,7 @@
 		D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A27ADD210FFC0F000BD535 /* Appearance.swift */; };
 		D9A364672A759BD20008CCFB /* DataUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A364662A759BD20008CCFB /* DataUpdatesView.swift */; };
 		D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */; };
+		D9ABFAA52E32056900FB1519 /* BRCDataImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9ABFAA42E32056700FB1519 /* BRCDataImportTests.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
@@ -170,6 +171,7 @@
 		D9F3BF0E1D5528EB00013153 /* BRCAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */; };
 		D9F8891C2300BC9D0069FD49 /* Date+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F8891B2300BC9D0069FD49 /* Date+iBurn.swift */; };
 		D9F889252300D18C0069FD49 /* BRCEventObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F889242300D18C0069FD49 /* BRCEventObject.swift */; };
+		D9F9DAB62E309FD5006A658B /* TestBundleHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F9DAB52E309FD5006A658B /* TestBundleHelper.swift */; };
 		D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */; };
 		D9FC5E351D54112D00D41AEE /* BRCArtObjectTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */; };
 /* End PBXBuildFile section */
@@ -470,6 +472,7 @@
 		D9AB87252C46201D004DEB50 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2024/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D9AB87262C46201D004DEB50 /* APIData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = APIData; path = "Submodules/iBurn-Data/data/2024/APIData"; sourceTree = SOURCE_ROOT; };
 		D9AB872B2C477E81004DEB50 /* iBurn-2024.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = "iBurn-2024.zip"; path = "Submodules/iBurn-Data/data/2024/iBurn-2024.zip"; sourceTree = SOURCE_ROOT; };
+		D9ABFAA42E32056700FB1519 /* BRCDataImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataImportTests.swift; sourceTree = "<group>"; };
 		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObject.swift; sourceTree = "<group>"; };
 		D9B362B2199821EB0093B441 /* NSURL+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+iBurn.h"; sourceTree = "<group>"; };
@@ -535,6 +538,7 @@
 		D9F3BF0D1D5528EB00013153 /* BRCAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCAudioPlayer.swift; sourceTree = "<group>"; };
 		D9F8891B2300BC9D0069FD49 /* Date+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+iBurn.swift"; sourceTree = "<group>"; };
 		D9F889242300D18C0069FD49 /* BRCEventObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCEventObject.swift; sourceTree = "<group>"; };
+		D9F9DAB52E309FD5006A658B /* TestBundleHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestBundleHelper.swift; sourceTree = "<group>"; };
 		D9FC5E311D54110300D41AEE /* BRCArtObjectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCArtObjectTableViewCell.h; sourceTree = "<group>"; };
 		D9FC5E321D54110300D41AEE /* BRCArtObjectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCArtObjectTableViewCell.m; sourceTree = "<group>"; };
 		D9FC5E341D54112D00D41AEE /* BRCArtObjectTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BRCArtObjectTableViewCell.xib; sourceTree = "<group>"; };
@@ -968,6 +972,8 @@
 			isa = PBXGroup;
 			children = (
 				D93176752E222D2E003636CB /* DetailServicesTests.swift */,
+				D9ABFAA42E32056700FB1519 /* BRCDataImportTests.swift */,
+				D9F9DAB52E309FD5006A658B /* TestBundleHelper.swift */,
 				D93176762E222D2E003636CB /* DetailViewModelTests.swift */,
 				D902DF0D1B7B1F2D00057898 /* BRCDataSorterTests.swift */,
 				D9914C4A1B40C52E00F90663 /* TestData */,
@@ -1769,7 +1775,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9ABFAA52E32056900FB1519 /* BRCDataImportTests.swift in Sources */,
 				D902DF0E1B7B1F2D00057898 /* BRCDataSorterTests.swift in Sources */,
+				D9F9DAB62E309FD5006A658B /* TestBundleHelper.swift in Sources */,
 				D93176772E222D2E003636CB /* DetailServicesTests.swift in Sources */,
 				D93176782E222D2E003636CB /* DetailViewModelTests.swift in Sources */,
 				D980A9161B3F5AA300BE3682 /* BRCDataImportTests.m in Sources */,

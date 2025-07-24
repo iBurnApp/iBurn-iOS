@@ -1,0 +1,16 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-119.21001900000002, 40.779943]
+            },
+            "properties": {
+                "name": "Test Medical",
+                "ref": "firstAid"
+            }
+        }
+    ]
+}

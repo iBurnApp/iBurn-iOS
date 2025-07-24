@@ -1,0 +1,163 @@
+[
+  {
+    "uid": "a1XVI000008yf262AA",
+    "name": "Bag o' Dicks",
+    "year": 2025,
+    "contact_email": "bagodicks.bm1@gmail.com",
+    "hometown": "chicago",
+    "description": "Free spirited camp with good beats, booze, and the friendliest bag o' dicks around! Look for the big LED dicks in the sky and come say hi. A bag o' dicks isn't always a bad thing, come check out our dicks and judge for yourself.  Come warm up your dick by our bonfire most nights or early mornings as well!",
+    "landmark": "3 neon dicks in the sky with sparkly come shots",
+    "images": [
+      {
+        "thumbnail_url": "https://burningman.widen.net/content/3ggbw9ehze/jpeg/a1XVI000008yf262AA-1.jpeg?w=640&keep=c&crop=yes&color=cccccc&quality=80&u=r3rtjx"
+      }
+    ],
+    "location_string": "8:45 & F",
+    "location": {
+      "string": "8:45 & F",
+      "gps_latitude": 40.79452820771572,
+      "gps_longitude": -119.2160401419114,
+      "frontage": "8:45",
+      "intersection": "F",
+      "intersection_type": "&",
+      "dimensions": "100 x 100",
+      "exact_location": "Mid-block facing 2:00"
+    },
+    "location_mock": true,
+    "location_mock_source": "Bag o' Dicks",
+    "location_mock_geocoded": true
+  },
+  {
+    "uid": "a1XVI000008zNKs2AM",
+    "name": "Pussy Day Spa",
+    "year": 2025,
+    "contact_email": "pusdayspa@gmail.com",
+    "hometown": "Redwood City",
+    "description": "If there is one \"must do\" at Burning Man, it's a visit to the Pussy Day Spa. We offer a choice of refreshing body wash and pussy massage including happy ending. What's not to like? Pleasure and bliss awaits as we pamper and delight you. Your boundaries will be respected, your feedback / adjustments encouraged, and your wishes fulfilled. We guarantee it will be the best experience you will ever have at Burning Man, or anywhere else. Open daily from 1 to 5 pm, we take reservations (recommended) as well as walk-ins.",
+    "landmark": "Pussy Day Spa sign",
+    "images": [
+      {
+        "thumbnail_url": "https://burningman.widen.net/content/6bj2bu2bsk/jpeg/a1XVI000008zNKs2AM-1.jpeg?w=640&keep=c&crop=yes&color=cccccc&quality=80&u=r3rtjx"
+      }
+    ],
+    "location_string": "9:00 & D",
+    "location": {
+      "string": "9:00 & D",
+      "gps_latitude": 40.79428055022349,
+      "gps_longitude": -119.21267647412193,
+      "frontage": "9:00",
+      "intersection": "D",
+      "intersection_type": "&",
+      "dimensions": "75 x 100",
+      "exact_location": "Corner - facing mountain & 2:00"
+    },
+    "location_mock": true,
+    "location_mock_source": "Pussy Day Spa",
+    "location_mock_geocoded": true
+  },
+  {
+    "uid": "a1XVI000008zSaf2AE",
+    "name": "Camp ASL Support Services HUB",
+    "year": 2025,
+    "contact_email": "ddhplanb@gmail.com",
+    "hometown": "All over, north, and, South America",
+    "description": "American sign language Support services. Centralized services for the Deaf.",
+    "landmark": "\"American sign language support services\" sign",
+    "images": [],
+    "location_string": "D & 5:15",
+    "location": {
+      "string": "D & 5:15",
+      "gps_latitude": 40.7773838906532,
+      "gps_longitude": -119.20822602792356,
+      "frontage": "D",
+      "intersection": "5:15",
+      "intersection_type": "&",
+      "dimensions": "100 x 100",
+      "exact_location": "Mid-block facing mountain"
+    },
+    "location_mock": true,
+    "location_mock_source": "Camp ASL Support Services HUB",
+    "location_mock_geocoded": true
+  },
+  {
+    "uid": "a1XVI000008zTDO2A2",
+    "name": "Casa de la Rumba",
+    "year": 2025,
+    "url": "https://casadelarumba.com",
+    "contact_email": "info@casadelarumba.com",
+    "hometown": "San Francisco",
+    "description": "The most magical prohibition era Casino where you can come and try our whimsical cocktails while trying your luck at our roulette or Blackjack table all under our glorious circus tent.\n\nCome get some rumba to our Casa. Celebrate sharing, life, and try your luck in our little casino. You can come and bet whatever you have on you and we will match it up.\n\nBe prepared to walk in a different time and space once you step into our 20s Casino. There will be a smile in your face when you leve. Guaranteed or we give your money back!",
+    "landmark": "Huge lighted CASINO letters",
+    "images": [
+      {
+        "thumbnail_url": "https://burningman.widen.net/content/8t90sszsoq/jpeg/a1XVI000008zTDO2A2-1.jpeg?w=640&keep=c&crop=yes&color=cccccc&quality=80&u=r3rtjx"
+      }
+    ],
+    "location_string": "6:30 & E",
+    "location": {
+      "string": "6:30 & E",
+      "gps_latitude": 40.7813880607743,
+      "gps_longitude": -119.21571852500912,
+      "frontage": "6:30",
+      "intersection": "E",
+      "intersection_type": "&",
+      "dimensions": "200 x 150",
+      "exact_location": "Mid-block facing 2:00"
+    },
+    "location_mock": true,
+    "location_mock_source": "Casa de la Rumba",
+    "location_mock_geocoded": true
+  },
+  {
+    "uid": "a1XVI000008zTWj2AM",
+    "name": "Twisted",
+    "year": 2025,
+    "hometown": "Lake Tahoe, CA",
+    "description": "Twisted Camp is a vibrant gathering space where creativity, connection, and community come to life. Our camp features a welcoming bar with mixologists (you never know what drink concoction we might have!), a cozy coffee station, and a lively atmosphere with music by DJ Tokenoshi. Expect a mix of interactive experiences, social spaces, and spontaneous fun. Our setup includes a well-lit bar, plush seating, bike racks, and unique art installations. No matter where we land on the playa, we are here to bring good vibes, great conversations, and unforgettable moments. Follow the twisted lights and join the fun.",
+    "landmark": "Large Twisted sign flagpole",
+    "images": [],
+    "location_string": "3:30 & E",
+    "location": {
+      "string": "3:30 & E",
+      "gps_latitude": 40.77731762604464,
+      "gps_longitude": -119.19565093855323,
+      "frontage": "3:30",
+      "intersection": "E",
+      "intersection_type": "&",
+      "dimensions": "100 x 200",
+      "exact_location": "Mid-block facing 2:00"
+    },
+    "location_mock": true,
+    "location_mock_source": "Twisted",
+    "location_mock_geocoded": true
+  },
+  {
+    "uid": "a1XVI000008zYsz2AE",
+    "name": "Chariot Project",
+    "year": 2025,
+    "url": "https://burningchariots.com/",
+    "contact_email": "goldie@burningchariots.com",
+    "hometown": "Reno",
+    "description": "Injured? Have a footsie-oopsie-daisy? Fear not! Chariot Project has a rainbow fleet for hurt feet. Our pedal-powered mobility carts are available for checkout by the day to attach to your own bike. While you are here you can explore our collection of canes, orthopedic boots, knee braces, and more to help you on your healing journey.",
+    "landmark": "Yellow Flags and Bike Chariots",
+    "images": [
+      {
+        "thumbnail_url": "https://burningman.widen.net/content/jkbqdqp9iu/jpeg/a1XVI000008zYsz2AE-1.jpeg?w=640&keep=c&crop=yes&color=cccccc&quality=80&u=r3rtjx"
+      }
+    ],
+    "location_string": "B & 6:15",
+    "location": {
+      "string": "B & 6:15",
+      "gps_latitude": 40.781580857624434,
+      "gps_longitude": -119.21223800842782,
+      "frontage": "B",
+      "intersection": "6:15",
+      "intersection_type": "&",
+      "dimensions": "50 x 100",
+      "exact_location": "Mid-block facing man"
+    },
+    "location_mock": true,
+    "location_mock_source": "Chariot Project",
+    "location_mock_geocoded": true
+  }
+]
