@@ -169,7 +169,7 @@ static CGFloat const kTableViewHeaderHeight = 200;
         
         [clearHeaderView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapMapContainerview:)]];
         
-        if ([self.dataObject isKindOfClass:BRCArtObject.class]) {
+        if ([self hasImageCell]) {
             self.tableView.tableFooterView = clearHeaderView;
         } else {
             self.tableView.tableHeaderView = clearHeaderView;
@@ -241,6 +241,15 @@ static CGFloat const kTableViewHeaderHeight = 200;
 {
     MapDetailViewController *mapViewController = [[MapDetailViewController alloc] initWithDataObject:self.dataObject metadata:self.metadata];
     [self.navigationController pushViewController:mapViewController animated:YES];
+}
+
+- (BOOL)hasImageCell {
+    for (BRCDetailCellInfo *cellInfo in self.detailCellInfoArray) {
+        if (cellInfo.cellType == BRCDetailCellInfoTypeImage) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (nullable BRCDetailCellInfo *)cellInfoForIndexPath:(NSIndexPath*)indexPath
