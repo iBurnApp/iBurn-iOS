@@ -41,11 +41,9 @@ IMPORTANT: After completing a task (and updating our documentation), we should a
 
 iBurn is an offline map and guide for the Burning Man art festival. It's a native iOS application built primarily with Swift and Objective-C, featuring offline map tiles, art/camp/event data management, and location tracking capabilities.
 
-## XcodeBuildMCP Integration
+## Project Details
 
-This project uses XcodeBuildMCP for comprehensive Xcode build automation and iOS development workflows. The MCP provides 84 tools covering project management, building, testing, simulator control, and UI automation.
-
-**Key Project Details**:
+**Key Project Information**:
 - **Workspace Path**: `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace`
 - **Main Scheme**: `iBurn` (for building the app)
 - **Test Schemes**: `iBurnTests`, `PlayaKitTests` 
@@ -54,20 +52,17 @@ This project uses XcodeBuildMCP for comprehensive Xcode build automation and iOS
 
 ### Project Discovery
 
-Start new sessions by discovering available projects and schemes:
+Start new sessions by exploring the project structure:
 
 ```bash
-# Discover Xcode projects and workspaces
-mcp__XcodeBuildMCP__discover_projs --workspaceRoot /Users/chrisbal/Documents/Code/iBurn-iOS
+# List available schemes
+xcodebuild -workspace iBurn.xcworkspace -list
 
-# List available schemes in workspace
-mcp__XcodeBuildMCP__list_schems_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace
+# List available simulators
+xcrun simctl list devices available
 
-# List available iOS simulators
-mcp__XcodeBuildMCP__list_sims --enabled true
-
-# List connected physical devices
-mcp__XcodeBuildMCP__list_devices
+# Check workspace structure
+open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
 ```
 
 ## Development Commands
@@ -77,177 +72,70 @@ mcp__XcodeBuildMCP__list_devices
 - `git submodule update --init` - Initialize git submodules (required after cloning)
 - Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file)
 
-### Building with XcodeBuildMCP
-XcodeBuildMCP provides comprehensive build automation with better error reporting and simplified syntax compared to raw xcodebuild commands.
+### Build Commands
 
-**Build Commands**:
+**Preferred Build Command (quiet, arm64 simulator)**:
 ```bash
-# Build for macOS
-mcp__XcodeBuildMCP__build_mac_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn
+# Build for iOS Simulator with quiet output
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
 
-# Build for iOS Simulator (by name)
-mcp__XcodeBuildMCP__build_sim_name_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn --simulatorName "iPhone 16 Pro"
-
-# Build for iOS Simulator (by UUID)
-mcp__XcodeBuildMCP__build_sim_id_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn --simulatorId "SIMULATOR_UUID"
-
-# Build for physical device
-mcp__XcodeBuildMCP__build_dev_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn
-
-# Build and run in one command
-mcp__XcodeBuildMCP__build_run_sim_name_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn --simulatorName "iPhone 16 Pro"
+# Build and show all output (for debugging)
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64'
 ```
 
 **Testing Commands**:
 ```bash
-# Run tests on simulator (by name)
-mcp__XcodeBuildMCP__test_sim_name_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurnTests --simulatorName "iPhone 16 Pro"
+# Run tests on simulator with quiet output
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
 
-# Run tests on simulator (by UUID)
-mcp__XcodeBuildMCP__test_sim_id_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurnTests --simulatorId "SIMULATOR_UUID"
+# Run tests with full output (for debugging)
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64'
 
-# Run tests on physical device
-mcp__XcodeBuildMCP__test_device_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurnTests --deviceId "DEVICE_UUID"
-
-# Run macOS tests
-mcp__XcodeBuildMCP__test_macos_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurnTests
+# Run PlayaKit tests
+xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
 ```
 
 **Utility Commands**:
 ```bash
 # Clean build products
-mcp__XcodeBuildMCP__clean_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn
+xcodebuild clean -workspace iBurn.xcworkspace -scheme iBurn
 
 # Show build settings
-mcp__XcodeBuildMCP__show_build_set_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -showBuildSettings
 ```
 
 ### Simulator Management
 
-XcodeBuildMCP provides comprehensive simulator control:
+Basic simulator control using standard tools:
 
 ```bash
+# List available simulators
+xcrun simctl list devices available
+
 # Boot a simulator
-mcp__XcodeBuildMCP__boot_sim --simulatorUuid "SIMULATOR_UUID"
+xcrun simctl boot "iPhone 16 Pro"
 
 # Open Simulator app
-mcp__XcodeBuildMCP__open_sim --enabled true
+open -a Simulator
 
-# Set appearance mode (dark/light)
-mcp__XcodeBuildMCP__set_sim_appearance --simulatorUuid "SIMULATOR_UUID" --mode dark
+# Shutdown simulator
+xcrun simctl shutdown "iPhone 16 Pro"
 
-# Set custom GPS location
-mcp__XcodeBuildMCP__set_simulator_location --simulatorUuid "SIMULATOR_UUID" --latitude 37.7749 --longitude -122.4194
-
-# Reset location to default
-mcp__XcodeBuildMCP__reset_simulator_location --simulatorUuid "SIMULATOR_UUID"
-
-# Simulate network conditions
-mcp__XcodeBuildMCP__set_network_condition --simulatorUuid "SIMULATOR_UUID" --profile "3g"
-
-# Reset network conditions
-mcp__XcodeBuildMCP__reset_network_condition --simulatorUuid "SIMULATOR_UUID"
+# Erase simulator content
+xcrun simctl erase "iPhone 16 Pro"
 ```
 
-### Swift Package Manager Integration
 
-XcodeBuildMCP includes comprehensive Swift Package Manager support:
 
-```bash
-# Build a Swift package
-mcp__XcodeBuildMCP__swift_package_build --packagePath /path/to/package --configuration debug
-
-# Run Swift package tests
-mcp__XcodeBuildMCP__swift_package_test --packagePath /path/to/package --parallel true
-
-# Run executable target
-mcp__XcodeBuildMCP__swift_package_run --packagePath /path/to/package --executableName myapp --arguments ["arg1", "arg2"]
-
-# Stop running Swift package executable
-mcp__XcodeBuildMCP__swift_package_stop --pid 12345
-
-# List running Swift package processes
-mcp__XcodeBuildMCP__swift_package_list
-
-# Clean Swift package build artifacts
-mcp__XcodeBuildMCP__swift_package_clean --packagePath /path/to/package
-```
-
-### App Lifecycle Management
-
-Install, launch, and manage apps on simulators and devices:
-
-```bash
-# Get app bundle paths
-mcp__XcodeBuildMCP__get_sim_app_path_name_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn --platform "iOS Simulator" --simulatorName "iPhone 16 Pro"
-mcp__XcodeBuildMCP__get_device_app_path_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn
-mcp__XcodeBuildMCP__get_mac_app_path_ws --workspacePath /Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace --scheme iBurn
-
-# Get bundle IDs from app paths
-mcp__XcodeBuildMCP__get_app_bundle_id --appPath /path/to/app.app
-mcp__XcodeBuildMCP__get_mac_bundle_id --appPath /path/to/app.app
-
-# Simulator app management
-mcp__XcodeBuildMCP__install_app_sim --simulatorUuid "SIMULATOR_UUID" --appPath /path/to/app.app
-mcp__XcodeBuildMCP__launch_app_sim --simulatorUuid "SIMULATOR_UUID" --bundleId com.example.app
-mcp__XcodeBuildMCP__launch_app_logs_sim --simulatorUuid "SIMULATOR_UUID" --bundleId com.example.app
-mcp__XcodeBuildMCP__stop_app_sim --simulatorUuid "SIMULATOR_UUID" --bundleId com.example.app
-
-# Device app management
-mcp__XcodeBuildMCP__install_app_device --deviceId "DEVICE_UUID" --appPath /path/to/app.app
-mcp__XcodeBuildMCP__launch_app_device --deviceId "DEVICE_UUID" --bundleId com.example.app
-mcp__XcodeBuildMCP__stop_app_device --deviceId "DEVICE_UUID" --processId 12345
-
-# macOS app management
-mcp__XcodeBuildMCP__launch_mac_app --appPath /path/to/app.app --args ["arg1", "arg2"]
-mcp__XcodeBuildMCP__stop_mac_app --appName "MyApp"
-```
-
-### UI Automation and Testing
-
-XcodeBuildMCP provides powerful UI automation capabilities for testing:
-
-```bash
-# Get UI hierarchy and element coordinates
-mcp__XcodeBuildMCP__describe_ui --simulatorUuid "SIMULATOR_UUID"
-
-# UI interactions (use describe_ui to get precise coordinates)
-mcp__XcodeBuildMCP__tap --simulatorUuid "SIMULATOR_UUID" --x 200 --y 300
-mcp__XcodeBuildMCP__long_press --simulatorUuid "SIMULATOR_UUID" --x 200 --y 300 --duration 1000
-mcp__XcodeBuildMCP__swipe --simulatorUuid "SIMULATOR_UUID" --x1 100 --y1 200 --x2 100 --y2 100
-
-# Text input and keyboard interactions
-mcp__XcodeBuildMCP__type_text --simulatorUuid "SIMULATOR_UUID" --text "Hello World"
-mcp__XcodeBuildMCP__key_press --simulatorUuid "SIMULATOR_UUID" --keyCode 40  # Return key
-mcp__XcodeBuildMCP__key_sequence --simulatorUuid "SIMULATOR_UUID" --keyCodes [40, 42, 44]  # Return, Backspace, Space
-
-# Hardware button interactions
-mcp__XcodeBuildMCP__button --simulatorUuid "SIMULATOR_UUID" --buttonType home
-mcp__XcodeBuildMCP__button --simulatorUuid "SIMULATOR_UUID" --buttonType siri
-
-# Gesture presets
-mcp__XcodeBuildMCP__gesture --simulatorUuid "SIMULATOR_UUID" --preset scroll-up
-mcp__XcodeBuildMCP__gesture --simulatorUuid "SIMULATOR_UUID" --preset swipe-from-left-edge
-
-# Screenshots for visual verification
-mcp__XcodeBuildMCP__screenshot --simulatorUuid "SIMULATOR_UUID"
-
-# Log capture
-mcp__XcodeBuildMCP__start_sim_log_cap --simulatorUuid "SIMULATOR_UUID" --bundleId com.example.app
-mcp__XcodeBuildMCP__stop_sim_log_cap --logSessionId "SESSION_ID"
-mcp__XcodeBuildMCP__start_device_log_cap --deviceId "DEVICE_UUID" --bundleId com.example.app
-mcp__XcodeBuildMCP__stop_device_log_cap --logSessionId "SESSION_ID"
-```
 
 ### Fastlane Commands
 - `fastlane ios beta` - Build and upload to TestFlight
 - `fastlane ios refresh_dsyms` - Download and upload crash symbols
 
 ### Testing
-- **XcodeBuildMCP**: Use testing commands for automated testing with precise error reporting
+- **Command Line**: Use xcodebuild test commands shown above for automated testing
 - **Xcode GUI**: Run tests through Xcode Test Navigator or `Cmd+U`  
 - **Test targets**: `iBurnTests`, `PlayaKitTests`
-- **UI Testing**: Use XcodeBuildMCP's UI automation tools for comprehensive app testing
 
 ## Architecture Overview
 

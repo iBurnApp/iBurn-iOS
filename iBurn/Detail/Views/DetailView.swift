@@ -111,8 +111,9 @@ struct DetailImageView: View {
     var body: some View {
         Image(uiImage: image)
             .resizable()
-            .aspectRatio(aspectRatio, contentMode: .fit)
-            .frame(maxWidth: .infinity)
+            .aspectRatio(contentMode: .fill)
+            .frame(maxWidth: .infinity, maxHeight: 300)
+            .clipped()
     }
 }
 

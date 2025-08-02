@@ -241,12 +241,29 @@ class DetailViewModel: ObservableObject {
     private func generateCellTypes() -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
         
-        // Add image header first if available (only for art objects)
+        // Add image header first if available (for all object types)
         if let artObject = dataObject as? BRCArtObject,
            let imageURL = artObject.localThumbnailURL,
            let image = loadImage(from: imageURL) {
             let aspectRatio = image.size.width / image.size.height
             cellTypes.append(.image(image, aspectRatio: aspectRatio))
+        }
+        // Add camp image for camp objects
+        else if let campObject = dataObject as? BRCCampObject,
+           let imageURL = campObject.localThumbnailURL,
+           let image = loadImage(from: imageURL) {
+            let aspectRatio = image.size.width / image.size.height
+            cellTypes.append(.image(image, aspectRatio: aspectRatio))
+        }
+        // Add host image for event objects (camp or art)
+        else if let eventObject = dataObject as? BRCEventObject {
+            if let campImage = loadHostCampImage(for: eventObject) {
+                let aspectRatio = campImage.size.width / campImage.size.height
+                cellTypes.append(.image(campImage, aspectRatio: aspectRatio))
+            } else if let artImage = loadHostArtImage(for: eventObject) {
+                let aspectRatio = artImage.size.width / artImage.size.height
+                cellTypes.append(.image(artImage, aspectRatio: aspectRatio))
+            }
         }
         
         // Add map view if object has location and is not embargoed
@@ -478,25 +495,10 @@ class DetailViewModel: ObservableObject {
     }
     
     private func generateHostImageCells() -> [DetailCellType] {
-        var cells: [DetailCellType] = []
+        let cells: [DetailCellType] = []
         
-        // Add camp image for camp objects
-        if let campObject = dataObject as? BRCCampObject,
-           let imageURL = campObject.localThumbnailURL,
-           let image = loadImage(from: imageURL) {
-            let aspectRatio = image.size.width / image.size.height
-            cells.append(.image(image, aspectRatio: aspectRatio))
-        }
-        // Add host image for event objects (camp or art)
-        else if let eventObject = dataObject as? BRCEventObject {
-            if let campImage = loadHostCampImage(for: eventObject) {
-                let aspectRatio = campImage.size.width / campImage.size.height
-                cells.append(.image(campImage, aspectRatio: aspectRatio))
-            } else if let artImage = loadHostArtImage(for: eventObject) {
-                let aspectRatio = artImage.size.width / artImage.size.height
-                cells.append(.image(artImage, aspectRatio: aspectRatio))
-            }
-        }
+        // Image generation moved to top of generateCellTypes()
+        // This method reserved for any future host-related cells that aren't images
         
         return cells
     }
