@@ -54,9 +54,18 @@ import EventKitUI
 
 private extension PageViewManager {
     private func pageViewController(_ pageViewController: UIPageViewController, viewControllerNear viewController: UIViewController, direction: IndexPathDirection) -> UIViewController? {
-        guard let detailVC = viewController as? DetailHostingController,
-            let oldIndex = detailVC.indexPath,
-            let newIndex = oldIndex.nextIndexPath(direction: direction, tableView: tableView),
+        // Extract indexPath from either BRCDetailViewController or DetailHostingController
+        let oldIndex: IndexPath?
+        if let hostingController = viewController as? DetailHostingController {
+            oldIndex = hostingController.indexPath
+        } else if let brcController = viewController as? BRCDetailViewController {
+            oldIndex = brcController.indexPath
+        } else {
+            oldIndex = nil
+        }
+        
+        guard let currentIndex = oldIndex,
+            let newIndex = currentIndex.nextIndexPath(direction: direction, tableView: tableView),
             let dataObject = objectProvider.dataObjectAtIndexPath(newIndex) else {
                 return nil
         }
