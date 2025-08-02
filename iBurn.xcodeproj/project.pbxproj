@@ -1256,7 +1256,6 @@
 			);
 			name = iBurn;
 			packageProductDependencies = (
-				D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				D966561528A9970B002FA471 /* FirebaseCrashlytics */,
 				D966562828A9B86E002FA471 /* Zip */,
 				D9915F582A76C35E0015C87D /* Siren */,
@@ -2236,11 +2235,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
-		};
-		D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalyticsWithoutAdIdSupport;
 		};
 		D966561528A9970B002FA471 /* FirebaseCrashlytics */ = {
 			isa = XCSwiftPackageProductDependency;
