@@ -15,7 +15,7 @@ enum Preferences {
     enum UserInterface {
         static let useSwiftUIDetailView = Preference<Bool>(
             key: "userInterface.detailView.useSwiftUI",
-            defaultValue: false,
+            defaultValue: true,
             description: "Use new detail screen instead of legacy implementation"
         )
     }
