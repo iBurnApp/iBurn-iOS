@@ -9,6 +9,7 @@ import Foundation
 import YapDatabase
 import CocoaLumberjack
 
+
 @objc
 public enum BRCMediaDownloadType: Int
 {
@@ -41,6 +42,15 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
     private let backgroundTaskQueue = DispatchQueue(label: "backgroundTaskQueue")
     /// isolate access on `backgroundTaskQueue`
     private var backgroundTasks: [Int: UIBackgroundTaskIdentifier] = [:]
+    
+    // Clean typealiases for all protocol compositions
+    typealias DataObjectWithMetadata = BRCDataObject & BRCMetadataProtocol
+    typealias ThumbnailDataObject = BRCDataObject & BRCThumbnailProtocol & BRCMetadataProtocol  
+    typealias ProcessableObject = BRCDataObject & BRCThumbnailProtocol
+    typealias ColorableMetadata = BRCObjectMetadata & BRCThumbnailImageColorsProtocol
+    
+    /** Collections to process for object operations */
+    private let collections = [BRCArtObject.yapCollection, BRCCampObject.yapCollection]
     
     deinit {
         if let observer = observer {
@@ -115,14 +125,14 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
     }
     
     public static func imageForArt(_ art: BRCArtObject) -> UIImage? {
-        return imageForThumbnailObject(art)
+        return imageForObject(art)
     }
     
     public static func imageForCamp(_ camp: BRCCampObject) -> UIImage? {
-        return imageForThumbnailObject(camp)
+        return imageForObject(camp)
     }
     
-    private static func imageForThumbnailObject(_ object: BRCDataObject & BRCThumbnailProtocol) -> UIImage? {
+    public static func imageForObject(_ object: BRCDataObject & BRCThumbnailProtocol) -> UIImage? {
         let filename = self.fileName(object, type: .image)
         guard let bundle = Bundle.bundledMedia else {
             return nil
@@ -251,6 +261,24 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
         }
     }
     
+    private func triggerColorComputationForFile(_ fileName: String) {
+        // Extract object ID from filename to find the corresponding object
+        let objectID = String(fileName.prefix(fileName.count - 4)) // Remove .jpg extension
+        
+        connection.asyncRead { transaction in
+            for collection in self.collections {
+                if let obj = transaction.object(forKey: objectID, inCollection: collection) as? ThumbnailDataObject,
+                   let metadata = obj.metadata(with: transaction) as? ColorableMetadata,
+                   metadata.thumbnailImageColors == nil,
+                   let image = BRCMediaDownloader.imageForObject(obj) {
+                    DDLogInfo("Triggering color computation for \(String(describing: type(of: obj))): \(obj.title)")
+                    ColorCache.shared.getColors(object: obj, metadata: metadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: nil)
+                    return
+                }
+            }
+        }
+    }
+    
     //MARK: NSURLSessionDelegate
     public func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
         if let backgroundCompletion = backgroundCompletion {
@@ -280,6 +308,12 @@ public final class BRCMediaDownloader: NSObject, URLSessionDelegate, URLSessionD
             return
         }
         DDLogInfo("Media file cached: \(destURL)")
+        
+        // Trigger color computation for newly downloaded images
+        if downloadType == .image {
+            triggerColorComputationForFile(fileName)
+        }
+        
         finishBackgroundTask(for: downloadTask)
     }
     

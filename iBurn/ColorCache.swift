@@ -101,31 +101,85 @@ public class ColorCache: NSObject {
     let writeConnection = BRCDatabaseManager.shared.readWriteConnection
     var completionQueue = DispatchQueue.main
     
+    // Clean typealiases for all protocol compositions
+    typealias DataObjectWithMetadata = BRCDataObject & BRCMetadataProtocol
+    typealias ThumbnailDataObject = BRCDataObject & BRCThumbnailProtocol & BRCMetadataProtocol  
+    typealias ProcessableObject = BRCDataObject & BRCThumbnailProtocol
+    typealias ColorableMetadata = BRCObjectMetadata & BRCThumbnailImageColorsProtocol
+    
+    /** Collections to process for object operations */
+    private let collections = [BRCArtObject.yapCollection, BRCCampObject.yapCollection]
+    
     @objc func prefetchAllColors() {
         DispatchQueue.global(qos: .default).async {
-            var objects: [(BRCArtObject, BRCArtMetadata)] = []
+            var allObjects: [(ProcessableObject, ColorableMetadata)] = []
+            
             self.backgroundReadConnection.read { transaction in
-                transaction.iterateRows(inCollection: BRCArtObject.yapCollection) { (key, art: BRCArtObject, metadata: BRCArtMetadata?, stop) in
-                    let artMetadata = art.artMetadata(with: transaction)
-                    if artMetadata.thumbnailImageColors != nil {
-                        return
-                    }
-                    if art.localThumbnailURL != nil {
-                        objects.append((art, artMetadata))
+                for collection in self.collections {
+                    transaction.iterateRows(inCollection: collection) { (key, obj: BRCDataObject, metadata: BRCObjectMetadata?, stop) in
+                        if let thumbnailObj = obj as? ThumbnailDataObject,
+                           let objMetadata = thumbnailObj.metadata(with: transaction) as? ColorableMetadata,
+                           objMetadata.thumbnailImageColors == nil,
+                           thumbnailObj.localThumbnailURL != nil {
+                            allObjects.append((thumbnailObj, objMetadata))
+                        }
                     }
                 }
             }
-            objects.forEach({ (art, metadata) in
-                guard let image = BRCMediaDownloader.imageForArt(art) else {
-                    return
+            
+            // Process all objects uniformly
+            allObjects.forEach({ (obj, metadata) in
+                autoreleasepool {
+                    guard let image = BRCMediaDownloader.imageForObject(obj) else {
+                        return
+                    }
+                    self.getColors(object: obj, metadata: metadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: nil)
                 }
-                self.getColors(art: art, artMetadata: metadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: nil)
             })
         }
     }
     
-    /** Only works for art objects at the moment. If processingQueue is nil, it will execute block on current queue */
-    func getColors(art: BRCArtObject, artMetadata: BRCArtMetadata, image: UIImage, downscaleSize: CGSize, processingQueue: DispatchQueue?, completion: ((BRCImageColors)->Void)?) {
+    /** Processes objects missing color metadata. Useful for newly added objects. */
+    @objc func processMissingColors() {
+        DispatchQueue.global(qos: .default).async {
+            var allObjects: [(ProcessableObject, ColorableMetadata)] = []
+            
+            self.backgroundReadConnection.read { transaction in
+                for collection in self.collections {
+                    transaction.iterateRows(inCollection: collection) { (key, obj: BRCDataObject, metadata: BRCObjectMetadata?, stop) in
+                        if let thumbnailObj = obj as? ThumbnailDataObject,
+                           let objMetadata = thumbnailObj.metadata(with: transaction) as? ColorableMetadata,
+                           objMetadata.thumbnailImageColors == nil,
+                           thumbnailObj.localThumbnailURL != nil {
+                            allObjects.append((thumbnailObj, objMetadata))
+                        }
+                    }
+                }
+            }
+            
+            NSLog("ColorCache: Processing %d objects missing colors", allObjects.count)
+            
+            // Process all objects uniformly
+            allObjects.forEach({ (obj, metadata) in
+                autoreleasepool {
+                    guard let image = BRCMediaDownloader.imageForObject(obj) else {
+                        return
+                    }
+                    self.getColors(object: obj, metadata: metadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: nil)
+                }
+            })
+        }
+    }
+    
+    /** Generic color computation for any object with thumbnail image colors. If processingQueue is nil, it will execute block on current queue */
+    func getColors<DataObject: DataObjectWithMetadata, Metadata: ColorableMetadata>(
+        object: DataObject,
+        metadata: Metadata,
+        image: UIImage,
+        downscaleSize: CGSize,
+        processingQueue: DispatchQueue?,
+        completion: ((BRCImageColors)->Void)?
+    ) {
         // If image colors theming is disabled, return global theme colors
         if !Appearance.useImageColorsTheming {
             if let completion = completion {
@@ -137,7 +191,7 @@ public class ColorCache: NSObject {
         }
         
         // Found colors in cache
-        if let colors = artMetadata.thumbnailImageColors {
+        if let colors = metadata.thumbnailImageColors {
             if let completion = completion {
                 self.completionQueue.async {
                     completion(colors)
@@ -145,12 +199,15 @@ public class ColorCache: NSObject {
             }
             return
         }
+        
         let processBlock = {
-            // Maybe find colors in database when given stale artMetadata
+            // Maybe find colors in database when given stale metadata
             var existingColors: BRCImageColors? = nil
             self.backgroundReadConnection.read { transaction in
-                let artMetadata = art.artMetadata(with: transaction)
-                existingColors = artMetadata.thumbnailImageColors
+                let freshMetadata = object.metadata(with: transaction)
+                if let colorMetadata = freshMetadata as? BRCThumbnailImageColorsProtocol {
+                    existingColors = colorMetadata.thumbnailImageColors
+                }
             }
             if let colors = existingColors {
                 if let completion = completion {
@@ -162,22 +219,30 @@ public class ColorCache: NSObject {
             }
             
             // Otherwise calculate the colors and save to db
-            let colors = image.getColors(quality: .high)
-            guard let brcColors = colors?.brc_ImageColors else {
+            let brcColors: BRCImageColors? = autoreleasepool {
+                let colors = image.getColors(quality: .high)
+                return colors?.brc_ImageColors
+            }
+            
+            guard let extractedColors = brcColors else {
                 return
             }
+            
             if let completion = completion {
                 self.completionQueue.async {
-                    completion(brcColors)
+                    completion(extractedColors)
                 }
             }
             
             self.writeConnection.asyncReadWrite { transaction in
-                let metadata = art.artMetadata(with: transaction).metadataCopy()
-                metadata.thumbnailImageColors = brcColors
-                art.replace(metadata, transaction: transaction)
+                let metadata = object.metadata(with: transaction).metadataCopy()
+                if let colorMetadata = metadata as? BRCThumbnailImageColorsProtocol {
+                    colorMetadata.thumbnailImageColors = extractedColors
+                    object.replace(metadata, transaction: transaction)
+                }
             }
         }
+        
         if let processingQueue = processingQueue {
             processingQueue.async {
                 processBlock()

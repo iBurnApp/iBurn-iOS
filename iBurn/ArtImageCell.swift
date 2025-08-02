@@ -68,7 +68,7 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
             // Use ColorCache for art objects, fallback to simple extraction for others
             if let art = dataObject as? BRCArtObject,
                let artMetadata = metadata as? BRCArtMetadata {
-                ColorCache.shared.getColors(art: art, artMetadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
+                ColorCache.shared.getColors(object: art, metadata: artMetadata, image: image, downscaleSize: .zero, processingQueue: nil, completion: { colors in
                     guard self.objectUniqueId == dataObject.uniqueID else { return }
                     DispatchQueue.main.async {
                         UIView.animate(withDuration: 0.25, delay: 0.0, options: [], animations: {

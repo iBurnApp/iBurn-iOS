@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly, nullable) NSURL *remoteThumbnailURL;
 @property (nonatomic, strong, readonly, nullable) NSURL *localThumbnailURL;
 
-- (nullable BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
+- (BRCCampMetadata*) campMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
 
 @end
 NS_ASSUME_NONNULL_END

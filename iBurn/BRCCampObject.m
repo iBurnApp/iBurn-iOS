@@ -41,7 +41,7 @@
     if ([metadata isKindOfClass:BRCCampMetadata.class]) {
         return metadata;
     }
-    return [BRCCampMetadata new];
+    return [[BRCCampMetadata alloc] init];
 }
 
 - (NSURL*) remoteThumbnailURL {
