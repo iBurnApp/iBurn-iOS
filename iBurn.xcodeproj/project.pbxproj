@@ -130,6 +130,7 @@
 		D9B55B802E275B2B00C19ACB /* MoreSwitchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B55B7E2E275B2B00C19ACB /* MoreSwitchCell.swift */; };
 		D9B55B812E275B2B00C19ACB /* MoreTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B55B7F2E275B2B00C19ACB /* MoreTableViewCell.swift */; };
 		D9B55B822E275B2B00C19ACB /* MoreSubtitleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B55B7D2E275B2B00C19ACB /* MoreSubtitleCell.swift */; };
+		D9B65A3D2E3DE78D00C620F3 /* iBurn-2025.zip in Resources */ = {isa = PBXBuildFile; fileRef = D9B65A3C2E3DE78D00C620F3 /* iBurn-2025.zip */; };
 		D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */; };
 		D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B73FFD1B78BF34001D04E3 /* NearbyViewController.swift */; };
 		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
@@ -484,6 +485,7 @@
 		D9B55B7D2E275B2B00C19ACB /* MoreSubtitleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreSubtitleCell.swift; sourceTree = "<group>"; };
 		D9B55B7E2E275B2B00C19ACB /* MoreSwitchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreSwitchCell.swift; sourceTree = "<group>"; };
 		D9B55B7F2E275B2B00C19ACB /* MoreTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreTableViewCell.swift; sourceTree = "<group>"; };
+		D9B65A3C2E3DE78D00C620F3 /* iBurn-2025.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = "iBurn-2025.zip"; path = "Submodules/iBurn-Data/data/2025/iBurn-2025.zip"; sourceTree = SOURCE_ROOT; };
 		D9B69D8F1EF8D8B100E2996D /* BRCYapDatabaseObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCYapDatabaseObject.h; sourceTree = "<group>"; };
 		D9B69D901EF8D8B100E2996D /* BRCYapDatabaseObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRCYapDatabaseObject.m; sourceTree = "<group>"; };
 		D9B73FFD1B78BF34001D04E3 /* NearbyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NearbyViewController.swift; sourceTree = "<group>"; };
@@ -758,7 +760,7 @@
 		63D270FA198716C600204954 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				D9CD345D2E10D03F00B49AC7 /* 2025 */,
+				D9B65A3C2E3DE78D00C620F3 /* iBurn-2025.zip */,
 				D9AB87212C461FF0004DEB50 /* 2024 */,
 				D9915F642A76D3110015C87D /* Settings.bundle */,
 				D9BB3BE02A6C3F6700777AEE /* 2023 */,
@@ -1175,13 +1177,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D9CD345D2E10D03F00B49AC7 /* 2025 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = 2025;
-			sourceTree = "<group>";
-		};
 		D9EC0E5A1B7DE02F0042B596 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -1449,6 +1444,7 @@
 				D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */,
 				D92562C319886EBF00ED6B50 /* BRCDataObjectTableViewCell.xib in Resources */,
 				D9895E801B7E7CA800A63F92 /* onboarding_loop_final.mp4 in Resources */,
+				D9B65A3D2E3DE78D00C620F3 /* iBurn-2025.zip in Resources */,
 				D99A61581B2A0AAD009CC09E /* Pods-iBurn-acknowledgements.plist in Resources */,
 				D9E0DA91210F82530056286B /* YearSettings.plist in Resources */,
 				D9915F652A76D3120015C87D /* Settings.bundle in Resources */,
@@ -1937,7 +1933,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 89;
+				CURRENT_PROJECT_VERSION = 91;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1974,7 +1970,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 89;
+				CURRENT_PROJECT_VERSION = 91;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
