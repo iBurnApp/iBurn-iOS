@@ -44,7 +44,7 @@ struct DetailView: View {
     var body: some View {
         ScrollView {
             // Content sections
-            LazyVStack(spacing: 8) {
+            VStack(spacing: 8) {
                 ForEach(viewModel.cells) { cell in
                     DetailCellView(cell: cell, viewModel: viewModel)
                 }
@@ -137,11 +137,20 @@ struct DetailCellView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, shouldAddVerticalPadding ? 16 : 0)
         .padding(.horizontal, shouldAddHorizontalPadding ? 16 : 0)
     }
     
     private var shouldAddHorizontalPadding: Bool {
+        switch cell.type {
+        case .image, .mapView:
+            return false // Images and maps should extend to edges
+        default:
+            return true // All other cells get horizontal padding
+        }
+    }
+    
+    private var shouldAddVerticalPadding: Bool {
         switch cell.type {
         case .image, .mapView:
             return false // Images and maps should extend to edges
