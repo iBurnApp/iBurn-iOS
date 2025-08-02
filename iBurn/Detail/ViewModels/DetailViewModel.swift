@@ -240,6 +240,7 @@ class DetailViewModel: ObservableObject {
     
     private func generateCellTypes() -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
+        var hasImage = false
         
         // Add image header first if available (for all object types)
         if let artObject = dataObject as? BRCArtObject,
@@ -247,6 +248,7 @@ class DetailViewModel: ObservableObject {
            let image = loadImage(from: imageURL) {
             let aspectRatio = image.size.width / image.size.height
             cellTypes.append(.image(image, aspectRatio: aspectRatio))
+            hasImage = true
         }
         // Add camp image for camp objects
         else if let campObject = dataObject as? BRCCampObject,
@@ -254,20 +256,24 @@ class DetailViewModel: ObservableObject {
            let image = loadImage(from: imageURL) {
             let aspectRatio = image.size.width / image.size.height
             cellTypes.append(.image(image, aspectRatio: aspectRatio))
+            hasImage = true
         }
         // Add host image for event objects (camp or art)
         else if let eventObject = dataObject as? BRCEventObject {
             if let campImage = loadHostCampImage(for: eventObject) {
                 let aspectRatio = campImage.size.width / campImage.size.height
                 cellTypes.append(.image(campImage, aspectRatio: aspectRatio))
+                hasImage = true
             } else if let artImage = loadHostArtImage(for: eventObject) {
                 let aspectRatio = artImage.size.width / artImage.size.height
                 cellTypes.append(.image(artImage, aspectRatio: aspectRatio))
+                hasImage = true
             }
         }
         
         // Add map view if object has location and is not embargoed
-        if shouldShowMap() {
+        // Only add here if no image exists, otherwise add it later before GPS coordinates
+        if shouldShowMap() && !hasImage {
             cellTypes.append(.mapView(dataObject, metadata: metadata))
         }
         
@@ -292,7 +298,7 @@ class DetailViewModel: ObservableObject {
         }
         
         // Add common cells
-        cellTypes.append(contentsOf: generateCommonCells())
+        cellTypes.append(contentsOf: generateCommonCells(hasImage: hasImage))
         
         // Add host images for camps and events (after user notes, before metadata)
         cellTypes.append(contentsOf: generateHostImageCells())
@@ -503,7 +509,7 @@ class DetailViewModel: ObservableObject {
         return cells
     }
     
-    private func generateCommonCells() -> [DetailCellType] {
+    private func generateCommonCells(hasImage: Bool) -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
         // Email
@@ -514,6 +520,11 @@ class DetailViewModel: ObservableObject {
         // URL
         if let url = dataObject.url {
             cells.append(.url(url, title: "Website"))
+        }
+        
+        // Add map view here if image exists (so it appears above GPS coordinates)
+        if shouldShowMap() && hasImage {
+            cells.append(.mapView(dataObject, metadata: metadata))
         }
         
         // GPS coordinates - only show if embargo allows
