@@ -16,14 +16,12 @@ class DetailViewControllerFactory {
     ///   - dataObject: The data object to display
     /// - Returns: Either the new SwiftUI or legacy UIKit implementation based on preference
     static func createDetailViewController(for dataObject: BRCDataObject) -> UIViewController {
-        #if DEBUG
-        // Check feature flag preference
+        // Check user interface preference
         let service = PreferenceServiceFactory.shared
-        if service.getValue(Preferences.FeatureFlags.useSwiftUIDetailView) {
+        if service.getValue(Preferences.UserInterface.useSwiftUIDetailView) {
             // Use new SwiftUI implementation
             return create(with: dataObject)
         }
-        #endif
         
         // Use legacy UIKit implementation
         return BRCDetailViewController(dataObject: dataObject)

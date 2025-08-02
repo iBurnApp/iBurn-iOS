@@ -11,16 +11,19 @@ import Foundation
 /// Centralized preference definitions for the app
 enum Preferences {
     
+    // MARK: - User Interface
+    enum UserInterface {
+        static let useSwiftUIDetailView = Preference<Bool>(
+            key: "userInterface.detailView.useSwiftUI",
+            defaultValue: false,
+            description: "Use new detail screen instead of legacy implementation"
+        )
+    }
+    
     // MARK: - Feature Flags (DEBUG only)
     #if DEBUG
     enum FeatureFlags {
-        static let useSwiftUIDetailView = Preference<Bool>(
-            key: "featureFlag.detailView.useSwiftUI",
-            defaultValue: false,
-            description: "Use new SwiftUI detail view instead of legacy UIKit implementation"
-        )
-        
-        // Add more feature flags here as needed
+        // Add debug-only feature flags here as needed
     }
     #endif
     
