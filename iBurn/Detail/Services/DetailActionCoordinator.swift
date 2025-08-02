@@ -211,7 +211,7 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
         case .showNextEvent(let nextEvent):
             print("⏭️ Attempting to show next event: \(nextEvent.title)")
             
-            guard let navigator = dependencies.navigator else {
+            guard let _ = dependencies.navigator else {
                 print("❌ Navigation FAILED: Navigator is nil")
                 return
             }

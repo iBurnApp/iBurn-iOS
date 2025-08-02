@@ -135,7 +135,7 @@ class DetailViewModel: ObservableObject {
         case .nextHostEvent(let nextEvent, _):
             coordinator.handle(.showNextEvent(nextEvent))
             
-        case .allHostEvents(let count, let hostName):
+        case .allHostEvents(_, let hostName):
             // Get all events for this host and show them
             if let eventObject = dataObject as? BRCEventObject {
                 let hostId = eventObject.hostedByCampUniqueID ?? eventObject.hostedByArtUniqueID
@@ -582,12 +582,12 @@ class DetailViewModel: ObservableObject {
     /// Following the same logic as BRCDetailViewController.setupMapViewWithObject:
     private func shouldShowMap() -> Bool {
         // Check if object has location data and embargo allows showing it
-        if let location = dataObject.location, BRCEmbargo.canShowLocation(for: dataObject) {
+        if let _ = dataObject.location, BRCEmbargo.canShowLocation(for: dataObject) {
             return true
         }
         
         // Also check for burner map location (user-set location)
-        if let burnerLocation = dataObject.burnerMapLocation {
+        if let _ = dataObject.burnerMapLocation {
             return true
         }
         

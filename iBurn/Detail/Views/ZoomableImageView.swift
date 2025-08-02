@@ -151,8 +151,8 @@ public struct ZoomableImageView: View {
     
     private func validatePanOffset() {
         // Calculate the scaled image size
-        let scaledImageWidth = uiImage.size.width * steadyStateZoomScale
-        let scaledImageHeight = uiImage.size.height * steadyStateZoomScale
+        let _ = uiImage.size.width * steadyStateZoomScale
+        let _ = uiImage.size.height * steadyStateZoomScale
         
         // Calculate the aspect ratios to determine actual displayed size
         let imageAspectRatio = uiImage.size.width / uiImage.size.height
