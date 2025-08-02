@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -55,6 +55,7 @@
 		D93176772E222D2E003636CB /* DetailServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93176752E222D2E003636CB /* DetailServicesTests.swift */; };
 		D93176782E222D2E003636CB /* DetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93176762E222D2E003636CB /* DetailViewModelTests.swift */; };
 		D93402352250811300318A7E /* PlayaKitYapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D960F2551F74E65A00144290 /* PlayaKitYapTests.swift */; };
+		D93440332E3E756F00199902 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D93440322E3E756F00199902 /* FirebaseCore */; };
 		D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94670D51F38347F00289CB8 /* IndexPath+iBurn.swift */; };
 		D94699501F3913A000DE8DA6 /* BRCObjectMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = D946994F1F3913A000DE8DA6 /* BRCObjectMetadata.m */; };
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
@@ -64,7 +65,6 @@
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
 		D962BFFC22D294A300637D8F /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = D962BFFB22D294A300637D8F /* bundle.js */; };
-		D966561428A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D966561528A9970B002FA471 /* FirebaseCrashlytics */; };
 		D966562928A9B86F002FA471 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = D966562828A9B86E002FA471 /* Zip */; };
 		D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D969E5AC211001ED00FF6700 /* AppearanceViewController.swift */; };
@@ -554,8 +554,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D93176642E2228AF003636CB /* Detail */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Detail; sourceTree = "<group>"; };
-		D93176872E232594003636CB /* Preferences */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Preferences; sourceTree = "<group>"; };
+		D93176642E2228AF003636CB /* Detail */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Detail;
+			sourceTree = "<group>";
+		};
+		D93176872E232594003636CB /* Preferences */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Preferences;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -567,6 +575,7 @@
 				D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */,
 				D9D12F621B5AF5070048229A /* Social.framework in Frameworks */,
 				D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */,
+				D93440332E3E756F00199902 /* FirebaseCore in Frameworks */,
 				D90256412E1F3FE00058AEF8 /* PlayaDB in Frameworks */,
 				D9915F592A76C35E0015C87D /* Siren in Frameworks */,
 				D99D57F12E1CE93B00D5A3DE /* PlayaAPI in Frameworks */,
@@ -577,7 +586,6 @@
 				63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */,
 				D902564B2E1F41060058AEF8 /* GRDB in Frameworks */,
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
-				D966561428A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
 				D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */,
 				D99D57EA2E1CE8CF00D5A3DE /* iBurn2025APIData in Frameworks */,
@@ -1259,6 +1267,7 @@
 				D99D57F02E1CE93B00D5A3DE /* PlayaAPI */,
 				D90256402E1F3FE00058AEF8 /* PlayaDB */,
 				D902564A2E1F41060058AEF8 /* GRDB */,
+				D93440322E3E756F00199902 /* FirebaseCore */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -1343,7 +1352,6 @@
 				};
 			};
 			buildConfigurationList = 63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1361,6 +1369,7 @@
 				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */,
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
@@ -2170,8 +2179,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.6.1;
 			};
 		};
 		D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */ = {
@@ -2187,7 +2196,7 @@
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 11.0.0;
+				minimumVersion = 12.0.0;
 			};
 		};
 		D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */ = {
@@ -2222,6 +2231,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D9592D502858560B00C90542 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
 			productName = MapLibre;
+		};
+		D93440322E3E756F00199902 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
 		};
 		D966561328A9970B002FA471 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
 			isa = XCSwiftPackageProductDependency;

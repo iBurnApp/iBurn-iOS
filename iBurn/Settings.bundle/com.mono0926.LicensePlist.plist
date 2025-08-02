@@ -62,7 +62,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/CocoaLumberjack</string>
 			<key>Title</key>
-			<string>CocoaLumberjack (3.8.5)</string>
+			<string>CocoaLumberjack (3.9.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -86,7 +86,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/firebase-ios-sdk</string>
 			<key>Title</key>
-			<string>Firebase (11.15.0)</string>
+			<string>Firebase (12.0.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -110,7 +110,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/GoogleAppMeasurement</string>
 			<key>Title</key>
-			<string>GoogleAppMeasurement (11.15.0)</string>
+			<string>GoogleAppMeasurement (12.0.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -134,7 +134,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/GRDB.swift</string>
 			<key>Title</key>
-			<string>GRDB.swift</string>
+			<string>GRDB.swift (7.6.1)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -150,7 +150,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/gtm-session-fetcher</string>
 			<key>Title</key>
-			<string>gtm-session-fetcher (4.5.0)</string>
+			<string>gtm-session-fetcher (5.0.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -206,7 +206,7 @@
 			<key>File</key>
 			<string>com.mono0926.LicensePlist/maplibre-gl-native-distribution</string>
 			<key>Title</key>
-			<string>MapLibre Native (6.16.0)</string>
+			<string>MapLibre Native (6.18.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>

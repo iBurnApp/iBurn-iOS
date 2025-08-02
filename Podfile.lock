@@ -3,8 +3,8 @@ PODS:
   - Appirater (2.3.1)
   - ASDayPicker (1.0.0)
   - BButton (4.0.2)
-  - CocoaLumberjack/Core (3.8.5)
-  - CocoaLumberjack/Swift (3.8.5):
+  - CocoaLumberjack/Core (3.9.0)
+  - CocoaLumberjack/Swift (3.9.0):
     - CocoaLumberjack/Core
   - CupertinoYankee (1.0.2)
   - DOFavoriteButton (0.0.4)
@@ -193,7 +193,7 @@ SPEC CHECKSUMS:
   Appirater: 44a4651f7912a17dc906b655f0c215d5bb768b84
   ASDayPicker: 62011b8971ef571c1b525c6ffd4a59c367f11da0
   BButton: ab0f2ed3b998ae73c5188b57d270d81e4a1eeb27
-  CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
+  CocoaLumberjack: 5644158777912b7de7469fa881f8a3f259c2512a
   CupertinoYankee: c288994087c791657fce35a43d2a604e64eef23e
   DOFavoriteButton: 866e15af173d2dd5233971a1f657a5f31d2491d5
   FormatterKit: 184db51bf120b633693a73624a4cede89ec51a41

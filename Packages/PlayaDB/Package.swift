@@ -16,7 +16,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/groue/GRDB.swift", from: "6.24.0"),
+        .package(url: "https://github.com/groue/GRDB.swift", .upToNextMajor(from: "7.6.1")),
         .package(path: "../PlayaAPI"),
     ],
     targets: [

@@ -32,15 +32,15 @@ version: 4.0.2
 
 name: CocoaLumberjack, nameSpecified: 
 body: BSD 3-Clause License…
-version: 3.8.5
+version: 3.9.0
 
 name: CocoaLumberjack, nameSpecified: 
 body: BSD 3-Clause License…
-version: 3.8.5
+version: 3.9.0
 
 name: CocoaLumberjack, nameSpecified: 
 body: BSD 3-Clause License…
-version: 3.8.5
+version: 3.9.0
 
 name: CupertinoYankee, nameSpecified: 
 body: Copyright (c) 2012–2…
@@ -174,27 +174,27 @@ name: abseil-cpp-binary, nameSpecified: abseil, owner: google, version: 1.202407
 
 name: app-check, nameSpecified: AppCheck, owner: google, version: 11.2.0, source: https://github.com/google/app-check
 
-name: firebase-ios-sdk, nameSpecified: Firebase, owner: firebase, version: 11.15.0, source: https://github.com/firebase/firebase-ios-sdk
+name: firebase-ios-sdk, nameSpecified: Firebase, owner: firebase, version: 12.0.0, source: https://github.com/firebase/firebase-ios-sdk
 
 name: google-ads-on-device-conversion-ios-sdk, nameSpecified: GoogleAdsOnDeviceConversion, owner: googleads, version: 2.1.0, source: https://github.com/googleads/google-ads-on-device-conversion-ios-sdk
 
-name: GoogleAppMeasurement, nameSpecified: GoogleAppMeasurement, owner: google, version: 11.15.0, source: https://github.com/google/GoogleAppMeasurement
+name: GoogleAppMeasurement, nameSpecified: GoogleAppMeasurement, owner: google, version: 12.0.0, source: https://github.com/google/GoogleAppMeasurement
 
 name: GoogleDataTransport, nameSpecified: GoogleDataTransport, owner: google, version: 10.1.0, source: https://github.com/google/GoogleDataTransport
 
 name: GoogleUtilities, nameSpecified: GoogleUtilities, owner: google, version: 8.1.0, source: https://github.com/google/GoogleUtilities
 
-name: GRDB.swift, nameSpecified: GRDB.swift, owner: groue, version: , source: https://github.com/groue/GRDB.swift
+name: GRDB.swift, nameSpecified: GRDB.swift, owner: groue, version: 7.6.1, source: https://github.com/groue/GRDB.swift
 
 name: grpc-binary, nameSpecified: gRPC, owner: google, version: 1.69.0, source: https://github.com/google/grpc-binary
 
-name: gtm-session-fetcher, nameSpecified: gtm-session-fetcher, owner: google, version: 4.5.0, source: https://github.com/google/gtm-session-fetcher
+name: gtm-session-fetcher, nameSpecified: gtm-session-fetcher, owner: google, version: 5.0.0, source: https://github.com/google/gtm-session-fetcher
 
 name: interop-ios-for-google-sdks, nameSpecified: InteropForGoogle, owner: google, version: 101.0.0, source: https://github.com/google/interop-ios-for-google-sdks
 
 name: leveldb, nameSpecified: leveldb, owner: firebase, version: 1.22.5, source: https://github.com/firebase/leveldb
 
-name: maplibre-gl-native-distribution, nameSpecified: MapLibre Native, owner: maplibre, version: 6.16.0, source: https://github.com/maplibre/maplibre-gl-native-distribution
+name: maplibre-gl-native-distribution, nameSpecified: MapLibre Native, owner: maplibre, version: 6.18.0, source: https://github.com/maplibre/maplibre-gl-native-distribution
 
 name: nanopb, nameSpecified: nanopb, owner: firebase, version: 2.30910.0, source: https://github.com/firebase/nanopb
 
