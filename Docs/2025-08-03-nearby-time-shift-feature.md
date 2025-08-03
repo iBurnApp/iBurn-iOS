@@ -330,3 +330,37 @@ Events are now properly filtered when time-shifted:
 - Properly hides expired events and far-future events relative to the shifted time
 
 This fix ensures the time-shift feature works as intended, allowing users to see what events would be available at their chosen warped time.
+
+## UI Refinements (August 3, 2025)
+
+Based on user feedback, implemented several UI improvements to enhance usability:
+
+### Changes Made:
+
+1. **Enhanced Location Display**
+   - NearbyViewController now shows geocoded address of warped location
+   - Displays actual location name instead of generic "Custom Location"
+   - Shows coordinates while geocoding for immediate feedback
+
+2. **Improved Time Presets**
+   - Removed "+1 Day" button
+   - Added "Sunrise" button (6:00 AM)
+   - Added "Noon" button (12:00 PM)
+   - Kept "Now" and "Sunset" buttons
+   - Arranged in logical order: Now, Sunrise, Noon, Sunset
+
+3. **Simplified Location Selection**
+   - Removed "Override Location" toggle
+   - Map is always tappable for location selection
+   - Map always fully visible (no opacity changes)
+   - "Clear Location" button provides needed control
+   - Reduced cognitive load with simpler interaction model
+
+### Benefits:
+- More intuitive location awareness with geocoded addresses
+- Better time preset options aligned with daily rhythms
+- Cleaner interface without unnecessary toggles
+- Consistent map interaction (always ready for tapping)
+- Reduced UI complexity while maintaining full functionality
+
+The Warp Travel feature now provides a streamlined, intuitive interface for exploring different times and locations at Burning Man.

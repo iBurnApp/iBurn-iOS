@@ -10,6 +10,7 @@ import UIKit
 import MapKit
 import PureLayout
 import SwiftUI
+import PlayaGeocoder
 
 public enum NearbyFilter: String {
     case all = "All"
@@ -313,8 +314,29 @@ class NearbyViewController: SortedViewController {
             formatter.timeStyle = .short
             
             var infoText = "⏰ \(formatter.string(from: config.date))"
-            if config.location != nil {
-                infoText += " 📍 Custom Location"
+            
+            // Add location info
+            if let location = config.location {
+                infoText += " 📍 "
+                
+                // Geocode the location asynchronously
+                PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { [weak self] address in
+                    DispatchQueue.main.async {
+                        guard let self = self,
+                              let currentConfig = self.timeShiftConfig,
+                              currentConfig.location?.coordinate.latitude == location.coordinate.latitude,
+                              currentConfig.location?.coordinate.longitude == location.coordinate.longitude else { return }
+                        
+                        // Update with geocoded address
+                        var updatedText = "⏰ \(formatter.string(from: currentConfig.date)) 📍 "
+                        updatedText += address ?? "Unknown Location"
+                        self.timeShiftInfoLabel.text = updatedText
+                        self.adjustTableHeaderHeight()
+                    }
+                }
+                
+                // Show coordinates while geocoding
+                infoText += String(format: "%.4f, %.4f", location.coordinate.latitude, location.coordinate.longitude)
             }
             
             timeShiftInfoLabel.text = infoText
@@ -322,22 +344,31 @@ class NearbyViewController: SortedViewController {
             timeShiftInfoLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
             timeShiftInfoLabel.isHidden = false
             
-            // Force layout and adjust height
-            timeShiftInfoLabel.sizeToFit()
-            let baseHeight: CGFloat = 85
-            let labelHeight = timeShiftInfoLabel.frame.height
-            let newHeight = baseHeight + labelHeight + 16
-            
-            tableHeaderView.frame.size.height = newHeight
-            
-            // Force constraints update
-            tableHeaderView.setNeedsLayout()
-            tableHeaderView.layoutIfNeeded()
+            adjustTableHeaderHeight()
         } else {
             timeShiftInfoLabel.isHidden = true
             timeShiftInfoLabel.text = nil
             tableHeaderView.frame.size.height = 85
+            
+            // Reassign to trigger update 
+            let oldHeaderView = tableView.tableHeaderView
+            tableView.tableHeaderView = nil
+            tableView.tableHeaderView = oldHeaderView
         }
+    }
+    
+    private func adjustTableHeaderHeight() {
+        // Force layout and adjust height
+        timeShiftInfoLabel.sizeToFit()
+        let baseHeight: CGFloat = 85
+        let labelHeight = timeShiftInfoLabel.frame.height
+        let newHeight = baseHeight + labelHeight + 16
+        
+        tableHeaderView.frame.size.height = newHeight
+        
+        // Force constraints update
+        tableHeaderView.setNeedsLayout()
+        tableHeaderView.layoutIfNeeded()
         
         // Reassign to trigger update 
         let oldHeaderView = tableView.tableHeaderView

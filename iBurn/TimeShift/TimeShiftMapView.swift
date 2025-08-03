@@ -11,7 +11,6 @@ import MapLibre
 
 struct TimeShiftMapView: UIViewRepresentable {
     @Binding var selectedLocation: CLLocation?
-    @Binding var isLocationOverrideEnabled: Bool
     let onLocationSelected: (CLLocationCoordinate2D) -> Void
     
     func makeUIView(context: Context) -> MLNMapView {
@@ -37,14 +36,14 @@ struct TimeShiftMapView: UIViewRepresentable {
     
     func updateUIView(_ mapView: MLNMapView, context: Context) {
         // Update annotation whenever location changes
-        context.coordinator.updateAnnotation(for: selectedLocation, on: mapView, isEnabled: isLocationOverrideEnabled)
+        context.coordinator.updateAnnotation(for: selectedLocation, on: mapView)
         
-        // Enable/disable interaction based on override state
-        mapView.isUserInteractionEnabled = true // Always allow interaction
-        mapView.alpha = isLocationOverrideEnabled ? 1.0 : 0.7
+        // Map is always interactive and fully visible
+        mapView.isUserInteractionEnabled = true
+        mapView.alpha = 1.0
         
         // Fit map to show both locations if we have a selected location
-        if let selectedLocation = selectedLocation, isLocationOverrideEnabled {
+        if let selectedLocation = selectedLocation {
             context.coordinator.fitMapToShowBothLocations(mapView: mapView, selectedLocation: selectedLocation)
         }
     }
@@ -62,8 +61,6 @@ struct TimeShiftMapView: UIViewRepresentable {
         }
         
         @objc func handleMapTap(_ gesture: UITapGestureRecognizer) {
-            guard parent.isLocationOverrideEnabled else { return }
-            
             let mapView = gesture.view as! MLNMapView
             let point = gesture.location(in: mapView)
             let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
@@ -71,15 +68,15 @@ struct TimeShiftMapView: UIViewRepresentable {
             parent.onLocationSelected(coordinate)
         }
         
-        func updateAnnotation(for location: CLLocation?, on mapView: MLNMapView, isEnabled: Bool) {
+        func updateAnnotation(for location: CLLocation?, on mapView: MLNMapView) {
             // Remove existing annotation
             if let existing = currentAnnotation {
                 mapView.removeAnnotation(existing)
                 currentAnnotation = nil
             }
             
-            // Add new annotation if we have a location and override is enabled
-            if isEnabled, let location = location {
+            // Add new annotation if we have a location
+            if let location = location {
                 let annotation = MLNPointAnnotation()
                 annotation.coordinate = location.coordinate
                 annotation.title = "Warped Location"

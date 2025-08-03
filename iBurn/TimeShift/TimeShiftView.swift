@@ -26,12 +26,11 @@ public struct TimeShiftView: View {
                 // Map Section
                 TimeShiftMapView(
                     selectedLocation: $viewModel.selectedLocation,
-                    isLocationOverrideEnabled: $viewModel.isLocationOverrideEnabled,
                     onLocationSelected: viewModel.updateLocation
                 )
                 .frame(maxHeight: selectedDetent == .large ? .infinity : 200)
                 .overlay(alignment: .topTrailing) {
-                    if viewModel.isLocationOverrideEnabled && viewModel.selectedLocation != nil {
+                    if viewModel.selectedLocation != nil {
                         Button("Clear Location") {
                             withAnimation {
                                 viewModel.selectedLocation = nil
@@ -63,21 +62,17 @@ public struct TimeShiftView: View {
                         // Quick Actions
                         quickActionButtons
                         
-                        // Location Override Toggle
-                        Toggle("Override Location", isOn: $viewModel.isLocationOverrideEnabled)
-                            .padding(.horizontal)
-                        
-                        if viewModel.isLocationOverrideEnabled {
-                            VStack(spacing: 8) {
-                                Text("Tap the map to select a new location")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                LocationComparisonView(
-                                    realLocation: viewModel.currentRealLocation,
-                                    warpedLocation: viewModel.selectedLocation
-                                )
-                            }
+                        // Location Section
+                        VStack(spacing: 8) {
+                            Text("Tap the map to warp to a new location")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 8)
+                            
+                            LocationComparisonView(
+                                realLocation: viewModel.currentRealLocation,
+                                warpedLocation: viewModel.selectedLocation
+                            )
                         }
                     }
                     .padding()
@@ -172,7 +167,7 @@ public struct TimeShiftView: View {
                 .tint(.orange)
             }
             
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Button(action: { 
                     viewModel.resetToNow()
                 }) {
@@ -181,9 +176,16 @@ public struct TimeShiftView: View {
                 .buttonStyle(.bordered)
                 
                 Button(action: { 
-                    viewModel.addOneDay()
+                    viewModel.setToSunrise()
                 }) {
-                    Label("+1 Day", systemImage: "calendar.badge.plus")
+                    Label("Sunrise", systemImage: "sunrise")
+                }
+                .buttonStyle(.bordered)
+                
+                Button(action: {
+                    viewModel.setToNoon()
+                }) {
+                    Label("Noon", systemImage: "sun.max")
                 }
                 .buttonStyle(.bordered)
                 

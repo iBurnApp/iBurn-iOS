@@ -129,7 +129,9 @@ public class TimeShiftViewModel: ObservableObject {
     
     func updateLocation(_ coordinate: CLLocationCoordinate2D) {
         selectedLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-        isLocationOverrideEnabled = true
+        if !isLocationOverrideEnabled {
+            isLocationOverrideEnabled = true
+        }
     }
     
     func resetToNow() {
@@ -142,8 +144,40 @@ public class TimeShiftViewModel: ObservableObject {
         isLocationOverrideEnabled = false
     }
     
-    func addOneDay() {
-        selectedDate = selectedDate.addingTimeInterval(86400) // +1 day
+    func setToSunrise() {
+        // Find next sunrise (approximately 6:00 AM)
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
+        components.hour = 6
+        components.minute = 0
+        
+        if let sunrise = Calendar.current.date(from: components),
+           sunrise > selectedDate {
+            selectedDate = sunrise
+        } else {
+            // Next day's sunrise
+            components.day! += 1
+            if let nextSunrise = Calendar.current.date(from: components) {
+                selectedDate = nextSunrise
+            }
+        }
+    }
+    
+    func setToNoon() {
+        // Find next noon (12:00 PM)
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
+        components.hour = 12
+        components.minute = 0
+        
+        if let noon = Calendar.current.date(from: components),
+           noon > selectedDate {
+            selectedDate = noon
+        } else {
+            // Next day's noon
+            components.day! += 1
+            if let nextNoon = Calendar.current.date(from: components) {
+                selectedDate = nextNoon
+            }
+        }
     }
     
     func setToSunset() {
@@ -151,6 +185,7 @@ public class TimeShiftViewModel: ObservableObject {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
         components.hour = 19
         components.minute = 30
+        
         if let sunset = Calendar.current.date(from: components),
            sunset > selectedDate {
             selectedDate = sunset
