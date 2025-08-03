@@ -270,12 +270,12 @@ class NearbyViewController: SortedViewController {
     
     private var timeShiftButtonTitle: String {
         guard let config = timeShiftConfig, config.isActive else {
-            return "Now"
+            return "Warp"
         }
         
         let interval = config.date.timeIntervalSince(Date.present)
         if abs(interval) < 60 {
-            return "Now"
+            return "Warp"
         }
         
         let formatter = DateComponentsFormatter()
@@ -326,7 +326,7 @@ class NearbyViewController: SortedViewController {
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
             
-            var infoText = "⏰ \(formatter.string(from: config.date))"
+            var infoText = "Warped: ⏰ \(formatter.string(from: config.date))"
             
             // Add location info
             if let location = config.location {
@@ -341,7 +341,7 @@ class NearbyViewController: SortedViewController {
                               currentConfig.location?.coordinate.longitude == location.coordinate.longitude else { return }
                         
                         // Update with geocoded address
-                        var updatedText = "⏰ \(formatter.string(from: currentConfig.date)) 📍 "
+                        var updatedText = "Warped: ⏰ \(formatter.string(from: currentConfig.date)) 📍 "
                         updatedText += address ?? "Unknown Location"
                         self.timeShiftInfoLabel.text = updatedText
                         self.updateTableHeaderViewHeight()

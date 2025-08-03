@@ -364,3 +364,29 @@ Based on user feedback, implemented several UI improvements to enhance usability
 - Reduced UI complexity while maintaining full functionality
 
 The Warp Travel feature now provides a streamlined, intuitive interface for exploring different times and locations at Burning Man.
+
+## Final UI Updates (August 3, 2025)
+
+Based on user feedback, made final refinements to clarify the distinction between real and warped states:
+
+### Changes Made:
+
+1. **Navigation Bar Geocoding**
+   - Reverted to always show the user's real location
+   - Removed orange color and tap gesture from navigation title
+   - Navigation title now consistently represents actual location
+
+2. **Table Header Clarity**
+   - Added "Warped:" prefix to time-shift info label
+   - Format: "Warped: ⏰ [date] 📍 [location]"
+   - Makes it immediately clear this is the warped state, not real
+
+3. **Button Naming**
+   - Changed button title from "Now" to "Warp" when not warped
+   - Maintains time offset display (e.g., "+1d", "-3h") when warped
+   - Aligns with "Warp Travel" feature branding
+
+### Result:
+- Clear distinction between real location (navigation title) and warped location (table header)
+- Consistent "Warp" terminology throughout the feature
+- Reduced confusion about which information represents actual vs. warped state

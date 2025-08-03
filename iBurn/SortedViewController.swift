@@ -41,16 +41,9 @@ extension CLLocation {
 extension UIViewController {
     /** Adds current geocoded playa address to navigation bar title */
     func geocodeNavigationBar() {
-        // Try to get location from SortedViewController's getCurrentLocation if available
-        let location: CLLocation?
-        if let sortedVC = self as? SortedViewController {
-            location = sortedVC.getCurrentLocation()
-        } else {
-            location = CLLocation.currentLocation
-        }
-        
-        guard let validLocation = location else { return }
-        PlayaGeocoder.shared.asyncReverseLookup(validLocation.coordinate) { [weak self] locationString in
+        // Always use the real location for navigation bar
+        guard let location = CLLocation.currentLocation else { return }
+        PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { [weak self] locationString in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 if let locationString = locationString, locationString.count > 0 {
@@ -58,19 +51,6 @@ extension UIViewController {
                     let label = UILabel()
                     label.attributedText = attrString
                     label.sizeToFit()
-                    
-                    // Add orange tint if this is a time-shifted location
-                    if let nearbyVC = self as? NearbyViewController,
-                       nearbyVC.isLocationOverridden() {
-                        label.textColor = .systemOrange
-                    }
-                    
-                    // Add tap gesture for NearbyViewController to reopen time-shift
-                    if let nearbyVC = self as? NearbyViewController {
-                        label.isUserInteractionEnabled = true
-                        let tapGesture = UITapGestureRecognizer(target: nearbyVC, action: #selector(NearbyViewController.timeShiftButtonPressed))
-                        label.addGestureRecognizer(tapGesture)
-                    }
                     
                     self.navigationItem.titleView = label
                 } else {
