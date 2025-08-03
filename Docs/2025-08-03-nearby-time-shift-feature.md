@@ -149,6 +149,7 @@ iBurn/
 - ✅ Map interaction and location selection functional
 - ✅ Persistence through UserSettings working correctly
 - ✅ Visual styling consistent with app theme
+- ✅ Bug fixes implemented and verified (August 3, 2025)
 
 ## Files Modified/Created
 
@@ -198,3 +199,58 @@ The implementation demonstrates effective use of:
 - Proper state management and persistence
 
 The feature is ready for user testing and can be easily extended to other parts of the app as needed.
+
+## Bug Fixes Applied (August 3, 2025)
+
+After initial implementation, several UI/UX issues were identified and resolved:
+
+### Issue 1: Map Location Selection Not Visible
+**Problem**: Selected location pins were not appearing on the TimeShiftMapView  
+**Solution**: 
+- Improved annotation view with larger, more visible orange pin (44x44 instead of 30x30)
+- Added pulsing animation to draw attention
+- Added shadow effects for better visibility
+- Enhanced coordinates display in annotation subtitle
+- Fixed map interaction to always allow tapping
+
+### Issue 2: Navigation Bar Geocoder Not Showing Overridden Location
+**Problem**: Navigation title continued showing real location instead of time-shifted location  
+**Solution**:
+- Modified `geocodeNavigationBar()` extension to use `getCurrentLocation()` from SortedViewController
+- Added orange text color when location is overridden
+- Created `isLocationOverridden()` method for clean status checking
+- Ensured proper main thread dispatch for UI updates
+
+### Issue 3: Table Header Time-Shift Info Not Displaying
+**Problem**: Time-shift information label was not appearing in table header  
+**Solution**:
+- Enhanced `updateTimeShiftInfoLabel()` with better layout handling
+- Added emoji indicators (⏰ for time, 📍 for location)
+- Improved text formatting with orange styling
+- Fixed table header height calculation and view reassignment
+- Added force layout updates to ensure visibility
+
+### Issue 4: No Way to Reopen Time-Shift from Navigation Title
+**Problem**: Users couldn't easily access time-shift interface after closing  
+**Solution**:
+- Added tap gesture recognizer to navigation title label
+- Made `timeShiftButtonPressed()` internal instead of private
+- Enhanced user discoverability of tap functionality
+
+### Issue 5: No Location Address Display in Time-Shift Interface
+**Problem**: Users couldn't see the address of their selected location  
+**Solution**:
+- Created `LocationAddressView` SwiftUI component
+- Integrated PlayaGeocoder for real-time address lookup
+- Added coordinate display in monospaced font
+- Included loading states and error handling
+- Added visual styling consistent with app theme
+
+### Technical Improvements Made:
+- Fixed SwiftUI color references (`.systemOrange` → `.orange`)
+- Corrected font family syntax (`.fontFamily()` → `.font(.system(design:))`)
+- Added proper import statements for PlayaGeocoder
+- Enhanced accessibility and visual feedback throughout
+- Improved error handling and edge cases
+
+All fixes maintain the existing architecture patterns and design consistency while significantly improving the user experience.

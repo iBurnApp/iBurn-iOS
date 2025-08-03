@@ -40,7 +40,7 @@ struct TimeShiftMapView: UIViewRepresentable {
         context.coordinator.updateAnnotation(for: selectedLocation, on: mapView)
         
         // Enable/disable interaction based on override state
-        mapView.isUserInteractionEnabled = isLocationOverrideEnabled
+        mapView.isUserInteractionEnabled = true // Always allow interaction
         mapView.alpha = isLocationOverrideEnabled ? 1.0 : 0.7
     }
     
@@ -78,11 +78,14 @@ struct TimeShiftMapView: UIViewRepresentable {
                 let annotation = MLNPointAnnotation()
                 annotation.coordinate = location.coordinate
                 annotation.title = "Selected Location"
+                annotation.subtitle = String(format: "%.5f, %.5f", location.coordinate.latitude, location.coordinate.longitude)
                 mapView.addAnnotation(annotation)
                 currentAnnotation = annotation
                 
-                // Center on the annotation
-                mapView.setCenter(location.coordinate, zoomLevel: 15, animated: true)
+                // Center on the annotation with slight delay to ensure visibility
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    mapView.setCenter(location.coordinate, zoomLevel: 16, animated: true)
+                }
             }
         }
         
@@ -95,14 +98,28 @@ struct TimeShiftMapView: UIViewRepresentable {
             
             if annotationView == nil {
                 annotationView = MLNAnnotationView(reuseIdentifier: reuseId)
-                annotationView?.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+                annotationView?.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
                 
-                // Custom pin image or system image
-                let config = UIImage.SymbolConfiguration(pointSize: 30)
+                // Create a more visible pin with shadow
+                let config = UIImage.SymbolConfiguration(pointSize: 36, weight: .medium)
                 let image = UIImage(systemName: "mappin.circle.fill", withConfiguration: config)
                 let imageView = UIImageView(image: image?.withTintColor(.systemOrange, renderingMode: .alwaysOriginal))
-                imageView.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+                imageView.frame = CGRect(x: 4, y: 4, width: 36, height: 36)
+                imageView.layer.shadowColor = UIColor.black.cgColor
+                imageView.layer.shadowOffset = CGSize(width: 0, height: 2)
+                imageView.layer.shadowOpacity = 0.3
+                imageView.layer.shadowRadius = 2
                 annotationView?.addSubview(imageView)
+                
+                // Add pulsing animation
+                let pulseAnimation = CABasicAnimation(keyPath: "transform.scale")
+                pulseAnimation.duration = 1.0
+                pulseAnimation.fromValue = 1.0
+                pulseAnimation.toValue = 1.2
+                pulseAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                pulseAnimation.autoreverses = true
+                pulseAnimation.repeatCount = .infinity
+                imageView.layer.add(pulseAnimation, forKey: "pulse")
             }
             
             return annotationView

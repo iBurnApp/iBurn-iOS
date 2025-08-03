@@ -276,7 +276,7 @@ class NearbyViewController: SortedViewController {
         return "Shifted"
     }
     
-    @objc private func timeShiftButtonPressed() {
+    @objc internal func timeShiftButtonPressed() {
         // Create ViewModel with current state
         let viewModel = TimeShiftViewModel(
             currentConfiguration: timeShiftConfig,
@@ -311,20 +311,38 @@ class NearbyViewController: SortedViewController {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
-            timeShiftInfoLabel.text = "Showing results for \(formatter.string(from: config.date))"
+            
+            var infoText = "⏰ \(formatter.string(from: config.date))"
+            if config.location != nil {
+                infoText += " 📍 Custom Location"
+            }
+            
+            timeShiftInfoLabel.text = infoText
+            timeShiftInfoLabel.textColor = .systemOrange
+            timeShiftInfoLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
             timeShiftInfoLabel.isHidden = false
             
-            // Adjust table header height
-            var newHeight: CGFloat = 85
+            // Force layout and adjust height
             timeShiftInfoLabel.sizeToFit()
-            newHeight += timeShiftInfoLabel.frame.height + 16
+            let baseHeight: CGFloat = 85
+            let labelHeight = timeShiftInfoLabel.frame.height
+            let newHeight = baseHeight + labelHeight + 16
+            
             tableHeaderView.frame.size.height = newHeight
+            
+            // Force constraints update
+            tableHeaderView.setNeedsLayout()
+            tableHeaderView.layoutIfNeeded()
         } else {
             timeShiftInfoLabel.isHidden = true
+            timeShiftInfoLabel.text = nil
             tableHeaderView.frame.size.height = 85
         }
         
-        tableView.tableHeaderView = tableHeaderView
+        // Reassign to trigger update 
+        let oldHeaderView = tableView.tableHeaderView
+        tableView.tableHeaderView = nil
+        tableView.tableHeaderView = oldHeaderView
     }
     
     override func getCurrentLocation() -> CLLocation? {
@@ -333,6 +351,11 @@ class NearbyViewController: SortedViewController {
             return location
         }
         return super.getCurrentLocation()
+    }
+    
+    // MARK: - Location Override Status
+    func isLocationOverridden() -> Bool {
+        return timeShiftConfig?.location != nil
     }
 
 }

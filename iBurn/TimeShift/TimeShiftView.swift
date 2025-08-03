@@ -9,6 +9,8 @@
 import SwiftUI
 import MapLibre
 import Foundation
+import CoreLocation
+import PlayaGeocoder
 
 public struct TimeShiftView: View {
     @ObservedObject var viewModel: TimeShiftViewModel
@@ -67,9 +69,15 @@ public struct TimeShiftView: View {
                             .padding(.horizontal)
                         
                         if viewModel.isLocationOverrideEnabled {
-                            Text("Tap the map to select a new location")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            VStack(spacing: 8) {
+                                Text("Tap the map to select a new location")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                if let location = viewModel.selectedLocation {
+                                    LocationAddressView(location: location)
+                                }
+                            }
                         }
                     }
                     .padding()
@@ -136,6 +144,78 @@ public struct TimeShiftView: View {
                 Label("Sunset", systemImage: "sunset")
             }
             .buttonStyle(.bordered)
+        }
+    }
+}
+
+// MARK: - LocationAddressView
+
+struct LocationAddressView: View {
+    let location: CLLocation
+    @State private var address: String = "Loading address..."
+    @State private var isLoading = true
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack {
+                Image(systemName: "mappin.circle.fill")
+                    .foregroundColor(.orange)
+                    .font(.caption)
+                
+                Text(address)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                
+                if isLoading {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                }
+                
+                Spacer()
+            }
+            
+            HStack {
+                Text("Coordinates:")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
+                Text(String(format: "%.5f, %.5f", location.coordinate.latitude, location.coordinate.longitude))
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+        .padding(.horizontal)
+        .onAppear {
+            geocodeLocation()
+        }
+        .onChange(of: location.coordinate.latitude) { _ in
+            geocodeLocation()
+        }
+        .onChange(of: location.coordinate.longitude) { _ in
+            geocodeLocation()
+        }
+    }
+    
+    private func geocodeLocation() {
+        isLoading = true
+        address = "Loading address..."
+        
+        PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { locationString in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                if let locationString = locationString, !locationString.isEmpty {
+                    self.address = locationString
+                } else {
+                    self.address = "Address not found"
+                }
+            }
         }
     }
 }
