@@ -267,8 +267,8 @@ The project uses GitHub Actions for continuous integration and deployment. This 
 
 ### Infrastructure Details
 
-- **Runners:** macOS 14 with Xcode 16.4 (latest stable)
-- **Simulators:** iPhone 15 Pro with latest iOS
+- **Runners:** macOS 15 ARM64 with Xcode 16.4 (latest stable)
+- **Simulators:** iPhone 16 Pro ARM64 with latest iOS
 - **Ruby:** Version 3.1 with bundler caching
 - **Dependencies:** CocoaPods with intelligent caching
 - **Parallel Execution:** Build and test schemes run concurrently
