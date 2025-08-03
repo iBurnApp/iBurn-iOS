@@ -151,11 +151,6 @@ public extension EventObject {
 // MARK: - Computed Properties
 
 public extension EventObject {
-    /// Whether this event has any scheduled occurrences
-    var hasOccurrences: Bool {
-        !occurrences.isEmpty
-    }
-    
     /// Whether this event has contact information
     var hasContact: Bool {
         contact != nil || url != nil
@@ -202,33 +197,17 @@ public extension EventObject {
         }
         return nil
     }
-    
-    /// The next occurrence of this event (if any)
-    func nextOccurrence(_ now: Date = Date()) -> EventOccurrence? {
-        return occurrences
-            .filter { $0.startTime > now }
-            .min { $0.startTime < $1.startTime }
-    }
-    
-    /// The current occurrence of this event (if any)
-    func currentOccurrence(_ now: Date = Date()) -> EventOccurrence? {
-        occurrences.first { $0.isCurrentlyHappening(now) }
-    }
-    
-    /// Whether this event is currently happening
-    func isCurrentlyHappening(_ now: Date = Date()) -> Bool {
-        currentOccurrence(now) != nil
-    }
 }
 
-// MARK: - Relationships
+// MARK: - GRDB Relationships
 
 public extension EventObject {
-    /// Associated occurrences (would be populated via relationship)
-    var occurrences: [EventOccurrence] {
-        // This would be populated by the database layer
-        // For now, return empty array
-        []
+    /// Define relationship to event occurrences
+    static let occurrences = hasMany(EventOccurrence.self, using: ForeignKey(["event_id"]))
+    
+    /// Associated occurrences request
+    var occurrences: QueryInterfaceRequest<EventOccurrence> {
+        request(for: EventObject.occurrences)
     }
 }
 
@@ -323,5 +302,17 @@ public extension EventOccurrence {
     /// Whether this is a long event (more than 4 hours)
     var isLongEvent: Bool {
         duration > 14400
+    }
+}
+
+// MARK: - GRDB Relationships for EventOccurrence
+
+public extension EventOccurrence {
+    /// Define relationship to parent event
+    static let event = belongsTo(EventObject.self, using: ForeignKey(["event_id"]))
+    
+    /// Associated event request
+    var event: QueryInterfaceRequest<EventObject> {
+        request(for: EventOccurrence.event)
     }
 }
