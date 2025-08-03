@@ -269,25 +269,7 @@ class NearbyViewController: SortedViewController {
     }
     
     private var timeShiftButtonTitle: String {
-        guard let config = timeShiftConfig, config.isActive else {
-            return "Warp"
-        }
-        
-        let interval = config.date.timeIntervalSince(Date.present)
-        if abs(interval) < 60 {
-            return "Warp"
-        }
-        
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.day, .hour]
-        formatter.unitsStyle = .abbreviated
-        formatter.maximumUnitCount = 1
-        
-        if let formatted = formatter.string(from: abs(interval)) {
-            return interval >= 0 ? "+\(formatted)" : "-\(formatted)"
-        }
-        
-        return "Shifted"
+        return "Warp"
     }
     
     @objc internal func timeShiftButtonPressed() {
