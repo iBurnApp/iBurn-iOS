@@ -40,6 +40,13 @@ class NearbyViewController: SortedViewController {
     }
     private var timeShiftBarButton: UIBarButtonItem?
     private let timeShiftInfoLabel = UILabel()
+    private lazy var warpButton: UIButton = {
+        var config = UIButton.Configuration.bordered()
+        config.title = "Warp Time and Space"
+        let button = UIButton(configuration: config)
+        button.addTarget(self, action: #selector(timeShiftButtonPressed), for: .touchUpInside)
+        return button
+    }()
     
     private var searchRegion: MKCoordinateRegion? {
         guard let currentLocation = getCurrentLocation() else { return nil }
@@ -169,10 +176,13 @@ class NearbyViewController: SortedViewController {
         tableHeaderLabel.textAlignment = .left
         
         timeShiftInfoLabel.font = .preferredFont(forTextStyle: .caption1)
-        timeShiftInfoLabel.textColor = .systemOrange
+        timeShiftInfoLabel.textColor = Appearance.currentColors.primaryColor
         timeShiftInfoLabel.textAlignment = .center
         timeShiftInfoLabel.numberOfLines = 0
         timeShiftInfoLabel.isHidden = true
+        
+        warpButton.tintColor = Appearance.currentColors.primaryColor
+        warpButton.isHidden = false
         
         setupDistanceStepper()
         
@@ -183,7 +193,7 @@ class NearbyViewController: SortedViewController {
         distanceStackView.spacing = 8
         
         // Create main vertical stack view
-        let mainStackView = UIStackView(arrangedSubviews: [distanceStackView, filterControl, timeShiftInfoLabel])
+        let mainStackView = UIStackView(arrangedSubviews: [distanceStackView, filterControl, warpButton, timeShiftInfoLabel])
         mainStackView.axis = .vertical
         mainStackView.alignment = .fill
         mainStackView.spacing = 12
@@ -256,9 +266,9 @@ class NearbyViewController: SortedViewController {
         button.title = timeShiftButtonTitle
         
         if timeShiftConfig?.isActive == true {
-            button.tintColor = .systemOrange
+            button.tintColor = Appearance.currentColors.primaryColor
             let attributes: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.systemOrange,
+                .foregroundColor: Appearance.currentColors.primaryColor,
                 .font: UIFont.systemFont(ofSize: 17, weight: .medium)
             ]
             button.setTitleTextAttributes(attributes, for: .normal)
@@ -337,11 +347,13 @@ class NearbyViewController: SortedViewController {
             
             timeShiftInfoLabel.text = infoText
             timeShiftInfoLabel.isHidden = false
+            warpButton.isHidden = true
             
             updateTableHeaderViewHeight()
         } else {
             timeShiftInfoLabel.isHidden = true
             timeShiftInfoLabel.text = nil
+            warpButton.isHidden = false
             updateTableHeaderViewHeight()
         }
     }

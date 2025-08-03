@@ -390,3 +390,34 @@ Based on user feedback, made final refinements to clarify the distinction betwee
 - Clear distinction between real location (navigation title) and warped location (table header)
 - Consistent "Warp" terminology throughout the feature
 - Reduced confusion about which information represents actual vs. warped state
+
+## Enhanced UI and Theme Support (August 3, 2025)
+
+Based on user feedback, implemented additional UI improvements for better usability and theme consistency:
+
+### Changes Made:
+
+1. **"Warp Time and Space" Button**
+   - Added prominent button in table header when not warped
+   - Uses `UIButton.Configuration.bordered()` for modern iOS styling
+   - Button replaces info label when in normal (non-warped) state
+   - Provides clear call-to-action for users
+
+2. **Theme Color Consistency**
+   - Replaced all `.systemOrange` colors with `Appearance.currentColors.primaryColor`
+   - Navigation bar "Warp" button now uses theme colors
+   - Time shift info label uses theme colors
+   - Ensures proper appearance in both light and dark modes
+
+3. **Improved Visual Hierarchy**
+   - Button shown when not warped (call-to-action)
+   - Info label shown when warped (status display)
+   - Clear visual distinction between states
+
+### Technical Implementation:
+- Used lazy property for button initialization
+- Integrated with existing stack view layout
+- Maintained backward compatibility with iOS deployment target
+- All colors now respect app theme settings
+
+The warp feature now has consistent theming and clearer user interaction patterns.
