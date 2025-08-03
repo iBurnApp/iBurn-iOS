@@ -11,78 +11,43 @@ import XCTest
 import YapDatabase
 
 @MainActor
-class BRCDataImportTestsSwift: XCTestCase {
+class BRCDataImportTests: XCTestCase {
     
     // MARK: - Properties
-    private var database: YapDatabase!
-    private var connection: YapDatabaseConnection!
-    private var importer: BRCDataImporter!
-    private let relationshipsName = "relationships"
+    private var databaseHelper: BRCTestDatabaseHelper!
+    
+    var database: YapDatabase! { databaseHelper.database }
+    var connection: YapDatabaseConnection! { databaseHelper.connection }
+    var importer: BRCDataImporter! { databaseHelper.importer }
     
     // MARK: - Setup & Teardown
     
     override func setUp() {
         super.setUp()
-        setupDatabase()
-        setupDataImporter()
+        databaseHelper = BRCTestDatabaseHelper()
+        databaseHelper.setUp()
     }
     
     override func tearDown() {
-        cleanupDatabase()
+        databaseHelper.tearDown()
+        databaseHelper = nil
         super.tearDown()
     }
     
-    private func setupDatabase() {
-        // Create unique database name
-        let dbName = UUID().uuidString + ".sqlite"
-        let tmpDbPath = NSTemporaryDirectory().appending(dbName)
-        
-        // Remove existing file if present
-        if FileManager.default.fileExists(atPath: tmpDbPath) {
-            try? FileManager.default.removeItem(atPath: tmpDbPath)
-        }
-        
-        // Create database
-        let options = YapDatabaseOptions()
-        options.corruptAction = .fail
-        let dbURL = URL(fileURLWithPath: tmpDbPath)
-        
-        database = YapDatabase(url: dbURL, options: options)
-        XCTAssertNotNil(database, "Failed to create YapDatabase")
-        
-        connection = database.newConnection()
-        XCTAssertNotNil(connection, "Failed to create YapDatabaseConnection")
-        
-        // Register relationships extension
-        let success = database.register(YapDatabaseRelationship(), withName: relationshipsName)
-        XCTAssertTrue(success, "Failed to register relationships extension")
-        print("Registered \(relationshipsName): \(success)")
-    }
-    
-    private func setupDataImporter() {
-        let sessionConfig = URLSessionConfiguration.ephemeral
-        importer = BRCDataImporter(readWrite: connection, sessionConfiguration: sessionConfig)
-        XCTAssertNotNil(importer, "Failed to create BRCDataImporter")
-        
-        importer.callbackQueue = DispatchQueue(label: "data.import.test.queue")
-    }
-    
-    private func cleanupDatabase() {
-        let dbURL = database?.databaseURL
-        connection = nil
-        importer = nil
-        database = nil
-        
-        if let url = dbURL {
-            try? FileManager.default.removeItem(at: url)
-        }
-    }
     
     // MARK: - Utility Methods
     
-    private func testDataURL(forDirectory directory: String) -> URL? {
-        let bundle = TestBundleHelper.dataBundle()
-        return bundle.url(forResource: "update", withExtension: "json", subdirectory: directory)
+    func testDataURL(forDirectory directory: String) -> URL? {
+        return databaseHelper.testDataURL(forDirectory: directory)
+    }
+    
+    private func collectionName(for dataClass: AnyClass) -> String? {
+        // Handle special case where BRCRecurringEventObject data is stored in BRCEventObject collection
+        if dataClass == BRCRecurringEventObject.self {
+            return BRCEventObject.yapCollection
+        }
+        // Safely cast to BRCYapDatabaseObject.Type to access yapCollection
+        return (dataClass as? BRCYapDatabaseObject.Type)?.yapCollection
     }
     
     private func loadDataFromFile(_ fileName: String, dataClass: AnyClass) throws {
@@ -126,13 +91,15 @@ class BRCDataImportTestsSwift: XCTestCase {
         importer.waitForDataUpdatesToFinish()
         
         // Verify data was loaded
-        let collectionClass = (dataClass == BRCRecurringEventObject.self) ? BRCEventObject.self : dataClass
+        guard let collection = collectionName(for: dataClass) else {
+            XCTFail("Unable to determine collection name for \(NSStringFromClass(dataClass))")
+            return
+        }
         
         connection.read { transaction in
-            let collection = (collectionClass as! BRCYapDatabaseObject.Type).yapCollection
             let count = transaction.numberOfKeys(inCollection: collection)
             XCTAssertGreaterThan(count, 0, "No objects loaded for \(NSStringFromClass(dataClass))")
-            print("Loaded \(count) \(NSStringFromClass(collectionClass)) objects")
+            print("Loaded \(count) \(NSStringFromClass(dataClass)) objects")
         }
     }
     
@@ -226,7 +193,7 @@ class BRCDataImportTestsSwift: XCTestCase {
         var camp1: BRCCampObject?
         var events1: [BRCEventObject] = []
         
-        connection.readWrite { transaction in
+        await connection.asyncReadWrite { transaction in
             // Find specific test objects
             art1 = transaction.object(forKey: "a2IVI000000yWeZ2AU", inCollection: BRCArtObject.yapCollection) as? BRCArtObject
             camp1 = transaction.object(forKey: "a1XVI000008yf262AA", inCollection: BRCCampObject.yapCollection) as? BRCCampObject
@@ -240,10 +207,9 @@ class BRCDataImportTestsSwift: XCTestCase {
             
             // Mark camp as favorite
             if let camp = camp1 {
-                if let campMetadata = camp.campMetadata(with: transaction) {
-                    campMetadata.isFavorite = true
-                    camp.save(with: transaction, metadata: campMetadata)
-                }
+                let campMetadata = camp.campMetadata(with: transaction)
+                campMetadata.isFavorite = true
+                camp.save(with: transaction, metadata: campMetadata)
                 
                 // Get camp events and mark them as favorites
                 events1 = camp.events(with: transaction)
@@ -281,7 +247,7 @@ class BRCDataImportTestsSwift: XCTestCase {
         var camp2: BRCCampObject?
         var events2: [BRCEventObject] = []
         
-        connection.read { transaction in
+        await connection.asyncRead { transaction in
             art2 = transaction.object(forKey: "a2IVI000000yWeZ2AU", inCollection: BRCArtObject.yapCollection) as? BRCArtObject
             camp2 = transaction.object(forKey: "a1XVI000008yf262AA", inCollection: BRCCampObject.yapCollection) as? BRCCampObject
             
@@ -309,13 +275,14 @@ class BRCDataImportTestsSwift: XCTestCase {
         }
         
         // Verify favorite status is preserved
-        connection.read { transaction in
+        await connection.asyncRead { transaction in
             if let art = art2 {
                 let artMetadata = art.artMetadata(with: transaction)
                 XCTAssertTrue(artMetadata.isFavorite, "Art favorite status should be preserved")
             }
             
-            if let camp = camp2, let campMetadata = camp.campMetadata(with: transaction) {
+            if let camp = camp2 {
+                let campMetadata = camp.campMetadata(with: transaction)
                 XCTAssertTrue(campMetadata.isFavorite, "Camp favorite status should be preserved")
             }
         }
@@ -326,7 +293,7 @@ class BRCDataImportTestsSwift: XCTestCase {
             print("Camp has \(events2.count) associated events")
             // Only check event locations if events exist
             for event in events2 {
-                print("Event: \(event.title ?? "unknown") has location: \(event.location != nil)")
+                print("Event: \(event.title) has location: \(event.location != nil)")
             }
         } else {
             print("No events found for camp - this may be normal depending on test data")

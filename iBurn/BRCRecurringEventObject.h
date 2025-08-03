@@ -7,7 +7,9 @@
 //
 
 #import "BRCEventObject.h"
+#import "BRCEventTime.h"
 
+NS_ASSUME_NONNULL_BEGIN
 /**
  *  The reason this exists is because PlayaEvents API gives us an 'occurence_set' for each event.
  *  However it is much easier for us to split these reoccurring events into separate objects.
@@ -17,7 +19,7 @@
 /**
  *  NSArray of BRCEventTime objects
  */
-@property (nonatomic, strong, readonly) NSArray *eventTimes;
+@property (nonatomic, strong, readonly) NSArray<BRCEventTime*> *eventTimes;
 
 /**
  *  Regular BRCEventObjects duplicated based on the eventTimes.  
@@ -25,6 +27,8 @@
  *
  *  @return duplicated BRCEventObject
  */
-- (NSArray*) eventObjects;
+- (NSArray<BRCEventObject*>*) eventObjects;
 
 @end
+
+NS_ASSUME_NONNULL_END

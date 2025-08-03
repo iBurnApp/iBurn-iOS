@@ -195,8 +195,8 @@ class DetailViewModelTests: XCTestCase {
         XCTAssertTrue(cells.contains { if case .text = $0.type { return true }; return false })
         // Events should have schedule information
         let hasScheduleInfo = cells.contains { cell in
-            if case .text(let text, _) = cell.type {
-                return text.contains("Starts:")
+            if case .schedule = cell.type {
+                return true
             }
             return false
         }

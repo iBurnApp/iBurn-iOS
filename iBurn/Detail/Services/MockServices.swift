@@ -233,7 +233,7 @@ enum MockDataObjects {
         
         // Create a recurring event first, then extract the first event object
         if let recurringEvent = try? MTLJSONAdapter.model(of: BRCRecurringEventObject.self, fromJSONDictionary: json) as? BRCRecurringEventObject {
-            let events = recurringEvent.eventObjects() as? [BRCEventObject] ?? []
+            let events = recurringEvent.eventObjects()
             if let firstEvent = events.first {
                 return firstEvent
             }

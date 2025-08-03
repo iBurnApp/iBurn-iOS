@@ -65,7 +65,7 @@ public final class BRCDataSorter: NSObject {
                     events = events.filter { !$0.hasEnded(opt.now) }
                 }
                 if !opt.showFutureEvents {
-                    events = events.filter { $0.isStartingSoon(opt.now) }
+                    events = events.filter { $0.isStartingSoon(opt.now) || $0.isHappeningRightNow(opt.now) }
                 }
                 if opt.sortEventsWithExpiration {
                     var expiredEvents = events.filter { $0.hasEnded(opt.now) }
