@@ -9,6 +9,7 @@
 import UIKit
 import MapKit
 import PureLayout
+import SwiftUI
 
 public enum NearbyFilter: String {
     case all = "All"
@@ -27,6 +28,18 @@ class NearbyViewController: SortedViewController {
     let distanceStepper: UIStepper = UIStepper()
     let tableHeaderView: UIView = UIView()
     private let filterControl = UISegmentedControl(items: NearbyFilter.allValues.map { $0.rawValue })
+    
+    // MARK: - Time Shift Properties
+    private var timeShiftConfig: TimeShiftConfiguration? {
+        didSet {
+            updateTimeShiftButton()
+            updateTimeShiftInfoLabel()
+            UserSettings.nearbyTimeShiftConfig = timeShiftConfig
+        }
+    }
+    private var timeShiftBarButton: UIBarButtonItem?
+    private let timeShiftInfoLabel = UILabel()
+    
     private var searchRegion: MKCoordinateRegion? {
         guard let currentLocation = getCurrentLocation() else { return nil }
         return MKCoordinateRegion.init(center: currentLocation.coordinate, latitudinalMeters: searchDistance, longitudinalMeters: searchDistance)
@@ -46,8 +59,13 @@ class NearbyViewController: SortedViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Restore saved time shift config
+        timeShiftConfig = UserSettings.nearbyTimeShiftConfig
+        
         setupMapButton()
         setupFilter()
+        setupTimeShiftButton()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -75,6 +93,18 @@ class NearbyViewController: SortedViewController {
             let nearbyObjects = results
             let options = BRCDataSorterOptions()
             options.sortOrder = .distance(currentLocation)
+            
+            // Use time-shifted date for filtering
+            if let config = self.timeShiftConfig {
+                options.now = config.date
+                options.showExpiredEvents = true // Show all when time shifting
+                options.showFutureEvents = true
+            } else {
+                options.now = Date.present
+                options.showExpiredEvents = false
+                options.showFutureEvents = false
+            }
+            
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (_events, _art, _camps) -> (Void) in
                 var events = _events
                 var art = _art
@@ -123,10 +153,21 @@ class NearbyViewController: SortedViewController {
         tableHeaderLabel.translatesAutoresizingMaskIntoConstraints = false
         distanceStepper.translatesAutoresizingMaskIntoConstraints = false
         filterControl.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Setup time shift info label
+        timeShiftInfoLabel.font = .preferredFont(forTextStyle: .caption1)
+        timeShiftInfoLabel.textColor = .systemOrange
+        timeShiftInfoLabel.textAlignment = .center
+        timeShiftInfoLabel.numberOfLines = 0
+        timeShiftInfoLabel.isHidden = true
+        timeShiftInfoLabel.translatesAutoresizingMaskIntoConstraints = false
+        
         setupDistanceStepper()
         tableHeaderView.addSubview(tableHeaderLabel)
         tableHeaderView.addSubview(distanceStepper)
         tableHeaderView.addSubview(filterControl)
+        tableHeaderView.addSubview(timeShiftInfoLabel)
+        
         distanceStepper.autoPinEdge(toSuperviewEdge: .top, withInset: 8)
         tableHeaderLabel.autoAlignAxis(ALAxis.horizontal, toSameAxisOf: distanceStepper)
         tableHeaderLabel.autoPinEdge(ALEdge.right, to: ALEdge.left, of: distanceStepper)
@@ -134,6 +175,13 @@ class NearbyViewController: SortedViewController {
         distanceStepper.autoPinEdge(toSuperviewMargin: ALEdge.right)
         filterControl.autoPinEdge(.top, to: .bottom, of: distanceStepper, withOffset: 8)
         filterControl.autoPinEdges(toSuperviewMarginsExcludingEdge: .top)
+        
+        // Time shift info label constraints
+        timeShiftInfoLabel.autoPinEdge(.top, to: .bottom, of: filterControl, withOffset: 8)
+        timeShiftInfoLabel.autoPinEdge(toSuperviewMargin: .left)
+        timeShiftInfoLabel.autoPinEdge(toSuperviewMargin: .right)
+        timeShiftInfoLabel.autoPinEdge(toSuperviewEdge: .bottom, withInset: 8, relation: .greaterThanOrEqual)
+        
         tableHeaderView.translatesAutoresizingMaskIntoConstraints = true
         tableHeaderView.autoresizingMask = [ .flexibleHeight, .flexibleWidth ]
         refreshTableHeaderView()
@@ -172,6 +220,119 @@ class NearbyViewController: SortedViewController {
             return 25
         }
         return UITableView.automaticDimension
+    }
+    
+    // MARK: - Time Shift Methods
+    
+    private func setupTimeShiftButton() {
+        timeShiftBarButton = UIBarButtonItem(
+            title: timeShiftButtonTitle,
+            style: .plain,
+            target: self,
+            action: #selector(timeShiftButtonPressed)
+        )
+        
+        updateTimeShiftButton()
+        navigationItem.leftBarButtonItem = timeShiftBarButton
+    }
+    
+    private func updateTimeShiftButton() {
+        guard let button = timeShiftBarButton else { return }
+        
+        button.title = timeShiftButtonTitle
+        
+        if timeShiftConfig?.isActive == true {
+            button.tintColor = .systemOrange
+            let attributes: [NSAttributedString.Key: Any] = [
+                .foregroundColor: UIColor.systemOrange,
+                .font: UIFont.systemFont(ofSize: 17, weight: .medium)
+            ]
+            button.setTitleTextAttributes(attributes, for: .normal)
+        } else {
+            button.tintColor = nil
+            button.setTitleTextAttributes(nil, for: .normal)
+        }
+    }
+    
+    private var timeShiftButtonTitle: String {
+        guard let config = timeShiftConfig, config.isActive else {
+            return "Now"
+        }
+        
+        let interval = config.date.timeIntervalSince(Date.present)
+        if abs(interval) < 60 {
+            return "Now"
+        }
+        
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour]
+        formatter.unitsStyle = .abbreviated
+        formatter.maximumUnitCount = 1
+        
+        if let formatted = formatter.string(from: abs(interval)) {
+            return interval >= 0 ? "+\(formatted)" : "-\(formatted)"
+        }
+        
+        return "Shifted"
+    }
+    
+    @objc private func timeShiftButtonPressed() {
+        // Create ViewModel with current state
+        let viewModel = TimeShiftViewModel(
+            currentConfiguration: timeShiftConfig,
+            currentLocation: getCurrentLocation()
+        )
+        
+        // Set up completion handlers
+        viewModel.onCancel = { [weak self] in
+            self?.dismiss(animated: true)
+        }
+        
+        viewModel.onApply = { [weak self] config in
+            self?.applyTimeShift(config)
+            self?.dismiss(animated: true)
+        }
+        
+        // Create and present the view controller
+        let timeShiftVC = TimeShiftViewController(viewModel: viewModel)
+        present(timeShiftVC, animated: true)
+    }
+    
+    private func applyTimeShift(_ config: TimeShiftConfiguration) {
+        timeShiftConfig = config.isActive ? config : nil
+        
+        refreshTableItems { [weak self] in
+            self?.tableView.reloadData()
+        }
+    }
+    
+    private func updateTimeShiftInfoLabel() {
+        if let config = timeShiftConfig, config.isActive {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            timeShiftInfoLabel.text = "Showing results for \(formatter.string(from: config.date))"
+            timeShiftInfoLabel.isHidden = false
+            
+            // Adjust table header height
+            var newHeight: CGFloat = 85
+            timeShiftInfoLabel.sizeToFit()
+            newHeight += timeShiftInfoLabel.frame.height + 16
+            tableHeaderView.frame.size.height = newHeight
+        } else {
+            timeShiftInfoLabel.isHidden = true
+            tableHeaderView.frame.size.height = 85
+        }
+        
+        tableView.tableHeaderView = tableHeaderView
+    }
+    
+    override func getCurrentLocation() -> CLLocation? {
+        // Use time-shifted location if available
+        if let config = timeShiftConfig, let location = config.location {
+            return location
+        }
+        return super.getCurrentLocation()
     }
 
 }

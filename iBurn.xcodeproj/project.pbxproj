@@ -563,6 +563,11 @@
 			path = Preferences;
 			sourceTree = "<group>";
 		};
+		D9E63FA62E3FDB9D00101257 /* TimeShift */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimeShift;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -706,6 +711,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9E63FA62E3FDB9D00101257 /* TimeShift */,
 				D93176872E232594003636CB /* Preferences */,
 				D93176642E2228AF003636CB /* Detail */,
 				D92AC55E22F00A6E00C9FE32 /* Tracks */,
@@ -1251,6 +1257,7 @@
 			fileSystemSynchronizedGroups = (
 				D93176642E2228AF003636CB /* Detail */,
 				D93176872E232594003636CB /* Preferences */,
+				D9E63FA62E3FDB9D00101257 /* TimeShift */,
 			);
 			name = iBurn;
 			packageProductDependencies = (
