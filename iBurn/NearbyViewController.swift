@@ -97,13 +97,13 @@ class NearbyViewController: SortedViewController {
             // Use time-shifted date for filtering
             if let config = self.timeShiftConfig {
                 options.now = config.date
-                options.showExpiredEvents = true // Show all when time shifting
-                options.showFutureEvents = true
             } else {
                 options.now = Date.present
-                options.showExpiredEvents = false
-                options.showFutureEvents = false
             }
+            
+            // Always use standard filtering - BRCDataSorter will use options.now for comparisons
+            options.showExpiredEvents = false
+            options.showFutureEvents = false
             
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (_events, _art, _camps) -> (Void) in
                 var events = _events

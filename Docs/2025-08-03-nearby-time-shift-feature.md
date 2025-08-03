@@ -311,3 +311,22 @@ After user feedback, implemented major improvements to the time-shift (now "Warp
 - Better separation of concerns
 
 The Warp Travel feature now provides an intuitive, visually clear interface for exploring different times and locations within the Burning Man experience.
+
+## Event Filtering Bug Fix (August 3, 2025)
+
+### Issue
+When time-shifting was active, the Nearby screen was showing ALL events instead of properly filtering them based on the shifted time. This made the feature unusable as it displayed every event regardless of when they occurred.
+
+### Root Cause
+The code was setting both `showExpiredEvents` and `showFutureEvents` to `true` when time-shifting, which completely disabled all time-based filtering in `BRCDataSorter`.
+
+### Solution
+Removed the special handling for time-shifted filtering. Since `BRCDataSorter` already uses `options.now` for all time comparisons, it automatically filters events correctly based on the provided date (whether real or shifted).
+
+### Result
+Events are now properly filtered when time-shifted:
+- Shows only events that are "starting soon" (within 30 minutes) relative to the shifted time
+- Shows events that are "happening right now" relative to the shifted time
+- Properly hides expired events and far-future events relative to the shifted time
+
+This fix ensures the time-shift feature works as intended, allowing users to see what events would be available at their chosen warped time.
