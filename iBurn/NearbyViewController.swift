@@ -140,8 +140,23 @@ class NearbyViewController: SortedViewController {
     
     func refreshTableHeaderView() {
         refreshHeaderLabel()
-        tableHeaderView.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: 85)
-        tableView.tableHeaderView = tableHeaderView
+        updateTableHeaderViewHeight()
+    }
+    
+    func updateTableHeaderViewHeight() {
+        // Let the stack view calculate its required size
+        let targetSize = CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height)
+        let size = tableHeaderView.systemLayoutSizeFitting(targetSize, 
+                                                          withHorizontalFittingPriority: .required, 
+                                                          verticalFittingPriority: .fittingSizeLevel)
+        
+        // Update header view frame if needed
+        if tableHeaderView.frame.size.height != size.height {
+            tableHeaderView.frame.size = CGSize(width: view.bounds.width, height: size.height)
+            
+            // Reassign to trigger table view update
+            tableView.tableHeaderView = tableHeaderView
+        }
     }
     
     override func setupTableView() {
@@ -150,42 +165,40 @@ class NearbyViewController: SortedViewController {
     }
     
     func setupTableHeaderView() {
-        tableHeaderLabel.textAlignment = NSTextAlignment.left
-        tableHeaderLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceStepper.translatesAutoresizingMaskIntoConstraints = false
-        filterControl.translatesAutoresizingMaskIntoConstraints = false
+        // Configure labels and controls
+        tableHeaderLabel.textAlignment = .left
         
-        // Setup time shift info label
         timeShiftInfoLabel.font = .preferredFont(forTextStyle: .caption1)
         timeShiftInfoLabel.textColor = .systemOrange
         timeShiftInfoLabel.textAlignment = .center
         timeShiftInfoLabel.numberOfLines = 0
         timeShiftInfoLabel.isHidden = true
-        timeShiftInfoLabel.translatesAutoresizingMaskIntoConstraints = false
         
         setupDistanceStepper()
-        tableHeaderView.addSubview(tableHeaderLabel)
-        tableHeaderView.addSubview(distanceStepper)
-        tableHeaderView.addSubview(filterControl)
-        tableHeaderView.addSubview(timeShiftInfoLabel)
         
-        distanceStepper.autoPinEdge(toSuperviewEdge: .top, withInset: 8)
-        tableHeaderLabel.autoAlignAxis(ALAxis.horizontal, toSameAxisOf: distanceStepper)
-        tableHeaderLabel.autoPinEdge(ALEdge.right, to: ALEdge.left, of: distanceStepper)
-        tableHeaderLabel.autoPinEdge(toSuperviewMargin: ALEdge.left)
-        distanceStepper.autoPinEdge(toSuperviewMargin: ALEdge.right)
-        filterControl.autoPinEdge(.top, to: .bottom, of: distanceStepper, withOffset: 8)
-        filterControl.autoPinEdges(toSuperviewMarginsExcludingEdge: .top)
+        // Create horizontal stack for distance row
+        let distanceStackView = UIStackView(arrangedSubviews: [tableHeaderLabel, distanceStepper])
+        distanceStackView.axis = .horizontal
+        distanceStackView.alignment = .center
+        distanceStackView.spacing = 8
         
-        // Time shift info label constraints
-        timeShiftInfoLabel.autoPinEdge(.top, to: .bottom, of: filterControl, withOffset: 8)
-        timeShiftInfoLabel.autoPinEdge(toSuperviewMargin: .left)
-        timeShiftInfoLabel.autoPinEdge(toSuperviewMargin: .right)
-        timeShiftInfoLabel.autoPinEdge(toSuperviewEdge: .bottom, withInset: 8, relation: .greaterThanOrEqual)
+        // Create main vertical stack view
+        let mainStackView = UIStackView(arrangedSubviews: [distanceStackView, filterControl, timeShiftInfoLabel])
+        mainStackView.axis = .vertical
+        mainStackView.alignment = .fill
+        mainStackView.spacing = 12
+        mainStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        mainStackView.isLayoutMarginsRelativeArrangement = true
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        tableHeaderView.translatesAutoresizingMaskIntoConstraints = true
-        tableHeaderView.autoresizingMask = [ .flexibleHeight, .flexibleWidth ]
-        refreshTableHeaderView()
+        // Add stack view to header
+        tableHeaderView.addSubview(mainStackView)
+        
+        // Constrain stack view to fill header view
+        mainStackView.autoPinEdgesToSuperviewEdges()
+        
+        // Update header view
+        updateTableHeaderViewHeight()
     }
     
     func setupDistanceStepper() {
@@ -331,7 +344,7 @@ class NearbyViewController: SortedViewController {
                         var updatedText = "⏰ \(formatter.string(from: currentConfig.date)) 📍 "
                         updatedText += address ?? "Unknown Location"
                         self.timeShiftInfoLabel.text = updatedText
-                        self.adjustTableHeaderHeight()
+                        self.updateTableHeaderViewHeight()
                     }
                 }
                 
@@ -340,40 +353,14 @@ class NearbyViewController: SortedViewController {
             }
             
             timeShiftInfoLabel.text = infoText
-            timeShiftInfoLabel.textColor = .systemOrange
-            timeShiftInfoLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
             timeShiftInfoLabel.isHidden = false
             
-            adjustTableHeaderHeight()
+            updateTableHeaderViewHeight()
         } else {
             timeShiftInfoLabel.isHidden = true
             timeShiftInfoLabel.text = nil
-            tableHeaderView.frame.size.height = 85
-            
-            // Reassign to trigger update 
-            let oldHeaderView = tableView.tableHeaderView
-            tableView.tableHeaderView = nil
-            tableView.tableHeaderView = oldHeaderView
+            updateTableHeaderViewHeight()
         }
-    }
-    
-    private func adjustTableHeaderHeight() {
-        // Force layout and adjust height
-        timeShiftInfoLabel.sizeToFit()
-        let baseHeight: CGFloat = 85
-        let labelHeight = timeShiftInfoLabel.frame.height
-        let newHeight = baseHeight + labelHeight + 16
-        
-        tableHeaderView.frame.size.height = newHeight
-        
-        // Force constraints update
-        tableHeaderView.setNeedsLayout()
-        tableHeaderView.layoutIfNeeded()
-        
-        // Reassign to trigger update 
-        let oldHeaderView = tableView.tableHeaderView
-        tableView.tableHeaderView = nil
-        tableView.tableHeaderView = oldHeaderView
     }
     
     override func getCurrentLocation() -> CLLocation? {
