@@ -174,27 +174,34 @@ public struct TimeShiftView: View {
                     Label("Now", systemImage: "clock")
                 }
                 .buttonStyle(.bordered)
+                .accessibilityHint("Reset to current time")
                 
                 Button(action: { 
                     viewModel.setToSunrise()
                 }) {
-                    Label("Sunrise", systemImage: "sunrise")
+                    Image(systemName: "sunrise")
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("Sunrise")
+                .accessibilityHint("Set time to 7:00 AM")
                 
                 Button(action: {
                     viewModel.setToNoon()
                 }) {
-                    Label("Noon", systemImage: "sun.max")
+                    Image(systemName: "sun.max")
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("Noon")
+                .accessibilityHint("Set time to 12:00 PM")
                 
                 Button(action: {
                     viewModel.setToSunset()
                 }) {
-                    Label("Sunset", systemImage: "sunset")
+                    Image(systemName: "sunset")
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("Sunset")
+                .accessibilityHint("Set time to 7:00 PM")
             }
         }
     }

@@ -145,9 +145,9 @@ public class TimeShiftViewModel: ObservableObject {
     }
     
     func setToSunrise() {
-        // Find next sunrise (approximately 6:00 AM)
+        // Find next sunrise (7:00 AM)
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
-        components.hour = 6
+        components.hour = 7
         components.minute = 0
         
         if let sunrise = Calendar.current.date(from: components),
@@ -181,10 +181,10 @@ public class TimeShiftViewModel: ObservableObject {
     }
     
     func setToSunset() {
-        // Find next sunset (approximately 7:30 PM)
+        // Find next sunset (7:00 PM)
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
         components.hour = 19
-        components.minute = 30
+        components.minute = 0
         
         if let sunset = Calendar.current.date(from: components),
            sunset > selectedDate {
