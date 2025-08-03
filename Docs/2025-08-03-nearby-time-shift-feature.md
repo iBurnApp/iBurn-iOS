@@ -254,3 +254,60 @@ After initial implementation, several UI/UX issues were identified and resolved:
 - Improved error handling and edge cases
 
 All fixes maintain the existing architecture patterns and design consistency while significantly improving the user experience.
+
+## Warp Travel UI Enhancements (August 3, 2025)
+
+After user feedback, implemented major improvements to the time-shift (now "Warp Travel") interface:
+
+### Issues Addressed:
+
+1. **Map Pin Persistence**
+   - Fixed: Pin now properly persists when location is selected
+   - Annotation visibility logic updated to always show when location is set
+
+2. **Map Zoom Behavior** 
+   - Implemented bounds fitting to show both user location and warped location
+   - Smart padding and zoom levels for optimal visibility
+   - Handles cases when user location isn't available yet
+
+3. **Reset Logic**
+   - Fixed: Resetting location no longer disables Apply button
+   - Location reset is now treated as a valid change that can be applied
+   - Clearer distinction between clearing location and disabling override
+
+4. **Enhanced UI/UX**
+   - Renamed to "Warp Travel" to emphasize bending time and space
+   - Time display now shows: Real Time → Warped Time with visual arrow
+   - Added comprehensive location comparison showing both locations side-by-side
+   - Added prominent "Reset to Reality" button when warped
+   - Clear visual indicators for all states
+
+### New Components:
+
+#### LocationComparisonView
+- Shows real location vs warped location
+- Live geocoding for both addresses  
+- Distance calculation between locations
+- Visual hierarchy with icons and colors
+- Loading states for address lookup
+
+#### Enhanced Time Display
+- "Time Warp" section with real → warped format
+- Clear visual flow showing the transformation
+- Offset description maintained for context
+- Improved typography and spacing
+
+#### Smart Reset Options
+- "Reset to Reality" - returns both time and location to current
+- "Clear Location" - removes selected location but keeps override enabled
+- "Now" button - resets just time
+- All actions properly update hasUnsavedChanges
+
+### Technical Improvements:
+- Added `isAtCurrentReality` computed property
+- Enhanced `hasUnsavedChanges` logic for all edge cases
+- Fixed deprecation warning for map bounds setting
+- Improved state management throughout
+- Better separation of concerns
+
+The Warp Travel feature now provides an intuitive, visually clear interface for exploring different times and locations within the Burning Man experience.

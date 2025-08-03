@@ -36,12 +36,17 @@ struct TimeShiftMapView: UIViewRepresentable {
     }
     
     func updateUIView(_ mapView: MLNMapView, context: Context) {
-        // Update annotation if location override is enabled
-        context.coordinator.updateAnnotation(for: selectedLocation, on: mapView)
+        // Update annotation whenever location changes
+        context.coordinator.updateAnnotation(for: selectedLocation, on: mapView, isEnabled: isLocationOverrideEnabled)
         
         // Enable/disable interaction based on override state
         mapView.isUserInteractionEnabled = true // Always allow interaction
         mapView.alpha = isLocationOverrideEnabled ? 1.0 : 0.7
+        
+        // Fit map to show both locations if we have a selected location
+        if let selectedLocation = selectedLocation, isLocationOverrideEnabled {
+            context.coordinator.fitMapToShowBothLocations(mapView: mapView, selectedLocation: selectedLocation)
+        }
     }
     
     func makeCoordinator() -> Coordinator {
@@ -66,27 +71,48 @@ struct TimeShiftMapView: UIViewRepresentable {
             parent.onLocationSelected(coordinate)
         }
         
-        func updateAnnotation(for location: CLLocation?, on mapView: MLNMapView) {
+        func updateAnnotation(for location: CLLocation?, on mapView: MLNMapView, isEnabled: Bool) {
             // Remove existing annotation
             if let existing = currentAnnotation {
                 mapView.removeAnnotation(existing)
                 currentAnnotation = nil
             }
             
-            // Add new annotation if location is overridden
-            if parent.isLocationOverrideEnabled, let location = location {
+            // Add new annotation if we have a location and override is enabled
+            if isEnabled, let location = location {
                 let annotation = MLNPointAnnotation()
                 annotation.coordinate = location.coordinate
-                annotation.title = "Selected Location"
+                annotation.title = "Warped Location"
                 annotation.subtitle = String(format: "%.5f, %.5f", location.coordinate.latitude, location.coordinate.longitude)
                 mapView.addAnnotation(annotation)
                 currentAnnotation = annotation
-                
-                // Center on the annotation with slight delay to ensure visibility
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    mapView.setCenter(location.coordinate, zoomLevel: 16, animated: true)
-                }
             }
+        }
+        
+        func fitMapToShowBothLocations(mapView: MLNMapView, selectedLocation: CLLocation) {
+            guard let userLocation = mapView.userLocation?.location else {
+                // If no user location yet, just center on selected location
+                mapView.setCenter(selectedLocation.coordinate, zoomLevel: 15, animated: true)
+                return
+            }
+            
+            // Calculate bounds that include both locations
+            let minLat = min(userLocation.coordinate.latitude, selectedLocation.coordinate.latitude)
+            let maxLat = max(userLocation.coordinate.latitude, selectedLocation.coordinate.latitude)
+            let minLon = min(userLocation.coordinate.longitude, selectedLocation.coordinate.longitude)
+            let maxLon = max(userLocation.coordinate.longitude, selectedLocation.coordinate.longitude)
+            
+            // Add some padding
+            let latPadding = (maxLat - minLat) * 0.2
+            let lonPadding = (maxLon - minLon) * 0.2
+            
+            let sw = CLLocationCoordinate2D(latitude: minLat - latPadding, longitude: minLon - lonPadding)
+            let ne = CLLocationCoordinate2D(latitude: maxLat + latPadding, longitude: maxLon + lonPadding)
+            let bounds = MLNCoordinateBounds(sw: sw, ne: ne)
+            
+            // Fit the map to show both locations
+            let edgePadding = UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50)
+            mapView.setVisibleCoordinateBounds(bounds, edgePadding: edgePadding, animated: true, completionHandler: nil)
         }
         
         // MARK: - MLNMapViewDelegate
