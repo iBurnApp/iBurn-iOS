@@ -305,8 +305,7 @@ class NearbyViewController: SortedViewController {
     private func updateTimeShiftInfoLabel() {
         if let config = timeShiftConfig, config.isActive {
             let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
+            formatter.dateFormat = "EEE MMM d, h:mm a"
             
             var infoText = "Warped: ⏰ \(formatter.string(from: config.date))"
             
@@ -323,6 +322,8 @@ class NearbyViewController: SortedViewController {
                               currentConfig.location?.coordinate.longitude == location.coordinate.longitude else { return }
                         
                         // Update with geocoded address
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "EEE MMM d, h:mm a"
                         var updatedText = "Warped: ⏰ \(formatter.string(from: currentConfig.date)) 📍 "
                         updatedText += address ?? "Unknown Location"
                         self.timeShiftInfoLabel.text = updatedText
