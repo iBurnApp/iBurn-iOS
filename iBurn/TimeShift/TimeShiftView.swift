@@ -24,7 +24,7 @@ public struct TimeShiftView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Map Section
-                TimeShiftMapSection(
+                TimeShiftMapView(
                     selectedLocation: $viewModel.selectedLocation,
                     onLocationSelected: viewModel.updateLocation
                 )
@@ -411,38 +411,6 @@ struct LocationAddressView: View {
                 } else {
                     self.address = "Address not found"
                 }
-            }
-        }
-    }
-}
-
-// MARK: - TimeShiftMapSection
-
-struct TimeShiftMapSection: View {
-    @Binding var selectedLocation: CLLocation?
-    let onLocationSelected: (CLLocationCoordinate2D) -> Void
-    @State private var mapView: MLNMapView?
-    
-    var body: some View {
-        TimeShiftMapView(
-            selectedLocation: $selectedLocation,
-            onLocationSelected: onLocationSelected
-        ) { map in
-            mapView = map
-        }
-        .overlay(alignment: .topTrailing) {
-            if selectedLocation != nil {
-                Button("Clear Location") {
-                    withAnimation {
-                        selectedLocation = nil
-                        // Zoom to BRC if outside playa area
-                        if let map = mapView {
-                            map.brc_zoomToFullTileSource(animated: true)
-                        }
-                    }
-                }
-                .buttonStyle(.bordered)
-                .padding()
             }
         }
     }

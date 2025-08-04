@@ -9,17 +9,46 @@
 import SwiftUI
 import MapLibre
 
-struct TimeShiftMapView: UIViewRepresentable {
+struct TimeShiftMapView: View {
     @Binding var selectedLocation: CLLocation?
     let onLocationSelected: (CLLocationCoordinate2D) -> Void
-    var onMapReady: ((MLNMapView) -> Void)?
+    @State private var mapViewRef: MLNMapView?
+    
+    var body: some View {
+        TimeShiftMapRepresentable(
+            selectedLocation: $selectedLocation,
+            onLocationSelected: onLocationSelected,
+            mapViewRef: $mapViewRef
+        )
+        .overlay(alignment: .topTrailing) {
+            if selectedLocation != nil {
+                Button("Clear Location") {
+                    withAnimation {
+                        selectedLocation = nil
+                        // Always zoom to BRC when clearing
+                        mapViewRef?.brc_zoomToFullTileSource(animated: true)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .padding()
+            }
+        }
+    }
+}
+
+struct TimeShiftMapRepresentable: UIViewRepresentable {
+    @Binding var selectedLocation: CLLocation?
+    let onLocationSelected: (CLLocationCoordinate2D) -> Void
+    @Binding var mapViewRef: MLNMapView?
     
     func makeUIView(context: Context) -> MLNMapView {
         let mapView = MLNMapView.brcMapView()
         mapView.delegate = context.coordinator
         
-        // Call the onMapReady callback
-        onMapReady?(mapView)
+        // Store reference to map
+        DispatchQueue.main.async {
+            mapViewRef = mapView
+        }
         
         // Add tap gesture for location selection
         let tapGesture = UITapGestureRecognizer(
@@ -46,10 +75,7 @@ struct TimeShiftMapView: UIViewRepresentable {
         mapView.isUserInteractionEnabled = true
         mapView.alpha = 1.0
         
-        // Fit map to show both locations if we have a selected location
-        if let selectedLocation = selectedLocation {
-            context.coordinator.fitMapToShowBothLocations(mapView: mapView, selectedLocation: selectedLocation)
-        }
+        // Don't auto-zoom - let user control the view
     }
     
     func makeCoordinator() -> Coordinator {
@@ -57,10 +83,10 @@ struct TimeShiftMapView: UIViewRepresentable {
     }
     
     class Coordinator: NSObject, MLNMapViewDelegate {
-        let parent: TimeShiftMapView
+        let parent: TimeShiftMapRepresentable
         var currentAnnotation: MLNPointAnnotation?
         
-        init(parent: TimeShiftMapView) {
+        init(parent: TimeShiftMapRepresentable) {
             self.parent = parent
         }
         
