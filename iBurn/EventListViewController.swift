@@ -57,6 +57,7 @@ public class EventListViewController: UIViewController {
         setupFilterButton()
         setupListCoordinator()
         setupSearchButton()
+        setupMapButton()
         definesPresentationContext = true
         
         view.addSubview(tableView)
@@ -188,5 +189,21 @@ extension ASDayPicker: ColorTheme {
         dateTextColor = colors.primaryColor
         selectedWeekdayTextColor = colors.primaryColor
         outOfRangeDateTextColor = colors.detailColor
+    }
+}
+
+extension EventListViewController: MapButtonHelper {
+    func setupMapButton() {
+        let mapImage = UIImage(systemName: "map")
+        let map = UIBarButtonItem(image: mapImage, style: .plain) { [weak self] (button) in
+            self?.mapButtonPressed(button)
+        }
+        navigationItem.leftBarButtonItem = map
+    }
+    
+    func mapButtonPressed(_ sender: Any?) {
+        let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler)
+        let mapVC = MapListViewController(dataSource: dataSource)
+        navigationController?.pushViewController(mapVC, animated: true)
     }
 }
