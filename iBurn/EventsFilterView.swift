@@ -1,29 +1,6 @@
 import SwiftUI
 
-// MARK: - UserDefaults Extensions
-
-extension UserDefaults {
-    @objc var showExpiredEvents: Bool {
-        get { bool(forKey: "showExpiredEvents") }
-        set { set(newValue, forKey: "showExpiredEvents") }
-    }
-    
-    @objc var showAllDayEvents: Bool {
-        get { bool(forKey: "showAllDayEvents") }
-        set { set(newValue, forKey: "showAllDayEvents") }
-    }
-    
-    var selectedEventTypes: [BRCEventType] {
-        get { 
-            guard let numbers = array(forKey: "selectedEventTypes") as? [NSNumber] else { return [] }
-            return numbers.compactMap { BRCEventType(rawValue: $0.uintValue) }
-        }
-        set { 
-            let numbers = newValue.map { NSNumber(value: $0.rawValue) }
-            set(numbers, forKey: "selectedEventTypes")
-        }
-    }
-}
+// MARK: - Models
 
 // MARK: - Models
 
@@ -47,13 +24,13 @@ class EventsFilterViewModel: ObservableObject {
     
     init(onFilterChanged: (() -> Void)? = nil) {
         self.onFilterChanged = onFilterChanged
-        // Initialize from UserDefaults
-        self.showExpiredEvents = UserDefaults.standard.showExpiredEvents
+        // Initialize from UserSettings
+        self.showExpiredEvents = UserSettings.showExpiredEvents
         self.searchSelectedDayOnly = UserSettings.searchSelectedDayOnly
-        self.showAllDayEvents = UserDefaults.standard.showAllDayEvents
+        self.showAllDayEvents = UserSettings.showAllDayEvents
         
         // Initialize event types
-        let storedTypes = UserDefaults.standard.selectedEventTypes
+        let storedTypes = UserSettings.selectedEventTypes
         self.eventTypes = BRCEventObject.allVisibleEventTypes.compactMap { number -> EventTypeContainer? in
             guard let type = BRCEventType(rawValue: number.uintValue) else { return nil }
             return EventTypeContainer(
@@ -73,16 +50,16 @@ class EventsFilterViewModel: ObservableObject {
     }
     
     func saveSettings() {
-        // Save to UserDefaults
-        UserDefaults.standard.showExpiredEvents = showExpiredEvents
+        // Save to UserSettings
+        UserSettings.showExpiredEvents = showExpiredEvents
         UserSettings.searchSelectedDayOnly = searchSelectedDayOnly
-        UserDefaults.standard.showAllDayEvents = showAllDayEvents
+        UserSettings.showAllDayEvents = showAllDayEvents
         
         // Save selected event types
         let selectedTypes = eventTypes
             .filter { $0.isSelected }
             .map { $0.type }
-        UserDefaults.standard.selectedEventTypes = selectedTypes
+        UserSettings.selectedEventTypes = selectedTypes
         
         // Notify of changes
         onFilterChanged?()
