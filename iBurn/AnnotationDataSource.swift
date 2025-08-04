@@ -32,9 +32,11 @@ extension StaticAnnotationDataSource: AnnotationDataSource {
 
 public class YapViewAnnotationDataSource: NSObject {
     private let viewHandler: YapViewHandler
+    public var showAllEvents: Bool = false
     
-    init(viewHandler: YapViewHandler) {
+    init(viewHandler: YapViewHandler, showAllEvents: Bool = false) {
         self.viewHandler = viewHandler
+        self.showAllEvents = showAllEvents
     }
 }
 
@@ -83,7 +85,7 @@ extension YapViewAnnotationDataSource: AnnotationDataSource {
                 BRCEmbargo.canShowLocation(for: dataObject),
                     let annotation = annotation {
                     if let event = dataObject as? BRCEventObject {
-                        if event.shouldShowOnMap() {
+                        if showAllEvents || event.shouldShowOnMap() {
                             annotations.append(annotation)
                         }
                     } else {

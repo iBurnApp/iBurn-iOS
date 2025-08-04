@@ -202,7 +202,7 @@ extension EventListViewController: MapButtonHelper {
     }
     
     func mapButtonPressed(_ sender: Any?) {
-        let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler)
+        let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler, showAllEvents: true)
         let mapVC = MapListViewController(dataSource: dataSource)
         navigationController?.pushViewController(mapVC, animated: true)
     }
