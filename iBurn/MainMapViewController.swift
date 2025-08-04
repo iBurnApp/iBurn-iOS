@@ -75,6 +75,7 @@ public class MainMapViewController: BaseMapViewController {
         // TODO: make sidebar buttons work
         setupSidebarButtons()
         setupSearchButton()
+        setupListButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
         
@@ -86,6 +87,22 @@ public class MainMapViewController: BaseMapViewController {
         bottom.constant = -50
         sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
         sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 150))
+    }
+    
+    private func setupListButton() {
+        let listImage = UIImage(systemName: "list.bullet")
+        let listButton = UIBarButtonItem(image: listImage, 
+                                       style: .plain, 
+                                       target: self, 
+                                       action: #selector(listButtonPressed))
+        navigationItem.leftBarButtonItem = listButton
+    }
+    
+    @objc private func listButtonPressed() {
+        let visibleAnnotations = mapView.annotations ?? []
+        let visibleBounds = mapView.visibleCoordinateBounds
+        let visiblePinsVC = MapPinListViewController(visibleAnnotations: visibleAnnotations, visibleBounds: visibleBounds)
+        navigationController?.pushViewController(visiblePinsVC, animated: true)
     }
     
     public override func viewWillAppear(_ animated: Bool) {

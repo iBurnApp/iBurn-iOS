@@ -22,4 +22,10 @@ extension UIBarButtonItem {
             closure(action.sender)
         }))
     }
+    
+    convenience init(image: UIImage?, style: UIBarButtonItem.Style, closure: @escaping UIBarButtonItemTargetClosure) {
+        self.init(image: image, primaryAction: .init(handler: { action in
+            closure(action.sender)
+        }))
+    }
 }
