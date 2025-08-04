@@ -324,6 +324,10 @@ class DetailViewModel: ObservableObject {
             cells.append(.text("Artist Location: \(artistLocation)", style: .caption))
         }
         
+        // Location with embargo handling
+        let locationValue = getLocationValue(for: art)
+        cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: art)))
+        
         // Audio tour
         if art.audioURL != nil {
             let isPlaying = audioService.isPlaying(artObject: art)
@@ -350,6 +354,10 @@ class DetailViewModel: ObservableObject {
         if let hometown = camp.hometown, !hometown.isEmpty {
             cells.append(.text("Hometown: \(hometown)", style: .caption))
         }
+        
+        // Location with embargo handling
+        let locationValue = getLocationValue(for: camp)
+        cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: camp)))
         
         // Next event
         if let nextEvent = dataService.getNextEvent(for: camp) {
