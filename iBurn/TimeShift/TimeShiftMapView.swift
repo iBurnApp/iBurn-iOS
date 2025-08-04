@@ -11,22 +11,21 @@ import MapLibre
 
 struct TimeShiftMapView: View {
     @Binding var selectedLocation: CLLocation?
+    @Binding var shouldZoomToCity: Bool
     let onLocationSelected: (CLLocationCoordinate2D) -> Void
-    @State private var mapViewRef: MLNMapView?
+    let onClearLocation: () -> Void
     
     var body: some View {
         TimeShiftMapRepresentable(
             selectedLocation: $selectedLocation,
-            onLocationSelected: onLocationSelected,
-            mapViewRef: $mapViewRef
+            shouldZoomToCity: $shouldZoomToCity,
+            onLocationSelected: onLocationSelected
         )
         .overlay(alignment: .topTrailing) {
             if selectedLocation != nil {
                 Button("Clear Location") {
                     withAnimation {
-                        selectedLocation = nil
-                        // Always zoom to BRC when clearing
-                        mapViewRef?.brc_zoomToFullTileSource(animated: true)
+                        onClearLocation()
                     }
                 }
                 .buttonStyle(.bordered)
@@ -38,17 +37,12 @@ struct TimeShiftMapView: View {
 
 struct TimeShiftMapRepresentable: UIViewRepresentable {
     @Binding var selectedLocation: CLLocation?
+    @Binding var shouldZoomToCity: Bool
     let onLocationSelected: (CLLocationCoordinate2D) -> Void
-    @Binding var mapViewRef: MLNMapView?
     
     func makeUIView(context: Context) -> MLNMapView {
         let mapView = MLNMapView.brcMapView()
         mapView.delegate = context.coordinator
-        
-        // Store reference to map
-        DispatchQueue.main.async {
-            mapViewRef = mapView
-        }
         
         // Add tap gesture for location selection
         let tapGesture = UITapGestureRecognizer(
@@ -75,7 +69,13 @@ struct TimeShiftMapRepresentable: UIViewRepresentable {
         mapView.isUserInteractionEnabled = true
         mapView.alpha = 1.0
         
-        // Don't auto-zoom - let user control the view
+        // Handle zoom to city trigger
+        if shouldZoomToCity {
+            mapView.brc_zoomToFullTileSource(animated: true)
+            DispatchQueue.main.async {
+                self.shouldZoomToCity = false
+            }
+        }
     }
     
     func makeCoordinator() -> Coordinator {

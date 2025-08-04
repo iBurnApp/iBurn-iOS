@@ -26,7 +26,9 @@ public struct TimeShiftView: View {
                 // Map Section
                 TimeShiftMapView(
                     selectedLocation: $viewModel.selectedLocation,
-                    onLocationSelected: viewModel.updateLocation
+                    shouldZoomToCity: $viewModel.shouldZoomToCity,
+                    onLocationSelected: viewModel.updateLocation,
+                    onClearLocation: viewModel.clearLocation
                 )
                 .frame(maxHeight: selectedDetent == .large ? .infinity : 200)
                 

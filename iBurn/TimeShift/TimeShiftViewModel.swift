@@ -16,6 +16,7 @@ public class TimeShiftViewModel: ObservableObject {
     @Published var selectedLocation: CLLocation?
     @Published var isLocationOverrideEnabled: Bool
     @Published var hasUnsavedChanges: Bool = false
+    @Published var shouldZoomToCity: Bool = false
     
     // MARK: - Private Properties
     private let originalDate: Date
@@ -143,6 +144,12 @@ public class TimeShiftViewModel: ObservableObject {
         selectedDate = Date.present
         selectedLocation = nil
         isLocationOverrideEnabled = false
+    }
+    
+    func clearLocation() {
+        selectedLocation = nil
+        isLocationOverrideEnabled = false
+        shouldZoomToCity = true
     }
     
     func setToSunrise() {
