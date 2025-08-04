@@ -57,32 +57,43 @@ enum EventEditControllerFactory {
     
     /// Formats location string to include both playa address and host name
     /// Uses same logic as legacy calendar system in BRCEventObject.m
+    /// Respects embargo status - hides playa location when under embargo
     private static func formatLocationString(event: BRCEventObject, host: BRCDataObject?) -> String {
         var locationString = ""
         
-        // Get playa location from host (camp/art) or fall back to event's otherLocation
-        var playaLocation: String?
-        if let host = host {
-            playaLocation = host.playaLocation
+        // Check if we should show location based on embargo status
+        let canShowLocation = host.map { BRCEmbargo.canShowLocation(for: $0) } ?? true
+        
+        if canShowLocation {
+            // Get playa location from host (camp/art) or fall back to event's otherLocation
+            var playaLocation: String?
+            if let host = host {
+                playaLocation = host.playaLocation
+                if playaLocation?.isEmpty ?? true {
+                    playaLocation = host.burnerMapLocationString
+                }
+            }
+            
+            // If no host location, fall back to event's otherLocation
             if playaLocation?.isEmpty ?? true {
-                playaLocation = host.burnerMapLocationString
+                playaLocation = event.otherLocation
             }
-        }
-        
-        // If no host location, fall back to event's otherLocation
-        if playaLocation?.isEmpty ?? true {
-            playaLocation = event.otherLocation
-        }
-        
-        // Build location string: "[Playa Address] - [Host Name]"
-        if let playaLocation = playaLocation, !playaLocation.isEmpty {
-            locationString += playaLocation
+            
+            // Build location string: "[Playa Address] - [Host Name]"
+            if let playaLocation = playaLocation, !playaLocation.isEmpty {
+                locationString += playaLocation
+                if let hostTitle = host?.title, !hostTitle.isEmpty {
+                    locationString += " - \(hostTitle)"
+                }
+            } else if let hostTitle = host?.title, !hostTitle.isEmpty {
+                // If no playa location but we have a host, just use host name
+                locationString = hostTitle
+            }
+        } else {
+            // Under embargo - only show host name, no playa location
             if let hostTitle = host?.title, !hostTitle.isEmpty {
-                locationString += " - \(hostTitle)"
+                locationString = hostTitle
             }
-        } else if let hostTitle = host?.title, !hostTitle.isEmpty {
-            // If no playa location but we have a host, just use host name
-            locationString = hostTitle
         }
         
         return locationString
