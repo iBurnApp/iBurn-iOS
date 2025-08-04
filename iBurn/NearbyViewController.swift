@@ -305,7 +305,13 @@ class NearbyViewController: SortedViewController {
     }
     
     private func applyTimeShift(_ config: TimeShiftConfiguration) {
-        timeShiftConfig = config.isActive ? config : nil
+        if config.isActive {
+            timeShiftConfig = config
+        } else {
+            timeShiftConfig = nil
+            // Clear UserSettings directly to ensure source of truth is updated
+            UserSettings.nearbyTimeShiftConfig = nil
+        }
         
         refreshTableItems { [weak self] in
             self?.tableView.reloadData()

@@ -12,10 +12,14 @@ import MapLibre
 struct TimeShiftMapView: UIViewRepresentable {
     @Binding var selectedLocation: CLLocation?
     let onLocationSelected: (CLLocationCoordinate2D) -> Void
+    var onMapReady: ((MLNMapView) -> Void)?
     
     func makeUIView(context: Context) -> MLNMapView {
         let mapView = MLNMapView.brcMapView()
         mapView.delegate = context.coordinator
+        
+        // Call the onMapReady callback
+        onMapReady?(mapView)
         
         // Add tap gesture for location selection
         let tapGesture = UITapGestureRecognizer(

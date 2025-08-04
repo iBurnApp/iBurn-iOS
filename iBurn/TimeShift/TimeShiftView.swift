@@ -24,28 +24,31 @@ public struct TimeShiftView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Map Section
-                TimeShiftMapView(
+                TimeShiftMapSection(
                     selectedLocation: $viewModel.selectedLocation,
                     onLocationSelected: viewModel.updateLocation
                 )
                 .frame(maxHeight: selectedDetent == .large ? .infinity : 200)
-                .overlay(alignment: .topTrailing) {
-                    if viewModel.selectedLocation != nil {
-                        Button("Clear Location") {
-                            withAnimation {
-                                viewModel.selectedLocation = nil
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .padding()
-                    }
-                }
                 
                 Divider()
                 
                 // Time Controls Section
                 ScrollView {
                     VStack(spacing: 20) {
+                        // Reset to Reality button - prominent at top
+                        if !viewModel.isAtCurrentReality {
+                            Button(action: {
+                                withAnimation {
+                                    viewModel.resetToReality()
+                                }
+                            }) {
+                                Label("Reset to Reality", systemImage: "location.north.line.fill")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(Color(Appearance.currentColors.primaryColor))
+                        }
+                        
                         // Current Selection Display
                         timeSelectionDisplay
                         
@@ -152,22 +155,7 @@ public struct TimeShiftView: View {
     }
     
     private var quickActionButtons: some View {
-        VStack(spacing: 12) {
-            // Reset to Reality button - prominent when not at reality
-            if !viewModel.isAtCurrentReality {
-                Button(action: {
-                    withAnimation {
-                        viewModel.resetToReality()
-                    }
-                }) {
-                    Label("Reset to Reality", systemImage: "location.north.line.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
-            }
-            
-            HStack(spacing: 10) {
+        HStack(spacing: 10) {
                 Button(action: { 
                     viewModel.resetToNow()
                 }) {
@@ -202,7 +190,6 @@ public struct TimeShiftView: View {
                 .buttonStyle(.bordered)
                 .accessibilityLabel("Sunset")
                 .accessibilityHint("Set time to 7:00 PM")
-            }
         }
     }
 }
@@ -424,6 +411,38 @@ struct LocationAddressView: View {
                 } else {
                     self.address = "Address not found"
                 }
+            }
+        }
+    }
+}
+
+// MARK: - TimeShiftMapSection
+
+struct TimeShiftMapSection: View {
+    @Binding var selectedLocation: CLLocation?
+    let onLocationSelected: (CLLocationCoordinate2D) -> Void
+    @State private var mapView: MLNMapView?
+    
+    var body: some View {
+        TimeShiftMapView(
+            selectedLocation: $selectedLocation,
+            onLocationSelected: onLocationSelected
+        ) { map in
+            mapView = map
+        }
+        .overlay(alignment: .topTrailing) {
+            if selectedLocation != nil {
+                Button("Clear Location") {
+                    withAnimation {
+                        selectedLocation = nil
+                        // Zoom to BRC if outside playa area
+                        if let map = mapView {
+                            map.brc_zoomToFullTileSource(animated: true)
+                        }
+                    }
+                }
+                .buttonStyle(.bordered)
+                .padding()
             }
         }
     }

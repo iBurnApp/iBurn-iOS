@@ -421,3 +421,46 @@ Based on user feedback, implemented additional UI improvements for better usabil
 - All colors now respect app theme settings
 
 The warp feature now has consistent theming and clearer user interaction patterns.
+
+## UI Fixes and Improvements (August 4, 2025)
+
+Based on user feedback, implemented critical fixes for the warp feature:
+
+### Issues Fixed:
+
+1. **Reset to Reality Button Position**
+   - Moved button to top of TimeShiftView for immediate visibility
+   - Now appears above time selection display
+   - Provides prominent escape hatch for users
+
+2. **Clear Location Zoom Behavior**
+   - Clear Location button now zooms to BRC bounds when clicked
+   - Uses existing `brc_zoomToFullTileSource(animated:)` method
+   - Ensures users can easily reorient after clearing location
+
+3. **Table Header Warp Button Visibility**
+   - Fixed issue where warp button wouldn't reappear after reset
+   - Updated `applyTimeShift` to properly clear config when inactive
+   - Directly clears UserSettings to ensure source of truth is updated
+   - ViewModel now correctly sets `isActive` based on `isAtCurrentReality`
+
+### Technical Changes:
+
+1. **TimeShiftView.swift**:
+   - Restructured layout with Reset button at top
+   - Created `TimeShiftMapSection` wrapper for map and clear button
+   - Fixed SwiftUI/UIKit color compatibility issues
+
+2. **NearbyViewController.swift**:
+   - Enhanced `applyTimeShift` to explicitly clear UserSettings when inactive
+   - Ensures table header properly reflects warp state
+
+3. **TimeShiftViewModel.swift**:
+   - Updated `apply()` to use `isAtCurrentReality` for determining active state
+   - Prevents saving configs that appear active but are actually at current reality
+
+### Result:
+- Reset to Reality is now prominently placed for easy access
+- Clear Location provides helpful zoom behavior
+- Table header correctly shows "Warp Time and Space" button when not warped
+- All state transitions are properly handled and persisted

@@ -119,10 +119,11 @@ public class TimeShiftViewModel: ObservableObject {
     }
     
     func apply() {
+        let isReallyActive = !isAtCurrentReality
         let config = TimeShiftConfiguration(
             date: selectedDate,
             location: isLocationOverrideEnabled ? selectedLocation : nil,
-            isActive: isTimeShifted
+            isActive: isReallyActive
         )
         onApply?(config)
     }
