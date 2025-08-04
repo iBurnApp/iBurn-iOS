@@ -7,11 +7,18 @@
 //
 
 import Foundation
+import MapLibre
+import UIKit
 
 
 public class MapListViewController: BaseMapViewController {
     
     private var hasZoomedToCoordinates = false
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        setupListButton()
+    }
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -25,4 +32,10 @@ public class MapListViewController: BaseMapViewController {
             hasZoomedToCoordinates = true
         }
     }
+}
+
+// MARK: - ListButtonHelper
+
+extension MapListViewController: ListButtonHelper {
+    // Using default implementation from protocol extension
 }

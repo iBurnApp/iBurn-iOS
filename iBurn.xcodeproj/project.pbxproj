@@ -165,6 +165,8 @@
 		D9E0DA97210FB46B0056286B /* SearchCooordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA96210FB46B0056286B /* SearchCooordinator.swift */; };
 		D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E0DA98210FB66C0056286B /* UIBarButtonItem+Blocks.swift */; };
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
+		D9E63FF02E40116C00101257 /* MapPinListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */; };
+		D9E63FF22E40296500101257 /* ListButtonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E63FF12E40296500101257 /* ListButtonHelper.swift */; };
 		D9E8D86622F4E43F00BD78EA /* UserDefaults+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E8D86522F4E43F00BD78EA /* UserDefaults+iBurn.swift */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EEFFC72E3F2FA600EF5FBE /* BRCTestDatabaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EEFFC62E3F2FA600EF5FBE /* BRCTestDatabaseHelper.swift */; };
@@ -532,6 +534,8 @@
 		D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCRecurringEventObject.m; sourceTree = "<group>"; };
 		D9E28F8719882F4E009B3A7A /* BRCDataObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCDataObject_Private.h; sourceTree = "<group>"; };
 		D9E28F8819882F96009B3A7A /* BRCEventObject_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRCEventObject_Private.h; sourceTree = "<group>"; };
+		D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPinListViewController.swift; sourceTree = "<group>"; };
+		D9E63FF12E40296500101257 /* ListButtonHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListButtonHelper.swift; sourceTree = "<group>"; };
 		D9E8D86522F4E43F00BD78EA /* UserDefaults+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+iBurn.swift"; sourceTree = "<group>"; };
 		D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRCPermissions.swift; sourceTree = "<group>"; };
 		D9EEFFC62E3F2FA600EF5FBE /* BRCTestDatabaseHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCTestDatabaseHelper.swift; sourceTree = "<group>"; };
@@ -706,6 +710,8 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9E63FF12E40296500101257 /* ListButtonHelper.swift */,
+				D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */,
 				D93176872E232594003636CB /* Preferences */,
 				D93176642E2228AF003636CB /* Detail */,
 				D92AC55E22F00A6E00C9FE32 /* Tracks */,
@@ -1664,6 +1670,7 @@
 				D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */,
 				D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */,
 				D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */,
+				D9E63FF02E40116C00101257 /* MapPinListViewController.swift in Sources */,
 				D9038C7220FBF12E0085C6B9 /* BRCOnboardingViewController.swift in Sources */,
 				D9E0DA8D210F7AB70056286B /* UITableView+iBurn.swift in Sources */,
 				D9DE7BB01EF25C11007A983E /* MainMapViewController.swift in Sources */,
@@ -1705,6 +1712,7 @@
 				D99754D52DFE24AB007716F4 /* BRCCampImage.m in Sources */,
 				D99754D62DFE24AB007716F4 /* BRCArtImage.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
+				D9E63FF22E40296500101257 /* ListButtonHelper.swift in Sources */,
 				D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
