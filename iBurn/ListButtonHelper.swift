@@ -7,8 +7,10 @@
 //
 
 import UIKit
+import MapLibre
 
 protocol ListButtonHelper: NSObjectProtocol {
+    var mapView: MLNMapView { get }
     func setupListButton()
     func listButtonPressed(_ sender: Any?)
 }
@@ -22,5 +24,12 @@ extension ListButtonHelper where Self: UIViewController {
         var buttons: [UIBarButtonItem] = navigationItem.rightBarButtonItems ?? []
         buttons.append(list)
         navigationItem.rightBarButtonItems = buttons
+    }
+    
+    func listButtonPressed(_ sender: Any?) {
+        let visibleAnnotations = mapView.annotations ?? []
+        let visibleBounds = mapView.visibleCoordinateBounds
+        let listVC = MapPinListViewController(visibleAnnotations: visibleAnnotations, visibleBounds: visibleBounds)
+        navigationController?.pushViewController(listVC, animated: true)
     }
 }

@@ -37,10 +37,5 @@ public class MapListViewController: BaseMapViewController {
 // MARK: - ListButtonHelper
 
 extension MapListViewController: ListButtonHelper {
-    @objc func listButtonPressed(_ sender: Any?) {
-        let visibleAnnotations = mapView.annotations ?? []
-        let visibleBounds = mapView.visibleCoordinateBounds
-        let listVC = MapPinListViewController(visibleAnnotations: visibleAnnotations, visibleBounds: visibleBounds)
-        navigationController?.pushViewController(listVC, animated: true)
-    }
+    // Using default implementation from protocol extension
 }
