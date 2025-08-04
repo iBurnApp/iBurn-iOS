@@ -19,6 +19,9 @@ public final class UserSettings: NSObject {
         static let favoritesFilter = "FavoritesFilter"
         static let nearbyFilter = "NearbyFilter"
         static let useImageColorsTheming = "UseImageColorsTheming"
+        static let selectedEventTypes = "kBRCSelectedEventsTypesKey"
+        static let showExpiredEvents = "kBRCShowExpiredEventsKey"
+        static let showAllDayEvents = "kBRCShowAllDayEventsKey"
     }
     
     /// Selected favorites filter
@@ -92,6 +95,38 @@ public final class UserSettings: NSObject {
                 return true
             }
             return UserDefaults.standard.bool(forKey: Keys.useImageColorsTheming)
+        }
+    }
+    
+    /// Selected event types for filtering
+    public static var selectedEventTypes: [BRCEventType] {
+        set {
+            let numbers = newValue.map { NSNumber(value: $0.rawValue) }
+            UserDefaults.standard.set(numbers, forKey: Keys.selectedEventTypes)
+        }
+        get {
+            guard let numbers = UserDefaults.standard.array(forKey: Keys.selectedEventTypes) as? [NSNumber] else { return [] }
+            return numbers.compactMap { BRCEventType(rawValue: $0.uintValue) }
+        }
+    }
+    
+    /// Show expired events
+    @objc public static var showExpiredEvents: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showExpiredEvents)
+        }
+        get {
+            return UserDefaults.standard.bool(forKey: Keys.showExpiredEvents)
+        }
+    }
+    
+    /// Show all day events
+    @objc public static var showAllDayEvents: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showAllDayEvents)
+        }
+        get {
+            return UserDefaults.standard.bool(forKey: Keys.showAllDayEvents)
         }
     }
     
