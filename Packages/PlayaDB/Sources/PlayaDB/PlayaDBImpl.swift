@@ -189,9 +189,93 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
     
-    func fetchEvents() async throws -> [EventObject] {
+    func fetchEvents() async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
-            try EventObject.fetchAll(db)
+            // Fetch events with their occurrences
+            let events = try EventObject.including(all: EventObject.occurrences).fetchAll(db)
+            
+            // Convert to EventObjectOccurrence instances
+            var eventObjectOccurrences: [EventObjectOccurrence] = []
+            for event in events {
+                let occurrences = try event.occurrences.fetchAll(db)
+                for occurrence in occurrences {
+                    eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
+                }
+            }
+            
+            return eventObjectOccurrences
+        }
+    }
+    
+    func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence] {
+        return try await dbQueue.read { db in
+            let calendar = Calendar.current
+            let dayStart = calendar.startOfDay(for: date)
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+            
+            // Find occurrences that overlap with this day
+            // Event overlaps if: starts before day ends AND ends after day starts
+            let occurrences = try EventOccurrence
+                .filter(Column("start_time") < dayEnd && Column("end_time") > dayStart)
+                .including(required: EventOccurrence.event)
+                .fetchAll(db)
+            
+            // Convert to EventObjectOccurrence instances
+            return try occurrences.map { occurrence in
+                let event = try occurrence.event.fetchOne(db)!
+                return EventObjectOccurrence(event: event, occurrence: occurrence)
+            }
+        }
+    }
+    
+    func fetchEvents(from startDate: Date, to endDate: Date) async throws -> [EventObjectOccurrence] {
+        return try await dbQueue.read { db in
+            // Find occurrences that overlap with this date range
+            let occurrences = try EventOccurrence
+                .filter(Column("start_time") < endDate && Column("end_time") > startDate)
+                .including(required: EventOccurrence.event)
+                .fetchAll(db)
+            
+            // Convert to EventObjectOccurrence instances
+            return try occurrences.map { occurrence in
+                let event = try occurrence.event.fetchOne(db)!
+                return EventObjectOccurrence(event: event, occurrence: occurrence)
+            }
+        }
+    }
+    
+    func fetchCurrentEvents(_ now: Date = Date()) async throws -> [EventObjectOccurrence] {
+        return try await dbQueue.read { db in
+            // Find occurrences happening right now
+            let occurrences = try EventOccurrence
+                .filter(Column("start_time") <= now && Column("end_time") > now)
+                .including(required: EventOccurrence.event)
+                .fetchAll(db)
+            
+            // Convert to EventObjectOccurrence instances
+            return try occurrences.map { occurrence in
+                let event = try occurrence.event.fetchOne(db)!
+                return EventObjectOccurrence(event: event, occurrence: occurrence)
+            }
+        }
+    }
+    
+    func fetchUpcomingEvents(within hours: Int = 24, from now: Date = Date()) async throws -> [EventObjectOccurrence] {
+        return try await dbQueue.read { db in
+            let futureTime = now.addingTimeInterval(TimeInterval(hours * 3600))
+            
+            // Find occurrences starting within the next N hours
+            let occurrences = try EventOccurrence
+                .filter(Column("start_time") > now && Column("start_time") <= futureTime)
+                .including(required: EventOccurrence.event)
+                .order(Column("start_time"))
+                .fetchAll(db)
+            
+            // Convert to EventObjectOccurrence instances
+            return try occurrences.map { occurrence in
+                let event = try occurrence.event.fetchOne(db)!
+                return EventObjectOccurrence(event: event, occurrence: occurrence)
+            }
         }
     }
     
@@ -560,7 +644,7 @@ internal class PlayaDBImpl: PlayaDB {
         []
     }
     
-    var allEvents: [EventObject] {
+    var allEvents: [EventObjectOccurrence] {
         // TODO: Implement reactive data access
         []
     }
