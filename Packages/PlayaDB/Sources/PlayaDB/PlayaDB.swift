@@ -12,8 +12,20 @@ public protocol PlayaDB {
     /// Fetch all camps
     func fetchCamps() async throws -> [CampObject]
     
-    /// Fetch all events
-    func fetchEvents() async throws -> [EventObject]
+    /// Fetch all events with their occurrences
+    func fetchEvents() async throws -> [EventObjectOccurrence]
+    
+    /// Fetch events occurring on a specific date (no midnight splitting - events spanning days appear on all relevant days)
+    func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence]
+    
+    /// Fetch events occurring within a date range
+    func fetchEvents(from startDate: Date, to endDate: Date) async throws -> [EventObjectOccurrence]
+    
+    /// Fetch currently happening events
+    func fetchCurrentEvents(_ now: Date) async throws -> [EventObjectOccurrence]
+    
+    /// Fetch upcoming events (starting within the next N hours)
+    func fetchUpcomingEvents(within hours: Int, from now: Date) async throws -> [EventObjectOccurrence]
     
     /// Fetch all objects within a geographic region
     func fetchObjects(in region: MKCoordinateRegion) async throws -> [any DataObject]
@@ -48,8 +60,8 @@ public protocol PlayaDB {
     /// All camps (reactive)
     var allCamps: [CampObject] { get }
     
-    /// All events (reactive)
-    var allEvents: [EventObject] { get }
+    /// All events with their occurrences (reactive)
+    var allEvents: [EventObjectOccurrence] { get }
     
     /// All favorited objects metadata (reactive)
     var favorites: [ObjectMetadata] { get }

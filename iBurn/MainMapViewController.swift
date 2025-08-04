@@ -15,7 +15,7 @@ import PlayaGeocoder
 import SafariServices
 import EventKitUI
 
-public class MainMapViewController: BaseMapViewController {
+public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     let uiConnection: YapDatabaseConnection
     let writeConnection: YapDatabaseConnection
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
@@ -75,6 +75,7 @@ public class MainMapViewController: BaseMapViewController {
         // TODO: make sidebar buttons work
         setupSidebarButtons()
         setupSearchButton()
+        setupListButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
         
@@ -87,6 +88,15 @@ public class MainMapViewController: BaseMapViewController {
         sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
         sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 150))
     }
+    
+    func setupListButton() {
+        let listImage = UIImage(systemName: "list.bullet")
+        let listButton = UIBarButtonItem(image: listImage, style: .plain) { [weak self] button in
+            self?.listButtonPressed(button)
+        }
+        navigationItem.leftBarButtonItem = listButton
+    }
+    
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
