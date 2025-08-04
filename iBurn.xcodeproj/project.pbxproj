@@ -567,6 +567,11 @@
 			path = Preferences;
 			sourceTree = "<group>";
 		};
+		D9E63FA62E3FDB9D00101257 /* TimeShift */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimeShift;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -710,6 +715,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9E63FA62E3FDB9D00101257 /* TimeShift */,
 				D9E63FF12E40296500101257 /* ListButtonHelper.swift */,
 				D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */,
 				D93176872E232594003636CB /* Preferences */,
@@ -1257,6 +1263,7 @@
 			fileSystemSynchronizedGroups = (
 				D93176642E2228AF003636CB /* Detail */,
 				D93176872E232594003636CB /* Preferences */,
+				D9E63FA62E3FDB9D00101257 /* TimeShift */,
 			);
 			name = iBurn;
 			packageProductDependencies = (

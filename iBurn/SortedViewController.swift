@@ -41,16 +41,21 @@ extension CLLocation {
 extension UIViewController {
     /** Adds current geocoded playa address to navigation bar title */
     func geocodeNavigationBar() {
+        // Always use the real location for navigation bar
         guard let location = CLLocation.currentLocation else { return }
-        PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { locationString in
-            if let locationString = locationString, locationString.count > 0 {
-                let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
-                let label = UILabel()
-                label.attributedText = attrString
-                label.sizeToFit()
-                self.navigationItem.titleView = label
-            } else {
-                self.navigationItem.title = self.title
+        PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { [weak self] locationString in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                if let locationString = locationString, locationString.count > 0 {
+                    let attrString = (locationString as NSString).brc_attributedLocationStringWithCrosshairs
+                    let label = UILabel()
+                    label.attributedText = attrString
+                    label.sizeToFit()
+                    
+                    self.navigationItem.titleView = label
+                } else {
+                    self.navigationItem.title = self.title
+                }
             }
         }
     }

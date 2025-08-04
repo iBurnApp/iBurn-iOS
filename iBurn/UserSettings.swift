@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 @objc
 public final class UserSettings: NSObject {
@@ -91,6 +92,57 @@ public final class UserSettings: NSObject {
                 return true
             }
             return UserDefaults.standard.bool(forKey: Keys.useImageColorsTheming)
+        }
+    }
+    
+    // MARK: - Time Shift Configuration
+    
+    private struct TimeShiftKeys {
+        static let isTimeShiftActive = "NearbyTimeShiftActive"
+        static let timeShiftDate = "NearbyTimeShiftDate"
+        static let timeShiftLatitude = "NearbyTimeShiftLatitude"
+        static let timeShiftLongitude = "NearbyTimeShiftLongitude"
+    }
+    
+    /// Time shift configuration for the Nearby screen
+    public static var nearbyTimeShiftConfig: TimeShiftConfiguration? {
+        get {
+            guard UserDefaults.standard.bool(forKey: TimeShiftKeys.isTimeShiftActive) else {
+                return nil
+            }
+            
+            let date = UserDefaults.standard.object(forKey: TimeShiftKeys.timeShiftDate) as? Date ?? Date.present
+            
+            var location: CLLocation? = nil
+            let lat = UserDefaults.standard.double(forKey: TimeShiftKeys.timeShiftLatitude)
+            let lon = UserDefaults.standard.double(forKey: TimeShiftKeys.timeShiftLongitude)
+            if lat != 0 && lon != 0 {
+                location = CLLocation(latitude: lat, longitude: lon)
+            }
+            
+            return TimeShiftConfiguration(
+                date: date,
+                location: location,
+                isActive: true
+            )
+        }
+        set {
+            if let config = newValue {
+                UserDefaults.standard.set(config.isActive, forKey: TimeShiftKeys.isTimeShiftActive)
+                UserDefaults.standard.set(config.date, forKey: TimeShiftKeys.timeShiftDate)
+                if let location = config.location {
+                    UserDefaults.standard.set(location.coordinate.latitude, forKey: TimeShiftKeys.timeShiftLatitude)
+                    UserDefaults.standard.set(location.coordinate.longitude, forKey: TimeShiftKeys.timeShiftLongitude)
+                } else {
+                    UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftLatitude)
+                    UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftLongitude)
+                }
+            } else {
+                UserDefaults.standard.set(false, forKey: TimeShiftKeys.isTimeShiftActive)
+                UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftDate)
+                UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftLatitude)
+                UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftLongitude)
+            }
         }
     }
 }

@@ -9,6 +9,8 @@
 import UIKit
 import MapKit
 import PureLayout
+import SwiftUI
+import PlayaGeocoder
 
 public enum NearbyFilter: String {
     case all = "All"
@@ -27,6 +29,25 @@ class NearbyViewController: SortedViewController {
     let distanceStepper: UIStepper = UIStepper()
     let tableHeaderView: UIView = UIView()
     private let filterControl = UISegmentedControl(items: NearbyFilter.allValues.map { $0.rawValue })
+    
+    // MARK: - Time Shift Properties
+    private var timeShiftConfig: TimeShiftConfiguration? {
+        didSet {
+            updateTimeShiftButton()
+            updateTimeShiftInfoLabel()
+            UserSettings.nearbyTimeShiftConfig = timeShiftConfig
+        }
+    }
+    private var timeShiftBarButton: UIBarButtonItem?
+    private let timeShiftInfoLabel = UILabel()
+    private lazy var warpButton: UIButton = {
+        var config = UIButton.Configuration.bordered()
+        config.title = "Warp Time and Space"
+        let button = UIButton(configuration: config)
+        button.addTarget(self, action: #selector(timeShiftButtonPressed), for: .touchUpInside)
+        return button
+    }()
+    
     private var searchRegion: MKCoordinateRegion? {
         guard let currentLocation = getCurrentLocation() else { return nil }
         return MKCoordinateRegion.init(center: currentLocation.coordinate, latitudinalMeters: searchDistance, longitudinalMeters: searchDistance)
@@ -46,8 +67,13 @@ class NearbyViewController: SortedViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Restore saved time shift config
+        timeShiftConfig = UserSettings.nearbyTimeShiftConfig
+        
         setupMapButton()
         setupFilter()
+        setupTimeShiftButton()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -75,6 +101,18 @@ class NearbyViewController: SortedViewController {
             let nearbyObjects = results
             let options = BRCDataSorterOptions()
             options.sortOrder = .distance(currentLocation)
+            
+            // Use time-shifted date for filtering
+            if let config = self.timeShiftConfig {
+                options.now = config.date
+            } else {
+                options.now = Date.present
+            }
+            
+            // Always use standard filtering - BRCDataSorter will use options.now for comparisons
+            options.showExpiredEvents = false
+            options.showFutureEvents = false
+            
             BRCDataSorter.sortDataObjects(nearbyObjects, options: options, completionQueue: DispatchQueue.main, callbackBlock: { (_events, _art, _camps) -> (Void) in
                 var events = _events
                 var art = _art
@@ -109,8 +147,23 @@ class NearbyViewController: SortedViewController {
     
     func refreshTableHeaderView() {
         refreshHeaderLabel()
-        tableHeaderView.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: 85)
-        tableView.tableHeaderView = tableHeaderView
+        updateTableHeaderViewHeight()
+    }
+    
+    func updateTableHeaderViewHeight() {
+        // Let the stack view calculate its required size
+        let targetSize = CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height)
+        let size = tableHeaderView.systemLayoutSizeFitting(targetSize, 
+                                                          withHorizontalFittingPriority: .required, 
+                                                          verticalFittingPriority: .fittingSizeLevel)
+        
+        // Update header view frame if needed
+        if tableHeaderView.frame.size.height != size.height {
+            tableHeaderView.frame.size = CGSize(width: view.bounds.width, height: size.height)
+            
+            // Reassign to trigger table view update
+            tableView.tableHeaderView = tableHeaderView
+        }
     }
     
     override func setupTableView() {
@@ -119,24 +172,43 @@ class NearbyViewController: SortedViewController {
     }
     
     func setupTableHeaderView() {
-        tableHeaderLabel.textAlignment = NSTextAlignment.left
-        tableHeaderLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceStepper.translatesAutoresizingMaskIntoConstraints = false
-        filterControl.translatesAutoresizingMaskIntoConstraints = false
+        // Configure labels and controls
+        tableHeaderLabel.textAlignment = .left
+        
+        timeShiftInfoLabel.font = .preferredFont(forTextStyle: .caption1)
+        timeShiftInfoLabel.textColor = Appearance.currentColors.primaryColor
+        timeShiftInfoLabel.textAlignment = .center
+        timeShiftInfoLabel.numberOfLines = 0
+        timeShiftInfoLabel.isHidden = true
+        
+        warpButton.tintColor = Appearance.currentColors.primaryColor
+        warpButton.isHidden = false
+        
         setupDistanceStepper()
-        tableHeaderView.addSubview(tableHeaderLabel)
-        tableHeaderView.addSubview(distanceStepper)
-        tableHeaderView.addSubview(filterControl)
-        distanceStepper.autoPinEdge(toSuperviewEdge: .top, withInset: 8)
-        tableHeaderLabel.autoAlignAxis(ALAxis.horizontal, toSameAxisOf: distanceStepper)
-        tableHeaderLabel.autoPinEdge(ALEdge.right, to: ALEdge.left, of: distanceStepper)
-        tableHeaderLabel.autoPinEdge(toSuperviewMargin: ALEdge.left)
-        distanceStepper.autoPinEdge(toSuperviewMargin: ALEdge.right)
-        filterControl.autoPinEdge(.top, to: .bottom, of: distanceStepper, withOffset: 8)
-        filterControl.autoPinEdges(toSuperviewMarginsExcludingEdge: .top)
-        tableHeaderView.translatesAutoresizingMaskIntoConstraints = true
-        tableHeaderView.autoresizingMask = [ .flexibleHeight, .flexibleWidth ]
-        refreshTableHeaderView()
+        
+        // Create horizontal stack for distance row
+        let distanceStackView = UIStackView(arrangedSubviews: [tableHeaderLabel, distanceStepper])
+        distanceStackView.axis = .horizontal
+        distanceStackView.alignment = .center
+        distanceStackView.spacing = 8
+        
+        // Create main vertical stack view
+        let mainStackView = UIStackView(arrangedSubviews: [distanceStackView, filterControl, warpButton, timeShiftInfoLabel])
+        mainStackView.axis = .vertical
+        mainStackView.alignment = .fill
+        mainStackView.spacing = 12
+        mainStackView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        mainStackView.isLayoutMarginsRelativeArrangement = true
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add stack view to header
+        tableHeaderView.addSubview(mainStackView)
+        
+        // Constrain stack view to fill header view
+        mainStackView.autoPinEdgesToSuperviewEdges()
+        
+        // Update header view
+        updateTableHeaderViewHeight()
     }
     
     func setupDistanceStepper() {
@@ -172,6 +244,137 @@ class NearbyViewController: SortedViewController {
             return 25
         }
         return UITableView.automaticDimension
+    }
+    
+    // MARK: - Time Shift Methods
+    
+    private func setupTimeShiftButton() {
+        timeShiftBarButton = UIBarButtonItem(
+            title: timeShiftButtonTitle,
+            style: .plain,
+            target: self,
+            action: #selector(timeShiftButtonPressed)
+        )
+        
+        updateTimeShiftButton()
+        navigationItem.leftBarButtonItem = timeShiftBarButton
+    }
+    
+    private func updateTimeShiftButton() {
+        guard let button = timeShiftBarButton else { return }
+        
+        button.title = timeShiftButtonTitle
+        
+        if timeShiftConfig?.isActive == true {
+            button.tintColor = Appearance.currentColors.primaryColor
+            let attributes: [NSAttributedString.Key: Any] = [
+                .foregroundColor: Appearance.currentColors.primaryColor,
+                .font: UIFont.systemFont(ofSize: 17, weight: .medium)
+            ]
+            button.setTitleTextAttributes(attributes, for: .normal)
+        } else {
+            button.tintColor = nil
+            button.setTitleTextAttributes(nil, for: .normal)
+        }
+    }
+    
+    private var timeShiftButtonTitle: String {
+        return "Warp"
+    }
+    
+    @objc internal func timeShiftButtonPressed() {
+        // Create ViewModel with current state
+        let viewModel = TimeShiftViewModel(
+            currentConfiguration: timeShiftConfig,
+            currentLocation: getCurrentLocation()
+        )
+        
+        // Set up completion handlers
+        viewModel.onCancel = { [weak self] in
+            self?.dismiss(animated: true)
+        }
+        
+        viewModel.onApply = { [weak self] config in
+            self?.applyTimeShift(config)
+            self?.dismiss(animated: true)
+        }
+        
+        // Create and present the view controller
+        let timeShiftVC = TimeShiftViewController(viewModel: viewModel)
+        present(timeShiftVC, animated: true)
+    }
+    
+    private func applyTimeShift(_ config: TimeShiftConfiguration) {
+        if config.isActive {
+            timeShiftConfig = config
+        } else {
+            timeShiftConfig = nil
+            // Clear UserSettings directly to ensure source of truth is updated
+            UserSettings.nearbyTimeShiftConfig = nil
+        }
+        
+        refreshTableItems { [weak self] in
+            self?.tableView.reloadData()
+        }
+    }
+    
+    private func updateTimeShiftInfoLabel() {
+        if let config = timeShiftConfig, config.isActive {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEE MMM d, h:mm a"
+            
+            var infoText = "Warped: ⏰ \(formatter.string(from: config.date))"
+            
+            // Add location info
+            if let location = config.location {
+                infoText += " 📍 "
+                
+                // Geocode the location asynchronously
+                PlayaGeocoder.shared.asyncReverseLookup(location.coordinate) { [weak self] address in
+                    DispatchQueue.main.async {
+                        guard let self = self,
+                              let currentConfig = self.timeShiftConfig,
+                              currentConfig.location?.coordinate.latitude == location.coordinate.latitude,
+                              currentConfig.location?.coordinate.longitude == location.coordinate.longitude else { return }
+                        
+                        // Update with geocoded address
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "EEE MMM d, h:mm a"
+                        var updatedText = "Warped: ⏰ \(formatter.string(from: currentConfig.date)) 📍 "
+                        updatedText += address ?? "Unknown Location"
+                        self.timeShiftInfoLabel.text = updatedText
+                        self.updateTableHeaderViewHeight()
+                    }
+                }
+                
+                // Show coordinates while geocoding
+                infoText += String(format: "%.4f, %.4f", location.coordinate.latitude, location.coordinate.longitude)
+            }
+            
+            timeShiftInfoLabel.text = infoText
+            timeShiftInfoLabel.isHidden = false
+            warpButton.isHidden = true
+            
+            updateTableHeaderViewHeight()
+        } else {
+            timeShiftInfoLabel.isHidden = true
+            timeShiftInfoLabel.text = nil
+            warpButton.isHidden = false
+            updateTableHeaderViewHeight()
+        }
+    }
+    
+    override func getCurrentLocation() -> CLLocation? {
+        // Use time-shifted location if available
+        if let config = timeShiftConfig, let location = config.location {
+            return location
+        }
+        return super.getCurrentLocation()
+    }
+    
+    // MARK: - Location Override Status
+    func isLocationOverridden() -> Bool {
+        return timeShiftConfig?.location != nil
     }
 
 }
