@@ -58,6 +58,8 @@ public class MapPinListViewController: SortedViewController {
         
         // Sort using BRCDataSorter
         let options = BRCDataSorterOptions()
+        options.showExpiredEvents = true  // Show all events regardless of timing
+        options.showFutureEvents = true   // Show all events regardless of timing
         if let currentLocation = getCurrentLocation() {
             options.sortOrder = .distance(currentLocation)
         }
