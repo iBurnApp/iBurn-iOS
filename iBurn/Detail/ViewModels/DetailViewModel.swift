@@ -357,13 +357,7 @@ class DetailViewModel: ObservableObject {
         
         // Landmark
         if let landmark = camp.landmark, !landmark.isEmpty {
-            cells.append(.text("Landmark: \(landmark)", style: .caption))
-        }
-        
-        // Frontage (only show when embargo allows)
-        if dataService.canShowLocation(for: camp), 
-           let frontage = camp.frontage, !frontage.isEmpty {
-            cells.append(.text("Frontage: \(frontage)", style: .caption))
+            cells.append(.landmark(landmark))
         }
         
         // Location with embargo handling

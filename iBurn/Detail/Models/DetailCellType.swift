@@ -42,6 +42,7 @@ enum DetailCellType {
     case audio(BRCArtObject, isPlaying: Bool)
     case userNotes(String)
     case date(Date, format: String)
+    case landmark(String)
 }
 
 // MARK: - Supporting Types
