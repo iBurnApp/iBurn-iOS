@@ -215,6 +215,9 @@ struct DetailCellView: View {
                 viewModel.handleCellTap(cell)
             }
             .frame(height: 200)
+            
+        case .landmark(let landmark):
+            DetailLandmarkCell(landmark: landmark)
         }
     }
     
@@ -224,7 +227,7 @@ struct DetailCellView: View {
             return true
         case .playaAddress(_, let tappable):
             return tappable
-        case .text, .distance, .schedule, .date:
+        case .text, .distance, .schedule, .date, .landmark:
             return false
         case .image:
             return true
@@ -645,6 +648,29 @@ struct DetailAllHostEventsCell: View {
             Image(systemName: "chevron.right")
                 .foregroundColor(themeColors.primaryColor)
                 .font(.caption)
+        }
+    }
+}
+
+struct DetailLandmarkCell: View {
+    let landmark: String
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("LANDMARK")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(themeColors.detailColor)
+                .textCase(.uppercase)
+            
+            HStack {
+                Image(systemName: "flag")
+                    .foregroundColor(themeColors.detailColor)
+                Text(landmark)
+                    .foregroundColor(themeColors.secondaryColor)
+                Spacer()
+            }
         }
     }
 }

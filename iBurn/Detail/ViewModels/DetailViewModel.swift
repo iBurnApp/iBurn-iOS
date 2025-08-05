@@ -355,6 +355,11 @@ class DetailViewModel: ObservableObject {
             cells.append(.text("Hometown: \(hometown)", style: .caption))
         }
         
+        // Landmark
+        if let landmark = camp.landmark, !landmark.isEmpty {
+            cells.append(.landmark(landmark))
+        }
+        
         // Location with embargo handling
         let locationValue = getLocationValue(for: camp)
         cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: camp)))
