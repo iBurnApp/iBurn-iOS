@@ -18,6 +18,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift", .upToNextMajor(from: "7.6.1")),
         .package(path: "../PlayaAPI"),
+        .package(path: "../../Submodules/iBurn-Data"),
     ],
     targets: [
         .target(
@@ -31,7 +32,9 @@ let package = Package(
             name: "PlayaDBTests",
             dependencies: [
                 "PlayaDB",
-                "PlayaAPI"
+                "PlayaAPI",
+                .product(name: "PlayaAPITestHelpers", package: "PlayaAPI"),
+                .product(name: "iBurn2025APIData", package: "iBurn-Data")
             ]
         ),
     ]

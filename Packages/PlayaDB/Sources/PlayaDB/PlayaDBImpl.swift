@@ -27,6 +27,9 @@ internal class PlayaDBImpl: PlayaDB {
         
         // Initialize database schema
         try setupDatabase()
+        
+        // Setup reactive observations
+        setupObservations()
     }
     
     // MARK: - Database Setup
@@ -172,7 +175,216 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_art_images_art_id ON art_images(art_id)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_camp_images_camp_id ON camp_images(camp_id)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_favorite ON object_metadata(is_favorite)")
+            
+            // Create FTS5 virtual tables for full-text search
+            try setupFTS5Tables(db)
+            
+            // Create R-Tree spatial index for geographic queries
+            try setupRTreeIndex(db)
         }
+    }
+    
+    private func setupFTS5Tables(_ db: Database) throws {
+        // Create FTS5 table for art objects
+        try db.execute(sql: """
+            CREATE VIRTUAL TABLE IF NOT EXISTS art_objects_fts USING fts5(
+                uid UNINDEXED,
+                name,
+                description,
+                artist,
+                hometown,
+                category,
+                content=art_objects,
+                content_rowid=rowid,
+                tokenize='porter unicode61'
+            )
+        """)
+        
+        // Create FTS5 table for camp objects
+        try db.execute(sql: """
+            CREATE VIRTUAL TABLE IF NOT EXISTS camp_objects_fts USING fts5(
+                uid UNINDEXED,
+                name,
+                description,
+                landmark,
+                hometown,
+                content=camp_objects,
+                content_rowid=rowid,
+                tokenize='porter unicode61'
+            )
+        """)
+        
+        // Create FTS5 table for event objects
+        try db.execute(sql: """
+            CREATE VIRTUAL TABLE IF NOT EXISTS event_objects_fts USING fts5(
+                uid UNINDEXED,
+                name,
+                description,
+                event_type_label,
+                print_description,
+                content=event_objects,
+                content_rowid=rowid,
+                tokenize='porter unicode61'
+            )
+        """)
+        
+        // Create triggers to keep FTS tables in sync
+        
+        // Art triggers
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS art_objects_ai AFTER INSERT ON art_objects BEGIN
+                INSERT INTO art_objects_fts(rowid, uid, name, description, artist, hometown, category)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.category);
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS art_objects_ad AFTER DELETE ON art_objects BEGIN
+                DELETE FROM art_objects_fts WHERE rowid = old.rowid;
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS art_objects_au AFTER UPDATE ON art_objects BEGIN
+                DELETE FROM art_objects_fts WHERE rowid = old.rowid;
+                INSERT INTO art_objects_fts(rowid, uid, name, description, artist, hometown, category)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.category);
+            END
+        """)
+        
+        // Camp triggers
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS camp_objects_ai AFTER INSERT ON camp_objects BEGIN
+                INSERT INTO camp_objects_fts(rowid, uid, name, description, landmark, hometown)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.landmark, new.hometown);
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS camp_objects_ad AFTER DELETE ON camp_objects BEGIN
+                DELETE FROM camp_objects_fts WHERE rowid = old.rowid;
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS camp_objects_au AFTER UPDATE ON camp_objects BEGIN
+                DELETE FROM camp_objects_fts WHERE rowid = old.rowid;
+                INSERT INTO camp_objects_fts(rowid, uid, name, description, landmark, hometown)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.landmark, new.hometown);
+            END
+        """)
+        
+        // Event triggers
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_objects_ai AFTER INSERT ON event_objects BEGIN
+                INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_objects_ad AFTER DELETE ON event_objects BEGIN
+                DELETE FROM event_objects_fts WHERE rowid = old.rowid;
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_objects_au AFTER UPDATE ON event_objects BEGIN
+                DELETE FROM event_objects_fts WHERE rowid = old.rowid;
+                INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
+            END
+        """)
+    }
+    
+    private func setupRTreeIndex(_ db: Database) throws {
+        // Create R-Tree virtual table for spatial indexing
+        try db.execute(sql: """
+            CREATE VIRTUAL TABLE IF NOT EXISTS spatial_index USING rtree(
+                id,
+                minLat, maxLat,
+                minLon, maxLon
+            )
+        """)
+        
+        // Create a mapping table to track which object each spatial entry refers to
+        try db.execute(sql: """
+            CREATE TABLE IF NOT EXISTS spatial_objects (
+                spatial_id INTEGER PRIMARY KEY,
+                object_type TEXT NOT NULL,
+                object_uid TEXT NOT NULL,
+                UNIQUE(object_type, object_uid)
+            )
+        """)
+        
+        // Create triggers to maintain spatial index for art objects
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS art_spatial_insert AFTER INSERT ON art_objects
+            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
+            BEGIN
+                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('art', NEW.uid);
+                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS art_spatial_delete AFTER DELETE ON art_objects
+            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
+            BEGIN
+                DELETE FROM spatial_index WHERE id = (
+                    SELECT spatial_id FROM spatial_objects 
+                    WHERE object_type = 'art' AND object_uid = OLD.uid
+                );
+                DELETE FROM spatial_objects WHERE object_type = 'art' AND object_uid = OLD.uid;
+            END
+        """)
+        
+        // Create triggers for camp objects
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS camp_spatial_insert AFTER INSERT ON camp_objects
+            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
+            BEGIN
+                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('camp', NEW.uid);
+                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS camp_spatial_delete AFTER DELETE ON camp_objects
+            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
+            BEGIN
+                DELETE FROM spatial_index WHERE id = (
+                    SELECT spatial_id FROM spatial_objects 
+                    WHERE object_type = 'camp' AND object_uid = OLD.uid
+                );
+                DELETE FROM spatial_objects WHERE object_type = 'camp' AND object_uid = OLD.uid;
+            END
+        """)
+        
+        // Create triggers for event objects
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_spatial_insert AFTER INSERT ON event_objects
+            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
+            BEGIN
+                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('event', NEW.uid);
+                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
+            END
+        """)
+        
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_spatial_delete AFTER DELETE ON event_objects
+            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
+            BEGIN
+                DELETE FROM spatial_index WHERE id = (
+                    SELECT spatial_id FROM spatial_objects 
+                    WHERE object_type = 'event' AND object_uid = OLD.uid
+                );
+                DELETE FROM spatial_objects WHERE object_type = 'event' AND object_uid = OLD.uid;
+            END
+        """)
     }
     
     // MARK: - Data Access Methods
@@ -289,59 +501,96 @@ internal class PlayaDBImpl: PlayaDB {
             let minLon = region.center.longitude - region.span.longitudeDelta / 2
             let maxLon = region.center.longitude + region.span.longitudeDelta / 2
             
-            // Fetch art objects in region
-            let artObjects = try ArtObject
-                .filter(Column("gps_latitude") >= minLat)
-                .filter(Column("gps_latitude") <= maxLat)
-                .filter(Column("gps_longitude") >= minLon)
-                .filter(Column("gps_longitude") <= maxLon)
-                .fetchAll(db)
-            objects.append(contentsOf: artObjects)
+            // Use R-Tree spatial index for efficient querying
+            let spatialSQL = """
+                SELECT so.object_type, so.object_uid
+                FROM spatial_index si
+                JOIN spatial_objects so ON si.id = so.spatial_id
+                WHERE si.minLat >= ? AND si.maxLat <= ?
+                  AND si.minLon >= ? AND si.maxLon <= ?
+            """
             
-            // Fetch camp objects in region
-            let campObjects = try CampObject
-                .filter(Column("gps_latitude") >= minLat)
-                .filter(Column("gps_latitude") <= maxLat)
-                .filter(Column("gps_longitude") >= minLon)
-                .filter(Column("gps_longitude") <= maxLon)
-                .fetchAll(db)
-            objects.append(contentsOf: campObjects)
+            let rows = try Row.fetchAll(db, sql: spatialSQL, arguments: [minLat, maxLat, minLon, maxLon])
             
-            // Fetch event objects in region
-            let eventObjects = try EventObject
-                .filter(Column("gps_latitude") >= minLat)
-                .filter(Column("gps_latitude") <= maxLat)
-                .filter(Column("gps_longitude") >= minLon)
-                .filter(Column("gps_longitude") <= maxLon)
-                .fetchAll(db)
-            objects.append(contentsOf: eventObjects)
+            // Group UIDs by type for batch fetching
+            var artUIDs: [String] = []
+            var campUIDs: [String] = []
+            var eventUIDs: [String] = []
+            
+            for row in rows {
+                let objectType: String = row["object_type"]
+                let objectUID: String = row["object_uid"]
+                
+                switch objectType {
+                case "art":
+                    artUIDs.append(objectUID)
+                case "camp":
+                    campUIDs.append(objectUID)
+                case "event":
+                    eventUIDs.append(objectUID)
+                default:
+                    break
+                }
+            }
+            
+            // Batch fetch objects by type
+            if !artUIDs.isEmpty {
+                let artObjects = try ArtObject.filter(artUIDs.contains(Column("uid"))).fetchAll(db)
+                objects.append(contentsOf: artObjects)
+            }
+            
+            if !campUIDs.isEmpty {
+                let campObjects = try CampObject.filter(campUIDs.contains(Column("uid"))).fetchAll(db)
+                objects.append(contentsOf: campObjects)
+            }
+            
+            if !eventUIDs.isEmpty {
+                let eventObjects = try EventObject.filter(eventUIDs.contains(Column("uid"))).fetchAll(db)
+                objects.append(contentsOf: eventObjects)
+            }
             
             return objects
         }
     }
     
     func searchObjects(_ query: String) async throws -> [any DataObject] {
-        // Basic string search for now (FTS5 will be added later)
         return try await dbQueue.read { db in
             var objects: [any DataObject] = []
-            let searchPattern = "%\(query)%"
             
-            // Search art objects
-            let artObjects = try ArtObject
-                .filter(Column("name").like(searchPattern) || Column("description").like(searchPattern) || Column("artist").like(searchPattern))
-                .fetchAll(db)
+            // Prepare search query for FTS5 (escape special characters)
+            let ftsQuery = query.replacingOccurrences(of: "\"", with: "\"\"")
+            
+            // Search art objects using FTS5
+            let artSQL = """
+                SELECT art_objects.*
+                FROM art_objects
+                JOIN art_objects_fts ON art_objects.rowid = art_objects_fts.rowid
+                WHERE art_objects_fts MATCH ?
+                ORDER BY rank
+            """
+            let artObjects = try ArtObject.fetchAll(db, sql: artSQL, arguments: [ftsQuery])
             objects.append(contentsOf: artObjects)
             
-            // Search camp objects
-            let campObjects = try CampObject
-                .filter(Column("name").like(searchPattern) || Column("description").like(searchPattern) || Column("landmark").like(searchPattern))
-                .fetchAll(db)
+            // Search camp objects using FTS5
+            let campSQL = """
+                SELECT camp_objects.*
+                FROM camp_objects
+                JOIN camp_objects_fts ON camp_objects.rowid = camp_objects_fts.rowid
+                WHERE camp_objects_fts MATCH ?
+                ORDER BY rank
+            """
+            let campObjects = try CampObject.fetchAll(db, sql: campSQL, arguments: [ftsQuery])
             objects.append(contentsOf: campObjects)
             
-            // Search event objects
-            let eventObjects = try EventObject
-                .filter(Column("name").like(searchPattern) || Column("description").like(searchPattern) || Column("event_type_label").like(searchPattern))
-                .fetchAll(db)
+            // Search event objects using FTS5
+            let eventSQL = """
+                SELECT event_objects.*
+                FROM event_objects
+                JOIN event_objects_fts ON event_objects.rowid = event_objects_fts.rowid
+                WHERE event_objects_fts MATCH ?
+                ORDER BY rank
+            """
+            let eventObjects = try EventObject.fetchAll(db, sql: eventSQL, arguments: [ftsQuery])
             objects.append(contentsOf: eventObjects)
             
             return objects
@@ -429,12 +678,16 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Data Import
     
     func importFromPlayaAPI() async throws {
-        let apiParser = APIParserFactory.create()
-        
         // Load data from bundles and parse
         let artData = try BundleDataLoader.loadArt()
         let campData = try BundleDataLoader.loadCamps()
         let eventData = try BundleDataLoader.loadEvents()
+        
+        try await importFromData(artData: artData, campData: campData, eventData: eventData)
+    }
+    
+    func importFromData(artData: Data, campData: Data, eventData: Data) async throws {
+        let apiParser = APIParserFactory.create()
         
         try await dbQueue.write { db in
             // Step 1: Import art objects first
@@ -489,7 +742,28 @@ internal class PlayaDBImpl: PlayaDB {
             try EventOccurrence.deleteAll(db)
             try EventObject.deleteAll(db)
             
+            // Track unique events to handle duplicates in data
+            var processedEventUIDs = Set<String>()
+            
             for apiEvent in apiEventObjects {
+                // Skip duplicate events (keep first occurrence)
+                if processedEventUIDs.contains(apiEvent.uid.value) {
+                    print("Warning: Skipping duplicate event UID: \(apiEvent.uid.value)")
+                    
+                    // Still add the occurrences for this duplicate event
+                    for apiOccurrence in apiEvent.occurrenceSet {
+                        var eventOccurrence = EventOccurrence(
+                            id: nil,
+                            eventId: apiEvent.uid.value,
+                            startTime: apiOccurrence.startTime,
+                            endTime: apiOccurrence.endTime
+                        )
+                        try eventOccurrence.insert(db)
+                    }
+                    continue
+                }
+                processedEventUIDs.insert(apiEvent.uid.value)
+                
                 var eventObject = try self.convertEventObject(from: apiEvent)
                 
                 // Resolve camp relationship and copy GPS coordinates
@@ -522,7 +796,51 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
             
-            // Step 4: Update import info
+            // Step 4: Rebuild FTS indexes (in case triggers weren't created yet)
+            try db.execute(sql: "INSERT INTO art_objects_fts(art_objects_fts) VALUES('rebuild')")
+            try db.execute(sql: "INSERT INTO camp_objects_fts(camp_objects_fts) VALUES('rebuild')")
+            try db.execute(sql: "INSERT INTO event_objects_fts(event_objects_fts) VALUES('rebuild')")
+            
+            // Step 4b: Rebuild spatial index
+            // Clear existing spatial data
+            try db.execute(sql: "DELETE FROM spatial_index")
+            try db.execute(sql: "DELETE FROM spatial_objects")
+            
+            // Re-insert all objects with GPS coordinates
+            let spatialArt = try ArtObject.filter(Column("gps_latitude") != nil).fetchAll(db)
+            for art in spatialArt {
+                if let lat = art.gpsLatitude, let lon = art.gpsLongitude {
+                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
+                                  arguments: ["art", art.uid])
+                    let spatialId = db.lastInsertedRowID
+                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
+                                  arguments: [spatialId, lat, lat, lon, lon])
+                }
+            }
+            
+            let spatialCamps = try CampObject.filter(Column("gps_latitude") != nil).fetchAll(db)
+            for camp in spatialCamps {
+                if let lat = camp.gpsLatitude, let lon = camp.gpsLongitude {
+                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
+                                  arguments: ["camp", camp.uid])
+                    let spatialId = db.lastInsertedRowID
+                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
+                                  arguments: [spatialId, lat, lat, lon, lon])
+                }
+            }
+            
+            let spatialEvents = try EventObject.filter(Column("gps_latitude") != nil).fetchAll(db)
+            for event in spatialEvents {
+                if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
+                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
+                                  arguments: ["event", event.uid])
+                    let spatialId = db.lastInsertedRowID
+                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
+                                  arguments: [spatialId, lat, lat, lon, lon])
+                }
+            }
+            
+            // Step 5: Update import info
             let now = Date()
             
             var artUpdateInfo = UpdateInfo(
@@ -632,26 +950,99 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
     
-    // MARK: - Reactive Data Access (placeholder)
+    // MARK: - Reactive Data Access
+    
+    private var _allArt: [ArtObject] = []
+    private var _allCamps: [CampObject] = []
+    private var _allEvents: [EventObjectOccurrence] = []
+    private var _favorites: [ObjectMetadata] = []
+    
+    private var observations: [DatabaseCancellable] = []
     
     var allArt: [ArtObject] {
-        // TODO: Implement reactive data access
-        []
+        _allArt
     }
     
     var allCamps: [CampObject] {
-        // TODO: Implement reactive data access
-        []
+        _allCamps
     }
     
     var allEvents: [EventObjectOccurrence] {
-        // TODO: Implement reactive data access
-        []
+        _allEvents
     }
     
     var favorites: [ObjectMetadata] {
-        // TODO: Implement reactive data access
-        []
+        _favorites
+    }
+    
+    private func setupObservations() {
+        // Observe art objects
+        let artObservation = ValueObservation.tracking(ArtObject.fetchAll)
+        let artCancellable = artObservation.start(
+            in: dbQueue,
+            onError: { error in
+                print("Error observing art objects: \(error)")
+            },
+            onChange: { [weak self] artObjects in
+                self?._allArt = artObjects
+            }
+        )
+        
+        // Observe camp objects
+        let campObservation = ValueObservation.tracking(CampObject.fetchAll)
+        let campCancellable = campObservation.start(
+            in: dbQueue,
+            onError: { error in
+                print("Error observing camp objects: \(error)")
+            },
+            onChange: { [weak self] campObjects in
+                self?._allCamps = campObjects
+            }
+        )
+        
+        // Observe event objects with occurrences
+        let eventObservation = ValueObservation.tracking { db in
+            let events = try EventObject.including(all: EventObject.occurrences).fetchAll(db)
+            var eventObjectOccurrences: [EventObjectOccurrence] = []
+            for event in events {
+                let occurrences = try event.occurrences.fetchAll(db)
+                for occurrence in occurrences {
+                    eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
+                }
+            }
+            return eventObjectOccurrences
+        }
+        let eventCancellable = eventObservation.start(
+            in: dbQueue,
+            onError: { error in
+                print("Error observing events: \(error)")
+            },
+            onChange: { [weak self] eventObjectOccurrences in
+                self?._allEvents = eventObjectOccurrences
+            }
+        )
+        
+        // Observe favorites
+        let favoritesObservation = ValueObservation.tracking { db in
+            try ObjectMetadata.filter(Column("is_favorite") == true).fetchAll(db)
+        }
+        let favoritesCancellable = favoritesObservation.start(
+            in: dbQueue,
+            onError: { error in
+                print("Error observing favorites: \(error)")
+            },
+            onChange: { [weak self] favoriteMetadata in
+                self?._favorites = favoriteMetadata
+            }
+        )
+        
+        // Store cancellables
+        observations = [
+            artCancellable,
+            campCancellable,
+            eventCancellable,
+            favoritesCancellable
+        ]
     }
 }
 
