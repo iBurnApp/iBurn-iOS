@@ -50,6 +50,69 @@ extension Bundle {
         return iBurn2025Map.MapResource.glyphsDirectory
     }
     
+    // MARK: - Map Cache Management
+    
+    /// Get the map cache directory for the current year
+    static var brc_mapCacheDirectory: URL {
+        let year = iBurn2025Map.year
+        let appSupportURL = FileManager.default.urls(for: .applicationSupportDirectory, 
+                                                     in: .userDomainMask).first!
+        return appSupportURL
+            .appendingPathComponent("iBurn")
+            .appendingPathComponent("\(year)")
+            .appendingPathComponent("Map")
+    }
+    
+    /// Get cached MBTiles URL, copying from bundle if needed
+    static var brc_cachedMbtilesURL: URL? {
+        let cacheDirectory = brc_mapCacheDirectory
+        var cachedMbtilesURL = cacheDirectory.appendingPathComponent("map.mbtiles")
+        
+        // Create directory structure if needed
+        do {
+            try FileManager.default.createDirectory(at: cacheDirectory, 
+                                                   withIntermediateDirectories: true, 
+                                                   attributes: nil)
+        } catch {
+            print("Error creating map cache directory: \(error)")
+            // Fall back to bundle URL
+            return brc_mbtilesURL
+        }
+        
+        // Check if cached file exists
+        if !FileManager.default.fileExists(atPath: cachedMbtilesURL.path) {
+            // Copy from bundle
+            guard let bundleMbtilesURL = brc_mbtilesURL else {
+                print("Could not find mbtiles in bundle")
+                return nil
+            }
+            
+            do {
+                try FileManager.default.copyItem(at: bundleMbtilesURL, to: cachedMbtilesURL)
+                
+                // Exclude from backup
+                var resourceValues = URLResourceValues()
+                resourceValues.isExcludedFromBackup = true
+                try cachedMbtilesURL.setResourceValues(resourceValues)
+                
+                print("Successfully copied mbtiles to cache: \(cachedMbtilesURL.path)")
+            } catch {
+                print("Error copying mbtiles to cache: \(error)")
+                // Fall back to bundle URL
+                return bundleMbtilesURL
+            }
+        }
+        
+        return cachedMbtilesURL
+    }
+    
+    /// Get cached style JSON URL for the given interface style
+    static func brc_cachedStyleURL(for userInterfaceStyle: UIUserInterfaceStyle) -> URL {
+        let cacheDirectory = brc_mapCacheDirectory
+        let styleName = userInterfaceStyle == .light ? "style-light.json" : "style-dark.json"
+        return cacheDirectory.appendingPathComponent(styleName)
+    }
+    
     /// Load media file data
     static func brc_loadMediaData(fileId: String) -> Data? {
         return iBurn2025MediaFiles.loadImageData(fileId: fileId)
