@@ -419,13 +419,20 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     [[self class] registerForRemoteNotifications];
     [self requestLocationPermission];
 
-    // Present Embargo Screen if needed
+    // Show informational alert about embargo if needed
     if (![BRCEmbargo allowEmbargoedData]) {
-        UIViewController *hostingController = [EmbargoPasscodeFactory makeViewControllerWithDismissAction:^{
-            [self.tabBarController dismissViewControllerAnimated:YES completion:nil];
-        }];
-        hostingController.modalPresentationStyle = UIModalPresentationFullScreen;
-        [self.tabBarController presentViewController:hostingController animated:YES completion:nil];
+        UIAlertController *alert = [UIAlertController 
+            alertControllerWithTitle:@"Locations Are Hidden"
+            message:@"Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nDon't worry, the app will automatically unlock itself after gates open at 12:01am Sunday and you're on playa."
+            preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction *okAction = [UIAlertAction 
+            actionWithTitle:@"Ok cool whatever"
+            style:UIAlertActionStyleDefault
+            handler:nil];
+        
+        [alert addAction:okAction];
+        [self.tabBarController presentViewController:alert animated:YES completion:nil];
     }
 }
 

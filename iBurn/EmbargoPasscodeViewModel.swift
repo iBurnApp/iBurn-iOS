@@ -8,6 +8,7 @@ class EmbargoPasscodeViewModel: ObservableObject {
     @Published var shouldShowUnlockError: Bool = false
     @Published var showingSocialWebView: Bool = false
     @Published var socialURLToOpen: URL? = nil
+    @Published var showPasscodeEntry: Bool = false
     
     private var countdownTimer: Timer?
     private let festivalStartDate: Date = BRCEventObject.festivalStartDate()
