@@ -337,6 +337,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func showUnlockView() {
         let unlockVC = EmbargoPasscodeHostingViewController { [weak self] in
             self?.dismiss(animated: true, completion: nil)
+            self?.tableView.reloadData()
         }
         present(unlockVC, animated: true, completion: nil)
     }
