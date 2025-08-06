@@ -338,7 +338,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let unlockVC = EmbargoPasscodeHostingViewController { [weak self] in
             self?.dismiss(animated: true, completion: nil)
         }
-        unlockVC.modalPresentationStyle = .fullScreen
         present(unlockVC, animated: true, completion: nil)
     }
 

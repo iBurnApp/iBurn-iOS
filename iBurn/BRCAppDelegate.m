@@ -423,7 +423,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     if (![BRCEmbargo allowEmbargoedData]) {
         UIAlertController *alert = [UIAlertController 
             alertControllerWithTitle:@"Location Data Coming Soon" 
-            message:@"Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nThe app will automatically unlock itself after gates open at 12:01am Sunday and you're on playa." 
+            message:@"Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nDon't worry, the app will automatically unlock itself after gates open at 12:01am Sunday and you're on playa."
             preferredStyle:UIAlertControllerStyleAlert];
         
         UIAlertAction *okAction = [UIAlertAction 
