@@ -24,34 +24,39 @@ struct EmbargoPasscodeView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
 
+                    Toggle("I am super special and am allowed early access", isOn: $viewModel.showPasscodeEntry)
+                        .toggleStyle(SwitchToggleStyle(tint: Color(colors.primaryColor)))
+                        .foregroundColor(.black)
+                        .padding(.horizontal)
                     
-                    
-                    HStack {
-                        SecureField("Passcode", text: $viewModel.passcode)
-                            .textFieldStyle(.roundedBorder)
-                            .padding(10)
-                            .textContentType(.password)
-                            .foregroundColor(.black)
-                            .modifier(ShakeEffect(shakes: viewModel.shouldShowUnlockError ? 3 : 0))
-                            .animation(viewModel.shouldShowUnlockError ? .default : nil, value: viewModel.shouldShowUnlockError)
-                            .onChange(of: viewModel.shouldShowUnlockError) { newValue in
-                                if newValue {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                        viewModel.shouldShowUnlockError = false
+                    if viewModel.showPasscodeEntry {
+                        HStack {
+                            SecureField("Passcode", text: $viewModel.passcode)
+                                .textFieldStyle(.roundedBorder)
+                                .padding(10)
+                                .textContentType(.password)
+                                .foregroundColor(.black)
+                                .modifier(ShakeEffect(shakes: viewModel.shouldShowUnlockError ? 3 : 0))
+                                .animation(viewModel.shouldShowUnlockError ? .default : nil, value: viewModel.shouldShowUnlockError)
+                                .onChange(of: viewModel.shouldShowUnlockError) { newValue in
+                                    if newValue {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                            viewModel.shouldShowUnlockError = false
+                                        }
                                     }
                                 }
+
+                            Spacer()
+
+                            Button("Unlock") {
+                                viewModel.unlockButtonPressed()
                             }
-
-                        Spacer()
-
-                        Button("Unlock") {
-                            viewModel.unlockButtonPressed()
+                            .font(.body.bold())
+                            .buttonStyle(.borderedProminent)
+                            .accentColor(Color(colors.primaryColor))
                         }
-                        .font(.body.bold())
-                        .buttonStyle(.borderedProminent)
-                        .accentColor(Color(colors.primaryColor))
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
             }
             .padding(.vertical)
