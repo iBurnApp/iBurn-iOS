@@ -49,6 +49,9 @@ public protocol PlayaDB {
     /// Import data from the PlayaAPI
     func importFromPlayaAPI() async throws
     
+    /// Import data from provided JSON data (for testing)
+    func importFromData(artData: Data, campData: Data, eventData: Data) async throws
+    
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
     
