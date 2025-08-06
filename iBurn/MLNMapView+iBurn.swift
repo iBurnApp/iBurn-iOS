@@ -25,18 +25,29 @@ extension MLNMapView {
     
     /// Sets default iBurn behavior for mapView
     @objc public func brc_setDefaults(moveToCenter: Bool) {
-        guard let mbtilesURL = Bundle.brc_mbtilesURL,
+        // Use cached MBTiles to avoid SQLite crashes
+        guard let mbtilesURL = Bundle.brc_cachedMbtilesURL,
               let styleJSONURL = Bundle.brc_mapStyleURL(for: traitCollection.userInterfaceStyle) else {
             print("Couldn't find mbtiles!")
             return
         }
         do {
+            // Load style JSON template and replace mbtiles path
             let styleJSONString = try String(contentsOf: styleJSONURL)
                 .replacingOccurrences(of: "{{mbtiles_path}}", with: mbtilesURL.path)
-            let outStyleURL = try FileManager.default
-                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                .appendingPathComponent("style.json")
+            
+            // Save style JSON to cache directory alongside mbtiles
+            let outStyleURL = Bundle.brc_cachedStyleURL(for: traitCollection.userInterfaceStyle)
             try styleJSONString.write(to: outStyleURL, atomically: true, encoding: .utf8)
+            
+            // Clean up old style.json from Application Support root if it exists
+            let oldStyleURL = try FileManager.default
+                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+                .appendingPathComponent("style.json")
+            if FileManager.default.fileExists(atPath: oldStyleURL.path) {
+                try? FileManager.default.removeItem(at: oldStyleURL)
+            }
+            
             self.styleURL = outStyleURL
         } catch {
             print("Error loading map tiles! \(error)")
