@@ -23,17 +23,20 @@ struct EmbargoPasscodeView: View {
                         .foregroundColor(.black)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
+                    
+                    Spacer()
 
-                    Toggle("I am super special and am allowed early access", isOn: $viewModel.showPasscodeEntry)
+                    Toggle("I am super special and have authorization to access this data early",
+                           isOn: $viewModel.showPasscodeEntry)
                         .toggleStyle(SwitchToggleStyle(tint: Color(colors.primaryColor)))
                         .foregroundColor(.black)
                         .padding(.horizontal)
+                        .font(.footnote)
                     
                     if viewModel.showPasscodeEntry {
-                        HStack {
+                        HStack(spacing: 5) {
                             SecureField("Passcode", text: $viewModel.passcode)
                                 .textFieldStyle(.roundedBorder)
-                                .padding(10)
                                 .textContentType(.password)
                                 .foregroundColor(.black)
                                 .modifier(ShakeEffect(shakes: viewModel.shouldShowUnlockError ? 3 : 0))
