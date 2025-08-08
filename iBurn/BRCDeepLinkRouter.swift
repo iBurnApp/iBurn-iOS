@@ -9,6 +9,7 @@
 import UIKit
 import CoreLocation
 import YapDatabase
+import CocoaLumberjack
 
 enum DeepLinkObjectType: String {
     case art = "art"
@@ -40,10 +41,18 @@ enum DeepLinkObjectType: String {
     }
     
     @objc func handleURL(_ url: URL) -> Bool {
-        guard canHandleURL(url) else { return false }
+        DDLogInfo("Deep link router handling URL: \(url.absoluteString)")
+        guard canHandleURL(url) else { 
+            DDLogWarn("Cannot handle URL: \(url.absoluteString)")
+            return false 
+        }
         
         let pathComponents = url.pathComponents.filter { $0 != "/" }
-        guard let firstComponent = pathComponents.first else { return false }
+        DDLogInfo("Path components: \(pathComponents)")
+        guard let firstComponent = pathComponents.first else { 
+            DDLogWarn("No path components found in URL: \(url.absoluteString)")
+            return false 
+        }
         
         let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let metadata = Dictionary(uniqueKeysWithValues: queryItems.compactMap { item -> (String, String)? in
@@ -51,16 +60,23 @@ enum DeepLinkObjectType: String {
             return (item.name, value)
         })
         
+        DDLogInfo("First component: \(firstComponent)")
         switch firstComponent {
         case "art", "camp", "event":
             // UID is now a query parameter
-            guard let uid = metadata["uid"] else { return false }
+            guard let uid = metadata["uid"] else { 
+                DDLogWarn("No UID found in metadata for \(firstComponent)")
+                return false 
+            }
+            DDLogInfo("Navigating to \(firstComponent) with UID: \(uid)")
             return navigateToObject(uid: uid, type: firstComponent, metadata: metadata)
             
         case "pin":
+            DDLogInfo("Creating map pin from metadata")
             return createMapPin(from: metadata)
             
         default:
+            DDLogWarn("Unknown path component: \(firstComponent)")
             return false
         }
     }
@@ -88,20 +104,36 @@ enum DeepLinkObjectType: String {
         }
         
         guard let dataObject = object else {
+            DDLogWarn("Object not found for UID: \(uid) type: \(type)")
             // Object not found - show error or search
             showObjectNotFound(uid: uid, type: type, metadata: metadata)
             return false
         }
         
-        // Navigate to object
+        DDLogInfo("Found object: \(dataObject.title) for UID: \(uid)")
+        
+        // Navigate to object - present as sheet over current interface
         DispatchQueue.main.async {
-            // Switch to map tab (index 0)
-            tabController.selectedIndex = 0
-            
-            // Push detail view
             let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
-            if let navController = tabController.selectedViewController as? UINavigationController {
-                navController.pushViewController(detailVC, animated: true)
+            
+            // Wrap in navigation controller for sheet presentation
+            let navController = UINavigationController(rootViewController: detailVC)
+            navController.modalPresentationStyle = .pageSheet
+            
+            // Add close button to navigation bar
+            detailVC.navigationItem.leftBarButtonItem = UIBarButtonItem(
+                barButtonSystemItem: .done,
+                target: self,
+                action: #selector(self.dismissDetailSheet)
+            )
+            
+            // Present over current interface
+            if let presentedVC = tabController.presentedViewController {
+                // If something is already presented, present over it
+                presentedVC.present(navController, animated: true)
+            } else {
+                // Present over tab controller
+                tabController.present(navController, animated: true)
             }
         }
         
@@ -139,18 +171,21 @@ enum DeepLinkObjectType: String {
             transaction.setObject(pin, forKey: pin.yapKey, inCollection: pin.yapCollection)
         }
         
-        // Navigate to map and show pin
+        // Show confirmation that pin was added
         DispatchQueue.main.async {
             guard let tabController = self.tabController else { return }
             
-            // Switch to map tab
-            tabController.selectedIndex = 0
+            let message = "Custom pin \"\(title)\" has been added to your map."
+            let alert = UIAlertController(title: "Pin Added", message: message, preferredStyle: .alert)
             
-            // Center map on pin
-            if let navController = tabController.selectedViewController as? UINavigationController,
-               let _ = navController.viewControllers.first as? MainMapViewController {
-                // Map will center on the pin automatically when annotation is added
-            }
+            alert.addAction(UIAlertAction(title: "View on Map", style: .default) { _ in
+                // Switch to map tab to show the pin
+                tabController.selectedIndex = 0
+            })
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+            
+            tabController.present(alert, animated: true)
         }
         
         return true
@@ -176,6 +211,14 @@ enum DeepLinkObjectType: String {
         
         DispatchQueue.main.async {
             self.tabController?.present(alert, animated: true)
+        }
+    }
+    
+    @objc private func dismissDetailSheet() {
+        guard let tabController = tabController else { return }
+        
+        if let presentedVC = tabController.presentedViewController {
+            presentedVC.dismiss(animated: true)
         }
     }
 }
