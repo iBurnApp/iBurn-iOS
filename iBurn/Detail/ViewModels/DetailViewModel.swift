@@ -189,6 +189,11 @@ class DetailViewModel: ObservableObject {
         }
     }
     
+    func shareObject() {
+        // Show QR code share screen instead of direct share sheet
+        coordinator.handle(.showShareScreen(dataObject))
+    }
+    
     /// Extract theme colors following the same logic as BRCDetailViewController
     func getThemeColors() -> ImageColors {
         // If image colors theming is disabled, always return global theme colors

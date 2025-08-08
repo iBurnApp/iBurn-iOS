@@ -23,9 +23,11 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.iburnapp.iburn</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>haf0ca0d3f6e80591495cf24f7f513abdf</string>
+				<string>iburn</string>
 			</array>
 		</dict>
 	</array>

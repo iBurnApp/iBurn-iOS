@@ -62,6 +62,15 @@ struct DetailView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
+                // Share button
+                Button(action: {
+                    viewModel.shareObject()
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .accessibilityLabel("Share")
+                        .font(.body)
+                }
+                
                 // Add to Calendar button for events
                 if viewModel.dataObject is BRCEventObject {
                     Button(action: {

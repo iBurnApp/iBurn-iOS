@@ -80,6 +80,8 @@ enum DetailAction {
     case pauseAudio
     case editNotes(current: String, completion: (String) -> Void)
     case showEventEditor(BRCEventObject)
+    case share([Any])
+    case showShareScreen(BRCDataObject)
 }
 
 // MARK: - Error Types

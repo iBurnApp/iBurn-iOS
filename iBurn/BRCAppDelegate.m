@@ -114,6 +114,18 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         [self handleNotification:launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]];
     }
     
+    // Handle launch from URL
+    NSURL *launchURL = launchOptions[UIApplicationLaunchOptionsURLKey];
+    if (launchURL) {
+        // Delay to ensure UI is ready
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            BOOL handled = [[BRCDeepLinkRouter shared] handleURL:launchURL];
+            if (!handled) {
+                DDLogWarn(@"Failed to handle launch URL: %@", launchURL);
+            }
+        });
+    }
+    
     self.locationManager = [CLLocationManager brc_locationManager];
     self.locationManager.delegate = self;
     
@@ -415,6 +427,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     [self setupDefaultTabBarController];
     self.window.rootViewController = self.tabBarController;
     
+    // Configure deep link router
+    [[BRCDeepLinkRouter shared] configureWithTabController:self.tabBarController];
+    
     // do it again just in case
     [[self class] registerForRemoteNotifications];
     [self requestLocationPermission];
@@ -467,6 +482,22 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         BOOL success = (result == UIBackgroundFetchResultNewData);
         [task setTaskCompletedWithSuccess:success];
     }];
+}
+
+#pragma mark - Deep Linking
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+    return [[BRCDeepLinkRouter shared] handleURL:url];
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        NSURL *url = userActivity.webpageURL;
+        if (url) {
+            return [[BRCDeepLinkRouter shared] handleURL:url];
+        }
+    }
+    return NO;
 }
 
 @end

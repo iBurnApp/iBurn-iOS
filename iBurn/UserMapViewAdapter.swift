@@ -64,6 +64,7 @@ public class UserMapViewAdapter: MapViewAdapter {
         guard annotation is BRCUserMapPoint else {
             return super.mapView(mapView, leftCalloutAccessoryViewFor: annotation)
         }
+        // Keep the edit button
         let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FAPencil, fontSize: 20)
         button?.tag = ButtonTag.edit.rawValue
         return button
@@ -73,9 +74,12 @@ public class UserMapViewAdapter: MapViewAdapter {
         guard annotation is BRCUserMapPoint else {
             return super.mapView(mapView, rightCalloutAccessoryViewFor: annotation)
         }
-        let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FATrash, fontSize: 20)
-        button?.tag = ButtonTag.delete.rawValue
-        return button
+        // More button (replaces delete button)
+        let moreButton = UIButton(type: .system)
+        moreButton.setImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
+        moreButton.tag = ButtonTag.more.rawValue
+        moreButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+        return moreButton
     }
     
     override public func mapView(_ mapView: MLNMapView, annotation: MLNAnnotation, calloutAccessoryControlTapped control: UIControl) {
@@ -89,11 +93,58 @@ public class UserMapViewAdapter: MapViewAdapter {
         case .delete:
             deleteMapPoint(point)
         case .edit:
+            // Restore edit functionality
             annotationView.isDraggable = true
             annotationView.startDragging()
             editMapPoint(point)
         case .info:
             break
+        case .share:
+            // Direct share (not used for user map points in callout)
+            shareMapPoint(point, sourceView: control)
+        case .more:
+            // Show action sheet with Delete and Share options
+            showMoreActionsForMapPoint(point, sourceView: control)
+        }
+    }
+    
+    private func shareMapPoint(_ point: BRCMapPoint, sourceView: UIView) {
+        // Show QR code share screen for map points
+        let shareViewController = ShareQRCodeHostingController(mapPoint: point)
+        if let parentVC = parent {
+            parentVC.present(shareViewController, animated: true, completion: nil)
+        }
+    }
+    
+    private func showMoreActionsForMapPoint(_ point: BRCMapPoint, sourceView: UIView) {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        // Share action
+        let shareAction = UIAlertAction(title: "Share", style: .default) { [weak self] _ in
+            self?.shareMapPoint(point, sourceView: sourceView)
+        }
+        shareAction.setValue(UIImage(systemName: "square.and.arrow.up"), forKey: "image")
+        actionSheet.addAction(shareAction)
+        
+        // Delete action
+        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            self?.deleteMapPoint(point)
+        }
+        deleteAction.setValue(UIImage(systemName: "trash"), forKey: "image")
+        actionSheet.addAction(deleteAction)
+        
+        // Cancel action
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        actionSheet.addAction(cancelAction)
+        
+        // iPad support
+        if let popover = actionSheet.popoverPresentationController {
+            popover.sourceView = sourceView
+            popover.sourceRect = sourceView.bounds
+        }
+        
+        if let parentVC = parent {
+            parentVC.present(actionSheet, animated: true)
         }
     }
     

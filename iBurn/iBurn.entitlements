@@ -4,5 +4,10 @@
 <dict>
 	<key>aps-environment</key>
 	<string>development</string>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:iburnapp.com</string>
+		<string>applinks:www.iburnapp.com</string>
+	</array>
 </dict>
 </plist>

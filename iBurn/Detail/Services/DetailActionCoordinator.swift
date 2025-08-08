@@ -9,6 +9,7 @@
 import UIKit
 import SafariServices
 import EventKitUI
+import SwiftUI
 
 // MARK: - Protocol
 
@@ -235,6 +236,45 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             // Present notes editor
             let alertController = createNotesEditor(currentNotes: current, completion: completion)
             presenter.present(alertController, animated: true, completion: nil)
+            
+        case .share(let activityItems):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot share: No presenter available")
+                return
+            }
+            
+            let activityController = UIActivityViewController(
+                activityItems: activityItems,
+                applicationActivities: nil
+            )
+            
+            // iPad support
+            if let popover = activityController.popoverPresentationController {
+                // Try to get the share button from the navigation bar
+                if let navController = presenter as? UINavigationController,
+                   let topVC = navController.topViewController {
+                    if let shareButton = topVC.navigationItem.rightBarButtonItems?.first {
+                        popover.barButtonItem = shareButton
+                    } else {
+                        popover.sourceView = topVC.view
+                        popover.sourceRect = CGRect(x: topVC.view.bounds.midX, y: 100, width: 0, height: 0)
+                    }
+                } else if let viewController = presenter as? UIViewController {
+                    popover.sourceView = viewController.view
+                    popover.sourceRect = CGRect(x: viewController.view.bounds.midX, y: 100, width: 0, height: 0)
+                }
+            }
+            
+            presenter.present(activityController, animated: true, completion: nil)
+            
+        case .showShareScreen(let dataObject):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot show share screen: No presenter available")
+                return
+            }
+            
+            let shareViewController = ShareQRCodeHostingController(dataObject: dataObject)
+            presenter.present(shareViewController, animated: true, completion: nil)
         }
     }
     
