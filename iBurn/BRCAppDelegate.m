@@ -119,7 +119,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     if (launchURL) {
         // Delay to ensure UI is ready
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [[BRCDeepLinkRouter shared] handleURL:launchURL];
+            BOOL handled = [[BRCDeepLinkRouter shared] handleURL:launchURL];
+            if (!handled) {
+                DDLogWarn(@"Failed to handle launch URL: %@", launchURL);
+            }
         });
     }
     

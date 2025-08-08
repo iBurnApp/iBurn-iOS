@@ -125,9 +125,9 @@ enum DeepLinkObjectType: String {
         }
         
         let title = metadata["title"] ?? "Custom Pin"
-        let description = metadata["desc"]
-        let address = metadata["addr"]
-        let color = metadata["color"] ?? "red"
+        let _ = metadata["desc"]
+        let _ = metadata["addr"]
+        let _ = metadata["color"] ?? "red"
         
         // Create and save custom pin as BRCUserMapPoint
         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -148,7 +148,7 @@ enum DeepLinkObjectType: String {
             
             // Center map on pin
             if let navController = tabController.selectedViewController as? UINavigationController,
-               let mapVC = navController.viewControllers.first as? MainMapViewController {
+               let _ = navController.viewControllers.first as? MainMapViewController {
                 // Map will center on the pin automatically when annotation is added
             }
         }

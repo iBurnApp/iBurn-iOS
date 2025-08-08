@@ -186,7 +186,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
     public func mapView(_ mapView: MLNMapView, didDeselect annotation: MLNAnnotation) {}
     
     public func mapView(_ mapView: MLNMapView, leftCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
-        guard let dataAnnotation = annotation as? DataObjectAnnotation else {
+        guard annotation is DataObjectAnnotation else {
             return nil
         }
         // Share button
