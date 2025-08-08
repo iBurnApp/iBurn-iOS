@@ -106,8 +106,8 @@ class BRCDeepLinkRouter: NSObject {
         
         switch firstComponent {
         case "art", "camp", "event":
-            guard pathComponents.count >= 2 else { return false }
-            let uid = pathComponents[1]
+            // UID is now a query parameter
+            guard let uid = metadata["uid"] else { return false }
             return navigateToObject(uid: uid, type: firstComponent, metadata: metadata)
             
         case "pin":
@@ -312,19 +312,22 @@ extension BRCDataObject {
     func generateShareURL() -> URL? {
         var components = URLComponents(string: "https://iburnapp.com")!
         
-        // Add path based on object type
+        // Set path based on object type
         if self is BRCArtObject {
-            components.path = "/art/\(uid)"
+            components.path = "/art/"
         } else if self is BRCCampObject {
-            components.path = "/camp/\(uid)"
+            components.path = "/camp/"
         } else if self is BRCEventObject {
-            components.path = "/event/\(uid)"
+            components.path = "/event/"
         } else {
             return nil
         }
         
         // Add query parameters
         var queryItems: [URLQueryItem] = []
+        
+        // UID as query parameter
+        queryItems.append(URLQueryItem(name: "uid", value: uid))
         
         // Universal parameters
         queryItems.append(URLQueryItem(name: "title", value: title))
@@ -437,7 +440,7 @@ Create this file for the website repository:
 
 ```bash
 # Test in Simulator
-xcrun simctl openurl booted "iburn://art/a2Id0000000cbObEAI"
+xcrun simctl openurl booted "iburn://art/?uid=a2Id0000000cbObEAI&title=Test%20Art"
 xcrun simctl openurl booted "iburn://pin?lat=40.7868&lng=-119.2068&title=Test%20Pin"
 ```
 
@@ -452,12 +455,12 @@ xcrun simctl openurl booted "iburn://pin?lat=40.7868&lng=-119.2068&title=Test%20
 
 | Scenario | URL | Expected Result |
 |----------|-----|-----------------|
-| Art object | `iburn://art/[uid]` | Opens art detail |
-| Camp object | `iburn://camp/[uid]` | Opens camp detail |
-| Event object | `iburn://event/[uid]` | Opens event detail |
+| Art object | `iburn://art/?uid=[uid]` | Opens art detail |
+| Camp object | `iburn://camp/?uid=[uid]` | Opens camp detail |
+| Event object | `iburn://event/?uid=[uid]` | Opens event detail |
 | Custom pin | `iburn://pin?lat=40.78&lng=-119.20&title=Test` | Creates pin on map |
-| Missing object | `iburn://art/invalid` | Shows error alert |
-| Web link | `https://iburnapp.com/art/[uid]` | Opens in app |
+| Missing object | `iburn://art/?uid=invalid` | Shows error alert |
+| Web link | `https://iburnapp.com/art/?uid=[uid]` | Opens in app |
 
 ### Step 7: Database Migration
 

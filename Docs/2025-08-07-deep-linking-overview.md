@@ -23,8 +23,8 @@ This document outlines the complete implementation plan for adding deep linking 
 
 #### API-Based Objects
 ```
-https://iburnapp.com/{type}/{uid}?{parameters}
-iburn://{type}/{uid}?{parameters}
+https://iburnapp.com/{type}/?uid={uid}&{parameters}
+iburn://{type}/?uid={uid}&{parameters}
 
 Types: art, camp, event
 UID: Salesforce-style identifier (e.g., "a2Id0000000cbObEAI")
@@ -70,12 +70,12 @@ iburn://pin?lat={latitude}&lng={longitude}&title={title}&{parameters}
 
 **Minimal art piece:**
 ```
-https://iburnapp.com/art/a2Id0000000cbObEAI
+https://iburnapp.com/art/?uid=a2Id0000000cbObEAI
 ```
 
 **Rich event with metadata:**
 ```
-https://iburnapp.com/event/5ye8cMz8?title=Fire%20Spinning&host=The%20Folly&host_id=a2Id0000000cbOb&host_type=art&addr=9%3A00%20Plaza&start=2025-08-29T21:00&desc=Nightly%20fire%20performance
+https://iburnapp.com/event/?uid=5ye8cMz8&title=Fire%20Spinning&host=The%20Folly&host_id=a2Id0000000cbOb&host_type=art&addr=9%3A00%20Plaza&start=2025-08-29T21:00&desc=Nightly%20fire%20performance
 ```
 
 **Custom map pin:**
