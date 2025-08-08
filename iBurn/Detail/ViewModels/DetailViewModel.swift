@@ -189,6 +189,16 @@ class DetailViewModel: ObservableObject {
         }
     }
     
+    func shareObject() {
+        if let shareURL = dataObject.generateShareURL() {
+            let activityItems: [Any] = [
+                "\(dataObject.title) at Burning Man",
+                shareURL
+            ]
+            coordinator.handle(.share(activityItems))
+        }
+    }
+    
     /// Extract theme colors following the same logic as BRCDetailViewController
     func getThemeColors() -> ImageColors {
         // If image colors theming is disabled, always return global theme colors
