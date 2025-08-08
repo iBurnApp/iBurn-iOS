@@ -53,8 +53,8 @@ enum DeepLinkObjectType: String {
         
         switch firstComponent {
         case "art", "camp", "event":
-            guard pathComponents.count >= 2 else { return false }
-            let uid = pathComponents[1]
+            // UID is now a query parameter
+            guard let uid = metadata["uid"] else { return false }
             return navigateToObject(uid: uid, type: firstComponent, metadata: metadata)
             
         case "pin":
@@ -196,19 +196,22 @@ extension BRCDataObject {
     @objc func generateShareURL() -> URL? {
         var components = URLComponents(string: "https://iburnapp.com")!
         
-        // Add path based on object type
+        // Set path based on object type
         if self is BRCArtObject {
-            components.path = "/art/\(uniqueID)"
+            components.path = "/art/"
         } else if self is BRCCampObject {
-            components.path = "/camp/\(uniqueID)"
+            components.path = "/camp/"
         } else if self is BRCEventObject {
-            components.path = "/event/\(uniqueID)"
+            components.path = "/event/"
         } else {
             return nil
         }
         
         // Add query parameters
         var queryItems: [URLQueryItem] = []
+        
+        // UID as query parameter
+        queryItems.append(URLQueryItem(name: "uid", value: uniqueID))
         
         // Universal parameters
         queryItems.append(URLQueryItem(name: "title", value: title))

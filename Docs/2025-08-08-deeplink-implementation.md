@@ -86,12 +86,17 @@ Key methods:
 
 ### Object URLs
 ```
-iburn://art/{uid}
-iburn://camp/{uid}
-iburn://event/{uid}
-https://iburnapp.com/art/{uid}
-https://iburnapp.com/camp/{uid}
-https://iburnapp.com/event/{uid}
+iburn://art/?uid={uid}
+iburn://camp/?uid={uid}
+iburn://event/?uid={uid}
+https://iburnapp.com/art/?uid={uid}
+https://iburnapp.com/camp/?uid={uid}
+https://iburnapp.com/event/?uid={uid}
+```
+
+Example:
+```
+https://iburnapp.com/art/?uid=a1XVI000008yf262AA&title=Simple%20Art
 ```
 
 ### Custom Pin URLs
@@ -116,7 +121,7 @@ https://iburnapp.com/pin?lat={latitude}&lng={longitude}&title={title}
 - All code compiles successfully after clean
 
 ### Test Scenarios
-1. **Custom URL Scheme**: `xcrun simctl openurl booted "iburn://art/a2Id0000000cbObEAI"`
+1. **Custom URL Scheme**: `xcrun simctl openurl booted "iburn://art/?uid=a2Id0000000cbObEAI&title=Test%20Art"`
 2. **Pin Creation**: `xcrun simctl openurl booted "iburn://pin?lat=40.7868&lng=-119.2068&title=Test%20Pin"`
 3. **Share Functionality**: Test share button in detail views
 4. **Universal Links**: Requires device testing with live domain
