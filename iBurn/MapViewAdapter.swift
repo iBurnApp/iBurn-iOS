@@ -13,13 +13,16 @@ import BButton
 import CocoaLumberjack
 import SafariServices
 import EventKitUI
+import SwiftUI
 
 public class MapViewAdapter: NSObject {
     
     enum ButtonTag: Int {
         case edit = 1,
         delete = 2,
-        info = 3
+        info = 3,
+        share = 4,
+        more = 5
     }
 
     // MARK: - Properties
@@ -183,7 +186,15 @@ extension MapViewAdapter: MLNMapViewDelegate {
     public func mapView(_ mapView: MLNMapView, didDeselect annotation: MLNAnnotation) {}
     
     public func mapView(_ mapView: MLNMapView, leftCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
-        return nil
+        guard let dataAnnotation = annotation as? DataObjectAnnotation else {
+            return nil
+        }
+        // Share button
+        let shareButton = UIButton(type: .system)
+        shareButton.setImage(UIImage(systemName: "square.and.arrow.up"), for: .normal)
+        shareButton.tag = ButtonTag.share.rawValue
+        shareButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+        return shareButton
     }
     
     public func mapView(_ mapView: MLNMapView, rightCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
@@ -208,6 +219,14 @@ extension MapViewAdapter: MLNMapViewDelegate {
                 let vc = DetailViewControllerFactory.createDetailViewController(for: data.object)
                 parentVC.navigationController?.pushViewController(vc, animated: true)
             }
+        case .share:
+            if let parentVC = parent {
+                let shareViewController = ShareQRCodeHostingController(dataObject: data.object)
+                parentVC.present(shareViewController, animated: true, completion: nil)
+            }
+        case .more:
+            // More action not used for regular data objects
+            break
         }
     }
     

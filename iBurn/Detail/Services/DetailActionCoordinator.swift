@@ -9,6 +9,7 @@
 import UIKit
 import SafariServices
 import EventKitUI
+import SwiftUI
 
 // MARK: - Protocol
 
@@ -265,6 +266,15 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             }
             
             presenter.present(activityController, animated: true, completion: nil)
+            
+        case .showShareScreen(let dataObject):
+            guard let presenter = dependencies.presenter else {
+                print("❌ Cannot show share screen: No presenter available")
+                return
+            }
+            
+            let shareViewController = ShareQRCodeHostingController(dataObject: dataObject)
+            presenter.present(shareViewController, animated: true, completion: nil)
         }
     }
     

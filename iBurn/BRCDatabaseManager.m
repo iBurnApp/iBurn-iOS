@@ -247,9 +247,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     }
     NSLog(@"Registered %@ %d", self.dataObjectsViewName, success);
     
-    // Register map pins view
-    [self registerMapPinsView];
-    
     success = [self registerUpdateInfoView];
     if (success) {
         [self postExtensionRegisteredNotification:BRCDatabaseManager.updateInfoViewName];
@@ -292,41 +289,6 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.searchObjectsViewName];
     }
     NSLog(@"Registered %@ %d", self.searchObjectsViewName, success);
-}
-
-- (void) registerMapPinsView {
-    // Create grouping for map pins
-    YapDatabaseViewGrouping *pinsGrouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(YapDatabaseReadTransaction *transaction, NSString *collection, NSString *key, id object) {
-        if ([object isKindOfClass:NSClassFromString(@"BRCMapPin")]) {
-            return @"pins";
-        }
-        return nil;
-    }];
-    
-    // Create sorting for map pins (newest first)
-    YapDatabaseViewSorting *pinsSorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection1, NSString *key1, id object1, NSString *collection2, NSString *key2, id object2) {
-        Class mapPinClass = NSClassFromString(@"BRCMapPin");
-        if ([object1 isKindOfClass:mapPinClass] && [object2 isKindOfClass:mapPinClass]) {
-            NSDate *date1 = [object1 valueForKey:@"createdDate"];
-            NSDate *date2 = [object2 valueForKey:@"createdDate"];
-            return [date2 compare:date1]; // Newest first
-        }
-        return NSOrderedSame;
-    }];
-    
-    // Allow BRCMapPin collection
-    YapWhitelistBlacklist *allowedCollections = [[YapWhitelistBlacklist alloc] initWithWhitelist:[NSSet setWithObject:@"BRCMapPinCollection"]];
-    YapDatabaseViewOptions *pinsViewOptions = [[YapDatabaseViewOptions alloc] init];
-    pinsViewOptions.allowedCollections = allowedCollections;
-    
-    // Create and register the view
-    YapDatabaseView *pinsView = [[YapDatabaseAutoView alloc] initWithGrouping:pinsGrouping sorting:pinsSorting versionTag:@"1" options:pinsViewOptions];
-    NSString *viewName = @"MapPins";
-    BOOL success = [self.database registerExtension:pinsView withName:viewName];
-    if (success) {
-        [self postExtensionRegisteredNotification:viewName];
-    }
-    NSLog(@"Registered %@ %d", viewName, success);
 }
 
 - (void) registerFullTextSearch {

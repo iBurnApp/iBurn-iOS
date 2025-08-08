@@ -190,13 +190,8 @@ class DetailViewModel: ObservableObject {
     }
     
     func shareObject() {
-        if let shareURL = dataObject.generateShareURL() {
-            let activityItems: [Any] = [
-                "\(dataObject.title) at Burning Man",
-                shareURL
-            ]
-            coordinator.handle(.share(activityItems))
-        }
+        // Show QR code share screen instead of direct share sheet
+        coordinator.handle(.showShareScreen(dataObject))
     }
     
     /// Extract theme colors following the same logic as BRCDetailViewController

@@ -38,6 +38,9 @@
 		D90FFA401EEFB4F6005127D0 /* UserTracking.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D90FFA3F1EEFB4F6005127D0 /* UserTracking.xcassets */; };
 		D913995D22FA88F000CA39A7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D913995C22FA88F000CA39A7 /* LaunchScreen.storyboard */; };
 		D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = D91879A32BC1058E0099EFAA /* MapLibre */; };
+		D919339C2E45CF2F006EA630 /* ShareQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */; };
+		D919339D2E45CF2F006EA630 /* BRCDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */; };
+		D919339F2E45DEB4006EA630 /* OpenInSafariActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */; };
 		D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9251483211519A2007A7904 /* AnnotationDataSource.swift */; };
 		D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D925148521151F17007A7904 /* UserMapViewAdapter.swift */; };
 		D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */; };
@@ -346,6 +349,9 @@
 		D9167B7620F14AB100815F81 /* MediaFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaFiles; path = "Submodules/iBurn-Data/data/2018/MediaFiles"; sourceTree = SOURCE_ROOT; };
 		D9167B7820F14ABA00815F81 /* TileCache */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TileCache; path = "Submodules/iBurn-Data/data/2018/TileCache"; sourceTree = SOURCE_ROOT; };
 		D9167B7A20F14AD000815F81 /* iBurn-2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2018"; path = "Submodules/iBurn-Data/data/2018/iBurn-2018"; sourceTree = SOURCE_ROOT; };
+		D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDeepLinkRouter.swift; sourceTree = "<group>"; };
+		D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareQRCodeView.swift; sourceTree = "<group>"; };
+		D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenInSafariActivity.swift; sourceTree = "<group>"; };
 		D9251483211519A2007A7904 /* AnnotationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationDataSource.swift; sourceTree = "<group>"; };
 		D925148521151F17007A7904 /* UserMapViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMapViewAdapter.swift; sourceTree = "<group>"; };
 		D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "YapDatabaseConnection+iBurn.swift"; sourceTree = "<group>"; };
@@ -715,6 +721,9 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */,
+				D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */,
+				D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */,
 				D9E63FA62E3FDB9D00101257 /* TimeShift */,
 				D9E63FF12E40296500101257 /* ListButtonHelper.swift */,
 				D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */,
@@ -1686,6 +1695,8 @@
 				D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */,
 				D9E8D86622F4E43F00BD78EA /* UserDefaults+iBurn.swift in Sources */,
 				D9774B172118DB4500BE3CC8 /* MapButtonHelper.swift in Sources */,
+				D919339C2E45CF2F006EA630 /* ShareQRCodeView.swift in Sources */,
+				D919339D2E45CF2F006EA630 /* BRCDeepLinkRouter.swift in Sources */,
 				D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */,
 				D92AC56522F00AE700C9FE32 /* TracksViewController.swift in Sources */,
 				D9FC5E331D54110300D41AEE /* BRCArtObjectTableViewCell.m in Sources */,
@@ -1757,6 +1768,7 @@
 				D994156B198726B600D245C7 /* BRCCampObject.m in Sources */,
 				D994156E198726C100D245C7 /* BRCEventObject.m in Sources */,
 				D98FFEB32DD0568900107B9F /* EmbargoPasscodeViewModel.swift in Sources */,
+				D919339F2E45DEB4006EA630 /* OpenInSafariActivity.swift in Sources */,
 				D98FFEB42DD0568900107B9F /* EmbargoPasscodeView.swift in Sources */,
 				D977C8601EF23036007766A9 /* BaseMapViewController.swift in Sources */,
 				D927BDB21EF4778000B7324D /* UserGuidance.swift in Sources */,

@@ -23,13 +23,13 @@ enum DeepLinkObjectType: String {
     
     private weak var tabController: TabController?
     
-    @objc func configure(with tabController: TabController) {
+    @objc func configure(withTabController tabController: TabController) {
         self.tabController = tabController
     }
     
     // MARK: - URL Handling
     
-    @objc func canHandle(_ url: URL) -> Bool {
+    @objc func canHandleURL(_ url: URL) -> Bool {
         if url.scheme == "iburn" {
             return true
         }
@@ -39,14 +39,14 @@ enum DeepLinkObjectType: String {
         return false
     }
     
-    @objc func handle(_ url: URL) -> Bool {
-        guard canHandle(url) else { return false }
+    @objc func handleURL(_ url: URL) -> Bool {
+        guard canHandleURL(url) else { return false }
         
         let pathComponents = url.pathComponents.filter { $0 != "/" }
         guard let firstComponent = pathComponents.first else { return false }
         
         let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        let metadata = Dictionary(uniqueKeysWithValues: queryItems.compactMap { item in
+        let metadata = Dictionary(uniqueKeysWithValues: queryItems.compactMap { item -> (String, String)? in
             guard let value = item.value else { return nil }
             return (item.name, value)
         })
@@ -74,7 +74,7 @@ enum DeepLinkObjectType: String {
         let connection = BRCDatabaseManager.shared.uiConnection
         var object: BRCDataObject?
         
-        connection?.read { transaction in
+        connection.read { transaction in
             switch type {
             case "art":
                 object = transaction.object(forKey: uid, inCollection: BRCArtObject.yapCollection) as? BRCArtObject
@@ -99,7 +99,7 @@ enum DeepLinkObjectType: String {
             tabController.selectedIndex = 0
             
             // Push detail view
-            let detailVC = DetailViewControllerFactory.viewController(for: dataObject)
+            let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
             if let navController = tabController.selectedViewController as? UINavigationController {
                 navController.pushViewController(detailVC, animated: true)
             }
@@ -129,19 +129,14 @@ enum DeepLinkObjectType: String {
         let address = metadata["addr"]
         let color = metadata["color"] ?? "red"
         
-        // Create and save custom pin
-        let pin = BRCMapPin()
-        pin.uniqueID = UUID().uuidString
-        pin.title = title
-        pin.detailDescription = description
-        pin.playaLocation = address
-        pin.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        pin.color = color
-        pin.createdDate = Date()
+        // Create and save custom pin as BRCUserMapPoint
+        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let pin = BRCUserMapPoint(title: title, coordinate: coordinate, type: .userStar)
+        // BRCUserMapPoint uses yapKey generated from creationDate
         
         // Save to database
-        BRCDatabaseManager.shared.readWriteConnection?.asyncReadWrite { transaction in
-            transaction.setObject(pin, forKey: pin.yapKey, inCollection: BRCMapPin.yapCollection)
+        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+            transaction.setObject(pin, forKey: pin.yapKey, inCollection: pin.yapCollection)
         }
         
         // Navigate to map and show pin
@@ -154,11 +149,7 @@ enum DeepLinkObjectType: String {
             // Center map on pin
             if let navController = tabController.selectedViewController as? UINavigationController,
                let mapVC = navController.viewControllers.first as? MainMapViewController {
-                mapVC.centerMapOn(dataObject: pin)
-                // Select annotation after a short delay to ensure it's been added
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    mapVC.selectAnnotation(for: pin)
-                }
+                // Map will center on the pin automatically when annotation is added
             }
         }
         
@@ -216,13 +207,16 @@ extension BRCDataObject {
         // Universal parameters
         queryItems.append(URLQueryItem(name: "title", value: title))
         
-        if let location = location {
-            queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", location.coordinate.latitude)))
-            queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", location.coordinate.longitude)))
-        }
-        
-        if let playaLocation = playaLocation, !playaLocation.isEmpty {
-            queryItems.append(URLQueryItem(name: "addr", value: playaLocation))
+        // Only include location data if embargo allows it
+        if BRCEmbargo.canShowLocation(for: self) {
+            if let location = location {
+                queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", location.coordinate.latitude)))
+                queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", location.coordinate.longitude)))
+            }
+            
+            if let playaLocation = playaLocation, !playaLocation.isEmpty {
+                queryItems.append(URLQueryItem(name: "addr", value: playaLocation))
+            }
         }
         
         if let description = detailDescription, !description.isEmpty {
@@ -232,19 +226,16 @@ extension BRCDataObject {
         
         // Event-specific parameters
         if let event = self as? BRCEventObject {
-            if let startDate = event.startDate {
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = [.withYear, .withMonth, .withDay, .withTime, .withColonSeparatorInTime]
-                queryItems.append(URLQueryItem(name: "start", value: formatter.string(from: startDate)))
-            }
-            if let endDate = event.endDate {
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = [.withYear, .withMonth, .withDay, .withTime, .withColonSeparatorInTime]
-                queryItems.append(URLQueryItem(name: "end", value: formatter.string(from: endDate)))
-            }
+            let startDate = event.startDate
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withYear, .withMonth, .withDay, .withTime, .withColonSeparatorInTime]
+            queryItems.append(URLQueryItem(name: "start", value: formatter.string(from: startDate)))
+            
+            let endDate = event.endDate
+            queryItems.append(URLQueryItem(name: "end", value: formatter.string(from: endDate)))
             
             // Add host information
-            BRCDatabaseManager.shared.uiConnection?.read { transaction in
+            BRCDatabaseManager.shared.uiConnection.read { transaction in
                 if let campHost = event.hostedByCamp(with: transaction) {
                     queryItems.append(URLQueryItem(name: "host", value: campHost.title))
                     queryItems.append(URLQueryItem(name: "host_id", value: campHost.uniqueID))
@@ -262,8 +253,7 @@ extension BRCDataObject {
         }
         
         // Add year
-        let yearSettings = YearSettings.current
-        queryItems.append(URLQueryItem(name: "year", value: String(yearSettings.year)))
+        queryItems.append(URLQueryItem(name: "year", value: YearSettings.playaYear))
         
         components.queryItems = queryItems
         
@@ -271,7 +261,7 @@ extension BRCDataObject {
     }
 }
 
-extension BRCMapPin {
+extension BRCMapPoint {
     
     @objc func generateShareURL() -> URL? {
         var components = URLComponents(string: "https://iburnapp.com")!
@@ -282,22 +272,16 @@ extension BRCMapPin {
         
         queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", coordinate.latitude)))
         queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", coordinate.longitude)))
-        queryItems.append(URLQueryItem(name: "title", value: title))
         
-        if let playaLocation = playaLocation, !playaLocation.isEmpty {
-            queryItems.append(URLQueryItem(name: "addr", value: playaLocation))
+        if let title = title {
+            queryItems.append(URLQueryItem(name: "title", value: title))
         }
         
-        if let description = detailDescription, !description.isEmpty {
-            let truncated = String(description.prefix(100))
-            queryItems.append(URLQueryItem(name: "desc", value: truncated))
-        }
-        
-        queryItems.append(URLQueryItem(name: "color", value: color))
+        // Map point type
+        queryItems.append(URLQueryItem(name: "type", value: String(type.rawValue)))
         
         // Add year
-        let yearSettings = YearSettings.current
-        queryItems.append(URLQueryItem(name: "year", value: String(yearSettings.year)))
+        queryItems.append(URLQueryItem(name: "year", value: YearSettings.playaYear))
         
         components.queryItems = queryItems
         
