@@ -48,12 +48,23 @@ struct FavoritesFilterView: View {
             // Filter Section
             Section {
                 Toggle("Show Expired Events", isOn: $viewModel.showExpiredEvents)
-                    .disabled(viewModel.showTodayOnly)
                 Toggle("Today's Events Only", isOn: $viewModel.showTodayOnly)
             } footer: {
-                Text("Filter your favorites to show only today's events or hide expired events")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
+                Group {
+                    if viewModel.showTodayOnly {
+                        if viewModel.showExpiredEvents {
+                            Text("Showing all of today's favorited events")
+                        } else {
+                            Text("Showing today's favorited events (hiding expired)")
+                        }
+                    } else if viewModel.showExpiredEvents {
+                        Text("Showing all favorited events including expired ones")
+                    } else {
+                        Text("Hiding expired events")
+                    }
+                }
+                .font(.footnote)
+                .foregroundColor(.secondary)
             }
         }
         .navigationTitle("Filter")

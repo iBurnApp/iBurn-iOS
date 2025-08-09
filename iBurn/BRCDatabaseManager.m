@@ -659,8 +659,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                         eventComponents.year != todayComponents.year) {
                         return NO;
                     }
-                    // If today only is on, we don't need to check expiration separately
-                    // as expired events from today should still show
+                    // If it's today, still check expiration setting
+                    if (!showExpiredEvents && [eventObject hasEnded:now]) {
+                        return NO;
+                    }
                     return YES;
                 }
                 
