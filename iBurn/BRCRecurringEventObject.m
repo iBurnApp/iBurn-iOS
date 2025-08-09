@@ -34,6 +34,14 @@
     NSMutableArray *events = [NSMutableArray arrayWithCapacity:self.eventTimes.count];
     __block NSUInteger eventCount = 0;
     [self.eventTimes enumerateObjectsUsingBlock:^(BRCEventTime *eventTime, NSUInteger idx, BOOL *stop) {
+        // Check for invalid date ranges where end is before start
+        if (eventTime.endDate && eventTime.startDate && [eventTime.endDate timeIntervalSinceDate:eventTime.startDate] < 0) {
+            NSLog(@"WARNING: Event '%@' has negative duration (end before start). Start: %@, End: %@. Skipping this occurrence.", 
+                  self.title, eventTime.startDate, eventTime.endDate);
+            // Skip this invalid occurrence
+            return;
+        }
+        
         NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:eventTime.startDate andDate:eventTime.endDate];
         // Why is the PlayaEvents API returning this?
         if (daysBetweenDates > 0) {
