@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *subtitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *rightSubtitleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *eventCountLabel;
 
 /** If favoriteButtonAction is set, you must save your changes */
 @property (nullable, nonatomic, copy) void (^favoriteButtonAction)(UITableViewCell *cell, BOOL isFavorite);

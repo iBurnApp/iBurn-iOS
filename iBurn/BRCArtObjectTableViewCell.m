@@ -10,6 +10,8 @@
 #import <Mantle/Mantle.h>
 #import "BRCArtObject.h"
 #import "iBurn-Swift.h"
+#import "BRCDataObject+Relationships.h"
+#import "BRCDatabaseManager.h"
 @import AVFoundation;
 
 @implementation BRCArtObjectTableViewCell
@@ -43,6 +45,21 @@
         self.playPauseButton.hidden = NO;
     } else {
         self.playPauseButton.hidden = YES;
+    }
+    
+    // Show event count for art objects
+    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
+        __block NSArray *events = nil;
+        [[BRCDatabaseManager shared].uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
+            events = [dataObject eventsWithTransaction:transaction];
+        }];
+        
+        if (events.count > 0 && self.eventCountLabel) {
+            self.eventCountLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
+            self.eventCountLabel.hidden = NO;
+        } else if (self.eventCountLabel) {
+            self.eventCountLabel.hidden = YES;
+        }
     }
 }
 

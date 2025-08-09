@@ -17,6 +17,8 @@
 #import "BRCEmbargo.h"
 #import <Mantle/Mantle.h>
 #import "iBurn-Swift.h"
+#import "BRCDataObject+Relationships.h"
+#import "BRCCampObject.h"
 
 @implementation BRCDataObjectTableViewCell
 
@@ -54,6 +56,26 @@
         [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
     }
     self.favoriteButton.selected = metadata.isFavorite;
+    
+    // Show event count for camps (art is handled in BRCArtObjectTableViewCell)
+    if ([dataObject isKindOfClass:[BRCCampObject class]]) {
+        __block NSArray *events = nil;
+        [[BRCDatabaseManager shared].uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
+            events = [dataObject eventsWithTransaction:transaction];
+        }];
+        
+        if (events.count > 0 && self.eventCountLabel) {
+            self.eventCountLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
+            self.eventCountLabel.hidden = NO;
+        } else if (self.eventCountLabel) {
+            self.eventCountLabel.hidden = YES;
+        }
+    } else if (![dataObject isKindOfClass:[BRCArtObject class]]) {
+        // Hide for non-camp, non-art objects
+        if (self.eventCountLabel) {
+            self.eventCountLabel.hidden = YES;
+        }
+    }
 }
 
 - (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {
