@@ -49,24 +49,15 @@
             return;
         }
         
-        // Check for invalid date ranges where end is before start
+        // Check for invalid date ranges where end is before start and swap them
         if ([endDate timeIntervalSinceDate:startDate] < 0) {
             NSTimeInterval hoursDiff = [endDate timeIntervalSinceDate:startDate] / 3600.0;
-            NSLog(@"WARNING: Event '%@' has negative duration (%.1fh). Start: %@, End: %@. Skipping invalid occurrence.",
+            NSLog(@"WARNING: Event '%@' has negative duration (%.1fh). Swapping dates. Original: Start: %@, End: %@",
                   self.title, hoursDiff, startDate, endDate);
-            return; // Skip this invalid occurrence
-        }
-        
-        // Check if event falls within festival dates
-        BOOL startInRange = ([startDate compare:festivalStart] != NSOrderedAscending && 
-                             [startDate compare:festivalEnd] != NSOrderedDescending);
-        BOOL endInRange = ([endDate compare:festivalStart] != NSOrderedAscending && 
-                           [endDate compare:festivalEnd] != NSOrderedDescending);
-        
-        if (!startInRange || !endInRange) {
-            NSLog(@"WARNING: Event '%@' falls outside festival dates (Aug 24 - Sep 1). Start: %@, End: %@. Skipping.",
-                  self.title, startDate, endDate);
-            return; // Skip events outside festival dates
+            // Swap the dates to fix the data entry error
+            NSDate *tempDate = startDate;
+            startDate = endDate;
+            endDate = tempDate;
         }
         
         NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:startDate andDate:endDate];
@@ -76,32 +67,53 @@
             NSDate *newStartDate = startDate;
             NSDate *newEndDate = [startDate endOfDay];
             while ([NSDate brc_daysBetweenDate:newStartDate andDate:endDate] >= 0 && ![newStartDate isEqualToDate:newEndDate]) {
-                BRCEventObject *event = [[BRCEventObject alloc] init];
-                [event mergeValuesForKeysFromModel:self];
-                event.startDate = [newStartDate copy];
-                event.endDate = [newEndDate copy];
-                event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
-                [events addObject:event];
-                eventCount++;
+                // Validate each split day event against festival dates
+                BOOL startInRange = ([newStartDate compare:festivalStart] != NSOrderedAscending && 
+                                     [newStartDate compare:festivalEnd] != NSOrderedDescending);
+                BOOL endInRange = ([newEndDate compare:festivalStart] != NSOrderedAscending && 
+                                   [newEndDate compare:festivalEnd] != NSOrderedDescending);
+                
+                if (startInRange && endInRange) {
+                    BRCEventObject *event = [[BRCEventObject alloc] init];
+                    [event mergeValuesForKeysFromModel:self];
+                    event.startDate = [newStartDate copy];
+                    event.endDate = [newEndDate copy];
+                    event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
+                    [events addObject:event];
+                    eventCount++;
+                } else {
+                    NSLog(@"Skipping split event '%@' outside festival dates. Start: %@, End: %@", 
+                          self.title, newStartDate, newEndDate);
+                }
+                
                 newStartDate = [[newStartDate brc_nextDay] beginningOfDay];
                 if ([NSDate brc_daysBetweenDate:newStartDate andDate:endDate] > 0) {
                     newEndDate = [newStartDate endOfDay];
                 } else {
                     newEndDate = endDate;
                 }
-                NSParameterAssert(event.startDate != nil);
-                NSParameterAssert(event.endDate != nil);
             }
         } else {
-            BRCEventObject *event = [[BRCEventObject alloc] init];
-            [event mergeValuesForKeysFromModel:self];
-            event.startDate = startDate;
-            event.endDate = endDate;
-            event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
-            NSParameterAssert(event.startDate != nil);
-            NSParameterAssert(event.endDate != nil);
-            [events addObject:event];
-            eventCount++;
+            // Single day event - validate against festival dates
+            BOOL startInRange = ([startDate compare:festivalStart] != NSOrderedAscending && 
+                                 [startDate compare:festivalEnd] != NSOrderedDescending);
+            BOOL endInRange = ([endDate compare:festivalStart] != NSOrderedAscending && 
+                               [endDate compare:festivalEnd] != NSOrderedDescending);
+            
+            if (startInRange && endInRange) {
+                BRCEventObject *event = [[BRCEventObject alloc] init];
+                [event mergeValuesForKeysFromModel:self];
+                event.startDate = startDate;
+                event.endDate = endDate;
+                event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
+                NSParameterAssert(event.startDate != nil);
+                NSParameterAssert(event.endDate != nil);
+                [events addObject:event];
+                eventCount++;
+            } else {
+                NSLog(@"WARNING: Event '%@' falls outside festival dates. Start: %@, End: %@. Skipping.",
+                      self.title, startDate, endDate);
+            }
         }
     }];
     return events;
