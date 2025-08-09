@@ -1,0 +1,92 @@
+//
+//  FavoritesFilterView.swift
+//  iBurn
+//
+//  Created by Claude on 2025-08-09.
+//  Copyright © 2025 Burning Man Earth. All rights reserved.
+//
+
+import SwiftUI
+
+// MARK: - View Model
+
+class FavoritesFilterViewModel: ObservableObject {
+    @Published var showExpiredEvents: Bool
+    
+    private let onFilterChanged: (() -> Void)?
+    var onDismiss: (() -> Void)?
+    
+    init(onFilterChanged: (() -> Void)? = nil) {
+        self.onFilterChanged = onFilterChanged
+        // Initialize from UserSettings
+        self.showExpiredEvents = UserSettings.showExpiredEventsInFavorites
+    }
+    
+    func saveSettings() {
+        // Save to UserSettings
+        UserSettings.showExpiredEventsInFavorites = showExpiredEvents
+        
+        // Notify of changes
+        onFilterChanged?()
+    }
+    
+    func dismiss() {
+        onDismiss?()
+    }
+}
+
+// MARK: - SwiftUI View
+
+struct FavoritesFilterView: View {
+    @ObservedObject var viewModel: FavoritesFilterViewModel
+    
+    var body: some View {
+        Form {
+            // Filter Section
+            Section {
+                Toggle("Show Expired Events", isOn: $viewModel.showExpiredEvents)
+            } footer: {
+                Text("Hide events that have already ended from your favorites list")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Filter")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
+                    viewModel.dismiss()
+                }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") {
+                    viewModel.saveSettings()
+                    viewModel.dismiss()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - UIKit Wrapper
+
+class FavoritesFilterViewController: UIHostingController<FavoritesFilterView> {
+    private let viewModel: FavoritesFilterViewModel
+    private let onFilterChanged: (() -> Void)?
+    
+    init(onFilterChanged: (() -> Void)? = nil) {
+        self.onFilterChanged = onFilterChanged
+        self.viewModel = FavoritesFilterViewModel(
+            onFilterChanged: onFilterChanged
+        )
+        super.init(rootView: FavoritesFilterView(viewModel: viewModel))
+        viewModel.onDismiss = { [weak self] in
+            self?.dismiss(animated: true)
+        }
+    }
+    
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}

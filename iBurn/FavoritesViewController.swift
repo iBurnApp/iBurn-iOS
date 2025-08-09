@@ -18,6 +18,8 @@ public enum FavoritesFilter: String, CaseIterable {
 
 public class FavoritesViewController: ObjectListViewController {
     
+    private var filterButton: UIBarButtonItem?
+    
     private enum Group: String {
         case event = "BRCEventObject"
         case camp = "BRCCampObject"
@@ -46,6 +48,7 @@ public class FavoritesViewController: ObjectListViewController {
         super.viewDidLoad()
         setupTableViewAdapter()
         setupFilter()
+        setupFilterButton()
     }
 }
 
@@ -68,6 +71,16 @@ private extension FavoritesViewController {
         let index = FavoritesFilter.allCases.firstIndex(of: userFilter) ?? 0
         filterControl.selectedSegmentIndex = index
         updateFilter(userFilter)
+    }
+    
+    func setupFilterButton() {
+        filterButton = UIBarButtonItem(
+            image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(filterButtonPressed)
+        )
+        navigationItem.rightBarButtonItem = filterButton
     }
     
     func setupTableViewAdapter() {
@@ -96,5 +109,24 @@ private extension FavoritesViewController {
             guard let filter = Group(rawValue: group)?.filter else { return false }
             return filter == newFilter
         }
+    }
+    
+    @objc private func filterButtonPressed() {
+        let filterVC = FavoritesFilterViewController { [weak self] in
+            // Refresh the database view when filter changes
+            BRCDatabaseManager.shared.refreshFavoritesFilteredView {
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                    self?.updateFilterButtonAppearance()
+                }
+            }
+        }
+        let navController = UINavigationController(rootViewController: filterVC)
+        present(navController, animated: true)
+    }
+    
+    private func updateFilterButtonAppearance() {
+        let showExpired = UserSettings.showExpiredEventsInFavorites
+        filterButton?.image = UIImage(systemName: showExpired ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
     }
 }
