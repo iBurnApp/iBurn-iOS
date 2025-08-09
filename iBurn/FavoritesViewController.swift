@@ -138,7 +138,10 @@ private extension FavoritesViewController {
 // MARK: - Map Button Override
 extension FavoritesViewController {
     override func mapButtonPressed(_ sender: Any?) {
-        // Show all favorited events on map, not just currently happening ones
+        // Show all items currently visible in the favorites list (respecting filter preferences)
+        // The viewHandler already contains the filtered favorites view (everythingFilteredByFavoriteAndExpiration)
+        // showAllEvents: true ensures all favorited events are shown, not just currently happening ones
+        // Arts and camps are always shown regardless of this setting
         let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler, showAllEvents: true)
         let mapVC = MapListViewController(dataSource: dataSource)
         navigationController?.pushViewController(mapVC, animated: true)

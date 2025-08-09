@@ -203,8 +203,17 @@ After implementation:
 3. ✅ Filter modal allows showing only today's events
 4. ✅ Settings persist across app launches
 5. ✅ Database efficiently filters at query level
-6. ✅ Map shows all favorited events regardless of filter
-7. ✅ Both map and filter buttons visible in navigation bar
+6. ✅ Map shows items matching the current filter preferences (respecting expired/today-only settings)
+7. ✅ Map shows all favorited arts and camps regardless of event filters
+8. ✅ Map shows all favorited events that pass the filter (not just currently happening ones)
+9. ✅ Both map and filter buttons visible in navigation bar
 
 ## Implementation Complete
 All features have been successfully implemented and tested. The build succeeds without errors.
+
+### Update: Map Filtering Clarification
+The map now correctly shows all items visible in the favorites list, respecting the current filter preferences:
+- Uses the `everythingFilteredByFavoriteAndExpiration` database view
+- Shows all favorited events that pass the filter (showAllEvents: true)
+- Arts and camps are always shown when favorited
+- The map is a visual representation of the filtered favorites list
