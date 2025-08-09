@@ -188,7 +188,7 @@ name: GRDB.swift, nameSpecified: GRDB.swift, owner: groue, version: 7.6.1, sourc
 
 name: grpc-binary, nameSpecified: gRPC, owner: google, version: 1.69.0, source: https://github.com/google/grpc-binary
 
-name: gtm-session-fetcher, nameSpecified: GTMSessionFetcher, owner: google, version: 5.0.0, source: https://github.com/google/gtm-session-fetcher
+name: gtm-session-fetcher, nameSpecified: gtm-session-fetcher, owner: google, version: 5.0.0, source: https://github.com/google/gtm-session-fetcher
 
 name: interop-ios-for-google-sdks, nameSpecified: InteropForGoogle, owner: google, version: 101.0.0, source: https://github.com/google/interop-ios-for-google-sdks
 
