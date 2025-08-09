@@ -12,6 +12,7 @@ import SwiftUI
 
 class FavoritesFilterViewModel: ObservableObject {
     @Published var showExpiredEvents: Bool
+    @Published var showTodayOnly: Bool
     
     private let onFilterChanged: (() -> Void)?
     var onDismiss: (() -> Void)?
@@ -20,11 +21,13 @@ class FavoritesFilterViewModel: ObservableObject {
         self.onFilterChanged = onFilterChanged
         // Initialize from UserSettings
         self.showExpiredEvents = UserSettings.showExpiredEventsInFavorites
+        self.showTodayOnly = UserSettings.showTodayOnlyInFavorites
     }
     
     func saveSettings() {
         // Save to UserSettings
         UserSettings.showExpiredEventsInFavorites = showExpiredEvents
+        UserSettings.showTodayOnlyInFavorites = showTodayOnly
         
         // Notify of changes
         onFilterChanged?()
@@ -45,8 +48,10 @@ struct FavoritesFilterView: View {
             // Filter Section
             Section {
                 Toggle("Show Expired Events", isOn: $viewModel.showExpiredEvents)
+                    .disabled(viewModel.showTodayOnly)
+                Toggle("Today's Events Only", isOn: $viewModel.showTodayOnly)
             } footer: {
-                Text("Hide events that have already ended from your favorites list")
+                Text("Filter your favorites to show only today's events or hide expired events")
                     .font(.footnote)
                     .foregroundColor(.secondary)
             }

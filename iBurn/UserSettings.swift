@@ -23,6 +23,7 @@ public final class UserSettings: NSObject {
         static let showExpiredEvents = "kBRCShowExpiredEventsKey"
         static let showAllDayEvents = "kBRCShowAllDayEventsKey"
         static let showExpiredEventsInFavorites = "kBRCShowExpiredEventsInFavoritesKey"
+        static let showTodayOnlyInFavorites = "kBRCShowTodayOnlyInFavoritesKey"
     }
     
     /// Selected favorites filter
@@ -142,6 +143,17 @@ public final class UserSettings: NSObject {
                 return true
             }
             return UserDefaults.standard.bool(forKey: Keys.showExpiredEventsInFavorites)
+        }
+    }
+    
+    /// Show only today's events in favorites list
+    @objc public static var showTodayOnlyInFavorites: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showTodayOnlyInFavorites)
+        }
+        get {
+            // Default to false to maintain current behavior
+            return UserDefaults.standard.bool(forKey: Keys.showTodayOnlyInFavorites)
         }
     }
     

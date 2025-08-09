@@ -629,6 +629,8 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     if (![[NSUserDefaults standardUserDefaults] objectForKey:@"kBRCShowExpiredEventsInFavoritesKey"]) {
         showExpiredEvents = YES;
     }
+    BOOL showTodayOnly = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowTodayOnlyInFavoritesKey"];
+    
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
         // Get metadata for the object
         id metadata = [transaction metadataForKey:key inCollection:collection];
@@ -640,19 +642,39 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                 return NO;
             }
             
-            // If it's an event, apply expiration filtering
+            // If it's an event, apply filtering
             if ([object isKindOfClass:[BRCEventObject class]]) {
                 BRCEventObject *eventObject = (BRCEventObject*)object;
+                NSDate *now = [NSDate present];
+                
+                // Check if event is today
+                if (showTodayOnly) {
+                    NSCalendar *calendar = [NSCalendar currentCalendar];
+                    NSDateComponents *eventComponents = [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:eventObject.startDate];
+                    NSDateComponents *todayComponents = [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:now];
+                    
+                    // If not today, filter out
+                    if (eventComponents.day != todayComponents.day || 
+                        eventComponents.month != todayComponents.month || 
+                        eventComponents.year != todayComponents.year) {
+                        return NO;
+                    }
+                    // If today only is on, we don't need to check expiration separately
+                    // as expired events from today should still show
+                    return YES;
+                }
+                
+                // Check expiration if not showing today only
                 if (showExpiredEvents) {
                     return YES;
                 } else {
-                    NSDate *now = [NSDate present];
                     return ![eventObject hasEnded:now];
                 }
             }
             
             // Non-events (Art, Camps) always pass through if favorited
-            return YES;
+            // unless today only is on, then hide them
+            return !showTodayOnly;
         }
         return NO;
     }];

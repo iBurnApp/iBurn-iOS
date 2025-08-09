@@ -134,3 +134,13 @@ private extension FavoritesViewController {
         filterButton?.image = UIImage(systemName: showExpired ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
     }
 }
+
+// MARK: - Map Button Override
+extension FavoritesViewController {
+    override func mapButtonPressed(_ sender: Any?) {
+        // Show all favorited events on map, not just currently happening ones
+        let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler, showAllEvents: true)
+        let mapVC = MapListViewController(dataSource: dataSource)
+        navigationController?.pushViewController(mapVC, animated: true)
+    }
+}
