@@ -138,6 +138,7 @@
 		D9BD4C021B7876E800313FB5 /* BRCCreditsInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C011B7876E800313FB5 /* BRCCreditsInfo.m */; };
 		D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */; };
 		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
+		D9C151EA2E47ABA900AE9625 /* FavoritesFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
 		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
@@ -504,6 +505,7 @@
 		D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreditsViewController.swift; sourceTree = "<group>"; };
 		D9BF9A661D515FF7004AA63B /* 2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2016; path = "Submodules/iBurn-Data/data/2016/2016"; sourceTree = SOURCE_ROOT; };
 		D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioTourViewController.swift; sourceTree = "<group>"; };
+		D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesFilterView.swift; sourceTree = "<group>"; };
 		D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoritesViewController.swift; sourceTree = "<group>"; };
 		D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedViewController.swift; sourceTree = "<group>"; };
 		D9C30F731B83118200CD03CC /* iBurn-2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2015"; path = "Submodules/iBurn-Data/data/2015/iBurn-2015"; sourceTree = SOURCE_ROOT; };
@@ -721,6 +723,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */,
 				D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */,
 				D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */,
 				D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */,
@@ -1680,6 +1683,7 @@
 				D92AC57022F0176B00C9FE32 /* Breadcrumb.swift in Sources */,
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
 				D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */,
+				D9C151EA2E47ABA900AE9625 /* FavoritesFilterView.swift in Sources */,
 				D9F889252300D18C0069FD49 /* BRCEventObject.swift in Sources */,
 				D984DFCF210EB38F00A45922 /* NSCopying+iBurn.swift in Sources */,
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,
