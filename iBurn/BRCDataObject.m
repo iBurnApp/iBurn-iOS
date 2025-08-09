@@ -245,6 +245,15 @@
 @implementation BRCDataObject (MarkerImage)
 
 - (UIImage*) brc_markerImage {
+    // Check if emoji map icons are enabled
+    if ([BRCDataObject emojiMapIconsEnabled]) {
+        UIImage *emojiImage = [self emojiMarkerImage];
+        if (emojiImage) {
+            return emojiImage;
+        }
+        // Fall back to regular pins if emoji rendering fails
+    }
+    
     UIImage *markerImage = nil;
     Class dataObjectClass = [self class];
     if (dataObjectClass == [BRCArtObject class]) {

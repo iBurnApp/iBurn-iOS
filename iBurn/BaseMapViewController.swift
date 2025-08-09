@@ -58,6 +58,7 @@ public class BaseMapViewController: UIViewController {
         setupMapView(mapView)
         mapViewAdapter.reloadAnnotations()
         NotificationCenter.default.addObserver(self, selector: #selector(powerStateDidChange(notification:)), name: .NSProcessInfoPowerStateDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(emojiMapIconsSettingChanged(notification:)), name: .emojiMapIconsSettingChanged, object: nil)
     }
     
     override public func viewWillAppear(_ animated: Bool) {
@@ -95,6 +96,13 @@ private extension BaseMapViewController {
     @objc func powerStateDidChange(notification: Notification) {
         DispatchQueue.main.async {
             self.updateIdleTimer()
+        }
+    }
+    
+    @objc func emojiMapIconsSettingChanged(notification: Notification) {
+        // Reload all annotations to reflect the new icon style
+        DispatchQueue.main.async { [weak self] in
+            self?.mapViewAdapter.reloadAnnotations()
         }
     }
     
