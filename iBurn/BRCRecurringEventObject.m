@@ -14,6 +14,7 @@
 #import "BRCDataObject_Private.h"
 #import "NSDate+iBurn.h"
 #import "NSDate+CupertinoYankee.h"
+#import "iBurn-Swift.h"
 
 @implementation BRCRecurringEventObject
 
@@ -33,22 +34,39 @@
 - (NSArray*) eventObjects {
     NSMutableArray *events = [NSMutableArray arrayWithCapacity:self.eventTimes.count];
     __block NSUInteger eventCount = 0;
+    
+    // Get festival date range
+    NSDate *festivalStart = YearSettings.eventStart;
+    NSDate *festivalEnd = YearSettings.eventEnd;
+    
     [self.eventTimes enumerateObjectsUsingBlock:^(BRCEventTime *eventTime, NSUInteger idx, BOOL *stop) {
-        // We'll handle date swapping when creating the event objects below
         NSDate *startDate = eventTime.startDate;
         NSDate *endDate = eventTime.endDate;
         
+        // Skip if dates are nil
+        if (!startDate || !endDate) {
+            NSLog(@"WARNING: Event '%@' has nil dates. Skipping.", self.title);
+            return;
+        }
+        
         // Check for invalid date ranges where end is before start
-        if (endDate && startDate && [endDate timeIntervalSinceDate:startDate] < 0) {
-            NSTimeInterval duration = [endDate timeIntervalSinceDate:startDate];
-            NSTimeInterval hoursDiff = duration / 3600.0;
-            
-            // Always swap the dates when end is before start
-            NSLog(@"WARNING: Event '%@' has negative duration (%.1fh). Swapping dates. Original: %@ to %@",
-                  self.title, hoursDiff, eventTime.startDate, eventTime.endDate);
-            NSDate *tempDate = startDate;
-            startDate = endDate;
-            endDate = tempDate;
+        if ([endDate timeIntervalSinceDate:startDate] < 0) {
+            NSTimeInterval hoursDiff = [endDate timeIntervalSinceDate:startDate] / 3600.0;
+            NSLog(@"WARNING: Event '%@' has negative duration (%.1fh). Start: %@, End: %@. Skipping invalid occurrence.",
+                  self.title, hoursDiff, startDate, endDate);
+            return; // Skip this invalid occurrence
+        }
+        
+        // Check if event falls within festival dates
+        BOOL startInRange = ([startDate compare:festivalStart] != NSOrderedAscending && 
+                             [startDate compare:festivalEnd] != NSOrderedDescending);
+        BOOL endInRange = ([endDate compare:festivalStart] != NSOrderedAscending && 
+                           [endDate compare:festivalEnd] != NSOrderedDescending);
+        
+        if (!startInRange || !endInRange) {
+            NSLog(@"WARNING: Event '%@' falls outside festival dates (Aug 24 - Sep 1). Start: %@, End: %@. Skipping.",
+                  self.title, startDate, endDate);
+            return; // Skip events outside festival dates
         }
         
         NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:startDate andDate:endDate];

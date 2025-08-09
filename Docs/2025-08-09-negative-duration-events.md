@@ -15,15 +15,18 @@ This appears to be a data issue where the end date is incorrectly set to an earl
 - This caused negative duration display in the UI (e.g., "(-22h)")
 
 ### Fix Applied
-1. **BRCRecurringEventObject.m**: Added validation to swap start/end dates when end is before start
+1. **BRCRecurringEventObject.m**: Added validation to skip invalid events:
+   - Skip events with negative duration (end before start)
+   - Skip events outside festival dates (Aug 24 - Sep 1, 2025)
 2. **BRCEventObject.m**: Added defensive check to return 0 duration instead of negative
 3. Both changes include logging to track data quality issues
 
 ### Code Changes
-- Swap ALL events where end date is before start date (preserves the event with corrected times)
+- Skip events where end date is before start date (invalid data)
+- Skip events that fall outside the official Burning Man dates
 - Return 0 duration for any remaining negative durations as a safety net
 - Log warnings to help identify and report data issues to PlayaEvents team
-- Simple approach: if end < start, swap them - no special cases
+- This prevents duplicate/invalid events from appearing in the UI
 
 ## Checking Script
 
