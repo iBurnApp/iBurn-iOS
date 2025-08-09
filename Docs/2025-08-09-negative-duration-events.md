@@ -15,14 +15,66 @@ This appears to be a data issue where the end date is incorrectly set to an earl
 - This caused negative duration display in the UI (e.g., "(-22h)")
 
 ### Fix Applied
-1. **BRCRecurringEventObject.m**: Added validation to skip occurrences with negative duration
+1. **BRCRecurringEventObject.m**: Added validation to swap start/end dates when end is before start
 2. **BRCEventObject.m**: Added defensive check to return 0 duration instead of negative
 3. Both changes include logging to track data quality issues
 
 ### Code Changes
-- Skip invalid occurrences when parsing recurring events
+- Swap invalid date ranges when parsing recurring events (preserves the event)
 - Return 0 duration for any remaining negative durations
 - Log warnings to help identify and report data issues to PlayaEvents team
+
+## Checking Script
+
+Use this Python script to check for negative duration events in the data:
+
+```python
+import json
+import datetime
+
+def check_negative_durations(json_path):
+    with open(json_path, 'r') as f:
+        events = json.load(f)
+
+    negative_duration_events = []
+    for event in events:
+        if 'occurrence_set' in event:
+            for occurrence in event['occurrence_set']:
+                start = datetime.datetime.fromisoformat(occurrence['start_time'])
+                end = datetime.datetime.fromisoformat(occurrence['end_time'])
+                duration = (end - start).total_seconds() / 3600
+                if duration < 0:
+                    negative_duration_events.append({
+                        'title': event.get('title', 'Unknown'),
+                        'uid': event.get('uid', 'Unknown'),
+                        'event_id': event.get('event_id', 'Unknown'),
+                        'start': occurrence['start_time'],
+                        'end': occurrence['end_time'],
+                        'duration_hours': duration,
+                        'hosted_by_camp': event.get('hosted_by_camp', ''),
+                        'description': event.get('description', '')[:100]
+                    })
+
+    # Sort by duration (most negative first)
+    negative_duration_events.sort(key=lambda x: x['duration_hours'])
+    
+    print(f'Found {len(negative_duration_events)} events with negative duration\n')
+    
+    if negative_duration_events:
+        print('Top 10 most extreme cases:')
+        for i, e in enumerate(negative_duration_events[:10], 1):
+            print(f"{i}. {e['title']}: {e['duration_hours']:.1f}h")
+            print(f"   Start: {e['start']}")
+            print(f"   End: {e['end']}")
+            print()
+    else:
+        print('✅ No events with negative duration found!')
+    
+    return negative_duration_events
+
+# Run with:
+# python3 check_events.py Submodules/iBurn-Data/data/2025/APIData/APIData.bundle/event.json
+```
 
 ## Complete List of Affected Events
 

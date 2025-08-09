@@ -34,21 +34,39 @@
     NSMutableArray *events = [NSMutableArray arrayWithCapacity:self.eventTimes.count];
     __block NSUInteger eventCount = 0;
     [self.eventTimes enumerateObjectsUsingBlock:^(BRCEventTime *eventTime, NSUInteger idx, BOOL *stop) {
+        // We'll handle date swapping when creating the event objects below
+        NSDate *startDate = eventTime.startDate;
+        NSDate *endDate = eventTime.endDate;
+        
         // Check for invalid date ranges where end is before start
-        if (eventTime.endDate && eventTime.startDate && [eventTime.endDate timeIntervalSinceDate:eventTime.startDate] < 0) {
-            NSLog(@"WARNING: Event '%@' has negative duration (end before start). Start: %@, End: %@. Skipping this occurrence.", 
-                  self.title, eventTime.startDate, eventTime.endDate);
-            // Skip this invalid occurrence
-            return;
+        if (endDate && startDate && [endDate timeIntervalSinceDate:startDate] < 0) {
+            NSTimeInterval duration = [endDate timeIntervalSinceDate:startDate];
+            NSTimeInterval hoursDiff = duration / 3600.0;
+            
+            // If the negative duration is less than 24 hours, assume it's a midnight crossing
+            // (e.g., 9pm to 2am should be 5 hours, not -19 hours)
+            if (hoursDiff > -24.0 && hoursDiff < 0) {
+                // Add a day to the end date for midnight crossing
+                endDate = [endDate dateByAddingTimeInterval:86400]; // 24 hours
+                NSLog(@"WARNING: Event '%@' appears to cross midnight. Adjusting end date. Original: %@ to %@, New end: %@",
+                      self.title, eventTime.startDate, eventTime.endDate, endDate);
+            } else {
+                // For larger negative durations, swap the dates
+                NSLog(@"WARNING: Event '%@' has large negative duration (%.1fh). Swapping dates. Original: %@ to %@",
+                      self.title, hoursDiff, eventTime.startDate, eventTime.endDate);
+                NSDate *tempDate = startDate;
+                startDate = endDate;
+                endDate = tempDate;
+            }
         }
         
-        NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:eventTime.startDate andDate:eventTime.endDate];
+        NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:startDate andDate:endDate];
         // Why is the PlayaEvents API returning this?
         if (daysBetweenDates > 0) {
             NSLog(@"Duped dates for %@: %@", self.title, self.uniqueID);
-            NSDate *newStartDate = eventTime.startDate;
-            NSDate *newEndDate = [eventTime.startDate endOfDay];
-            while ([NSDate brc_daysBetweenDate:newStartDate andDate:eventTime.endDate] >= 0 && ![newStartDate isEqualToDate:newEndDate]) {
+            NSDate *newStartDate = startDate;
+            NSDate *newEndDate = [startDate endOfDay];
+            while ([NSDate brc_daysBetweenDate:newStartDate andDate:endDate] >= 0 && ![newStartDate isEqualToDate:newEndDate]) {
                 BRCEventObject *event = [[BRCEventObject alloc] init];
                 [event mergeValuesForKeysFromModel:self];
                 event.startDate = [newStartDate copy];
@@ -57,10 +75,10 @@
                 [events addObject:event];
                 eventCount++;
                 newStartDate = [[newStartDate brc_nextDay] beginningOfDay];
-                if ([NSDate brc_daysBetweenDate:newStartDate andDate:eventTime.endDate] > 0) {
+                if ([NSDate brc_daysBetweenDate:newStartDate andDate:endDate] > 0) {
                     newEndDate = [newStartDate endOfDay];
                 } else {
-                    newEndDate = eventTime.endDate;
+                    newEndDate = endDate;
                 }
                 NSParameterAssert(event.startDate != nil);
                 NSParameterAssert(event.endDate != nil);
@@ -68,8 +86,8 @@
         } else {
             BRCEventObject *event = [[BRCEventObject alloc] init];
             [event mergeValuesForKeysFromModel:self];
-            event.startDate = eventTime.startDate;
-            event.endDate = eventTime.endDate;
+            event.startDate = startDate;
+            event.endDate = endDate;
             event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
             NSParameterAssert(event.startDate != nil);
             NSParameterAssert(event.endDate != nil);
