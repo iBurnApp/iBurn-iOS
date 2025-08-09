@@ -11,4 +11,5 @@
 @interface BRCEventObject()
 @property (nonatomic, strong, readwrite) NSDate *startDate;
 @property (nonatomic, strong, readwrite) NSDate *endDate;
+@property (nonatomic, readwrite) BOOL isAllDay;
 @end

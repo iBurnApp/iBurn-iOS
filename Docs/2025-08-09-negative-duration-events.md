@@ -15,17 +15,20 @@ This appears to be a data issue where the end date is incorrectly set to an earl
 - This caused negative duration display in the UI (e.g., "(-22h)")
 
 ### Fix Applied
-1. **BRCRecurringEventObject.m**: Two-step validation process:
+1. **BRCRecurringEventObject.m**: Three-step validation process:
    - First: Swap start/end dates when end is before start (fixes data entry errors)
    - Then: Validate swapped events against festival dates (Aug 24 - Sep 1, 2025)
-   - Only add events that pass both corrections
+   - Finally: Mark events over 12 hours as all-day (fixes API data quality issue)
+   - Only add events that pass validation
 2. **BRCEventObject.m**: Added defensive check to return 0 duration instead of negative
-3. Both changes include logging to track data quality issues
+3. **BRCEventObject_Private.h**: Made isAllDay property writable for import corrections
+4. All changes include logging to track data quality issues
 
 ### Code Changes
 - Swap dates for events where end is before start (attempts to fix the data)
 - After swapping, validate all events against festival dates
 - For multi-day events, validate each split day separately
+- Mark events over 12 hours as all-day (corrects API data quality issue)
 - Skip any events that fall outside the official Burning Man dates
 - Return 0 duration for any remaining negative durations as a safety net
 - This approach fixes recoverable data while filtering out truly invalid events

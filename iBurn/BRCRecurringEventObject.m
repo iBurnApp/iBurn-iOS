@@ -79,6 +79,14 @@
                     event.startDate = [newStartDate copy];
                     event.endDate = [newEndDate copy];
                     event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
+                    
+                    // Mark events over 12 hours as all-day
+                    NSTimeInterval duration = [newEndDate timeIntervalSinceDate:newStartDate];
+                    if (duration >= (12 * 60 * 60)) { // 12 hours in seconds
+                        event.isAllDay = YES;
+                        NSLog(@"Marking split event '%@' as all-day (duration: %.1fh)", self.title, duration / 3600.0);
+                    }
+                    
                     [events addObject:event];
                     eventCount++;
                 } else {
@@ -106,6 +114,14 @@
                 event.startDate = startDate;
                 event.endDate = endDate;
                 event.uniqueID = [NSString stringWithFormat:@"%@-%d", self.uniqueID, (int)eventCount];
+                
+                // Mark events over 12 hours as all-day
+                NSTimeInterval duration = [endDate timeIntervalSinceDate:startDate];
+                if (duration >= (12 * 60 * 60)) { // 12 hours in seconds
+                    event.isAllDay = YES;
+                    NSLog(@"Marking event '%@' as all-day (duration: %.1fh)", self.title, duration / 3600.0);
+                }
+                
                 NSParameterAssert(event.startDate != nil);
                 NSParameterAssert(event.endDate != nil);
                 [events addObject:event];
