@@ -74,13 +74,17 @@ private extension FavoritesViewController {
     }
     
     func setupFilterButton() {
-        filterButton = UIBarButtonItem(
+        let filter = UIBarButtonItem(
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             style: .plain,
             target: self,
             action: #selector(filterButtonPressed)
         )
-        navigationItem.rightBarButtonItem = filterButton
+        filterButton = filter
+        // Add filter button to existing buttons (map button is already there from parent class)
+        var buttons: [UIBarButtonItem] = navigationItem.rightBarButtonItems ?? []
+        buttons.insert(filter, at: 0) // Insert filter button before map button
+        navigationItem.rightBarButtonItems = buttons
     }
     
     func setupTableViewAdapter() {
