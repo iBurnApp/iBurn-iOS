@@ -43,21 +43,12 @@
             NSTimeInterval duration = [endDate timeIntervalSinceDate:startDate];
             NSTimeInterval hoursDiff = duration / 3600.0;
             
-            // If the negative duration is less than 24 hours, assume it's a midnight crossing
-            // (e.g., 9pm to 2am should be 5 hours, not -19 hours)
-            if (hoursDiff > -24.0 && hoursDiff < 0) {
-                // Add a day to the end date for midnight crossing
-                endDate = [endDate dateByAddingTimeInterval:86400]; // 24 hours
-                NSLog(@"WARNING: Event '%@' appears to cross midnight. Adjusting end date. Original: %@ to %@, New end: %@",
-                      self.title, eventTime.startDate, eventTime.endDate, endDate);
-            } else {
-                // For larger negative durations, swap the dates
-                NSLog(@"WARNING: Event '%@' has large negative duration (%.1fh). Swapping dates. Original: %@ to %@",
-                      self.title, hoursDiff, eventTime.startDate, eventTime.endDate);
-                NSDate *tempDate = startDate;
-                startDate = endDate;
-                endDate = tempDate;
-            }
+            // Always swap the dates when end is before start
+            NSLog(@"WARNING: Event '%@' has negative duration (%.1fh). Swapping dates. Original: %@ to %@",
+                  self.title, hoursDiff, eventTime.startDate, eventTime.endDate);
+            NSDate *tempDate = startDate;
+            startDate = endDate;
+            endDate = tempDate;
         }
         
         NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:startDate andDate:endDate];

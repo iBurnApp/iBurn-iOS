@@ -20,9 +20,10 @@ This appears to be a data issue where the end date is incorrectly set to an earl
 3. Both changes include logging to track data quality issues
 
 ### Code Changes
-- Swap invalid date ranges when parsing recurring events (preserves the event)
-- Return 0 duration for any remaining negative durations
+- Swap ALL events where end date is before start date (preserves the event with corrected times)
+- Return 0 duration for any remaining negative durations as a safety net
 - Log warnings to help identify and report data issues to PlayaEvents team
+- Simple approach: if end < start, swap them - no special cases
 
 ## Checking Script
 
