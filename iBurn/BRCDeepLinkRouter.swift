@@ -47,20 +47,33 @@ enum DeepLinkObjectType: String {
             return false 
         }
         
-        let pathComponents = url.pathComponents.filter { $0 != "/" }
-        DDLogInfo("Path components: \(pathComponents)")
-        guard let firstComponent = pathComponents.first else { 
-            DDLogWarn("No path components found in URL: \(url.absoluteString)")
+        // Extract the type component based on URL scheme
+        let typeComponent: String?
+        
+        if url.scheme == "iburn" {
+            // For iburn:// URLs, the host IS the type (e.g., iburn://art?uid=123)
+            typeComponent = url.host
+            DDLogInfo("iburn:// scheme - using host as type: \(typeComponent ?? "nil")")
+        } else {
+            // For https URLs, use path components (e.g., https://iburnapp.com/art/?uid=123)
+            let pathComponents = url.pathComponents.filter { $0 != "/" }
+            typeComponent = pathComponents.first
+            DDLogInfo("https scheme - using path component as type: \(typeComponent ?? "nil")")
+        }
+        
+        guard let firstComponent = typeComponent else { 
+            DDLogWarn("No type component found in URL: \(url.absoluteString)")
             return false 
         }
         
+        // Parse query parameters
         let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let metadata = Dictionary(uniqueKeysWithValues: queryItems.compactMap { item -> (String, String)? in
             guard let value = item.value else { return nil }
             return (item.name, value)
         })
         
-        DDLogInfo("First component: \(firstComponent)")
+        DDLogInfo("Type component: \(firstComponent)")
         switch firstComponent {
         case "art", "camp", "event":
             // UID is now a query parameter
@@ -76,7 +89,7 @@ enum DeepLinkObjectType: String {
             return createMapPin(from: metadata)
             
         default:
-            DDLogWarn("Unknown path component: \(firstComponent)")
+            DDLogWarn("Unknown type component: \(firstComponent)")
             return false
         }
     }
