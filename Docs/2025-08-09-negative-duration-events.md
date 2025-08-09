@@ -7,6 +7,10 @@ Total events with negative duration: **207**
 These events have end times that occur before their start times, resulting in negative durations.
 This appears to be a data issue where the end date is incorrectly set to an earlier day than the start date.
 
+## Additional Issue Fixed: Stale Event Data
+During investigation, discovered that old events from previous imports were not being removed properly.
+The cleanup code was checking the wrong collection for recurring events, leaving hundreds of stale events in the database.
+
 ## Solution Implemented
 
 ### Problem
@@ -22,7 +26,10 @@ This appears to be a data issue where the end date is incorrectly set to an earl
    - Only add events that pass validation
 2. **BRCEventObject.m**: Added defensive check to return 0 duration instead of negative
 3. **BRCEventObject_Private.h**: Made isAllDay property writable for import corrections
-4. All changes include logging to track data quality issues
+4. **BRCDataImporter.m**: Fixed critical bug where event cleanup was checking wrong collection
+   - Events are stored in BRCEventObject collection but cleanup was only checking BRCRecurringEventObject
+   - Now properly removes outdated events from both collections
+5. All changes include logging to track data quality issues
 
 ### Code Changes
 - Swap dates for events where end is before start (attempts to fix the data)
