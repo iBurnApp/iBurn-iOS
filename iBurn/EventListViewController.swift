@@ -30,6 +30,7 @@ public class EventListViewController: UIViewController {
     }
     private var dayObserver: NSKeyValueObservation?
     private var loadingIndicator = UIActivityIndicatorView(style: .medium)
+    private var refreshTimer: Timer?
     
     // MARK: - Init
     
@@ -69,11 +70,23 @@ public class EventListViewController: UIViewController {
         searchWillAppear()
         refreshNavigationBarColors(animated)
         dayPicker.setColorTheme(Appearance.currentColors, animated: true)
+        
+        // Refresh filters every 60 seconds to update expired events
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.updateFilteredViews()
+        }
     }
     
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         searchDidAppear()
+    }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        refreshTimer?.invalidate()
+        refreshTimer = nil
     }
     
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -114,7 +127,7 @@ private extension EventListViewController {
     }
     
     func setupFilterButton() {
-        let filter = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filterButtonPressed(_:)))
+        let filter = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease.circle"), style: .plain, target: self, action: #selector(filterButtonPressed(_:)))
         let loading = UIBarButtonItem(customView: self.loadingIndicator)
         self.navigationItem.rightBarButtonItems = [filter, loading]
     }

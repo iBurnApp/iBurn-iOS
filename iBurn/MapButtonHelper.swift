@@ -15,7 +15,7 @@ protocol MapButtonHelper: NSObjectProtocol {
 
 extension MapButtonHelper where Self: UIViewController {
     func setupMapButton() {
-        let map = UIBarButtonItem(title: "Map", style: .plain) { [weak self] (button) in
+        let map = UIBarButtonItem(image: UIImage(systemName: "map"), style: .plain) { [weak self] (button) in
             self?.mapButtonPressed(button)
         }
         var buttons: [UIBarButtonItem] = navigationItem.rightBarButtonItems ?? []

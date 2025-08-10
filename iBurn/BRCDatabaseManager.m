@@ -837,7 +837,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
                 !BRCLocations.hasEnteredBurningManRegion) {
                 return NO;
             }
-            BOOL eventHasEnded = [eventObject hasEnded:now] || [eventObject isEndingSoon:now];
+            BOOL eventHasEnded = [eventObject hasEnded:now];
             BOOL eventMatchesTypeFilter = [eventTypes containsObject:@(eventObject.eventType)];
             
             if ((eventMatchesTypeFilter || [eventTypes count] == 0)) {
