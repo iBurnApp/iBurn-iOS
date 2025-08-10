@@ -70,28 +70,39 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
         // Always include user pins
         allAnnotations.append(contentsOf: userDataSource.allAnnotations())
         
+        // Get selected event types for filtering
+        let selectedEventTypes = UserSettings.selectedEventTypesForMap
+        
         // Add favorites if enabled
         if UserSettings.showFavoritesOnMap {
             let favoriteAnnotations = favoritesDataSource.allAnnotations()
             
-            if UserSettings.showTodaysFavoritesOnlyOnMap {
-                // Filter to only show today's favorited events
-                let todaysAnnotations = favoriteAnnotations.filter { annotation in
-                    guard let dataAnnotation = annotation as? DataObjectAnnotation,
-                          let event = dataAnnotation.object as? BRCEventObject else {
-                        // Not an event, include it (art/camps)
-                        return true
-                    }
-                    // Check if event is happening today
-                    let calendar = Calendar.current
-                    let today = Date.present
-                    let eventDate = event.startDate
-                    return calendar.isDate(eventDate, inSameDayAs: today)
+            let filteredFavorites = favoriteAnnotations.filter { annotation in
+                guard let dataAnnotation = annotation as? DataObjectAnnotation else {
+                    return true
                 }
-                allAnnotations.append(contentsOf: todaysAnnotations)
-            } else {
-                allAnnotations.append(contentsOf: favoriteAnnotations)
+                
+                // Filter events by type and today's setting
+                if let event = dataAnnotation.object as? BRCEventObject {
+                    // Check event type
+                    if !selectedEventTypes.contains(event.eventType) {
+                        return false
+                    }
+                    
+                    // Check if we're filtering to today only
+                    if UserSettings.showTodaysFavoritesOnlyOnMap {
+                        let calendar = Calendar.current
+                        let today = Date.present
+                        let eventDate = event.startDate
+                        return calendar.isDate(eventDate, inSameDayAs: today)
+                    }
+                }
+                
+                // Not an event or passes all filters
+                return true
             }
+            
+            allAnnotations.append(contentsOf: filteredFavorites)
         }
         
         // Add non-favorited art if enabled
@@ -113,9 +124,22 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
         // Add active events if enabled
         if UserSettings.showActiveEventsOnMap, let eventsDataSource = eventsDataSource {
             let eventAnnotations = eventsDataSource.allAnnotations()
-            // Filter out already included favorites
-            let nonFavoriteEvents = filterOutFavorites(eventAnnotations)
-            allAnnotations.append(contentsOf: nonFavoriteEvents)
+            // Filter out already included favorites and filter by event type
+            let filteredEvents = eventAnnotations.filter { annotation in
+                guard let dataAnnotation = annotation as? DataObjectAnnotation,
+                      let event = dataAnnotation.object as? BRCEventObject else {
+                    return true
+                }
+                
+                // Filter by event type
+                if !selectedEventTypes.contains(event.eventType) {
+                    return false
+                }
+                
+                // Filter out favorites
+                return !dataAnnotation.metadata.isFavorite
+            }
+            allAnnotations.append(contentsOf: filteredEvents)
         }
         
         return allAnnotations

@@ -8,6 +8,15 @@
 
 import SwiftUI
 
+// MARK: - Models
+
+struct MapEventTypeContainer: Identifiable {
+    let id = UUID()
+    let type: BRCEventType
+    let title: String
+    var isSelected: Bool
+}
+
 // MARK: - View Model
 
 class MapFilterViewModel: ObservableObject {
@@ -16,6 +25,7 @@ class MapFilterViewModel: ObservableObject {
     @Published var showActiveEvents: Bool
     @Published var showFavorites: Bool
     @Published var showTodaysFavoritesOnly: Bool
+    @Published var eventTypes: [MapEventTypeContainer]
     
     private let onFilterChanged: (() -> Void)?
     var onDismiss: (() -> Void)?
@@ -28,6 +38,25 @@ class MapFilterViewModel: ObservableObject {
         self.showActiveEvents = UserSettings.showActiveEventsOnMap
         self.showFavorites = UserSettings.showFavoritesOnMap
         self.showTodaysFavoritesOnly = UserSettings.showTodaysFavoritesOnlyOnMap
+        
+        // Initialize event types
+        let storedTypes = UserSettings.selectedEventTypesForMap
+        self.eventTypes = BRCEventObject.allVisibleEventTypes.compactMap { number -> MapEventTypeContainer? in
+            guard let type = BRCEventType(rawValue: number.uintValue) else { return nil }
+            return MapEventTypeContainer(
+                type: type,
+                title: BRCEventObject.stringForEventType(type),
+                isSelected: storedTypes.contains(type)
+            )
+        }
+    }
+    
+    func selectAllEventTypes() {
+        eventTypes.indices.forEach { eventTypes[$0].isSelected = true }
+    }
+    
+    func selectNoneEventTypes() {
+        eventTypes.indices.forEach { eventTypes[$0].isSelected = false }
     }
     
     func saveSettings() {
@@ -37,6 +66,12 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showActiveEventsOnMap = showActiveEvents
         UserSettings.showFavoritesOnMap = showFavorites
         UserSettings.showTodaysFavoritesOnlyOnMap = showTodaysFavoritesOnly
+        
+        // Save selected event types
+        let selectedTypes = eventTypes
+            .filter { $0.isSelected }
+            .map { $0.type }
+        UserSettings.selectedEventTypesForMap = selectedTypes
         
         // Notify of changes
         onFilterChanged?()
@@ -58,7 +93,7 @@ struct MapFilterView: View {
             Section(header: Text("Show on Map")) {
                 Toggle("Art", isOn: $viewModel.showArt)
                 Toggle("Camps", isOn: $viewModel.showCamps)
-                Toggle("Active Events", isOn: $viewModel.showActiveEvents)
+                Toggle("Events", isOn: $viewModel.showActiveEvents)
             }
             
             // Favorites Section
@@ -80,6 +115,25 @@ struct MapFilterView: View {
                 Toggle("Show Favorites", isOn: $viewModel.showFavorites)
                 Toggle("Today's Favorites Only", isOn: $viewModel.showTodaysFavoritesOnly)
                     .disabled(!viewModel.showFavorites)
+            }
+            
+            // Event Types Section - only show when events are enabled
+            if viewModel.showActiveEvents {
+                Section {
+                    Button("Select All") {
+                        viewModel.selectAllEventTypes()
+                    }
+                    Button("Select None") {
+                        viewModel.selectNoneEventTypes()
+                    }
+                }
+                
+                Section(header: Text("Event Types")) {
+                    ForEach($viewModel.eventTypes) { $type in
+                        Toggle(type.title, isOn: $type.isSelected)
+                            .foregroundColor(Color(BRCImageColors.colors(for: type.type).secondaryColor))
+                    }
+                }
             }
         }
         .navigationTitle("Map Filter")

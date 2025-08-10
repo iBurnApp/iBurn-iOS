@@ -32,6 +32,7 @@ public final class UserSettings: NSObject {
         static let showActiveEventsOnMap = "kBRCShowActiveEventsOnMapKey"
         static let showFavoritesOnMap = "kBRCShowFavoritesOnMapKey"
         static let showTodaysFavoritesOnlyOnMap = "kBRCShowTodaysFavoritesOnlyOnMapKey"
+        static let selectedEventTypesForMap = "kBRCSelectedEventTypesForMapKey"
     }
     
     /// Selected favorites filter
@@ -195,9 +196,9 @@ public final class UserSettings: NSObject {
             UserDefaults.standard.set(newValue, forKey: Keys.showArtOnMap)
         }
         get {
-            // Default to true if not set
+            // Default to false to reduce initial map clutter
             if UserDefaults.standard.object(forKey: Keys.showArtOnMap) == nil {
-                return true
+                return false
             }
             return UserDefaults.standard.bool(forKey: Keys.showArtOnMap)
         }
@@ -209,9 +210,9 @@ public final class UserSettings: NSObject {
             UserDefaults.standard.set(newValue, forKey: Keys.showCampsOnMap)
         }
         get {
-            // Default to true if not set
+            // Default to false to reduce initial map clutter
             if UserDefaults.standard.object(forKey: Keys.showCampsOnMap) == nil {
-                return true
+                return false
             }
             return UserDefaults.standard.bool(forKey: Keys.showCampsOnMap)
         }
@@ -223,9 +224,9 @@ public final class UserSettings: NSObject {
             UserDefaults.standard.set(newValue, forKey: Keys.showActiveEventsOnMap)
         }
         get {
-            // Default to true if not set
+            // Default to false to reduce initial map clutter
             if UserDefaults.standard.object(forKey: Keys.showActiveEventsOnMap) == nil {
-                return true
+                return false
             }
             return UserDefaults.standard.bool(forKey: Keys.showActiveEventsOnMap)
         }
@@ -251,8 +252,26 @@ public final class UserSettings: NSObject {
             UserDefaults.standard.set(newValue, forKey: Keys.showTodaysFavoritesOnlyOnMap)
         }
         get {
-            // Default to false to show all favorites
+            // Default to true to show only today's favorites
+            if UserDefaults.standard.object(forKey: Keys.showTodaysFavoritesOnlyOnMap) == nil {
+                return true
+            }
             return UserDefaults.standard.bool(forKey: Keys.showTodaysFavoritesOnlyOnMap)
+        }
+    }
+    
+    /// Selected event types for map filtering
+    public static var selectedEventTypesForMap: [BRCEventType] {
+        set {
+            let numbers = newValue.map { NSNumber(value: $0.rawValue) }
+            UserDefaults.standard.set(numbers, forKey: Keys.selectedEventTypesForMap)
+        }
+        get {
+            guard let numbers = UserDefaults.standard.array(forKey: Keys.selectedEventTypesForMap) as? [NSNumber] else { 
+                // Default to all event types if not set
+                return BRCEventObject.allVisibleEventTypes.compactMap { BRCEventType(rawValue: $0.uintValue) }
+            }
+            return numbers.compactMap { BRCEventType(rawValue: $0.uintValue) }
         }
     }
     
