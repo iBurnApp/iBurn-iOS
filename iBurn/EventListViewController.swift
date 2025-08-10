@@ -114,7 +114,7 @@ private extension EventListViewController {
     }
     
     func setupFilterButton() {
-        let filter = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filterButtonPressed(_:)))
+        let filter = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease.circle"), style: .plain, target: self, action: #selector(filterButtonPressed(_:)))
         let loading = UIBarButtonItem(customView: self.loadingIndicator)
         self.navigationItem.rightBarButtonItems = [filter, loading]
     }
