@@ -17,6 +17,7 @@ class EventsFilterViewModel: ObservableObject {
     @Published var showExpiredEvents: Bool
     @Published var searchSelectedDayOnly: Bool
     @Published var showAllDayEvents: Bool
+    @Published var showOnlyArtHostedEvents: Bool
     @Published var eventTypes: [EventTypeContainer]
     
     private let onFilterChanged: (() -> Void)?
@@ -28,6 +29,7 @@ class EventsFilterViewModel: ObservableObject {
         self.showExpiredEvents = UserSettings.showExpiredEvents
         self.searchSelectedDayOnly = UserSettings.searchSelectedDayOnly
         self.showAllDayEvents = UserSettings.showAllDayEvents
+        self.showOnlyArtHostedEvents = UserSettings.showOnlyArtHostedEvents
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypes
@@ -54,6 +56,7 @@ class EventsFilterViewModel: ObservableObject {
         UserSettings.showExpiredEvents = showExpiredEvents
         UserSettings.searchSelectedDayOnly = searchSelectedDayOnly
         UserSettings.showAllDayEvents = showAllDayEvents
+        UserSettings.showOnlyArtHostedEvents = showOnlyArtHostedEvents
         
         // Save selected event types
         let selectedTypes = eventTypes
@@ -82,6 +85,11 @@ struct EventsFilterView: View {
                 Toggle("Show Expired Events", isOn: $viewModel.showExpiredEvents)
                 Toggle("Search Selected Day Only", isOn: $viewModel.searchSelectedDayOnly)
                 Toggle("Show All Day Events", isOn: $viewModel.showAllDayEvents)
+            }
+            
+            // Location Section
+            Section(header: Text("Location")) {
+                Toggle("Only show events hosted at art", isOn: $viewModel.showOnlyArtHostedEvents)
             }
             
             // Actions Section

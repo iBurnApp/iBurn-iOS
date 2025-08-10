@@ -808,16 +808,28 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
 
 + (YapDatabaseViewFiltering*) eventsFilteredByExpirationAndType {
     BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] showExpiredEvents];
+    BOOL showOnlyArtHosted = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowOnlyArtHostedEventsKey"];
     NSSet *filteredSet = [NSSet setWithArray:[[NSUserDefaults standardUserDefaults] selectedEventTypes]];
-    return [[self class] eventsFilteredByExpiration:showExpiredEvents eventTypes:filteredSet];
+    return [[self class] eventsFilteredByExpiration:showExpiredEvents eventTypes:filteredSet artHostedOnly:showOnlyArtHosted];
 }
 
+// Backward compatibility method
 + (YapDatabaseViewFiltering*) eventsFilteredByExpiration:(BOOL)showExpired eventTypes:(NSSet*)eventTypes {
+    return [self eventsFilteredByExpiration:showExpired eventTypes:eventTypes artHostedOnly:NO];
+}
+
++ (YapDatabaseViewFiltering*) eventsFilteredByExpiration:(BOOL)showExpired eventTypes:(NSSet*)eventTypes artHostedOnly:(BOOL)artHostedOnly {
     BOOL showAllDayEvents = [NSUserDefaults standardUserDefaults].showAllDayEvents;
     YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction *transaction, NSString *group, NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BRCEventObject class]]) {
             NSDate *now = [NSDate present];
             BRCEventObject *eventObject = (BRCEventObject*)object;
+            
+            // Check if event is hosted at art if filter is enabled
+            if (artHostedOnly && !eventObject.hostedByArtUniqueID) {
+                return NO;
+            }
+            
             if (eventObject.isAllDay && !showAllDayEvents) {
                 return NO;
             }
