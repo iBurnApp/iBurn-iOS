@@ -25,14 +25,12 @@ class AppearanceViewController: UITableViewController {
     enum Section: Int, CaseIterable {
         case theme = 0
         case imageColors = 1
-        case mapIcons = 2
-        case detailView = 3
+        case detailView = 2
         
         var title: String? {
             switch self {
             case .theme: return "Theme"
             case .imageColors: return "Image Colors"
-            case .mapIcons: return "Map Icons"
             case .detailView: return "Detail View"
             }
         }
@@ -41,7 +39,6 @@ class AppearanceViewController: UITableViewController {
             switch self {
             case .theme: return "Restart the app for full effect."
             case .imageColors: return "When enabled, uses colors extracted from art images for theming. When disabled, uses the global theme colors."
-            case .mapIcons: return "Use emoji instead of colored pins for map icons. Events show their type emoji, art shows 🎨, and camps show ⛺"
             case .detailView: return "The new detail screen looks worse and is full of bugs, but maybe you'll like it."
             }
         }
@@ -50,7 +47,6 @@ class AppearanceViewController: UITableViewController {
             switch self {
             case .theme: return ThemeRow.allCases.count
             case .imageColors: return 1
-            case .mapIcons: return 1
             case .detailView: return 1
             }
         }
@@ -83,7 +79,6 @@ class AppearanceViewController: UITableViewController {
         case light
         case dark
         case imageColorsToggle
-        case emojiMapIconsToggle
         case detailViewToggle
         
         var theme: AppTheme? {
@@ -94,7 +89,7 @@ class AppearanceViewController: UITableViewController {
                 return .dark
             case .system:
                 return .system
-            case .imageColorsToggle, .emojiMapIconsToggle, .detailViewToggle:
+            case .imageColorsToggle, .detailViewToggle:
                 return nil
             }
         }
@@ -159,7 +154,7 @@ class AppearanceViewController: UITableViewController {
                 cell.accessoryType = Appearance.theme == .light ? .checkmark : .none
             case .dark:
                 cell.accessoryType = Appearance.theme == .dark ? .checkmark : .none
-            case .imageColorsToggle, .emojiMapIconsToggle, .detailViewToggle:
+            case .imageColorsToggle, .detailViewToggle:
                 break // Not applicable for theme rows
             }
             
@@ -173,18 +168,6 @@ class AppearanceViewController: UITableViewController {
             switchControl.isOn = Appearance.useImageColorsTheming
             switchControl.onTintColor = Appearance.currentColors.primaryColor
             switchControl.addTarget(self, action: #selector(imageColorsToggleChanged(_:)), for: .valueChanged)
-            cell.accessoryView = switchControl
-            
-        case .mapIcons:
-            // Only one row in this section
-            cell.textLabel?.text = "Use Emoji Map Icons"
-            cell.tag = CellTag.emojiMapIconsToggle.rawValue
-            
-            // Configure the switch for emoji map icons toggle
-            let switchControl = UISwitch()
-            switchControl.isOn = BRCDataObject.emojiMapIconsEnabled
-            switchControl.onTintColor = Appearance.currentColors.primaryColor
-            switchControl.addTarget(self, action: #selector(emojiMapIconsToggleChanged(_:)), for: .valueChanged)
             cell.accessoryView = switchControl
             
         case .detailView:
@@ -225,13 +208,6 @@ class AppearanceViewController: UITableViewController {
                 // Trigger the action manually since we're setting programmatically
                 imageColorsToggleChanged(switchControl)
             }
-        case .emojiMapIconsToggle:
-            // Toggle the switch programmatically when cell is tapped
-            if let switchControl = cell.accessoryView as? UISwitch {
-                switchControl.setOn(!switchControl.isOn, animated: true)
-                // Trigger the action manually since we're setting programmatically
-                emojiMapIconsToggleChanged(switchControl)
-            }
         case .detailViewToggle:
             // Toggle the switch programmatically when cell is tapped
             if let switchControl = cell.accessoryView as? UISwitch {
@@ -245,11 +221,6 @@ class AppearanceViewController: UITableViewController {
     @objc private func imageColorsToggleChanged(_ sender: UISwitch) {
         Appearance.useImageColorsTheming = sender.isOn
         refreshTheme()
-    }
-    
-    @objc private func emojiMapIconsToggleChanged(_ sender: UISwitch) {
-        BRCDataObject.setEmojiMapIconsEnabled(sender.isOn)
-        // Notification is automatically posted by setEmojiMapIconsEnabled
     }
     
     @objc private func detailViewToggleChanged(_ sender: UISwitch) {

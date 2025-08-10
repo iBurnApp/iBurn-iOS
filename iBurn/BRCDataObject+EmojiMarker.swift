@@ -10,20 +10,6 @@ import UIKit
 
 extension BRCDataObject {
     
-    /// User defaults key for emoji map icons preference
-    @objc static let emojiMapIconsKey = "BRCEmojiMapIconsEnabled"
-    
-    /// Check if emoji map icons are enabled
-    @objc static var emojiMapIconsEnabled: Bool {
-        UserDefaults.standard.bool(forKey: emojiMapIconsKey)
-    }
-    
-    /// Set emoji map icons preference
-    @objc static func setEmojiMapIconsEnabled(_ enabled: Bool) {
-        UserDefaults.standard.set(enabled, forKey: emojiMapIconsKey)
-        NotificationCenter.default.post(name: .emojiMapIconsSettingChanged, object: nil)
-    }
-    
     /// Get the emoji marker image for this data object
     @objc func emojiMarkerImage() -> UIImage? {
         let emoji: String
@@ -34,7 +20,7 @@ extension BRCDataObject {
         } else if let campObject = self as? BRCCampObject {
             emoji = campObject.emoji
         } else if let eventObject = self as? BRCEventObject {
-            emoji = BRCEventObject.emoji(forEventType: eventObject.eventType)
+            emoji = eventObject.eventType.emoji
             
             // Apply event status colors
             let statusColor = eventStatusColor(for: eventObject, at: Date.present)
@@ -62,10 +48,4 @@ extension BRCDataObject {
         }
         return nil
     }
-}
-
-// MARK: - Notification
-
-extension Notification.Name {
-    static let emojiMapIconsSettingChanged = Notification.Name("BRCEmojiMapIconsSettingChanged")
 }

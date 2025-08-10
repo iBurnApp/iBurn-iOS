@@ -13,7 +13,9 @@ extension NSDate {
     /// Returns current datetime, or mocked datetime if running test scheme
     @objc public class var present: Date {
         #if DEBUG
-        if ProcessInfo.mockDateEnabled {
+        // Check if date override is enabled in UserDefaults
+        let mockEnabled = UserDefaults.standard.bool(forKey: "BRCMockDateEnabled")
+        if mockEnabled || ProcessInfo.mockDateEnabled {
             return NSDate.brc_test()
         } else {
             return Date()

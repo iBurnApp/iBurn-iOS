@@ -25,30 +25,38 @@ final class EmojiImageRenderer {
         let borderColor: UIColor?
         let borderWidth: CGFloat
         let cornerRadius: CGFloat
+        let statusDotColor: UIColor?
+        let statusDotSize: CGFloat
+        
+        init(size: CGSize, 
+             backgroundColor: UIColor? = nil,
+             borderColor: UIColor? = nil,
+             borderWidth: CGFloat = 0,
+             cornerRadius: CGFloat = 0,
+             statusDotColor: UIColor? = nil,
+             statusDotSize: CGFloat = 8) {
+            self.size = size
+            self.backgroundColor = backgroundColor
+            self.borderColor = borderColor
+            self.borderWidth = borderWidth
+            self.cornerRadius = cornerRadius
+            self.statusDotColor = statusDotColor
+            self.statusDotSize = statusDotSize
+        }
         
         static let `default` = Configuration(
-            size: CGSize(width: 40, height: 40),
-            backgroundColor: nil,
-            borderColor: nil,
-            borderWidth: 0,
-            cornerRadius: 0
+            size: CGSize(width: 40, height: 40)
         )
         
         static let mapPin = Configuration(
-            size: CGSize(width: 36, height: 36),
-            backgroundColor: .white,
-            borderColor: nil,
-            borderWidth: 0,
-            cornerRadius: 18
+            size: CGSize(width: 36, height: 36)
         )
         
         static func mapPinWithStatus(color: UIColor) -> Configuration {
             Configuration(
                 size: CGSize(width: 36, height: 36),
-                backgroundColor: .white,
-                borderColor: color,
-                borderWidth: 3,
-                cornerRadius: 18
+                statusDotColor: color,
+                statusDotSize: 10
             )
         }
     }
@@ -67,7 +75,7 @@ final class EmojiImageRenderer {
     ///   - configuration: Rendering configuration
     /// - Returns: Rendered UIImage or nil if rendering fails
     func renderEmoji(_ emoji: String, configuration: Configuration = .default) -> UIImage? {
-        let cacheKey = "\(emoji)_\(configuration.size.width)_\(configuration.size.height)_\(configuration.backgroundColor?.hexString ?? "clear")_\(configuration.borderColor?.hexString ?? "none")_\(configuration.borderWidth)_\(configuration.cornerRadius)" as NSString
+        let cacheKey = "\(emoji)_\(configuration.size.width)_\(configuration.size.height)_\(configuration.backgroundColor?.hexString ?? "clear")_\(configuration.borderColor?.hexString ?? "none")_\(configuration.borderWidth)_\(configuration.cornerRadius)_\(configuration.statusDotColor?.hexString ?? "none")_\(configuration.statusDotSize)" as NSString
         
         if let cachedImage = cache.object(forKey: cacheKey) {
             return cachedImage
@@ -95,7 +103,7 @@ final class EmojiImageRenderer {
             }
             
             // Draw emoji
-            let fontSize = min(configuration.size.width, configuration.size.height) * 0.6
+            let fontSize = min(configuration.size.width, configuration.size.height) * 0.7
             let font = UIFont.systemFont(ofSize: fontSize)
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: font
@@ -111,6 +119,31 @@ final class EmojiImageRenderer {
             )
             
             attributedString.draw(in: textRect)
+            
+            // Draw status dot if present
+            if let statusDotColor = configuration.statusDotColor {
+                let dotRadius = configuration.statusDotSize / 2
+                let dotOffset: CGFloat = 2
+                let dotCenter = CGPoint(x: dotOffset + dotRadius, y: dotOffset + dotRadius)
+                
+                // Draw white background for the dot for better visibility
+                let whiteDotPath = UIBezierPath(arcCenter: dotCenter, 
+                                               radius: dotRadius + 1, 
+                                               startAngle: 0, 
+                                               endAngle: .pi * 2, 
+                                               clockwise: true)
+                UIColor.white.setFill()
+                whiteDotPath.fill()
+                
+                // Draw the colored dot
+                let dotPath = UIBezierPath(arcCenter: dotCenter, 
+                                          radius: dotRadius, 
+                                          startAngle: 0, 
+                                          endAngle: .pi * 2, 
+                                          clockwise: true)
+                statusDotColor.setFill()
+                dotPath.fill()
+            }
         }
         
         cache.setObject(image, forKey: cacheKey)
