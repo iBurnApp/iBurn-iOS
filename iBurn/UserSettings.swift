@@ -24,6 +24,8 @@ public final class UserSettings: NSObject {
         static let showAllDayEvents = "kBRCShowAllDayEventsKey"
         static let showExpiredEventsInFavorites = "kBRCShowExpiredEventsInFavoritesKey"
         static let showTodayOnlyInFavorites = "kBRCShowTodayOnlyInFavoritesKey"
+        static let showOnlyArtWithEvents = "kBRCShowOnlyArtWithEventsKey"
+        static let showOnlyArtHostedEvents = "kBRCShowOnlyArtHostedEventsKey"
     }
     
     /// Selected favorites filter
@@ -154,6 +156,28 @@ public final class UserSettings: NSObject {
         get {
             // Default to false to maintain current behavior
             return UserDefaults.standard.bool(forKey: Keys.showTodayOnlyInFavorites)
+        }
+    }
+    
+    /// Show only art with events in art list
+    @objc public static var showOnlyArtWithEvents: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showOnlyArtWithEvents)
+        }
+        get {
+            // Default to false to show all art
+            return UserDefaults.standard.bool(forKey: Keys.showOnlyArtWithEvents)
+        }
+    }
+    
+    /// Show only events hosted at art
+    @objc public static var showOnlyArtHostedEvents: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showOnlyArtHostedEvents)
+        }
+        get {
+            // Default to false to show all events
+            return UserDefaults.standard.bool(forKey: Keys.showOnlyArtHostedEvents)
         }
     }
     

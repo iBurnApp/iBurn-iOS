@@ -321,7 +321,9 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
 
     func pushArtView() {
         let dbManager = BRCDatabaseManager.shared
-        let artVC = ObjectListViewController(viewName: dbManager.artViewName, searchViewName: dbManager.searchArtView)
+        // Use filtered view if filter is enabled
+        let viewName = UserSettings.showOnlyArtWithEvents ? dbManager.artFilteredByEvents : dbManager.artViewName
+        let artVC = ArtListViewController(viewName: viewName, searchViewName: dbManager.searchArtView)
         artVC.tableView.separatorStyle = .none
         artVC.title = "Art"
         navigationController?.pushViewController(artVC, animated: true)

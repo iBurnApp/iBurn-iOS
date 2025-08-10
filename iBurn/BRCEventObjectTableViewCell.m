@@ -90,10 +90,10 @@
     }];
     if (camp) {
         host = camp;
-        hostName = camp.title;
+        hostName = [NSString stringWithFormat:@"🏕 %@", camp.title];
     } else if (art) {
         host = art;
-        hostName = art.title;
+        hostName = [NSString stringWithFormat:@"🎨 %@", art.title];
     } else {
         host = eventObject;
         hostName = eventObject.otherLocation;

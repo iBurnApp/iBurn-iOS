@@ -21,6 +21,7 @@
 /** Fired when button is pressed */
 @property (nonatomic, copy) void (^playPauseBlock)(BRCArtObjectTableViewCell *sender);
 
+
 - (void) configurePlayPauseButton:(BRCArtObject*)artObject;
 
 @end

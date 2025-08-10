@@ -10,6 +10,8 @@
 #import <Mantle/Mantle.h>
 #import "BRCArtObject.h"
 #import "iBurn-Swift.h"
+#import "BRCDataObject+Relationships.h"
+#import "BRCDatabaseManager.h"
 @import AVFoundation;
 
 @implementation BRCArtObjectTableViewCell
@@ -43,6 +45,23 @@
         self.playPauseButton.hidden = NO;
     } else {
         self.playPauseButton.hidden = YES;
+    }
+    
+    // Prepend event count to artist name for art objects
+    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
+        BRCArtObject *art = (BRCArtObject*)dataObject;
+        __block NSArray *events = nil;
+        [[BRCDatabaseManager shared].uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
+            events = [dataObject eventsWithTransaction:transaction];
+        }];
+        
+        NSString *artistName = art.artistName;
+        if (events.count > 0 && artistName.length > 0) {
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"📅 %lu • %@", (unsigned long)events.count, artistName];
+        } else if (events.count > 0) {
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
+        }
+        // If no events, the parent class already set the artist name
     }
 }
 
