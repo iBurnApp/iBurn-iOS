@@ -153,30 +153,44 @@ final class EmojiImageRenderer {
                 dotPath.fill()
             }
             
-            // Draw heart icon if favorite
+            // Draw heart emoji if favorite
             if configuration.isFavorite {
-                let heartOffset: CGFloat = 2
+                let heartEmoji = "❤️"
+                let heartOffset: CGFloat = 1
                 
                 // Position heart in bottom-right corner
+                let heartSize = configuration.heartSize
                 let heartRect = CGRect(
-                    x: configuration.size.width - configuration.heartSize - heartOffset,
-                    y: configuration.size.height - configuration.heartSize - heartOffset,
-                    width: configuration.heartSize,
-                    height: configuration.heartSize
+                    x: configuration.size.width - heartSize - heartOffset,
+                    y: configuration.size.height - heartSize - heartOffset,
+                    width: heartSize,
+                    height: heartSize
                 )
                 
-                // Create heart icons for border and fill
-                let heartFillImage = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
-                let heartBorderImage = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
+                // Create attributes with white stroke for visibility
+                let paragraphStyle = NSMutableParagraphStyle()
+                paragraphStyle.alignment = .center
                 
-                // Draw white border (slightly larger)
-                let borderRect = heartRect.insetBy(dx: -1, dy: -1)
-                UIColor.white.setFill()
-                heartBorderImage?.draw(in: borderRect)
+                let fontSize = heartSize * 0.85
+                let font = UIFont.systemFont(ofSize: fontSize)
+                let attributes: [NSAttributedString.Key: Any] = [
+                    .font: font,
+                    .strokeColor: UIColor.white,
+                    .strokeWidth: -4.0,  // Negative for stroke + fill
+                    .foregroundColor: UIColor.systemPink,
+                    .paragraphStyle: paragraphStyle
+                ]
                 
-                // Draw pink heart fill
-                UIColor.systemPink.setFill()
-                heartFillImage?.draw(in: heartRect)
+                // Draw the emoji heart
+                let attributedString = NSAttributedString(string: heartEmoji, attributes: attributes)
+                let textSize = attributedString.size()
+                let centeredRect = CGRect(
+                    x: heartRect.origin.x + (heartRect.width - textSize.width) / 2,
+                    y: heartRect.origin.y + (heartRect.height - textSize.height) / 2,
+                    width: textSize.width,
+                    height: textSize.height
+                )
+                attributedString.draw(in: centeredRect)
             }
         }
         
