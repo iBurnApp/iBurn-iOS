@@ -20,6 +20,15 @@
 #if DEBUG
 /** Used for testing events */
 + (NSDate*) brc_testDate;
+
+/** Set a custom override date for testing */
++ (void) brc_setOverrideDate:(NSDate*)overrideDate;
+
+/** Get the current override date (nil if using default) */
++ (NSDate*) brc_currentOverrideDate;
+
+/** Clear the custom override date */
++ (void) brc_clearOverrideDate;
 #endif
 
 @end

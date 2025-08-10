@@ -15,6 +15,12 @@ final class AppDelegate: BRCAppDelegate {
     override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
         Siren.shared.wail()
+        
+        // Preload common emojis for better map performance
+        DispatchQueue.global(qos: .background).async {
+            EmojiImageRenderer.shared.preloadCommonEmojis()
+        }
+        
         return result
     }
 }

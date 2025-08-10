@@ -245,6 +245,13 @@
 @implementation BRCDataObject (MarkerImage)
 
 - (UIImage*) brc_markerImage {
+    // Always try to use emoji markers first
+    UIImage *emojiImage = [self emojiMarkerImage];
+    if (emojiImage) {
+        return emojiImage;
+    }
+    
+    // Fall back to regular pins if emoji rendering fails
     UIImage *markerImage = nil;
     Class dataObjectClass = [self class];
     if (dataObjectClass == [BRCArtObject class]) {

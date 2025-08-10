@@ -139,6 +139,10 @@
 		D9BD4C051B78788E00313FB5 /* CreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BD4C041B78788E00313FB5 /* CreditsViewController.swift */; };
 		D9BF9A6A1D52A86A004AA63B /* AudioTourViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */; };
 		D9C151EA2E47ABA900AE9625 /* FavoritesFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */; };
+		D9C151EC2E49337400AE9625 /* EmojiImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C151EB2E49337400AE9625 /* EmojiImageRenderer.swift */; };
+		D9C1523D2E49371300AE9625 /* BRCArtObject+Emoji.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C1523B2E49371300AE9625 /* BRCArtObject+Emoji.swift */; };
+		D9C1523E2E49371300AE9625 /* BRCCampObject+Emoji.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C1523C2E49371300AE9625 /* BRCCampObject+Emoji.swift */; };
+		D9C152402E49372500AE9625 /* BRCDataObject+EmojiMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C1523F2E49372500AE9625 /* BRCDataObject+EmojiMarker.swift */; };
 		D9C30F6E1B82EDBB00CD03CC /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */; };
 		D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */; };
 		D9C9D2C11B7D64C0002C95E4 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9D2C01B7D64C0002C95E4 /* MoreViewController.swift */; };
@@ -506,6 +510,10 @@
 		D9BF9A661D515FF7004AA63B /* 2016 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2016; path = "Submodules/iBurn-Data/data/2016/2016"; sourceTree = SOURCE_ROOT; };
 		D9BF9A691D52A86A004AA63B /* AudioTourViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioTourViewController.swift; sourceTree = "<group>"; };
 		D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesFilterView.swift; sourceTree = "<group>"; };
+		D9C151EB2E49337400AE9625 /* EmojiImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiImageRenderer.swift; sourceTree = "<group>"; };
+		D9C1523B2E49371300AE9625 /* BRCArtObject+Emoji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BRCArtObject+Emoji.swift"; sourceTree = "<group>"; };
+		D9C1523C2E49371300AE9625 /* BRCCampObject+Emoji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BRCCampObject+Emoji.swift"; sourceTree = "<group>"; };
+		D9C1523F2E49372500AE9625 /* BRCDataObject+EmojiMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BRCDataObject+EmojiMarker.swift"; sourceTree = "<group>"; };
 		D9C30F6D1B82EDBB00CD03CC /* FavoritesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoritesViewController.swift; sourceTree = "<group>"; };
 		D9C30F6F1B82EE6700CD03CC /* SortedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedViewController.swift; sourceTree = "<group>"; };
 		D9C30F731B83118200CD03CC /* iBurn-2015 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "iBurn-2015"; path = "Submodules/iBurn-Data/data/2015/iBurn-2015"; sourceTree = SOURCE_ROOT; };
@@ -723,7 +731,11 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9C1523F2E49372500AE9625 /* BRCDataObject+EmojiMarker.swift */,
+				D9C1523B2E49371300AE9625 /* BRCArtObject+Emoji.swift */,
+				D9C1523C2E49371300AE9625 /* BRCCampObject+Emoji.swift */,
 				D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */,
+				D9C151EB2E49337400AE9625 /* EmojiImageRenderer.swift */,
 				D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */,
 				D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */,
 				D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */,
@@ -1681,6 +1693,7 @@
 				D99395A8198B897B00E9ADD2 /* BRCDetailInfoTableViewCell.m in Sources */,
 				D9CC7E0A20806FA600A6E502 /* AppDelegate.swift in Sources */,
 				D92AC57022F0176B00C9FE32 /* Breadcrumb.swift in Sources */,
+				D9C151EC2E49337400AE9625 /* EmojiImageRenderer.swift in Sources */,
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
 				D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */,
 				D9C151EA2E47ABA900AE9625 /* FavoritesFilterView.swift in Sources */,
@@ -1735,6 +1748,7 @@
 				D99754D62DFE24AB007716F4 /* BRCArtImage.m in Sources */,
 				D9794B74198BBFB400D7FDA7 /* UIColor+iBurn.m in Sources */,
 				D9E63FF22E40296500101257 /* ListButtonHelper.swift in Sources */,
+				D9C152402E49372500AE9625 /* BRCDataObject+EmojiMarker.swift in Sources */,
 				D9C30F701B82EE6700CD03CC /* SortedViewController.swift in Sources */,
 				D977C8641EF23994007766A9 /* MapDetailViewController.swift in Sources */,
 				D9B362B71998253A0093B441 /* BRCSocialButtonsView.m in Sources */,
@@ -1754,6 +1768,8 @@
 				D9A27ADE210FFC0F000BD535 /* Appearance.swift in Sources */,
 				63010EFF1B72DEEA000A847C /* BRCGeocoder.m in Sources */,
 				D9E0DA99210FB66C0056286B /* UIBarButtonItem+Blocks.swift in Sources */,
+				D9C1523D2E49371300AE9625 /* BRCArtObject+Emoji.swift in Sources */,
+				D9C1523E2E49371300AE9625 /* BRCCampObject+Emoji.swift in Sources */,
 				D9038C7420FBF6B90085C6B9 /* BRCLocations.swift in Sources */,
 				D9F358EC22A4A9A90022DA0C /* WebViewHelper.swift in Sources */,
 				D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */,
