@@ -52,30 +52,27 @@
     if ([dataObject isKindOfClass:[BRCArtObject class]]) {
         BRCArtObject *art = (BRCArtObject*)dataObject;
         self.rightSubtitleLabel.text = art.artistName;
-    } else {
-        [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
-    }
-    self.favoriteButton.selected = metadata.isFavorite;
-    
-    // Show event count for camps (art is handled in BRCArtObjectTableViewCell)
-    if ([dataObject isKindOfClass:[BRCCampObject class]]) {
+    } else if ([dataObject isKindOfClass:[BRCCampObject class]]) {
+        // For camps, prepend event count if they have events
         __block NSArray *events = nil;
         [[BRCDatabaseManager shared].uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
             events = [dataObject eventsWithTransaction:transaction];
         }];
         
-        if (events.count > 0 && self.eventCountLabel) {
-            self.eventCountLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
-            self.eventCountLabel.hidden = NO;
-        } else if (self.eventCountLabel) {
-            self.eventCountLabel.hidden = YES;
+        NSString *locationText = nil;
+        [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
+        locationText = self.rightSubtitleLabel.text;
+        
+        if (events.count > 0 && locationText) {
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"📅 %lu • %@", (unsigned long)events.count, locationText];
+        } else if (events.count > 0) {
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
         }
-    } else if (![dataObject isKindOfClass:[BRCArtObject class]]) {
-        // Hide for non-camp, non-art objects
-        if (self.eventCountLabel) {
-            self.eventCountLabel.hidden = YES;
-        }
+        // If no events, location text is already set by setupLocationLabel
+    } else {
+        [self setupLocationLabel:self.rightSubtitleLabel dataObject:dataObject];
     }
+    self.favoriteButton.selected = metadata.isFavorite;
 }
 
 - (void) setupLocationLabel:(UILabel*)label dataObject:(BRCDataObject*)dataObject {

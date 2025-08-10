@@ -47,19 +47,21 @@
         self.playPauseButton.hidden = YES;
     }
     
-    // Show event count for art objects
+    // Prepend event count to artist name for art objects
     if ([dataObject isKindOfClass:[BRCArtObject class]]) {
+        BRCArtObject *art = (BRCArtObject*)dataObject;
         __block NSArray *events = nil;
         [[BRCDatabaseManager shared].uiConnection readWithBlock:^(YapDatabaseReadTransaction * _Nonnull transaction) {
             events = [dataObject eventsWithTransaction:transaction];
         }];
         
-        if (events.count > 0 && self.eventCountLabel) {
-            self.eventCountLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
-            self.eventCountLabel.hidden = NO;
-        } else if (self.eventCountLabel) {
-            self.eventCountLabel.hidden = YES;
+        NSString *artistName = art.artistName;
+        if (events.count > 0 && artistName.length > 0) {
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"📅 %lu • %@", (unsigned long)events.count, artistName];
+        } else if (events.count > 0) {
+            self.rightSubtitleLabel.text = [NSString stringWithFormat:@"📅 %lu", (unsigned long)events.count];
         }
+        // If no events, the parent class already set the artist name
     }
 }
 
