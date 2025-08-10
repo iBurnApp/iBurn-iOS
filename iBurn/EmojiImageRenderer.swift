@@ -27,6 +27,8 @@ final class EmojiImageRenderer {
         let cornerRadius: CGFloat
         let statusDotColor: UIColor?
         let statusDotSize: CGFloat
+        let isFavorite: Bool
+        let heartSize: CGFloat
         
         init(size: CGSize, 
              backgroundColor: UIColor? = nil,
@@ -34,7 +36,9 @@ final class EmojiImageRenderer {
              borderWidth: CGFloat = 0,
              cornerRadius: CGFloat = 0,
              statusDotColor: UIColor? = nil,
-             statusDotSize: CGFloat = 8) {
+             statusDotSize: CGFloat = 8,
+             isFavorite: Bool = false,
+             heartSize: CGFloat = 10) {
             self.size = size
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
@@ -42,6 +46,8 @@ final class EmojiImageRenderer {
             self.cornerRadius = cornerRadius
             self.statusDotColor = statusDotColor
             self.statusDotSize = statusDotSize
+            self.isFavorite = isFavorite
+            self.heartSize = heartSize
         }
         
         static let `default` = Configuration(
@@ -52,11 +58,13 @@ final class EmojiImageRenderer {
             size: CGSize(width: 36, height: 36)
         )
         
-        static func mapPinWithStatus(color: UIColor) -> Configuration {
+        static func mapPinWithStatus(color: UIColor? = nil, isFavorite: Bool = false) -> Configuration {
             Configuration(
                 size: CGSize(width: 36, height: 36),
                 statusDotColor: color,
-                statusDotSize: 10
+                statusDotSize: 10,
+                isFavorite: isFavorite,
+                heartSize: 10
             )
         }
     }
@@ -75,7 +83,7 @@ final class EmojiImageRenderer {
     ///   - configuration: Rendering configuration
     /// - Returns: Rendered UIImage or nil if rendering fails
     func renderEmoji(_ emoji: String, configuration: Configuration = .default) -> UIImage? {
-        let cacheKey = "\(emoji)_\(configuration.size.width)_\(configuration.size.height)_\(configuration.backgroundColor?.hexString ?? "clear")_\(configuration.borderColor?.hexString ?? "none")_\(configuration.borderWidth)_\(configuration.cornerRadius)_\(configuration.statusDotColor?.hexString ?? "none")_\(configuration.statusDotSize)" as NSString
+        let cacheKey = "\(emoji)_\(configuration.size.width)_\(configuration.size.height)_\(configuration.backgroundColor?.hexString ?? "clear")_\(configuration.borderColor?.hexString ?? "none")_\(configuration.borderWidth)_\(configuration.cornerRadius)_\(configuration.statusDotColor?.hexString ?? "none")_\(configuration.statusDotSize)_\(configuration.isFavorite)_\(configuration.heartSize)" as NSString
         
         if let cachedImage = cache.object(forKey: cacheKey) {
             return cachedImage
@@ -144,6 +152,25 @@ final class EmojiImageRenderer {
                 statusDotColor.setFill()
                 dotPath.fill()
             }
+            
+            // Draw heart icon if favorite
+            if configuration.isFavorite {
+                let heartImage = UIImage(systemName: "heart.fill")
+                let heartTintColor = UIColor.systemPink
+                let heartOffset: CGFloat = 2
+                
+                // Position heart in bottom-right corner
+                let heartRect = CGRect(
+                    x: configuration.size.width - configuration.heartSize - heartOffset,
+                    y: configuration.size.height - configuration.heartSize - heartOffset,
+                    width: configuration.heartSize,
+                    height: configuration.heartSize
+                )
+                
+                // Draw the heart icon
+                heartTintColor.setFill()
+                heartImage?.draw(in: heartRect)
+            }
         }
         
         cache.setObject(image, forKey: cacheKey)
@@ -163,6 +190,8 @@ final class EmojiImageRenderer {
             _ = renderEmoji(emoji, configuration: .mapPinWithStatus(color: .systemGreen))
             _ = renderEmoji(emoji, configuration: .mapPinWithStatus(color: .systemOrange))
             _ = renderEmoji(emoji, configuration: .mapPinWithStatus(color: .systemRed))
+            _ = renderEmoji(emoji, configuration: .mapPinWithStatus(isFavorite: true))
+            _ = renderEmoji(emoji, configuration: .mapPinWithStatus(color: .systemGreen, isFavorite: true))
         }
     }
     
