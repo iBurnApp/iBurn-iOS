@@ -188,11 +188,7 @@ public protocol ImageAnnotation: MLNAnnotation {
 
 extension DataObjectAnnotation: ImageAnnotation {
     public var markerImage: UIImage? {
-        if metadata.isFavorite {
-            return UIImage(named: "BRCPinkPin")
-        } else {
-            return object.brc_markerImage
-        }
+        return object.brc_markerImage
     }
 }
 
