@@ -124,6 +124,8 @@
 		D9A364672A759BD20008CCFB /* DataUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A364662A759BD20008CCFB /* DataUpdatesView.swift */; };
 		D9A6A8E42114CD8E00988DA7 /* BRCDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A6A8E32114CD8E00988DA7 /* BRCDatabaseManager.swift */; };
 		D9ABFAA52E32056900FB1519 /* BRCDataImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9ABFAA42E32056700FB1519 /* BRCDataImportTests.swift */; };
+		D9ART0012E47ABA900AE9626 /* ArtListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9ART0012E47ABA900AE9625 /* ArtListViewController.swift */; };
+		D9ART0022E47ABA900AE9627 /* ArtFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9ART0022E47ABA900AE9626 /* ArtFilterView.swift */; };
 		D9B34BA51F39737B007C6AAE /* BRCDataObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */; };
 		D9B34BA61F397930007C6AAE /* ArtImageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D94699551F3969CA00DE8DA6 /* ArtImageCell.xib */; };
 		D9B362B4199821EB0093B441 /* NSURL+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B362B3199821EB0093B441 /* NSURL+iBurn.m */; };
@@ -482,6 +484,8 @@
 		D9AB872B2C477E81004DEB50 /* iBurn-2024.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = "iBurn-2024.zip"; path = "Submodules/iBurn-Data/data/2024/iBurn-2024.zip"; sourceTree = SOURCE_ROOT; };
 		D9ABFAA42E32056700FB1519 /* BRCDataImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataImportTests.swift; sourceTree = "<group>"; };
 		D9ADBF5E1D6BA9A6003A71DF /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2016/bundle.js"; sourceTree = SOURCE_ROOT; };
+		D9ART0012E47ABA900AE9625 /* ArtListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtListViewController.swift; sourceTree = "<group>"; };
+		D9ART0022E47ABA900AE9626 /* ArtFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtFilterView.swift; sourceTree = "<group>"; };
 		D9B34BA41F39737B007C6AAE /* BRCDataObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDataObject.swift; sourceTree = "<group>"; };
 		D9B362B2199821EB0093B441 /* NSURL+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+iBurn.h"; sourceTree = "<group>"; };
 		D9B362B3199821EB0093B441 /* NSURL+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+iBurn.m"; sourceTree = "<group>"; };
@@ -724,6 +728,8 @@
 			isa = PBXGroup;
 			children = (
 				D9C151E92E47ABA900AE9625 /* FavoritesFilterView.swift */,
+				D9ART0012E47ABA900AE9625 /* ArtListViewController.swift */,
+				D9ART0022E47ABA900AE9626 /* ArtFilterView.swift */,
 				D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */,
 				D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */,
 				D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */,
@@ -1684,6 +1690,8 @@
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
 				D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */,
 				D9C151EA2E47ABA900AE9625 /* FavoritesFilterView.swift in Sources */,
+				D9ART0012E47ABA900AE9626 /* ArtListViewController.swift in Sources */,
+				D9ART0022E47ABA900AE9627 /* ArtFilterView.swift in Sources */,
 				D9F889252300D18C0069FD49 /* BRCEventObject.swift in Sources */,
 				D984DFCF210EB38F00A45922 /* NSCopying+iBurn.swift in Sources */,
 				6322830119881DDE009E472B /* BRCDetailViewController.m in Sources */,

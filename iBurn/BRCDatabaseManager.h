@@ -68,6 +68,8 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavorite;
 /** Art, camps and events filtered by favorite and expiration */
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavoriteAndExpiration;
+/** Art filtered by having events */
+@property (nonatomic, strong, readonly) NSString *artFilteredByEvents;
 
 /** Audio Tour */
 @property (nonatomic, strong, readonly) NSString *audioTourViewName;
@@ -112,6 +114,8 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
                        maxCoord:(CLLocationCoordinate2D)maxCoord
                 completionQueue:(dispatch_queue_t)completionQueue
                    resultsBlock:(void (^)(NSArray<BRCDataObject*> *results))resultsBlock;
+
+- (void) refreshArtFilteredView:(void (^_Nullable)(void))completionBlock;
 
 @end
 

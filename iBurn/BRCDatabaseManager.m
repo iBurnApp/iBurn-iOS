@@ -160,6 +160,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _eventsFilteredByDayExpirationAndTypeViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName];
     _everythingFilteredByFavorite = [self.dataObjectsViewName stringByAppendingString:@"-FavoritesFilter"];
     _everythingFilteredByFavoriteAndExpiration = [self.everythingFilteredByFavorite stringByAppendingString:@"-WithExpiration"];
+    _artFilteredByEvents = [self.artViewName stringByAppendingString:@"-FilteredByEvents"];
     
     NSString *searchSuffix = @"-SearchView";
     _searchArtView = [self.ftsArtName stringByAppendingString:searchSuffix];
@@ -387,6 +388,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.artImagesViewName];
     }
     NSLog(@"%@ %d", self.artImagesViewName, success);
+    
+    // Art filtered by having events
+    YapDatabaseViewFiltering *artWithEventsFiltering = [BRCDatabaseManager artFilteredByEvents];
+    YapDatabaseFilteredView *artWithEvents = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.artViewName filtering:artWithEventsFiltering versionTag:@"1"];
+    success = [self.database registerExtension:artWithEvents withName:self.artFilteredByEvents];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.artFilteredByEvents];
+    }
+    NSLog(@"%@ %d", self.artFilteredByEvents, success);
 }
 
 - (void) registerSearchViews {
@@ -623,6 +633,27 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return filtering;
 }
 
++ (YapDatabaseViewFiltering*) artFilteredByEvents {
+    BOOL showOnlyWithEvents = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowOnlyArtWithEventsKey"];
+    
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        if (!showOnlyWithEvents) {
+            // If filter is off, show all art
+            return YES;
+        }
+        
+        // Check if art has events
+        if ([object isKindOfClass:[BRCArtObject class]]) {
+            BRCArtObject *artObject = (BRCArtObject*)object;
+            NSArray *events = [artObject eventsWithTransaction:transaction];
+            return events.count > 0;
+        }
+        
+        return YES;
+    }];
+    return filtering;
+}
+
 + (YapDatabaseViewFiltering*) favoritesFilteredByExpiration {
     BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowExpiredEventsInFavoritesKey"];
     // Default to true if not set
@@ -848,6 +879,18 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         }
         YapDatabaseViewFiltering *favoritesWithExpirationFiltering = [BRCDatabaseManager favoritesFilteredByExpiration];
         [filteredFavoritesTransaction setFiltering:favoritesWithExpirationFiltering versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:completionBlock];
+}
+
+/** Refresh art filtered view based on events setting */
+- (void) refreshArtFilteredView:(void (^)(void))completionBlock {
+    [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseFilteredViewTransaction *filteredArtTransaction = [transaction ext:self.artFilteredByEvents];
+        if (!filteredArtTransaction) {
+            return;
+        }
+        YapDatabaseViewFiltering *artWithEventsFiltering = [BRCDatabaseManager artFilteredByEvents];
+        [filteredArtTransaction setFiltering:artWithEventsFiltering versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:completionBlock];
 }
 
