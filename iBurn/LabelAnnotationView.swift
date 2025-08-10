@@ -45,10 +45,10 @@ final class LabelAnnotationView: MLNAnnotationView {
         label.textColor = .label
         
         imageView.centerAnchors == centerAnchors
-        label.topAnchor == imageView.bottomAnchor - 10
+        label.topAnchor == imageView.bottomAnchor  // No spacing between emoji and label
         label.horizontalAnchors == horizontalAnchors
 
-        frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        frame = CGRect(x: 0, y: 0, width: 100, height: 45)  // Adjusted height
     }
     
     // MARK: Overrides
