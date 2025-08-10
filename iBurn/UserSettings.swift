@@ -26,6 +26,12 @@ public final class UserSettings: NSObject {
         static let showTodayOnlyInFavorites = "kBRCShowTodayOnlyInFavoritesKey"
         static let showOnlyArtWithEvents = "kBRCShowOnlyArtWithEventsKey"
         static let showOnlyArtHostedEvents = "kBRCShowOnlyArtHostedEventsKey"
+        // Map filter keys
+        static let showArtOnMap = "kBRCShowArtOnMapKey"
+        static let showCampsOnMap = "kBRCShowCampsOnMapKey"
+        static let showActiveEventsOnMap = "kBRCShowActiveEventsOnMapKey"
+        static let showFavoritesOnMap = "kBRCShowFavoritesOnMapKey"
+        static let showTodaysFavoritesOnlyOnMap = "kBRCShowTodaysFavoritesOnlyOnMapKey"
     }
     
     /// Selected favorites filter
@@ -178,6 +184,75 @@ public final class UserSettings: NSObject {
         get {
             // Default to false to show all events
             return UserDefaults.standard.bool(forKey: Keys.showOnlyArtHostedEvents)
+        }
+    }
+    
+    // MARK: - Map Filter Settings
+    
+    /// Show art on map
+    @objc public static var showArtOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showArtOnMap)
+        }
+        get {
+            // Default to true if not set
+            if UserDefaults.standard.object(forKey: Keys.showArtOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showArtOnMap)
+        }
+    }
+    
+    /// Show camps on map
+    @objc public static var showCampsOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showCampsOnMap)
+        }
+        get {
+            // Default to true if not set
+            if UserDefaults.standard.object(forKey: Keys.showCampsOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showCampsOnMap)
+        }
+    }
+    
+    /// Show active events on map
+    @objc public static var showActiveEventsOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showActiveEventsOnMap)
+        }
+        get {
+            // Default to true if not set
+            if UserDefaults.standard.object(forKey: Keys.showActiveEventsOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showActiveEventsOnMap)
+        }
+    }
+    
+    /// Show favorites on map
+    @objc public static var showFavoritesOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showFavoritesOnMap)
+        }
+        get {
+            // Default to true if not set
+            if UserDefaults.standard.object(forKey: Keys.showFavoritesOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showFavoritesOnMap)
+        }
+    }
+    
+    /// Show only today's favorites on map
+    @objc public static var showTodaysFavoritesOnlyOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showTodaysFavoritesOnlyOnMap)
+        }
+        get {
+            // Default to false to show all favorites
+            return UserDefaults.standard.bool(forKey: Keys.showTodaysFavoritesOnlyOnMap)
         }
     }
     
