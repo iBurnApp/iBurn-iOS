@@ -159,6 +159,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _eventsFilteredByDayViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventSelectedDayOnly parentViewName:self.eventsViewName];
     _eventsFilteredByDayExpirationAndTypeViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeEventExpirationAndType parentViewName:self.eventsFilteredByDayViewName];
     _everythingFilteredByFavorite = [self.dataObjectsViewName stringByAppendingString:@"-FavoritesFilter"];
+    _everythingFilteredByFavoriteAndExpiration = [self.everythingFilteredByFavorite stringByAppendingString:@"-WithExpiration"];
     
     NSString *searchSuffix = @"-SearchView";
     _searchArtView = [self.ftsArtName stringByAppendingString:searchSuffix];
@@ -336,6 +337,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.everythingFilteredByFavorite];
     }
     NSLog(@"%@ %d", self.everythingFilteredByFavorite, success);
+    
+    // Favorites filtered by expiration
+    YapDatabaseViewFiltering *favoritesWithExpirationFiltering = [BRCDatabaseManager favoritesFilteredByExpiration];
+    YapDatabaseFilteredView *favoritesWithExpiration = [[YapDatabaseFilteredView alloc] initWithParentViewName:self.dataObjectsViewName filtering:favoritesWithExpirationFiltering versionTag:@"1"];
+    success = [self.database registerExtension:favoritesWithExpiration withName:self.everythingFilteredByFavoriteAndExpiration];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.everythingFilteredByFavoriteAndExpiration];
+    }
+    NSLog(@"%@ %d", self.everythingFilteredByFavoriteAndExpiration, success);
     
     // Audio Tour
     YapDatabaseViewFiltering *audioTourFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
@@ -613,6 +623,66 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return filtering;
 }
 
++ (YapDatabaseViewFiltering*) favoritesFilteredByExpiration {
+    BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowExpiredEventsInFavoritesKey"];
+    // Default to true if not set
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"kBRCShowExpiredEventsInFavoritesKey"]) {
+        showExpiredEvents = YES;
+    }
+    BOOL showTodayOnly = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowTodayOnlyInFavoritesKey"];
+    
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        // Get metadata for the object
+        id metadata = [transaction metadataForKey:key inCollection:collection];
+        
+        // First check if it's a favorite
+        if ([metadata isKindOfClass:BRCObjectMetadata.class]) {
+            BRCObjectMetadata *ourMetadata = (BRCObjectMetadata*)metadata;
+            if (!ourMetadata.isFavorite) {
+                return NO;
+            }
+            
+            // If it's an event, apply filtering
+            if ([object isKindOfClass:[BRCEventObject class]]) {
+                BRCEventObject *eventObject = (BRCEventObject*)object;
+                NSDate *now = [NSDate present];
+                
+                // Check if event is today
+                if (showTodayOnly) {
+                    NSCalendar *calendar = [NSCalendar currentCalendar];
+                    NSDateComponents *eventComponents = [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:eventObject.startDate];
+                    NSDateComponents *todayComponents = [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:now];
+                    
+                    // If not today, filter out
+                    if (eventComponents.day != todayComponents.day || 
+                        eventComponents.month != todayComponents.month || 
+                        eventComponents.year != todayComponents.year) {
+                        return NO;
+                    }
+                    // If it's today, still check expiration setting
+                    if (!showExpiredEvents && [eventObject hasEnded:now]) {
+                        return NO;
+                    }
+                    return YES;
+                }
+                
+                // Check expiration if not showing today only
+                if (showExpiredEvents) {
+                    return YES;
+                } else {
+                    return ![eventObject hasEnded:now];
+                }
+            }
+            
+            // Non-events (Art, Camps) always pass through if favorited
+            // unless today only is on, then hide them
+            return !showTodayOnly;
+        }
+        return NO;
+    }];
+    return filtering;
+}
+
 /**
  *  Does not register the view, but checks if it is registered and returns
  *  the registered view if it exists. (Caller should register the view)
@@ -766,6 +836,18 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         YapDatabaseViewGrouping *grouping = [BRCDatabaseManager groupingForClass:viewClass];
         YapDatabaseViewSorting *sorting = [BRCDatabaseManager sorting];
         [viewTransaction setGrouping:grouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:completionBlock];
+}
+
+/** Refresh favorites filtered view based on expiration setting */
+- (void) refreshFavoritesFilteredViewWithCompletionBlock:(dispatch_block_t)completionBlock {
+    [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseFilteredViewTransaction *filteredFavoritesTransaction = [transaction ext:self.everythingFilteredByFavoriteAndExpiration];
+        if (!filteredFavoritesTransaction) {
+            return;
+        }
+        YapDatabaseViewFiltering *favoritesWithExpirationFiltering = [BRCDatabaseManager favoritesFilteredByExpiration];
+        [filteredFavoritesTransaction setFiltering:favoritesWithExpirationFiltering versionTag:[[NSUUID UUID] UUIDString]];
     } completionBlock:completionBlock];
 }
 

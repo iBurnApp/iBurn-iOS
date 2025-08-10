@@ -66,6 +66,8 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) NSString *eventsFilteredByDayExpirationAndTypeViewName;
 /** Art, camps and events filtered by favorite */
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavorite;
+/** Art, camps and events filtered by favorite and expiration */
+@property (nonatomic, strong, readonly) NSString *everythingFilteredByFavoriteAndExpiration;
 
 /** Audio Tour */
 @property (nonatomic, strong, readonly) NSString *audioTourViewName;
@@ -88,6 +90,8 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 - (void) refreshEventFilteredViewsWithSelectedDay:(NSDate*)selectedDay completionBlock:(dispatch_block_t)completionBlock;
 /** Refresh events sorting if selected by expiration/start time */
 - (void) refreshEventsSortingWithCompletionBlock:(dispatch_block_t)completionBlock;
+/** Refresh favorites filtered view based on expiration setting */
+- (void) refreshFavoritesFilteredViewWithCompletionBlock:(dispatch_block_t)completionBlock;
 
 /** R-Tree Index Extension Name */
 @property (nonatomic, strong, readonly) NSString *rTreeIndex;
