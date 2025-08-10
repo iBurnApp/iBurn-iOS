@@ -80,9 +80,16 @@ public class SortedViewController: UITableViewController {
             geocoderTimer?.tolerance = 1
         }
     }
+    private var dataRefreshTimer: Timer? {
+        didSet {
+            oldValue?.invalidate()
+            dataRefreshTimer?.tolerance = 5
+        }
+    }
     
     deinit {
         geocoderTimer?.invalidate()
+        dataRefreshTimer?.invalidate()
     }
     
     public override init(style: UITableView.Style) {
@@ -156,11 +163,18 @@ public class SortedViewController: UITableViewController {
         geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             self?.geocodeNavigationBar()
         }
+        // Refresh data every 60 seconds to update expired events
+        dataRefreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.refreshTableItems {
+                self?.tableView.reloadData()
+            }
+        }
     }
     
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         geocoderTimer = nil
+        dataRefreshTimer = nil
     }
     
     
