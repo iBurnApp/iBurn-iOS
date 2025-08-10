@@ -19,6 +19,7 @@ public enum FavoritesFilter: String, CaseIterable {
 public class FavoritesViewController: ObjectListViewController {
     
     private var filterButton: UIBarButtonItem?
+    private var refreshTimer: Timer?
     
     private enum Group: String {
         case event = "BRCEventObject"
@@ -49,6 +50,26 @@ public class FavoritesViewController: ObjectListViewController {
         setupTableViewAdapter()
         setupFilter()
         setupFilterButton()
+    }
+    
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Refresh filters every 60 seconds to update expired events
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            BRCDatabaseManager.shared.refreshFavoritesFilteredView {
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
+            }
+        }
+    }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        refreshTimer?.invalidate()
+        refreshTimer = nil
     }
 }
 
