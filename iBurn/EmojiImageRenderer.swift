@@ -155,8 +155,6 @@ final class EmojiImageRenderer {
             
             // Draw heart icon if favorite
             if configuration.isFavorite {
-                let heartImage = UIImage(systemName: "heart.fill")
-                let heartTintColor = UIColor.systemPink
                 let heartOffset: CGFloat = 2
                 
                 // Position heart in bottom-right corner
@@ -167,9 +165,18 @@ final class EmojiImageRenderer {
                     height: configuration.heartSize
                 )
                 
-                // Draw the heart icon
-                heartTintColor.setFill()
-                heartImage?.draw(in: heartRect)
+                // Create heart icons for border and fill
+                let heartFillImage = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
+                let heartBorderImage = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
+                
+                // Draw white border (slightly larger)
+                let borderRect = heartRect.insetBy(dx: -1, dy: -1)
+                UIColor.white.setFill()
+                heartBorderImage?.draw(in: borderRect)
+                
+                // Draw pink heart fill
+                UIColor.systemPink.setFill()
+                heartFillImage?.draw(in: heartRect)
             }
         }
         
