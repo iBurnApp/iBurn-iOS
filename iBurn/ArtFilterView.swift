@@ -12,6 +12,7 @@ class ArtFilterViewModel: ObservableObject {
     @Published var showOnlyArtWithEvents: Bool
     
     var onFilterChanged: (() -> Void)?
+    var onDismiss: (() -> Void)?
     
     init() {
         self.showOnlyArtWithEvents = UserSettings.showOnlyArtWithEvents
@@ -21,33 +22,37 @@ class ArtFilterViewModel: ObservableObject {
         UserSettings.showOnlyArtWithEvents = showOnlyArtWithEvents
         onFilterChanged?()
     }
+    
+    func dismiss() {
+        onDismiss?()
+    }
 }
 
 struct ArtFilterView: View {
     @ObservedObject var viewModel: ArtFilterViewModel
-    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section {
-                    Toggle("Only show art with events", isOn: $viewModel.showOnlyArtWithEvents)
-                        .onChange(of: viewModel.showOnlyArtWithEvents) { _ in
-                            viewModel.saveSettings()
-                        }
-                } footer: {
-                    Text("When enabled, only art installations that host events will be shown in the list.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
+        Form {
+            Section {
+                Toggle("Only show art with events", isOn: $viewModel.showOnlyArtWithEvents)
+            } footer: {
+                Text("When enabled, only art installations that host events will be shown in the list.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Filter Art")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
+                    viewModel.dismiss()
                 }
             }
-            .navigationTitle("Filter Art")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") {
+                    viewModel.saveSettings()
+                    viewModel.dismiss()
                 }
             }
         }
@@ -63,6 +68,9 @@ class ArtFilterViewController: UIHostingController<ArtFilterView> {
     init(onFilterChanged: @escaping () -> Void) {
         super.init(rootView: ArtFilterView(viewModel: viewModel))
         viewModel.onFilterChanged = onFilterChanged
+        viewModel.onDismiss = { [weak self] in
+            self?.dismiss(animated: true)
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
