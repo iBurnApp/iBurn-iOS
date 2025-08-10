@@ -50,6 +50,11 @@ NSString * const kBRCEventArtEdgeName = @"art";
 
 - (NSTimeInterval)timeIntervalForDuration {
     NSTimeInterval duration = [self.endDate timeIntervalSinceDate:self.startDate];
+    // Handle invalid events where end date is before start date
+    if (duration < 0) {
+        NSLog(@"WARNING: Event '%@' has negative duration: %.1f hours. Returning 0.", self.title, duration / 3600.0);
+        return 0;
+    }
     return duration;
 }
 

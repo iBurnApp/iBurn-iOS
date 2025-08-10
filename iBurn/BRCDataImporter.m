@@ -378,6 +378,28 @@ NSString * const BRCDataImporterMapTilesUpdatedNotification = @"BRCDataImporterM
             [obj removeWithTransaction:transaction];
         }];
         
+        // Special cleanup for events - also need to clean the BRCEventObject collection
+        // because recurring events are split into individual BRCEventObjects
+        if (dataClass == [BRCRecurringEventObject class]) {
+            NSMutableArray<BRCEventObject*> *eventsToRemove = [NSMutableArray array];
+            [transaction enumerateRowsInCollection:[BRCEventObject yapCollection] usingBlock:^(NSString * _Nonnull key, id  _Nonnull object, id  _Nullable metadata, BOOL * _Nonnull stop) {
+                if ([object isKindOfClass:[BRCEventObject class]] &&
+                    [metadata isKindOfClass:BRCObjectMetadata.class]) {
+                    BRCEventObject *eventObject = object;
+                    BRCObjectMetadata *metadataObject = metadata;
+                    if (![metadataObject.lastUpdated isEqualToDate:updateInfo.lastUpdated]) {
+                        [eventsToRemove addObject:eventObject];
+                        NSLog(@"Outdated event found: %@", eventObject.title);
+                    }
+                }
+            }];
+            
+            NSLog(@"Removing %lu outdated events", (unsigned long)eventsToRemove.count);
+            [eventsToRemove enumerateObjectsUsingBlock:^(BRCEventObject * _Nonnull event, NSUInteger idx, BOOL * _Nonnull stop) {
+                [event removeWithTransaction:transaction];
+            }];
+        }
+        
         ////////////// Data massaging
         NSMutableArray *objectsToUpdate = [NSMutableArray array];
         [transaction enumerateKeysAndObjectsInCollection:[BRCEventObject yapCollection] usingBlock:^(NSString *key, id object, BOOL *stop) {
