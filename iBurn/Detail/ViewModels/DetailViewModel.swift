@@ -426,6 +426,9 @@ class DetailViewModel: ObservableObject {
         let locationValue = getLocationValue(for: event)
         cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: event)))
         
+        // Event type section
+        cells.append(.eventType(event.eventType))
+        
         // Add host description if available
         if let hostDescription = getHostDescription(for: event) {
             cells.append(.text(hostDescription, style: .body))
