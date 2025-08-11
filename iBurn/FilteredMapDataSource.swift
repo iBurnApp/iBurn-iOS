@@ -29,7 +29,8 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
             BRCDatabaseManager.shared.everythingFilteredByFavorite :
             BRCDatabaseManager.shared.everythingFilteredByFavoriteAndExpiration
         favoritesDataSource = YapViewAnnotationDataSource(
-            viewHandler: YapViewHandler(viewName: favoritesViewName)
+            viewHandler: YapViewHandler(viewName: favoritesViewName),
+            showAllEvents: true  // Show all favorited events, not just currently happening
         )
         
         // Art data source - only created if needed
@@ -82,13 +83,8 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
                     return true
                 }
                 
-                // Filter events by type and today's setting
+                // Filter events by today's setting only (not by type for favorites)
                 if let event = dataAnnotation.object as? BRCEventObject {
-                    // Check event type
-                    if !selectedEventTypes.contains(event.eventType) {
-                        return false
-                    }
-                    
                     // Check if we're filtering to today only
                     if UserSettings.showTodaysFavoritesOnlyOnMap {
                         let calendar = Calendar.current

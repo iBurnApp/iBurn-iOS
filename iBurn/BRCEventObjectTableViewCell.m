@@ -90,7 +90,7 @@
     }];
     if (camp) {
         host = camp;
-        hostName = [NSString stringWithFormat:@"🏕 %@", camp.title];
+        hostName = [NSString stringWithFormat:@"%@", camp.title];
     } else if (art) {
         host = art;
         hostName = [NSString stringWithFormat:@"🎨 %@", art.title];
