@@ -14,6 +14,7 @@ import CocoaLumberjack
 import PlayaGeocoder
 import SafariServices
 import EventKitUI
+import SwiftUI
 
 public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     let uiConnection: YapDatabaseConnection
@@ -46,11 +47,8 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         sidebarButtons = SidebarButtonsView()
         search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchEverythingView)
         search.tableViewAdapter.groupTransformer = GroupTransformers.searchGroup
-        let userSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
-        userSource.allowedClass = BRCUserMapPoint.self
         let mapView = MLNMapView.brcMapView()
-        let favoritesSource = YapViewAnnotationDataSource(viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.everythingFilteredByFavorite))
-        let dataSource = AggregateAnnotationDataSource(dataSources: [userSource, favoritesSource])
+        let dataSource = FilteredMapDataSource()
         let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(mapViewAdapter: mapViewAdapter)
         title = NSLocalizedString("Map", comment: "title for map view")
@@ -76,6 +74,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         setupSidebarButtons()
         setupSearchButton()
         setupListButton()
+        setupFilterButton()
         search.tableViewAdapter.delegate = self
         definesPresentationContext = true
         
@@ -95,6 +94,28 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
             self?.listButtonPressed(button)
         }
         navigationItem.leftBarButtonItem = listButton
+    }
+    
+    func setupFilterButton() {
+        let filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
+        let filterButton = UIBarButtonItem(image: filterImage, style: .plain) { [weak self] button in
+            self?.filterButtonPressed(button)
+        }
+        navigationItem.leftBarButtonItems = [navigationItem.leftBarButtonItem, filterButton].compactMap { $0 }
+    }
+    
+    @objc func filterButtonPressed(_ sender: Any?) {
+        let filterVC = MapFilterViewController { [weak self] in
+            // Recreate data source with new filter settings
+            guard let self = self else { return }
+            let newDataSource = FilteredMapDataSource()
+            if let userAdapter = self.userMapViewAdapter {
+                userAdapter.dataSource = newDataSource
+                self.mapViewAdapter.reloadAnnotations()
+            }
+        }
+        let nav = UINavigationController(rootViewController: filterVC)
+        present(nav, animated: true)
     }
     
     
