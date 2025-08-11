@@ -43,6 +43,7 @@ enum DetailCellType {
     case userNotes(String)
     case date(Date, format: String)
     case landmark(String)
+    case eventType(BRCEventType)
 }
 
 // MARK: - Supporting Types

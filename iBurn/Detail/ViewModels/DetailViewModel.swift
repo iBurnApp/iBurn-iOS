@@ -385,10 +385,6 @@ class DetailViewModel: ObservableObject {
     private func generateEventCells(_ event: BRCEventObject) -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
-        // Event type with emoji
-        let eventTypeString = "\(event.eventType.emoji) \(event.eventType.displayString)"
-        cells.append(.text(eventTypeString, style: .subtitle))
-        
         // Host relationship (camp or art)
         var hostName: String?
         var hostId: String?
@@ -429,6 +425,9 @@ class DetailViewModel: ObservableObject {
         // Location with embargo handling
         let locationValue = getLocationValue(for: event)
         cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: event)))
+        
+        // Event type section
+        cells.append(.eventType(event.eventType))
         
         // Add host description if available
         if let hostDescription = getHostDescription(for: event) {

@@ -227,6 +227,9 @@ struct DetailCellView: View {
             
         case .landmark(let landmark):
             DetailLandmarkCell(landmark: landmark)
+            
+        case .eventType(let eventType):
+            DetailEventTypeCell(eventType: eventType)
         }
     }
     
@@ -236,7 +239,7 @@ struct DetailCellView: View {
             return true
         case .playaAddress(_, let tappable):
             return tappable
-        case .text, .distance, .schedule, .date, .landmark:
+        case .text, .distance, .schedule, .date, .landmark, .eventType:
             return false
         case .image:
             return true
@@ -680,6 +683,25 @@ struct DetailLandmarkCell: View {
                     .foregroundColor(themeColors.secondaryColor)
                 Spacer()
             }
+        }
+    }
+}
+
+struct DetailEventTypeCell: View {
+    let eventType: BRCEventType
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("EVENT TYPE")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(themeColors.detailColor)
+                .textCase(.uppercase)
+            
+            Text("\(eventType.emoji) \(eventType.displayString)")
+                .foregroundColor(themeColors.secondaryColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

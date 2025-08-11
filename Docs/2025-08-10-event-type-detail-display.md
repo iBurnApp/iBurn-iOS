@@ -4,32 +4,63 @@
 
 **Problem**: Event detail screen didn't show the event type, making it unclear what category of event users were viewing.
 
-**Solution**: Added event type display with emoji and descriptive text to the event detail screen, positioned prominently after the title.
+**Solution**: Added event type as a dedicated section with header "EVENT TYPE", positioned before the host description for clear event categorization.
 
 ## Technical Details
 
 ### Changes Made
 
-**File**: `iBurn/Detail/ViewModels/DetailViewModel.swift`
-
-**Location**: Line 388-390 in `generateEventCells()` method
-
-**Implementation**:
+#### 1. Added Event Type Cell Case
+**File**: `iBurn/Detail/Models/DetailCellType.swift`
 ```swift
-// Event type with emoji
-let eventTypeString = "\(event.eventType.emoji) \(event.eventType.displayString)"
-cells.append(.text(eventTypeString, style: .subtitle))
+case eventType(BRCEventType)
 ```
+
+#### 2. Added Event Type to Event Cells
+**File**: `iBurn/Detail/ViewModels/DetailViewModel.swift`
+```swift
+// Event type section
+cells.append(.eventType(event.eventType))
+```
+Positioned after location, before host description.
+
+#### 3. Created DetailEventTypeCell Component
+**File**: `iBurn/Detail/Views/DetailView.swift`
+```swift
+struct DetailEventTypeCell: View {
+    let eventType: BRCEventType
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("EVENT TYPE")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(themeColors.detailColor)
+                .textCase(.uppercase)
+            
+            Text("\(eventType.emoji) \(eventType.displayString)")
+                .foregroundColor(themeColors.secondaryColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+```
+
+#### 4. Added Switch Cases
+- Added case handling in cell rendering switch
+- Added eventType to non-tappable cells list
 
 ### Display Format
 
-The event type now appears as:
-- Format: `[emoji] [display string]`
-- Examples:
+The event type now appears:
+- **Section Header**: "EVENT TYPE" in uppercase, caption font
+- **Content**: `[emoji] [display string]` in secondary color
+- **Style**: Consistent with other section headers (SCHEDULE, LANDMARK, etc.)
+- **Examples**:
   - "🎉 Gathering/Party"
-  - "🧑‍🏫 Class/Workshop" 
+  - "🧑‍🏫 Class/Workshop"
   - "💃 Performance"
-  - "🔥 Fire/Spectacle"
 
 ### Cell Order
 
@@ -37,12 +68,20 @@ The event type appears in this order within event details:
 1. Image (if available)
 2. Title
 3. Description
-4. **Event Type (NEW)**
-5. Host relationship (camp/art)
-6. Next event from host
-7. Schedule
-8. Location
+4. Host relationship (camp/art)
+5. Next event from host
+6. Schedule
+7. Location
+8. **EVENT TYPE (with section header)**
 9. Host description
+
+### Visual Consistency
+
+The implementation maintains consistency with other detail sections:
+1. Uses standard section header styling (uppercase, caption, semibold)
+2. Follows same VStack layout pattern as LANDMARK and SCHEDULE
+3. Uses theme colors appropriately (detailColor for header, secondaryColor for content)
+4. Proper spacing and alignment
 
 ## Context Preservation
 
