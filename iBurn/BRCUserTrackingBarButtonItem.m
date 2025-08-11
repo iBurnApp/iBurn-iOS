@@ -226,30 +226,30 @@ typedef enum : NSUInteger {
     {
         CGRect rect = CGRectMake(0, 0, self.customView.bounds.size.width, self.customView.bounds.size.height);
         
-        UIGraphicsBeginImageContextWithOptions(rect.size, NO, [[UIScreen mainScreen] scale]);
+        // Guard against invalid sizes
+        if (rect.size.width <= 0 || rect.size.height <= 0) {
+            return;
+        }
         
-        CGContextRef context = UIGraphicsGetCurrentContext();
-        
-        UIImage *image;
-        
-        if (_mapView.userTrackingMode == MLNUserTrackingModeNone || ! _mapView)
-            image = [UIImage imageNamed:@"TrackingLocationOffMask.png"];
-        else if (_mapView.userTrackingMode == MLNUserTrackingModeFollow)
-            image = [UIImage imageNamed:@"TrackingLocationMask.png"];
-        else if (_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading)
-            image = [UIImage imageNamed:@"TrackingHeadingMask.png"];
-        
-        UIGraphicsPushContext(context);
-        [image drawAtPoint:CGPointMake((rect.size.width  - image.size.width) / 2, ((rect.size.height - image.size.height) / 2) + 2)];
-        UIGraphicsPopContext();
-        
-        CGContextSetBlendMode(context, kCGBlendModeSourceIn);
-        CGContextSetFillColorWithColor(context, self.tintColor.CGColor);
-        CGContextFillRect(context, rect);
-        
-        _buttonImageView.image = UIGraphicsGetImageFromCurrentImageContext();
-        
-        UIGraphicsEndImageContext();
+        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:rect.size];
+        _buttonImageView.image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+            CGContextRef context = rendererContext.CGContext;
+            
+            UIImage *image;
+            
+            if (_mapView.userTrackingMode == MLNUserTrackingModeNone || ! _mapView)
+                image = [UIImage imageNamed:@"TrackingLocationOffMask.png"];
+            else if (_mapView.userTrackingMode == MLNUserTrackingModeFollow)
+                image = [UIImage imageNamed:@"TrackingLocationMask.png"];
+            else if (_mapView.userTrackingMode == MLNUserTrackingModeFollowWithHeading)
+                image = [UIImage imageNamed:@"TrackingHeadingMask.png"];
+            
+            [image drawAtPoint:CGPointMake((rect.size.width  - image.size.width) / 2, ((rect.size.height - image.size.height) / 2) + 2)];
+            
+            CGContextSetBlendMode(context, kCGBlendModeSourceIn);
+            CGContextSetFillColorWithColor(context, self.tintColor.CGColor);
+            CGContextFillRect(context, rect);
+        }];
         
         CABasicAnimation *backgroundColorAnimation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
         CABasicAnimation *cornerRadiusAnimation    = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
