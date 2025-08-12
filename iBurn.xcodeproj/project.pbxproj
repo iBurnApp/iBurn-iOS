@@ -179,6 +179,7 @@
 		D9E28F86198823CC009B3A7A /* BRCRecurringEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E28F85198823CC009B3A7A /* BRCRecurringEventObject.m */; };
 		D9E63FF02E40116C00101257 /* MapPinListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */; };
 		D9E63FF22E40296500101257 /* ListButtonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E63FF12E40296500101257 /* ListButtonHelper.swift */; };
+		D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */; };
 		D9E8D86622F4E43F00BD78EA /* UserDefaults+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E8D86522F4E43F00BD78EA /* UserDefaults+iBurn.swift */; };
 		D9EC0E591B7DE0200042B596 /* BRCPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC0E581B7DE0200042B596 /* BRCPermissions.swift */; };
 		D9EEFFC72E3F2FA600EF5FBE /* BRCTestDatabaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EEFFC62E3F2FA600EF5FBE /* BRCTestDatabaseHelper.swift */; };
@@ -610,6 +611,7 @@
 				D93440332E3E756F00199902 /* FirebaseCore in Frameworks */,
 				D90256412E1F3FE00058AEF8 /* PlayaDB in Frameworks */,
 				D9915F592A76C35E0015C87D /* Siren in Frameworks */,
+				D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */,
 				D99D57F12E1CE93B00D5A3DE /* PlayaAPI in Frameworks */,
 				D99D57EC2E1CE8CF00D5A3DE /* iBurn2025Map in Frameworks */,
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
@@ -1314,6 +1316,7 @@
 				D90256402E1F3FE00058AEF8 /* PlayaDB */,
 				D902564A2E1F41060058AEF8 /* GRDB */,
 				D93440322E3E756F00199902 /* FirebaseCore */,
+				D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -2002,7 +2005,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 99;
+				CURRENT_PROJECT_VERSION = 100;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2039,7 +2042,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 99;
+				CURRENT_PROJECT_VERSION = 100;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2327,6 +2330,11 @@
 		D99D57F02E1CE93B00D5A3DE /* PlayaAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlayaAPI;
+		};
+		D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
