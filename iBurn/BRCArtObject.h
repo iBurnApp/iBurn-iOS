@@ -37,5 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BRCArtMetadata*) artMetadataWithTransaction:(YapDatabaseReadTransaction*)transaction;
 
+/**
+ * Creates a special BRCArtObject for the audio tour introduction.
+ * This object has uniqueID "intro" and will return the intro.m4a file as its audio URL.
+ */
++ (nullable instancetype)introObject;
+
 @end
 NS_ASSUME_NONNULL_END

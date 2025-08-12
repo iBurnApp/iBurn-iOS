@@ -40,7 +40,7 @@ public final class BRCAudioPlayer: NSObject {
     /** This is fired if track is changed, or stops playing */
     @objc public static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
     @objc public static let sharedInstance = BRCAudioPlayer()
-    @objc public var player: AVQueuePlayer? {
+    var player: AVQueuePlayer? {
         didSet {
             if let player {
                 itemObserver = player.observe(\.currentItem, options: .initial) {
@@ -101,6 +101,11 @@ public final class BRCAudioPlayer: NSObject {
             return true
         }
         return false
+    }
+    
+    /// Check if an item is currently loaded (playing or paused)
+    @objc public func hasItem(_ item: BRCArtObject) -> Bool {
+        return nowPlaying?.uniqueID == item.uniqueID && player != nil
     }
     
     /** Plays audio tour for items, if they are the same it will pause */

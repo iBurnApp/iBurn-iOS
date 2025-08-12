@@ -9,6 +9,7 @@
 #import "BRCArtObject.h"
 #import "NSDictionary+MTLManipulationAdditions.h"
 #import "NSValueTransformer+MTLPredefinedTransformerAdditions.h"
+#import "MTLJSONAdapter.h"
 #import "iBurn-Swift.h"
 #import "BRCArtImage.h"
 
@@ -109,6 +110,29 @@
         return metadata;
     }
     return [BRCArtMetadata new];
+}
+
++ (instancetype)introObject {
+    // Create a dictionary with the required JSON keys for the intro object
+    NSDictionary *introJSON = @{
+        @"uid": @"intro",
+        @"name": @"Audio Tour Introduction", 
+        @"artist": @"Burning Man",
+        @"description": @"Welcome to the Burning Man audio tour. This introduction will guide you through the art installations.",
+        @"year": @(2025)
+    };
+    
+    NSError *error = nil;
+    BRCArtObject *introArt = [MTLJSONAdapter modelOfClass:[BRCArtObject class] 
+                                        fromJSONDictionary:introJSON 
+                                                     error:&error];
+    
+    if (error) {
+        NSLog(@"Error creating intro object: %@", error);
+        return nil;
+    }
+    
+    return introArt;
 }
 
 @end

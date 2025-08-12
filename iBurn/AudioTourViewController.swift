@@ -8,8 +8,6 @@
 
 import UIKit
 import YapDatabase
-import AVFoundation
-import MediaPlayer
 
 enum AudioButtonState: String {
     case PlayAll = "Play All"
@@ -22,7 +20,6 @@ class AudioTourViewController: SortedViewController {
     let playAllItemsButton = UIBarButtonItem()
     let soundcloudButton = UIButton(frame: CGRect(x: 0, y: 0, width: 200, height: 50))
     let introButton = UIButton(frame: CGRect(x: 0, y: 0, width: 200, height: 50))
-    private var isPlayingIntro = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,45 +64,63 @@ class AudioTourViewController: SortedViewController {
     }
     
     func refreshButtonState() {
+        let isIntroPlaying = isCurrentlyPlayingIntro()
+        
         if let player = BRCAudioPlayer.sharedInstance.player {
             if player.rate > 0 {
-                if isPlayingIntro {
+                if isIntroPlaying {
                     introButton.setTitle("Pause Introduction", for: .normal)
+                    playAllItemsButton.title = AudioButtonState.PlayAll.rawValue
                 } else {
+                    introButton.setTitle("Play Audio Tour Introduction", for: .normal)
                     playAllItemsButton.title = AudioButtonState.Pause.rawValue
                 }
             } else {
-                if isPlayingIntro {
+                if isIntroPlaying {
                     introButton.setTitle("Resume Introduction", for: .normal)
+                    playAllItemsButton.title = AudioButtonState.PlayAll.rawValue
                 } else {
+                    introButton.setTitle("Play Audio Tour Introduction", for: .normal)
                     playAllItemsButton.title = AudioButtonState.Resume.rawValue
                 }
             }
         } else {
             playAllItemsButton.title = AudioButtonState.PlayAll.rawValue
             introButton.setTitle("Play Audio Tour Introduction", for: .normal)
-            isPlayingIntro = false
         }
+    }
+    
+    /// Check if the intro is currently the active item in the player
+    private func isCurrentlyPlayingIntro() -> Bool {
+        // Create an intro object to check against
+        guard let introArt = BRCArtObject.intro() else {
+            return false
+        }
+        // Use the hasItem method to check if intro is loaded (playing or paused)
+        return BRCAudioPlayer.sharedInstance.hasItem(introArt)
     }
     
     internal override func audioPlayerChangeNotification(_ notification: Notification) {
         super.audioPlayerChangeNotification(notification)
-        // Reset intro state if player was reset
-        if BRCAudioPlayer.sharedInstance.player == nil {
-            isPlayingIntro = false
-        }
+        // Just refresh the button state - it will check the actual player state
         refreshButtonState()
     }
     
     @objc func playAllItems(_ sender: AnyObject?) {
-        // Reset intro playing state when playing all items
-        isPlayingIntro = false
-        
-        if BRCAudioPlayer.sharedInstance.player != nil {
-            BRCAudioPlayer.sharedInstance.togglePlayPause()
-        } else {
+        // Check if we're currently playing the intro
+        if isCurrentlyPlayingIntro() {
+            // Stop intro and start tour
             if let objects = self.sections.first?.objects {
                 BRCAudioPlayer.sharedInstance.playAudioTour(objects as! [BRCArtObject])
+            }
+        } else {
+            // Normal toggle behavior
+            if BRCAudioPlayer.sharedInstance.player != nil {
+                BRCAudioPlayer.sharedInstance.togglePlayPause()
+            } else {
+                if let objects = self.sections.first?.objects {
+                    BRCAudioPlayer.sharedInstance.playAudioTour(objects as! [BRCArtObject])
+                }
             }
         }
         refreshButtonState()
@@ -139,58 +154,25 @@ private extension AudioTourViewController {
     }
     
     @objc func soundcloudButtonPressed(_ sender: Any) {
-        let url = URL(string: "https://soundcloud.com/burningman/sets/2024-art-audio-guide")!
+        let url = URL(string: "https://m.soundcloud.com/burningman/sets")!
         WebViewHelper.presentWebView(url: url, from: self)
     }
     
     func playIntroAudio() {
-        // Check if intro.m4a exists in the MediaFiles bundle
-        guard let introURL = getIntroAudioURL() else {
-            print("Could not find intro.m4a in MediaFiles bundle")
+        // Create the intro object using the factory method
+        guard let introArt = BRCArtObject.intro() else {
+            print("Could not create intro BRCArtObject")
             return
         }
         
-        // If currently playing intro, toggle play/pause
-        if isPlayingIntro, BRCAudioPlayer.sharedInstance.player != nil {
+        // Check if intro is currently loaded (playing or paused)
+        if BRCAudioPlayer.sharedInstance.hasItem(introArt) {
+            // Toggle play/pause for the intro
             BRCAudioPlayer.sharedInstance.togglePlayPause()
         } else {
-            // Reset any existing playback
-            if BRCAudioPlayer.sharedInstance.player != nil {
-                BRCAudioPlayer.sharedInstance.playAudioTour([])
-            }
-            
-            // Create a simple AVQueuePlayer for the intro
-            let introItem = AVPlayerItem(url: introURL)
-            let player = AVQueuePlayer(items: [introItem])
-            
-            // Set the player directly on BRCAudioPlayer
-            BRCAudioPlayer.sharedInstance.player = player
-            
-            // Start playback
-            isPlayingIntro = true
-            BRCAudioPlayer.sharedInstance.play()
-            
-            // Update Now Playing info
-            var nowPlayingInfo = [String : Any]()
-            nowPlayingInfo[MPMediaItemPropertyTitle] = "Audio Tour Introduction"
-            nowPlayingInfo[MPMediaItemPropertyArtist] = "Burning Man"
-            nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = "Burning Man Audio Tour"
-            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+            // Play the intro (will stop any other audio)
+            BRCAudioPlayer.sharedInstance.playAudioTour([introArt])
         }
         refreshButtonState()
-    }
-    
-    func getIntroAudioURL() -> URL? {
-        // Try to get intro.m4a from the MediaFiles bundle
-        if let url = Bundle.brc_mediaFileURL(fileId: "intro", extension: "m4a") {
-            return url
-        }
-        
-        // Fallback: try direct bundle access
-        if let mediaBundle = Bundle.bundledMedia {
-            return mediaBundle.url(forResource: "intro", withExtension: "m4a")
-        }
-        
-        return nil
     }
 }
