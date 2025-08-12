@@ -45,6 +45,7 @@ class DetailViewModel: ObservableObject {
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
+    private var audioNotificationObserver: NSObjectProtocol?
     
     // MARK: - Initialization
     
@@ -63,6 +64,16 @@ class DetailViewModel: ObservableObject {
         
         // Initialize with basic metadata - no side effects in init
         self.metadata = dataService.getMetadata(for: dataObject) ?? BRCObjectMetadata()
+        
+        // Listen for audio player state changes
+        setupAudioNotificationObserver()
+    }
+    
+    deinit {
+        // Clean up notification observer
+        if let observer = audioNotificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     // MARK: - Public Methods
@@ -75,6 +86,12 @@ class DetailViewModel: ObservableObject {
         // Update metadata
         if let updatedMetadata = dataService.getMetadata(for: dataObject) {
             self.metadata = updatedMetadata
+        }
+        
+        // Update audio playing state if applicable
+        if let artObject = dataObject as? BRCArtObject,
+           artObject.audioURL != nil {
+            isAudioPlaying = audioService.isPlaying(artObject: artObject)
         }
         
         // Generate cells
@@ -164,11 +181,10 @@ class DetailViewModel: ObservableObject {
         case .audio(let artObject, _):
             if audioService.isPlaying(artObject: artObject) {
                 audioService.pauseAudio()
-                isAudioPlaying = false
             } else {
                 audioService.playAudio(artObjects: [artObject])
-                isAudioPlaying = true
             }
+            // Audio state will be updated via notification observer
             
         case .userNotes(let currentNotes):
             coordinator.handle(.editNotes(current: currentNotes) { [weak self] newNotes in
@@ -217,6 +233,35 @@ class DetailViewModel: ObservableObject {
         
         // Fallback to global theme colors
         return ImageColors(Appearance.currentColors)
+    }
+    
+    // MARK: - Audio State Management
+    
+    private func setupAudioNotificationObserver() {
+        audioNotificationObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name(BRCAudioPlayer.BRCAudioPlayerChangeNotification),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateAudioPlayingState()
+        }
+    }
+    
+    private func updateAudioPlayingState() {
+        // Check if current object is an art object with audio
+        guard let artObject = dataObject as? BRCArtObject,
+              artObject.audioURL != nil else {
+            return
+        }
+        
+        // Update the playing state based on actual player state
+        let wasPlaying = isAudioPlaying
+        isAudioPlaying = audioService.isPlaying(artObject: artObject)
+        
+        // Only regenerate cells if the state actually changed
+        if wasPlaying != isAudioPlaying {
+            cells = generateCells()
+        }
     }
     
     /// Handle event-specific color logic - try hosting camp colors first
@@ -335,8 +380,7 @@ class DetailViewModel: ObservableObject {
         
         // Audio tour
         if art.audioURL != nil {
-            let isPlaying = audioService.isPlaying(artObject: art)
-            cells.append(.audio(art, isPlaying: isPlaying))
+            cells.append(.audio(art, isPlaying: isAudioPlaying))
         }
         
         // Next event
