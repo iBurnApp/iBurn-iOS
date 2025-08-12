@@ -174,11 +174,11 @@ name: abseil-cpp-binary, nameSpecified: abseil, owner: google, version: 1.202407
 
 name: app-check, nameSpecified: AppCheck, owner: google, version: 11.2.0, source: https://github.com/google/app-check
 
-name: firebase-ios-sdk, nameSpecified: Firebase, owner: firebase, version: 12.0.0, source: https://github.com/firebase/firebase-ios-sdk
+name: firebase-ios-sdk, nameSpecified: Firebase, owner: firebase, version: 12.1.0, source: https://github.com/firebase/firebase-ios-sdk
 
-name: google-ads-on-device-conversion-ios-sdk, nameSpecified: GoogleAdsOnDeviceConversion, owner: googleads, version: 2.1.0, source: https://github.com/googleads/google-ads-on-device-conversion-ios-sdk
+name: google-ads-on-device-conversion-ios-sdk, nameSpecified: GoogleAdsOnDeviceConversion, owner: googleads, version: 2.2.0, source: https://github.com/googleads/google-ads-on-device-conversion-ios-sdk
 
-name: GoogleAppMeasurement, nameSpecified: GoogleAppMeasurement, owner: google, version: 12.0.0, source: https://github.com/google/GoogleAppMeasurement
+name: GoogleAppMeasurement, nameSpecified: GoogleAppMeasurement, owner: google, version: 12.1.0, source: https://github.com/google/GoogleAppMeasurement
 
 name: GoogleDataTransport, nameSpecified: GoogleDataTransport, owner: google, version: 10.1.0, source: https://github.com/google/GoogleDataTransport
 
