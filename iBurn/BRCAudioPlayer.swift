@@ -40,7 +40,7 @@ public final class BRCAudioPlayer: NSObject {
     /** This is fired if track is changed, or stops playing */
     @objc public static let BRCAudioPlayerChangeNotification = "BRCAudioPlayerChangeNotification"
     @objc public static let sharedInstance = BRCAudioPlayer()
-    var player: AVQueuePlayer? {
+    @objc public var player: AVQueuePlayer? {
         didSet {
             if let player {
                 itemObserver = player.observe(\.currentItem, options: .initial) {
