@@ -90,7 +90,7 @@ extension BRCEventType {
         case .crafts:
             return "🎨"
         case .coffee:
-            return "☕️"
+            return "🍹"
         case .healing:
             return "💆"
         case .LGBT:
