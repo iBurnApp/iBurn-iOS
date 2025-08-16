@@ -251,6 +251,8 @@ struct DetailCellView: View {
             return false
         case .image:
             return true
+        case .visitStatus:
+            return false // The Menu handles the interaction
         }
     }
 }

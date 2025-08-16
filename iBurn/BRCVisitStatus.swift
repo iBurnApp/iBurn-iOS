@@ -64,7 +64,7 @@ import SwiftUI
     }
     
     /// UIColor for UIKit compatibility
-    @objc public var uiColor: UIColor {
+    public var uiColor: UIColor {
         switch self {
         case .unvisited:
             return .systemGray
@@ -80,7 +80,7 @@ import SwiftUI
 
 extension BRCVisitStatus {
     /// String value for Mantle serialization
-    @objc public var stringValue: String {
+    public var stringValue: String {
         switch self {
         case .unvisited:
             return "unvisited"
@@ -92,7 +92,7 @@ extension BRCVisitStatus {
     }
     
     /// Initialize from string value (for Mantle deserialization)
-    @objc public init?(stringValue: String) {
+    public init?(stringValue: String) {
         switch stringValue {
         case "unvisited":
             self = .unvisited
