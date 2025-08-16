@@ -556,6 +556,7 @@ struct DetailDateCell: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = format
+        formatter.timeZone = TimeZone.burningManTimeZone
         return formatter.string(from: date)
     }
 }
@@ -609,6 +610,7 @@ struct DetailNextHostEventCell: View {
         let calendar = Calendar.current
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
+        timeFormatter.timeZone = TimeZone.burningManTimeZone
         
         var timeString: String
         
@@ -620,6 +622,7 @@ struct DetailNextHostEventCell: View {
         } else {
             let dayFormatter = DateFormatter()
             dayFormatter.dateFormat = "EEEE M/d" // e.g., "Friday 8/25"
+            dayFormatter.timeZone = TimeZone.burningManTimeZone
             timeString = "\(dayFormatter.string(from: startDate)) at \(timeFormatter.string(from: startDate))"
         }
         
