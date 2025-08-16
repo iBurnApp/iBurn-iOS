@@ -70,6 +70,12 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavoriteAndExpiration;
 /** Art filtered by having events */
 @property (nonatomic, strong, readonly) NSString *artFilteredByEvents;
+/** Art, camps and events filtered by visited status */
+@property (nonatomic, strong, readonly) NSString *visitedObjectsViewName;
+/** Art, camps and events filtered by want to visit status */
+@property (nonatomic, strong, readonly) NSString *wantToVisitObjectsViewName;
+/** Art, camps and events filtered by unvisited status */
+@property (nonatomic, strong, readonly) NSString *unvisitedObjectsViewName;
 
 /** Audio Tour */
 @property (nonatomic, strong, readonly) NSString *audioTourViewName;

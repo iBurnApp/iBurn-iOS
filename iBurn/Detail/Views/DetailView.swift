@@ -230,6 +230,14 @@ struct DetailCellView: View {
             
         case .eventType(let eventType):
             DetailEventTypeCell(eventType: eventType)
+            
+        case .visitStatus(let status):
+            DetailVisitStatusCell(
+                currentStatus: status,
+                onStatusChange: { newStatus in
+                    Task { await viewModel.updateVisitStatus(newStatus) }
+                }
+            )
         }
     }
     
@@ -702,6 +710,45 @@ struct DetailEventTypeCell: View {
             Text("\(eventType.emoji) \(eventType.displayString)")
                 .foregroundColor(themeColors.secondaryColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+struct DetailVisitStatusCell: View {
+    let currentStatus: BRCVisitStatus
+    let onStatusChange: (BRCVisitStatus) -> Void
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("VISIT STATUS")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(themeColors.detailColor)
+                .textCase(.uppercase)
+            
+            Menu {
+                ForEach(BRCVisitStatus.allCases, id: \.self) { status in
+                    Button(action: {
+                        onStatusChange(status)
+                    }) {
+                        Label(status.displayString, systemImage: status.iconName)
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: currentStatus.iconName)
+                        .foregroundColor(currentStatus.color)
+                    Text(currentStatus.displayString)
+                        .foregroundColor(themeColors.primaryColor)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .foregroundColor(themeColors.primaryColor)
+                        .font(.caption)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 }

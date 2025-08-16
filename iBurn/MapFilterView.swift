@@ -25,6 +25,9 @@ class MapFilterViewModel: ObservableObject {
     @Published var showActiveEvents: Bool
     @Published var showFavorites: Bool
     @Published var showTodaysFavoritesOnly: Bool
+    @Published var showVisited: Bool
+    @Published var showWantToVisit: Bool
+    @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
     
     private let onFilterChanged: (() -> Void)?
@@ -38,6 +41,9 @@ class MapFilterViewModel: ObservableObject {
         self.showActiveEvents = UserSettings.showActiveEventsOnMap
         self.showFavorites = UserSettings.showFavoritesOnMap
         self.showTodaysFavoritesOnly = UserSettings.showTodaysFavoritesOnlyOnMap
+        self.showVisited = UserSettings.showVisitedOnMap
+        self.showWantToVisit = UserSettings.showWantToVisitOnMap
+        self.showUnvisited = UserSettings.showUnvisitedOnMap
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
@@ -66,6 +72,9 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showActiveEventsOnMap = showActiveEvents
         UserSettings.showFavoritesOnMap = showFavorites
         UserSettings.showTodaysFavoritesOnlyOnMap = showTodaysFavoritesOnly
+        UserSettings.showVisitedOnMap = showVisited
+        UserSettings.showWantToVisitOnMap = showWantToVisit
+        UserSettings.showUnvisitedOnMap = showUnvisited
         
         // Save selected event types
         let selectedTypes = eventTypes
@@ -115,6 +124,13 @@ struct MapFilterView: View {
                 Toggle("Show Favorites", isOn: $viewModel.showFavorites)
                 Toggle("Today's Favorites Only", isOn: $viewModel.showTodaysFavoritesOnly)
                     .disabled(!viewModel.showFavorites)
+            }
+            
+            // Visit Status Section
+            Section(header: Text("Visit Status")) {
+                Toggle("Show Visited", isOn: $viewModel.showVisited)
+                Toggle("Show Want to Visit", isOn: $viewModel.showWantToVisit)
+                Toggle("Show Unvisited", isOn: $viewModel.showUnvisited)
             }
             
             // Event Types Section - only show when events are enabled
