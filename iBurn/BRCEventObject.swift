@@ -49,10 +49,15 @@ extension BRCEventType {
         switch self {
         case .unknown, .none:
             return false
-        case .coffee, .healing, .LGBT: // no longer used in 2023
+        // These event types are no longer used in the data as of 2025
+        case .healing, .LGBT, .performance, .support, .ceremony, .game, 
+             .fire, .parade, .liveMusic, .RIDE, .repair, .sustainability, .meditation:
             return false
-        default:
+        // Only show event types that actually have events in 2025:
+        case .workshop, .party, .other, .coffee, .food, .crafts, .adult, .kid:
             return true
+        @unknown default:
+            return false
         }
     }
     
@@ -85,7 +90,7 @@ extension BRCEventType {
         case .crafts:
             return "🎨"
         case .coffee:
-            return "☕️"
+            return "🍹"
         case .healing:
             return "💆"
         case .LGBT:
@@ -113,15 +118,15 @@ extension BRCEventType {
         case .unknown, .none:
             return "Unknown"
         case .other:
-            return "Miscellaneous"
+            return "Other"  // Matches 2025 data
         case .workshop:
-            return "Class/Workshop"
+            return "Class/Workshop"  // Matches 2025 data
         case .performance:
             return "Performance"
         case .support:
             return "Self Care"
         case .party:
-            return "Gathering/Party"
+            return "Music/Party"  // Updated to match 2025 data
         case .ceremony:
             return "Ritual/Ceremony"
         case .game:
@@ -129,17 +134,17 @@ extension BRCEventType {
         case .fire:
             return "Fire/Spectacle"
         case .adult:
-            return "Mature Audiences"
+            return "Mature Audiences"  // Matches 2025 data
         case .kid:
-            return "For Kids"
+            return "Kids Activities"  // Updated to match 2025 data
         case .parade:
             return "Parade"
         case .food:
-            return "Food & Drink"
+            return "Food"  // Simplified to match 2025 data
         case .crafts:
-            return "Arts & Crafts"
+            return "Arts & Crafts"  // Matches 2025 data
         case .coffee:
-            return "Coffee/Tea"
+            return "Beverages"  // Updated to match 2025 data (tea = Beverages)
         case .healing:
             return "Healing/Massage/Spa"
         case .LGBT:
