@@ -90,7 +90,7 @@ private extension VisitListViewController {
             case BRCVisitStatusGroupWantToVisit:
                 return "⭐ Want to Visit"
             case BRCVisitStatusGroupVisited:
-                return "✓ Visited"
+                return "✅ Visited"
             default:
                 return group
             }
