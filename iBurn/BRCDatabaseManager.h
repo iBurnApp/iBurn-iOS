@@ -23,6 +23,11 @@ extern NSString * const kBRCDatabaseFolderName;
  the extension name under the "extensionName" key */
 extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 
+/** Visit status group names for the grouped view */
+extern NSString * const BRCVisitStatusGroupWantToVisit;
+extern NSString * const BRCVisitStatusGroupVisited;
+extern NSString * const BRCVisitStatusGroupUnvisited;
+
 @interface BRCDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;
@@ -70,6 +75,14 @@ extern NSString * const BRCDatabaseExtensionRegisteredNotification;
 @property (nonatomic, strong, readonly) NSString *everythingFilteredByFavoriteAndExpiration;
 /** Art filtered by having events */
 @property (nonatomic, strong, readonly) NSString *artFilteredByEvents;
+/** Art, camps and events filtered by visited status */
+@property (nonatomic, strong, readonly) NSString *visitedObjectsViewName;
+/** Art, camps and events filtered by want to visit status */
+@property (nonatomic, strong, readonly) NSString *wantToVisitObjectsViewName;
+/** Art, camps and events filtered by unvisited status */
+@property (nonatomic, strong, readonly) NSString *unvisitedObjectsViewName;
+/** All objects grouped by visit status */
+@property (nonatomic, strong, readonly) NSString *allObjectsGroupedByVisitStatusViewName;
 
 /** Audio Tour */
 @property (nonatomic, strong, readonly) NSString *audioTourViewName;

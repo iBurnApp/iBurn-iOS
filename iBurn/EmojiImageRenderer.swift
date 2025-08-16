@@ -29,6 +29,8 @@ final class EmojiImageRenderer {
         let statusDotSize: CGFloat
         let isFavorite: Bool
         let heartSize: CGFloat
+        let visitStatus: Int
+        let visitEmojiSize: CGFloat
         
         init(size: CGSize, 
              backgroundColor: UIColor? = nil,
@@ -38,7 +40,9 @@ final class EmojiImageRenderer {
              statusDotColor: UIColor? = nil,
              statusDotSize: CGFloat = 8,
              isFavorite: Bool = false,
-             heartSize: CGFloat = 10) {
+             heartSize: CGFloat = 10,
+             visitStatus: Int = 0,
+             visitEmojiSize: CGFloat = 10) {
             self.size = size
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
@@ -48,6 +52,8 @@ final class EmojiImageRenderer {
             self.statusDotSize = statusDotSize
             self.isFavorite = isFavorite
             self.heartSize = heartSize
+            self.visitStatus = visitStatus
+            self.visitEmojiSize = visitEmojiSize
         }
         
         static let `default` = Configuration(
@@ -58,13 +64,15 @@ final class EmojiImageRenderer {
             size: CGSize(width: 36, height: 36)
         )
         
-        static func mapPinWithStatus(color: UIColor? = nil, isFavorite: Bool = false) -> Configuration {
+        static func mapPinWithStatus(color: UIColor? = nil, isFavorite: Bool = false, visitStatus: Int = 0) -> Configuration {
             Configuration(
                 size: CGSize(width: 36, height: 36),
                 statusDotColor: color,
                 statusDotSize: 10,
                 isFavorite: isFavorite,
-                heartSize: 10
+                heartSize: 10,
+                visitStatus: visitStatus,
+                visitEmojiSize: 10
             )
         }
     }
@@ -83,7 +91,7 @@ final class EmojiImageRenderer {
     ///   - configuration: Rendering configuration
     /// - Returns: Rendered UIImage or nil if rendering fails
     func renderEmoji(_ emoji: String, configuration: Configuration = .default) -> UIImage? {
-        let cacheKey = "\(emoji)_\(configuration.size.width)_\(configuration.size.height)_\(configuration.backgroundColor?.hexString ?? "clear")_\(configuration.borderColor?.hexString ?? "none")_\(configuration.borderWidth)_\(configuration.cornerRadius)_\(configuration.statusDotColor?.hexString ?? "none")_\(configuration.statusDotSize)_\(configuration.isFavorite)_\(configuration.heartSize)" as NSString
+        let cacheKey = "\(emoji)_\(configuration.size.width)_\(configuration.size.height)_\(configuration.backgroundColor?.hexString ?? "clear")_\(configuration.borderColor?.hexString ?? "none")_\(configuration.borderWidth)_\(configuration.cornerRadius)_\(configuration.statusDotColor?.hexString ?? "none")_\(configuration.statusDotSize)_\(configuration.isFavorite)_\(configuration.heartSize)_\(configuration.visitStatus)_\(configuration.visitEmojiSize)" as NSString
         
         if let cachedImage = cache.object(forKey: cacheKey) {
             return cachedImage
@@ -192,6 +200,62 @@ final class EmojiImageRenderer {
                 )
                 attributedString.draw(in: centeredRect)
             }
+            
+            // Draw visit status emoji if visited or want to visit
+            if configuration.visitStatus != 0 {
+                let visitEmoji: String
+                let emojiColor: UIColor
+                
+                switch configuration.visitStatus {
+                case 1: // visited
+                    visitEmoji = "✅"
+                    emojiColor = UIColor.systemGreen
+                case 2: // wantToVisit
+                    visitEmoji = "⭐"
+                    emojiColor = UIColor.systemYellow
+                default:
+                    visitEmoji = ""
+                    emojiColor = UIColor.clear
+                }
+                
+                if !visitEmoji.isEmpty {
+                    let visitOffset: CGFloat = 1
+                    
+                    // Position visit emoji in top-right corner
+                    let visitSize = configuration.visitEmojiSize
+                    let visitRect = CGRect(
+                        x: configuration.size.width - visitSize - visitOffset,
+                        y: visitOffset,
+                        width: visitSize,
+                        height: visitSize
+                    )
+                    
+                    // Create attributes with white stroke for visibility
+                    let paragraphStyle = NSMutableParagraphStyle()
+                    paragraphStyle.alignment = .center
+                    
+                    let fontSize = visitSize * 0.85
+                    let font = UIFont.systemFont(ofSize: fontSize)
+                    let attributes: [NSAttributedString.Key: Any] = [
+                        .font: font,
+                        .strokeColor: UIColor.white,
+                        .strokeWidth: -4.0,  // Negative for stroke + fill
+                        .foregroundColor: emojiColor,
+                        .paragraphStyle: paragraphStyle
+                    ]
+                    
+                    // Draw the visit emoji
+                    let attributedString = NSAttributedString(string: visitEmoji, attributes: attributes)
+                    let textSize = attributedString.size()
+                    let centeredRect = CGRect(
+                        x: visitRect.origin.x + (visitRect.width - textSize.width) / 2,
+                        y: visitRect.origin.y + (visitRect.height - textSize.height) / 2,
+                        width: textSize.width,
+                        height: textSize.height
+                    )
+                    attributedString.draw(in: centeredRect)
+                }
+            }
         }
         
         cache.setObject(image, forKey: cacheKey)
@@ -213,6 +277,12 @@ final class EmojiImageRenderer {
             _ = renderEmoji(emoji, configuration: .mapPinWithStatus(color: .systemRed))
             _ = renderEmoji(emoji, configuration: .mapPinWithStatus(isFavorite: true))
             _ = renderEmoji(emoji, configuration: .mapPinWithStatus(color: .systemGreen, isFavorite: true))
+            
+            // Preload visit status combinations
+            _ = renderEmoji(emoji, configuration: .mapPinWithStatus(visitStatus: 1)) // visited
+            _ = renderEmoji(emoji, configuration: .mapPinWithStatus(visitStatus: 2)) // want to visit
+            _ = renderEmoji(emoji, configuration: .mapPinWithStatus(isFavorite: true, visitStatus: 1))
+            _ = renderEmoji(emoji, configuration: .mapPinWithStatus(isFavorite: true, visitStatus: 2))
         }
     }
     

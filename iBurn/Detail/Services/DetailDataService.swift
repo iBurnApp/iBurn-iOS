@@ -17,7 +17,7 @@ class DetailDataService: DetailDataServiceProtocol {
             throw DetailError.invalidData
         }
         
-        let newMetadata = metadata.copy() as! BRCObjectMetadata
+        let newMetadata = metadata.metadataCopy()
         newMetadata.isFavorite = isFavorite
         
         return await withCheckedContinuation { continuation in
@@ -39,8 +39,25 @@ class DetailDataService: DetailDataServiceProtocol {
             throw DetailError.invalidData
         }
         
-        let newMetadata = metadata.copy() as! BRCObjectMetadata
+        let newMetadata = metadata.metadataCopy()
         newMetadata.userNotes = notes
+        
+        return await withCheckedContinuation { continuation in
+            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+                object.replace(newMetadata, transaction: transaction)
+            } completionBlock: {
+                continuation.resume()
+            }
+        }
+    }
+    
+    func updateVisitStatus(for object: BRCDataObject, visitStatus: BRCVisitStatus) async throws {
+        guard let metadata = getMetadata(for: object) else {
+            throw DetailError.invalidData
+        }
+        
+        let newMetadata = metadata.metadataCopy()
+        newMetadata.visitStatus = visitStatus.rawValue
         
         return await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in

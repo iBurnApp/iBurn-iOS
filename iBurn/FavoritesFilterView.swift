@@ -13,6 +13,7 @@ import SwiftUI
 class FavoritesFilterViewModel: ObservableObject {
     @Published var showExpiredEvents: Bool
     @Published var showTodayOnly: Bool
+    @Published var visitStatusFilter: Set<BRCVisitStatus>
     
     private let onFilterChanged: (() -> Void)?
     var onDismiss: (() -> Void)?
@@ -22,15 +23,29 @@ class FavoritesFilterViewModel: ObservableObject {
         // Initialize from UserSettings
         self.showExpiredEvents = UserSettings.showExpiredEventsInFavorites
         self.showTodayOnly = UserSettings.showTodayOnlyInFavorites
+        self.visitStatusFilter = UserSettings.visitStatusFilterForLists
     }
     
     func saveSettings() {
         // Save to UserSettings
         UserSettings.showExpiredEventsInFavorites = showExpiredEvents
         UserSettings.showTodayOnlyInFavorites = showTodayOnly
+        UserSettings.visitStatusFilterForLists = visitStatusFilter
         
         // Notify of changes
         onFilterChanged?()
+    }
+    
+    func toggleVisitStatus(_ status: BRCVisitStatus) {
+        if visitStatusFilter.contains(status) {
+            visitStatusFilter.remove(status)
+        } else {
+            visitStatusFilter.insert(status)
+        }
+    }
+    
+    func isVisitStatusSelected(_ status: BRCVisitStatus) -> Bool {
+        visitStatusFilter.contains(status)
     }
     
     func dismiss() {
@@ -66,6 +81,31 @@ struct FavoritesFilterView: View {
                 .font(.footnote)
                 .foregroundColor(.secondary)
             }
+            
+            // TODO: Visit status filtering is temporarily disabled - needs proper implementation
+            // Visit Status Section
+            /*
+            Section(header: Text("Visit Status"), footer: Text("Filter favorites by visit status")
+                .font(.footnote)
+                .foregroundColor(.secondary)) {
+                ForEach(BRCVisitStatus.allCases, id: \.self) { status in
+                    HStack {
+                        Image(systemName: status.iconName)
+                            .foregroundColor(status.color)
+                        Text("Show \(status.displayString)")
+                        Spacer()
+                        if viewModel.isVisitStatusSelected(status) {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.accentColor)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        viewModel.toggleVisitStatus(status)
+                    }
+                }
+            }
+            */
         }
         .navigationTitle("Filter")
         .navigationBarTitleDisplayMode(.inline)

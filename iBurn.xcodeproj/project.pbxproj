@@ -41,6 +41,8 @@
 		D919339C2E45CF2F006EA630 /* ShareQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */; };
 		D919339D2E45CF2F006EA630 /* BRCDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */; };
 		D919339F2E45DEB4006EA630 /* OpenInSafariActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */; };
+		D9214A7E2E5016A50031A3A4 /* BRCVisitStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9214A7D2E5016A50031A3A4 /* BRCVisitStatus.swift */; };
+		D9214A802E501C9B0031A3A4 /* VisitListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9214A7F2E501C9B0031A3A4 /* VisitListViewController.swift */; };
 		D9251484211519A2007A7904 /* AnnotationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9251483211519A2007A7904 /* AnnotationDataSource.swift */; };
 		D925148621151F17007A7904 /* UserMapViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D925148521151F17007A7904 /* UserMapViewAdapter.swift */; };
 		D92514882115297A007A7904 /* YapDatabaseConnection+iBurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */; };
@@ -362,6 +364,8 @@
 		D919339A2E45CF2F006EA630 /* BRCDeepLinkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCDeepLinkRouter.swift; sourceTree = "<group>"; };
 		D919339B2E45CF2F006EA630 /* ShareQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareQRCodeView.swift; sourceTree = "<group>"; };
 		D919339E2E45DEB4006EA630 /* OpenInSafariActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenInSafariActivity.swift; sourceTree = "<group>"; };
+		D9214A7D2E5016A50031A3A4 /* BRCVisitStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BRCVisitStatus.swift; sourceTree = "<group>"; };
+		D9214A7F2E501C9B0031A3A4 /* VisitListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitListViewController.swift; sourceTree = "<group>"; };
 		D9251483211519A2007A7904 /* AnnotationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationDataSource.swift; sourceTree = "<group>"; };
 		D925148521151F17007A7904 /* UserMapViewAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMapViewAdapter.swift; sourceTree = "<group>"; };
 		D92514872115297A007A7904 /* YapDatabaseConnection+iBurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "YapDatabaseConnection+iBurn.swift"; sourceTree = "<group>"; };
@@ -741,6 +745,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D9214A7F2E501C9B0031A3A4 /* VisitListViewController.swift */,
 				D9C1532B2E49573600AE9625 /* MapFilterView.swift */,
 				D9C153292E4956D000AE9625 /* FilteredMapDataSource.swift */,
 				D9C1523F2E49372500AE9625 /* BRCDataObject+EmojiMarker.swift */,
@@ -756,6 +761,7 @@
 				D9E63FA62E3FDB9D00101257 /* TimeShift */,
 				D9E63FF12E40296500101257 /* ListButtonHelper.swift */,
 				D9E63FEF2E40116C00101257 /* MapPinListViewController.swift */,
+				D9214A7D2E5016A50031A3A4 /* BRCVisitStatus.swift */,
 				D93176872E232594003636CB /* Preferences */,
 				D93176642E2228AF003636CB /* Detail */,
 				D92AC55E22F00A6E00C9FE32 /* Tracks */,
@@ -1711,6 +1717,7 @@
 				D9C151EC2E49337400AE9625 /* EmojiImageRenderer.swift in Sources */,
 				D94670D61F38347F00289CB8 /* IndexPath+iBurn.swift in Sources */,
 				D90FFA391EEFAF19005127D0 /* ImageAnnotationView.swift in Sources */,
+				D9214A802E501C9B0031A3A4 /* VisitListViewController.swift in Sources */,
 				D9C151EA2E47ABA900AE9625 /* FavoritesFilterView.swift in Sources */,
 				D9ART0012E47ABA900AE9626 /* ArtListViewController.swift in Sources */,
 				D9ART0022E47ABA900AE9627 /* ArtFilterView.swift in Sources */,
@@ -1725,6 +1732,7 @@
 				D9E0DA8D210F7AB70056286B /* UITableView+iBurn.swift in Sources */,
 				D9DE7BB01EF25C11007A983E /* MainMapViewController.swift in Sources */,
 				D9E0DA89210F76B60056286B /* EventListViewController.swift in Sources */,
+				D9214A7E2E5016A50031A3A4 /* BRCVisitStatus.swift in Sources */,
 				D9941568198726A700D245C7 /* BRCArtObject.m in Sources */,
 				D9D42BFD1D59439C0002AC96 /* BRCMediaDownloader.swift in Sources */,
 				D9E8D86622F4E43F00BD78EA /* UserDefaults+iBurn.swift in Sources */,

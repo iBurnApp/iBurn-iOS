@@ -52,8 +52,9 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     enum DetailViewsRow: Int, CaseIterable {
         case art = 0
         case camps = 1
-        case audioTour = 2
-        case locationHistory = 3
+        case visitList = 2
+        case audioTour = 3
+        case locationHistory = 4
     }
     
     enum CustomizationRow: Int, CaseIterable {
@@ -180,6 +181,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
                 moreCell.configure(title: "Art", imageName: "BRCArtIcon", tag: row.rawValue)
             case .camps:
                 moreCell.configure(title: "Camps", imageName: "BRCCampIcon", tag: row.rawValue)
+            case .visitList:
+                moreCell.configure(title: "Visit List", systemImageName: "bookmark.circle", tag: row.rawValue)
             case .audioTour:
                 moreCell.configure(title: "Audio Tour", imageName: "BRCAudioIcon", tag: row.rawValue)
             case .locationHistory:
@@ -265,6 +268,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             switch row {
             case .art: pushArtView()
             case .camps: pushCampsView()
+            case .visitList: pushVisitListView()
             case .audioTour: showAudioTour()
             case .locationHistory: pushTracksView()
             }
@@ -333,6 +337,12 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         let campsVC = ObjectListViewController(viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
         campsVC.title = "Camps"
         navigationController?.pushViewController(campsVC, animated: true)
+    }
+    
+    func pushVisitListView() {
+        let visitVC = VisitListViewController()
+        visitVC.title = "Visit List"
+        navigationController?.pushViewController(visitVC, animated: true)
     }
 
     func showUnlockView() {

@@ -18,6 +18,9 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
     private let eventsDataSource: YapViewAnnotationDataSource?
     private let favoritesDataSource: YapViewAnnotationDataSource
     private let userDataSource: YapCollectionAnnotationDataSource
+    private let visitedDataSource: YapViewAnnotationDataSource?
+    private let wantToVisitDataSource: YapViewAnnotationDataSource?
+    private let unvisitedDataSource: YapViewAnnotationDataSource?
     
     override init() {
         // User pins are always shown
@@ -62,6 +65,18 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
             eventsDataSource = nil
         }
         
+        // Visit status data sources - always created for reference
+        // We'll use these to check visit status regardless of filter settings
+        visitedDataSource = YapViewAnnotationDataSource(
+            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.visitedObjectsViewName)
+        )
+        wantToVisitDataSource = YapViewAnnotationDataSource(
+            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.wantToVisitObjectsViewName)
+        )
+        unvisitedDataSource = YapViewAnnotationDataSource(
+            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.unvisitedObjectsViewName)
+        )
+        
         super.init()
     }
     
@@ -98,7 +113,9 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
                 return true
             }
             
-            allAnnotations.append(contentsOf: filteredFavorites)
+            // Also filter by visit status
+            let visitFiltered = filterByVisitStatus(filteredFavorites)
+            allAnnotations.append(contentsOf: visitFiltered)
         }
         
         // Add non-favorited art if enabled
@@ -106,7 +123,9 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
             let artAnnotations = artDataSource.allAnnotations()
             // Filter out already included favorites
             let nonFavoriteArt = filterOutFavorites(artAnnotations)
-            allAnnotations.append(contentsOf: nonFavoriteArt)
+            // Filter by visit status
+            let filteredArt = filterByVisitStatus(nonFavoriteArt)
+            allAnnotations.append(contentsOf: filteredArt)
         }
         
         // Add non-favorited camps if enabled
@@ -114,7 +133,9 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
             let campAnnotations = campsDataSource.allAnnotations()
             // Filter out already included favorites
             let nonFavoriteCamps = filterOutFavorites(campAnnotations)
-            allAnnotations.append(contentsOf: nonFavoriteCamps)
+            // Filter by visit status
+            let filteredCamps = filterByVisitStatus(nonFavoriteCamps)
+            allAnnotations.append(contentsOf: filteredCamps)
         }
         
         // Add active events if enabled
@@ -135,7 +156,9 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
                 // Filter out favorites
                 return !dataAnnotation.metadata.isFavorite
             }
-            allAnnotations.append(contentsOf: filteredEvents)
+            // Filter by visit status
+            let visitFiltered = filterByVisitStatus(filteredEvents)
+            allAnnotations.append(contentsOf: visitFiltered)
         }
         
         return allAnnotations
@@ -153,6 +176,32 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
                 return true
             }
             return !dataAnnotation.metadata.isFavorite
+        }
+    }
+    
+    /// Filter annotations by visit status based on user settings
+    private func filterByVisitStatus(_ annotations: [MLNAnnotation]) -> [MLNAnnotation] {
+        // If all visit statuses are shown, don't filter
+        if UserSettings.showVisitedOnMap && UserSettings.showWantToVisitOnMap && UserSettings.showUnvisitedOnMap {
+            return annotations
+        }
+        
+        // Filter based on visit status settings
+        return annotations.filter { annotation in
+            guard let dataAnnotation = annotation as? DataObjectAnnotation else {
+                return true // Always show non-data annotations
+            }
+            
+            let visitStatus = BRCVisitStatus(rawValue: dataAnnotation.metadata.visitStatus) ?? .unvisited
+            
+            switch visitStatus {
+            case .visited:
+                return UserSettings.showVisitedOnMap
+            case .wantToVisit:
+                return UserSettings.showWantToVisitOnMap
+            case .unvisited:
+                return UserSettings.showUnvisitedOnMap
+            }
         }
     }
     

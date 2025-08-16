@@ -15,29 +15,31 @@ extension BRCDataObject {
         let emoji: String
         var configuration = EmojiImageRenderer.Configuration.mapPin
         
-        // Check if object is favorited
+        // Check if object is favorited and get visit status
         var isFavorite = false
+        var visitStatus = 0
         BRCDatabaseManager.shared.uiConnection.read { transaction in
             let metadata = self.metadata(with: transaction)
             isFavorite = metadata.isFavorite
+            visitStatus = metadata.visitStatus
         }
         
         if let artObject = self as? BRCArtObject {
             emoji = artObject.emoji
-            configuration = .mapPinWithStatus(isFavorite: isFavorite)
+            configuration = .mapPinWithStatus(isFavorite: isFavorite, visitStatus: visitStatus)
         } else if let campObject = self as? BRCCampObject {
             emoji = campObject.emoji
-            configuration = .mapPinWithStatus(isFavorite: isFavorite)
+            configuration = .mapPinWithStatus(isFavorite: isFavorite, visitStatus: visitStatus)
         } else if let eventObject = self as? BRCEventObject {
             emoji = eventObject.eventType.emoji
             
             // Apply event status colors
             let statusColor = eventStatusColor(for: eventObject, at: Date.present)
-            configuration = .mapPinWithStatus(color: statusColor, isFavorite: isFavorite)
+            configuration = .mapPinWithStatus(color: statusColor, isFavorite: isFavorite, visitStatus: visitStatus)
         } else {
             // Default emoji for unknown types
             emoji = "📍"
-            configuration = .mapPinWithStatus(isFavorite: isFavorite)
+            configuration = .mapPinWithStatus(isFavorite: isFavorite, visitStatus: visitStatus)
         }
         
         return EmojiImageRenderer.shared.renderEmoji(emoji, configuration: configuration)

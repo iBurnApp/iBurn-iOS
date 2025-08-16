@@ -22,6 +22,12 @@ protocol DetailDataServiceProtocol {
     ///   - notes: The new notes text
     func updateUserNotes(for object: BRCDataObject, notes: String) async throws
     
+    /// Updates the visit status for a data object
+    /// - Parameters:
+    ///   - object: The data object to update
+    ///   - visitStatus: The new visit status
+    func updateVisitStatus(for object: BRCDataObject, visitStatus: BRCVisitStatus) async throws
+    
     /// Gets the metadata for a data object
     /// - Parameter object: The data object
     /// - Returns: The metadata or nil if not found

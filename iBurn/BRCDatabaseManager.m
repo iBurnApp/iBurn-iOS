@@ -30,13 +30,20 @@ static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 NSString * const kBRCDatabaseName = @"iBurn-2025.sqlite";
 NSString * const kBRCDatabaseFolderName = @"iBurn-2025";
 
+NSString * const BRCVisitStatusGroupWantToVisit = @"Want to Visit";
+NSString * const BRCVisitStatusGroupVisited = @"Visited";
+NSString * const BRCVisitStatusGroupUnvisited = @"Unvisited";
+
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
     BRCDatabaseFilteredViewTypeEverything,
     BRCDatabaseFilteredViewTypeFavoritesOnly,
     BRCDatabaseFilteredViewTypeEventExpirationAndType,
     BRCDatabaseFilteredViewTypeEventSelectedDayOnly,
-    BRCDatabaseFilteredViewTypeFullTextSearch
+    BRCDatabaseFilteredViewTypeFullTextSearch,
+    BRCDatabaseFilteredViewTypeVisitedOnly,
+    BRCDatabaseFilteredViewTypeWantToVisitOnly,
+    BRCDatabaseFilteredViewTypeUnvisitedOnly
 };
 
 @interface BRCDatabaseManager()
@@ -161,6 +168,10 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _everythingFilteredByFavorite = [self.dataObjectsViewName stringByAppendingString:@"-FavoritesFilter"];
     _everythingFilteredByFavoriteAndExpiration = [self.everythingFilteredByFavorite stringByAppendingString:@"-WithExpiration"];
     _artFilteredByEvents = [self.artViewName stringByAppendingString:@"-FilteredByEvents"];
+    _visitedObjectsViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeVisitedOnly parentViewName:self.dataObjectsViewName];
+    _wantToVisitObjectsViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeWantToVisitOnly parentViewName:self.dataObjectsViewName];
+    _unvisitedObjectsViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeUnvisitedOnly parentViewName:self.dataObjectsViewName];
+    _allObjectsGroupedByVisitStatusViewName = [self.dataObjectsViewName stringByAppendingString:@"-GroupedByVisitStatus"];
     
     NSString *searchSuffix = @"-SearchView";
     _searchArtView = [self.ftsArtName stringByAppendingString:searchSuffix];
@@ -347,6 +358,56 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.everythingFilteredByFavoriteAndExpiration];
     }
     NSLog(@"%@ %d", self.everythingFilteredByFavoriteAndExpiration, success);
+    
+    // Visit Status Views
+    YapDatabaseFilteredView *visitedFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeVisitedOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
+    success = [self.database registerExtension:visitedFiltering withName:self.visitedObjectsViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.visitedObjectsViewName];
+    }
+    NSLog(@"%@ %d", self.visitedObjectsViewName, success);
+    
+    YapDatabaseFilteredView *wantToVisitFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeWantToVisitOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
+    success = [self.database registerExtension:wantToVisitFiltering withName:self.wantToVisitObjectsViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.wantToVisitObjectsViewName];
+    }
+    NSLog(@"%@ %d", self.wantToVisitObjectsViewName, success);
+    
+    YapDatabaseFilteredView *unvisitedFiltering = [BRCDatabaseManager filteredViewForType:BRCDatabaseFilteredViewTypeUnvisitedOnly parentViewName:self.dataObjectsViewName allowedCollections:nil];
+    success = [self.database registerExtension:unvisitedFiltering withName:self.unvisitedObjectsViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.unvisitedObjectsViewName];
+    }
+    NSLog(@"%@ %d", self.unvisitedObjectsViewName, success);
+    
+    // All objects grouped by visit status
+    YapDatabaseViewGrouping *visitStatusGrouping = [YapDatabaseViewGrouping withObjectBlock:^NSString * _Nullable(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        if ([object isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = (BRCDataObject *)object;
+            BRCObjectMetadata *metadata = [dataObject metadataWithTransaction:transaction];
+            BRCVisitStatus visitStatus = metadata.visitStatus;
+            switch (visitStatus) {
+                case BRCVisitStatusWantToVisit:
+                    return BRCVisitStatusGroupWantToVisit;
+                case BRCVisitStatusVisited:
+                    return BRCVisitStatusGroupVisited;
+                case BRCVisitStatusUnvisited:
+                default:
+                    return BRCVisitStatusGroupUnvisited;
+            }
+        }
+        return nil;
+    }];
+    
+    YapDatabaseAutoView *visitStatusView = [[YapDatabaseAutoView alloc] initWithGrouping:visitStatusGrouping
+                                                                                  sorting:[[self class] sorting]
+                                                                               versionTag:@"1"];
+    success = [self.database registerExtension:visitStatusView withName:self.allObjectsGroupedByVisitStatusViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.allObjectsGroupedByVisitStatusViewName];
+    }
+    NSLog(@"%@ %d", self.allObjectsGroupedByVisitStatusViewName, success);
     
     // Audio Tour
     YapDatabaseViewFiltering *audioTourFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
@@ -633,6 +694,39 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     return filtering;
 }
 
++ (YapDatabaseViewFiltering*) visitedOnlyFiltering {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withMetadataBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nullable metadata) {
+        if ([metadata isKindOfClass:BRCObjectMetadata.class]) {
+            BRCObjectMetadata *ourMetadata = (BRCObjectMetadata*)metadata;
+            return ourMetadata.visitStatus == BRCVisitStatusVisited;
+        }
+        return NO;
+    }];
+    return filtering;
+}
+
++ (YapDatabaseViewFiltering*) wantToVisitOnlyFiltering {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withMetadataBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nullable metadata) {
+        if ([metadata isKindOfClass:BRCObjectMetadata.class]) {
+            BRCObjectMetadata *ourMetadata = (BRCObjectMetadata*)metadata;
+            return ourMetadata.visitStatus == BRCVisitStatusWantToVisit;
+        }
+        return NO;
+    }];
+    return filtering;
+}
+
++ (YapDatabaseViewFiltering*) unvisitedOnlyFiltering {
+    YapDatabaseViewFiltering *filtering = [YapDatabaseViewFiltering withMetadataBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nullable metadata) {
+        if ([metadata isKindOfClass:BRCObjectMetadata.class]) {
+            BRCObjectMetadata *ourMetadata = (BRCObjectMetadata*)metadata;
+            return ourMetadata.visitStatus == BRCVisitStatusUnvisited;
+        }
+        return NO;
+    }];
+    return filtering;
+}
+
 + (YapDatabaseViewFiltering*) artFilteredByEvents {
     BOOL showOnlyWithEvents = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowOnlyArtWithEventsKey"];
     
@@ -732,6 +826,12 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         filtering = [[self class] eventsFilteredByExpirationAndType];
     } else if (filterType == BRCDatabaseFilteredViewTypeEventSelectedDayOnly) {
         filtering = [[self class] eventsFilteredByToday];
+    } else if (filterType == BRCDatabaseFilteredViewTypeVisitedOnly) {
+        filtering = [[self class] visitedOnlyFiltering];
+    } else if (filterType == BRCDatabaseFilteredViewTypeWantToVisitOnly) {
+        filtering = [[self class] wantToVisitOnlyFiltering];
+    } else if (filterType == BRCDatabaseFilteredViewTypeUnvisitedOnly) {
+        filtering = [[self class] unvisitedOnlyFiltering];
     } else {
         filtering = [[self class] allItemsFiltering];
     }
@@ -764,6 +864,15 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
             break;
         case BRCDatabaseFilteredViewTypeEverything:
             return @"Everything";
+            break;
+        case BRCDatabaseFilteredViewTypeVisitedOnly:
+            return @"Visited";
+            break;
+        case BRCDatabaseFilteredViewTypeWantToVisitOnly:
+            return @"WantToVisit";
+            break;
+        case BRCDatabaseFilteredViewTypeUnvisitedOnly:
+            return @"Unvisited";
             break;
         default:
             return nil;
