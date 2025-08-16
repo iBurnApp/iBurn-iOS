@@ -30,6 +30,10 @@ static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 NSString * const kBRCDatabaseName = @"iBurn-2025.sqlite";
 NSString * const kBRCDatabaseFolderName = @"iBurn-2025";
 
+NSString * const BRCVisitStatusGroupWantToVisit = @"Want to Visit";
+NSString * const BRCVisitStatusGroupVisited = @"Visited";
+NSString * const BRCVisitStatusGroupUnvisited = @"Unvisited";
+
 typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     BRCDatabaseFilteredViewTypeUnknown,
     BRCDatabaseFilteredViewTypeEverything,
@@ -167,6 +171,7 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     _visitedObjectsViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeVisitedOnly parentViewName:self.dataObjectsViewName];
     _wantToVisitObjectsViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeWantToVisitOnly parentViewName:self.dataObjectsViewName];
     _unvisitedObjectsViewName = [[self class] filteredViewNameForType:BRCDatabaseFilteredViewTypeUnvisitedOnly parentViewName:self.dataObjectsViewName];
+    _allObjectsGroupedByVisitStatusViewName = [self.dataObjectsViewName stringByAppendingString:@"-GroupedByVisitStatus"];
     
     NSString *searchSuffix = @"-SearchView";
     _searchArtView = [self.ftsArtName stringByAppendingString:searchSuffix];
@@ -375,6 +380,34 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
         [self postExtensionRegisteredNotification:self.unvisitedObjectsViewName];
     }
     NSLog(@"%@ %d", self.unvisitedObjectsViewName, success);
+    
+    // All objects grouped by visit status
+    YapDatabaseViewGrouping *visitStatusGrouping = [YapDatabaseViewGrouping withObjectBlock:^NSString * _Nullable(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+        if ([object isKindOfClass:[BRCDataObject class]]) {
+            BRCDataObject *dataObject = (BRCDataObject *)object;
+            BRCObjectMetadata *metadata = [dataObject metadataWithTransaction:transaction];
+            BRCVisitStatus visitStatus = metadata.visitStatus;
+            switch (visitStatus) {
+                case BRCVisitStatusWantToVisit:
+                    return BRCVisitStatusGroupWantToVisit;
+                case BRCVisitStatusVisited:
+                    return BRCVisitStatusGroupVisited;
+                case BRCVisitStatusUnvisited:
+                default:
+                    return BRCVisitStatusGroupUnvisited;
+            }
+        }
+        return nil;
+    }];
+    
+    YapDatabaseAutoView *visitStatusView = [[YapDatabaseAutoView alloc] initWithGrouping:visitStatusGrouping
+                                                                                  sorting:[[self class] sorting]
+                                                                               versionTag:@"1"];
+    success = [self.database registerExtension:visitStatusView withName:self.allObjectsGroupedByVisitStatusViewName];
+    if (success) {
+        [self postExtensionRegisteredNotification:self.allObjectsGroupedByVisitStatusViewName];
+    }
+    NSLog(@"%@ %d", self.allObjectsGroupedByVisitStatusViewName, success);
     
     // Audio Tour
     YapDatabaseViewFiltering *audioTourFiltering = [YapDatabaseViewFiltering withObjectBlock:^BOOL(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull group, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {

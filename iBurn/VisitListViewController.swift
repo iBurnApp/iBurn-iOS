@@ -15,16 +15,25 @@ public enum VisitFilter: String, CaseIterable {
     case all = "All"
 }
 
-public class VisitListViewController: UIViewController {
+public class VisitListViewController: ObjectListViewController {
     
     // MARK: - Properties
     
     private var currentFilter: VisitFilter = .wantToVisit
     private let filterControl = UISegmentedControl(items: VisitFilter.allCases.map { $0.rawValue })
-    private var listCoordinator: ListCoordinator!
     private var refreshTimer: Timer?
     
-    public var tableView = UITableView.iBurnTableView(style: .grouped)
+    // MARK: - Init
+    
+    public init() {
+        let dbManager = BRCDatabaseManager.shared
+        super.init(viewName: dbManager.allObjectsGroupedByVisitStatusViewName,
+                   searchViewName: dbManager.searchEverythingView)
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - View Lifecycle
     
@@ -34,13 +43,10 @@ public class VisitListViewController: UIViewController {
         setupViews()
         setupFilter()
         updateViewForSelectedFilter()
-        definesPresentationContext = true
     }
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        refreshNavigationBarColors(animated)
-        searchWillAppear()
         
         // Refresh view when visit status might have changed
         refreshTimer?.invalidate()
@@ -49,21 +55,10 @@ public class VisitListViewController: UIViewController {
         }
     }
     
-    public override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        searchDidAppear()
-    }
-    
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         refreshTimer?.invalidate()
         refreshTimer = nil
-    }
-    
-    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        tableView.setColorTheme(Appearance.currentColors, animated: false)
-        setColorTheme(Appearance.currentColors, animated: false)
     }
 }
 
@@ -72,24 +67,8 @@ public class VisitListViewController: UIViewController {
 private extension VisitListViewController {
     
     func setupViews() {
-        // Add table view to view hierarchy
-        view.addSubview(tableView)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
         // Setup filter control as table header
         setupFilterControl()
-        
-        // Setup search button
-        setupSearchButton()
-        
-        // Setup map button  
-        setupMapButton()
     }
     
     func setupFilter() {
@@ -125,45 +104,24 @@ private extension VisitListViewController {
     }
     
     func updateViewForSelectedFilter() {
-        let dbManager = BRCDatabaseManager.shared
-        let viewName: String
+        // Update the view handler's groups based on selected filter
+        let groupFilter: YapViewHandler.MappingsGroups
         
         switch currentFilter {
         case .wantToVisit:
-            viewName = dbManager.wantToVisitObjectsViewName
+            groupFilter = .names([BRCVisitStatusGroupWantToVisit])
         case .visited:
-            viewName = dbManager.visitedObjectsViewName
+            groupFilter = .names([BRCVisitStatusGroupVisited])
         case .all:
-            viewName = dbManager.dataObjectsViewName
+            groupFilter = .names([BRCVisitStatusGroupWantToVisit, 
+                                  BRCVisitStatusGroupVisited, 
+                                  BRCVisitStatusGroupUnvisited])
         }
         
-        // Create new coordinator with the selected view
-        listCoordinator = ListCoordinator(
-            viewName: viewName,
-            searchViewName: dbManager.searchEverythingView,
-            tableView: tableView
-        )
-        listCoordinator.parent = self
+        // Update the groups in the view handler
+        listCoordinator.tableViewAdapter.viewHandler.groups = groupFilter
         
         // Reload the table
         tableView.reloadData()
-    }
-}
-
-// MARK: - SearchCooordinator
-
-extension VisitListViewController: SearchCooordinator {
-    var searchController: UISearchController {
-        return listCoordinator.searchDisplayManager.searchController
-    }
-}
-
-// MARK: - MapButtonHelper
-
-extension VisitListViewController: MapButtonHelper {
-    @objc func mapButtonPressed(_ sender: Any?) {
-        let dataSource = YapViewAnnotationDataSource(viewHandler: listCoordinator.tableViewAdapter.viewHandler)
-        let mapVC = MapListViewController(dataSource: dataSource)
-        navigationController?.pushViewController(mapVC, animated: true)
     }
 }
