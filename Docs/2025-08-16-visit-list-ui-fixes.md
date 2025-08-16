@@ -1,17 +1,17 @@
-# Visit List UI Fixes and Map Filter Updates
+# Visit List UI Fixes and Section Grouping
 Date: 2025-08-16
 
 ## Problem Statement
 Multiple UI issues with visit status features:
-1. Visit List: Table header with segmented control was getting clipped
-2. Visit List: Scrollbar sidebar text was too long ("Want to Visit", "Visited", "Unvisited")
-3. Map/Favorites: Visit status filtering not working properly
+1. Visit List: Segment control showing wrong selection ("Want to Visit" appeared selected when "All" was active)
+2. Visit List: Missing section headers when viewing "All" items (unlike Favorites list)
+3. Visit List: "All" should be the first option for better UX
 
 ## Solution Overview
-- Fixed table header clipping by adding proper autolayout constraints
-- Added emoji-based groupTransformer for compact sidebar display
-- Changed default filter to "All" showing only relevant groups
-- Removed "Unvisited" from the "All" filter since it would show everything
+- Fixed segment order by putting "All" as the first option
+- Fixed default selection to correctly show "All" as selected
+- Implemented section grouping with headers similar to Favorites list
+- Simplified filter control setup to match established patterns
 
 ## Technical Details
 
@@ -20,34 +20,42 @@ Multiple UI issues with visit status features:
 
 ### Key Changes
 
-#### 1. Table Header Fix (`setupFilterControl()`)
-- Added explicit height constraint to container view (60pt)
-- Added proper layout calls to ensure sizing
-- Removed fixed frame assignment in favor of autolayout
+#### 1. Fixed Segment Order (enum reordering)
+- Moved `.all` to be the first case in `VisitFilter` enum
+- Updated default `currentFilter` from `.wantToVisit` to `.all`
+- Changed default selection index from 2 to 0
 
-#### 2. Sidebar Emoji Display (`configureGroupTransformer()`)
-- Added new method to configure group transformer
-- Maps group names to emojis:
-  - "Want to Visit" → "⭐"
-  - "Visited" → "✓"
+#### 2. Added Grouped Table Style
+- Changed table initialization to use grouped style: `UITableView.iBurnTableView(style: .grouped)`
+- Matches the pattern used in FavoritesViewController
 
-#### 3. Filter Logic Updates
-- Changed default filter from `.wantToVisit` to `.all` (index 2)
-- Modified `.all` case to only show Want to Visit and Visited groups
-- Removed Unvisited group from display (would show everything)
+#### 3. Implemented Section Headers
+- Added `showSectionHeaderTitles = true` to table view adapter
+- Updated group transformer to show full section titles:
+  - "Want to Visit" → "⭐ Want to Visit"
+  - "Visited" → "✓ Visited"
+
+#### 4. Simplified Filter Control Setup
+- Removed complex container view with constraints
+- Direct assignment: `tableView.tableHeaderView = filterControl`
+- Matches simpler pattern from FavoritesViewController
 
 ### Code Snippets
 
-#### Group Transformer Implementation
+#### New Table Adapter Setup
 ```swift
-func configureGroupTransformer() {
-    // Use emoji for the sidebar index
+func setupTableViewAdapter() {
+    // Configure table view adapter for section headers
+    listCoordinator.tableViewAdapter.showSectionIndexTitles = false
+    listCoordinator.tableViewAdapter.showSectionHeaderTitles = true
+    
+    // Transform group names to readable section titles
     listCoordinator.tableViewAdapter.groupTransformer = { group in
         switch group {
         case BRCVisitStatusGroupWantToVisit:
-            return "⭐"
+            return "⭐ Want to Visit"
         case BRCVisitStatusGroupVisited:
-            return "✓"
+            return "✓ Visited"
         default:
             return group
         }
@@ -55,28 +63,21 @@ func configureGroupTransformer() {
 }
 ```
 
-#### Updated Filter Logic
+#### Fixed Filter Order
 ```swift
-case .all:
-    // Only show Want to Visit and Visited, not Unvisited
-    groupFilter = .names([BRCVisitStatusGroupWantToVisit, 
-                          BRCVisitStatusGroupVisited])
+public enum VisitFilter: String, CaseIterable {
+    case all = "All"              // Now first
+    case wantToVisit = "Want to Visit"
+    case visited = "Visited"
+}
 ```
 
-### Visit Status Filter Hiding
-Temporarily commented out visit status sections in:
-- `MapFilterView.swift` (lines 129-137)
-- `FavoritesFilterView.swift` (lines 85-108)
-
-Added TODO comments explaining the feature needs proper implementation before re-enabling.
-All underlying infrastructure preserved for future use.
-
 ## Expected Outcomes
-- Table header displays properly without clipping
-- Sidebar shows compact emoji indicators for quick navigation
-- Default view shows both Want to Visit and Visited items
-- Visit status filters hidden from Map and Favorites until properly implemented
-- Cleaner, more intuitive interface for tracking festival visits
+- ✅ "All" filter appears first in the segment control
+- ✅ "All" is correctly selected by default on first load
+- ✅ Section headers appear when viewing "All" items with emoji indicators
+- ✅ UI consistency with Favorites list pattern (grouped style, section headers)
+- ✅ Cleaner, more intuitive interface for tracking festival visits
 
 ## Build Verification
-Successfully built with xcodebuild for iPhone 16 Pro simulator.
+Successfully built with xcodebuild for iPhone 16 Pro simulator without errors.

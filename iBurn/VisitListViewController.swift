@@ -10,16 +10,16 @@ import UIKit
 import YapDatabase
 
 public enum VisitFilter: String, CaseIterable {
-    case wantToVisit = "Want to Visit"
-    case visited = "Visited" 
     case all = "All"
+    case wantToVisit = "Want to Visit"
+    case visited = "Visited"
 }
 
 public class VisitListViewController: ObjectListViewController {
     
     // MARK: - Properties
     
-    private var currentFilter: VisitFilter = .wantToVisit
+    private var currentFilter: VisitFilter = .all
     private let filterControl = UISegmentedControl(items: VisitFilter.allCases.map { $0.rawValue })
     private var refreshTimer: Timer?
     
@@ -38,11 +38,12 @@ public class VisitListViewController: ObjectListViewController {
     // MARK: - View Lifecycle
     
     public override func viewDidLoad() {
+        self.tableView = UITableView.iBurnTableView(style: .grouped)
         super.viewDidLoad()
         
         setupViews()
         setupFilter()
-        configureGroupTransformer()
+        setupTableViewAdapter()
         updateViewForSelectedFilter()
     }
     
@@ -73,19 +74,23 @@ private extension VisitListViewController {
     }
     
     func setupFilter() {
-        // Default to "All"
-        filterControl.selectedSegmentIndex = 2
+        // Default to "All" (first segment)
+        filterControl.selectedSegmentIndex = 0
         filterControl.addTarget(self, action: #selector(filterChanged), for: .valueChanged)
     }
     
-    func configureGroupTransformer() {
-        // Use emoji for the sidebar index
+    func setupTableViewAdapter() {
+        // Configure table view adapter for section headers
+        listCoordinator.tableViewAdapter.showSectionIndexTitles = false
+        listCoordinator.tableViewAdapter.showSectionHeaderTitles = true
+        
+        // Transform group names to readable section titles
         listCoordinator.tableViewAdapter.groupTransformer = { group in
             switch group {
             case BRCVisitStatusGroupWantToVisit:
-                return "⭐"
+                return "⭐ Want to Visit"
             case BRCVisitStatusGroupVisited:
-                return "✓"
+                return "✓ Visited"
             default:
                 return group
             }
@@ -93,31 +98,8 @@ private extension VisitListViewController {
     }
     
     func setupFilterControl() {
-        // Create a container view for the segmented control
-        let containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        
-        filterControl.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(filterControl)
-        
-        NSLayoutConstraint.activate([
-            filterControl.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
-            filterControl.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            filterControl.leadingAnchor.constraint(greaterThanOrEqualTo: containerView.leadingAnchor, constant: 16),
-            filterControl.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -16),
-            // Add explicit height constraint for the container
-            containerView.heightAnchor.constraint(equalToConstant: 60)
-        ])
-        
-        // Set as table header view with proper autolayout
-        tableView.tableHeaderView = containerView
-        
-        // Force layout to ensure proper sizing
-        containerView.setNeedsLayout()
-        containerView.layoutIfNeeded()
-        
-        // Update the table header view to recognize the height
-        tableView.tableHeaderView = containerView
+        // Set filter control as table header (simpler approach like FavoritesViewController)
+        tableView.tableHeaderView = filterControl
     }
     
     @objc func filterChanged() {
@@ -131,14 +113,14 @@ private extension VisitListViewController {
         let groupFilter: YapViewHandler.MappingsGroups
         
         switch currentFilter {
+        case .all:
+            // Show both Want to Visit and Visited groups
+            groupFilter = .names([BRCVisitStatusGroupWantToVisit, 
+                                  BRCVisitStatusGroupVisited])
         case .wantToVisit:
             groupFilter = .names([BRCVisitStatusGroupWantToVisit])
         case .visited:
             groupFilter = .names([BRCVisitStatusGroupVisited])
-        case .all:
-            // Only show Want to Visit and Visited, not Unvisited
-            groupFilter = .names([BRCVisitStatusGroupWantToVisit, 
-                                  BRCVisitStatusGroupVisited])
         }
         
         // Update the groups in the view handler
