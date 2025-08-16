@@ -1,10 +1,11 @@
-# Visit List UI Fixes
+# Visit List UI Fixes and Map Filter Updates
 Date: 2025-08-16
 
 ## Problem Statement
-The Visit List view had two UI issues:
-1. Table header with segmented control was getting clipped
-2. Scrollbar sidebar text was too long ("Want to Visit", "Visited", "Unvisited")
+Multiple UI issues with visit status features:
+1. Visit List: Table header with segmented control was getting clipped
+2. Visit List: Scrollbar sidebar text was too long ("Want to Visit", "Visited", "Unvisited")
+3. Map/Favorites: Visit status filtering not working properly
 
 ## Solution Overview
 - Fixed table header clipping by adding proper autolayout constraints
@@ -62,10 +63,19 @@ case .all:
                           BRCVisitStatusGroupVisited])
 ```
 
+### Visit Status Filter Hiding
+Temporarily commented out visit status sections in:
+- `MapFilterView.swift` (lines 129-137)
+- `FavoritesFilterView.swift` (lines 85-108)
+
+Added TODO comments explaining the feature needs proper implementation before re-enabling.
+All underlying infrastructure preserved for future use.
+
 ## Expected Outcomes
 - Table header displays properly without clipping
 - Sidebar shows compact emoji indicators for quick navigation
 - Default view shows both Want to Visit and Visited items
+- Visit status filters hidden from Map and Favorites until properly implemented
 - Cleaner, more intuitive interface for tracking festival visits
 
 ## Build Verification

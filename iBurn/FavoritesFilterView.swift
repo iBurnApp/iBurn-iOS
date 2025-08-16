@@ -82,7 +82,9 @@ struct FavoritesFilterView: View {
                 .foregroundColor(.secondary)
             }
             
+            // TODO: Visit status filtering is temporarily disabled - needs proper implementation
             // Visit Status Section
+            /*
             Section(header: Text("Visit Status"), footer: Text("Filter favorites by visit status")
                 .font(.footnote)
                 .foregroundColor(.secondary)) {
@@ -103,6 +105,7 @@ struct FavoritesFilterView: View {
                     }
                 }
             }
+            */
         }
         .navigationTitle("Filter")
         .navigationBarTitleDisplayMode(.inline)

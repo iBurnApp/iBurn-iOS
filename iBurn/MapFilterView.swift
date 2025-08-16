@@ -126,12 +126,15 @@ struct MapFilterView: View {
                     .disabled(!viewModel.showFavorites)
             }
             
+            // TODO: Visit status filtering is temporarily disabled - needs proper implementation
             // Visit Status Section
+            /*
             Section(header: Text("Visit Status")) {
                 Toggle("Show Visited", isOn: $viewModel.showVisited)
                 Toggle("Show Want to Visit", isOn: $viewModel.showWantToVisit)
                 Toggle("Show Unvisited", isOn: $viewModel.showUnvisited)
             }
+            */
             
             // Event Types Section - only show when events are enabled
             if viewModel.showActiveEvents {
