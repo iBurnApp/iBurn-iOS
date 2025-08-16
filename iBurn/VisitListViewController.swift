@@ -42,6 +42,7 @@ public class VisitListViewController: ObjectListViewController {
         
         setupViews()
         setupFilter()
+        configureGroupTransformer()
         updateViewForSelectedFilter()
     }
     
@@ -72,9 +73,23 @@ private extension VisitListViewController {
     }
     
     func setupFilter() {
-        // Default to "Want to Visit"
-        filterControl.selectedSegmentIndex = 0
+        // Default to "All"
+        filterControl.selectedSegmentIndex = 2
         filterControl.addTarget(self, action: #selector(filterChanged), for: .valueChanged)
+    }
+    
+    func configureGroupTransformer() {
+        // Use emoji for the sidebar index
+        listCoordinator.tableViewAdapter.groupTransformer = { group in
+            switch group {
+            case BRCVisitStatusGroupWantToVisit:
+                return "⭐"
+            case BRCVisitStatusGroupVisited:
+                return "✓"
+            default:
+                return group
+            }
+        }
     }
     
     func setupFilterControl() {
@@ -89,11 +104,19 @@ private extension VisitListViewController {
             filterControl.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
             filterControl.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             filterControl.leadingAnchor.constraint(greaterThanOrEqualTo: containerView.leadingAnchor, constant: 16),
-            filterControl.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -16)
+            filterControl.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -16),
+            // Add explicit height constraint for the container
+            containerView.heightAnchor.constraint(equalToConstant: 60)
         ])
         
-        // Set as table header view
-        containerView.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 60)
+        // Set as table header view with proper autolayout
+        tableView.tableHeaderView = containerView
+        
+        // Force layout to ensure proper sizing
+        containerView.setNeedsLayout()
+        containerView.layoutIfNeeded()
+        
+        // Update the table header view to recognize the height
         tableView.tableHeaderView = containerView
     }
     
@@ -113,9 +136,9 @@ private extension VisitListViewController {
         case .visited:
             groupFilter = .names([BRCVisitStatusGroupVisited])
         case .all:
+            // Only show Want to Visit and Visited, not Unvisited
             groupFilter = .names([BRCVisitStatusGroupWantToVisit, 
-                                  BRCVisitStatusGroupVisited, 
-                                  BRCVisitStatusGroupUnvisited])
+                                  BRCVisitStatusGroupVisited])
         }
         
         // Update the groups in the view handler
