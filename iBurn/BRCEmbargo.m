@@ -11,7 +11,7 @@
 #import "BRCSecrets.h"
 #import "BRCEventObject.h"
 #import "BRCCampObject.h"
-#import "BRCEventObject.h"
+#import "BRCArtObject.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "NSData+iBurn.h"
 #import "iBurn-Swift.h"
@@ -53,13 +53,14 @@
     return NO;
 }
 
+#warning TODO: Re-enable camp and event embargo for 2026 by uncommenting the code block below
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject
 {
     if (![BRCEmbargo allowEmbargoedData]) {
-        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
-            [dataObject isKindOfClass:[BRCArtObject class]]) {
-            return NO;
-        }
+//        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
+//            [dataObject isKindOfClass:[BRCArtObject class]]) {
+//            return NO;
+//        }
         if ([dataObject isKindOfClass:[BRCArtObject class]]) {
             return NO;
         }
