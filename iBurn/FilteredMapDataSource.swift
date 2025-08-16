@@ -65,38 +65,17 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
             eventsDataSource = nil
         }
         
-        // Visit status data sources - only created if filtering is active
-        if !UserSettings.showVisitedOnMap || !UserSettings.showWantToVisitOnMap || !UserSettings.showUnvisitedOnMap {
-            // Only create data sources if we're actually filtering (not showing all)
-            if UserSettings.showVisitedOnMap {
-                visitedDataSource = YapViewAnnotationDataSource(
-                    viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.visitedObjectsViewName)
-                )
-            } else {
-                visitedDataSource = nil
-            }
-            
-            if UserSettings.showWantToVisitOnMap {
-                wantToVisitDataSource = YapViewAnnotationDataSource(
-                    viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.wantToVisitObjectsViewName)
-                )
-            } else {
-                wantToVisitDataSource = nil
-            }
-            
-            if UserSettings.showUnvisitedOnMap {
-                unvisitedDataSource = YapViewAnnotationDataSource(
-                    viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.unvisitedObjectsViewName)
-                )
-            } else {
-                unvisitedDataSource = nil
-            }
-        } else {
-            // All visit statuses are shown, so don't filter
-            visitedDataSource = nil
-            wantToVisitDataSource = nil
-            unvisitedDataSource = nil
-        }
+        // Visit status data sources - always created for reference
+        // We'll use these to check visit status regardless of filter settings
+        visitedDataSource = YapViewAnnotationDataSource(
+            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.visitedObjectsViewName)
+        )
+        wantToVisitDataSource = YapViewAnnotationDataSource(
+            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.wantToVisitObjectsViewName)
+        )
+        unvisitedDataSource = YapViewAnnotationDataSource(
+            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.unvisitedObjectsViewName)
+        )
         
         super.init()
     }
