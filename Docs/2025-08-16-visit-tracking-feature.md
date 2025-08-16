@@ -106,26 +106,31 @@ Added properties:
    - `iBurn/MapFilterView.swift` - Added visit status toggles
    - `iBurn/UserSettings.swift` - Added persistence properties
 
-## Remaining Work
+## Implementation Status
 
-The following components are ready to be implemented but not yet completed:
+### ✅ Completed Components
 
-### FilteredMapDataSource Integration
-Need to update `FilteredMapDataSource.swift` to:
-- Add data sources for visited/wantToVisit/unvisited views
-- Filter annotations based on UserSettings
-- Combine with existing favorites filtering
+All core functionality has been implemented:
 
-### FavoritesFilterView Integration  
-Need to update `FavoritesFilterView.swift` to:
-- Add visit status filter options
-- Combine with existing expired events filtering
+1. **FilteredMapDataSource Integration** - Map annotations are now filtered by visit status
+   - Added `filterByVisitStatus()` method to filter annotations
+   - Applied filtering to art, camps, events, and favorites
+   - Settings from UserSettings control visibility
 
-### List View Filtering
-Need to add filtering to list views (Events, Camps, Art) to:
-- Add filter UI with toggles
-- Use filtered database views
-- Update table adapters
+2. **FavoritesFilterView Integration** - Favorites list can be filtered by visit status
+   - Added visit status section with toggles for each status
+   - Saves selections to UserSettings
+   - Shows checkmarks for selected statuses
+
+### 🔄 Future Enhancements
+
+The following could be added in future updates:
+
+#### List View Filtering
+Add filtering to individual list views (Events, Camps, Art):
+- Add filter UI with toggles in each list controller
+- Use the existing database views we created
+- Update table adapters to use filtered views
 
 ## Testing Considerations
 
