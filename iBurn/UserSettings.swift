@@ -33,6 +33,11 @@ public final class UserSettings: NSObject {
         static let showFavoritesOnMap = "kBRCShowFavoritesOnMapKey"
         static let showTodaysFavoritesOnlyOnMap = "kBRCShowTodaysFavoritesOnlyOnMapKey"
         static let selectedEventTypesForMap = "kBRCSelectedEventTypesForMapKey"
+        // Visit status keys
+        static let showVisitedOnMap = "kBRCShowVisitedOnMapKey"
+        static let showWantToVisitOnMap = "kBRCShowWantToVisitOnMapKey"
+        static let showUnvisitedOnMap = "kBRCShowUnvisitedOnMapKey"
+        static let visitStatusFilterForLists = "kBRCVisitStatusFilterForListsKey"
     }
     
     /// Selected favorites filter
@@ -323,6 +328,66 @@ public final class UserSettings: NSObject {
                 UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftLatitude)
                 UserDefaults.standard.removeObject(forKey: TimeShiftKeys.timeShiftLongitude)
             }
+        }
+    }
+    
+    // MARK: - Visit Status Filtering
+    
+    /// Show visited objects on map
+    @objc public static var showVisitedOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showVisitedOnMap)
+        }
+        get {
+            // Default to true to show all statuses
+            if UserDefaults.standard.object(forKey: Keys.showVisitedOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showVisitedOnMap)
+        }
+    }
+    
+    /// Show want to visit objects on map
+    @objc public static var showWantToVisitOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showWantToVisitOnMap)
+        }
+        get {
+            // Default to true to show all statuses
+            if UserDefaults.standard.object(forKey: Keys.showWantToVisitOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showWantToVisitOnMap)
+        }
+    }
+    
+    /// Show unvisited objects on map
+    @objc public static var showUnvisitedOnMap: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showUnvisitedOnMap)
+        }
+        get {
+            // Default to true to show all statuses
+            if UserDefaults.standard.object(forKey: Keys.showUnvisitedOnMap) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showUnvisitedOnMap)
+        }
+    }
+    
+    /// Visit status filter for list views
+    public static var visitStatusFilterForLists: Set<BRCVisitStatus> {
+        set {
+            let numbers = newValue.map { NSNumber(value: $0.rawValue) }
+            UserDefaults.standard.set(numbers, forKey: Keys.visitStatusFilterForLists)
+        }
+        get {
+            guard let numbers = UserDefaults.standard.array(forKey: Keys.visitStatusFilterForLists) as? [NSNumber] else { 
+                // Default to show all statuses
+                return Set(BRCVisitStatus.allCases)
+            }
+            let statuses = numbers.compactMap { BRCVisitStatus(rawValue: $0.intValue) }
+            return Set(statuses)
         }
     }
 }

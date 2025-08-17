@@ -132,6 +132,22 @@ class DetailViewModel: ObservableObject {
         }
     }
     
+    @MainActor
+    func updateVisitStatus(_ status: BRCVisitStatus) async {
+        do {
+            try await dataService.updateVisitStatus(for: dataObject, visitStatus: status)
+            
+            // Update local state
+            self.metadata.visitStatus = status.rawValue
+            
+            // Regenerate cells to reflect changes
+            self.cells = generateCells()
+            
+        } catch {
+            self.error = error
+        }
+    }
+    
     func handleCellTap(_ cell: DetailCell) {
         switch cell.type {
         case .email(let email, _):
@@ -607,6 +623,10 @@ class DetailViewModel: ObservableObject {
         // User notes
         let notes = metadata.userNotes ?? ""
         cells.append(.userNotes(notes))
+        
+        // Visit status
+        let visitStatus = BRCVisitStatus(rawValue: metadata.visitStatus) ?? .unvisited
+        cells.append(.visitStatus(visitStatus))
         
         return cells
     }

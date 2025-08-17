@@ -37,6 +37,13 @@ class MockDetailDataService: DetailDataServiceProtocol {
         }
     }
     
+    func updateVisitStatus(for object: BRCDataObject, visitStatus: BRCVisitStatus) async throws {
+        // Just a mock implementation
+        if shouldThrowError {
+            throw DetailError.updateFailed
+        }
+    }
+    
     func getMetadata(for object: BRCDataObject) -> BRCObjectMetadata? {
         guard let metadata = BRCObjectMetadata() else {
             return nil

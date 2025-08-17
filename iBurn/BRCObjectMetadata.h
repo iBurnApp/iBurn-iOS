@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable, readwrite) NSString *userNotes;
 /** The last time object was fetched from iBurn API */
 @property (nonatomic, strong, nullable, readwrite) NSDate *lastUpdated;
+/** Visit status for the object (unvisited, visited, wantToVisit) */
+@property (nonatomic, readwrite) NSInteger visitStatus;
 
 - (instancetype) metadataCopy;
 @end
