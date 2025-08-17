@@ -63,7 +63,10 @@ class DetailDataService: DetailDataServiceProtocol {
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
             } completionBlock: {
-                continuation.resume()
+                // Refresh the visit status grouped view to trigger real-time updates
+                BRCDatabaseManager.shared.refreshVisitStatusGroupedView {
+                    continuation.resume()
+                }
             }
         }
     }

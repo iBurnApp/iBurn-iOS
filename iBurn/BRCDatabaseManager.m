@@ -1015,6 +1015,37 @@ typedef NS_ENUM(NSUInteger, BRCDatabaseFilteredViewType) {
     } completionBlock:completionBlock];
 }
 
+/** Refresh visit status grouped view to force re-evaluation */
+- (void) refreshVisitStatusGroupedViewWithCompletionBlock:(void (^)(void))completionBlock {
+    [self.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        YapDatabaseAutoViewTransaction *visitStatusTransaction = [transaction ext:self.allObjectsGroupedByVisitStatusViewName];
+        if (!visitStatusTransaction) {
+            return;
+        }
+        
+        // Re-create the same grouping used during setup
+        YapDatabaseViewGrouping *visitStatusGrouping = [YapDatabaseViewGrouping withObjectBlock:^NSString * _Nullable(YapDatabaseReadTransaction * _Nonnull transaction, NSString * _Nonnull collection, NSString * _Nonnull key, id  _Nonnull object) {
+            if ([object isKindOfClass:[BRCDataObject class]]) {
+                BRCDataObject *dataObject = (BRCDataObject *)object;
+                BRCObjectMetadata *metadata = [dataObject metadataWithTransaction:transaction];
+                BRCVisitStatus visitStatus = (BRCVisitStatus)metadata.visitStatus;
+                switch (visitStatus) {
+                    case BRCVisitStatusWantToVisit:
+                        return BRCVisitStatusGroupWantToVisit;
+                    case BRCVisitStatusVisited:
+                        return BRCVisitStatusGroupVisited;
+                    default:
+                        return BRCVisitStatusGroupUnvisited;
+                }
+            }
+            return nil;
+        }];
+        
+        YapDatabaseViewSorting *sorting = [[self class] sorting];
+        [visitStatusTransaction setGrouping:visitStatusGrouping sorting:sorting versionTag:[[NSUUID UUID] UUIDString]];
+    } completionBlock:completionBlock];
+}
+
 /**
  * Query for objects in bounded region.
  * @see MKCoordinateRegionMakeWithDistance

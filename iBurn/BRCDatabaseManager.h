@@ -130,6 +130,9 @@ extern NSString * const BRCVisitStatusGroupUnvisited;
 
 - (void) refreshArtFilteredView:(void (^_Nullable)(void))completionBlock;
 
+/** Refresh visit status grouped view to force re-evaluation */
+- (void) refreshVisitStatusGroupedViewWithCompletionBlock:(void (^_Nullable)(void))completionBlock;
+
 @end
 
 NS_ASSUME_NONNULL_END

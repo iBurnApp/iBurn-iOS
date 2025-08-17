@@ -21,7 +21,6 @@ public class VisitListViewController: ObjectListViewController {
     
     private var currentFilter: VisitFilter = .all
     private let filterControl = UISegmentedControl(items: VisitFilter.allCases.map { $0.rawValue })
-    private var refreshTimer: Timer?
     
     // MARK: - Init
     
@@ -50,17 +49,12 @@ public class VisitListViewController: ObjectListViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Refresh view when visit status might have changed
-        refreshTimer?.invalidate()
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            self?.tableView.reloadData()
+        // Refresh the view to ensure it shows the latest visit status changes
+        BRCDatabaseManager.shared.refreshVisitStatusGroupedView {
+            DispatchQueue.main.async { [weak self] in
+                self?.tableView.reloadData()
+            }
         }
-    }
-    
-    public override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        refreshTimer?.invalidate()
-        refreshTimer = nil
     }
 }
 
