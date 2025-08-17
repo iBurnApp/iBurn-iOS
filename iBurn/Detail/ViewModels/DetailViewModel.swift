@@ -484,9 +484,11 @@ class DetailViewModel: ObservableObject {
     private func formatEventSchedule(event: BRCEventObject, startDate: Date, endDate: Date) -> NSAttributedString {
         let dayFormatter = DateFormatter()
         dayFormatter.dateFormat = "EEEE M/d"
+        dayFormatter.timeZone = TimeZone.burningManTimeZone
         
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
+        timeFormatter.timeZone = TimeZone.burningManTimeZone
         
         let dayString = dayFormatter.string(from: startDate)
         var timeString: String
@@ -617,6 +619,7 @@ class DetailViewModel: ObservableObject {
             let formatter = DateFormatter()
             formatter.dateStyle = .short
             formatter.timeStyle = .short
+            formatter.timeZone = TimeZone.burningManTimeZone
             let dateString = formatter.string(from: updateDate)
             cells.append(.text("Last Updated: \(dateString)", style: .caption))
         }
