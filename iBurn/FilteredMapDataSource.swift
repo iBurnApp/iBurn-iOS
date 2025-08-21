@@ -18,9 +18,6 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
     private let eventsDataSource: YapViewAnnotationDataSource?
     private let favoritesDataSource: YapViewAnnotationDataSource
     private let userDataSource: YapCollectionAnnotationDataSource
-    private let visitedDataSource: YapViewAnnotationDataSource?
-    private let wantToVisitDataSource: YapViewAnnotationDataSource?
-    private let unvisitedDataSource: YapViewAnnotationDataSource?
     
     override init() {
         // User pins are always shown
@@ -65,18 +62,6 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
             eventsDataSource = nil
         }
         
-        // Visit status data sources - always created for reference
-        // We'll use these to check visit status regardless of filter settings
-        visitedDataSource = YapViewAnnotationDataSource(
-            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.visitedObjectsViewName)
-        )
-        wantToVisitDataSource = YapViewAnnotationDataSource(
-            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.wantToVisitObjectsViewName)
-        )
-        unvisitedDataSource = YapViewAnnotationDataSource(
-            viewHandler: YapViewHandler(viewName: BRCDatabaseManager.shared.unvisitedObjectsViewName)
-        )
-        
         super.init()
     }
     
@@ -113,96 +98,36 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
                 return true
             }
             
-            // Also filter by visit status
-            let visitFiltered = filterByVisitStatus(filteredFavorites)
-            allAnnotations.append(contentsOf: visitFiltered)
+            allAnnotations.append(contentsOf: filteredFavorites)
         }
         
-        // Add non-favorited art if enabled
+        // Add art if enabled (MapViewAdapter will handle de-duplication)
         if UserSettings.showArtOnMap, let artDataSource = artDataSource {
             let artAnnotations = artDataSource.allAnnotations()
-            // Filter out already included favorites
-            let nonFavoriteArt = filterOutFavorites(artAnnotations)
-            // Filter by visit status
-            let filteredArt = filterByVisitStatus(nonFavoriteArt)
-            allAnnotations.append(contentsOf: filteredArt)
+            allAnnotations.append(contentsOf: artAnnotations)
         }
         
-        // Add non-favorited camps if enabled
+        // Add camps if enabled (MapViewAdapter will handle de-duplication)
         if UserSettings.showCampsOnMap, let campsDataSource = campsDataSource {
             let campAnnotations = campsDataSource.allAnnotations()
-            // Filter out already included favorites
-            let nonFavoriteCamps = filterOutFavorites(campAnnotations)
-            // Filter by visit status
-            let filteredCamps = filterByVisitStatus(nonFavoriteCamps)
-            allAnnotations.append(contentsOf: filteredCamps)
+            allAnnotations.append(contentsOf: campAnnotations)
         }
         
         // Add active events if enabled
         if UserSettings.showActiveEventsOnMap, let eventsDataSource = eventsDataSource {
             let eventAnnotations = eventsDataSource.allAnnotations()
-            // Filter out already included favorites and filter by event type
+            // Filter by event type
             let filteredEvents = eventAnnotations.filter { annotation in
                 guard let dataAnnotation = annotation as? DataObjectAnnotation,
                       let event = dataAnnotation.object as? BRCEventObject else {
                     return true
                 }
-                
-                // Filter by event type
-                if !selectedEventTypes.contains(event.eventType) {
-                    return false
-                }
-                
-                // Filter out favorites
-                return !dataAnnotation.metadata.isFavorite
+                return selectedEventTypes.contains(event.eventType)
             }
-            // Filter by visit status
-            let visitFiltered = filterByVisitStatus(filteredEvents)
-            allAnnotations.append(contentsOf: visitFiltered)
+            allAnnotations.append(contentsOf: filteredEvents)
         }
         
         return allAnnotations
-    }
-    
-    private func filterOutFavorites(_ annotations: [MLNAnnotation]) -> [MLNAnnotation] {
-        // If favorites are not shown, return all annotations
-        guard UserSettings.showFavoritesOnMap else {
-            return annotations
-        }
-        
-        // Filter out annotations that are already shown as favorites
-        return annotations.filter { annotation in
-            guard let dataAnnotation = annotation as? DataObjectAnnotation else {
-                return true
-            }
-            return !dataAnnotation.metadata.isFavorite
-        }
-    }
-    
-    /// Filter annotations by visit status based on user settings
-    private func filterByVisitStatus(_ annotations: [MLNAnnotation]) -> [MLNAnnotation] {
-        // If all visit statuses are shown, don't filter
-        if UserSettings.showVisitedOnMap && UserSettings.showWantToVisitOnMap && UserSettings.showUnvisitedOnMap {
-            return annotations
-        }
-        
-        // Filter based on visit status settings
-        return annotations.filter { annotation in
-            guard let dataAnnotation = annotation as? DataObjectAnnotation else {
-                return true // Always show non-data annotations
-            }
-            
-            let visitStatus = BRCVisitStatus(rawValue: dataAnnotation.metadata.visitStatus) ?? .unvisited
-            
-            switch visitStatus {
-            case .visited:
-                return UserSettings.showVisitedOnMap
-            case .wantToVisit:
-                return UserSettings.showWantToVisitOnMap
-            case .unvisited:
-                return UserSettings.showUnvisitedOnMap
-            }
-        }
     }
     
     /// Reload data sources when settings change

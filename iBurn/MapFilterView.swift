@@ -20,8 +20,8 @@ struct MapEventTypeContainer: Identifiable {
 // MARK: - View Model
 
 class MapFilterViewModel: ObservableObject {
-    @Published var showArt: Bool
-    @Published var showCamps: Bool
+    @Published var showArtAlways: Bool
+    @Published var showCampsAlways: Bool
     @Published var showActiveEvents: Bool
     @Published var showFavorites: Bool
     @Published var showTodaysFavoritesOnly: Bool
@@ -29,6 +29,20 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
+    @Published var showArtOnlyZoomedIn: Bool {
+        didSet {
+            if !showArtOnlyZoomedIn {
+                showArtAlways = false
+            }
+        }
+    }
+    @Published var showCampsOnlyZoomedIn: Bool {
+        didSet {
+            if !showCampsOnlyZoomedIn {
+                showCampsAlways = false
+            }
+        }
+    }
     
     private let onFilterChanged: (() -> Void)?
     var onDismiss: (() -> Void)?
@@ -36,14 +50,16 @@ class MapFilterViewModel: ObservableObject {
     init(onFilterChanged: (() -> Void)? = nil) {
         self.onFilterChanged = onFilterChanged
         // Initialize from UserSettings
-        self.showArt = UserSettings.showArtOnMap
-        self.showCamps = UserSettings.showCampsOnMap
+        self.showArtAlways = UserSettings.showArtOnMap
+        self.showCampsAlways = UserSettings.showCampsOnMap
         self.showActiveEvents = UserSettings.showActiveEventsOnMap
         self.showFavorites = UserSettings.showFavoritesOnMap
         self.showTodaysFavoritesOnly = UserSettings.showTodaysFavoritesOnlyOnMap
         self.showVisited = UserSettings.showVisitedOnMap
         self.showWantToVisit = UserSettings.showWantToVisitOnMap
         self.showUnvisited = UserSettings.showUnvisitedOnMap
+        self.showArtOnlyZoomedIn = UserSettings.showArtOnlyZoomedIn
+        self.showCampsOnlyZoomedIn = UserSettings.showCampsOnlyZoomedIn
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
@@ -67,14 +83,16 @@ class MapFilterViewModel: ObservableObject {
     
     func saveSettings() {
         // Save to UserSettings
-        UserSettings.showArtOnMap = showArt
-        UserSettings.showCampsOnMap = showCamps
+        UserSettings.showArtOnMap = showArtAlways
+        UserSettings.showCampsOnMap = showCampsAlways
         UserSettings.showActiveEventsOnMap = showActiveEvents
         UserSettings.showFavoritesOnMap = showFavorites
         UserSettings.showTodaysFavoritesOnlyOnMap = showTodaysFavoritesOnly
         UserSettings.showVisitedOnMap = showVisited
         UserSettings.showWantToVisitOnMap = showWantToVisit
         UserSettings.showUnvisitedOnMap = showUnvisited
+        UserSettings.showArtOnlyZoomedIn = showArtOnlyZoomedIn
+        UserSettings.showCampsOnlyZoomedIn = showCampsOnlyZoomedIn
         
         // Save selected event types
         let selectedTypes = eventTypes
@@ -100,8 +118,17 @@ struct MapFilterView: View {
         Form {
             // Data Types Section
             Section(header: Text("Show on Map")) {
-                Toggle("Art", isOn: $viewModel.showArt)
-                Toggle("Camps", isOn: $viewModel.showCamps)
+                // Art with zoom option
+                Toggle("Art (When Zoomed In)", isOn: $viewModel.showArtOnlyZoomedIn)
+                Toggle("Art (Always)", isOn: $viewModel.showArtAlways)
+                .disabled(!viewModel.showArtOnlyZoomedIn)
+                
+                // Camps with zoom option
+                Toggle("Camps (When Zoomed In)", isOn: $viewModel.showCampsOnlyZoomedIn)
+                Toggle("Camps (Always)", isOn: $viewModel.showCampsAlways)
+                .disabled(!viewModel.showCampsOnlyZoomedIn)
+                
+                // Events
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
             }
             
