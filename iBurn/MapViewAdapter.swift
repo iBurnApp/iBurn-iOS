@@ -68,8 +68,9 @@ public class MapViewAdapter: NSObject {
     // MARK: - Public API
     
     @objc public func reloadAnnotations() {
+        // Only remove annotations that came from the data source
         removeAnnotations(self.annotations)
-        annotationsByID.removeAll() // Clear tracking
+        // Don't clear the entire dictionary - removeAnnotations already handles cleanup
         self.annotations = dataSource?.allAnnotations() ?? []
         addAnnotations(self.annotations)
     }
