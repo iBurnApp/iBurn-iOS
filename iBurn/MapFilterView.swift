@@ -20,8 +20,8 @@ struct MapEventTypeContainer: Identifiable {
 // MARK: - View Model
 
 class MapFilterViewModel: ObservableObject {
-    @Published var showArt: Bool
-    @Published var showCamps: Bool
+    @Published var showArtAlways: Bool
+    @Published var showCampsAlways: Bool
     @Published var showActiveEvents: Bool
     @Published var showFavorites: Bool
     @Published var showTodaysFavoritesOnly: Bool
@@ -29,8 +29,20 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
-    @Published var showArtOnlyZoomedIn: Bool
-    @Published var showCampsOnlyZoomedIn: Bool
+    @Published var showArtOnlyZoomedIn: Bool {
+        didSet {
+            if !showArtOnlyZoomedIn {
+                showArtAlways = false
+            }
+        }
+    }
+    @Published var showCampsOnlyZoomedIn: Bool {
+        didSet {
+            if !showCampsOnlyZoomedIn {
+                showCampsAlways = false
+            }
+        }
+    }
     
     private let onFilterChanged: (() -> Void)?
     var onDismiss: (() -> Void)?
@@ -38,8 +50,8 @@ class MapFilterViewModel: ObservableObject {
     init(onFilterChanged: (() -> Void)? = nil) {
         self.onFilterChanged = onFilterChanged
         // Initialize from UserSettings
-        self.showArt = UserSettings.showArtOnMap
-        self.showCamps = UserSettings.showCampsOnMap
+        self.showArtAlways = UserSettings.showArtOnMap
+        self.showCampsAlways = UserSettings.showCampsOnMap
         self.showActiveEvents = UserSettings.showActiveEventsOnMap
         self.showFavorites = UserSettings.showFavoritesOnMap
         self.showTodaysFavoritesOnly = UserSettings.showTodaysFavoritesOnlyOnMap
@@ -71,8 +83,8 @@ class MapFilterViewModel: ObservableObject {
     
     func saveSettings() {
         // Save to UserSettings
-        UserSettings.showArtOnMap = showArt
-        UserSettings.showCampsOnMap = showCamps
+        UserSettings.showArtOnMap = showArtAlways
+        UserSettings.showCampsOnMap = showCampsAlways
         UserSettings.showActiveEventsOnMap = showActiveEvents
         UserSettings.showFavoritesOnMap = showFavorites
         UserSettings.showTodaysFavoritesOnlyOnMap = showTodaysFavoritesOnly
@@ -107,34 +119,14 @@ struct MapFilterView: View {
             // Data Types Section
             Section(header: Text("Show on Map")) {
                 // Art with zoom option
-                Toggle("Art (Only Zoomed In)", isOn: $viewModel.showArt)
-                    .onChange(of: viewModel.showArt) { newValue in
-                        if !newValue {
-                            viewModel.showArtOnlyZoomedIn = true // Reset to default
-                        }
-                    }
-                if viewModel.showArt {
-                    Toggle("Art (Always)", isOn: Binding(
-                        get: { !viewModel.showArtOnlyZoomedIn },
-                        set: { viewModel.showArtOnlyZoomedIn = !$0 }
-                    ))
-                    .padding(.leading, 20)
-                }
+                Toggle("Art (When Zoomed In)", isOn: $viewModel.showArtOnlyZoomedIn)
+                Toggle("Art (Always)", isOn: $viewModel.showArtAlways)
+                .disabled(!viewModel.showArtOnlyZoomedIn)
                 
                 // Camps with zoom option
-                Toggle("Camps (Only Zoomed In)", isOn: $viewModel.showCamps)
-                    .onChange(of: viewModel.showCamps) { newValue in
-                        if !newValue {
-                            viewModel.showCampsOnlyZoomedIn = true // Reset to default
-                        }
-                    }
-                if viewModel.showCamps {
-                    Toggle("Camps (Always)", isOn: Binding(
-                        get: { !viewModel.showCampsOnlyZoomedIn },
-                        set: { viewModel.showCampsOnlyZoomedIn = !$0 }
-                    ))
-                    .padding(.leading, 20)
-                }
+                Toggle("Camps (When Zoomed In)", isOn: $viewModel.showCampsOnlyZoomedIn)
+                Toggle("Camps (Always)", isOn: $viewModel.showCampsAlways)
+                .disabled(!viewModel.showCampsOnlyZoomedIn)
                 
                 // Events
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
