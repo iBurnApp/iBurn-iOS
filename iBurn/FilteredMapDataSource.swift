@@ -81,102 +81,95 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
     }
     
     public func allAnnotations() -> [MLNAnnotation] {
-        var allAnnotations: [MLNAnnotation] = []
+        // Dictionary handles all de-duplication
+        var annotationsByID: [String: MLNAnnotation] = [:]
         
-        // Always include user pins
-        allAnnotations.append(contentsOf: userDataSource.allAnnotations())
+        // Helper to add annotations with type-prefixed keys
+        func addToDict(_ annotations: [MLNAnnotation]) {
+            for annotation in annotations {
+                let key: String
+                
+                if let dataAnnotation = annotation as? DataObjectAnnotation {
+                    // Use the class name of the underlying object
+                    let className = String(describing: type(of: dataAnnotation.object))
+                    key = "\(className):\(dataAnnotation.object.uniqueID)"
+                } else if let mapPoint = annotation as? BRCMapPoint {
+                    // Use the class name (BRCMapPoint or BRCUserMapPoint)
+                    let className = String(describing: type(of: mapPoint))
+                    key = "\(className):\(mapPoint.yapKey)"
+                } else {
+                    // Fallback for any other annotation types
+                    key = "Unknown:\(UUID().uuidString)"
+                }
+                
+                annotationsByID[key] = annotation
+            }
+        }
+        
+        // User pins (always shown)
+        addToDict(userDataSource.allAnnotations())
         
         // Get selected event types for filtering
         let selectedEventTypes = UserSettings.selectedEventTypesForMap
         
-        // Add favorites if enabled
+        // Favorites (if enabled)
         if UserSettings.showFavoritesOnMap {
-            let favoriteAnnotations = favoritesDataSource.allAnnotations()
+            var favoriteAnnotations = favoritesDataSource.allAnnotations()
             
-            let filteredFavorites = favoriteAnnotations.filter { annotation in
-                guard let dataAnnotation = annotation as? DataObjectAnnotation else {
-                    return true
-                }
-                
-                // Filter events by today's setting only (not by type for favorites)
-                if let event = dataAnnotation.object as? BRCEventObject {
-                    // Check if we're filtering to today only
-                    if UserSettings.showTodaysFavoritesOnlyOnMap {
-                        let calendar = Calendar.current
-                        let today = Date.present
-                        let eventDate = event.startDate
-                        return calendar.isDate(eventDate, inSameDayAs: today)
+            // Only filter for "today's favorites" if that setting is on
+            if UserSettings.showTodaysFavoritesOnlyOnMap {
+                favoriteAnnotations = favoriteAnnotations.filter { annotation in
+                    guard let dataAnnotation = annotation as? DataObjectAnnotation,
+                          let event = dataAnnotation.object as? BRCEventObject else {
+                        return true // Non-events always pass
                     }
+                    let calendar = Calendar.current
+                    let today = Date.present
+                    let eventDate = event.startDate
+                    return calendar.isDate(eventDate, inSameDayAs: today)
                 }
-                
-                // Not an event or passes all filters
-                return true
             }
             
             // Also filter by visit status
-            let visitFiltered = filterByVisitStatus(filteredFavorites)
-            allAnnotations.append(contentsOf: visitFiltered)
+            let visitFiltered = filterByVisitStatus(favoriteAnnotations)
+            addToDict(visitFiltered)
         }
         
-        // Add non-favorited art if enabled
+        // Art (if enabled)
         if UserSettings.showArtOnMap, let artDataSource = artDataSource {
             let artAnnotations = artDataSource.allAnnotations()
-            // Filter out already included favorites
-            let nonFavoriteArt = filterOutFavorites(artAnnotations)
             // Filter by visit status
-            let filteredArt = filterByVisitStatus(nonFavoriteArt)
-            allAnnotations.append(contentsOf: filteredArt)
+            let filteredArt = filterByVisitStatus(artAnnotations)
+            addToDict(filteredArt)
         }
         
-        // Add non-favorited camps if enabled
+        // Camps (if enabled)
         if UserSettings.showCampsOnMap, let campsDataSource = campsDataSource {
             let campAnnotations = campsDataSource.allAnnotations()
-            // Filter out already included favorites
-            let nonFavoriteCamps = filterOutFavorites(campAnnotations)
             // Filter by visit status
-            let filteredCamps = filterByVisitStatus(nonFavoriteCamps)
-            allAnnotations.append(contentsOf: filteredCamps)
+            let filteredCamps = filterByVisitStatus(campAnnotations)
+            addToDict(filteredCamps)
         }
         
-        // Add active events if enabled
+        // Events (if enabled)
         if UserSettings.showActiveEventsOnMap, let eventsDataSource = eventsDataSource {
             let eventAnnotations = eventsDataSource.allAnnotations()
-            // Filter out already included favorites and filter by event type
+            
+            // Filter by event type
             let filteredEvents = eventAnnotations.filter { annotation in
                 guard let dataAnnotation = annotation as? DataObjectAnnotation,
                       let event = dataAnnotation.object as? BRCEventObject else {
                     return true
                 }
-                
-                // Filter by event type
-                if !selectedEventTypes.contains(event.eventType) {
-                    return false
-                }
-                
-                // Filter out favorites
-                return !dataAnnotation.metadata.isFavorite
+                return selectedEventTypes.contains(event.eventType)
             }
+            
             // Filter by visit status
             let visitFiltered = filterByVisitStatus(filteredEvents)
-            allAnnotations.append(contentsOf: visitFiltered)
+            addToDict(visitFiltered)
         }
         
-        return allAnnotations
-    }
-    
-    private func filterOutFavorites(_ annotations: [MLNAnnotation]) -> [MLNAnnotation] {
-        // If favorites are not shown, return all annotations
-        guard UserSettings.showFavoritesOnMap else {
-            return annotations
-        }
-        
-        // Filter out annotations that are already shown as favorites
-        return annotations.filter { annotation in
-            guard let dataAnnotation = annotation as? DataObjectAnnotation else {
-                return true
-            }
-            return !dataAnnotation.metadata.isFavorite
-        }
+        return Array(annotationsByID.values)
     }
     
     /// Filter annotations by visit status based on user settings
