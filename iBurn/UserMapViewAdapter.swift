@@ -37,6 +37,12 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     // MARK: - MLNMapViewDelegate Overrides
     
+    override public func reloadAnnotations() {
+        // Clear editing annotation - removes from map and nils reference
+        clearEditingAnnotation()
+        super.reloadAnnotations()
+    }
+    
     override public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
         let annotationView = super.mapView(mapView, viewFor: annotation)
         guard let imageAnnotationView = annotationView as? ImageAnnotationView,
