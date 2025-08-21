@@ -117,11 +117,12 @@ public class MapViewAdapter: NSObject {
                 overlapping.sort { $0.object.uniqueID < $1.object.uniqueID }
                 overlappingAnnotations[.init(originalCoordinate)] = overlapping
                 
-                // Apply offset to this new annotation based on its sorted position
-                if overlapping.count > 1,
-                   let index = overlapping.firstIndex(where: { $0.object.uniqueID == data.object.uniqueID }) {
-                    let percentage = Double(index) / Double(overlapping.count) + 0.18
-                    data.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
+                // Re-offset ALL annotations in this group if there's overlap
+                if overlapping.count > 1 {
+                    for (index, overlappingAnnotation) in overlapping.enumerated() {
+                        let percentage = Double(index) / Double(overlapping.count) + 0.18
+                        overlappingAnnotation.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
+                    }
                 }
             }
             
