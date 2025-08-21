@@ -33,6 +33,9 @@ public final class UserSettings: NSObject {
         static let showFavoritesOnMap = "kBRCShowFavoritesOnMapKey"
         static let showTodaysFavoritesOnlyOnMap = "kBRCShowTodaysFavoritesOnlyOnMapKey"
         static let selectedEventTypesForMap = "kBRCSelectedEventTypesForMapKey"
+        // Zoom-based visibility keys
+        static let showArtOnlyZoomedIn = "kBRCShowArtOnlyZoomedInKey"
+        static let showCampsOnlyZoomedIn = "kBRCShowCampsOnlyZoomedInKey"
         // Visit status keys
         static let showVisitedOnMap = "kBRCShowVisitedOnMapKey"
         static let showWantToVisitOnMap = "kBRCShowWantToVisitOnMapKey"
@@ -220,6 +223,31 @@ public final class UserSettings: NSObject {
                 return false
             }
             return UserDefaults.standard.bool(forKey: Keys.showCampsOnMap)
+        }
+    }
+    
+    // Default to showing only when zoomed in
+    static var showArtOnlyZoomedIn: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: Keys.showArtOnlyZoomedIn) == nil {
+                return true // Default value
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showArtOnlyZoomedIn)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showArtOnlyZoomedIn)
+        }
+    }
+    
+    static var showCampsOnlyZoomedIn: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: Keys.showCampsOnlyZoomedIn) == nil {
+                return true // Default value
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showCampsOnlyZoomedIn)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showCampsOnlyZoomedIn)
         }
     }
     

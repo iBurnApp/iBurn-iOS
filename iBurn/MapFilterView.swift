@@ -29,6 +29,8 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
+    @Published var showArtOnlyZoomedIn: Bool
+    @Published var showCampsOnlyZoomedIn: Bool
     
     private let onFilterChanged: (() -> Void)?
     var onDismiss: (() -> Void)?
@@ -44,6 +46,8 @@ class MapFilterViewModel: ObservableObject {
         self.showVisited = UserSettings.showVisitedOnMap
         self.showWantToVisit = UserSettings.showWantToVisitOnMap
         self.showUnvisited = UserSettings.showUnvisitedOnMap
+        self.showArtOnlyZoomedIn = UserSettings.showArtOnlyZoomedIn
+        self.showCampsOnlyZoomedIn = UserSettings.showCampsOnlyZoomedIn
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
@@ -75,6 +79,8 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showVisitedOnMap = showVisited
         UserSettings.showWantToVisitOnMap = showWantToVisit
         UserSettings.showUnvisitedOnMap = showUnvisited
+        UserSettings.showArtOnlyZoomedIn = showArtOnlyZoomedIn
+        UserSettings.showCampsOnlyZoomedIn = showCampsOnlyZoomedIn
         
         // Save selected event types
         let selectedTypes = eventTypes
@@ -100,8 +106,37 @@ struct MapFilterView: View {
         Form {
             // Data Types Section
             Section(header: Text("Show on Map")) {
-                Toggle("Art", isOn: $viewModel.showArt)
-                Toggle("Camps", isOn: $viewModel.showCamps)
+                // Art with zoom option
+                Toggle("Art (Only Zoomed In)", isOn: $viewModel.showArt)
+                    .onChange(of: viewModel.showArt) { newValue in
+                        if !newValue {
+                            viewModel.showArtOnlyZoomedIn = true // Reset to default
+                        }
+                    }
+                if viewModel.showArt {
+                    Toggle("Art (Always)", isOn: Binding(
+                        get: { !viewModel.showArtOnlyZoomedIn },
+                        set: { viewModel.showArtOnlyZoomedIn = !$0 }
+                    ))
+                    .padding(.leading, 20)
+                }
+                
+                // Camps with zoom option
+                Toggle("Camps (Only Zoomed In)", isOn: $viewModel.showCamps)
+                    .onChange(of: viewModel.showCamps) { newValue in
+                        if !newValue {
+                            viewModel.showCampsOnlyZoomedIn = true // Reset to default
+                        }
+                    }
+                if viewModel.showCamps {
+                    Toggle("Camps (Always)", isOn: Binding(
+                        get: { !viewModel.showCampsOnlyZoomedIn },
+                        set: { viewModel.showCampsOnlyZoomedIn = !$0 }
+                    ))
+                    .padding(.leading, 20)
+                }
+                
+                // Events
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
             }
             

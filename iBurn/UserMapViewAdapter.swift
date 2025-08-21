@@ -161,13 +161,17 @@ public class UserMapViewAdapter: MapViewAdapter {
                     if let event = $0 as? BRCEventObject {
                         return event.shouldShowOnMap()
                     } else if let _ = $0 as? BRCCampObject {
-                        // nearby camps just clutter the map until we get more precise location data
-                        // from the org
-                        if zoomLevel >= 17.0 {
-                            return true
-                        } else {
-                            return false
+                        // Show camps at zoom 17+ if zoomed-only mode
+                        if UserSettings.showCampsOnlyZoomedIn {
+                            return zoomLevel >= 17.0
                         }
+                        return false
+                    } else if let _ = $0 as? BRCArtObject {
+                        // Show art at zoom 16+ if zoomed-only mode
+                        if UserSettings.showArtOnlyZoomedIn {
+                            return zoomLevel >= 16.0
+                        }
+                        return false
                     } else {
                         return true
                     }
