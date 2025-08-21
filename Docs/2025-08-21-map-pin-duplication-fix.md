@@ -19,21 +19,39 @@ Camp and art pins were being duplicated on the map at elevated zoom levels when 
 
 ## Solution Overview
 
-Implemented dictionary-based de-duplication in `FilteredMapDataSource` using type-prefixed keys to ensure exactly one annotation per unique object.
+Implemented universal dictionary-based de-duplication in `MapViewAdapter` using type-prefixed keys to ensure exactly one annotation per unique object, regardless of data source.
 
 ## Technical Implementation
 
 ### Files Modified
 
+#### MapViewAdapter.swift
+- **Added**: Universal de-duplication at the map presentation layer
+- **Key changes**:
+  - Added `annotationsByID` dictionary to track all annotations on map
+  - Added `keyForAnnotation()` helper for consistent key generation
+  - Modified `addAnnotations()` to check for and prevent duplicates
+  - Modified `removeAnnotations()` to clean up tracking
+  - Updated `reloadAnnotations()` to clear tracking dictionary
+
 #### FilteredMapDataSource.swift
-- **Before**: Used array appending with partial de-duplication via `filterOutFavorites()`
-- **After**: Dictionary-based collection with automatic de-duplication
+- **Reverted**: Removed dictionary-based de-duplication (now handled by MapViewAdapter)
+- **Simplified**: Back to simple array appending since de-duplication happens upstream
 
-### Key Changes
+### Key Implementation Details
 
-1. **Dictionary Collection**:
+1. **Central Key Generation**:
    ```swift
-   var annotationsByID: [String: MLNAnnotation] = [:]
+   private func keyForAnnotation(_ annotation: MLNAnnotation) -> String? {
+       if let data = annotation as? DataObjectAnnotation {
+           let className = String(describing: type(of: data.object))
+           return "\(className):\(data.object.uniqueID)"
+       } else if let mapPoint = annotation as? BRCMapPoint {
+           let className = String(describing: type(of: mapPoint))
+           return "\(className):\(mapPoint.yapKey)"
+       }
+       return nil // Non-trackable annotations
+   }
    ```
 
 2. **Type-Prefixed Keys**:
@@ -43,30 +61,17 @@ Implemented dictionary-based de-duplication in `FilteredMapDataSource` using typ
      - `"BRCCampObject:camp-456"`
      - `"BRCUserMapPoint:2024-08-21-12:34:56"`
 
-3. **Simplified Logic**:
-   - Removed `filterOutFavorites()` method (no longer needed)
-   - Removed `filterByVisitStatus()` method (out of scope)
-   - Dictionary automatically handles all de-duplication
+3. **De-duplication in addAnnotations()**:
+   - Check if key exists in `annotationsByID` dictionary
+   - Only add to map if not already present
+   - Non-trackable annotations always added
 
-### Code Structure
+### Architecture Benefits
 
-```swift
-func allAnnotations() -> [MLNAnnotation] {
-    var annotationsByID: [String: MLNAnnotation] = [:]
-    
-    func addToDict(_ annotations: [MLNAnnotation]) {
-        for annotation in annotations {
-            // Generate type-prefixed key
-            // Add to dictionary (overwrites duplicates)
-        }
-    }
-    
-    // Process each data source
-    // Dictionary ensures no duplicates
-    
-    return Array(annotationsByID.values)
-}
-```
+- **Single Source of Truth**: MapViewAdapter owns what's on the map
+- **Universal De-duplication**: Works for ALL data sources (filters, zoom-based, future sources)
+- **No Duplicate Logic**: De-duplication logic in one place only
+- **Clean Separation**: Data sources focus on filtering, MapViewAdapter handles presentation
 
 ## Benefits
 

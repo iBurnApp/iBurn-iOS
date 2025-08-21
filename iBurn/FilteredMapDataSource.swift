@@ -81,80 +81,62 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
     }
     
     public func allAnnotations() -> [MLNAnnotation] {
-        // Dictionary handles all de-duplication
-        var annotationsByID: [String: MLNAnnotation] = [:]
+        var allAnnotations: [MLNAnnotation] = []
         
-        // Helper to add annotations with type-prefixed keys
-        func addToDict(_ annotations: [MLNAnnotation]) {
-            for annotation in annotations {
-                let key: String
-                
-                if let dataAnnotation = annotation as? DataObjectAnnotation {
-                    // Use the class name of the underlying object
-                    let className = String(describing: type(of: dataAnnotation.object))
-                    key = "\(className):\(dataAnnotation.object.uniqueID)"
-                } else if let mapPoint = annotation as? BRCMapPoint {
-                    // Use the class name (BRCMapPoint or BRCUserMapPoint)
-                    let className = String(describing: type(of: mapPoint))
-                    key = "\(className):\(mapPoint.yapKey)"
-                } else {
-                    // Fallback for any other annotation types
-                    key = "Unknown:\(UUID().uuidString)"
-                }
-                
-                annotationsByID[key] = annotation
-            }
-        }
-        
-        // User pins (always shown)
-        addToDict(userDataSource.allAnnotations())
+        // Always include user pins
+        allAnnotations.append(contentsOf: userDataSource.allAnnotations())
         
         // Get selected event types for filtering
         let selectedEventTypes = UserSettings.selectedEventTypesForMap
         
-        // Favorites (if enabled)
+        // Add favorites if enabled
         if UserSettings.showFavoritesOnMap {
-            var favoriteAnnotations = favoritesDataSource.allAnnotations()
+            let favoriteAnnotations = favoritesDataSource.allAnnotations()
             
-            // Only filter for "today's favorites" if that setting is on
-            if UserSettings.showTodaysFavoritesOnlyOnMap {
-                favoriteAnnotations = favoriteAnnotations.filter { annotation in
-                    guard let dataAnnotation = annotation as? DataObjectAnnotation,
-                          let event = dataAnnotation.object as? BRCEventObject else {
-                        return true // Non-events always pass
-                    }
-                    let calendar = Calendar.current
-                    let today = Date.present
-                    let eventDate = event.startDate
-                    return calendar.isDate(eventDate, inSameDayAs: today)
+            let filteredFavorites = favoriteAnnotations.filter { annotation in
+                guard let dataAnnotation = annotation as? DataObjectAnnotation else {
+                    return true
                 }
+                
+                // Filter events by today's setting only (not by type for favorites)
+                if let event = dataAnnotation.object as? BRCEventObject {
+                    // Check if we're filtering to today only
+                    if UserSettings.showTodaysFavoritesOnlyOnMap {
+                        let calendar = Calendar.current
+                        let today = Date.present
+                        let eventDate = event.startDate
+                        return calendar.isDate(eventDate, inSameDayAs: today)
+                    }
+                }
+                
+                // Not an event or passes all filters
+                return true
             }
             
             // Also filter by visit status
-            let visitFiltered = filterByVisitStatus(favoriteAnnotations)
-            addToDict(visitFiltered)
+            let visitFiltered = filterByVisitStatus(filteredFavorites)
+            allAnnotations.append(contentsOf: visitFiltered)
         }
         
-        // Art (if enabled)
+        // Add art if enabled (MapViewAdapter will handle de-duplication)
         if UserSettings.showArtOnMap, let artDataSource = artDataSource {
             let artAnnotations = artDataSource.allAnnotations()
             // Filter by visit status
             let filteredArt = filterByVisitStatus(artAnnotations)
-            addToDict(filteredArt)
+            allAnnotations.append(contentsOf: filteredArt)
         }
         
-        // Camps (if enabled)
+        // Add camps if enabled (MapViewAdapter will handle de-duplication)
         if UserSettings.showCampsOnMap, let campsDataSource = campsDataSource {
             let campAnnotations = campsDataSource.allAnnotations()
             // Filter by visit status
             let filteredCamps = filterByVisitStatus(campAnnotations)
-            addToDict(filteredCamps)
+            allAnnotations.append(contentsOf: filteredCamps)
         }
         
-        // Events (if enabled)
+        // Add active events if enabled
         if UserSettings.showActiveEventsOnMap, let eventsDataSource = eventsDataSource {
             let eventAnnotations = eventsDataSource.allAnnotations()
-            
             // Filter by event type
             let filteredEvents = eventAnnotations.filter { annotation in
                 guard let dataAnnotation = annotation as? DataObjectAnnotation,
@@ -163,13 +145,12 @@ public class FilteredMapDataSource: NSObject, AnnotationDataSource {
                 }
                 return selectedEventTypes.contains(event.eventType)
             }
-            
             // Filter by visit status
             let visitFiltered = filterByVisitStatus(filteredEvents)
-            addToDict(visitFiltered)
+            allAnnotations.append(contentsOf: visitFiltered)
         }
         
-        return Array(annotationsByID.values)
+        return allAnnotations
     }
     
     /// Filter annotations by visit status based on user settings

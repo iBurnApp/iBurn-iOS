@@ -40,6 +40,9 @@ public class MapViewAdapter: NSObject {
     /// for checking if annotations overlap
     private var overlappingAnnotations: [CLLocationCoordinate2DBox: [DataObjectAnnotation]] = [:]
     
+    /// Dictionary tracking all annotations currently on the map by type-prefixed ID
+    private var annotationsByID: [String: MLNAnnotation] = [:]
+    
     @objc public init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
         self.mapView = mapView
@@ -47,47 +50,76 @@ public class MapViewAdapter: NSObject {
         super.init()
         self.mapView.delegate = self
     }
+    
+    // MARK: - Helper Methods
+    
+    /// Generate unique key for an annotation
+    private func keyForAnnotation(_ annotation: MLNAnnotation) -> String? {
+        if let data = annotation as? DataObjectAnnotation {
+            let className = String(describing: type(of: data.object))
+            return "\(className):\(data.object.uniqueID)"
+        } else if let mapPoint = annotation as? BRCMapPoint {
+            let className = String(describing: type(of: mapPoint))
+            return "\(className):\(mapPoint.yapKey)"
+        }
+        return nil // Non-trackable annotations
+    }
 
     // MARK: - Public API
     
     @objc public func reloadAnnotations() {
         removeAnnotations(self.annotations)
+        annotationsByID.removeAll() // Clear tracking
         self.annotations = dataSource?.allAnnotations() ?? []
         addAnnotations(self.annotations)
     }
     
     @objc public func removeAnnotations(_ annotations: [MLNAnnotation]) {
-        annotations.forEach { (annotation) in
+        annotations.forEach { annotation in
+            // Remove from tracking dictionary
+            if let key = keyForAnnotation(annotation) {
+                annotationsByID.removeValue(forKey: key)
+            }
+            
+            // Clean up overlap tracking for DataObjectAnnotations
             if let data = annotation as? DataObjectAnnotation {
                 let originalCoordinate = data.originalCoordinate
                 var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-                overlapping = overlapping.filter({
-                    if data.object.uniqueID == $0.object.uniqueID {
-                        return false
-                    } else {
-                        return true
-                    }
-                })
+                overlapping = overlapping.filter { $0.object.uniqueID != data.object.uniqueID }
                 overlappingAnnotations[.init(originalCoordinate)] = overlapping
             }
         }
         mapView.removeAnnotations(annotations)
     }
     
-    /// Adds annotations in a way that avoid overlap
+    /// Adds annotations in a way that avoid overlap and de-duplicates
     @objc public func addAnnotations(_ annotations: [MLNAnnotation]) {
-        annotations.forEach { (annotation) in
-            if let data = annotation as? DataObjectAnnotation {
-                let originalCoordinate = data.originalCoordinate
-                var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-                overlapping.append(data)
-                overlappingAnnotations[.init(originalCoordinate)] = overlapping
+        var uniqueAnnotations: [MLNAnnotation] = []
+        
+        annotations.forEach { annotation in
+            if let key = keyForAnnotation(annotation) {
+                // Check if already on map
+                if annotationsByID[key] == nil {
+                    annotationsByID[key] = annotation
+                    uniqueAnnotations.append(annotation)
+                    
+                    // Handle overlap offset for DataObjectAnnotation
+                    if let data = annotation as? DataObjectAnnotation {
+                        let originalCoordinate = data.originalCoordinate
+                        var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
+                        overlapping.append(data)
+                        overlappingAnnotations[.init(originalCoordinate)] = overlapping
+                    }
+                }
+            } else {
+                // Non-trackable annotations always added
+                uniqueAnnotations.append(annotation)
             }
         }
-        annotations.forEach {
-            guard let data = $0 as? DataObjectAnnotation else {
-                return
-            }
+        
+        // Apply overlap offsets
+        uniqueAnnotations.forEach {
+            guard let data = $0 as? DataObjectAnnotation else { return }
             let originalCoordinate = data.originalCoordinate
             let overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
             if overlapping.count > 1 {
@@ -97,7 +129,8 @@ public class MapViewAdapter: NSObject {
                 }
             }
         }
-        mapView.addAnnotations(annotations)
+        
+        mapView.addAnnotations(uniqueAnnotations)
     }
 }
 
