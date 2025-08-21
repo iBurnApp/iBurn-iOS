@@ -61,9 +61,10 @@ Implemented universal dictionary-based de-duplication in `MapViewAdapter` using 
      - `"BRCCampObject:camp-456"`
      - `"BRCUserMapPoint:2024-08-21-12:34:56"`
 
-3. **De-duplication in addAnnotations()**:
-   - Check if key exists in `annotationsByID` dictionary
-   - Only add to map if not already present
+3. **Single-pass implementation in addAnnotations()**:
+   - Filter annotations to find new ones
+   - Track in dictionary while filtering
+   - Apply consistent offsets immediately using sorted ordering
    - Non-trackable annotations always added
 
 ### Architecture Benefits

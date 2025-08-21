@@ -94,43 +94,41 @@ public class MapViewAdapter: NSObject {
     
     /// Adds annotations in a way that avoid overlap and de-duplicates
     @objc public func addAnnotations(_ annotations: [MLNAnnotation]) {
-        var uniqueAnnotations: [MLNAnnotation] = []
-        
-        annotations.forEach { annotation in
-            if let key = keyForAnnotation(annotation) {
-                // Check if already on map
-                if annotationsByID[key] == nil {
-                    annotationsByID[key] = annotation
-                    uniqueAnnotations.append(annotation)
-                    
-                    // Handle overlap offset for DataObjectAnnotation
-                    if let data = annotation as? DataObjectAnnotation {
-                        let originalCoordinate = data.originalCoordinate
-                        var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-                        overlapping.append(data)
-                        overlappingAnnotations[.init(originalCoordinate)] = overlapping
-                    }
-                }
-            } else {
-                // Non-trackable annotations always added
-                uniqueAnnotations.append(annotation)
+        // Single pass: filter, track, and offset
+        let newAnnotations = annotations.filter { annotation in
+            guard let key = keyForAnnotation(annotation) else {
+                return true // Non-trackable always added
             }
-        }
-        
-        // Apply overlap offsets
-        uniqueAnnotations.forEach {
-            guard let data = $0 as? DataObjectAnnotation else { return }
-            let originalCoordinate = data.originalCoordinate
-            let overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-            if overlapping.count > 1 {
-                for (i, annotation) in overlapping.enumerated() {
-                    let percentage = Double(i) / Double(overlapping.count) + 0.18
-                    annotation.coordinate = data.originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
+            
+            if annotationsByID[key] != nil {
+                return false // Already on map
+            }
+            
+            // Track it
+            annotationsByID[key] = annotation
+            
+            // Handle overlap offset for DataObjectAnnotation
+            if let data = annotation as? DataObjectAnnotation {
+                let originalCoordinate = data.originalCoordinate
+                var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
+                overlapping.append(data)
+                
+                // Sort by uniqueID for consistent ordering
+                overlapping.sort { $0.object.uniqueID < $1.object.uniqueID }
+                overlappingAnnotations[.init(originalCoordinate)] = overlapping
+                
+                // Apply offset to this new annotation based on its sorted position
+                if overlapping.count > 1,
+                   let index = overlapping.firstIndex(where: { $0.object.uniqueID == data.object.uniqueID }) {
+                    let percentage = Double(index) / Double(overlapping.count) + 0.18
+                    data.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
                 }
             }
+            
+            return true
         }
         
-        mapView.addAnnotations(uniqueAnnotations)
+        mapView.addAnnotations(newAnnotations)
     }
 }
 
