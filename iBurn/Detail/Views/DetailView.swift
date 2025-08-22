@@ -413,13 +413,19 @@ struct DetailDistanceCell: View {
     private var formattedDistance: String {
         let meters = Measurement(value: distance, unit: UnitLength.meters)
         let feet = meters.converted(to: .feet)
+        let miles = meters.converted(to: .miles)
         
         let formatter = MeasurementFormatter()
         formatter.unitStyle = .short
         formatter.unitOptions = .providedUnit
-        formatter.numberFormatter.maximumFractionDigits = 0
         
-        return formatter.string(from: feet)
+        if feet.value < 1000 {
+            formatter.numberFormatter.maximumFractionDigits = 0
+            return formatter.string(from: feet)
+        } else {
+            formatter.numberFormatter.maximumFractionDigits = 1
+            return formatter.string(from: miles)
+        }
     }
 }
 
