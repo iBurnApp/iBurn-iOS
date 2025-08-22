@@ -189,6 +189,9 @@ struct DetailCellView: View {
         case .distance(let distance):
             DetailDistanceCell(distance: distance)
             
+        case .travelTime(let distance):
+            DetailTravelTimeCell(distance: distance)
+            
         case .userNotes(let notes):
             DetailUserNotesCell(notes: notes)
             
@@ -247,7 +250,7 @@ struct DetailCellView: View {
             return true
         case .playaAddress(_, let tappable):
             return tappable
-        case .text, .distance, .schedule, .date, .landmark, .eventType:
+        case .text, .distance, .travelTime, .schedule, .date, .landmark, .eventType:
             return false
         case .image:
             return true
@@ -401,9 +404,36 @@ struct DetailDistanceCell: View {
         HStack {
             Image(systemName: "ruler")
                 .foregroundColor(themeColors.detailColor)
-            Text("Distance: \(distance, specifier: "%.0f") meters")
+            Text("Distance: \(formattedDistance)")
                 .foregroundColor(themeColors.detailColor)
             Spacer()
+        }
+    }
+    
+    private var formattedDistance: String {
+        let meters = Measurement(value: distance, unit: UnitLength.meters)
+        let feet = meters.converted(to: .feet)
+        
+        let formatter = MeasurementFormatter()
+        formatter.unitStyle = .short
+        formatter.unitOptions = .providedUnit
+        formatter.numberFormatter.maximumFractionDigits = 0
+        
+        return formatter.string(from: feet)
+    }
+}
+
+struct DetailTravelTimeCell: View {
+    let distance: CLLocationDistance
+    @Environment(\.themeColors) var themeColors
+    
+    var body: some View {
+        if let attributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) {
+            HStack {
+                Text(AttributedString(attributedString))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+            }
         }
     }
 }

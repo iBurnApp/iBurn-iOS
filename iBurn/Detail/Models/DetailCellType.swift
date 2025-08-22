@@ -39,6 +39,7 @@ enum DetailCellType {
     case allHostEvents(count: Int, hostName: String)
     case playaAddress(String, tappable: Bool)
     case distance(CLLocationDistance)
+    case travelTime(CLLocationDistance)
     case audio(BRCArtObject, isPlaying: Bool)
     case userNotes(String)
     case date(Date, format: String)
