@@ -49,15 +49,29 @@
             return;
         }
         
-        // Check for invalid date ranges where end is before start and swap them
+        // Check if end is before start (negative duration)  
         if ([endDate timeIntervalSinceDate:startDate] < 0) {
-            NSTimeInterval hoursDiff = [endDate timeIntervalSinceDate:startDate] / 3600.0;
-            NSLog(@"WARNING: Event '%@' has negative duration (%.1fh). Swapping dates. Original: Start: %@, End: %@",
-                  self.title, hoursDiff, startDate, endDate);
-            // Swap the dates to fix the data entry error
-            NSDate *tempDate = startDate;
-            startDate = endDate;
-            endDate = tempDate;
+            NSCalendar *calendar = [NSCalendar currentCalendar];
+            
+            // Extract time components from end date
+            NSDateComponents *endTimeComponents = [calendar components:(NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:endDate];
+            
+            // Apply end time to start date
+            NSDateComponents *startDateComponents = [calendar components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay) fromDate:startDate];
+            startDateComponents.hour = endTimeComponents.hour;
+            startDateComponents.minute = endTimeComponents.minute;
+            startDateComponents.second = endTimeComponents.second;
+            
+            NSDate *correctedEndDate = [calendar dateFromComponents:startDateComponents];
+            
+            // If end time is still before start time (same day), it must cross midnight
+            if ([correctedEndDate timeIntervalSinceDate:startDate] <= 0) {
+                correctedEndDate = [calendar dateByAddingUnit:NSCalendarUnitDay value:1 toDate:correctedEndDate options:0];
+            }
+            
+            NSLog(@"Fixed event '%@': Start %@ -> End %@ (was %@)", 
+                  self.title, startDate, correctedEndDate, endDate);
+            endDate = correctedEndDate;
         }
         
         NSInteger daysBetweenDates = [NSDate brc_daysBetweenDate:startDate andDate:endDate];
