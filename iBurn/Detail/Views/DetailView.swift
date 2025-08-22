@@ -404,10 +404,22 @@ struct DetailDistanceCell: View {
         HStack {
             Image(systemName: "ruler")
                 .foregroundColor(themeColors.detailColor)
-            Text("Distance: \(distance * 3.28084, specifier: "%.0f") ft")
+            Text("Distance: \(formattedDistance)")
                 .foregroundColor(themeColors.detailColor)
             Spacer()
         }
+    }
+    
+    private var formattedDistance: String {
+        let meters = Measurement(value: distance, unit: UnitLength.meters)
+        let feet = meters.converted(to: .feet)
+        
+        let formatter = MeasurementFormatter()
+        formatter.unitStyle = .short
+        formatter.unitOptions = .providedUnit
+        formatter.numberFormatter.maximumFractionDigits = 0
+        
+        return formatter.string(from: feet)
     }
 }
 
