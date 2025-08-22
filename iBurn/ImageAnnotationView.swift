@@ -14,6 +14,7 @@ final class ImageAnnotationView: MLNAnnotationView {
     // MARK: Properties
     
     static let reuseIdentifier = "BRCAnnotationView"
+    var onDragEnded: ((MLNAnnotation) -> Void)?
     
     var image: UIImage? {
         didSet {
@@ -65,6 +66,9 @@ final class ImageAnnotationView: MLNAnnotationView {
             break
         case .ending, .canceling:
             endDragging()
+            if case .ending = dragState, let annotation = annotation {
+                onDragEnded?(annotation)
+            }
         case .none:
             break
         @unknown default:

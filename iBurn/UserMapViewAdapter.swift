@@ -37,6 +37,12 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     // MARK: - MLNMapViewDelegate Overrides
     
+    override public func reloadAnnotations() {
+        // Clear editing annotation - removes from map and nils reference
+        clearEditingAnnotation()
+        super.reloadAnnotations()
+    }
+    
     override public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
         let annotationView = super.mapView(mapView, viewFor: annotation)
         guard let imageAnnotationView = annotationView as? ImageAnnotationView,
@@ -45,6 +51,15 @@ public class UserMapViewAdapter: MapViewAdapter {
             imageAnnotationView.isDraggable = true
             imageAnnotationView.isUserInteractionEnabled = true
             imageAnnotationView.addLongPressGestureIfNeeded(target: self, action: #selector(handleCalloutLongPress(_:)), minimumPressDuration: 0.5)
+            imageAnnotationView.onDragEnded = { [weak self] annotation in
+                if let mapPoint = annotation as? BRCMapPoint {
+                    // Just save to database, don't remove or reload
+                    self?.writeConnection.readWrite({ (transaction) in
+                        mapPoint.save(with: transaction, metadata: nil)
+                    })
+                    DDLogInfo("Saved dragged annotation: \(mapPoint)")
+                }
+            }
         } else {
             imageAnnotationView.isDraggable = false
         }
@@ -197,32 +212,41 @@ public class UserMapViewAdapter: MapViewAdapter {
 private extension UserMapViewAdapter {
     
     func clearEditingAnnotation() {
-        if let existingMapPoint = self.editingAnnotation {
-            mapView.removeAnnotation(existingMapPoint)
-        }
-        editingAnnotation = nil
+        guard let existingMapPoint = self.editingAnnotation else { return }
+        editingAnnotation = nil  // Clear reference first
+        mapView.removeAnnotation(existingMapPoint)
     }
     
     func saveMapPoint(_ mapPoint: BRCMapPoint) {
-        writeConnection.asyncReadWrite({ (transaction) in
+        writeConnection.readWrite({ (transaction) in
             mapPoint.save(with: transaction, metadata: nil)
-        }) {
-            self.clearEditingAnnotation()
-            self.mapView.removeAnnotation(mapPoint)
-            DDLogInfo("Saved user annotation: \(mapPoint)")
-            self.reloadAnnotations()
+        })
+        
+        // For new/edited pins, just clear the editing reference
+        // Don't remove from map - it should stay visible
+        if mapPoint === editingAnnotation {
+            editingAnnotation = nil
+            // Don't remove the annotation - keep it on the map
         }
+        
+        DDLogInfo("Saved user annotation: \(mapPoint)")
+        // Don't reload - it will read from stale connection
     }
     
     func deleteMapPoint(_ mapPoint: BRCMapPoint) {
-        writeConnection.asyncReadWrite({ (transaction) in
+        writeConnection.readWrite({ (transaction) in
             mapPoint.remove(with: transaction)
-        }) {
-            self.clearEditingAnnotation()
-            self.mapView.removeAnnotation(mapPoint)
-            DDLogInfo("Deleted user annotation: \(mapPoint)")
-            self.reloadAnnotations()
+        })
+        
+        // Remove from map immediately
+        if mapPoint === editingAnnotation {
+            editingAnnotation = nil
         }
+        mapView.removeAnnotation(mapPoint)
+        
+        DDLogInfo("Deleted user annotation: \(mapPoint)")
+        // Don't reload - it will read from stale connection
+        // The annotation is already removed from the map
     }
 }
 
@@ -259,10 +283,7 @@ private extension UserMapViewAdapter {
             textField.returnKeyType = .done
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
-            guard let self else { return }
-            self.clearEditingAnnotation()
-        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in }
         
         let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self,
