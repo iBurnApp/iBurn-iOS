@@ -131,6 +131,16 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
                 return
             }
             let activityViewController = createShareController(for: coordinate)
+            
+            // iPad popover support
+            if let popover = activityViewController.popoverPresentationController {
+                if let viewController = presenter as? UIViewController {
+                    popover.sourceView = viewController.view
+                    // Position the popover at a reasonable location
+                    popover.sourceRect = CGRect(x: viewController.view.bounds.midX, y: 100, width: 0, height: 0)
+                }
+            }
+            
             presenter.present(activityViewController, animated: true, completion: nil)
             
             
