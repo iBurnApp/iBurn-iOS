@@ -510,7 +510,9 @@ class DetailViewModel: ObservableObject {
         var timeString: String
         
         if event.isAllDay {
-            timeString = "All Day"
+            let start = timeFormatter.string(from: startDate)
+            let end = timeFormatter.string(from: endDate)
+            timeString = "All Day (\(start) - \(end))"
         } else {
             let start = timeFormatter.string(from: startDate)
             let end = timeFormatter.string(from: endDate)
@@ -618,6 +620,7 @@ class DetailViewModel: ObservableObject {
         // Distance
         if let distance = locationService.distanceToObject(dataObject) {
             cells.append(.distance(distance))
+            cells.append(.travelTime(distance))
         }
         
         // User notes
