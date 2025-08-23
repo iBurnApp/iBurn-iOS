@@ -17,7 +17,7 @@ public class BaseMapViewController: UIViewController {
         return mapViewAdapter.mapView
     }
     var mapViewAdapter: MapViewAdapter
-    var mapLayerManager: MapLayerManager?
+    lazy var mapLayerManager = MapLayerManager(mapView: mapView)
     @objc public var isVisible = false
     
     // MARK: - Init
@@ -61,10 +61,7 @@ public class BaseMapViewController: UIViewController {
         // Set up style loaded callback for layer management
         mapViewAdapter.onStyleLoaded = { [weak self] style in
             guard let self = self else { return }
-            if self.mapLayerManager == nil {
-                self.mapLayerManager = MapLayerManager(mapView: self.mapView)
-            }
-            self.mapLayerManager?.updateAllLayers()
+            self.mapLayerManager.updateAllLayers()
         }
         
         mapViewAdapter.reloadAnnotations()
