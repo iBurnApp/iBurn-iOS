@@ -17,6 +17,7 @@ public class BaseMapViewController: UIViewController {
         return mapViewAdapter.mapView
     }
     var mapViewAdapter: MapViewAdapter
+    var mapLayerManager: MapLayerManager?
     @objc public var isVisible = false
     
     // MARK: - Init
@@ -54,6 +55,7 @@ public class BaseMapViewController: UIViewController {
         view.addSubview(mapView)
         view.tintColor = Appearance.currentColors.primaryColor
         mapView.autoPinEdgesToSuperviewEdges()
+        mapView.delegate = self
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
         mapViewAdapter.reloadAnnotations()
@@ -86,6 +88,19 @@ public class BaseMapViewController: UIViewController {
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         navigationItem.rightBarButtonItem?.tintColor = view.tintColor
+    }
+}
+
+// MARK: - MLNMapViewDelegate
+
+extension BaseMapViewController: MLNMapViewDelegate {
+    public func mapView(_ mapView: MLNMapView, didFinishLoading style: MLNStyle) {
+        // Initialize map layer manager if needed
+        if mapLayerManager == nil {
+            mapLayerManager = MapLayerManager(mapView: mapView)
+        }
+        // Update layer visibility based on current settings
+        mapLayerManager?.updateAllLayers()
     }
 }
 

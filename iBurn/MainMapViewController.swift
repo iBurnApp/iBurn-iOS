@@ -113,6 +113,8 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
                 userAdapter.dataSource = newDataSource
                 self.mapViewAdapter.reloadAnnotations()
             }
+            // Update map layers based on new filter settings
+            self.mapLayerManager?.updateAllLayers()
         }
         let nav = UINavigationController(rootViewController: filterVC)
         present(nav, animated: true)

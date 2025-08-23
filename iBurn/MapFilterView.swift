@@ -29,6 +29,8 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
+    @Published var showCampBoundaries: Bool
+    @Published var showBigCampNames: Bool
     @Published var showArtOnlyZoomedIn: Bool {
         didSet {
             if !showArtOnlyZoomedIn {
@@ -60,6 +62,8 @@ class MapFilterViewModel: ObservableObject {
         self.showUnvisited = UserSettings.showUnvisitedOnMap
         self.showArtOnlyZoomedIn = UserSettings.showArtOnlyZoomedIn
         self.showCampsOnlyZoomedIn = UserSettings.showCampsOnlyZoomedIn
+        self.showCampBoundaries = UserSettings.showCampBoundaries
+        self.showBigCampNames = UserSettings.showBigCampNames
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
@@ -93,6 +97,8 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showUnvisitedOnMap = showUnvisited
         UserSettings.showArtOnlyZoomedIn = showArtOnlyZoomedIn
         UserSettings.showCampsOnlyZoomedIn = showCampsOnlyZoomedIn
+        UserSettings.showCampBoundaries = showCampBoundaries
+        UserSettings.showBigCampNames = showBigCampNames
         
         // Save selected event types
         let selectedTypes = eventTypes
@@ -130,6 +136,12 @@ struct MapFilterView: View {
                 
                 // Events
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
+            }
+            
+            // Camp Display Section
+            Section(header: Text("Camp Display")) {
+                Toggle("Show Camp Boundaries", isOn: $viewModel.showCampBoundaries)
+                Toggle("Show Camp Names (Big)", isOn: $viewModel.showBigCampNames)
             }
             
             // Favorites Section
