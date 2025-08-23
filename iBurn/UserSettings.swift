@@ -43,6 +43,7 @@ public final class UserSettings: NSObject {
         static let visitStatusFilterForLists = "kBRCVisitStatusFilterForListsKey"
         // Camp layer keys
         static let showCampBoundaries = "kBRCShowCampBoundariesKey"
+        static let showCampBoundariesAlways = "kBRCShowCampBoundariesAlwaysKey"
         static let showBigCampNames = "kBRCShowBigCampNamesKey"
     }
     
@@ -322,6 +323,17 @@ public final class UserSettings: NSObject {
                 return true
             }
             return UserDefaults.standard.bool(forKey: Keys.showCampBoundaries)
+        }
+    }
+    
+    /// Show camp boundaries at all zoom levels (ignores minzoom)
+    @objc public static var showCampBoundariesAlways: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showCampBoundariesAlways)
+        }
+        get {
+            // Default to false - respect zoom restrictions by default
+            return UserDefaults.standard.bool(forKey: Keys.showCampBoundariesAlways)
         }
     }
     

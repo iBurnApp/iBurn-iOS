@@ -26,9 +26,20 @@ class MapLayerManager {
     func updateCampLayerVisibility() {
         guard let style = mapView?.style else { return }
         
-        // Camp Boundaries
+        // Camp Boundaries - handle visibility and minzoom
         if let boundariesLayer = style.layer(withIdentifier: "camp-boundaries") {
             boundariesLayer.isVisible = UserSettings.showCampBoundaries
+            
+            // Dynamic minzoom control
+            if UserSettings.showCampBoundaries {
+                if UserSettings.showCampBoundariesAlways {
+                    // Remove minzoom restriction to show at all zoom levels
+                    boundariesLayer.minimumZoomLevel = 0
+                } else {
+                    // Apply zoom 15+ restriction
+                    boundariesLayer.minimumZoomLevel = 15
+                }
+            }
         }
         
         // Big Camp Labels
