@@ -55,9 +55,18 @@ public class BaseMapViewController: UIViewController {
         view.addSubview(mapView)
         view.tintColor = Appearance.currentColors.primaryColor
         mapView.autoPinEdgesToSuperviewEdges()
-        mapView.delegate = self
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
+        
+        // Set up style loaded callback for layer management
+        mapViewAdapter.onStyleLoaded = { [weak self] style in
+            guard let self = self else { return }
+            if self.mapLayerManager == nil {
+                self.mapLayerManager = MapLayerManager(mapView: self.mapView)
+            }
+            self.mapLayerManager?.updateAllLayers()
+        }
+        
         mapViewAdapter.reloadAnnotations()
         NotificationCenter.default.addObserver(self, selector: #selector(powerStateDidChange(notification:)), name: .NSProcessInfoPowerStateDidChange, object: nil)
     }
@@ -88,19 +97,6 @@ public class BaseMapViewController: UIViewController {
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         navigationItem.rightBarButtonItem?.tintColor = view.tintColor
-    }
-}
-
-// MARK: - MLNMapViewDelegate
-
-extension BaseMapViewController: MLNMapViewDelegate {
-    public func mapView(_ mapView: MLNMapView, didFinishLoading style: MLNStyle) {
-        // Initialize map layer manager if needed
-        if mapLayerManager == nil {
-            mapLayerManager = MapLayerManager(mapView: mapView)
-        }
-        // Update layer visibility based on current settings
-        mapLayerManager?.updateAllLayers()
     }
 }
 
