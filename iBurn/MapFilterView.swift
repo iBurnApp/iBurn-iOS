@@ -29,7 +29,13 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
-    @Published var showCampBoundaries: Bool
+    @Published var showCampBoundaries: Bool {
+        didSet {
+            if !showCampBoundaries {
+                showCampBoundariesAlways = false
+            }
+        }
+    }
     @Published var showCampBoundariesAlways: Bool
     @Published var showBigCampNames: Bool
     @Published var showArtOnlyZoomedIn: Bool {
@@ -128,12 +134,12 @@ struct MapFilterView: View {
             // Data Types Section
             Section(header: Text("Show on Map")) {
                 // Art with zoom option
-                Toggle("Art (When Zoomed In)", isOn: $viewModel.showArtOnlyZoomedIn)
+                Toggle("Art (Zoomed)", isOn: $viewModel.showArtOnlyZoomedIn)
                 Toggle("Art (Always)", isOn: $viewModel.showArtAlways)
                 .disabled(!viewModel.showArtOnlyZoomedIn)
                 
                 // Camps with zoom option
-                Toggle("Camps (When Zoomed In)", isOn: $viewModel.showCampsOnlyZoomedIn)
+                Toggle("Camps (Zoomed)", isOn: $viewModel.showCampsOnlyZoomedIn)
                 Toggle("Camps (Always)", isOn: $viewModel.showCampsAlways)
                 .disabled(!viewModel.showCampsOnlyZoomedIn)
                 
@@ -143,25 +149,10 @@ struct MapFilterView: View {
             
             // Camp Display Section
             Section(header: Text("Camp Display")) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Toggle("Show Camp Boundaries", isOn: $viewModel.showCampBoundaries)
-                    if viewModel.showCampBoundaries {
-                        Toggle("Show Camp Boundaries (Always)", isOn: $viewModel.showCampBoundariesAlways)
-                            .padding(.leading, 20)
-                    }
-                    if !viewModel.showCampBoundariesAlways && viewModel.showCampBoundaries {
-                        Text("Visible at zoom 15+")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 20)
-                    }
-                }
-                VStack(alignment: .leading, spacing: 4) {
-                    Toggle("Show Camp Names (Big)", isOn: $viewModel.showBigCampNames)
-                    Text("Visible at zoom 17+")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Toggle("Show Camp Boundaries (Zoomed)", isOn: $viewModel.showCampBoundaries)
+                Toggle("Show Camp Boundaries (Always)", isOn: $viewModel.showCampBoundariesAlways)
+                    .disabled(!viewModel.showCampBoundaries)
+                Toggle("Show Camp Names (Zoomed)", isOn: $viewModel.showBigCampNames)
             }
             
             // Favorites Section
