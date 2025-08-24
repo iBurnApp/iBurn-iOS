@@ -17,6 +17,7 @@ public class BaseMapViewController: UIViewController {
         return mapViewAdapter.mapView
     }
     var mapViewAdapter: MapViewAdapter
+    lazy var mapLayerManager = MapLayerManager(mapView: mapView)
     @objc public var isVisible = false
     
     // MARK: - Init
@@ -56,6 +57,13 @@ public class BaseMapViewController: UIViewController {
         mapView.autoPinEdgesToSuperviewEdges()
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
+        
+        // Set up style loaded callback for layer management
+        mapViewAdapter.onStyleLoaded = { [weak self] style in
+            guard let self = self else { return }
+            self.mapLayerManager.updateAllLayers()
+        }
+        
         mapViewAdapter.reloadAnnotations()
         NotificationCenter.default.addObserver(self, selector: #selector(powerStateDidChange(notification:)), name: .NSProcessInfoPowerStateDidChange, object: nil)
     }

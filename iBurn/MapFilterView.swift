@@ -29,6 +29,15 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
+    @Published var showCampBoundaries: Bool {
+        didSet {
+            if !showCampBoundaries {
+                showCampBoundariesAlways = false
+            }
+        }
+    }
+    @Published var showCampBoundariesAlways: Bool
+    @Published var showBigCampNames: Bool
     @Published var showArtOnlyZoomedIn: Bool {
         didSet {
             if !showArtOnlyZoomedIn {
@@ -60,6 +69,9 @@ class MapFilterViewModel: ObservableObject {
         self.showUnvisited = UserSettings.showUnvisitedOnMap
         self.showArtOnlyZoomedIn = UserSettings.showArtOnlyZoomedIn
         self.showCampsOnlyZoomedIn = UserSettings.showCampsOnlyZoomedIn
+        self.showCampBoundaries = UserSettings.showCampBoundaries
+        self.showCampBoundariesAlways = UserSettings.showCampBoundariesAlways
+        self.showBigCampNames = UserSettings.showBigCampNames
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
@@ -93,6 +105,9 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showUnvisitedOnMap = showUnvisited
         UserSettings.showArtOnlyZoomedIn = showArtOnlyZoomedIn
         UserSettings.showCampsOnlyZoomedIn = showCampsOnlyZoomedIn
+        UserSettings.showCampBoundaries = showCampBoundaries
+        UserSettings.showCampBoundariesAlways = showCampBoundariesAlways
+        UserSettings.showBigCampNames = showBigCampNames
         
         // Save selected event types
         let selectedTypes = eventTypes
@@ -119,17 +134,25 @@ struct MapFilterView: View {
             // Data Types Section
             Section(header: Text("Show on Map")) {
                 // Art with zoom option
-                Toggle("Art (When Zoomed In)", isOn: $viewModel.showArtOnlyZoomedIn)
+                Toggle("Art (Zoomed)", isOn: $viewModel.showArtOnlyZoomedIn)
                 Toggle("Art (Always)", isOn: $viewModel.showArtAlways)
                 .disabled(!viewModel.showArtOnlyZoomedIn)
                 
                 // Camps with zoom option
-                Toggle("Camps (When Zoomed In)", isOn: $viewModel.showCampsOnlyZoomedIn)
+                Toggle("Camps (Zoomed)", isOn: $viewModel.showCampsOnlyZoomedIn)
                 Toggle("Camps (Always)", isOn: $viewModel.showCampsAlways)
                 .disabled(!viewModel.showCampsOnlyZoomedIn)
                 
                 // Events
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
+            }
+            
+            // Camp Display Section
+            Section(header: Text("Camp Display")) {
+                Toggle("Show Camp Boundaries (Zoomed)", isOn: $viewModel.showCampBoundaries)
+                Toggle("Show Camp Boundaries (Always)", isOn: $viewModel.showCampBoundariesAlways)
+                    .disabled(!viewModel.showCampBoundaries)
+                Toggle("Show Camp Names (Zoomed)", isOn: $viewModel.showBigCampNames)
             }
             
             // Favorites Section

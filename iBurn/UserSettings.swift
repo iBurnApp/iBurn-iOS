@@ -41,6 +41,10 @@ public final class UserSettings: NSObject {
         static let showWantToVisitOnMap = "kBRCShowWantToVisitOnMapKey"
         static let showUnvisitedOnMap = "kBRCShowUnvisitedOnMapKey"
         static let visitStatusFilterForLists = "kBRCVisitStatusFilterForListsKey"
+        // Camp layer keys
+        static let showCampBoundaries = "kBRCShowCampBoundariesKey"
+        static let showCampBoundariesAlways = "kBRCShowCampBoundariesAlwaysKey"
+        static let showBigCampNames = "kBRCShowBigCampNamesKey"
     }
     
     /// Selected favorites filter
@@ -305,6 +309,45 @@ public final class UserSettings: NSObject {
                 return BRCEventObject.allVisibleEventTypes.compactMap { BRCEventType(rawValue: $0.uintValue) }
             }
             return numbers.compactMap { BRCEventType(rawValue: $0.uintValue) }
+        }
+    }
+    
+    /// Show camp boundaries on map
+    @objc public static var showCampBoundaries: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showCampBoundaries)
+        }
+        get {
+            // Default to true
+            if UserDefaults.standard.object(forKey: Keys.showCampBoundaries) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showCampBoundaries)
+        }
+    }
+    
+    /// Show camp boundaries at all zoom levels (ignores minzoom)
+    @objc public static var showCampBoundariesAlways: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showCampBoundariesAlways)
+        }
+        get {
+            // Default to false - respect zoom restrictions by default
+            return UserDefaults.standard.bool(forKey: Keys.showCampBoundariesAlways)
+        }
+    }
+    
+    /// Show big camp names on map
+    @objc public static var showBigCampNames: Bool {
+        set {
+            UserDefaults.standard.set(newValue, forKey: Keys.showBigCampNames)
+        }
+        get {
+            // Default to true
+            if UserDefaults.standard.object(forKey: Keys.showBigCampNames) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: Keys.showBigCampNames)
         }
     }
     

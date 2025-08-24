@@ -66,6 +66,7 @@
 		D94699531F39699D00DE8DA6 /* ArtImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94699511F39699C00DE8DA6 /* ArtImageCell.swift */; };
 		D94D97D21B8FC11A008FC86E /* BRCDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9941570198726F400D245C7 /* BRCDataImporter.m */; };
 		D94EFA51199158D2009F12F4 /* CLLocationManager+iBurn.m in Sources */ = {isa = PBXBuildFile; fileRef = D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */; };
+		D95561E12E5A27E400A7ECE4 /* MapLayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95561E02E5A27E400A7ECE4 /* MapLayerManager.swift */; };
 		D95AB0EF1B7FF5FF00DFC2FD /* BRCUserMapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */; };
 		D95AB0F21B802CA000DFC2FD /* BRCBreadcrumbPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F11B802CA000DFC2FD /* BRCBreadcrumbPoint.m */; };
 		D95AB0F41B80662C00DFC2FD /* BRCDistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AB0F31B80662C00DFC2FD /* BRCDistanceView.swift */; };
@@ -393,6 +394,7 @@
 		D94E60B11F4384E3007B5142 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = bundle.js; path = "Submodules/iBurn-Data/data/2017/bundle.js"; sourceTree = SOURCE_ROOT; };
 		D94EFA4F199158D2009F12F4 /* CLLocationManager+iBurn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CLLocationManager+iBurn.h"; sourceTree = "<group>"; };
 		D94EFA50199158D2009F12F4 /* CLLocationManager+iBurn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CLLocationManager+iBurn.m"; sourceTree = "<group>"; };
+		D95561E02E5A27E400A7ECE4 /* MapLayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLayerManager.swift; sourceTree = "<group>"; };
 		D9571DB41F225E73004B6607 /* 2017 */ = {isa = PBXFileReference; lastKnownFileType = text; name = 2017; path = "Submodules/iBurn-Data/data/2017/2017"; sourceTree = SOURCE_ROOT; };
 		D95AB0ED1B7FF5FF00DFC2FD /* BRCUserMapPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCUserMapPoint.h; sourceTree = "<group>"; };
 		D95AB0EE1B7FF5FF00DFC2FD /* BRCUserMapPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCUserMapPoint.m; sourceTree = "<group>"; };
@@ -745,6 +747,7 @@
 		63CE2A5D1987140F00F65B01 /* iBurn */ = {
 			isa = PBXGroup;
 			children = (
+				D95561E02E5A27E400A7ECE4 /* MapLayerManager.swift */,
 				D9214A7F2E501C9B0031A3A4 /* VisitListViewController.swift */,
 				D9C1532B2E49573600AE9625 /* MapFilterView.swift */,
 				D9C153292E4956D000AE9625 /* FilteredMapDataSource.swift */,
@@ -1752,6 +1755,7 @@
 				D984DFD5210EC84200A45922 /* DataObject.swift in Sources */,
 				D9B73FFE1B78BF34001D04E3 /* NearbyViewController.swift in Sources */,
 				D969E5AD211001ED00FF6700 /* AppearanceViewController.swift in Sources */,
+				D95561E12E5A27E400A7ECE4 /* MapLayerManager.swift in Sources */,
 				D9B69D911EF8D8B100E2996D /* BRCYapDatabaseObject.m in Sources */,
 				D984DFCB210E9F0700A45922 /* YapTableViewAdapter.swift in Sources */,
 				D902DF0B1B7B19FC00057898 /* BRCDataSorter.swift in Sources */,

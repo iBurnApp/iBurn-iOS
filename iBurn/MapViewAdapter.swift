@@ -30,6 +30,7 @@ public class MapViewAdapter: NSObject {
     public let mapView: MLNMapView
     public var dataSource: AnnotationDataSource?
     public weak var parent: UIViewController?
+    public var onStyleLoaded: ((MLNStyle) -> Void)?
 
     /// key is annotation ObjectIdentifier
     var annotationViews: [ObjectIdentifier: MLNAnnotationView] = [:]
@@ -140,6 +141,8 @@ public class MapViewAdapter: NSObject {
 extension MapViewAdapter: MLNMapViewDelegate {
     
     public func mapView(_ mapView: MLNMapView, didFinishLoading style: MLNStyle) {
+        // Call the style loaded callback if set
+        onStyleLoaded?(style)
         
         let imageMap = [
             "Airport": "airport",
