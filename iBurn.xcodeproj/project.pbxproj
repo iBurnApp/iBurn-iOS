@@ -11,7 +11,6 @@
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
 		6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */; };
-		8B63739199F78E117A29DE00 /* libPods-PlayaKitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */; };
 		BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */; };
 		D90256412E1F3FE00058AEF8 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = D90256402E1F3FE00058AEF8 /* PlayaDB */; };
 		D902564B2E1F41060058AEF8 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D902564A2E1F41060058AEF8 /* GRDB */; };
@@ -121,7 +120,6 @@
 		B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
-		D960F24E1F74E65A00144290 /* PlayaKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlayaKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaGeocoder.xcodeproj; path = PlayaGeocoder/PlayaGeocoder.xcodeproj; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -138,14 +136,37 @@
 		F85F754B52B5E3558DF62298 /* Pods_PlayaKit_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D902A0332EA45D9600ED87D5 /* Exceptions for "iBurn" folder in "iBurn" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"iBurn-Info.plist",
+			);
+			target = 63CE2A531987140F00F65B01 /* iBurn */;
+		};
+		D902A0342EA45D9600ED87D5 /* Exceptions for "iBurnTests" folder in "iBurnTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D980A9091B3F5A6400BE3682 /* iBurnTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D9029F322EA45CB500ED87D5 /* iBurn */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D902A0332EA45D9600ED87D5 /* Exceptions for "iBurn" folder in "iBurn" target */,
+			);
 			path = iBurn;
 			sourceTree = "<group>";
 		};
 		D9029FFF2EA45CC700ED87D5 /* iBurnTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D902A0342EA45D9600ED87D5 /* Exceptions for "iBurnTests" folder in "iBurnTests" target */,
+			);
 			path = iBurnTests;
 			sourceTree = "<group>";
 		};
@@ -178,14 +199,6 @@
 				D99D57EE2E1CE8CF00D5A3DE /* iBurn2025MediaFiles in Frameworks */,
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D960F24B1F74E65A00144290 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				8B63739199F78E117A29DE00 /* libPods-PlayaKitTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +255,6 @@
 			children = (
 				63CE2A541987140F00F65B01 /* iBurn.app */,
 				D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */,
-				D960F24E1F74E65A00144290 /* PlayaKitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -328,25 +340,6 @@
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
 			productType = "com.apple.product-type.application";
 		};
-		D960F24D1F74E65A00144290 /* PlayaKitTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D960F2611F74E65A00144290 /* Build configuration list for PBXNativeTarget "PlayaKitTests" */;
-			buildPhases = (
-				E9C3145650DF2A650019858A /* [CP] Check Pods Manifest.lock */,
-				D960F24A1F74E65A00144290 /* Sources */,
-				D960F24B1F74E65A00144290 /* Frameworks */,
-				D960F24C1F74E65A00144290 /* Resources */,
-				0F2BA51289E65FBCA0863ACD /* [CP] Copy Pods Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = PlayaKitTests;
-			productName = PlayaKitTests;
-			productReference = D960F24E1F74E65A00144290 /* PlayaKitTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		D980A9091B3F5A6400BE3682 /* iBurnTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D980A9141B3F5A6400BE3682 /* Build configuration list for PBXNativeTarget "iBurnTests" */;
@@ -379,7 +372,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = BRC;
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2600;
 				ORGANIZATIONNAME = iBurn;
 				TargetAttributes = {
 					63CE2A531987140F00F65B01 = {
@@ -394,12 +387,6 @@
 								enabled = 1;
 							};
 						};
-					};
-					D960F24D1F74E65A00144290 = {
-						CreatedOnToolsVersion = 9.0;
-						DevelopmentTeam = 4T8JLQR6GR;
-						LastSwiftMigration = 1020;
-						ProvisioningStyle = Automatic;
 					};
 					D980A9091B3F5A6400BE3682 = {
 						CreatedOnToolsVersion = 6.3;
@@ -439,7 +426,6 @@
 			targets = (
 				63CE2A531987140F00F65B01 /* iBurn */,
 				D980A9091B3F5A6400BE3682 /* iBurnTests */,
-				D960F24D1F74E65A00144290 /* PlayaKitTests */,
 			);
 		};
 /* End PBXProject section */
@@ -483,13 +469,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D960F24C1F74E65A00144290 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D980A9081B3F5A6400BE3682 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -500,27 +479,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0F2BA51289E65FBCA0863ACD /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		494E5894B2B0684522784BC0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -615,24 +573,6 @@
 			shellPath = /bin/sh;
 			shellScript = "${PODS_ROOT}/LicensePlist/license-plist --output-path $PRODUCT_NAME/Settings.bundle --add-version-numbers --suppress-opening-directory || true\n";
 		};
-		E9C3145650DF2A650019858A /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PlayaKitTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		F0F8D9D639BE0D2FDC435A0E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -658,13 +598,6 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		63CE2A501987140F00F65B01 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D960F24A1F74E65A00144290 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -747,6 +680,7 @@
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -798,6 +732,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LLVM_LTO = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -878,65 +813,6 @@
 			};
 			name = Release;
 		};
-		D960F2621F74E65A00144290 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4T8JLQR6GR;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = PlayaKitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.iburnapp.PlayaKitTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		D960F2631F74E65A00144290 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = 4T8JLQR6GR;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = PlayaKitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.iburnapp.PlayaKitTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 		D980A9121B3F5A6400BE3682 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */;
@@ -1008,15 +884,6 @@
 			buildConfigurations = (
 				63CE2A811987140F00F65B01 /* Debug */,
 				63CE2A821987140F00F65B01 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D960F2611F74E65A00144290 /* Build configuration list for PBXNativeTarget "PlayaKitTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D960F2621F74E65A00144290 /* Debug */,
-				D960F2631F74E65A00144290 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
