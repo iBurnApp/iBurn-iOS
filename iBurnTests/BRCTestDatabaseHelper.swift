@@ -88,11 +88,4 @@ class BRCTestDatabaseHelper {
             try? FileManager.default.removeItem(at: url)
         }
     }
-    
-    // MARK: - Utility Methods
-    
-    func testDataURL(forDirectory directory: String) -> URL? {
-        let bundle = TestBundleHelper.dataBundle()
-        return bundle.url(forResource: "update", withExtension: "json", subdirectory: directory)
-    }
 }

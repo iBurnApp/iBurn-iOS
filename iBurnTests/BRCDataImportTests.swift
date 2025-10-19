@@ -33,14 +33,10 @@ class BRCDataImportTests: XCTestCase {
         databaseHelper = nil
         super.tearDown()
     }
-    
-    
+
+
     // MARK: - Utility Methods
-    
-    func testDataURL(forDirectory directory: String) -> URL? {
-        return databaseHelper.testDataURL(forDirectory: directory)
-    }
-    
+
     private func collectionName(for dataClass: AnyClass) -> String? {
         // Handle special case where BRCRecurringEventObject data is stored in BRCEventObject collection
         if dataClass == BRCRecurringEventObject.self {
@@ -64,10 +60,13 @@ class BRCDataImportTests: XCTestCase {
             transaction.setObject(updateInfo, forKey: updateInfo.yapKey, inCollection: BRCUpdateInfo.yapCollection)
         }
         
-        // Get test data URL
-        let bundle = TestBundleHelper.dataBundle()
-        guard let dataURL = bundle.url(forResource: fileName, withExtension: "json", subdirectory: "initial_data") else {
-            XCTFail("Failed to find test data file: \(fileName).json")
+        // Get test data URL from initial_data.bundle
+        guard let bundle = TestBundleHelper.bundle(named: "initial_data") else {
+            XCTFail("Failed to load initial_data bundle")
+            return
+        }
+        guard let dataURL = bundle.url(forResource: fileName, withExtension: "json") else {
+            XCTFail("Failed to find test data file: \(fileName).json in initial_data bundle")
             return
         }
         
@@ -144,8 +143,8 @@ class BRCDataImportTests: XCTestCase {
     // MARK: - Update Tests
     
     func testLoadUpdates() async throws {
-        guard let initialUpdateURL = testDataURL(forDirectory: "initial_data"),
-              let updatedURL = testDataURL(forDirectory: "updated_data") else {
+        guard let initialUpdateURL = TestBundleHelper.updateDataURL(forBundle: "initial_data"),
+              let updatedURL = TestBundleHelper.updateDataURL(forBundle: "updated_data") else {
             XCTFail("Failed to get test data URLs")
             return
         }
@@ -177,8 +176,8 @@ class BRCDataImportTests: XCTestCase {
     }
     
     func testUpdateData() async throws {
-        guard let initialUpdateURL = testDataURL(forDirectory: "initial_data"),
-              let updatedURL = testDataURL(forDirectory: "updated_data") else {
+        guard let initialUpdateURL = TestBundleHelper.updateDataURL(forBundle: "initial_data"),
+              let updatedURL = TestBundleHelper.updateDataURL(forBundle: "updated_data") else {
             XCTFail("Failed to get test data URLs")
             return
         }
