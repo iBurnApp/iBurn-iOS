@@ -618,10 +618,10 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.matching(searchText: searchText)
         }
 
-        // TODO: Implement once favorites associations are set up
-        // if filter.onlyFavorites {
-        //     request = request.onlyFavorites()
-        // }
+        // Apply favorites filter
+        if filter.onlyFavorites {
+            request = request.onlyFavorites(ofType: .art)
+        }
 
         // TODO: Implement onlyWithEvents once we add event relationships
         // if filter.onlyWithEvents {
@@ -651,10 +651,10 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.matching(searchText: searchText)
         }
 
-        // TODO: Implement once favorites associations are set up
-        // if filter.onlyFavorites {
-        //     request = request.onlyFavorites()
-        // }
+        // Apply favorites filter
+        if filter.onlyFavorites {
+            request = request.onlyFavorites(ofType: .camp)
+        }
 
         // Default ordering
         return request.orderedByName()
@@ -688,6 +688,16 @@ internal class PlayaDBImpl: PlayaDB {
             .including(required: EventOccurrence.event)
 
         let occurrences = try occurrenceRequest.fetchAll(db)
+        let favoriteEventIds: Set<String>
+        if filter.onlyFavorites {
+            let metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .filter(ObjectMetadata.Columns.isFavorite == true)
+                .fetchAll(db)
+            favoriteEventIds = Set(metadata.map(\.objectId))
+        } else {
+            favoriteEventIds = []
+        }
 
         var eventObjectOccurrences: [EventObjectOccurrence] = []
         for occurrence in occurrences {
@@ -696,6 +706,9 @@ internal class PlayaDBImpl: PlayaDB {
             }
 
             var includeEvent = true
+            if filter.onlyFavorites && !favoriteEventIds.contains(event.uid) {
+                includeEvent = false
+            }
 
             if let year = filter.year, event.year != year {
                 includeEvent = false

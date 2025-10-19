@@ -124,6 +124,21 @@ final class FilterRequestBuilderTests: XCTestCase {
         }
     }
 
+    private func setFavorite(
+        _ type: DataObjectType,
+        id: String,
+        isFavorite: Bool = true
+    ) async throws {
+        try await dbQueue.write { db in
+            var metadata = ObjectMetadata(
+                objectType: type.rawValue,
+                objectId: id,
+                isFavorite: isFavorite
+            )
+            try metadata.save(db)
+        }
+    }
+
     // MARK: - Art Filters
 
     func testArtRequestAppliesYearRegionAndSearchFilters() async throws {
@@ -263,6 +278,76 @@ final class FilterRequestBuilderTests: XCTestCase {
         let names = camps.map(\.name)
 
         XCTAssertEqual(names, names.sorted(), "Camp results should be ordered alphabetically by name")
+    }
+
+    func testArtRequestOnlyFavorites() async throws {
+        let allArt = try await playaDB.fetchArt()
+        guard let existingArt = allArt.first else {
+            XCTFail("Expected seeded art data")
+            return
+        }
+
+        try await insertArt(
+            uid: "art-not-favorite",
+            name: "Non Favorite Installation",
+            year: existingArt.year
+        )
+
+        try await setFavorite(.art, id: existingArt.uid)
+
+        let filter = ArtFilter(year: existingArt.year, onlyFavorites: true)
+        let favorites = try await playaDB.fetchArt(filter: filter)
+
+        XCTAssertEqual(favorites.map(\.uid), [existingArt.uid], "Only favorited art should be returned")
+    }
+
+    func testCampRequestOnlyFavorites() async throws {
+        let camps = try await playaDB.fetchCamps()
+        guard let existingCamp = camps.first else {
+            XCTFail("Expected seeded camp data")
+            return
+        }
+
+        try await insertCamp(
+            uid: "camp-not-favorite",
+            name: "Non Favorite Camp",
+            year: existingCamp.year
+        )
+
+        try await setFavorite(.camp, id: existingCamp.uid)
+
+        let filter = CampFilter(year: existingCamp.year, onlyFavorites: true)
+        let favorites = try await playaDB.fetchCamps(filter: filter)
+
+        XCTAssertEqual(favorites.map(\.uid), [existingCamp.uid], "Only favorited camps should be returned")
+    }
+
+    func testEventFetchOnlyFavorites() async throws {
+        let events = try await playaDB.fetchEvents(filter: .all)
+        guard let existingEvent = events.first else {
+            XCTFail("Expected seeded event data")
+            return
+        }
+
+        let now = Date()
+        try await insertEvent(
+            uid: "event-non-favorite",
+            name: "Non Favorite Event",
+            year: existingEvent.event.year,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(5400)
+        )
+
+        try await setFavorite(.event, id: existingEvent.event.uid)
+
+        let filter = EventFilter(onlyFavorites: true, includeExpired: true)
+        let favorites = try await playaDB.fetchEvents(filter: filter)
+
+        XCTAssertEqual(
+            Set(favorites.map { $0.event.uid }),
+            [existingEvent.event.uid],
+            "Only favorited events should be returned"
+        )
     }
 
     // MARK: - Event Filters

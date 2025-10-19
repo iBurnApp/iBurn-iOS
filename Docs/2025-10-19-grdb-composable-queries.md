@@ -202,7 +202,8 @@ Packages/PlayaDB/Sources/PlayaDB/
 1. ✅ Add targeted tests that exercise `ArtFilter`, `CampFilter`, and `EventFilter` through the request builders and new `fetch*` APIs
 2. ✅ Seed representative fixtures in tests (multiple years, coordinates inside/outside the map region, varied descriptions) to validate each filter dimension
 3. ✅ Confirm ordering guarantees (e.g., `orderedByName`, `orderedByStartTime`) and region bounds handling
-4. ⏳ Document findings, capture command output, and commit once validation is complete
+4. ✅ Implement favorites-aware filtering/observations for all fetch/observe paths
+5. ⏳ Document findings, capture command output, and commit once validation is complete
 
 ## Current Session (2025-10-19 PM)
 
@@ -224,16 +225,17 @@ Packages/PlayaDB/Sources/PlayaDB/
   - Introduced `Packages/PlayaDB/Sources/PlayaDB/ObservationToken.swift` and new `observeArt/observeCamps/observeEvents` APIs on `PlayaDB` with a shared `observe<T>` helper inside `PlayaDBImpl`.
   - Refactored event occurrence fetching into `eventObjectOccurrences(filter:db:)` for reuse by both fetch and observe paths.
   - Added `Packages/PlayaDB/Tests/PlayaDBTests/FilterObservationTests.swift` to assert that filtered observations receive live updates when matching records change.
+  - Implemented `onlyFavorites` query helpers and applied them across art/camp requests plus event occurrence filtering; added targeted fetch & observation tests for favorites-only flows.
 - **Test Data Strategy**
   - Programmatically inserted auxiliary fixtures (inside/outside map region, differing years, missing GPS) to validate filter combinations without mutating shared mock JSON fixtures.
   - Seeded dedicated observation fixtures (unique year/search tokens) so initial emissions remain empty until the test inserts matching records.
 - **Testing**
   - Command: `swift test` (run from `Packages/PlayaDB`)
-  - Result: ✅ Passed — 63 tests total (existing 55 + 6 + 2 new observation tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
+  - Result: ✅ Passed — 66 tests total (existing 55 + 6 + 5 new favorites/observation tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
   - Timing: ~27 seconds in sandboxed macOS ARM64 environment.
 - **Follow-ups**
   - Document results (this file) and commit updates.
-  - Remaining Phase 2 scope: favorites-aware filtering/observations once ObjectMetadata associations are complete.
+  - Remaining Phase 2 scope: implement event relationship filters (`onlyWithEvents`) and broaden metadata syncing.
 
 ### Phase 3: SwiftUI Migration (Future)
 

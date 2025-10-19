@@ -223,5 +223,19 @@ extension QueryInterfaceRequest where RowDecoder: TableRecord {
 }
 
 // MARK: - Favorites Filter
-// TODO: Implement onlyFavorites() once GRDB associations are set up between
-// DataObject models and ObjectMetadata
+
+extension QueryInterfaceRequest where RowDecoder: FetchableRecord & TableRecord, RowDecoder.Columns: DataObjectColumns {
+    /// Filters to only objects marked as favorites in metadata.
+    public func onlyFavorites(ofType type: DataObjectType) -> Self {
+        let favoritesPredicate: SQL = SQL("""
+            EXISTS (
+                SELECT 1
+                FROM object_metadata
+                WHERE object_metadata.object_type = \(type.rawValue)
+                  AND object_metadata.object_id = \(RowDecoder.Columns.uid)
+                  AND object_metadata.is_favorite = 1
+            )
+        """)
+        return self.filter(favoritesPredicate)
+    }
+}

@@ -96,6 +96,21 @@ final class FilterObservationTests: XCTestCase {
         }
     }
 
+    private func setFavorite(
+        _ type: DataObjectType,
+        id: String,
+        isFavorite: Bool = true
+    ) async throws {
+        try await dbQueue.write { db in
+            var metadata = ObjectMetadata(
+                objectType: type.rawValue,
+                objectId: id,
+                isFavorite: isFavorite
+            )
+            try metadata.save(db)
+        }
+    }
+
     // MARK: - Tests
 
     func testObserveArtReceivesUpdatesForMatchingFilter() async throws {
@@ -164,5 +179,38 @@ final class FilterObservationTests: XCTestCase {
         )
 
         await fulfillment(of: [expectation], timeout: 2.0)
+    }
+
+    func testObserveArtOnlyFavoritesUpdates() async throws {
+        let favoritesExpectation = expectation(description: "Favorite art emitted")
+
+        let allArt = try await playaDB.fetchArt()
+        guard let art = allArt.first else {
+            XCTFail("Expected seeded art data")
+            return
+        }
+
+        var emissionCount = 0
+        let token = playaDB.observeArt(
+            filter: ArtFilter(onlyFavorites: true),
+            onChange: { objects in
+                emissionCount += 1
+                if emissionCount >= 2 {
+                    XCTAssertEqual(objects.map(\.uid), [art.uid])
+                    favoritesExpectation.fulfill()
+                } else {
+                    XCTAssertTrue(objects.isEmpty, "Initial favorites emission should be empty")
+                }
+            },
+            onError: { error in
+                XCTFail("Favorites observation error: \(error)")
+            }
+        )
+
+        defer { token.cancel() }
+
+        try await setFavorite(.art, id: art.uid)
+
+        await fulfillment(of: [favoritesExpectation], timeout: 2.0)
     }
 }
