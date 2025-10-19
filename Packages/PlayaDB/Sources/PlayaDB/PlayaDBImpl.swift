@@ -623,10 +623,9 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.onlyFavorites(ofType: .art)
         }
 
-        // TODO: Implement onlyWithEvents once we add event relationships
-        // if filter.onlyWithEvents {
-        //     request = request.withEvents()
-        // }
+        if filter.onlyWithEvents {
+            request = request.withEvents()
+        }
 
         // Default ordering
         return request.orderedByName()

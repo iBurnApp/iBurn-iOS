@@ -70,7 +70,8 @@ final class FilterObservationTests: XCTestCase {
         end: Date,
         description: String? = nil,
         latitude: Double? = nil,
-        longitude: Double? = nil
+        longitude: Double? = nil,
+        locatedAtArt: String? = nil
     ) async throws {
         let event = EventObject(
             uid: uid,
@@ -79,6 +80,7 @@ final class FilterObservationTests: XCTestCase {
             description: description,
             eventTypeLabel: "Workshop",
             eventTypeCode: "work",
+            locatedAtArt: locatedAtArt,
             gpsLatitude: latitude,
             gpsLongitude: longitude
         )
@@ -212,5 +214,44 @@ final class FilterObservationTests: XCTestCase {
         try await setFavorite(.art, id: art.uid)
 
         await fulfillment(of: [favoritesExpectation], timeout: 2.0)
+    }
+
+    func testObserveArtOnlyWithEventsUpdates() async throws {
+        let expectation = expectation(description: "Art with events emitted")
+        let year = 2031
+
+        let art = try await insertArt(
+            uid: "observed-art-with-event",
+            name: "Performance Plaza",
+            year: year
+        )
+
+        let token = playaDB.observeArt(
+            filter: ArtFilter(year: year, onlyWithEvents: true),
+            onChange: { artObjects in
+                if artObjects.contains(where: { $0.uid == art.uid }) {
+                    expectation.fulfill()
+                } else {
+                    XCTAssertTrue(artObjects.isEmpty, "Initial emission should be empty before event insertion")
+                }
+            },
+            onError: { error in
+                XCTFail("onlyWithEvents observation error: \(error)")
+            }
+        )
+
+        defer { token.cancel() }
+
+        let now = Date()
+        try await insertEvent(
+            uid: "event-for-observed-art",
+            name: "Performance Show",
+            year: year,
+            start: now,
+            end: now.addingTimeInterval(1800),
+            locatedAtArt: art.uid
+        )
+
+        await fulfillment(of: [expectation], timeout: 2.0)
     }
 }

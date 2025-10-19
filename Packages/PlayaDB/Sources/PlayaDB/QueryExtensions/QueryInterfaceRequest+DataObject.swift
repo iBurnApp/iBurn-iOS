@@ -61,6 +61,19 @@ extension QueryInterfaceRequest where RowDecoder == ArtObject {
         let distanceApprox = latDiff * latDiff + lonDiff * lonDiff
         return self.order(distanceApprox.asc)
     }
+
+    /// Only art installations that have associated events
+    public func withEvents() -> Self {
+        self.filter(
+            sql: """
+                EXISTS (
+                    SELECT 1
+                    FROM event_objects
+                    WHERE event_objects.located_at_art = art_objects.uid
+                )
+            """
+        )
+    }
 }
 
 // MARK: - Common DataObject Queries for CampObject

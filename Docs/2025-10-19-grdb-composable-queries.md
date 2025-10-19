@@ -226,16 +226,17 @@ Packages/PlayaDB/Sources/PlayaDB/
   - Refactored event occurrence fetching into `eventObjectOccurrences(filter:db:)` for reuse by both fetch and observe paths.
   - Added `Packages/PlayaDB/Tests/PlayaDBTests/FilterObservationTests.swift` to assert that filtered observations receive live updates when matching records change.
   - Implemented `onlyFavorites` query helpers and applied them across art/camp requests plus event occurrence filtering; added targeted fetch & observation tests for favorites-only flows.
+  - Implemented `ArtFilter.onlyWithEvents` with a new `withEvents()` query helper, updated request builders, and expanded fetch/observe tests to cover event-linked art.
 - **Test Data Strategy**
   - Programmatically inserted auxiliary fixtures (inside/outside map region, differing years, missing GPS) to validate filter combinations without mutating shared mock JSON fixtures.
   - Seeded dedicated observation fixtures (unique year/search tokens) so initial emissions remain empty until the test inserts matching records.
 - **Testing**
   - Command: `swift test` (run from `Packages/PlayaDB`)
-  - Result: ✅ Passed — 66 tests total (existing 55 + 6 + 5 new favorites/observation tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
+  - Result: ✅ Passed — 69 tests total (existing 55 + 14 new focused tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
   - Timing: ~27 seconds in sandboxed macOS ARM64 environment.
 - **Follow-ups**
   - Document results (this file) and commit updates.
-  - Remaining Phase 2 scope: implement event relationship filters (`onlyWithEvents`) and broaden metadata syncing.
+  - Remaining Phase 2 scope: wire metadata sync (notes/last viewed) into filtered queries and address GRDB Sendable warnings in observation closures.
 
 ### Phase 3: SwiftUI Migration (Future)
 

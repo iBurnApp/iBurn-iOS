@@ -98,7 +98,8 @@ final class FilterRequestBuilderTests: XCTestCase {
         end: Date,
         description: String? = nil,
         latitude: Double? = nil,
-        longitude: Double? = nil
+        longitude: Double? = nil,
+        locatedAtArt: String? = nil
     ) async throws {
         let event = EventObject(
             uid: uid,
@@ -107,6 +108,7 @@ final class FilterRequestBuilderTests: XCTestCase {
             description: description,
             eventTypeLabel: "Workshop",
             eventTypeCode: "work",
+            locatedAtArt: locatedAtArt,
             gpsLatitude: latitude,
             gpsLongitude: longitude
         )
@@ -347,6 +349,45 @@ final class FilterRequestBuilderTests: XCTestCase {
             Set(favorites.map { $0.event.uid }),
             [existingEvent.event.uid],
             "Only favorited events should be returned"
+        )
+    }
+
+    func testArtRequestOnlyWithEvents() async throws {
+        let year = 2030
+
+        let artWithEvent = try await insertArt(
+            uid: "art-with-event",
+            name: "Eventful Art",
+            year: year
+        )
+
+        try await insertArt(
+            uid: "art-without-event",
+            name: "Quiet Art",
+            year: year
+        )
+
+        let now = Date()
+        try await insertEvent(
+            uid: "event-for-art",
+            name: "Art Performance",
+            year: year,
+            start: now,
+            end: now.addingTimeInterval(3600),
+            locatedAtArt: artWithEvent.uid
+        )
+
+        let filter = ArtFilter(
+            year: year,
+            onlyWithEvents: true
+        )
+
+        let results = try await playaDB.fetchArt(filter: filter)
+
+        XCTAssertEqual(
+            results.map(\.uid),
+            [artWithEvent.uid],
+            "Only art with events should be returned"
         )
     }
 
