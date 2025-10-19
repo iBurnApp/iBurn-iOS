@@ -57,3 +57,11 @@ public protocol EventOccurrenceColumns: ColumnExpression {
     static var startTime: Self { get }
     static var endTime: Self { get }
 }
+
+// MARK: - Model Column Providers
+
+/// Protocol adopted by models that expose their column set for generic query helpers.
+public protocol DataObjectColumnProviding: TableRecord {
+    associatedtype ColumnSet: DataObjectColumns
+    static var columnSet: ColumnSet.Type { get }
+}

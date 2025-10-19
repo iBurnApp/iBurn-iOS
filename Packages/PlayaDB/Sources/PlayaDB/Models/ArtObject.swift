@@ -186,6 +186,13 @@ public extension ArtObject {
     }
 }
 
+// MARK: - Column Provider Conformance
+
+extension ArtObject: DataObjectColumnProviding {
+    public typealias ColumnSet = Columns
+    public static var columnSet: Columns.Type { Columns.self }
+}
+
 // MARK: - Computed Properties
 
 public extension ArtObject {

@@ -163,6 +163,13 @@ public extension EventObject {
     }
 }
 
+// MARK: - Column Provider Conformance
+
+extension EventObject: DataObjectColumnProviding {
+    public typealias ColumnSet = Columns
+    public static var columnSet: Columns.Type { Columns.self }
+}
+
 // MARK: - Computed Properties
 
 public extension EventObject {

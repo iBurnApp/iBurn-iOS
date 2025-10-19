@@ -229,6 +229,7 @@ Packages/PlayaDB/Sources/PlayaDB/
   - Implemented `ArtFilter.onlyWithEvents` with a new `withEvents()` query helper, updated request builders, and expanded fetch/observe tests to cover event-linked art.
   - Added metadata synchronization: `PlayaDB.metadata(for:)` creates or fetches metadata rows on demand, fetch/observe paths call `ensureMetadata` to guarantee notes/last-viewed records, and tests verify metadata creation for art/event filters.
   - Hydrated aggregate queries (`fetchObjects`, `searchObjects`) to ensure metadata rows exist for map/search results, with coverage confirming metadata creation per object type.
+  - Reduced query extension duplication via generic column-provider protocols (`DataObjectColumnProviding`) and a shared `FilterRegion` struct, cutting per-model boilerplate in `QueryInterfaceRequest+DataObject.swift` and `QueryInterfaceRequest+Contact.swift`.
   - Reworked base observations to use `@Sendable` closures and async metadata hydration; resolves previous GRDB `@Sendable` warnings.
 - **Test Data Strategy**
   - Programmatically inserted auxiliary fixtures (inside/outside map region, differing years, missing GPS) to validate filter combinations without mutating shared mock JSON fixtures.

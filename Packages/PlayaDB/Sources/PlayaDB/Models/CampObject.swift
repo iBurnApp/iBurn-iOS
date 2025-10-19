@@ -166,6 +166,13 @@ public extension CampObject {
     }
 }
 
+// MARK: - Column Provider Conformance
+
+extension CampObject: DataObjectColumnProviding {
+    public typealias ColumnSet = Columns
+    public static var columnSet: Columns.Type { Columns.self }
+}
+
 // MARK: - Computed Properties
 
 public extension CampObject {
