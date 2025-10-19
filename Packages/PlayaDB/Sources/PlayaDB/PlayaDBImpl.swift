@@ -596,7 +596,161 @@ internal class PlayaDBImpl: PlayaDB {
             return objects
         }
     }
-    
+
+    // MARK: - Filtered Data Access (Internal Request Builders)
+
+    /// Build an art query from filter options (internal - uses GRDB types)
+    internal func artRequest(filter: ArtFilter) -> QueryInterfaceRequest<ArtObject> {
+        var request = ArtObject.all()
+
+        // Apply year filter
+        if let year = filter.year {
+            request = request.forYear(year)
+        }
+
+        // Apply region filter (also filters to only objects with GPS coordinates)
+        if let region = filter.region {
+            request = request.inRegion(region).withLocation()
+        }
+
+        // Apply text search filter
+        if let searchText = filter.searchText {
+            request = request.matching(searchText: searchText)
+        }
+
+        // TODO: Implement once favorites associations are set up
+        // if filter.onlyFavorites {
+        //     request = request.onlyFavorites()
+        // }
+
+        // TODO: Implement onlyWithEvents once we add event relationships
+        // if filter.onlyWithEvents {
+        //     request = request.withEvents()
+        // }
+
+        // Default ordering
+        return request.orderedByName()
+    }
+
+    /// Build a camp query from filter options (internal - uses GRDB types)
+    internal func campRequest(filter: CampFilter) -> QueryInterfaceRequest<CampObject> {
+        var request = CampObject.all()
+
+        // Apply year filter
+        if let year = filter.year {
+            request = request.forYear(year)
+        }
+
+        // Apply region filter (also filters to only objects with GPS coordinates)
+        if let region = filter.region {
+            request = request.inRegion(region).withLocation()
+        }
+
+        // Apply text search filter
+        if let searchText = filter.searchText {
+            request = request.matching(searchText: searchText)
+        }
+
+        // TODO: Implement once favorites associations are set up
+        // if filter.onlyFavorites {
+        //     request = request.onlyFavorites()
+        // }
+
+        // Default ordering
+        return request.orderedByName()
+    }
+
+    /// Build an event occurrence query from filter options (internal - uses GRDB types)
+    internal func eventOccurrenceRequest(filter: EventFilter) -> QueryInterfaceRequest<EventOccurrence> {
+        var request = EventOccurrence.all()
+
+        // Apply time-based filters
+        if filter.happeningNow {
+            // Only currently happening events (overrides other time filters)
+            request = request.happeningNow()
+        } else if let hours = filter.startingWithinHours {
+            // Events starting within N hours
+            request = request.startingWithin(hours: hours)
+        } else if !filter.includeExpired {
+            // Exclude expired events
+            request = request.notExpired()
+        }
+
+        // Default ordering by start time
+        return request.orderedByStartTime()
+    }
+
+    // MARK: - Filtered Data Access (Public API)
+
+    func fetchArt(filter: ArtFilter) async throws -> [ArtObject] {
+        try await dbQueue.read { db in
+            try artRequest(filter: filter).fetchAll(db)
+        }
+    }
+
+    func fetchCamps(filter: CampFilter) async throws -> [CampObject] {
+        try await dbQueue.read { db in
+            try campRequest(filter: filter).fetchAll(db)
+        }
+    }
+
+    func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence] {
+        try await dbQueue.read { db in
+            // Build occurrence query
+            let occurrenceRequest = eventOccurrenceRequest(filter: filter)
+                .including(required: EventOccurrence.event)
+
+            // Fetch occurrences with their events
+            let occurrences = try occurrenceRequest.fetchAll(db)
+
+            // Convert to EventObjectOccurrence
+            var eventObjectOccurrences: [EventObjectOccurrence] = []
+            for occurrence in occurrences {
+                let event = try occurrence.event.fetchOne(db)!
+
+                // Apply event-level filters (year, region, search, favorites)
+                var includeEvent = true
+
+                // Year filter
+                if let year = filter.year, event.year != year {
+                    includeEvent = false
+                }
+
+                // Region filter (event inherits location from host camp/art)
+                if let region = filter.region {
+                    if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
+                        let minLat = region.center.latitude - region.span.latitudeDelta / 2
+                        let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+                        let minLon = region.center.longitude - region.span.longitudeDelta / 2
+                        let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+
+                        if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
+                            includeEvent = false
+                        }
+                    } else {
+                        includeEvent = false  // No GPS coordinates
+                    }
+                }
+
+                // Search text filter (basic name/description search for now)
+                // TODO: Use FTS5 for better search performance
+                if let searchText = filter.searchText, !searchText.isEmpty {
+                    let nameMatch = event.name.lowercased().contains(searchText.lowercased())
+                    let descMatch = event.description?.lowercased().contains(searchText.lowercased()) ?? false
+                    if !nameMatch && !descMatch {
+                        includeEvent = false
+                    }
+                }
+
+                if includeEvent {
+                    eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
+                }
+            }
+
+            return eventObjectOccurrences
+        }
+    }
+
     // MARK: - Metadata Operations
     
     func getFavorites() async throws -> [any DataObject] {

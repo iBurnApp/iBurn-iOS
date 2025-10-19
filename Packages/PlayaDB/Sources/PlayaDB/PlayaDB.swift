@@ -5,33 +5,71 @@ import MapKit
 /// Public interface for the PlayaDB database system
 public protocol PlayaDB {
     // MARK: - Data Access
-    
+
     /// Fetch all art objects
     func fetchArt() async throws -> [ArtObject]
-    
+
     /// Fetch all camps
     func fetchCamps() async throws -> [CampObject]
-    
+
     /// Fetch all events with their occurrences
     func fetchEvents() async throws -> [EventObjectOccurrence]
-    
+
     /// Fetch events occurring on a specific date (no midnight splitting - events spanning days appear on all relevant days)
     func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence]
-    
+
     /// Fetch events occurring within a date range
     func fetchEvents(from startDate: Date, to endDate: Date) async throws -> [EventObjectOccurrence]
-    
+
     /// Fetch currently happening events
     func fetchCurrentEvents(_ now: Date) async throws -> [EventObjectOccurrence]
-    
+
     /// Fetch upcoming events (starting within the next N hours)
     func fetchUpcomingEvents(within hours: Int, from now: Date) async throws -> [EventObjectOccurrence]
-    
+
     /// Fetch all objects within a geographic region
     func fetchObjects(in region: MKCoordinateRegion) async throws -> [any DataObject]
-    
+
     /// Search for objects using full-text search
     func searchObjects(_ query: String) async throws -> [any DataObject]
+
+    // MARK: - Filtered Data Access
+
+    /// Fetch art objects matching the specified filter criteria
+    ///
+    /// - Parameter filter: Filter options for art objects (year, region, search, etc.)
+    /// - Returns: Array of art objects matching all specified filter criteria
+    ///
+    /// Example:
+    /// ```swift
+    /// let filter = ArtFilter(year: 2025, region: mapRegion)
+    /// let art = try await playaDB.fetchArt(filter: filter)
+    /// ```
+    func fetchArt(filter: ArtFilter) async throws -> [ArtObject]
+
+    /// Fetch camp objects matching the specified filter criteria
+    ///
+    /// - Parameter filter: Filter options for camp objects (year, region, search, etc.)
+    /// - Returns: Array of camp objects matching all specified filter criteria
+    ///
+    /// Example:
+    /// ```swift
+    /// let filter = CampFilter(region: mapRegion, searchText: "burner")
+    /// let camps = try await playaDB.fetchCamps(filter: filter)
+    /// ```
+    func fetchCamps(filter: CampFilter) async throws -> [CampObject]
+
+    /// Fetch event occurrences matching the specified filter criteria
+    ///
+    /// - Parameter filter: Filter options for events (time-based, region, search, etc.)
+    /// - Returns: Array of event occurrences matching all specified filter criteria
+    ///
+    /// Example:
+    /// ```swift
+    /// let filter = EventFilter(happeningNow: true, region: mapRegion)
+    /// let events = try await playaDB.fetchEvents(filter: filter)
+    /// ```
+    func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence]
     
     // MARK: - Metadata Operations
     
