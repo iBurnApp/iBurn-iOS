@@ -498,15 +498,13 @@ internal class PlayaDBImpl: PlayaDB {
     }
     
     func fetchObjects(in region: MKCoordinateRegion) async throws -> [any DataObject] {
-        return try await dbQueue.read { db in
-            var objects: [any DataObject] = []
-            
+        let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject]) in
             // Calculate bounding box
             let minLat = region.center.latitude - region.span.latitudeDelta / 2
             let maxLat = region.center.latitude + region.span.latitudeDelta / 2
             let minLon = region.center.longitude - region.span.longitudeDelta / 2
             let maxLon = region.center.longitude + region.span.longitudeDelta / 2
-            
+
             // Use R-Tree spatial index for efficient querying
             let spatialSQL = """
                 SELECT so.object_type, so.object_uid
@@ -515,18 +513,18 @@ internal class PlayaDBImpl: PlayaDB {
                 WHERE si.minLat >= ? AND si.maxLat <= ?
                   AND si.minLon >= ? AND si.maxLon <= ?
             """
-            
+
             let rows = try Row.fetchAll(db, sql: spatialSQL, arguments: [minLat, maxLat, minLon, maxLon])
-            
+
             // Group UIDs by type for batch fetching
             var artUIDs: [String] = []
             var campUIDs: [String] = []
             var eventUIDs: [String] = []
-            
+
             for row in rows {
                 let objectType: String = row["object_type"]
                 let objectUID: String = row["object_uid"]
-                
+
                 switch objectType {
                 case "art":
                     artUIDs.append(objectUID)
@@ -538,35 +536,36 @@ internal class PlayaDBImpl: PlayaDB {
                     break
                 }
             }
-            
-            // Batch fetch objects by type
-            if !artUIDs.isEmpty {
-                let artObjects = try ArtObject.filter(artUIDs.contains(Column("uid"))).fetchAll(db)
-                objects.append(contentsOf: artObjects)
-            }
-            
-            if !campUIDs.isEmpty {
-                let campObjects = try CampObject.filter(campUIDs.contains(Column("uid"))).fetchAll(db)
-                objects.append(contentsOf: campObjects)
-            }
-            
-            if !eventUIDs.isEmpty {
-                let eventObjects = try EventObject.filter(eventUIDs.contains(Column("uid"))).fetchAll(db)
-                objects.append(contentsOf: eventObjects)
-            }
-            
-            return objects
+
+            let artObjects = try ArtObject
+                .filter(artUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            let campObjects = try CampObject
+                .filter(campUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            let eventObjects = try EventObject
+                .filter(eventUIDs.contains(Column("uid")))
+                .fetchAll(db)
+
+            return (artObjects, campObjects, eventObjects)
         }
+
+        try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
+        try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
+        try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
+
+        var objects: [any DataObject] = []
+        objects.append(contentsOf: result.0)
+        objects.append(contentsOf: result.1)
+        objects.append(contentsOf: result.2)
+        return objects
     }
     
     func searchObjects(_ query: String) async throws -> [any DataObject] {
-        return try await dbQueue.read { db in
-            var objects: [any DataObject] = []
-            
+        let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject]) in
             // Prepare search query for FTS5 (escape special characters)
             let ftsQuery = query.replacingOccurrences(of: "\"", with: "\"\"")
-            
-            // Search art objects using FTS5
+
             let artSQL = """
                 SELECT art_objects.*
                 FROM art_objects
@@ -575,9 +574,7 @@ internal class PlayaDBImpl: PlayaDB {
                 ORDER BY rank
             """
             let artObjects = try ArtObject.fetchAll(db, sql: artSQL, arguments: [ftsQuery])
-            objects.append(contentsOf: artObjects)
-            
-            // Search camp objects using FTS5
+
             let campSQL = """
                 SELECT camp_objects.*
                 FROM camp_objects
@@ -586,9 +583,7 @@ internal class PlayaDBImpl: PlayaDB {
                 ORDER BY rank
             """
             let campObjects = try CampObject.fetchAll(db, sql: campSQL, arguments: [ftsQuery])
-            objects.append(contentsOf: campObjects)
-            
-            // Search event objects using FTS5
+
             let eventSQL = """
                 SELECT event_objects.*
                 FROM event_objects
@@ -597,10 +592,19 @@ internal class PlayaDBImpl: PlayaDB {
                 ORDER BY rank
             """
             let eventObjects = try EventObject.fetchAll(db, sql: eventSQL, arguments: [ftsQuery])
-            objects.append(contentsOf: eventObjects)
-            
-            return objects
+
+            return (artObjects, campObjects, eventObjects)
         }
+
+        try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
+        try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
+        try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
+
+        var objects: [any DataObject] = []
+        objects.append(contentsOf: result.0)
+        objects.append(contentsOf: result.1)
+        objects.append(contentsOf: result.2)
+        return objects
     }
 
     // MARK: - Filtered Data Access (Internal Request Builders)

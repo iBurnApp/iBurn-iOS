@@ -399,6 +399,48 @@ final class FilterRequestBuilderTests: XCTestCase {
         XCTAssertNotNil(metadata, "Fetching art with events should ensure metadata exists")
     }
 
+    func testFetchObjectsEnsuresMetadata() async throws {
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.79, longitude: -119.20),
+            span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        )
+
+        let objects = try await playaDB.fetchObjects(in: region)
+        XCTAssertGreaterThan(objects.count, 0, "Region should return objects")
+
+        try await dbQueue.read { db in
+            for object in objects {
+                let metadata = try ObjectMetadata
+                    .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                    .filter(ObjectMetadata.Columns.objectId == object.uid)
+                    .fetchOne(db)
+                XCTAssertNotNil(metadata, "Metadata should exist for \(object.uid)")
+            }
+        }
+    }
+
+    func testSearchObjectsEnsuresMetadata() async throws {
+        let searchTerms = ["Burning", "ASL", "Tarot"]
+        var seenObjects: [any DataObject] = []
+
+        for term in searchTerms {
+            let results = try await playaDB.searchObjects(term)
+            seenObjects.append(contentsOf: results)
+
+            try await dbQueue.read { db in
+                for object in results {
+                    let metadata = try ObjectMetadata
+                        .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                        .filter(ObjectMetadata.Columns.objectId == object.uid)
+                        .fetchOne(db)
+                    XCTAssertNotNil(metadata, "Metadata should exist for search result \(object.uid)")
+                }
+            }
+        }
+
+        XCTAssertFalse(seenObjects.isEmpty, "Search should locate at least one object")
+    }
+
     func testMetadataLookupCreatesRow() async throws {
         let art = try await insertArt(
             uid: "art-metadata-test",
