@@ -389,6 +389,27 @@ final class FilterRequestBuilderTests: XCTestCase {
             [artWithEvent.uid],
             "Only art with events should be returned"
         )
+
+        let metadata = try await dbQueue.read { db in
+            try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.art.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == artWithEvent.uid)
+                .fetchOne(db)
+        }
+        XCTAssertNotNil(metadata, "Fetching art with events should ensure metadata exists")
+    }
+
+    func testMetadataLookupCreatesRow() async throws {
+        let art = try await insertArt(
+            uid: "art-metadata-test",
+            name: "Metadata Tester",
+            year: 2032
+        )
+
+        let metadata = try await playaDB.metadata(for: art)
+
+        XCTAssertEqual(metadata.objectId, art.uid)
+        XCTAssertEqual(metadata.objectType, DataObjectType.art.rawValue)
     }
 
     // MARK: - Event Filters

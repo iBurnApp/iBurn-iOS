@@ -103,6 +103,9 @@ public protocol PlayaDB {
     
     // MARK: - Metadata Operations
     
+    /// Fetch metadata for the specified object, creating a default record if needed.
+    func metadata(for object: any DataObject) async throws -> ObjectMetadata
+    
     /// Get all favorited objects
     func getFavorites() async throws -> [any DataObject]
     

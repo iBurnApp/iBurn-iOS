@@ -203,7 +203,7 @@ Packages/PlayaDB/Sources/PlayaDB/
 2. ✅ Seed representative fixtures in tests (multiple years, coordinates inside/outside the map region, varied descriptions) to validate each filter dimension
 3. ✅ Confirm ordering guarantees (e.g., `orderedByName`, `orderedByStartTime`) and region bounds handling
 4. ✅ Implement favorites-aware filtering/observations for all fetch/observe paths
-5. ⏳ Document findings, capture command output, and commit once validation is complete
+5. ✅ Document findings, capture command output, and commit once validation is complete
 
 ## Current Session (2025-10-19 PM)
 
@@ -227,16 +227,18 @@ Packages/PlayaDB/Sources/PlayaDB/
   - Added `Packages/PlayaDB/Tests/PlayaDBTests/FilterObservationTests.swift` to assert that filtered observations receive live updates when matching records change.
   - Implemented `onlyFavorites` query helpers and applied them across art/camp requests plus event occurrence filtering; added targeted fetch & observation tests for favorites-only flows.
   - Implemented `ArtFilter.onlyWithEvents` with a new `withEvents()` query helper, updated request builders, and expanded fetch/observe tests to cover event-linked art.
+  - Added metadata synchronization: `PlayaDB.metadata(for:)` creates or fetches metadata rows on demand, fetch/observe paths call `ensureMetadata` to guarantee notes/last-viewed records, and tests verify metadata creation for art/event filters.
+  - Reworked base observations to use `@Sendable` closures and async metadata hydration; resolves previous GRDB `@Sendable` warnings.
 - **Test Data Strategy**
   - Programmatically inserted auxiliary fixtures (inside/outside map region, differing years, missing GPS) to validate filter combinations without mutating shared mock JSON fixtures.
   - Seeded dedicated observation fixtures (unique year/search tokens) so initial emissions remain empty until the test inserts matching records.
 - **Testing**
   - Command: `swift test` (run from `Packages/PlayaDB`)
-  - Result: ✅ Passed — 69 tests total (existing 55 + 14 new focused tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
+  - Result: ✅ Passed — 70 tests total (existing 55 + 15 new focused tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
   - Timing: ~27 seconds in sandboxed macOS ARM64 environment.
 - **Follow-ups**
   - Document results (this file) and commit updates.
-  - Remaining Phase 2 scope: wire metadata sync (notes/last viewed) into filtered queries and address GRDB Sendable warnings in observation closures.
+  - Next focus: surface metadata helpers to detail view clients (notes/visit status) and extend metadata hydration to aggregate queries (`fetchObjects`, search).
 
 ### Phase 3: SwiftUI Migration (Future)
 

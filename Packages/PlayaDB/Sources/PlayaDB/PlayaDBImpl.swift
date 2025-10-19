@@ -390,19 +390,23 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Data Access Methods
     
     func fetchArt() async throws -> [ArtObject] {
-        return try await dbQueue.read { db in
+        let art = try await dbQueue.read { db in
             try ArtObject.fetchAll(db)
         }
+        try await ensureMetadata(for: .art, ids: art.map(\.uid))
+        return art
     }
     
     func fetchCamps() async throws -> [CampObject] {
-        return try await dbQueue.read { db in
+        let camps = try await dbQueue.read { db in
             try CampObject.fetchAll(db)
         }
+        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
+        return camps
     }
     
     func fetchEvents() async throws -> [EventObjectOccurrence] {
-        return try await dbQueue.read { db in
+        let events = try await dbQueue.read { db in
             // Fetch events with their occurrences
             let events = try EventObject.including(all: EventObject.occurrences).fetchAll(db)
             
@@ -417,6 +421,8 @@ internal class PlayaDBImpl: PlayaDB {
             
             return eventObjectOccurrences
         }
+        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
+        return events
     }
     
     func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence] {
@@ -748,27 +754,35 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Filtered Data Access (Public API)
 
     func fetchArt(filter: ArtFilter) async throws -> [ArtObject] {
-        try await dbQueue.read { db in
+        let art = try await dbQueue.read { db in
             try artRequest(filter: filter).fetchAll(db)
         }
+        try await ensureMetadata(for: .art, ids: art.map(\.uid))
+        return art
     }
 
     func fetchCamps(filter: CampFilter) async throws -> [CampObject] {
-        try await dbQueue.read { db in
+        let camps = try await dbQueue.read { db in
             try campRequest(filter: filter).fetchAll(db)
         }
+        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
+        return camps
     }
 
     func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence] {
-        try await dbQueue.read { db in
+        let events = try await dbQueue.read { db in
             try eventObjectOccurrences(filter: filter, db: db)
         }
+        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
+        return events
     }
 
     // MARK: - Filtered Observation Helpers
 
     private func observe<T>(
-        value: @escaping (Database) throws -> [T],
+        type: DataObjectType?,
+        ids: @escaping ([T]) -> [String],
+        value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([T]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
@@ -776,7 +790,17 @@ internal class PlayaDBImpl: PlayaDB {
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
-            onChange: onChange
+            onChange: { [weak self] values in
+                if let type = type {
+                    let identifiers = ids(values)
+                    if !identifiers.isEmpty {
+                        Task {
+                            try? await self?.ensureMetadata(for: type, ids: identifiers)
+                        }
+                    }
+                }
+                onChange(values)
+            }
         )
         return PlayaDBObservationToken(cancellable)
     }
@@ -787,8 +811,11 @@ internal class PlayaDBImpl: PlayaDB {
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
         observe(
-            value: { db in
-                try self.artRequest(filter: filter).fetchAll(db)
+            type: .art,
+            ids: { $0.map(\.uid) },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.artRequest(filter: filter).fetchAll(db)
             },
             onChange: onChange,
             onError: onError
@@ -801,8 +828,11 @@ internal class PlayaDBImpl: PlayaDB {
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
         observe(
-            value: { db in
-                try self.campRequest(filter: filter).fetchAll(db)
+            type: .camp,
+            ids: { $0.map(\.uid) },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.campRequest(filter: filter).fetchAll(db)
             },
             onChange: onChange,
             onError: onError
@@ -815,12 +845,62 @@ internal class PlayaDBImpl: PlayaDB {
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
         observe(
-            value: { db in
-                try self.eventObjectOccurrences(filter: filter, db: db)
+            type: .event,
+            ids: { $0.map { $0.event.uid } },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.eventObjectOccurrences(filter: filter, db: db)
             },
             onChange: onChange,
             onError: onError
         )
+    }
+
+    // MARK: - Metadata Helpers
+
+    private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
+        let uniqueIds = Set(ids)
+        guard !uniqueIds.isEmpty else { return }
+
+        try await dbQueue.write { db in
+            let existingIds = try Set(
+                String.fetchAll(
+                    db,
+                    ObjectMetadata
+                        .select(ObjectMetadata.Columns.objectId)
+                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                        .filter(uniqueIds.contains(ObjectMetadata.Columns.objectId))
+                )
+            )
+
+            let missingIds = uniqueIds.subtracting(existingIds)
+            guard !missingIds.isEmpty else { return }
+
+            let now = Date()
+            for id in missingIds {
+                var metadata = ObjectMetadata(
+                    objectType: type.rawValue,
+                    objectId: id,
+                    createdAt: now,
+                    updatedAt: now
+                )
+                try metadata.insert(db)
+            }
+        }
+    }
+
+    func metadata(for object: any DataObject) async throws -> ObjectMetadata {
+        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+
+        return try await dbQueue.read { db in
+            guard let metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else {
+                throw PlayaDBError.metadataNotFound
+            }
+            return metadata
+        }
     }
 
     // MARK: - Metadata Operations
@@ -1203,25 +1283,39 @@ internal class PlayaDBImpl: PlayaDB {
     
     private func setupObservations() {
         // Observe art objects
-        let artObservation = ValueObservation.tracking(ArtObject.fetchAll)
+        let artObservation = ValueObservation.tracking { db in
+            try ArtObject.fetchAll(db)
+        }
         let artCancellable = artObservation.start(
             in: dbQueue,
             onError: { error in
                 print("Error observing art objects: \(error)")
             },
             onChange: { [weak self] artObjects in
+                if !artObjects.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .art, ids: artObjects.map(\.uid))
+                    }
+                }
                 self?._allArt = artObjects
             }
         )
         
         // Observe camp objects
-        let campObservation = ValueObservation.tracking(CampObject.fetchAll)
+        let campObservation = ValueObservation.tracking { db in
+            try CampObject.fetchAll(db)
+        }
         let campCancellable = campObservation.start(
             in: dbQueue,
             onError: { error in
                 print("Error observing camp objects: \(error)")
             },
             onChange: { [weak self] campObjects in
+                if !campObjects.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .camp, ids: campObjects.map(\.uid))
+                    }
+                }
                 self?._allCamps = campObjects
             }
         )
@@ -1244,6 +1338,11 @@ internal class PlayaDBImpl: PlayaDB {
                 print("Error observing events: \(error)")
             },
             onChange: { [weak self] eventObjectOccurrences in
+                if !eventObjectOccurrences.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .event, ids: eventObjectOccurrences.map { $0.event.uid })
+                    }
+                }
                 self?._allEvents = eventObjectOccurrences
             }
         )
@@ -1278,6 +1377,7 @@ enum PlayaDBError: Error {
     case notImplemented(String)
     case databaseError(String)
     case importError(String)
+    case metadataNotFound
     
     var localizedDescription: String {
         switch self {
@@ -1287,6 +1387,8 @@ enum PlayaDBError: Error {
             return "Database error: \(message)"
         case .importError(let message):
             return "Import error: \(message)"
+        case .metadataNotFound:
+            return "Metadata not found for requested object"
         }
     }
 }
