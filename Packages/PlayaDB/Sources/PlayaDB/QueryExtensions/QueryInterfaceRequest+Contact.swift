@@ -8,63 +8,114 @@
 
 import GRDB
 
-// MARK: - Web URL Queries
+// MARK: - Web URL Queries for ArtObject
 
-extension QueryInterfaceRequest {
+extension QueryInterfaceRequest where RowDecoder == ArtObject {
     /// Filter to only objects with a URL
-    public func withUrl() -> Self where RowDecoder.Columns: WebUrlColumns {
-        self.filter(RowDecoder.Columns.url != nil)
+    public func withUrl() -> Self {
+        self.filter(ArtObject.Columns.url != nil)
     }
 
     /// Filter by URL pattern
-    public func withUrl(matching pattern: String) -> Self where RowDecoder.Columns: WebUrlColumns {
-        self.filter(RowDecoder.Columns.url.like("%\(pattern)%"))
+    public func withUrl(matching pattern: String) -> Self {
+        self.filter(ArtObject.Columns.url.like("%\(pattern)%"))
     }
-}
 
-// MARK: - Contact Email Queries
-
-extension QueryInterfaceRequest {
     /// Filter to only objects with contact email
-    public func withContactEmail() -> Self where RowDecoder.Columns: ContactEmailColumns {
-        self.filter(RowDecoder.Columns.contactEmail != nil)
+    public func withContactEmail() -> Self {
+        self.filter(ArtObject.Columns.contactEmail != nil)
     }
 
     /// Filter by email domain
-    public func withEmailDomain(_ domain: String) -> Self where RowDecoder.Columns: ContactEmailColumns {
-        self.filter(RowDecoder.Columns.contactEmail.like("%@\(domain)"))
+    public func withEmailDomain(_ domain: String) -> Self {
+        self.filter(ArtObject.Columns.contactEmail.like("%@\(domain)"))
     }
-}
 
-// MARK: - Hometown Queries
-
-extension QueryInterfaceRequest {
     /// Filter to only objects with hometown specified
-    public func withHometown() -> Self where RowDecoder.Columns: HometownColumns {
-        self.filter(RowDecoder.Columns.hometown != nil)
+    public func withHometown() -> Self {
+        self.filter(ArtObject.Columns.hometown != nil)
     }
 
     /// Filter by hometown
-    public func fromHometown(_ hometown: String) -> Self where RowDecoder.Columns: HometownColumns {
-        self.filter(RowDecoder.Columns.hometown.like("%\(hometown)%"))
+    public func fromHometown(_ hometown: String) -> Self {
+        self.filter(ArtObject.Columns.hometown.like("%\(hometown)%"))
     }
 
     /// Order by hometown alphabetically
-    public func orderedByHometown() -> Self where RowDecoder.Columns: HometownColumns {
-        self.order(RowDecoder.Columns.hometown.asc)
+    public func orderedByHometown() -> Self {
+        self.order(ArtObject.Columns.hometown.asc)
     }
-}
 
-// MARK: - Location String Queries
-
-extension QueryInterfaceRequest {
     /// Filter to only objects with location string
-    public func withLocationString() -> Self where RowDecoder.Columns: LocationStringColumns {
-        self.filter(RowDecoder.Columns.locationString != nil)
+    public func withLocationString() -> Self {
+        self.filter(ArtObject.Columns.locationString != nil)
     }
 
     /// Filter by location string pattern
-    public func atLocation(matching pattern: String) -> Self where RowDecoder.Columns: LocationStringColumns {
-        self.filter(RowDecoder.Columns.locationString.like("%\(pattern)%"))
+    public func atLocation(matching pattern: String) -> Self {
+        self.filter(ArtObject.Columns.locationString.like("%\(pattern)%"))
+    }
+}
+
+// MARK: - Web URL Queries for CampObject
+
+extension QueryInterfaceRequest where RowDecoder == CampObject {
+    /// Filter to only objects with a URL
+    public func withUrl() -> Self {
+        self.filter(CampObject.Columns.url != nil)
+    }
+
+    /// Filter by URL pattern
+    public func withUrl(matching pattern: String) -> Self {
+        self.filter(CampObject.Columns.url.like("%\(pattern)%"))
+    }
+
+    /// Filter to only objects with contact email
+    public func withContactEmail() -> Self {
+        self.filter(CampObject.Columns.contactEmail != nil)
+    }
+
+    /// Filter by email domain
+    public func withEmailDomain(_ domain: String) -> Self {
+        self.filter(CampObject.Columns.contactEmail.like("%@\(domain)"))
+    }
+
+    /// Filter to only objects with hometown specified
+    public func withHometown() -> Self {
+        self.filter(CampObject.Columns.hometown != nil)
+    }
+
+    /// Filter by hometown
+    public func fromHometown(_ hometown: String) -> Self {
+        self.filter(CampObject.Columns.hometown.like("%\(hometown)%"))
+    }
+
+    /// Order by hometown alphabetically
+    public func orderedByHometown() -> Self {
+        self.order(CampObject.Columns.hometown.asc)
+    }
+
+    /// Filter to only objects with location string
+    public func withLocationString() -> Self {
+        self.filter(CampObject.Columns.locationString != nil)
+    }
+
+    /// Filter by location string pattern
+    public func atLocation(matching pattern: String) -> Self {
+        self.filter(CampObject.Columns.locationString.like("%\(pattern)%"))
+    }
+}
+
+// MARK: - Web URL Queries for EventObject
+
+extension QueryInterfaceRequest where RowDecoder == EventObject {
+    /// Filter to only objects with a URL
+    public func withUrl() -> Self {
+        self.filter(EventObject.Columns.url != nil)
+    }
+
+    /// Filter by URL pattern
+    public func withUrl(matching pattern: String) -> Self {
+        self.filter(EventObject.Columns.url.like("%\(pattern)%"))
     }
 }

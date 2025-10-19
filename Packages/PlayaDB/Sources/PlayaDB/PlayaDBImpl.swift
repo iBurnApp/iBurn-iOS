@@ -7,8 +7,8 @@ import PlayaAPI
 /// Internal implementation of PlayaDB using GRDB
 internal class PlayaDBImpl: PlayaDB {
     // MARK: - Database Connection
-    
-    private let dbQueue: DatabaseQueue
+
+    internal let dbQueue: DatabaseQueue  // Internal for testing
     private let dbPath: String
     
     // MARK: - Initialization

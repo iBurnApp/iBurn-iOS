@@ -10,100 +10,191 @@ import GRDB
 import CoreLocation
 import MapKit
 
-// MARK: - Common DataObject Queries
+// MARK: - Common DataObject Queries for ArtObject
 
-extension QueryInterfaceRequest {
-    /// Generic name search (works for any model with DataObjectColumns)
-    public func matching(name searchText: String?) -> Self where RowDecoder.Columns: DataObjectColumns {
-        guard let searchText = searchText, !searchText.isEmpty else {
-            return self
-        }
-        return self.filter(RowDecoder.Columns.name.like("%\(searchText)%"))
-    }
-
-    /// Generic name ordering (works for any model with DataObjectColumns)
-    public func orderedByName() -> Self where RowDecoder.Columns: DataObjectColumns {
-        self.order(RowDecoder.Columns.name.asc)
+extension QueryInterfaceRequest where RowDecoder == ArtObject {
+    /// Order by name
+    public func orderedByName() -> Self {
+        self.order(ArtObject.Columns.name.asc)
     }
 
     /// Filter by year
-    public func forYear(_ year: Int) -> Self where RowDecoder.Columns: DataObjectColumns {
-        self.filter(RowDecoder.Columns.year == year)
+    public func forYear(_ year: Int) -> Self {
+        self.filter(ArtObject.Columns.year == year)
     }
 
     /// Only objects with descriptions
-    public func withDescription() -> Self where RowDecoder.Columns: DataObjectColumns {
-        self.filter(RowDecoder.Columns.description != nil)
+    public func withDescription() -> Self {
+        self.filter(ArtObject.Columns.description != nil)
     }
 
     /// Search in description
-    public func descriptionContains(_ text: String) -> Self where RowDecoder.Columns: DataObjectColumns {
-        self.filter(RowDecoder.Columns.description.like("%\(text)%"))
+    public func descriptionContains(_ text: String) -> Self {
+        self.filter(ArtObject.Columns.description.like("%\(text)%"))
     }
-}
 
-// MARK: - Geographic Queries
-
-extension QueryInterfaceRequest {
-    /// Generic geographic filtering (works for any model with GeoLocatableColumns)
-    public func inRegion(_ region: MKCoordinateRegion) -> Self where RowDecoder.Columns: GeoLocatableColumns {
+    /// Geographic filtering
+    public func inRegion(_ region: MKCoordinateRegion) -> Self {
         let minLat = region.center.latitude - region.span.latitudeDelta / 2
         let maxLat = region.center.latitude + region.span.latitudeDelta / 2
         let minLon = region.center.longitude - region.span.longitudeDelta / 2
         let maxLon = region.center.longitude + region.span.longitudeDelta / 2
 
         return self
-            .filter(RowDecoder.Columns.gpsLatitude >= minLat)
-            .filter(RowDecoder.Columns.gpsLatitude <= maxLat)
-            .filter(RowDecoder.Columns.gpsLongitude >= minLon)
-            .filter(RowDecoder.Columns.gpsLongitude <= maxLon)
+            .filter(ArtObject.Columns.gpsLatitude >= minLat)
+            .filter(ArtObject.Columns.gpsLatitude <= maxLat)
+            .filter(ArtObject.Columns.gpsLongitude >= minLon)
+            .filter(ArtObject.Columns.gpsLongitude <= maxLon)
     }
 
     /// Only objects with valid GPS coordinates
-    public func withLocation() -> Self where RowDecoder.Columns: GeoLocatableColumns {
+    public func withLocation() -> Self {
         self
-            .filter(RowDecoder.Columns.gpsLatitude != nil)
-            .filter(RowDecoder.Columns.gpsLongitude != nil)
+            .filter(ArtObject.Columns.gpsLatitude != nil)
+            .filter(ArtObject.Columns.gpsLongitude != nil)
     }
 
-    /// Order by distance approximation (for initial filtering, use Haversine in Swift for exact distance)
-    public func orderedByDistance(from coordinate: CLLocationCoordinate2D) -> Self where RowDecoder.Columns: GeoLocatableColumns {
-        // Simple Pythagorean approximation for SQL sorting
-        // For exact calculations, post-process in Swift with Haversine formula
-        let latDiff = RowDecoder.Columns.gpsLatitude - coordinate.latitude
-        let lonDiff = RowDecoder.Columns.gpsLongitude - coordinate.longitude
+    /// Order by distance approximation
+    public func orderedByDistance(from coordinate: CLLocationCoordinate2D) -> Self {
+        let latDiff = ArtObject.Columns.gpsLatitude - coordinate.latitude
+        let lonDiff = ArtObject.Columns.gpsLongitude - coordinate.longitude
         let distanceApprox = latDiff * latDiff + lonDiff * lonDiff
+        return self.order(distanceApprox.asc)
+    }
+}
 
+// MARK: - Common DataObject Queries for CampObject
+
+extension QueryInterfaceRequest where RowDecoder == CampObject {
+    /// Order by name
+    public func orderedByName() -> Self {
+        self.order(CampObject.Columns.name.asc)
+    }
+
+    /// Filter by year
+    public func forYear(_ year: Int) -> Self {
+        self.filter(CampObject.Columns.year == year)
+    }
+
+    /// Only objects with descriptions
+    public func withDescription() -> Self {
+        self.filter(CampObject.Columns.description != nil)
+    }
+
+    /// Search in description
+    public func descriptionContains(_ text: String) -> Self {
+        self.filter(CampObject.Columns.description.like("%\(text)%"))
+    }
+
+    /// Geographic filtering
+    public func inRegion(_ region: MKCoordinateRegion) -> Self {
+        let minLat = region.center.latitude - region.span.latitudeDelta / 2
+        let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+        let minLon = region.center.longitude - region.span.longitudeDelta / 2
+        let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+
+        return self
+            .filter(CampObject.Columns.gpsLatitude >= minLat)
+            .filter(CampObject.Columns.gpsLatitude <= maxLat)
+            .filter(CampObject.Columns.gpsLongitude >= minLon)
+            .filter(CampObject.Columns.gpsLongitude <= maxLon)
+    }
+
+    /// Only objects with valid GPS coordinates
+    public func withLocation() -> Self {
+        self
+            .filter(CampObject.Columns.gpsLatitude != nil)
+            .filter(CampObject.Columns.gpsLongitude != nil)
+    }
+
+    /// Order by distance approximation
+    public func orderedByDistance(from coordinate: CLLocationCoordinate2D) -> Self {
+        let latDiff = CampObject.Columns.gpsLatitude - coordinate.latitude
+        let lonDiff = CampObject.Columns.gpsLongitude - coordinate.longitude
+        let distanceApprox = latDiff * latDiff + lonDiff * lonDiff
+        return self.order(distanceApprox.asc)
+    }
+}
+
+// MARK: - Common DataObject Queries for EventObject
+
+extension QueryInterfaceRequest where RowDecoder == EventObject {
+    /// Order by name
+    public func orderedByName() -> Self {
+        self.order(EventObject.Columns.name.asc)
+    }
+
+    /// Filter by year
+    public func forYear(_ year: Int) -> Self {
+        self.filter(EventObject.Columns.year == year)
+    }
+
+    /// Only objects with descriptions
+    public func withDescription() -> Self {
+        self.filter(EventObject.Columns.description != nil)
+    }
+
+    /// Search in description
+    public func descriptionContains(_ text: String) -> Self {
+        self.filter(EventObject.Columns.description.like("%\(text)%"))
+    }
+
+    /// Geographic filtering
+    public func inRegion(_ region: MKCoordinateRegion) -> Self {
+        let minLat = region.center.latitude - region.span.latitudeDelta / 2
+        let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+        let minLon = region.center.longitude - region.span.longitudeDelta / 2
+        let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+
+        return self
+            .filter(EventObject.Columns.gpsLatitude >= minLat)
+            .filter(EventObject.Columns.gpsLatitude <= maxLat)
+            .filter(EventObject.Columns.gpsLongitude >= minLon)
+            .filter(EventObject.Columns.gpsLongitude <= maxLon)
+    }
+
+    /// Only objects with valid GPS coordinates
+    public func withLocation() -> Self {
+        self
+            .filter(EventObject.Columns.gpsLatitude != nil)
+            .filter(EventObject.Columns.gpsLongitude != nil)
+    }
+
+    /// Order by distance approximation
+    public func orderedByDistance(from coordinate: CLLocationCoordinate2D) -> Self {
+        let latDiff = EventObject.Columns.gpsLatitude - coordinate.latitude
+        let lonDiff = EventObject.Columns.gpsLongitude - coordinate.longitude
+        let distanceApprox = latDiff * latDiff + lonDiff * lonDiff
         return self.order(distanceApprox.asc)
     }
 }
 
 // MARK: - Event Occurrence Queries
 
-extension QueryInterfaceRequest {
+extension QueryInterfaceRequest where RowDecoder == EventOccurrence {
     /// Only events that haven't expired
-    public func notExpired(at date: Date = Date.present) -> Self where RowDecoder.Columns: EventOccurrenceColumns {
-        self.filter(RowDecoder.Columns.endTime > date)
+    public func notExpired(at date: Date = Date()) -> Self {
+        self.filter(EventOccurrence.Columns.endTime > date)
     }
 
     /// Events happening now
-    public func happeningNow(at date: Date = Date.present) -> Self where RowDecoder.Columns: EventOccurrenceColumns {
+    public func happeningNow(at date: Date = Date()) -> Self {
         self
-            .filter(RowDecoder.Columns.startTime <= date)
-            .filter(RowDecoder.Columns.endTime > date)
+            .filter(EventOccurrence.Columns.startTime <= date)
+            .filter(EventOccurrence.Columns.endTime > date)
     }
 
     /// Upcoming events (starting within X hours)
-    public func startingWithin(hours: Int, from date: Date = Date.present) -> Self where RowDecoder.Columns: EventOccurrenceColumns {
+    public func startingWithin(hours: Int, from date: Date = Date()) -> Self {
         let endDate = Calendar.current.date(byAdding: .hour, value: hours, to: date) ?? date
         return self
-            .filter(RowDecoder.Columns.startTime >= date)
-            .filter(RowDecoder.Columns.startTime <= endDate)
+            .filter(EventOccurrence.Columns.startTime >= date)
+            .filter(EventOccurrence.Columns.startTime <= endDate)
     }
 
     /// Order by start time
-    public func orderedByStartTime() -> Self where RowDecoder.Columns: EventOccurrenceColumns {
-        self.order(RowDecoder.Columns.startTime.asc)
+    public func orderedByStartTime() -> Self {
+        self.order(EventOccurrence.Columns.startTime.asc)
     }
 }
 
@@ -121,18 +212,5 @@ extension QueryInterfaceRequest {
 }
 
 // MARK: - Favorites Filter
-
-extension QueryInterfaceRequest where RowDecoder: DataObject {
-    /// Filter to only favorited objects (generic for all DataObjects)
-    public func onlyFavorites() -> Self {
-        // Derive object type name from table name
-        let tableName = RowDecoder.databaseTableName
-        let objectType = tableName.replacingOccurrences(of: "_objects", with: "")
-
-        return self.joining(
-            required: ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.isFavorite == true)
-        )
-    }
-}
+// TODO: Implement onlyFavorites() once GRDB associations are set up between
+// DataObject models and ObjectMetadata
