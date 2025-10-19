@@ -680,6 +680,59 @@ internal class PlayaDBImpl: PlayaDB {
         return request.orderedByStartTime()
     }
 
+    private func eventObjectOccurrences(
+        filter: EventFilter,
+        db: Database
+    ) throws -> [EventObjectOccurrence] {
+        let occurrenceRequest = eventOccurrenceRequest(filter: filter)
+            .including(required: EventOccurrence.event)
+
+        let occurrences = try occurrenceRequest.fetchAll(db)
+
+        var eventObjectOccurrences: [EventObjectOccurrence] = []
+        for occurrence in occurrences {
+            guard let event = try occurrence.event.fetchOne(db) else {
+                continue
+            }
+
+            var includeEvent = true
+
+            if let year = filter.year, event.year != year {
+                includeEvent = false
+            }
+
+            if let region = filter.region {
+                if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
+                    let minLat = region.center.latitude - region.span.latitudeDelta / 2
+                    let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+                    let minLon = region.center.longitude - region.span.longitudeDelta / 2
+                    let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+
+                    if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
+                        includeEvent = false
+                    }
+                } else {
+                    includeEvent = false
+                }
+            }
+
+            if let searchText = filter.searchText, !searchText.isEmpty {
+                let lowerSearch = searchText.lowercased()
+                let nameMatch = event.name.lowercased().contains(lowerSearch)
+                let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
+                if !nameMatch && !descMatch {
+                    includeEvent = false
+                }
+            }
+
+            if includeEvent {
+                eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
+            }
+        }
+
+        return eventObjectOccurrences
+    }
+
     // MARK: - Filtered Data Access (Public API)
 
     func fetchArt(filter: ArtFilter) async throws -> [ArtObject] {
@@ -696,59 +749,66 @@ internal class PlayaDBImpl: PlayaDB {
 
     func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence] {
         try await dbQueue.read { db in
-            // Build occurrence query
-            let occurrenceRequest = eventOccurrenceRequest(filter: filter)
-                .including(required: EventOccurrence.event)
-
-            // Fetch occurrences with their events
-            let occurrences = try occurrenceRequest.fetchAll(db)
-
-            // Convert to EventObjectOccurrence
-            var eventObjectOccurrences: [EventObjectOccurrence] = []
-            for occurrence in occurrences {
-                let event = try occurrence.event.fetchOne(db)!
-
-                // Apply event-level filters (year, region, search, favorites)
-                var includeEvent = true
-
-                // Year filter
-                if let year = filter.year, event.year != year {
-                    includeEvent = false
-                }
-
-                // Region filter (event inherits location from host camp/art)
-                if let region = filter.region {
-                    if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
-                        let minLat = region.center.latitude - region.span.latitudeDelta / 2
-                        let maxLat = region.center.latitude + region.span.latitudeDelta / 2
-                        let minLon = region.center.longitude - region.span.longitudeDelta / 2
-                        let maxLon = region.center.longitude + region.span.longitudeDelta / 2
-
-                        if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
-                            includeEvent = false
-                        }
-                    } else {
-                        includeEvent = false  // No GPS coordinates
-                    }
-                }
-
-                // Search text filter (basic name/description search for now)
-                // TODO: Use FTS5 for better search performance
-                if let searchText = filter.searchText, !searchText.isEmpty {
-                    let nameMatch = event.name.lowercased().contains(searchText.lowercased())
-                    let descMatch = event.description?.lowercased().contains(searchText.lowercased()) ?? false
-                    if !nameMatch && !descMatch {
-                        includeEvent = false
-                    }
-                }
-
-                if includeEvent {
-                    eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
-                }
-            }
-
-            return eventObjectOccurrences
+            try eventObjectOccurrences(filter: filter, db: db)
         }
+    }
+
+    // MARK: - Filtered Observation Helpers
+
+    private func observe<T>(
+        value: @escaping (Database) throws -> [T],
+        onChange: @escaping ([T]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking(value)
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: onChange
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
+    func observeArt(
+        filter: ArtFilter,
+        onChange: @escaping ([ArtObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            value: { db in
+                try self.artRequest(filter: filter).fetchAll(db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    func observeCamps(
+        filter: CampFilter,
+        onChange: @escaping ([CampObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            value: { db in
+                try self.campRequest(filter: filter).fetchAll(db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    func observeEvents(
+        filter: EventFilter,
+        onChange: @escaping ([EventObjectOccurrence]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            value: { db in
+                try self.eventObjectOccurrences(filter: filter, db: db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
     }
 
     // MARK: - Metadata Operations

@@ -71,6 +71,36 @@ public protocol PlayaDB {
     /// ```
     func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence]
     
+    /// Observe art objects matching the specified filter criteria.
+    ///
+    /// - Parameters:
+    ///   - filter: Filter options for art objects.
+    ///   - onChange: Called each time the underlying query results change.
+    ///   - onError: Called if the observation encounters an error.
+    /// - Returns: Token for cancelling the observation.
+    @discardableResult
+    func observeArt(
+        filter: ArtFilter,
+        onChange: @escaping ([ArtObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
+
+    /// Observe camp objects matching the specified filter criteria.
+    @discardableResult
+    func observeCamps(
+        filter: CampFilter,
+        onChange: @escaping ([CampObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
+
+    /// Observe event occurrences matching the specified filter criteria.
+    @discardableResult
+    func observeEvents(
+        filter: EventFilter,
+        onChange: @escaping ([EventObjectOccurrence]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
+    
     // MARK: - Metadata Operations
     
     /// Get all favorited objects
@@ -106,6 +136,34 @@ public protocol PlayaDB {
     
     /// All favorited objects metadata (reactive)
     var favorites: [ObjectMetadata] { get }
+}
+
+// MARK: - Observation Convenience
+
+public extension PlayaDB {
+    @discardableResult
+    func observeArt(
+        filter: ArtFilter,
+        onChange: @escaping ([ArtObject]) -> Void
+    ) -> PlayaDBObservationToken {
+        observeArt(filter: filter, onChange: onChange, onError: { _ in })
+    }
+
+    @discardableResult
+    func observeCamps(
+        filter: CampFilter,
+        onChange: @escaping ([CampObject]) -> Void
+    ) -> PlayaDBObservationToken {
+        observeCamps(filter: filter, onChange: onChange, onError: { _ in })
+    }
+
+    @discardableResult
+    func observeEvents(
+        filter: EventFilter,
+        onChange: @escaping ([EventObjectOccurrence]) -> Void
+    ) -> PlayaDBObservationToken {
+        observeEvents(filter: filter, onChange: onChange, onError: { _ in })
+    }
 }
 
 // MARK: - Factory

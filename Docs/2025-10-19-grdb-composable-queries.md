@@ -216,20 +216,24 @@ Packages/PlayaDB/Sources/PlayaDB/
   - `Packages/PlayaDB/Sources/PlayaDB/Filters/*.swift`
   - `Packages/PlayaDB/Tests/PlayaDBTests/*`
 
-## Session Updates (2025-10-19 11:20 PT)
+## Session Updates (2025-10-19 11:25 PT)
 
 - **Code Changes**
   - Added `Packages/PlayaDB/Tests/PlayaDBTests/FilterRequestBuilderTests.swift` with six new async XCTest cases covering `ArtFilter`, `CampFilter`, and `EventFilter` request builders plus filtered fetch ordering.
   - Updated `QueryInterfaceRequest+DataObject.matching` to route FTS clauses through the `*_fts` virtual tables via a `rowid IN (...)` subquery (resolves prior `no such column: "art_objects"` failures).
+  - Introduced `Packages/PlayaDB/Sources/PlayaDB/ObservationToken.swift` and new `observeArt/observeCamps/observeEvents` APIs on `PlayaDB` with a shared `observe<T>` helper inside `PlayaDBImpl`.
+  - Refactored event occurrence fetching into `eventObjectOccurrences(filter:db:)` for reuse by both fetch and observe paths.
+  - Added `Packages/PlayaDB/Tests/PlayaDBTests/FilterObservationTests.swift` to assert that filtered observations receive live updates when matching records change.
 - **Test Data Strategy**
   - Programmatically inserted auxiliary fixtures (inside/outside map region, differing years, missing GPS) to validate filter combinations without mutating shared mock JSON fixtures.
+  - Seeded dedicated observation fixtures (unique year/search tokens) so initial emissions remain empty until the test inserts matching records.
 - **Testing**
   - Command: `swift test` (run from `Packages/PlayaDB`)
-  - Result: ✅ Passed — 61 tests total (existing 55 + 6 new), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
+  - Result: ✅ Passed — 63 tests total (existing 55 + 6 + 2 new observation tests), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
   - Timing: ~27 seconds in sandboxed macOS ARM64 environment.
 - **Follow-ups**
-  - Update documentation (this file) with results, then stage & commit.
-  - Remaining Phase 2 scope: implement filter-based `observe*` APIs and favorites integration once associations are ready.
+  - Document results (this file) and commit updates.
+  - Remaining Phase 2 scope: favorites-aware filtering/observations once ObjectMetadata associations are complete.
 
 ### Phase 3: SwiftUI Migration (Future)
 
