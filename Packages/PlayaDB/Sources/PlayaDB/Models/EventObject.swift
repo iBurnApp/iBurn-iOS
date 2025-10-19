@@ -9,13 +9,28 @@ public struct EventObject: DataObject, Codable, FetchableRecord, MutablePersista
     public static let databaseTableName = "event_objects"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String,
+                         CodingKey,
+                         ColumnExpression,
+                         DataObjectColumns,
+                         GeoLocatableColumns,
+                         WebUrlColumns {
+        // DataObjectColumns
         case uid
         case name
         case year
-        case eventId = "event_id"
         case description
+
+        // GeoLocatableColumns
+        case gpsLatitude = "gps_latitude"
+        case gpsLongitude = "gps_longitude"
+
+        // WebUrlColumns
+        case url
+
+        // Event-specific columns
+        case eventId = "event_id"
         case eventTypeLabel = "event_type_label"
         case eventTypeCode = "event_type_code"
         case printDescription = "print_description"
@@ -24,12 +39,12 @@ public struct EventObject: DataObject, Codable, FetchableRecord, MutablePersista
         case locatedAtArt = "located_at_art"
         case otherLocation = "other_location"
         case checkLocation = "check_location"
-        case url
         case allDay = "all_day"
         case contact
-        case gpsLatitude = "gps_latitude"
-        case gpsLongitude = "gps_longitude"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     
     // MARK: - Primary Data (from PlayaAPI.Event)
     
@@ -218,13 +233,21 @@ public struct EventOccurrence: Codable, FetchableRecord, MutablePersistableRecor
     public static let databaseTableName = "event_occurrences"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String,
+                         CodingKey,
+                         ColumnExpression,
+                         EventOccurrenceColumns {
         case id
         case eventId = "event_id"
+
+        // EventOccurrenceColumns
         case startTime = "start_time"
         case endTime = "end_time"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     /// Auto-incremented ID
     public var id: Int64?
     

@@ -9,29 +9,53 @@ public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistabl
     public static let databaseTableName = "art_objects"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String,
+                         CodingKey,
+                         ColumnExpression,
+                         DataObjectColumns,
+                         GeoLocatableColumns,
+                         WebUrlColumns,
+                         ContactEmailColumns,
+                         HometownColumns,
+                         LocationStringColumns {
+        // DataObjectColumns
         case uid
         case name
         case year
-        case url
-        case contactEmail = "contact_email"
-        case hometown
         case description
+
+        // GeoLocatableColumns
+        case gpsLatitude = "gps_latitude"
+        case gpsLongitude = "gps_longitude"
+
+        // WebUrlColumns
+        case url
+
+        // ContactEmailColumns
+        case contactEmail = "contact_email"
+
+        // HometownColumns
+        case hometown
+
+        // LocationStringColumns
+        case locationString = "location_string"
+
+        // Art-specific columns
         case artist
         case category
         case program
         case donationLink = "donation_link"
-        case locationString = "location_string"
         case locationHour = "location_hour"
         case locationMinute = "location_minute"
         case locationDistance = "location_distance"
         case locationCategory = "location_category"
-        case gpsLatitude = "gps_latitude"
-        case gpsLongitude = "gps_longitude"
         case guidedTours = "guided_tours"
         case selfGuidedTourMap = "self_guided_tour_map"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     
     // MARK: - Primary Data (from PlayaAPI.Art)
     
@@ -229,13 +253,16 @@ public struct ArtImage: Codable, FetchableRecord, MutablePersistableRecord {
     public static let databaseTableName = "art_images"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String, CodingKey, ColumnExpression {
         case id
         case artId = "art_id"
         case thumbnailUrl = "thumbnail_url"
         case galleryRef = "gallery_ref"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     /// Auto-incremented ID
     public var id: Int64?
     

@@ -8,8 +8,8 @@ public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord
     public static let databaseTableName = "object_metadata"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String, CodingKey, ColumnExpression {
         case objectType = "object_type"
         case objectId = "object_id"
         case isFavorite = "is_favorite"
@@ -18,6 +18,9 @@ public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     /// Type of object this metadata belongs to
     public var objectType: String
     
