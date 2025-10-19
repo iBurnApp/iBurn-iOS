@@ -200,14 +200,25 @@ extension QueryInterfaceRequest where RowDecoder == EventOccurrence {
 
 // MARK: - Full-Text Search
 
-extension QueryInterfaceRequest {
+extension QueryInterfaceRequest where RowDecoder: TableRecord {
     /// Full-text search using FTS5
     public func matching(searchText: String?) -> Self {
         guard let searchText = searchText, !searchText.isEmpty else {
             return self
         }
         let pattern = FTS5Pattern(matchingAllTokensIn: searchText)
-        return self.matching(pattern)
+        let tableName = RowDecoder.databaseTableName
+        let ftsTableName = "\(tableName)_fts"
+        return self.filter(
+            sql: """
+                rowid IN (
+                    SELECT rowid
+                    FROM \"\(ftsTableName)\"
+                    WHERE \"\(ftsTableName)\" MATCH ?
+                )
+            """,
+            arguments: [pattern]
+        )
     }
 }
 

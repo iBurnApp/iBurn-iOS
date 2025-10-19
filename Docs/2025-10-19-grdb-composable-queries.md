@@ -186,29 +186,50 @@ Packages/PlayaDB/Sources/PlayaDB/
 
 ## Next Steps
 
-### Phase 2: Filter Structs & Query Methods (Next Session)
+### Phase 2: Filter Structs & Query Methods (In Progress)
 
-1. **Create Filter Structs**:
-   - `ArtFilter` - onlyWithEvents, onlyFavorites, inRegion, searchText
-   - `CampFilter` - onlyFavorites, inRegion, searchText
-   - `FavoritesFilter` - objectType, includeExpiredEvents, searchText
-   - `EventFilter` - onlyFavorites, includeExpired, searchText
+1. **Create Filter Structs** ✅
+   - `ArtFilter`, `CampFilter`, `EventFilter` implemented with year, region, favorites toggles, and search support
+2. **Add PlayaDB Query Methods** ✅ (fetch variants complete; observe variants pending)
+   - `fetchArt(filter:)`, `fetchCamps(filter:)`, `fetchEvents(filter:)`
+3. **Create Request Builders** ✅
+   - Internal helpers: `artRequest(filter:)`, `campRequest(filter:)`, `eventOccurrenceRequest(filter:)`
+4. **Generic Observation Helper** ⏳
+   - `observe<T>(_ request:)` still outstanding for reactive consumers
 
-2. **Add PlayaDB Query Methods**:
-   - `fetchArt(filter: ArtFilter)`
-   - `observeArt(filter: ArtFilter)`
-   - `fetchCamps(filter: CampFilter)`
-   - `observeCamps(filter: CampFilter)`
-   - `fetchFavorites(filter: FavoritesFilter)`
-   - `observeFavorites(filter: FavoritesFilter)`
+### Phase 2b Focus: Filter Fetch Validation (Current Session)
 
-3. **Create Request Builders**:
-   - `artRequest(filter: ArtFilter)` - compose filters into GRDB request
-   - `campRequest(filter: CampFilter)`
-   - `eventRequest(filter: EventFilter)`
+1. ✅ Add targeted tests that exercise `ArtFilter`, `CampFilter`, and `EventFilter` through the request builders and new `fetch*` APIs
+2. ✅ Seed representative fixtures in tests (multiple years, coordinates inside/outside the map region, varied descriptions) to validate each filter dimension
+3. ✅ Confirm ordering guarantees (e.g., `orderedByName`, `orderedByStartTime`) and region bounds handling
+4. ⏳ Document findings, capture command output, and commit once validation is complete
 
-4. **Generic Observation Helper**:
-   - `observe<T>(_ request: QueryInterfaceRequest<T>)`
+## Current Session (2025-10-19 PM)
+
+- **Conversation Context**: `Packages/PlayaDB/2025-10-19-were-resuming-our-migration-to-grdb-check-docs-a.txt`
+- **Objectives**:
+  1. Review filter request builders and outline validation scenarios (year, region, search, timing)
+  2. Implement coverage for filtered fetch APIs through new XCTest cases (may require helper fixtures)
+  3. Run the PlayaDB test suite, record results, and update this document prior to committing
+- **Key Files in Scope**:
+  - `Packages/PlayaDB/Sources/PlayaDB/PlayaDBImpl.swift`
+  - `Packages/PlayaDB/Sources/PlayaDB/Filters/*.swift`
+  - `Packages/PlayaDB/Tests/PlayaDBTests/*`
+
+## Session Updates (2025-10-19 11:20 PT)
+
+- **Code Changes**
+  - Added `Packages/PlayaDB/Tests/PlayaDBTests/FilterRequestBuilderTests.swift` with six new async XCTest cases covering `ArtFilter`, `CampFilter`, and `EventFilter` request builders plus filtered fetch ordering.
+  - Updated `QueryInterfaceRequest+DataObject.matching` to route FTS clauses through the `*_fts` virtual tables via a `rowid IN (...)` subquery (resolves prior `no such column: "art_objects"` failures).
+- **Test Data Strategy**
+  - Programmatically inserted auxiliary fixtures (inside/outside map region, differing years, missing GPS) to validate filter combinations without mutating shared mock JSON fixtures.
+- **Testing**
+  - Command: `swift test` (run from `Packages/PlayaDB`)
+  - Result: ✅ Passed — 61 tests total (existing 55 + 6 new), warnings unchanged (`ValueObservation` Sendable notices, unused local in `PlayaDBImportTests`).
+  - Timing: ~27 seconds in sandboxed macOS ARM64 environment.
+- **Follow-ups**
+  - Update documentation (this file) with results, then stage & commit.
+  - Remaining Phase 2 scope: implement filter-based `observe*` APIs and favorites integration once associations are ready.
 
 ### Phase 3: SwiftUI Migration (Future)
 
