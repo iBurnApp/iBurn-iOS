@@ -23,12 +23,12 @@ import MapKit
 /// )
 /// let art = try await playaDB.fetchArt(filter: filter)
 /// ```
-public struct ArtFilter {
+public struct ArtFilter: Hashable {
     /// Filter by year (e.g., 2025)
     public var year: Int?
 
     /// Filter by geographic region (requires GPS coordinates)
-    public var region: MKCoordinateRegion?
+    private var regionStorage: FilterRegion?
 
     /// Full-text search across name, description, artist, etc.
     public var searchText: String?
@@ -48,7 +48,7 @@ public struct ArtFilter {
         onlyFavorites: Bool = false
     ) {
         self.year = year
-        self.region = region
+        self.regionStorage = region.map(FilterRegion.init)
         self.searchText = searchText
         self.onlyWithEvents = onlyWithEvents
         self.onlyFavorites = onlyFavorites
@@ -58,34 +58,16 @@ public struct ArtFilter {
     public static var all: ArtFilter {
         ArtFilter()
     }
-}
 
-// MARK: - Equatable
-
-extension ArtFilter: Equatable {
-    public static func == (lhs: ArtFilter, rhs: ArtFilter) -> Bool {
-        lhs.year == rhs.year &&
-        lhs.searchText == rhs.searchText &&
-        lhs.onlyWithEvents == rhs.onlyWithEvents &&
-        lhs.onlyFavorites == rhs.onlyFavorites &&
-        lhs.region?.center.latitude == rhs.region?.center.latitude &&
-        lhs.region?.center.longitude == rhs.region?.center.longitude &&
-        lhs.region?.span.latitudeDelta == rhs.region?.span.latitudeDelta &&
-        lhs.region?.span.longitudeDelta == rhs.region?.span.longitudeDelta
+    /// The region expressed as `MKCoordinateRegion`.
+    public var region: MKCoordinateRegion? {
+        get { regionStorage?.coordinateRegion }
+        set { regionStorage = newValue.map(FilterRegion.init) }
     }
-}
 
-// MARK: - Hashable
-
-extension ArtFilter: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(year)
-        hasher.combine(searchText)
-        hasher.combine(onlyWithEvents)
-        hasher.combine(onlyFavorites)
-        hasher.combine(region?.center.latitude)
-        hasher.combine(region?.center.longitude)
-        hasher.combine(region?.span.latitudeDelta)
-        hasher.combine(region?.span.longitudeDelta)
+    /// Accessor for the underlying hashable region representation.
+    public var filterRegion: FilterRegion? {
+        get { regionStorage }
+        set { regionStorage = newValue }
     }
 }

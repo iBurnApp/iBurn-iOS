@@ -22,12 +22,12 @@ import MapKit
 /// )
 /// let events = try await playaDB.fetchEvents(filter: filter)
 /// ```
-public struct EventFilter {
+public struct EventFilter: Hashable {
     /// Filter by year (e.g., 2025)
     public var year: Int?
 
     /// Filter by geographic region (requires GPS coordinates from host camp/art)
-    public var region: MKCoordinateRegion?
+    private var regionStorage: FilterRegion?
 
     /// Full-text search across event name, description, etc.
     public var searchText: String?
@@ -58,7 +58,7 @@ public struct EventFilter {
         startingWithinHours: Int? = nil
     ) {
         self.year = year
-        self.region = region
+        self.regionStorage = region.map(FilterRegion.init)
         self.searchText = searchText
         self.onlyFavorites = onlyFavorites
         self.includeExpired = includeExpired
@@ -85,38 +85,16 @@ public struct EventFilter {
     public static func startingSoon(hours: Int) -> EventFilter {
         EventFilter(startingWithinHours: hours)
     }
-}
 
-// MARK: - Equatable
-
-extension EventFilter: Equatable {
-    public static func == (lhs: EventFilter, rhs: EventFilter) -> Bool {
-        lhs.year == rhs.year &&
-        lhs.searchText == rhs.searchText &&
-        lhs.onlyFavorites == rhs.onlyFavorites &&
-        lhs.includeExpired == rhs.includeExpired &&
-        lhs.happeningNow == rhs.happeningNow &&
-        lhs.startingWithinHours == rhs.startingWithinHours &&
-        lhs.region?.center.latitude == rhs.region?.center.latitude &&
-        lhs.region?.center.longitude == rhs.region?.center.longitude &&
-        lhs.region?.span.latitudeDelta == rhs.region?.span.latitudeDelta &&
-        lhs.region?.span.longitudeDelta == rhs.region?.span.longitudeDelta
+    /// Region expressed as `MKCoordinateRegion`.
+    public var region: MKCoordinateRegion? {
+        get { regionStorage?.coordinateRegion }
+        set { regionStorage = newValue.map(FilterRegion.init) }
     }
-}
 
-// MARK: - Hashable
-
-extension EventFilter: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(year)
-        hasher.combine(searchText)
-        hasher.combine(onlyFavorites)
-        hasher.combine(includeExpired)
-        hasher.combine(happeningNow)
-        hasher.combine(startingWithinHours)
-        hasher.combine(region?.center.latitude)
-        hasher.combine(region?.center.longitude)
-        hasher.combine(region?.span.latitudeDelta)
-        hasher.combine(region?.span.longitudeDelta)
+    /// Underlying hashable region representation.
+    public var filterRegion: FilterRegion? {
+        get { regionStorage }
+        set { regionStorage = newValue }
     }
 }
