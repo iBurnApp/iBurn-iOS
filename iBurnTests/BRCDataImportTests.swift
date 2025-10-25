@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import iBurn
+@preconcurrency @testable import iBurn
 import YapDatabase
 
 @MainActor
@@ -320,3 +320,4 @@ class BRCDataImportTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
     }
 }
+

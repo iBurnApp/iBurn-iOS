@@ -171,8 +171,16 @@ public extension PlayaDB {
 
 // MARK: - Factory
 
+/// Create a new PlayaDB instance
+/// This is a global factory function to avoid protocol metatype issues
+public func createPlayaDB() throws -> PlayaDB {
+    try PlayaDBImpl()
+}
+
 public extension PlayaDB {
     /// Create a new PlayaDB instance
+    /// Note: Due to Swift limitations with protocol metatypes, prefer using the global
+    /// createPlayaDB() function instead of calling this static method.
     static func create() throws -> PlayaDB {
         try PlayaDBImpl()
     }

@@ -491,6 +491,7 @@
 				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
 				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
 				"",
+				"",
 			);
 			showEnvVarsInLog = 0;
 		};
@@ -506,6 +507,7 @@
 			shellPath = /bin/sh;
 			shellScript = (
 				"\"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources.sh\"",
+				"",
 				"",
 			);
 			showEnvVarsInLog = 0;
@@ -531,6 +533,7 @@
 				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
 				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
 				"",
+				"",
 			);
 			showEnvVarsInLog = 0;
 		};
@@ -546,6 +549,7 @@
 			shellScript = (
 				"\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"",
 				"",
+				"",
 			);
 		};
 		D9915F632A76D2D40015C87D /* LicensePlist */ = {
@@ -558,6 +562,7 @@
 			shellPath = /bin/sh;
 			shellScript = (
 				"${PODS_ROOT}/LicensePlist/license-plist --output-path $PRODUCT_NAME/Settings.bundle --add-version-numbers --suppress-opening-directory || true",
+				"",
 				"",
 			);
 		};
@@ -573,6 +578,7 @@
 			shellPath = /bin/sh;
 			shellScript = (
 				"\"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources.sh\"",
+				"",
 				"",
 			);
 			showEnvVarsInLog = 0;

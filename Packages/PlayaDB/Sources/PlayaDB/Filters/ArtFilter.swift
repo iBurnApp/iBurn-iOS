@@ -23,7 +23,7 @@ import MapKit
 /// )
 /// let art = try await playaDB.fetchArt(filter: filter)
 /// ```
-public struct ArtFilter: Hashable {
+public struct ArtFilter: Hashable, Codable {
     /// Filter by year (e.g., 2025)
     public var year: Int?
 

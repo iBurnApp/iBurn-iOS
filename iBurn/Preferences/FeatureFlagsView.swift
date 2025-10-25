@@ -12,11 +12,14 @@ import SwiftUI
 
 /// Debug view for toggling feature flags at runtime
 struct FeatureFlagsView: View {
-    
+
     @State private var mockDateEnabled = UserDefaults.standard.bool(forKey: "BRCMockDateEnabled")
     @State private var mockDateValue = Date()
     @State private var currentDate = Date.present
     @State private var timer: Timer?
+
+    // SwiftUI Lists feature flag
+    @State private var useSwiftUILists = Preferences.FeatureFlags.useSwiftUILists.value
     
     // Dynamically calculated Burning Man dates based on Labor Day
     private var eventYear: Int {
@@ -104,7 +107,20 @@ struct FeatureFlagsView: View {
                 Text("Override the current date for testing time-sensitive features like event status colors.")
                     .font(.footnote)
             }
-            
+
+            // SwiftUI Lists Section
+            Section {
+                Toggle("Use SwiftUI Lists", isOn: $useSwiftUILists)
+                    .onChange(of: useSwiftUILists) { newValue in
+                        Preferences.FeatureFlags.useSwiftUILists.value = newValue
+                    }
+            } header: {
+                Text("UI Features")
+            } footer: {
+                Text("Use new SwiftUI-based list views for Art and Camps instead of legacy UIKit implementation.")
+                    .font(.footnote)
+            }
+
             // Quick Presets Section
             if mockDateEnabled {
                 Section {

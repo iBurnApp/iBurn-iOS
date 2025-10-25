@@ -2,7 +2,7 @@ import Foundation
 import MapKit
 
 /// Lightweight, hashable representation of an `MKCoordinateRegion`.
-public struct FilterRegion: Hashable {
+public struct FilterRegion: Hashable, Codable {
     public var centerLatitude: Double
     public var centerLongitude: Double
     public var latitudeDelta: Double
