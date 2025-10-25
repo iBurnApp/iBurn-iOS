@@ -264,26 +264,45 @@ class DetailViewModelTests: XCTestCase {
     
     func testCellTapAudioTogglesPlayback() {
         let artObject = MockDataObjects.artObjectWithAudio
+
+        // Create a viewModel with the art object that has audio
+        let audioViewModel = DetailViewModel(
+            dataObject: artObject,
+            dataService: mockDataService,
+            audioService: mockAudioService,
+            locationService: mockLocationService,
+            coordinator: mockCoordinator
+        )
+
         let audioCellType = DetailCellType.audio(artObject, isPlaying: false)
         let audioCell = DetailCell(audioCellType)
-        
-        viewModel.handleCellTap(audioCell)
-        
+
+        audioViewModel.handleCellTap(audioCell)
+
         XCTAssertTrue(mockAudioService.playAudioCalled)
-        XCTAssertTrue(viewModel.isAudioPlaying)
+        XCTAssertTrue(audioViewModel.isAudioPlaying)
     }
     
     func testCellTapAudioPausesWhenPlaying() {
         let artObject = MockDataObjects.artObjectWithAudio
         mockAudioService.currentlyPlaying = artObject
-        
+
+        // Create a viewModel with the art object that has audio
+        let audioViewModel = DetailViewModel(
+            dataObject: artObject,
+            dataService: mockDataService,
+            audioService: mockAudioService,
+            locationService: mockLocationService,
+            coordinator: mockCoordinator
+        )
+
         let audioCellType = DetailCellType.audio(artObject, isPlaying: true)
         let audioCell = DetailCell(audioCellType)
-        
-        viewModel.handleCellTap(audioCell)
-        
+
+        audioViewModel.handleCellTap(audioCell)
+
         XCTAssertTrue(mockAudioService.pauseAudioCalled)
-        XCTAssertFalse(viewModel.isAudioPlaying)
+        XCTAssertFalse(audioViewModel.isAudioPlaying)
     }
     
     // MARK: - Error Handling Tests
