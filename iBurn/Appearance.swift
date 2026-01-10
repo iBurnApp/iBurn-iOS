@@ -80,28 +80,100 @@ import UIKit
     private func setGlobalAppearance() {
         let colors = Appearance.currentColors
         
-        let coloredAppearance = UINavigationBarAppearance()
-        coloredAppearance.configureWithOpaqueBackground()
-        coloredAppearance.backgroundColor = colors.backgroundColor
-        coloredAppearance.titleTextAttributes = [.foregroundColor: colors.secondaryColor]
-        coloredAppearance.largeTitleTextAttributes = [.foregroundColor: colors.secondaryColor]
-               
-        UINavigationBar.appearance().standardAppearance = coloredAppearance
-        UINavigationBar.appearance().scrollEdgeAppearance = coloredAppearance
-
-        UINavigationBar.appearance().backgroundColor = colors.backgroundColor
-        UINavigationBar.appearance().tintColor = colors.primaryColor
-        UINavigationBar.appearance().barTintColor = colors.backgroundColor
-        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: colors.primaryColor]
-        UITabBar.appearance().backgroundColor = colors.backgroundColor
-        UITabBar.appearance().tintColor = colors.primaryColor
-        UITabBar.appearance().barTintColor = colors.backgroundColor
+        Appearance.applyNavigationBarAppearance(UINavigationBar.appearance(), colors: colors, animated: false)
+        Appearance.applyTabBarAppearance(UITabBar.appearance(), colors: colors)
         UITableView.appearance().backgroundColor = colors.backgroundColor
         UITableView.appearance().tintColor = colors.primaryColor
         UISwitch.appearance().tintColor = colors.primaryColor
         UISwitch.appearance().onTintColor = colors.primaryColor
     }
 
+}
+
+extension Appearance {
+    private static let glassBlurStyle: UIBlurEffect.Style = .systemChromeMaterial
+    private static let navBarGlassAlpha: CGFloat = 0.35
+    private static let tabBarGlassAlpha: CGFloat = 0.45
+    
+    private static func glassTintedColor(base: UIColor, alpha: CGFloat) -> UIColor {
+        UIColor { traitCollection in
+            base.resolvedColor(with: traitCollection).withAlphaComponent(alpha)
+        }
+    }
+    
+    private static func makeNavigationBarAppearance(colors: BRCImageColors) -> UINavigationBarAppearance {
+        let appearance = UINavigationBarAppearance()
+        if UIAccessibility.isReduceTransparencyEnabled {
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = colors.backgroundColor
+        } else {
+            appearance.configureWithTransparentBackground()
+            appearance.backgroundEffect = UIBlurEffect(style: glassBlurStyle)
+            appearance.backgroundColor = glassTintedColor(base: colors.backgroundColor, alpha: navBarGlassAlpha)
+        }
+        appearance.titleTextAttributes = [.foregroundColor: colors.secondaryColor]
+        appearance.largeTitleTextAttributes = [.foregroundColor: colors.secondaryColor]
+        appearance.shadowColor = .clear
+        return appearance
+    }
+    
+    private static func makeTabBarAppearance(colors: BRCImageColors) -> UITabBarAppearance {
+        let appearance = UITabBarAppearance()
+        if UIAccessibility.isReduceTransparencyEnabled {
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = colors.backgroundColor
+        } else {
+            appearance.configureWithTransparentBackground()
+            appearance.backgroundEffect = UIBlurEffect(style: glassBlurStyle)
+            appearance.backgroundColor = glassTintedColor(base: colors.backgroundColor, alpha: tabBarGlassAlpha)
+        }
+        appearance.shadowColor = .clear
+        let normalAttributes: [NSAttributedString.Key: Any] = [.foregroundColor: colors.detailColor]
+        let selectedAttributes: [NSAttributedString.Key: Any] = [.foregroundColor: colors.primaryColor]
+        appearance.stackedLayoutAppearance.normal.iconColor = colors.detailColor
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttributes
+        appearance.stackedLayoutAppearance.selected.iconColor = colors.primaryColor
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttributes
+        appearance.inlineLayoutAppearance.normal.iconColor = colors.detailColor
+        appearance.inlineLayoutAppearance.normal.titleTextAttributes = normalAttributes
+        appearance.inlineLayoutAppearance.selected.iconColor = colors.primaryColor
+        appearance.inlineLayoutAppearance.selected.titleTextAttributes = selectedAttributes
+        appearance.compactInlineLayoutAppearance.normal.iconColor = colors.detailColor
+        appearance.compactInlineLayoutAppearance.normal.titleTextAttributes = normalAttributes
+        appearance.compactInlineLayoutAppearance.selected.iconColor = colors.primaryColor
+        appearance.compactInlineLayoutAppearance.selected.titleTextAttributes = selectedAttributes
+        return appearance
+    }
+    
+    @objc public static func applyNavigationBarAppearance(_ navBar: UINavigationBar, colors: BRCImageColors, animated: Bool) {
+        let appearance = makeNavigationBarAppearance(colors: colors)
+        let applyTheme = {
+            navBar.standardAppearance = appearance
+            navBar.scrollEdgeAppearance = appearance
+            navBar.compactAppearance = appearance
+            if #available(iOS 15.0, *) {
+                navBar.compactScrollEdgeAppearance = appearance
+            }
+            navBar.tintColor = colors.primaryColor
+            navBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
+        }
+        if animated {
+            UIView.transition(with: navBar, duration: 0.25, options: [.beginFromCurrentState, .transitionCrossDissolve], animations: applyTheme, completion: nil)
+        } else {
+            applyTheme()
+        }
+    }
+    
+    @objc public static func applyTabBarAppearance(_ tabBar: UITabBar, colors: BRCImageColors) {
+        let appearance = makeTabBarAppearance(colors: colors)
+        tabBar.standardAppearance = appearance
+        if #available(iOS 15.0, *) {
+            tabBar.scrollEdgeAppearance = appearance
+        }
+        tabBar.tintColor = colors.primaryColor
+        tabBar.unselectedItemTintColor = colors.detailColor
+        tabBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
+    }
 }
 
 

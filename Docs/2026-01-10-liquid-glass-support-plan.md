@@ -3,10 +3,9 @@
 ## High-Level Plan
 Problem statement: iBurn has no real "liquid glass" support today. The global appearance pipeline forces opaque nav/tab bars and solid backgrounds, and the per-view theming helpers override any translucent configuration. The only material usage is a SwiftUI sheet background in one view.
 
-Solution overview: Introduce an explicit "liquid glass" appearance mode (toggle or default-on), build nav/tab appearances using transparent backgrounds plus blur material, and update the theming pipeline so it does not overwrite glass settings. Align UIKit and SwiftUI backgrounds so glass surfaces read consistently and respect accessibility (reduce transparency).
+Solution overview: Make glass the default (no toggle) by building nav/tab appearances using transparent backgrounds plus blur material, and update the theming pipeline so it does not overwrite glass settings. Align UIKit and SwiftUI backgrounds so glass surfaces read consistently and respect accessibility (reduce transparency).
 
 Key changes (planned):
-- Add a preference for liquid glass (Appearance or feature flag) and wire it into `Appearance`.
 - Replace opaque bar configuration with a shared appearance builder that can return opaque or glass configurations.
 - Update `ColorTheme` to skip background overrides when glass is enabled and apply `UINavigationBarAppearance`/`UITabBarAppearance` instead of `barTintColor`.
 - Add SwiftUI list/hosting adjustments to avoid solid list backgrounds blocking glass.
@@ -114,6 +113,59 @@ File: `/Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/Detail/Views/ZoomableIma
 - `/Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/ListView/ArtListView.swift` (SwiftUI list background and toolbar)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/Detail/Views/DetailView.swift` (SwiftUI detail toolbar background if needed)
 
+### Update (2026-01-10): No Toggle + Map Fullscreen Requirement
+User guidance: do not add a toggle; ensure nav/tab bars are glass by default, and make main map extend under bars.
+
+Implemented changes:
+- `/Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/Appearance.swift`: added shared glass appearance builders for nav/tab bars with reduce-transparency fallback; centralized application via `applyNavigationBarAppearance` and `applyTabBarAppearance`.
+- `/Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/ColorCache.swift`: `setColorTheme` now delegates to Appearance helpers instead of forcing opaque bar tints.
+- `/Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/BaseMapViewController.swift`: set `edgesForExtendedLayout = [.all]` and `extendedLayoutIncludesOpaqueBars = true` so the map extends under bars.
+
+Key snippets:
+```swift
+// /Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/Appearance.swift
+private static func makeNavigationBarAppearance(colors: BRCImageColors) -> UINavigationBarAppearance {
+    let appearance = UINavigationBarAppearance()
+    if UIAccessibility.isReduceTransparencyEnabled {
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = colors.backgroundColor
+    } else {
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: glassBlurStyle)
+        appearance.backgroundColor = glassTintedColor(base: colors.backgroundColor, alpha: navBarGlassAlpha)
+    }
+    appearance.titleTextAttributes = [.foregroundColor: colors.secondaryColor]
+    appearance.largeTitleTextAttributes = [.foregroundColor: colors.secondaryColor]
+    appearance.shadowColor = .clear
+    return appearance
+}
+```
+
+```swift
+// /Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/Appearance.swift
+@objc public static func applyTabBarAppearance(_ tabBar: UITabBar, colors: BRCImageColors) {
+    let appearance = makeTabBarAppearance(colors: colors)
+    tabBar.standardAppearance = appearance
+    if #available(iOS 15.0, *) {
+        tabBar.scrollEdgeAppearance = appearance
+    }
+    tabBar.tintColor = colors.primaryColor
+    tabBar.unselectedItemTintColor = colors.detailColor
+    tabBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
+}
+```
+
+```swift
+// /Users/chrisbal/Documents/Code/iBurn-iOS-2/iBurn/BaseMapViewController.swift
+override public func viewDidLoad() {
+    super.viewDidLoad()
+    edgesForExtendedLayout = [.all]
+    extendedLayoutIncludesOpaqueBars = true
+    view.addSubview(mapView)
+    ...
+}
+```
+
 ## Context Preservation
 User request: "okay we're working on liquid glass support. evaluate our current impl and plan fixes"
 
@@ -124,7 +176,7 @@ Key observations:
 
 Decision rationale:
 - Use `UINavigationBarAppearance`/`UITabBarAppearance` with transparent backgrounds and `UIBlurEffect` to achieve glass without per-view hacks.
-- Gate background changes in `ColorTheme` on a liquid glass toggle to avoid fighting the appearance pipeline.
+- Remove background overrides in `ColorTheme` so per-view theme updates don't kill blur.
 - Avoid deep SwiftUI rewrites; rely on UIKit appearances with light SwiftUI tweaks for list backgrounds and toolbars.
 
 ## Cross-References
