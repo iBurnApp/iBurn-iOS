@@ -28,24 +28,13 @@ extension UIViewController {
 
 extension UINavigationBar: ColorTheme {
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
-        self.titleTextAttributes = [.foregroundColor: colors.secondaryColor]
-        let theme = {
-            self.barTintColor = colors.backgroundColor
-            self.tintColor = colors.primaryColor
-        }
-        if animated {
-            UIView.transition(with: self, duration: 0.25, options: [.beginFromCurrentState, .transitionCrossDissolve], animations: theme, completion: nil)
-        } else {
-            theme()
-        }
+        Appearance.applyNavigationBarAppearance(self, colors: colors, animated: animated)
     }
 }
 
 extension UITabBar {
     @objc public func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
-        backgroundColor = colors.backgroundColor
-        tintColor = colors.primaryColor
-        barTintColor = colors.backgroundColor
+        Appearance.applyTabBarAppearance(self, colors: colors)
     }
 }
 

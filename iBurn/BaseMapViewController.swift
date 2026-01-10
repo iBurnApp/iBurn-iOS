@@ -52,6 +52,8 @@ public class BaseMapViewController: UIViewController {
 
     override public func viewDidLoad() {
         super.viewDidLoad()
+        edgesForExtendedLayout = [.all]
+        extendedLayoutIncludesOpaqueBars = true
         view.addSubview(mapView)
         view.tintColor = Appearance.currentColors.primaryColor
         mapView.autoPinEdgesToSuperviewEdges()
