@@ -123,6 +123,12 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if let navBar = navigationController?.navigationBar {
+            Appearance.applyTransparentNavigationBarAppearance(navBar, colors: Appearance.currentColors, animated: animated)
+        }
+        if let tabBar = tabBarController?.tabBar {
+            Appearance.applyTransparentTabBarAppearance(tabBar, colors: Appearance.currentColors)
+        }
         mapViewAdapter.reloadAnnotations()
         geocodeNavigationBar()
         geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
@@ -132,6 +138,12 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        if let navBar = navigationController?.navigationBar {
+            Appearance.applyNavigationBarAppearance(navBar, colors: Appearance.currentColors, animated: animated)
+        }
+        if let tabBar = tabBarController?.tabBar {
+            Appearance.applyTabBarAppearance(tabBar, colors: Appearance.currentColors)
+        }
         self.tabBarController?.tabBar.isHidden = false
         self.tabBarController?.tabBar.alpha = 1.0
         self.navigationController?.setNavigationBarHidden(false, animated: animated)

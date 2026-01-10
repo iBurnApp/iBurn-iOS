@@ -7,8 +7,8 @@ import PlayaAPI
 /// Internal implementation of PlayaDB using GRDB
 internal class PlayaDBImpl: PlayaDB {
     // MARK: - Database Connection
-    
-    private let dbQueue: DatabaseQueue
+
+    internal let dbQueue: DatabaseQueue  // Internal for testing
     private let dbPath: String
     
     // MARK: - Initialization
@@ -390,19 +390,23 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Data Access Methods
     
     func fetchArt() async throws -> [ArtObject] {
-        return try await dbQueue.read { db in
+        let art = try await dbQueue.read { db in
             try ArtObject.fetchAll(db)
         }
+        try await ensureMetadata(for: .art, ids: art.map(\.uid))
+        return art
     }
     
     func fetchCamps() async throws -> [CampObject] {
-        return try await dbQueue.read { db in
+        let camps = try await dbQueue.read { db in
             try CampObject.fetchAll(db)
         }
+        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
+        return camps
     }
     
     func fetchEvents() async throws -> [EventObjectOccurrence] {
-        return try await dbQueue.read { db in
+        let events = try await dbQueue.read { db in
             // Fetch events with their occurrences
             let events = try EventObject.including(all: EventObject.occurrences).fetchAll(db)
             
@@ -417,6 +421,8 @@ internal class PlayaDBImpl: PlayaDB {
             
             return eventObjectOccurrences
         }
+        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
+        return events
     }
     
     func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence] {
@@ -492,15 +498,13 @@ internal class PlayaDBImpl: PlayaDB {
     }
     
     func fetchObjects(in region: MKCoordinateRegion) async throws -> [any DataObject] {
-        return try await dbQueue.read { db in
-            var objects: [any DataObject] = []
-            
+        let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject]) in
             // Calculate bounding box
             let minLat = region.center.latitude - region.span.latitudeDelta / 2
             let maxLat = region.center.latitude + region.span.latitudeDelta / 2
             let minLon = region.center.longitude - region.span.longitudeDelta / 2
             let maxLon = region.center.longitude + region.span.longitudeDelta / 2
-            
+
             // Use R-Tree spatial index for efficient querying
             let spatialSQL = """
                 SELECT so.object_type, so.object_uid
@@ -509,18 +513,18 @@ internal class PlayaDBImpl: PlayaDB {
                 WHERE si.minLat >= ? AND si.maxLat <= ?
                   AND si.minLon >= ? AND si.maxLon <= ?
             """
-            
+
             let rows = try Row.fetchAll(db, sql: spatialSQL, arguments: [minLat, maxLat, minLon, maxLon])
-            
+
             // Group UIDs by type for batch fetching
             var artUIDs: [String] = []
             var campUIDs: [String] = []
             var eventUIDs: [String] = []
-            
+
             for row in rows {
                 let objectType: String = row["object_type"]
                 let objectUID: String = row["object_uid"]
-                
+
                 switch objectType {
                 case "art":
                     artUIDs.append(objectUID)
@@ -532,35 +536,36 @@ internal class PlayaDBImpl: PlayaDB {
                     break
                 }
             }
-            
-            // Batch fetch objects by type
-            if !artUIDs.isEmpty {
-                let artObjects = try ArtObject.filter(artUIDs.contains(Column("uid"))).fetchAll(db)
-                objects.append(contentsOf: artObjects)
-            }
-            
-            if !campUIDs.isEmpty {
-                let campObjects = try CampObject.filter(campUIDs.contains(Column("uid"))).fetchAll(db)
-                objects.append(contentsOf: campObjects)
-            }
-            
-            if !eventUIDs.isEmpty {
-                let eventObjects = try EventObject.filter(eventUIDs.contains(Column("uid"))).fetchAll(db)
-                objects.append(contentsOf: eventObjects)
-            }
-            
-            return objects
+
+            let artObjects = try ArtObject
+                .filter(artUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            let campObjects = try CampObject
+                .filter(campUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            let eventObjects = try EventObject
+                .filter(eventUIDs.contains(Column("uid")))
+                .fetchAll(db)
+
+            return (artObjects, campObjects, eventObjects)
         }
+
+        try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
+        try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
+        try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
+
+        var objects: [any DataObject] = []
+        objects.append(contentsOf: result.0)
+        objects.append(contentsOf: result.1)
+        objects.append(contentsOf: result.2)
+        return objects
     }
     
     func searchObjects(_ query: String) async throws -> [any DataObject] {
-        return try await dbQueue.read { db in
-            var objects: [any DataObject] = []
-            
+        let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject]) in
             // Prepare search query for FTS5 (escape special characters)
             let ftsQuery = query.replacingOccurrences(of: "\"", with: "\"\"")
-            
-            // Search art objects using FTS5
+
             let artSQL = """
                 SELECT art_objects.*
                 FROM art_objects
@@ -569,9 +574,7 @@ internal class PlayaDBImpl: PlayaDB {
                 ORDER BY rank
             """
             let artObjects = try ArtObject.fetchAll(db, sql: artSQL, arguments: [ftsQuery])
-            objects.append(contentsOf: artObjects)
-            
-            // Search camp objects using FTS5
+
             let campSQL = """
                 SELECT camp_objects.*
                 FROM camp_objects
@@ -580,9 +583,7 @@ internal class PlayaDBImpl: PlayaDB {
                 ORDER BY rank
             """
             let campObjects = try CampObject.fetchAll(db, sql: campSQL, arguments: [ftsQuery])
-            objects.append(contentsOf: campObjects)
-            
-            // Search event objects using FTS5
+
             let eventSQL = """
                 SELECT event_objects.*
                 FROM event_objects
@@ -591,12 +592,321 @@ internal class PlayaDBImpl: PlayaDB {
                 ORDER BY rank
             """
             let eventObjects = try EventObject.fetchAll(db, sql: eventSQL, arguments: [ftsQuery])
-            objects.append(contentsOf: eventObjects)
-            
-            return objects
+
+            return (artObjects, campObjects, eventObjects)
+        }
+
+        try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
+        try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
+        try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
+
+        var objects: [any DataObject] = []
+        objects.append(contentsOf: result.0)
+        objects.append(contentsOf: result.1)
+        objects.append(contentsOf: result.2)
+        return objects
+    }
+
+    // MARK: - Filtered Data Access (Internal Request Builders)
+
+    /// Build an art query from filter options (internal - uses GRDB types)
+    internal func artRequest(filter: ArtFilter) -> QueryInterfaceRequest<ArtObject> {
+        var request = ArtObject.all()
+
+        // Apply year filter
+        if let year = filter.year {
+            request = request.forYear(year)
+        }
+
+        // Apply region filter (also filters to only objects with GPS coordinates)
+        if let region = filter.region {
+            request = request.inRegion(region).withLocation()
+        }
+
+        // Apply text search filter
+        if let searchText = filter.searchText {
+            request = request.matching(searchText: searchText)
+        }
+
+        // Apply favorites filter
+        if filter.onlyFavorites {
+            request = request.onlyFavorites(ofType: .art)
+        }
+
+        if filter.onlyWithEvents {
+            request = request.withEvents()
+        }
+
+        // Default ordering
+        return request.orderedByName()
+    }
+
+    /// Build a camp query from filter options (internal - uses GRDB types)
+    internal func campRequest(filter: CampFilter) -> QueryInterfaceRequest<CampObject> {
+        var request = CampObject.all()
+
+        // Apply year filter
+        if let year = filter.year {
+            request = request.forYear(year)
+        }
+
+        // Apply region filter (also filters to only objects with GPS coordinates)
+        if let region = filter.region {
+            request = request.inRegion(region).withLocation()
+        }
+
+        // Apply text search filter
+        if let searchText = filter.searchText {
+            request = request.matching(searchText: searchText)
+        }
+
+        // Apply favorites filter
+        if filter.onlyFavorites {
+            request = request.onlyFavorites(ofType: .camp)
+        }
+
+        // Default ordering
+        return request.orderedByName()
+    }
+
+    /// Build an event occurrence query from filter options (internal - uses GRDB types)
+    internal func eventOccurrenceRequest(filter: EventFilter) -> QueryInterfaceRequest<EventOccurrence> {
+        var request = EventOccurrence.all()
+
+        // Apply time-based filters
+        if filter.happeningNow {
+            // Only currently happening events (overrides other time filters)
+            request = request.happeningNow()
+        } else if let hours = filter.startingWithinHours {
+            // Events starting within N hours
+            request = request.startingWithin(hours: hours)
+        } else if !filter.includeExpired {
+            // Exclude expired events
+            request = request.notExpired()
+        }
+
+        // Default ordering by start time
+        return request.orderedByStartTime()
+    }
+
+    private func eventObjectOccurrences(
+        filter: EventFilter,
+        db: Database
+    ) throws -> [EventObjectOccurrence] {
+        let occurrenceRequest = eventOccurrenceRequest(filter: filter)
+            .including(required: EventOccurrence.event)
+
+        let occurrences = try occurrenceRequest.fetchAll(db)
+        let favoriteEventIds: Set<String>
+        if filter.onlyFavorites {
+            let metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .filter(ObjectMetadata.Columns.isFavorite == true)
+                .fetchAll(db)
+            favoriteEventIds = Set(metadata.map(\.objectId))
+        } else {
+            favoriteEventIds = []
+        }
+
+        var eventObjectOccurrences: [EventObjectOccurrence] = []
+        for occurrence in occurrences {
+            guard let event = try occurrence.event.fetchOne(db) else {
+                continue
+            }
+
+            var includeEvent = true
+            if filter.onlyFavorites && !favoriteEventIds.contains(event.uid) {
+                includeEvent = false
+            }
+
+            if let year = filter.year, event.year != year {
+                includeEvent = false
+            }
+
+            if let region = filter.region {
+                if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
+                    let minLat = region.center.latitude - region.span.latitudeDelta / 2
+                    let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+                    let minLon = region.center.longitude - region.span.longitudeDelta / 2
+                    let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+
+                    if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
+                        includeEvent = false
+                    }
+                } else {
+                    includeEvent = false
+                }
+            }
+
+            if let searchText = filter.searchText, !searchText.isEmpty {
+                let lowerSearch = searchText.lowercased()
+                let nameMatch = event.name.lowercased().contains(lowerSearch)
+                let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
+                if !nameMatch && !descMatch {
+                    includeEvent = false
+                }
+            }
+
+            if includeEvent {
+                eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
+            }
+        }
+
+        return eventObjectOccurrences
+    }
+
+    // MARK: - Filtered Data Access (Public API)
+
+    func fetchArt(filter: ArtFilter) async throws -> [ArtObject] {
+        let art = try await dbQueue.read { db in
+            try artRequest(filter: filter).fetchAll(db)
+        }
+        try await ensureMetadata(for: .art, ids: art.map(\.uid))
+        return art
+    }
+
+    func fetchCamps(filter: CampFilter) async throws -> [CampObject] {
+        let camps = try await dbQueue.read { db in
+            try campRequest(filter: filter).fetchAll(db)
+        }
+        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
+        return camps
+    }
+
+    func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db in
+            try eventObjectOccurrences(filter: filter, db: db)
+        }
+        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
+        return events
+    }
+
+    // MARK: - Filtered Observation Helpers
+
+    private func observe<T>(
+        type: DataObjectType?,
+        ids: @escaping ([T]) -> [String],
+        value: @escaping @Sendable (Database) throws -> [T],
+        onChange: @escaping ([T]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking(value)
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: { [weak self] values in
+                if let type = type {
+                    let identifiers = ids(values)
+                    if !identifiers.isEmpty {
+                        Task {
+                            try? await self?.ensureMetadata(for: type, ids: identifiers)
+                        }
+                    }
+                }
+                onChange(values)
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
+    func observeArt(
+        filter: ArtFilter,
+        onChange: @escaping ([ArtObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            type: .art,
+            ids: { $0.map(\.uid) },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.artRequest(filter: filter).fetchAll(db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    func observeCamps(
+        filter: CampFilter,
+        onChange: @escaping ([CampObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            type: .camp,
+            ids: { $0.map(\.uid) },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.campRequest(filter: filter).fetchAll(db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    func observeEvents(
+        filter: EventFilter,
+        onChange: @escaping ([EventObjectOccurrence]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            type: .event,
+            ids: { $0.map { $0.event.uid } },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.eventObjectOccurrences(filter: filter, db: db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    // MARK: - Metadata Helpers
+
+    private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
+        let uniqueIds = Set(ids)
+        guard !uniqueIds.isEmpty else { return }
+
+        try await dbQueue.write { db in
+            let existingIds = try Set(
+                String.fetchAll(
+                    db,
+                    ObjectMetadata
+                        .select(ObjectMetadata.Columns.objectId)
+                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                        .filter(uniqueIds.contains(ObjectMetadata.Columns.objectId))
+                )
+            )
+
+            let missingIds = uniqueIds.subtracting(existingIds)
+            guard !missingIds.isEmpty else { return }
+
+            let now = Date()
+            for id in missingIds {
+                var metadata = ObjectMetadata(
+                    objectType: type.rawValue,
+                    objectId: id,
+                    createdAt: now,
+                    updatedAt: now
+                )
+                try metadata.insert(db)
+            }
         }
     }
-    
+
+    func metadata(for object: any DataObject) async throws -> ObjectMetadata {
+        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+
+        return try await dbQueue.read { db in
+            guard let metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else {
+                throw PlayaDBError.metadataNotFound
+            }
+            return metadata
+        }
+    }
+
     // MARK: - Metadata Operations
     
     func getFavorites() async throws -> [any DataObject] {
@@ -977,25 +1287,39 @@ internal class PlayaDBImpl: PlayaDB {
     
     private func setupObservations() {
         // Observe art objects
-        let artObservation = ValueObservation.tracking(ArtObject.fetchAll)
+        let artObservation = ValueObservation.tracking { db in
+            try ArtObject.fetchAll(db)
+        }
         let artCancellable = artObservation.start(
             in: dbQueue,
             onError: { error in
                 print("Error observing art objects: \(error)")
             },
             onChange: { [weak self] artObjects in
+                if !artObjects.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .art, ids: artObjects.map(\.uid))
+                    }
+                }
                 self?._allArt = artObjects
             }
         )
         
         // Observe camp objects
-        let campObservation = ValueObservation.tracking(CampObject.fetchAll)
+        let campObservation = ValueObservation.tracking { db in
+            try CampObject.fetchAll(db)
+        }
         let campCancellable = campObservation.start(
             in: dbQueue,
             onError: { error in
                 print("Error observing camp objects: \(error)")
             },
             onChange: { [weak self] campObjects in
+                if !campObjects.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .camp, ids: campObjects.map(\.uid))
+                    }
+                }
                 self?._allCamps = campObjects
             }
         )
@@ -1018,6 +1342,11 @@ internal class PlayaDBImpl: PlayaDB {
                 print("Error observing events: \(error)")
             },
             onChange: { [weak self] eventObjectOccurrences in
+                if !eventObjectOccurrences.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .event, ids: eventObjectOccurrences.map { $0.event.uid })
+                    }
+                }
                 self?._allEvents = eventObjectOccurrences
             }
         )
@@ -1052,6 +1381,7 @@ enum PlayaDBError: Error {
     case notImplemented(String)
     case databaseError(String)
     case importError(String)
+    case metadataNotFound
     
     var localizedDescription: String {
         switch self {
@@ -1061,6 +1391,8 @@ enum PlayaDBError: Error {
             return "Database error: \(message)"
         case .importError(let message):
             return "Import error: \(message)"
+        case .metadataNotFound:
+            return "Metadata not found for requested object"
         }
     }
 }

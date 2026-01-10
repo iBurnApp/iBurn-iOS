@@ -1,0 +1,585 @@
+import XCTest
+import CoreLocation
+import MapKit
+import GRDB
+@testable import PlayaDB
+import PlayaAPITestHelpers
+
+/// Tests that validate the filter request builders and filtered fetch APIs.
+final class FilterRequestBuilderTests: XCTestCase {
+    private var playaDB: PlayaDB!
+    private var tempDBPath: String!
+
+    private var dbQueue: DatabaseQueue {
+        (playaDB as! PlayaDBImpl).dbQueue
+    }
+
+    // MARK: - XCTest Lifecycle
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        tempDBPath = ":memory:"
+        playaDB = try PlayaDBImpl(dbPath: tempDBPath)
+
+        // Seed baseline mock data
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON
+        )
+    }
+
+    override func tearDown() async throws {
+        playaDB = nil
+        tempDBPath = nil
+        try await super.tearDown()
+    }
+
+    // MARK: - Helpers
+
+    @discardableResult
+    private func insertArt(
+        uid: String,
+        name: String,
+        year: Int,
+        description: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil
+    ) async throws -> ArtObject {
+        let art = ArtObject(
+            uid: uid,
+            name: name,
+            year: year,
+            description: description,
+            gpsLatitude: latitude,
+            gpsLongitude: longitude
+        )
+
+        try await dbQueue.write { db in
+            var mutableArt = art
+            try mutableArt.insert(db)
+        }
+
+        return art
+    }
+
+    @discardableResult
+    private func insertCamp(
+        uid: String,
+        name: String,
+        year: Int,
+        description: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil
+    ) async throws -> CampObject {
+        let camp = CampObject(
+            uid: uid,
+            name: name,
+            year: year,
+            description: description,
+            gpsLatitude: latitude,
+            gpsLongitude: longitude
+        )
+
+        try await dbQueue.write { db in
+            var mutableCamp = camp
+            try mutableCamp.insert(db)
+        }
+
+        return camp
+    }
+
+    private func insertEvent(
+        uid: String,
+        name: String,
+        year: Int,
+        start: Date,
+        end: Date,
+        description: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        locatedAtArt: String? = nil
+    ) async throws {
+        let event = EventObject(
+            uid: uid,
+            name: name,
+            year: year,
+            description: description,
+            eventTypeLabel: "Workshop",
+            eventTypeCode: "work",
+            locatedAtArt: locatedAtArt,
+            gpsLatitude: latitude,
+            gpsLongitude: longitude
+        )
+
+        try await dbQueue.write { db in
+            var mutableEvent = event
+            try mutableEvent.insert(db)
+
+            var insertedOccurrence = EventOccurrence(
+                eventId: uid,
+                startTime: start,
+                endTime: end
+            )
+            try insertedOccurrence.insert(db)
+        }
+    }
+
+    private func setFavorite(
+        _ type: DataObjectType,
+        id: String,
+        isFavorite: Bool = true
+    ) async throws {
+        try await dbQueue.write { db in
+            var metadata = ObjectMetadata(
+                objectType: type.rawValue,
+                objectId: id,
+                isFavorite: isFavorite
+            )
+            try metadata.save(db)
+        }
+    }
+
+    // MARK: - Art Filters
+
+    func testArtRequestAppliesYearRegionAndSearchFilters() async throws {
+        // Additional fixtures to challenge filters
+        try await insertArt(
+            uid: "art-outside-region",
+            name: "Far Away Sculpture",
+            year: 2025,
+            description: "Sculpture far from playa center",
+            latitude: 40.1,
+            longitude: -119.9
+        )
+
+        try await insertArt(
+            uid: "art-different-year",
+            name: "Vintage Piece",
+            year: 2024,
+            description: "Historic artwork inside the city",
+            latitude: 40.79,
+            longitude: -119.21
+        )
+
+        try await insertArt(
+            uid: "art-no-location",
+            name: "Mystery Installation",
+            year: 2025,
+            description: "No coordinates available"
+        )
+
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065),
+            span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        )
+
+        // Filter targets the imported mock art (curiosity keyword & GPS inside region)
+        let filter = ArtFilter(
+            year: 2025,
+            region: region,
+            searchText: "curiosity"
+        )
+
+        let request = (playaDB as! PlayaDBImpl).artRequest(filter: filter)
+        let results = try await dbQueue.read { db in
+            try request.fetchAll(db)
+        }
+
+        XCTAssertEqual(results.count, 1, "Only the mock art record should match all filters")
+        XCTAssertEqual(results.first?.uid, "a2IVI000000yWeZ2AU")
+    }
+
+    func testFetchArtFilterOrdersByNameAscending() async throws {
+        try await insertArt(
+            uid: "art-alpha",
+            name: "Alpha Installation",
+            year: 2025,
+            description: "Alphabetical test",
+            latitude: 40.785,
+            longitude: -119.205
+        )
+
+        try await insertArt(
+            uid: "art-beta",
+            name: "Beta Installation",
+            year: 2025,
+            description: "Alphabetical test two",
+            latitude: 40.786,
+            longitude: -119.204
+        )
+
+        let filter = ArtFilter(year: 2025)
+        let art = try await playaDB.fetchArt(filter: filter)
+        let names = art.map(\.name)
+
+        XCTAssertEqual(names, names.sorted(), "Art results should be ordered alphabetically by name")
+    }
+
+    // MARK: - Camp Filters
+
+    func testCampRequestAppliesRegionAndSearchFilters() async throws {
+        try await insertCamp(
+            uid: "camp-library",
+            name: "Desert Library",
+            year: 2025,
+            description: "Mobile library with workshops",
+            latitude: 40.789,
+            longitude: -119.205
+        )
+
+        try await insertCamp(
+            uid: "camp-outside",
+            name: "Remote Camp",
+            year: 2025,
+            description: "Too far away",
+            latitude: 40.2,
+            longitude: -119.8
+        )
+
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065),
+            span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        )
+
+        let filter = CampFilter(
+            year: 2025,
+            region: region,
+            searchText: "library"
+        )
+
+        let request = (playaDB as! PlayaDBImpl).campRequest(filter: filter)
+        let results = try await dbQueue.read { db in
+            try request.fetchAll(db)
+        }
+
+        XCTAssertEqual(results.count, 1, "Only the Desert Library should match the compound filter")
+        XCTAssertEqual(results.first?.uid, "camp-library")
+    }
+
+    func testFetchCampsFilterOrdersByNameAscending() async throws {
+        try await insertCamp(
+            uid: "camp-alpha",
+            name: "Alpha Camp",
+            year: 2025,
+            latitude: 40.785,
+            longitude: -119.205
+        )
+
+        try await insertCamp(
+            uid: "camp-beta",
+            name: "Beta Camp",
+            year: 2025,
+            latitude: 40.786,
+            longitude: -119.204
+        )
+
+        let filter = CampFilter(year: 2025)
+        let camps = try await playaDB.fetchCamps(filter: filter)
+        let names = camps.map(\.name)
+
+        XCTAssertEqual(names, names.sorted(), "Camp results should be ordered alphabetically by name")
+    }
+
+    func testArtRequestOnlyFavorites() async throws {
+        let allArt = try await playaDB.fetchArt()
+        guard let existingArt = allArt.first else {
+            XCTFail("Expected seeded art data")
+            return
+        }
+
+        try await insertArt(
+            uid: "art-not-favorite",
+            name: "Non Favorite Installation",
+            year: existingArt.year
+        )
+
+        try await setFavorite(.art, id: existingArt.uid)
+
+        let filter = ArtFilter(year: existingArt.year, onlyFavorites: true)
+        let favorites = try await playaDB.fetchArt(filter: filter)
+
+        XCTAssertEqual(favorites.map(\.uid), [existingArt.uid], "Only favorited art should be returned")
+    }
+
+    func testCampRequestOnlyFavorites() async throws {
+        let camps = try await playaDB.fetchCamps()
+        guard let existingCamp = camps.first else {
+            XCTFail("Expected seeded camp data")
+            return
+        }
+
+        try await insertCamp(
+            uid: "camp-not-favorite",
+            name: "Non Favorite Camp",
+            year: existingCamp.year
+        )
+
+        try await setFavorite(.camp, id: existingCamp.uid)
+
+        let filter = CampFilter(year: existingCamp.year, onlyFavorites: true)
+        let favorites = try await playaDB.fetchCamps(filter: filter)
+
+        XCTAssertEqual(favorites.map(\.uid), [existingCamp.uid], "Only favorited camps should be returned")
+    }
+
+    func testEventFetchOnlyFavorites() async throws {
+        let events = try await playaDB.fetchEvents(filter: .all)
+        guard let existingEvent = events.first else {
+            XCTFail("Expected seeded event data")
+            return
+        }
+
+        let now = Date()
+        try await insertEvent(
+            uid: "event-non-favorite",
+            name: "Non Favorite Event",
+            year: existingEvent.event.year,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(5400)
+        )
+
+        try await setFavorite(.event, id: existingEvent.event.uid)
+
+        let filter = EventFilter(onlyFavorites: true, includeExpired: true)
+        let favorites = try await playaDB.fetchEvents(filter: filter)
+
+        XCTAssertEqual(
+            Set(favorites.map { $0.event.uid }),
+            [existingEvent.event.uid],
+            "Only favorited events should be returned"
+        )
+    }
+
+    func testArtRequestOnlyWithEvents() async throws {
+        let year = 2030
+
+        let artWithEvent = try await insertArt(
+            uid: "art-with-event",
+            name: "Eventful Art",
+            year: year
+        )
+
+        try await insertArt(
+            uid: "art-without-event",
+            name: "Quiet Art",
+            year: year
+        )
+
+        let now = Date()
+        try await insertEvent(
+            uid: "event-for-art",
+            name: "Art Performance",
+            year: year,
+            start: now,
+            end: now.addingTimeInterval(3600),
+            locatedAtArt: artWithEvent.uid
+        )
+
+        let filter = ArtFilter(
+            year: year,
+            onlyWithEvents: true
+        )
+
+        let results = try await playaDB.fetchArt(filter: filter)
+
+        XCTAssertEqual(
+            results.map(\.uid),
+            [artWithEvent.uid],
+            "Only art with events should be returned"
+        )
+
+        let metadata = try await dbQueue.read { db in
+            try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.art.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == artWithEvent.uid)
+                .fetchOne(db)
+        }
+        XCTAssertNotNil(metadata, "Fetching art with events should ensure metadata exists")
+    }
+
+    func testFetchObjectsEnsuresMetadata() async throws {
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.79, longitude: -119.20),
+            span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        )
+
+        let objects = try await playaDB.fetchObjects(in: region)
+        XCTAssertGreaterThan(objects.count, 0, "Region should return objects")
+
+        try await dbQueue.read { db in
+            for object in objects {
+                let metadata = try ObjectMetadata
+                    .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                    .filter(ObjectMetadata.Columns.objectId == object.uid)
+                    .fetchOne(db)
+                XCTAssertNotNil(metadata, "Metadata should exist for \(object.uid)")
+            }
+        }
+    }
+
+    func testSearchObjectsEnsuresMetadata() async throws {
+        let searchTerms = ["Burning", "ASL", "Tarot"]
+        var seenObjects: [any DataObject] = []
+
+        for term in searchTerms {
+            let results = try await playaDB.searchObjects(term)
+            seenObjects.append(contentsOf: results)
+
+            try await dbQueue.read { db in
+                for object in results {
+                    let metadata = try ObjectMetadata
+                        .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                        .filter(ObjectMetadata.Columns.objectId == object.uid)
+                        .fetchOne(db)
+                    XCTAssertNotNil(metadata, "Metadata should exist for search result \(object.uid)")
+                }
+            }
+        }
+
+        XCTAssertFalse(seenObjects.isEmpty, "Search should locate at least one object")
+    }
+
+    func testMetadataLookupCreatesRow() async throws {
+        let art = try await insertArt(
+            uid: "art-metadata-test",
+            name: "Metadata Tester",
+            year: 2032
+        )
+
+        let metadata = try await playaDB.metadata(for: art)
+
+        XCTAssertEqual(metadata.objectId, art.uid)
+        XCTAssertEqual(metadata.objectType, DataObjectType.art.rawValue)
+    }
+
+    // MARK: - Event Filters
+
+    func testEventOccurrenceRequestTimeFilters() async throws {
+        let now = Date()
+
+        try await insertEvent(
+            uid: "event-past",
+            name: "Past Gathering",
+            year: 2025,
+            start: now.addingTimeInterval(-7200),
+            end: now.addingTimeInterval(-3600),
+            description: "Already finished"
+        )
+
+        try await insertEvent(
+            uid: "event-current",
+            name: "Current Workshop",
+            year: 2025,
+            start: now.addingTimeInterval(-1800),
+            end: now.addingTimeInterval(1800),
+            description: "Happening now"
+        )
+
+        try await insertEvent(
+            uid: "event-future",
+            name: "Future Class",
+            year: 2025,
+            start: now.addingTimeInterval(7200),
+            end: now.addingTimeInterval(10800),
+            description: "Upcoming"
+        )
+
+        let impl = playaDB as! PlayaDBImpl
+
+        let happeningFilter = EventFilter(happeningNow: true)
+        let happening = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: happeningFilter).fetchAll(db)
+        }
+        XCTAssertEqual(happening.map(\.eventId), ["event-current"])
+
+        let upcomingFilter = EventFilter(startingWithinHours: 3)
+        let upcoming = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: upcomingFilter).fetchAll(db)
+        }
+        XCTAssertEqual(upcoming.map(\.eventId), ["event-future"])
+
+        let notExpiredFilter = EventFilter(includeExpired: false)
+        let notExpired = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: notExpiredFilter).fetchAll(db)
+        }
+        XCTAssertEqual(
+            Set(notExpired.map(\.eventId)),
+            Set(["event-current", "event-future"]),
+            "Expired events should be excluded when includeExpired is false"
+        )
+    }
+
+    func testFetchEventsAppliesYearRegionAndSearchFilters() async throws {
+        let now = Date()
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065),
+            span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        )
+
+        try await insertEvent(
+            uid: "event-match",
+            name: "Sunrise Yoga",
+            year: 2025,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Daily yoga practice",
+            latitude: 40.787,
+            longitude: -119.205
+        )
+
+        try await insertEvent(
+            uid: "event-different-year",
+            name: "Old Year Gala",
+            year: 2024,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Different year",
+            latitude: 40.787,
+            longitude: -119.205
+        )
+
+        try await insertEvent(
+            uid: "event-outside-region",
+            name: "Distant Music",
+            year: 2025,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Too far away",
+            latitude: 40.2,
+            longitude: -119.8
+        )
+
+        try await insertEvent(
+            uid: "event-no-location",
+            name: "Secret Location Party",
+            year: 2025,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Location TBD"
+        )
+
+        try await insertEvent(
+            uid: "event-search-miss",
+            name: "Morning Meditation",
+            year: 2025,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Relaxing meditation inside region",
+            latitude: 40.788,
+            longitude: -119.204
+        )
+
+        let filter = EventFilter(
+            year: 2025,
+            region: region,
+            searchText: "yoga",
+            includeExpired: true
+        )
+
+        let events = try await playaDB.fetchEvents(filter: filter)
+        XCTAssertEqual(events.count, 1, "Only Sunrise Yoga should match all event-level filters")
+        XCTAssertEqual(events.first?.event.uid, "event-match")
+    }
+}

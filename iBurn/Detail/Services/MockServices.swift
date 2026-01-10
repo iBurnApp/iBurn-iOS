@@ -106,11 +106,23 @@ class MockAudioService: AudioServiceProtocol {
     func playAudio(artObjects: [BRCArtObject]) {
         playAudioCalled = true
         currentlyPlaying = artObjects.first
+
+        // Post notification synchronously for simpler testing
+        NotificationCenter.default.post(
+            name: Notification.Name(BRCAudioPlayer.BRCAudioPlayerChangeNotification),
+            object: nil
+        )
     }
-    
+
     func pauseAudio() {
         pauseAudioCalled = true
         currentlyPlaying = nil
+
+        // Post notification synchronously for simpler testing
+        NotificationCenter.default.post(
+            name: Notification.Name(BRCAudioPlayer.BRCAudioPlayerChangeNotification),
+            object: nil
+        )
     }
     
     func isPlaying(artObject: BRCArtObject) -> Bool {

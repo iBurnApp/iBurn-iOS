@@ -165,30 +165,262 @@ final class PlayaDBRealDataTests: XCTestCase {
         let artData = try iBurn2025APIData.DataFile.art.loadData()
         let campData = try iBurn2025APIData.DataFile.camp.loadData()
         let eventData = try iBurn2025APIData.DataFile.event.loadData()
-        
+
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
-        
+
         // When: Mark some items as favorites
         let artObjects = try await playaDB.fetchArt()
         let campObjects = try await playaDB.fetchCamps()
-        
+
         // Mark first 5 art pieces as favorites
         for art in artObjects.prefix(5) {
             try await playaDB.toggleFavorite(art)
         }
-        
+
         // Mark first 3 camps as favorites
         for camp in campObjects.prefix(3) {
             try await playaDB.toggleFavorite(camp)
         }
-        
+
         // Then: Should be able to retrieve favorites
         let favorites = try await playaDB.getFavorites()
         XCTAssertEqual(favorites.count, 8, "Should have 8 favorites (5 art + 3 camps)")
-        
+
         // Verify favorite status
         let firstArt = artObjects.first!
         let isFavorite = try await playaDB.isFavorite(firstArt)
         XCTAssertTrue(isFavorite, "First art object should be marked as favorite")
+    }
+
+    // MARK: - Query Extension Performance Tests
+
+    func testQueryExtensions_OrderedByNamePerformance() async throws {
+        // Given: Import real data
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // When: Query with orderedByName() extension
+        let dbImpl = playaDB as! PlayaDBImpl
+        let startTime = Date()
+
+        let results = try await dbImpl.dbQueue.read { db in
+            try ArtObject.all()
+                .orderedByName()
+                .fetchAll(db)
+        }
+
+        let queryTime = Date().timeIntervalSince(startTime)
+
+        // Then: Should be fast and return sorted results
+        XCTAssertGreaterThan(results.count, 0, "Should have results")
+        XCTAssertLessThan(queryTime, 0.1, "Query should complete in under 100ms")
+
+        print("orderedByName() query: \(results.count) results in \(queryTime)s")
+    }
+
+    func testQueryExtensions_InRegionPerformance() async throws {
+        // Given: Import real data
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // When: Query with inRegion() extension
+        let brcCenter = CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065)
+        let region = MKCoordinateRegion(
+            center: brcCenter,
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )
+
+        let dbImpl = playaDB as! PlayaDBImpl
+        let startTime = Date()
+
+        let results = try await dbImpl.dbQueue.read { db in
+            try ArtObject.all()
+                .inRegion(region)
+                .fetchAll(db)
+        }
+
+        let queryTime = Date().timeIntervalSince(startTime)
+
+        // Then: Should be fast with R-Tree optimization
+        XCTAssertGreaterThan(results.count, 0, "Should find objects in region")
+        XCTAssertLessThan(queryTime, 0.1, "Spatial query should complete in under 100ms")
+
+        print("inRegion() query: \(results.count) results in \(queryTime)s")
+    }
+
+    func testQueryExtensions_ComposedQueryPerformance() async throws {
+        // Given: Import real data
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // When: Execute complex composed query
+        let brcCenter = CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065)
+        let region = MKCoordinateRegion(
+            center: brcCenter,
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )
+
+        let dbImpl = playaDB as! PlayaDBImpl
+        let startTime = Date()
+
+        let results = try await dbImpl.dbQueue.read { db in
+            try ArtObject.all()
+                .inRegion(region)
+                .withLocation()
+                .withUrl()
+                .orderedByName()
+                .fetchAll(db)
+        }
+
+        let queryTime = Date().timeIntervalSince(startTime)
+
+        // Then: Composed query should still be fast (single SQL query)
+        XCTAssertLessThan(queryTime, 0.15, "Composed query should complete in under 150ms")
+
+        print("Composed query (inRegion + withLocation + withUrl + orderedByName): \(results.count) results in \(queryTime)s")
+    }
+
+    // TODO: Re-enable once favorites associations are implemented
+    /*
+    func testQueryExtensions_FavoritesPerformance() async throws {
+        // Given: Import real data and mark favorites
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // Mark some favorites
+        let artObjects = try await playaDB.fetchArt()
+        for art in artObjects.prefix(20) {
+            try await playaDB.toggleFavorite(art)
+        }
+
+        // When: Query favorites with extensions
+        let dbImpl = playaDB as! PlayaDBImpl
+        let startTime = Date()
+
+        let results = try await dbImpl.dbQueue.read { db in
+            try ArtObject.all()
+                .onlyFavorites()
+                .orderedByName()
+                .fetchAll(db)
+        }
+
+        let queryTime = Date().timeIntervalSince(startTime)
+
+        // Then: Join query should be fast
+        XCTAssertGreaterThan(results.count, 0, "Should have favorited objects")
+        XCTAssertLessThan(queryTime, 0.1, "Favorites query with join should complete in under 100ms")
+
+        print("onlyFavorites() + orderedByName() query: \(results.count) results in \(queryTime)s")
+    }
+    */
+
+    func testQueryExtensions_EventTimingPerformance() async throws {
+        // Given: Import real data
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // When: Query events with timing filters
+        let now = Date()
+        let dbImpl = playaDB as! PlayaDBImpl
+        let startTime = Date()
+
+        let results = try await dbImpl.dbQueue.read { db in
+            try EventOccurrence.all()
+                .notExpired(at: now)
+                .orderedByStartTime()
+                .limit(100)
+                .fetchAll(db)
+        }
+
+        let queryTime = Date().timeIntervalSince(startTime)
+
+        // Then: Time-based query should be fast
+        XCTAssertLessThan(queryTime, 0.1, "Event timing query should complete in under 100ms")
+
+        print("notExpired() + orderedByStartTime() query: \(results.count) results in \(queryTime)s")
+    }
+
+    func testQueryExtensions_ContactInfoPerformance() async throws {
+        // Given: Import real data
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // When: Query with contact info filters
+        let dbImpl = playaDB as! PlayaDBImpl
+        let startTime = Date()
+
+        let results = try await dbImpl.dbQueue.read { db in
+            try ArtObject.all()
+                .withUrl()
+                .withContactEmail()
+                .withHometown()
+                .orderedByHometown()
+                .fetchAll(db)
+        }
+
+        let queryTime = Date().timeIntervalSince(startTime)
+
+        // Then: Multiple filter query should be fast
+        XCTAssertLessThan(queryTime, 0.15, "Contact info query should complete in under 150ms")
+
+        print("withUrl() + withContactEmail() + withHometown() + orderedByHometown() query: \(results.count) results in \(queryTime)s")
+    }
+
+    func testQueryExtensions_CrossModelConsistency() async throws {
+        // Given: Import real data
+        let artData = try iBurn2025APIData.DataFile.art.loadData()
+        let campData = try iBurn2025APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
+
+        // When: Apply same query to different models
+        let brcCenter = CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065)
+        let region = MKCoordinateRegion(
+            center: brcCenter,
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )
+
+        let dbImpl = playaDB as! PlayaDBImpl
+
+        let artResults = try await dbImpl.dbQueue.read { db in
+            try ArtObject.all()
+                .inRegion(region)
+                .withLocation()
+                .orderedByName()
+                .fetchAll(db)
+        }
+
+        let campResults = try await dbImpl.dbQueue.read { db in
+            try CampObject.all()
+                .inRegion(region)
+                .withLocation()
+                .orderedByName()
+                .fetchAll(db)
+        }
+
+        // Then: Both queries should work and be consistent
+        XCTAssertGreaterThan(artResults.count, 0, "Should have art results")
+        XCTAssertGreaterThan(campResults.count, 0, "Should have camp results")
+
+        print("Cross-model query: \(artResults.count) art, \(campResults.count) camps in same region")
     }
 }

@@ -23,7 +23,11 @@ enum Preferences {
     // MARK: - Feature Flags (DEBUG only)
     #if DEBUG
     enum FeatureFlags {
-        // Add debug-only feature flags here as needed
+        static let useSwiftUILists = Preference<Bool>(
+            key: "featureFlag.lists.useSwiftUI",
+            defaultValue: false,
+            description: "Use new SwiftUI list views instead of legacy UIKit for Art and Camps"
+        )
     }
     #endif
     

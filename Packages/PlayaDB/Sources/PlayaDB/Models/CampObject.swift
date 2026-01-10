@@ -9,26 +9,50 @@ public struct CampObject: DataObject, Codable, FetchableRecord, MutablePersistab
     public static let databaseTableName = "camp_objects"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String,
+                         CodingKey,
+                         ColumnExpression,
+                         DataObjectColumns,
+                         GeoLocatableColumns,
+                         WebUrlColumns,
+                         ContactEmailColumns,
+                         HometownColumns,
+                         LocationStringColumns {
+        // DataObjectColumns
         case uid
         case name
         case year
-        case url
-        case contactEmail = "contact_email"
-        case hometown
         case description
-        case landmark
+
+        // GeoLocatableColumns
+        case gpsLatitude = "gps_latitude"
+        case gpsLongitude = "gps_longitude"
+
+        // WebUrlColumns
+        case url
+
+        // ContactEmailColumns
+        case contactEmail = "contact_email"
+
+        // HometownColumns
+        case hometown
+
+        // LocationStringColumns
         case locationString = "location_string"
+
+        // Camp-specific columns
+        case landmark
         case locationLocationString = "location_location_string"
         case frontage
         case intersection
         case intersectionType = "intersection_type"
         case dimensions
         case exactLocation = "exact_location"
-        case gpsLatitude = "gps_latitude"
-        case gpsLongitude = "gps_longitude"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     
     // MARK: - Primary Data (from PlayaAPI.Camp)
     
@@ -142,6 +166,13 @@ public extension CampObject {
     }
 }
 
+// MARK: - Column Provider Conformance
+
+extension CampObject: DataObjectColumnProviding {
+    public typealias ColumnSet = Columns
+    public static var columnSet: Columns.Type { Columns.self }
+}
+
 // MARK: - Computed Properties
 
 public extension CampObject {
@@ -237,12 +268,15 @@ public struct CampImage: Codable, FetchableRecord, MutablePersistableRecord {
     public static let databaseTableName = "camp_images"
     
     // MARK: - Column Mapping
-    
-    private enum CodingKeys: String, CodingKey, ColumnExpression {
+
+    public enum Columns: String, CodingKey, ColumnExpression {
         case id
         case campId = "camp_id"
         case thumbnailUrl = "thumbnail_url"
     }
+
+    // Use Columns as CodingKeys
+    private typealias CodingKeys = Columns
     /// Auto-incremented ID
     public var id: Int64?
     

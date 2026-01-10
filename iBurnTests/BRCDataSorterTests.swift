@@ -34,16 +34,12 @@ class BRCDataSorterTests: XCTestCase {
         super.tearDown()
     }
     
-    // MARK: - Utility Methods
-    
-    func testDataURL(forDirectory directory: String) -> URL? {
-        return databaseHelper.testDataURL(forDirectory: directory)
-    }
+    // MARK: - Tests
 
     func testSortData() throws {
         let expectation = self.expectation(description: "sort data")
-        
-        let testDataURL = try XCTUnwrap(testDataURL(forDirectory: "initial_data"))
+
+        let testDataURL = try XCTUnwrap(TestBundleHelper.updateDataURL(forBundle: "initial_data"))
         importer.loadUpdates(from: testDataURL, fetchResultBlock: { (fetchResult: UIBackgroundFetchResult) -> Void in
             self.importer.waitForDataUpdatesToFinish()
             var dataObjects: [BRCDataObject] = []
