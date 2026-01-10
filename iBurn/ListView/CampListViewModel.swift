@@ -1,31 +1,25 @@
 //
-//  ArtListViewModel.swift
+//  CampListViewModel.swift
 //  iBurn
 //
-//  Created by Claude Code on 10/25/25.
-//  Copyright © 2025 Burning Man Earth. All rights reserved.
+//  Created by Codex on 1/10/26.
+//  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
 import Foundation
 import CoreLocation
 import PlayaDB
 
-/// View model for the Art list view
-///
-/// Manages state for displaying and filtering art objects, including:
-/// - Observing art objects from PlayaDB via AsyncStream
-/// - Tracking current location for distance calculations
-/// - Managing filter state with persistence
-/// - Handling search text filtering (in-memory)
+/// View model for the Camp list view
 @MainActor
-class ArtListViewModel: ObservableObject {
+class CampListViewModel: ObservableObject {
     // MARK: - Published Properties
 
-    /// All art objects from the database (filtered by current filter)
-    @Published var items: [ArtObject] = []
+    /// All camp objects from the database (filtered by current filter)
+    @Published var items: [CampObject] = []
 
     /// Current filter applied to the list
-    @Published var filter: ArtFilter {
+    @Published var filter: CampFilter {
         didSet {
             saveFilter()
             restartObservation()
@@ -46,7 +40,7 @@ class ArtListViewModel: ObservableObject {
 
     // MARK: - Private Properties
 
-    private let dataProvider: ArtDataProvider
+    private let dataProvider: CampDataProvider
     private let locationProvider: LocationProvider
     private let legacyDataStore: LegacyDataStore
     private var observationTask: Task<Void, Never>?
@@ -55,15 +49,10 @@ class ArtListViewModel: ObservableObject {
 
     // MARK: - Initialization
 
-    /// Initialize the view model
-    /// - Parameters:
-    ///   - dataProvider: The data provider for art objects
-    ///   - locationProvider: The provider for location updates
-    ///   - initialFilter: Optional initial filter (uses persisted or default)
     init(
-        dataProvider: ArtDataProvider,
+        dataProvider: CampDataProvider,
         locationProvider: LocationProvider,
-        initialFilter: ArtFilter = .all,
+        initialFilter: CampFilter = .all,
         legacyDataStore: LegacyDataStore = LegacyDataStore()
     ) {
         self.dataProvider = dataProvider
@@ -85,10 +74,6 @@ class ArtListViewModel: ObservableObject {
 
     // MARK: - Observation
 
-    /// Start observing art objects from the database
-    ///
-    /// Creates a Task that consumes the AsyncStream from the data provider.
-    /// Updates are automatically published to the `items` property.
     private func startObserving() {
         observationTask?.cancel()
         isLoading = true
@@ -106,10 +91,6 @@ class ArtListViewModel: ObservableObject {
         }
     }
 
-    /// Start observing location updates
-    ///
-    /// Creates a Task that consumes the AsyncStream from the location provider.
-    /// Location updates trigger distance recalculations in the view.
     private func startLocationUpdates() {
         locationTask?.cancel()
 
@@ -124,9 +105,6 @@ class ArtListViewModel: ObservableObject {
         }
     }
 
-    /// Restart observation with current filter
-    ///
-    /// Called when filter changes to fetch new results from the database.
     private func restartObservation() {
         startObserving()
         refreshFavorites()
@@ -134,15 +112,13 @@ class ArtListViewModel: ObservableObject {
 
     // MARK: - Actions
 
-    /// Toggle the favorite status of an art object
-    /// - Parameter object: The art object to toggle
-    func toggleFavorite(_ object: ArtObject) async {
+    func toggleFavorite(_ object: CampObject) async {
         do {
             try await dataProvider.toggleFavorite(object)
             let isFavorite = try await dataProvider.isFavorite(object)
             await legacyDataStore.updateFavoriteStatus(
                 uid: object.uid,
-                type: .art,
+                type: .camp,
                 isFavorite: isFavorite
             )
             refreshFavorites()
@@ -151,26 +127,17 @@ class ArtListViewModel: ObservableObject {
         }
     }
 
-    /// Get distance string for an art object
-    /// - Parameter object: The art object
-    /// - Returns: Formatted distance string or nil if location unavailable
-    func distanceString(for object: ArtObject) -> String? {
+    func distanceString(for object: CampObject) -> String? {
         dataProvider.distanceString(from: currentLocation, to: object)
     }
 
-    /// Check if an art object is marked as favorite
-    /// - Parameter object: The art object to check
-    func isFavorite(_ object: ArtObject) -> Bool {
+    func isFavorite(_ object: CampObject) -> Bool {
         favoriteIDs.contains(object.uid)
     }
 
     // MARK: - Computed Properties
 
-    /// Items filtered by search text (in-memory filtering)
-    ///
-    /// This performs client-side filtering on top of the database filtering.
-    /// Search looks in name, description, and artist name.
-    var filteredItems: [ArtObject] {
+    var filteredItems: [CampObject] {
         let baseItems = filter.onlyFavorites
             ? items.filter { favoriteIDs.contains($0.uid) }
             : items
@@ -178,10 +145,12 @@ class ArtListViewModel: ObservableObject {
         guard !searchText.isEmpty else { return baseItems }
 
         let lowercasedSearch = searchText.lowercased()
-        return baseItems.filter { art in
-            art.name.lowercased().contains(lowercasedSearch) ||
-            art.description?.lowercased().contains(lowercasedSearch) == true ||
-            art.artist?.lowercased().contains(lowercasedSearch) == true
+        return baseItems.filter { camp in
+            camp.name.lowercased().contains(lowercasedSearch) ||
+            camp.description?.lowercased().contains(lowercasedSearch) == true ||
+            camp.hometown?.lowercased().contains(lowercasedSearch) == true ||
+            camp.landmark?.lowercased().contains(lowercasedSearch) == true ||
+            camp.locationString?.lowercased().contains(lowercasedSearch) == true
         }
     }
 
@@ -191,14 +160,14 @@ class ArtListViewModel: ObservableObject {
         favoritesTask?.cancel()
         favoritesTask = Task { [weak self] in
             guard let self = self else { return }
-            let ids = await self.legacyDataStore.favoriteIDs(for: .art)
+            let ids = await self.legacyDataStore.favoriteIDs(for: .camp)
             await MainActor.run {
                 self.favoriteIDs = ids
             }
         }
     }
 
-    private func filterWithoutFavorites() -> ArtFilter {
+    private func filterWithoutFavorites() -> CampFilter {
         var effectiveFilter = filter
         effectiveFilter.onlyFavorites = false
         return effectiveFilter
@@ -206,18 +175,15 @@ class ArtListViewModel: ObservableObject {
 
     // MARK: - Filter Persistence
 
-    /// Save the current filter to UserDefaults
     private func saveFilter() {
         if let data = try? JSONEncoder().encode(filter) {
-            UserDefaults.standard.set(data, forKey: "artListFilter")
+            UserDefaults.standard.set(data, forKey: "campListFilter")
         }
     }
 
-    /// Load the persisted filter from UserDefaults
-    /// - Returns: The persisted filter or nil if not found
-    private static func loadFilter() -> ArtFilter? {
-        guard let data = UserDefaults.standard.data(forKey: "artListFilter"),
-              let filter = try? JSONDecoder().decode(ArtFilter.self, from: data) else {
+    private static func loadFilter() -> CampFilter? {
+        guard let data = UserDefaults.standard.data(forKey: "campListFilter"),
+              let filter = try? JSONDecoder().decode(CampFilter.self, from: data) else {
             return nil
         }
         return filter

@@ -25,6 +25,9 @@ class DependencyContainer {
     /// Preference service for app settings
     let preferenceService: PreferenceService
 
+    /// Background seeder for PlayaDB
+    private let playaDBSeeder: PlayaDBSeeder
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
@@ -32,11 +35,10 @@ class DependencyContainer {
         ArtDataProvider(playaDB: playaDB)
     }()
 
-    // TODO: Add when CampDataProvider is created
-    // /// Data provider for Camp objects
-    // private(set) lazy var campDataProvider: CampDataProvider = {
-    //     CampDataProvider(playaDB: playaDB)
-    // }()
+    /// Data provider for Camp objects
+    private(set) lazy var campDataProvider: CampDataProvider = {
+        CampDataProvider(playaDB: playaDB)
+    }()
 
     // MARK: - Initialization
 
@@ -55,6 +57,9 @@ class DependencyContainer {
         )
 
         self.preferenceService = preferenceService
+
+        self.playaDBSeeder = PlayaDBSeeder(playaDB: self.playaDB)
+        self.playaDBSeeder.seedIfNeeded()
     }
 
     // MARK: - Factory Methods
@@ -70,15 +75,14 @@ class DependencyContainer {
         )
     }
 
-    // TODO: Add when CampListViewModel is created
-    // /// Create a CampListViewModel with injected dependencies
-    // /// - Parameter initialFilter: Optional initial filter (defaults to .all)
-    // /// - Returns: Configured CampListViewModel
-    // func makeCampListViewModel(initialFilter: CampFilter = .all) -> CampListViewModel {
-    //     CampListViewModel(
-    //         dataProvider: campDataProvider,
-    //         locationProvider: locationProvider,
-    //         initialFilter: initialFilter
-    //     )
-    // }
+    /// Create a CampListViewModel with injected dependencies
+    /// - Parameter initialFilter: Optional initial filter (defaults to .all)
+    /// - Returns: Configured CampListViewModel
+    func makeCampListViewModel(initialFilter: CampFilter = .all) -> CampListViewModel {
+        CampListViewModel(
+            dataProvider: campDataProvider,
+            locationProvider: locationProvider,
+            initialFilter: initialFilter
+        )
+    }
 }

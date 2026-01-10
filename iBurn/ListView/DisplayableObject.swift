@@ -26,5 +26,5 @@ protocol DisplayableObject {
 import PlayaDB
 
 extension ArtObject: DisplayableObject {}
-// Future: extension CampObject: DisplayableObject {}
+extension CampObject: DisplayableObject {}
 // Future: extension EventObject: DisplayableObject {}

@@ -64,7 +64,7 @@ import Onboard
         // fill frame w/ video
         moviePlayerController.videoGravity = convertToAVLayerVideoGravity(AVLayerVideoGravity.resizeAspectFill.rawValue)
         // loop video http://stackoverflow.com/a/26401680
-        weak var weakVC: BRCOnboardingViewController? = self
+        weak let weakVC: BRCOnboardingViewController? = self
         // prevent memory cycle
         let noteCenter = NotificationCenter.default
         observer = noteCenter.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: nil, queue:         // any object can send

@@ -10,6 +10,8 @@ import XCTest
 @preconcurrency @testable import iBurn
 import YapDatabase
 
+extension BRCUpdateInfo: @unchecked Sendable {}
+
 @MainActor
 class BRCDataImportTests: XCTestCase {
     
@@ -320,4 +322,3 @@ class BRCDataImportTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
     }
 }
-

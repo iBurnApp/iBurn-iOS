@@ -1,35 +1,26 @@
 //
-//  ArtListView.swift
+//  CampListView.swift
 //  iBurn
 //
-//  Created by Claude Code on 10/25/25.
-//  Copyright © 2025 Burning Man Earth. All rights reserved.
+//  Created by Codex on 1/10/26.
+//  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
 import SwiftUI
 import PlayaDB
 
-/// SwiftUI view for displaying a list of art objects
-///
-/// Features:
-/// - Searchable list with real-time filtering
-/// - Filter button to configure display options (onlyWithEvents, onlyFavorites)
-/// - Map button to view art on map
-/// - Distance display from user location
-/// - Favorite toggling per item
-/// - Navigation to detail view
-/// - Theme support
-struct ArtListView: View {
-    @StateObject private var viewModel: ArtListViewModel
+/// SwiftUI view for displaying a list of camp objects
+struct CampListView: View {
+    @StateObject private var viewModel: CampListViewModel
     @State private var showingFilterSheet = false
     @Environment(\.themeColors) var themeColors
-    private let onSelect: (ArtObject) -> Void
-    private let onShowMap: ([ArtObject]) -> Void
+    private let onSelect: (CampObject) -> Void
+    private let onShowMap: ([CampObject]) -> Void
 
     init(
-        viewModel: ArtListViewModel,
-        onSelect: @escaping (ArtObject) -> Void = { _ in },
-        onShowMap: @escaping ([ArtObject]) -> Void = { _ in }
+        viewModel: CampListViewModel,
+        onSelect: @escaping (CampObject) -> Void = { _ in },
+        onShowMap: @escaping ([CampObject]) -> Void = { _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.onSelect = onSelect
@@ -38,32 +29,30 @@ struct ArtListView: View {
 
     var body: some View {
         ZStack {
-            // Main list content
             List {
-                ForEach(viewModel.filteredItems, id: \.uid) { art in
+                ForEach(viewModel.filteredItems, id: \.uid) { camp in
                     ObjectRowView(
-                        object: art,
-                        distance: viewModel.distanceString(for: art),
-                        isFavorite: viewModel.isFavorite(art),
+                        object: camp,
+                        distance: viewModel.distanceString(for: camp),
+                        isFavorite: viewModel.isFavorite(camp),
                         onFavoriteTap: {
-                            Task { await viewModel.toggleFavorite(art) }
+                            Task { await viewModel.toggleFavorite(camp) }
                         }
                     ) {
-                        // TODO: Add audio button when audio data is migrated to PlayaDB
                         EmptyView()
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        onSelect(art)
+                        onSelect(camp)
                     }
                 }
             }
             .listStyle(.plain)
             .searchable(
                 text: $viewModel.searchText,
-                prompt: "Search art, artists, descriptions"
+                prompt: "Search camps, descriptions, hometowns"
             )
-            .navigationTitle("Art")
+            .navigationTitle("Camps")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -80,29 +69,27 @@ struct ArtListView: View {
                 }
             }
             .sheet(isPresented: $showingFilterSheet) {
-                ArtFilterSheet(filter: $viewModel.filter)
+                CampFilterSheet(filter: $viewModel.filter)
             }
 
-            // Loading overlay
             if viewModel.isLoading && viewModel.items.isEmpty {
                 VStack(spacing: 16) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("Loading art...")
+                    Text("Loading camps...")
                         .font(.subheadline)
                         .foregroundColor(themeColors.secondaryColor)
                 }
             }
 
-            // Empty state
             if !viewModel.isLoading && viewModel.filteredItems.isEmpty {
                 VStack(spacing: 16) {
-                    Image(systemName: "paintpalette")
+                    Image(systemName: "tent")
                         .font(.system(size: 64))
                         .foregroundColor(themeColors.detailColor)
 
                     if viewModel.searchText.isEmpty {
-                        Text("No art found")
+                        Text("No camps found")
                             .font(.headline)
                             .foregroundColor(themeColors.primaryColor)
 
@@ -123,34 +110,22 @@ struct ArtListView: View {
         }
     }
 
-    // MARK: - Helper Properties
-
-    /// Icon name for filter button (filled when filters are active)
     private var filterIconName: String {
-        if viewModel.filter.onlyWithEvents || viewModel.filter.onlyFavorites {
-            return "line.3.horizontal.decrease.circle.fill"
-        } else {
-            return "line.3.horizontal.decrease.circle"
-        }
+        viewModel.filter.onlyFavorites
+            ? "line.3.horizontal.decrease.circle.fill"
+            : "line.3.horizontal.decrease.circle"
     }
 
-    // MARK: - Helper Methods
-
-    /// Show the map view with current art items
     private func showMap() {
         onShowMap(viewModel.filteredItems)
     }
-
 }
 
-
-// MARK: - Preview
-
-#Preview("Art List") {
+#Preview("Camp List") {
     NavigationView {
-        ArtListView(
-            viewModel: ArtListViewModel(
-                dataProvider: PreviewArtDataProvider(),
+        CampListView(
+            viewModel: CampListViewModel(
+                dataProvider: PreviewCampDataProvider(),
                 locationProvider: MockLocationProvider(),
                 initialFilter: .all
             )
@@ -158,46 +133,31 @@ struct ArtListView: View {
     }
 }
 
-#Preview("Art List - With Filters") {
-    NavigationView {
-        ArtListView(
-            viewModel: ArtListViewModel(
-                dataProvider: PreviewArtDataProvider(),
-                locationProvider: MockLocationProvider(),
-                initialFilter: ArtFilter(onlyWithEvents: true)
-            )
-        )
-    }
-}
-
-// MARK: - Preview Helpers
-
 @MainActor
-private class PreviewArtDataProvider: ArtDataProvider {
+private class PreviewCampDataProvider: CampDataProvider {
     init() {
-        // This will fail in preview but that's okay
         super.init(playaDB: try! createPlayaDB())
     }
 
-    override func observeObjects(filter: ArtFilter) -> AsyncStream<[ArtObject]> {
+    override func observeObjects(filter: CampFilter) -> AsyncStream<[CampObject]> {
         AsyncStream { continuation in
-            // Provide mock data for preview
             continuation.yield([
-                Self.createMockArt(name: "Temple of Transition"),
-                Self.createMockArt(name: "The Man"),
-                Self.createMockArt(name: "Galaxy Portal")
+                Self.createMockCamp(name: "Solaris Camp"),
+                Self.createMockCamp(name: "Dusty Mermaid"),
+                Self.createMockCamp(name: "Roaming Oasis")
             ])
             continuation.finish()
         }
     }
 
-    private nonisolated static func createMockArt(name: String) -> ArtObject {
-        ArtObject(
+    private nonisolated static func createMockCamp(name: String) -> CampObject {
+        CampObject(
             uid: UUID().uuidString,
             name: name,
             year: 2025,
-            description: "A beautiful art installation",
-            artist: "Unknown Artist",
+            description: "A welcoming theme camp",
+            landmark: "Near Center Camp",
+            locationString: "6:00 & Esplanade",
             gpsLatitude: 40.7864,
             gpsLongitude: -119.2065
         )

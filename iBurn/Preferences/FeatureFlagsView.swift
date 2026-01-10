@@ -19,7 +19,7 @@ struct FeatureFlagsView: View {
     @State private var timer: Timer?
 
     // SwiftUI Lists feature flag
-    @State private var useSwiftUILists = Preferences.FeatureFlags.useSwiftUILists.value
+    @State private var useSwiftUILists = UserDefaults.standard.bool(forKey: Preferences.FeatureFlags.useSwiftUILists.key)
     
     // Dynamically calculated Burning Man dates based on Labor Day
     private var eventYear: Int {
@@ -112,7 +112,7 @@ struct FeatureFlagsView: View {
             Section {
                 Toggle("Use SwiftUI Lists", isOn: $useSwiftUILists)
                     .onChange(of: useSwiftUILists) { newValue in
-                        Preferences.FeatureFlags.useSwiftUILists.value = newValue
+                        UserDefaults.standard.setValue(newValue, forKey: Preferences.FeatureFlags.useSwiftUILists.key)
                     }
             } header: {
                 Text("UI Features")

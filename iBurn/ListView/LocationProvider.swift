@@ -31,7 +31,7 @@ protocol LocationProvider {
 /// In the future, this could be enhanced to listen to location delegate callbacks
 /// or use NotificationCenter if location updates are broadcast.
 @MainActor
-class CoreLocationProvider: LocationProvider {
+class CoreLocationProvider: @preconcurrency LocationProvider {
     private let locationManager: CLLocationManager
     let locationStream: AsyncStream<CLLocation?>
 
@@ -69,7 +69,7 @@ class CoreLocationProvider: LocationProvider {
 
 /// Mock implementation for testing
 @MainActor
-class MockLocationProvider: LocationProvider {
+class MockLocationProvider: @preconcurrency LocationProvider {
     var mockLocation: CLLocation?
 
     var currentLocation: CLLocation? {

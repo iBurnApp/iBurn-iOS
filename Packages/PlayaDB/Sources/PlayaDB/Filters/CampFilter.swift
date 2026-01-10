@@ -23,7 +23,7 @@ import MapKit
 /// )
 /// let camps = try await playaDB.fetchCamps(filter: filter)
 /// ```
-public struct CampFilter: Hashable {
+public struct CampFilter: Hashable, Codable {
     /// Filter by year (e.g., 2025)
     public var year: Int?
 
