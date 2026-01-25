@@ -43,7 +43,8 @@ struct ArtListView: View {
                 ForEach(viewModel.filteredItems, id: \.uid) { art in
                     ObjectRowView(
                         object: art,
-                        distance: viewModel.distanceString(for: art),
+                        subtitle: viewModel.distanceAttributedString(for: art),
+                        rightSubtitle: art.artist,
                         isFavorite: viewModel.isFavorite(art),
                         onFavoriteTap: {
                             Task { await viewModel.toggleFavorite(art) }

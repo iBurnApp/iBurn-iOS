@@ -31,7 +31,8 @@ import CoreLocation
 /// ```
 struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let object: Object
-    let distance: String?
+    let subtitle: AttributedString?
+    let rightSubtitle: String?
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
 
@@ -40,46 +41,55 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Main content
-            VStack(alignment: .leading, spacing: 4) {
-                // Name
-                Text(object.name)
-                    .font(.headline)
-                    .foregroundColor(themeColors.primaryColor)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(object.name)
+                        .font(.headline)
+                        .foregroundColor(themeColors.primaryColor)
+                        .lineLimit(1)
 
-                // Description (if available)
+                    Spacer(minLength: 0)
+
+                    actions()
+                }
+
                 if let description = object.description, !description.isEmpty {
                     Text(description)
-                        .font(.subheadline)
-                        .foregroundColor(themeColors.secondaryColor)
-                        .lineLimit(2)
-                }
-
-                // Distance (if available)
-                if let distance = distance {
-                    Text(distance)
                         .font(.caption)
-                        .foregroundColor(themeColors.detailColor)
+                        .foregroundColor(themeColors.secondaryColor)
+                        .lineLimit(3)
+                }
+
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .foregroundColor(themeColors.detailColor)
+                    } else {
+                        Text("🚶🏽 ? min   🚴🏽 ? min")
+                            .font(.subheadline)
+                            .foregroundColor(themeColors.detailColor)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if let rightSubtitle, !rightSubtitle.isEmpty {
+                        Text(rightSubtitle)
+                            .font(.subheadline)
+                            .foregroundColor(themeColors.detailColor)
+                            .lineLimit(1)
+                    }
                 }
             }
 
-            Spacer()
-
-            // Action buttons
-            HStack(spacing: 8) {
-                // Type-specific actions (audio button, etc.)
-                actions()
-
-                // Favorite button
-                Button(action: onFavoriteTap) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .pink : themeColors.detailColor)
-                        .imageScale(.large)
-                }
-                .buttonStyle(.plain) // Prevent List row selection on tap
+            Button(action: onFavoriteTap) {
+                Image(systemName: isFavorite ? "heart.fill" : "heart")
+                    .foregroundColor(isFavorite ? .pink : themeColors.detailColor)
+                    .imageScale(.large)
             }
+            .buttonStyle(.plain)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
     }
 }
 

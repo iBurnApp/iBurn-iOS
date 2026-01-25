@@ -60,6 +60,6 @@ protocol ObjectListDataProvider<Object, Filter> {
     /// - Parameters:
     ///   - location: The starting location (typically user location)
     ///   - object: The object to measure distance to
-    /// - Returns: Formatted distance string (e.g., "0.5 mi") or nil
-    func distanceString(from location: CLLocation?, to object: Object) -> String?
+    /// - Returns: Formatted, attributed distance string (walk/bike estimates) or nil
+    func distanceAttributedString(from location: CLLocation?, to object: Object) -> AttributedString?
 }

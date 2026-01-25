@@ -89,8 +89,8 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
         favoriteIDs.contains(object.uid)
     }
 
-    func distanceString(for object: Object) -> String? {
-        dataProvider.distanceString(from: currentLocation, to: object)
+    func distanceAttributedString(for object: Object) -> AttributedString? {
+        dataProvider.distanceAttributedString(from: currentLocation, to: object)
     }
 
     var filteredItems: [Object] {

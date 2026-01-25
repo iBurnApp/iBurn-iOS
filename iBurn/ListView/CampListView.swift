@@ -33,7 +33,8 @@ struct CampListView: View {
                 ForEach(viewModel.filteredItems, id: \.uid) { camp in
                     ObjectRowView(
                         object: camp,
-                        distance: viewModel.distanceString(for: camp),
+                        subtitle: viewModel.distanceAttributedString(for: camp),
+                        rightSubtitle: rightSubtitle(for: camp),
                         isFavorite: viewModel.isFavorite(camp),
                         onFavoriteTap: {
                             Task { await viewModel.toggleFavorite(camp) }
@@ -118,6 +119,13 @@ struct CampListView: View {
 
     private func showMap() {
         onShowMap(viewModel.filteredItems)
+    }
+
+    private func rightSubtitle(for camp: CampObject) -> String? {
+        if BRCEmbargo.allowEmbargoedData() {
+            return camp.locationString ?? camp.intersection ?? "Location Unknown"
+        }
+        return "Location Restricted"
     }
 }
 

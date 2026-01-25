@@ -87,7 +87,7 @@ private final class TestDataProvider: ObjectListDataProvider {
         favorites.contains(object.uid)
     }
 
-    func distanceString(from location: CLLocation?, to object: TestObject) -> String? {
+    func distanceAttributedString(from location: CLLocation?, to object: TestObject) -> AttributedString? {
         nil
     }
 }

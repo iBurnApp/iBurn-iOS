@@ -55,14 +55,16 @@ class CampDataProvider: ObjectListDataProvider {
         try await playaDB.isFavorite(object)
     }
 
-    func distanceString(from location: CLLocation?, to object: CampObject) -> String? {
+    func distanceAttributedString(from location: CLLocation?, to object: CampObject) -> AttributedString? {
         guard let location = location,
               let objectLocation = object.location else {
             return nil
         }
 
         let distance = location.distance(from: objectLocation)
-        let attributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance)
-        return attributedString?.string
+        guard let nsAttributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) else {
+            return nil
+        }
+        return AttributedString(nsAttributedString)
     }
 }
