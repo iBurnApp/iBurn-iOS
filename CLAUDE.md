@@ -129,6 +129,9 @@ xcrun simctl erase "iPhone 16 Pro"
 - `fastlane ios refresh_dsyms` - Download and upload crash symbols
 
 ### Testing
+
+When adding new functionality, make sure to plan for testability. When your feature is complete, add tests to validate your business logic, and then ensure they are passing.
+
 - **Command Line**: Use xcodebuild test commands shown above for automated testing
 - **Xcode GUI**: Run tests through Xcode Test Navigator or `Cmd+U`  
 - **Test targets**: `iBurnTests`, `PlayaKitTests`

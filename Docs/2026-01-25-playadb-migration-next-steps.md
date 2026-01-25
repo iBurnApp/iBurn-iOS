@@ -68,6 +68,24 @@ Added focused tests for the new shared list view model:
   - Favorites-only filtering is client-side while observation receives `onlyFavorites = false`
   - Favorite toggling writes legacy and reconciles the provider
 
+### List Cell Parity Progress
+
+**Thumbnails + image-colors theming (SwiftUI lists, without YapDatabase objects)**
+
+Goal: replicate the legacy `ArtImageCell` behavior (local cached thumbnail image + optional per-row color theming) while targeting PlayaDB models, not YapDatabase objects.
+
+Implementation:
+- Local cached thumbnail lookup uses the existing media cache naming scheme (`<uid>.jpg`) via `BRCMediaDownloader.localMediaURL`, protocolized behind `MediaAssetProviding`.
+- Image-derived colors are computed on-demand from the local thumbnail using `UIImageColors` and cached in-memory (no new DB table for local assets).
+
+Files:
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/MediaAssetProviding.swift` (new)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/RowAssetsLoader.swift` (new)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/MediaObjectRowView.swift` (new)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ObjectRowView.swift` (updated; supports thumbnail + optional colors override)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ArtListView.swift` (updated; uses `MediaObjectRowView`)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/CampListView.swift` (updated; uses `MediaObjectRowView`)
+
 ### Current State (from existing Docs)
 - GRDB-backed SwiftUI Art + Camp lists exist behind DEBUG feature flag `Preferences.FeatureFlags.useSwiftUILists`.
 - Data seeding exists via `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/PlayaDBSeeder.swift` (imports bundled JSON into PlayaDB when `getUpdateInfo()` is empty).

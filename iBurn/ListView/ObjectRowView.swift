@@ -9,6 +9,7 @@
 import SwiftUI
 import PlayaDB
 import CoreLocation
+import UIKit
 
 /// Generic row view for displaying data objects in list views
 ///
@@ -31,6 +32,8 @@ import CoreLocation
 /// ```
 struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let object: Object
+    let thumbnail: UIImage?
+    let colorsOverride: BRCImageColors?
     let subtitle: AttributedString?
     let rightSubtitle: String?
     let isFavorite: Bool
@@ -40,12 +43,26 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     @Environment(\.themeColors) var themeColors
 
     var body: some View {
+        let colors = colorsOverride.map(ImageColors.init) ?? themeColors
+
         HStack(alignment: .top, spacing: 12) {
+            if let thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    )
+            }
+
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(object.name)
                         .font(.headline)
-                        .foregroundColor(themeColors.primaryColor)
+                        .foregroundColor(colors.primaryColor)
                         .lineLimit(1)
 
                     Spacer(minLength: 0)
@@ -56,7 +73,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                 if let description = object.description, !description.isEmpty {
                     Text(description)
                         .font(.caption)
-                        .foregroundColor(themeColors.secondaryColor)
+                        .foregroundColor(colors.secondaryColor)
                         .lineLimit(3)
                 }
 
@@ -64,11 +81,11 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                     if let subtitle {
                         Text(subtitle)
                             .font(.subheadline)
-                            .foregroundColor(themeColors.detailColor)
+                            .foregroundColor(colors.detailColor)
                     } else {
                         Text("🚶🏽 ? min   🚴🏽 ? min")
                             .font(.subheadline)
-                            .foregroundColor(themeColors.detailColor)
+                            .foregroundColor(colors.detailColor)
                     }
 
                     Spacer(minLength: 0)
@@ -76,7 +93,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                     if let rightSubtitle, !rightSubtitle.isEmpty {
                         Text(rightSubtitle)
                             .font(.subheadline)
-                            .foregroundColor(themeColors.detailColor)
+                            .foregroundColor(colors.detailColor)
                             .lineLimit(1)
                     }
                 }
@@ -84,12 +101,13 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
 
             Button(action: onFavoriteTap) {
                 Image(systemName: isFavorite ? "heart.fill" : "heart")
-                    .foregroundColor(isFavorite ? .pink : themeColors.detailColor)
+                    .foregroundColor(isFavorite ? .pink : colors.detailColor)
                     .imageScale(.large)
             }
             .buttonStyle(.plain)
         }
         .padding(.vertical, 10)
+        .listRowBackground(colors.backgroundColor)
     }
 }
 
