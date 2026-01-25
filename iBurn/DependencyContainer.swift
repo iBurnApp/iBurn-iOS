@@ -68,10 +68,25 @@ class DependencyContainer {
     /// - Parameter initialFilter: Optional initial filter (defaults to .all)
     /// - Returns: Configured ArtListViewModel
     func makeArtListViewModel(initialFilter: ArtFilter = .all) -> ArtListViewModel {
-        ArtListViewModel(
+        ObjectListViewModel(
             dataProvider: artDataProvider,
             locationProvider: locationProvider,
-            initialFilter: initialFilter
+            legacyType: .art,
+            filterStorageKey: "artListFilter",
+            initialFilter: initialFilter,
+            effectiveFilterForObservation: { filter in
+                var f = filter
+                f.onlyFavorites = false
+                return f
+            },
+            matchesSearch: { art, q in
+                art.name.lowercased().contains(q) ||
+                art.description?.lowercased().contains(q) == true ||
+                art.artist?.lowercased().contains(q) == true
+            },
+            isDatabaseSeeded: { [artDataProvider] in
+                await artDataProvider.isDatabaseSeeded()
+            }
         )
     }
 
@@ -79,10 +94,27 @@ class DependencyContainer {
     /// - Parameter initialFilter: Optional initial filter (defaults to .all)
     /// - Returns: Configured CampListViewModel
     func makeCampListViewModel(initialFilter: CampFilter = .all) -> CampListViewModel {
-        CampListViewModel(
+        ObjectListViewModel(
             dataProvider: campDataProvider,
             locationProvider: locationProvider,
-            initialFilter: initialFilter
+            legacyType: .camp,
+            filterStorageKey: "campListFilter",
+            initialFilter: initialFilter,
+            effectiveFilterForObservation: { filter in
+                var f = filter
+                f.onlyFavorites = false
+                return f
+            },
+            matchesSearch: { camp, q in
+                camp.name.lowercased().contains(q) ||
+                camp.description?.lowercased().contains(q) == true ||
+                camp.hometown?.lowercased().contains(q) == true ||
+                camp.landmark?.lowercased().contains(q) == true ||
+                camp.locationString?.lowercased().contains(q) == true
+            },
+            isDatabaseSeeded: { [campDataProvider] in
+                await campDataProvider.isDatabaseSeeded()
+            }
         )
     }
 }

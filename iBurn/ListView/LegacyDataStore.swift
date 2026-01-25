@@ -11,7 +11,7 @@ import MapLibre
 import PlayaDB
 import YapDatabase
 
-final class LegacyDataStore {
+final class LegacyDataStore: LegacyFavoritesStoring {
     private let databaseManager: BRCDatabaseManager
 
     init(databaseManager: BRCDatabaseManager = .shared) {

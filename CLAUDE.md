@@ -29,13 +29,9 @@ Each document should include:
 * **Related Work**: Reference previous documents and build upon them
 * **Completion**: Mark final outcomes and any remaining work
 
-## Planning
-
-When working in plan mode, we can consult Gemini 2.5 Pro with `gemini -p "example prompt"` command. This model has a large context window (1M tokens) and is especially helpful when iterating on architecture decisions and proposed code changes. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
-
 ## Source Control
 
-IMPORTANT: After completing a task (and updating our documentation), we should always commit our changes. Only perform safe operations like `git add` and `git commit`. Never attempt to rewrite history, pull from remote, squash, merge or rebase.
+IMPORTANT: Do not perform any operations that result in git writes, the user will handle `git add`, `git commit`, etc. Never attempt to rewrite history, pull from remote, squash, merge or rebase. You can use read-only operations like `git show`, `git log` etc.
 
 ## Project Overview
 

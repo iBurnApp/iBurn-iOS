@@ -152,7 +152,20 @@ struct ArtListView: View {
             viewModel: ArtListViewModel(
                 dataProvider: PreviewArtDataProvider(),
                 locationProvider: MockLocationProvider(),
-                initialFilter: .all
+                legacyType: .art,
+                filterStorageKey: "artListFilter.preview",
+                initialFilter: .all,
+                legacyDataStore: PreviewLegacyFavoritesStore(),
+                effectiveFilterForObservation: { filter in
+                    var f = filter
+                    f.onlyFavorites = false
+                    return f
+                },
+                matchesSearch: { art, q in
+                    art.name.lowercased().contains(q) ||
+                    art.description?.lowercased().contains(q) == true ||
+                    art.artist?.lowercased().contains(q) == true
+                }
             )
         )
     }
@@ -164,7 +177,20 @@ struct ArtListView: View {
             viewModel: ArtListViewModel(
                 dataProvider: PreviewArtDataProvider(),
                 locationProvider: MockLocationProvider(),
-                initialFilter: ArtFilter(onlyWithEvents: true)
+                legacyType: .art,
+                filterStorageKey: "artListFilter.preview",
+                initialFilter: ArtFilter(onlyWithEvents: true),
+                legacyDataStore: PreviewLegacyFavoritesStore(),
+                effectiveFilterForObservation: { filter in
+                    var f = filter
+                    f.onlyFavorites = false
+                    return f
+                },
+                matchesSearch: { art, q in
+                    art.name.lowercased().contains(q) ||
+                    art.description?.lowercased().contains(q) == true ||
+                    art.artist?.lowercased().contains(q) == true
+                }
             )
         )
     }
@@ -202,4 +228,9 @@ private class PreviewArtDataProvider: ArtDataProvider {
             gpsLongitude: -119.2065
         )
     }
+}
+
+private final class PreviewLegacyFavoritesStore: LegacyFavoritesStoring {
+    func favoriteIDs(for type: DataObjectType) async -> Set<String> { [] }
+    func updateFavoriteStatus(uid: String, type: DataObjectType, isFavorite: Bool) async {}
 }

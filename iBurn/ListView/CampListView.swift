@@ -127,7 +127,22 @@ struct CampListView: View {
             viewModel: CampListViewModel(
                 dataProvider: PreviewCampDataProvider(),
                 locationProvider: MockLocationProvider(),
-                initialFilter: .all
+                legacyType: .camp,
+                filterStorageKey: "campListFilter.preview",
+                initialFilter: .all,
+                legacyDataStore: PreviewLegacyFavoritesStore(),
+                effectiveFilterForObservation: { filter in
+                    var f = filter
+                    f.onlyFavorites = false
+                    return f
+                },
+                matchesSearch: { camp, q in
+                    camp.name.lowercased().contains(q) ||
+                    camp.description?.lowercased().contains(q) == true ||
+                    camp.hometown?.lowercased().contains(q) == true ||
+                    camp.landmark?.lowercased().contains(q) == true ||
+                    camp.locationString?.lowercased().contains(q) == true
+                }
             )
         )
     }
@@ -162,4 +177,9 @@ private class PreviewCampDataProvider: CampDataProvider {
             gpsLongitude: -119.2065
         )
     }
+}
+
+private final class PreviewLegacyFavoritesStore: LegacyFavoritesStoring {
+    func favoriteIDs(for type: DataObjectType) async -> Set<String> { [] }
+    func updateFavoriteStatus(uid: String, type: DataObjectType, isFavorite: Bool) async {}
 }

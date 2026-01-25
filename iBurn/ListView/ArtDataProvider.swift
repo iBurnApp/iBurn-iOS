@@ -26,6 +26,11 @@ class ArtDataProvider: ObjectListDataProvider {
         self.playaDB = playaDB
     }
 
+    func isDatabaseSeeded() async -> Bool {
+        guard let updateInfo = try? await playaDB.getUpdateInfo() else { return false }
+        return !updateInfo.isEmpty
+    }
+
     // MARK: - ObjectListDataProvider
 
     func observeObjects(filter: ArtFilter) -> AsyncStream<[ArtObject]> {
