@@ -50,4 +50,3 @@ struct MediaObjectRowView<Object: DisplayableObject, Actions: View>: View {
         .onAppear { assets.startIfNeeded() }
     }
 }
-

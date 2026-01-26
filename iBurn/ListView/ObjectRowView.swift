@@ -42,23 +42,13 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     @ViewBuilder let actions: () -> Actions
     @Environment(\.themeColors) var themeColors
 
+    private let thumbnailSize: CGFloat = 100
+
     var body: some View {
         let colors = colorsOverride.map(ImageColors.init) ?? themeColors
 
         HStack(alignment: .top, spacing: 12) {
-            if let thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 56, height: 56)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                    )
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(object.name)
                         .font(.headline)
@@ -70,22 +60,29 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                     actions()
                 }
 
-                if let description = object.description, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(colors.secondaryColor)
-                        .lineLimit(3)
+                HStack(alignment: .top, spacing: 8) {
+                    thumbnailView
+                        .frame(width: thumbnailSize, height: thumbnailSize)
+
+                    Text(object.description ?? "")
+                        .font(.subheadline)
+                        .foregroundColor(colors.detailColor)
+                        .lineLimit(nil)
+                        .truncationMode(.tail)
+                        .frame(height: thumbnailSize, alignment: .topLeading)
                 }
+                .padding(.top, 4)
 
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     if let subtitle {
                         Text(subtitle)
                             .font(.subheadline)
-                            .foregroundColor(colors.detailColor)
+                            .frame(width: thumbnailSize, alignment: .leading)
                     } else {
                         Text("🚶🏽 ? min   🚴🏽 ? min")
                             .font(.subheadline)
-                            .foregroundColor(colors.detailColor)
+                            .foregroundColor(colors.secondaryColor)
+                            .frame(width: thumbnailSize, alignment: .leading)
                     }
 
                     Spacer(minLength: 0)
@@ -93,10 +90,11 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                     if let rightSubtitle, !rightSubtitle.isEmpty {
                         Text(rightSubtitle)
                             .font(.subheadline)
-                            .foregroundColor(colors.detailColor)
+                            .foregroundColor(colors.secondaryColor)
                             .lineLimit(1)
                     }
                 }
+                .padding(.top, 8)
             }
 
             Button(action: onFavoriteTap) {
@@ -107,7 +105,45 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             .buttonStyle(.plain)
         }
         .padding(.vertical, 10)
-        .listRowBackground(colors.backgroundColor)
+        .listRowBackground(listRowBackground)
+    }
+
+    private var listRowBackground: some View {
+        ZStack {
+            themeColors.backgroundColor
+            if let override = colorsOverride {
+                Color(override.backgroundColor)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.22), value: colorsOverride != nil)
+    }
+
+    @ViewBuilder
+    private var thumbnailView: some View {
+        let shape = Rectangle()
+
+        ZStack {
+            shape.fill(Color.black.opacity(0.06))
+
+            if let thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: thumbnailSize, height: thumbnailSize)
+                    .clipped()
+                    .transition(.opacity)
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundColor(.black.opacity(0.25))
+                    .frame(width: thumbnailSize, height: thumbnailSize)
+            }
+        }
+        .clipShape(shape)
+        .contentShape(shape)
+        .clipped()
+        .animation(.easeInOut(duration: 0.22), value: thumbnail != nil)
     }
 }
 

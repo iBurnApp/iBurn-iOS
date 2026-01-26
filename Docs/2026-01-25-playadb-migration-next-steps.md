@@ -102,6 +102,63 @@ Related historical references:
 - Branch: `playadb-migration`
 - Working tree: had local changes after updating favorite toggling sync (see section above)
 
+## 2026-01-25 Session Continued (SwiftUI Art/Camps Cell Parity)
+
+### Problem Statement
+- SwiftUI Art/Camp list rows (PlayaDB-backed) still look/behave “MVP” compared to the legacy UIKit list cells (notably thumbnails, spacing, distance placement, clipping, and flicker/jank while assets/colors load).
+
+### Legacy Reference (UIKit)
+File: `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ArtImageCell.xib`
+
+Key layout facts:
+- Thumbnail image view is **100x100** with a **1:1 aspect ratio constraint** and `scaleAspectFill`.
+- Thumbnail + description live in a stack view with **spacing = 8**.
+- Subtitle (walk/bike time) label is positioned **below the thumbnail stack view** with **top spacing = 8**.
+
+Relevant XIB snippet:
+```xml
+<stackView ... spacing="8" ...>
+  <imageView ... contentMode="scaleAspectFill" ...>
+    <constraint firstAttribute="height" constant="100" .../>
+    <constraint firstAttribute="width" constant="100" .../>
+    <constraint firstAttribute="width" secondItem="..." secondAttribute="height" multiplier="1:1" .../>
+  </imageView>
+  <label ... id="descriptionLabel" .../>
+</stackView>
+<label ... id="subtitleLabel" .../>
+```
+
+### Implementation Notes (SwiftUI)
+
+Primary file updated:
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ObjectRowView.swift`
+
+Changes:
+- Reserve a fixed 100x100 thumbnail slot so the row doesn’t reflow when the image arrives.
+- Fix thumbnail clipping so it cannot overflow into adjacent content.
+- Align the distance/walk/bike subtitle under the thumbnail by giving it a fixed width of 100.
+- Match legacy label coloring intent:
+  - Description uses `detailColor`
+  - Right subtitle uses `secondaryColor`
+- Represent missing thumbnails with `UIImage? == nil` (no separate `isMissingThumbnail` boolean).
+
+Media lookup (no YapDB objects; reuse legacy disk cache):
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/MediaAssetProviding.swift` (protocol; default uses `BRCMediaDownloader.localMediaURL("\(uid).jpg")`)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/RowAssetsLoader.swift` (sync thumbnail load, async colors, in-memory caches)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/MediaObjectRowView.swift` (row wrapper that owns `RowAssetsLoader`)
+
+### Build / Tests (iOS 26.2 simulator)
+
+Build (succeeded):
+```bash
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet
+```
+
+iBurnTests (succeeded):
+```bash
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet
+```
+
 ## Context Preservation
 - The next missing GRDB migration slice for parity is Events; existing PlayaDB already exposes:
   - `/Users/chrisbal/Documents/Code/iBurn-iOS/Packages/PlayaDB/Sources/PlayaDB/PlayaDB.swift` event APIs (`fetchEvents(on:)`, `fetchCurrentEvents`, etc.)

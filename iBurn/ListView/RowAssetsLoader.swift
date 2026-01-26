@@ -18,6 +18,7 @@ final class RowAssetsLoader: ObservableObject {
     private let provider: MediaAssetProviding
 
     private var didStart = false
+    private var loadTask: Task<Void, Never>?
 
     private static let thumbnailCache: NSCache<NSString, UIImage> = {
         let cache = NSCache<NSString, UIImage>()
@@ -37,46 +38,48 @@ final class RowAssetsLoader: ObservableObject {
     ) {
         self.objectID = objectID
         self.provider = provider
+
+        // Prime from in-memory caches so the first render doesn't flicker if already loaded.
+        let cacheKey = objectID as NSString
+        self.thumbnail = Self.thumbnailCache.object(forKey: cacheKey)
+        self.colors = Self.colorsCache.object(forKey: cacheKey)
+
+        // The legacy thumbnail cache is on-disk and is fast to load.
+        // Load the thumbnail synchronously (colors can be computed later).
+        if self.thumbnail == nil,
+           let url = provider.localThumbnailURL(objectID: objectID) {
+            if let image = UIImage(contentsOfFile: url.path) {
+                Self.thumbnailCache.setObject(image, forKey: cacheKey)
+                self.thumbnail = image
+            }
+        }
     }
 
     func startIfNeeded() {
         guard !didStart else { return }
         didStart = true
 
-        let cacheKey = objectID as NSString
-        if let cachedImage = Self.thumbnailCache.object(forKey: cacheKey) {
-            thumbnail = cachedImage
-        }
-        if let cachedColors = Self.colorsCache.object(forKey: cacheKey) {
-            colors = cachedColors
-        }
+        guard Appearance.useImageColorsTheming, colors == nil else { return }
+        guard let image = thumbnail else { return }
 
-        guard thumbnail == nil else { return }
-        guard let url = provider.localThumbnailURL(objectID: objectID) else { return }
-        let path = url.path
-        let keyString = objectID
+        let objectID = self.objectID
+        loadTask?.cancel()
+        loadTask = Task.detached(priority: .utility) {
+            if Task.isCancelled { return }
+            let extracted = image.getColors(quality: .high)?.brc_ImageColors
+            if Task.isCancelled { return }
+            guard let extracted else { return }
 
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let image = UIImage(contentsOfFile: path) else { return }
-
-            let extractedColors: BRCImageColors?
-            if Appearance.useImageColorsTheming {
-                extractedColors = image.getColors(quality: .high)?.brc_ImageColors
-            } else {
-                extractedColors = nil
-            }
-
-            DispatchQueue.main.async {
-                guard let self else { return }
-                let cacheKey = keyString as NSString
-                Self.thumbnailCache.setObject(image, forKey: cacheKey)
-                self.thumbnail = image
-
-                if let extractedColors {
-                    Self.colorsCache.setObject(extractedColors, forKey: cacheKey)
-                    self.colors = extractedColors
-                }
+            await MainActor.run {
+                if Task.isCancelled { return }
+                let cacheKey = objectID as NSString
+                Self.colorsCache.setObject(extracted, forKey: cacheKey)
+                self.colors = extracted
             }
         }
+    }
+
+    deinit {
+        loadTask?.cancel()
     }
 }
