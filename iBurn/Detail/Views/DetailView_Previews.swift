@@ -77,7 +77,7 @@ struct DetailView_Previews: PreviewProvider {
             NavigationView {
                 DetailView(viewModel: {
                     let viewModel = DetailViewModel.createPreview(with: MockDataObjects.eventObject)
-                    viewModel.metadata.isFavorite = true
+                    viewModel.isFavorite = true
                     return viewModel
                 }())
             }
@@ -87,7 +87,7 @@ struct DetailView_Previews: PreviewProvider {
             NavigationView {
                 DetailView(viewModel: {
                     let viewModel = DetailViewModel.createPreview(with: MockDataObjects.campObject)
-                    viewModel.metadata.userNotes = "Great coffee here! Really friendly people. Don't miss the 3pm ceremony."
+                    viewModel.userNotes = "Great coffee here! Really friendly people. Don't miss the 3pm ceremony."
                     return viewModel
                 }())
             }

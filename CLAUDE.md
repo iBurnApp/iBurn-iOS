@@ -89,6 +89,9 @@ xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'pl
 
 # Run PlayaKit tests
 xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+
+# Run SPM tests (quietly by default)
+swift test --quiet
 ```
 
 **Utility Commands**:
@@ -121,9 +124,6 @@ xcrun simctl shutdown "iPhone 16 Pro"
 xcrun simctl erase "iPhone 16 Pro"
 ```
 
-
-
-
 ### Fastlane Commands
 - `fastlane ios beta` - Build and upload to TestFlight
 - `fastlane ios refresh_dsyms` - Download and upload crash symbols
@@ -134,7 +134,7 @@ When adding new functionality, make sure to plan for testability. When your feat
 
 - **Command Line**: Use xcodebuild test commands shown above for automated testing
 - **Xcode GUI**: Run tests through Xcode Test Navigator or `Cmd+U`  
-- **Test targets**: `iBurnTests`, `PlayaKitTests`
+- **Test targets**: `iBurnTests`, `PlayaKitTests`, and local Swift Package targets for `PlayaDB` and `PlayaAPI`
 
 ## Architecture Overview
 

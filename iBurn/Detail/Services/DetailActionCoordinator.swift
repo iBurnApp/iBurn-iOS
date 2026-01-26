@@ -229,6 +229,16 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             
             // Navigate to the next event's detail view
             self.handle(.navigateToObject(nextEvent))
+
+        case .showMapAnnotation(let annotation, let title):
+            guard let navigator = dependencies.navigator else {
+                print("❌ Cannot show map: Navigator is nil")
+                return
+            }
+            let dataSource = StaticAnnotationDataSource(annotation: annotation)
+            let mapVC = MapListViewController(dataSource: dataSource)
+            mapVC.title = title
+            navigator.pushViewController(mapVC, animated: true)
             
         case .playAudio(_):
             // Audio is handled directly by AudioService in ViewModel

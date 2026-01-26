@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PlayaDB
 
 /// Factory for creating detail view controllers
 class DetailViewControllerFactory {
@@ -74,20 +75,41 @@ class DetailViewControllerFactory {
             coordinator: coordinator
         )
         
-        // Determine colors based on data object type
-        let colors = BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
-        
         // Create controller with all dependencies
         let controller = DetailHostingController(
             viewModel: viewModel,
             coordinator: coordinator,
-            colors: colors,
-            dataObject: dataObject
+            title: dataObject.title
         )
         
         // Update coordinator with the real presenter
         coordinator.updatePresenter(controller)
         
+        return controller
+    }
+
+    /// Creates a SwiftUI detail controller for a PlayaDB-backed object.
+    static func create(
+        with object: any PlayaDB.DataObject,
+        playaDB: PlayaDB
+    ) -> DetailHostingController {
+        let coordinator = DetailActionCoordinatorFactory.makeCoordinator()
+        let locationService = LocationService()
+
+        let viewModel = DetailViewModel(
+            object: object,
+            playaDB: playaDB,
+            locationService: locationService,
+            coordinator: coordinator
+        )
+
+        let controller = DetailHostingController(
+            viewModel: viewModel,
+            coordinator: coordinator,
+            title: object.name
+        )
+
+        coordinator.updatePresenter(controller)
         return controller
     }
 }

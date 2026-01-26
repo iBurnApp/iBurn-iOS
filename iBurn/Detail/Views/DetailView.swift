@@ -54,7 +54,7 @@ struct DetailView: View {
         .environment(\.themeColors, viewModel.getThemeColors())
         .background(backgroundColor)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(viewModel.dataObject.title)
+        .navigationTitle(viewModel.title)
         .sheet(isPresented: imageViewerBinding) {
             if let selected = viewModel.selectedImage {
                 ImageViewerSheet(image: selected)
@@ -72,7 +72,7 @@ struct DetailView: View {
                 }
                 
                 // Add to Calendar button for events
-                if viewModel.dataObject is BRCEventObject {
+                if viewModel.showsCalendarButton {
                     Button(action: {
                         viewModel.showEventEditor()
                     }) {
@@ -86,10 +86,10 @@ struct DetailView: View {
                 Button(action: {
                     Task { await viewModel.toggleFavorite() }
                 }) {
-                    Image(systemName: viewModel.metadata.isFavorite ? "heart.fill" : "heart")
+                    Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
                         .font(.body)
-                        .accessibilityLabel(viewModel.metadata.isFavorite ?  "Remove Favorite" : "Add Favorite")
-                        .foregroundColor(viewModel.metadata.isFavorite ? .pink : themeColors.detailColor)
+                        .accessibilityLabel(viewModel.isFavorite ?  "Remove Favorite" : "Add Favorite")
+                        .foregroundColor(viewModel.isFavorite ? .pink : themeColors.detailColor)
                 }
             }
         }
@@ -197,6 +197,9 @@ struct DetailCellView: View {
             
         case .audio(let artObject, let isPlaying):
             DetailAudioCell(artObject: artObject, isPlaying: isPlaying)
+
+        case .audioTrack(let track, let isPlaying):
+            DetailAudioTrackCell(track: track, isPlaying: isPlaying)
             
         case .relationship(let object, let type):
             DetailRelationshipCell(object: object, type: type)
@@ -227,6 +230,12 @@ struct DetailCellView: View {
                 viewModel.handleCellTap(cell)
             }
             .frame(height: 200)
+
+        case .mapAnnotation(let annotation, _):
+            DetailMapViewRepresentable(annotation: annotation) {
+                viewModel.handleCellTap(cell)
+            }
+            .frame(height: 200)
             
         case .landmark(let landmark):
             DetailLandmarkCell(landmark: landmark)
@@ -246,7 +255,7 @@ struct DetailCellView: View {
     
     private func isCellTappable(_ cellType: DetailCellType) -> Bool {
         switch cellType {
-        case .email, .url, .coordinates, .relationship, .eventRelationship, .nextHostEvent, .allHostEvents, .audio, .userNotes, .mapView:
+        case .email, .url, .coordinates, .relationship, .eventRelationship, .nextHostEvent, .allHostEvents, .audio, .audioTrack, .userNotes, .mapView, .mapAnnotation:
             return true
         case .playaAddress(_, let tappable):
             return tappable
@@ -483,6 +492,22 @@ struct DetailAudioCell: View {
     let isPlaying: Bool
     @Environment(\.themeColors) var themeColors
     
+    var body: some View {
+        HStack {
+            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                .foregroundColor(themeColors.primaryColor)
+                .font(.title2)
+            Text("Audio Tour")
+            Spacer()
+        }
+    }
+}
+
+struct DetailAudioTrackCell: View {
+    let track: BRCAudioTourTrack
+    let isPlaying: Bool
+    @Environment(\.themeColors) var themeColors
+
     var body: some View {
         HStack {
             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
@@ -793,4 +818,3 @@ struct DetailVisitStatusCell: View {
         }
     }
 }
-

@@ -114,6 +114,12 @@ public protocol PlayaDB {
     
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
+
+    /// Update user notes for an object (nil/empty clears notes).
+    func setUserNotes(_ notes: String?, for object: any DataObject) async throws
+
+    /// Mark an object as viewed at the provided date (used for recents, etc.).
+    func setLastViewed(_ date: Date, for object: any DataObject) async throws
     
     // MARK: - Data Import
     

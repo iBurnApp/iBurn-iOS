@@ -14,6 +14,7 @@ import CocoaLumberjack
 import SafariServices
 import EventKitUI
 import SwiftUI
+import PlayaDB
 
 public class MapViewAdapter: NSObject {
     
@@ -39,10 +40,13 @@ public class MapViewAdapter: NSObject {
     private var annotations: [MLNAnnotation] = []
 
     /// for checking if annotations overlap
-    private var overlappingAnnotations: [CLLocationCoordinate2DBox: [DataObjectAnnotation]] = [:]
+    private var overlappingAnnotations: [CLLocationCoordinate2DBox: [any OffsettableAnnotation]] = [:]
     
-    /// Dictionary tracking all annotations currently on the map by type-prefixed ID
-    private var annotationsByID: [String: MLNAnnotation] = [:]
+    /// Dictionary tracking all annotations currently on the map by stable keys
+    private var annotationsByID: [AnyHashable: MLNAnnotation] = [:]
+
+    /// For PlayaDB annotations, the host can provide routing for callout actions.
+    public var onPlayaInfoTapped: ((AnyDataObjectID) -> Void)?
     
     @objc public init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
@@ -55,13 +59,15 @@ public class MapViewAdapter: NSObject {
     // MARK: - Helper Methods
     
     /// Generate unique key for an annotation
-    private func keyForAnnotation(_ annotation: MLNAnnotation) -> String? {
+    private func keyForAnnotation(_ annotation: MLNAnnotation) -> AnyHashable? {
         if let data = annotation as? DataObjectAnnotation {
             let className = String(describing: type(of: data.object))
-            return "\(className):\(data.object.uniqueID)"
+            return AnyHashable("\(className):\(data.object.uniqueID)")
+        } else if let playa = annotation as? PlayaObjectAnnotation {
+            return AnyHashable(playa.id)
         } else if let mapPoint = annotation as? BRCMapPoint {
             let className = String(describing: type(of: mapPoint))
-            return "\(className):\(mapPoint.yapKey)"
+            return AnyHashable("\(className):\(mapPoint.yapKey)")
         }
         return nil // Non-trackable annotations
     }
@@ -83,11 +89,11 @@ public class MapViewAdapter: NSObject {
                 annotationsByID.removeValue(forKey: key)
             }
             
-            // Clean up overlap tracking for DataObjectAnnotations
-            if let data = annotation as? DataObjectAnnotation {
+            // Clean up overlap tracking for offsettable annotations
+            if let data = annotation as? any OffsettableAnnotation {
                 let originalCoordinate = data.originalCoordinate
                 var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-                overlapping = overlapping.filter { $0.object.uniqueID != data.object.uniqueID }
+                overlapping = overlapping.filter { $0.stableID != data.stableID }
                 overlappingAnnotations[.init(originalCoordinate)] = overlapping
             }
         }
@@ -109,14 +115,14 @@ public class MapViewAdapter: NSObject {
             // Track it
             annotationsByID[key] = annotation
             
-            // Handle overlap offset for DataObjectAnnotation
-            if let data = annotation as? DataObjectAnnotation {
+            // Handle overlap offset for annotations that support it.
+            if let data = annotation as? any OffsettableAnnotation {
                 let originalCoordinate = data.originalCoordinate
                 var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
                 overlapping.append(data)
                 
-                // Sort by uniqueID for consistent ordering
-                overlapping.sort { $0.object.uniqueID < $1.object.uniqueID }
+                // Sort by stable ID for consistent ordering
+                overlapping.sort { $0.stableID < $1.stableID }
                 overlappingAnnotations[.init(originalCoordinate)] = overlapping
                 
                 // Re-offset ALL annotations in this group if there's overlap
@@ -205,6 +211,17 @@ extension MapViewAdapter: MLNMapViewDelegate {
             labelAnnotationView.label.text = data.title
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
+        } else if let data = annotation as? PlayaObjectAnnotation {
+            let labelAnnotationView: LabelAnnotationView
+            if let view = mapView.dequeueReusableAnnotationView(withIdentifier: LabelAnnotationView.reuseIdentifier) as? LabelAnnotationView {
+                labelAnnotationView = view
+            } else {
+                labelAnnotationView = LabelAnnotationView(reuseIdentifier: LabelAnnotationView.reuseIdentifier)
+            }
+            labelAnnotationView.imageView.image = image
+            labelAnnotationView.label.text = data.title
+            labelViews.append(labelAnnotationView)
+            annotationView = labelAnnotationView
         }
         
         if let annotationView = annotationView {
@@ -234,7 +251,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
     }
     
     public func mapView(_ mapView: MLNMapView, rightCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
-        guard annotation is DataObjectAnnotation else {
+        guard annotation is DataObjectAnnotation || annotation is PlayaObjectAnnotation else {
             return nil
         }
         let infoButton = UIButton(type: .infoLight)
@@ -243,20 +260,25 @@ extension MapViewAdapter: MLNMapViewDelegate {
     }
     
     public func mapView(_ mapView: MLNMapView, annotation: MLNAnnotation, calloutAccessoryControlTapped control: UIControl) {
-        guard let data = annotation as? DataObjectAnnotation,
-            let tag = ButtonTag(rawValue: control.tag) else {
+        guard let tag = ButtonTag(rawValue: control.tag) else {
                 return
         }
         switch tag {
         case .delete, .edit:
             break
         case .info:
-            if let parentVC = parent {
+            if let data = annotation as? DataObjectAnnotation, let parentVC = parent {
                 let vc = DetailViewControllerFactory.createDetailViewController(for: data.object)
                 parentVC.navigationController?.pushViewController(vc, animated: true)
+                return
+            }
+
+            if let data = annotation as? PlayaObjectAnnotation {
+                onPlayaInfoTapped?(data.id)
+                return
             }
         case .share:
-            if let parentVC = parent {
+            if let data = annotation as? DataObjectAnnotation, let parentVC = parent {
                 let shareViewController = ShareQRCodeHostingController(dataObject: data.object)
                 parentVC.present(shareViewController, animated: true, completion: nil)
             }
@@ -272,6 +294,22 @@ extension MapViewAdapter: MLNMapViewDelegate {
             view.label.isHidden = labelIsHidden
         }
     }
+}
+
+// MARK: - Overlap Offsetting
+
+private protocol OffsettableAnnotation: AnyObject {
+    var coordinate: CLLocationCoordinate2D { get set }
+    var originalCoordinate: CLLocationCoordinate2D { get }
+    var stableID: String { get }
+}
+
+extension DataObjectAnnotation: OffsettableAnnotation {
+    fileprivate var stableID: String { object.uniqueID }
+}
+
+extension PlayaObjectAnnotation: OffsettableAnnotation {
+    fileprivate var stableID: String { "\(id.objectType.rawValue):\(id.uid)" }
 }
 
 private struct Offset {

@@ -9,6 +9,7 @@
 import Foundation
 import SwiftUI
 import CoreLocation
+import MapLibre
 
 // MARK: - DetailCell Wrapper
 
@@ -28,6 +29,7 @@ struct DetailCell: Identifiable {
 enum DetailCellType {
     case image(UIImage, aspectRatio: CGFloat)
     case mapView(BRCDataObject, metadata: BRCObjectMetadata?)
+    case mapAnnotation(MLNAnnotation, title: String)
     case text(String, style: DetailTextStyle)
     case email(String, label: String?)
     case url(URL, title: String)
@@ -41,6 +43,7 @@ enum DetailCellType {
     case distance(CLLocationDistance)
     case travelTime(CLLocationDistance)
     case audio(BRCArtObject, isPlaying: Bool)
+    case audioTrack(BRCAudioTourTrack, isPlaying: Bool)
     case userNotes(String)
     case date(Date, format: String)
     case landmark(String)
@@ -75,6 +78,7 @@ enum DetailAction {
     case openEmail(String)
     case openURL(URL)
     case showMap(BRCDataObject)
+    case showMapAnnotation(MLNAnnotation, title: String)
     case navigateToObject(BRCDataObject)
     case showEventsList([BRCEventObject], hostName: String)
     case showNextEvent(BRCEventObject)

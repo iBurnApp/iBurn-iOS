@@ -12,10 +12,10 @@ import PlayaDB
 
 @MainActor
 class CampListHostingController: UIHostingController<CampListView> {
-    private let legacyDataStore: LegacyDataStore
+    private let playaDB: PlayaDB
 
     init(dependencies: DependencyContainer) {
-        self.legacyDataStore = LegacyDataStore()
+        self.playaDB = dependencies.playaDB
         let viewModel = dependencies.makeCampListViewModel()
         super.init(rootView: CampListView(viewModel: viewModel))
         self.rootView = CampListView(
@@ -35,41 +35,38 @@ class CampListHostingController: UIHostingController<CampListView> {
     }
 
     private func showDetail(for camp: CampObject) {
-        guard let dataObject = legacyDataStore.dataObject(for: camp.uid, type: .camp) else {
-            showMissingObjectAlert(name: camp.name)
-            return
-        }
-
-        let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
+        let detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
         navigationController?.pushViewController(detailVC, animated: true)
     }
 
     private func showMap(for camps: [CampObject]) {
-        let annotations = legacyDataStore.annotations(for: camps)
+        guard BRCEmbargo.allowEmbargoedData() else {
+            showMissingMapAlert()
+            return
+        }
+
+        let annotations = camps.compactMap { PlayaObjectAnnotation(camp: $0) }
         guard !annotations.isEmpty else {
             showMissingMapAlert()
             return
         }
 
+        let lookup = Dictionary(uniqueKeysWithValues: camps.map { ($0.anyID, $0) })
         let dataSource = StaticAnnotationDataSource(annotations: annotations)
         let mapVC = MapListViewController(dataSource: dataSource)
+        mapVC.mapViewAdapter.onPlayaInfoTapped = { [weak self] anyID in
+            guard let camp = lookup[anyID] else { return }
+            self?.showDetail(for: camp)
+        }
         navigationController?.pushViewController(mapVC, animated: true)
-    }
-
-    private func showMissingObjectAlert(name: String) {
-        let alert = UIAlertController(
-            title: "Unable to Load Detail",
-            message: "Could not find details for \(name).",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
 
     private func showMissingMapAlert() {
         let alert = UIAlertController(
             title: "No Mappable Camps",
-            message: "None of the selected camps have map coordinates.",
+            message: BRCEmbargo.allowEmbargoedData()
+                ? "None of the selected camps have map coordinates."
+                : "Location data is currently restricted.",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))

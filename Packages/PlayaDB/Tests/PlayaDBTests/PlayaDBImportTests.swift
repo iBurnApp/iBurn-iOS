@@ -250,8 +250,8 @@ final class PlayaDBImportTests: XCTestCase {
         let campData = MockAPIData.campJSON
         let eventData = MockAPIData.eventJSON
         let parser = APIParserFactory.create()
-        let expectedEventObjects = try parser.parseEvents(from: eventData)
-        // let totalExpectedOccurrences = expectedEventObjects.reduce(0) { $0 + $1.occurrenceSet.count }
+        _ = try parser.parseEvents(from: eventData)
+        // Note: we currently don't assert occurrence counts here; this parse call just sanity-checks the fixture.
         
         // When: Import data into PlayaDB
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)

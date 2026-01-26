@@ -178,3 +178,52 @@ xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'pl
 - Users can browse Events using PlayaDB data (including correct cross-midnight occurrences) behind a feature flag.
 - Tapping an event can still route to the existing legacy detail flow until event detail is migrated.
 - The app continues to build and `xcodebuild test -scheme iBurnTests` continues to pass on simulator.
+
+---
+
+## Next Plan: Remove LegacyDataStore From SwiftUI List Navigation (Art/Camps)
+
+### Goal
+- SwiftUI Art/Camp lists should navigate (detail + map) without using YapDatabase-backed `LegacyDataStore` at all.
+- Allowed dependencies: PlayaDB (GRDB) + `BRCMediaDownloader` (filesystem/bundled media). Audio continues to use `BRCAudioPlayer` (now supports `BRCAudioTourTrack`).
+
+### Plan (Incremental)
+1) **Detail flow (PlayaDB-only)**
+   - Add new SwiftUI detail views for `PlayaDB.ArtObject` and `PlayaDB.CampObject`.
+   - Back them with a small view model that:
+     - reads `ObjectMetadata` via `PlayaDB.metadata(for:)`
+     - toggles favorites via `PlayaDB.toggleFavorite(_:)`
+     - loads thumbnail/audio URLs via `MediaAssetProviding` (`BRCMediaDownloader.localMediaURL`)
+     - optionally supports notes + lastViewed (requires PlayaDB API additions below)
+
+2) **Metadata write support**
+   - Extend `Packages/PlayaDB` public API with explicit metadata update methods (notes + lastViewed) so the app can persist those without reaching into GRDB internals.
+   - Add unit tests in `PlayaKitTests` or `iBurnTests` (whichever already hosts PlayaDB tests) that verify:
+     - notes round-trip
+     - lastViewed updates
+     - updatedAt changes appropriately
+
+3) **Map flow (PlayaDB-only)**
+   - Implement a new annotation type (e.g. `PlayaObjectAnnotation`) that conforms to `MLNAnnotation` + `ImageAnnotation` and is built from PlayaDB objects (uid, type, coordinate, title/subtitle).
+   - Enforce embargo via `BRCEmbargo.allowEmbargoedData()` (if embargoed, don’t show art/camp pins).
+
+4) **Map callout -> Detail**
+   - Update `MapViewAdapter` to:
+     - render `PlayaObjectAnnotation` using `LabelAnnotationView` (same look as legacy)
+     - route info-tap to the new detail flow via an injected closure/delegate (so we don’t call `DetailViewControllerFactory`).
+   - Defer share QR action for Playa objects until we have a PlayaDB-compatible share payload.
+
+5) **Replace LegacyDataStore usage**
+   - Update:
+     - `iBurn/ListView/ArtListHostingController.swift`
+     - `iBurn/ListView/CampListHostingController.swift`
+   - `onSelect`: push the new PlayaDB detail hosting controller.
+   - `onShowMap`: build `PlayaObjectAnnotation`s from the current filtered items and push `MapListViewController(dataSource: StaticAnnotationDataSource(annotations: ...))`.
+
+6) **Verification**
+   - Verify on iOS 26.2 sim:
+     - list -> detail works
+     - list -> map works
+     - map callout info -> detail works
+     - favorites + notes persist via PlayaDB
+     - embargo hides art/camp pins when locked

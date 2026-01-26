@@ -984,6 +984,41 @@ internal class PlayaDBImpl: PlayaDB {
             return metadata?.isFavorite ?? false
         }
     }
+
+    func setUserNotes(_ notes: String?, for object: any DataObject) async throws {
+        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+
+        try await dbQueue.write { db in
+            guard var metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else {
+                throw PlayaDBError.metadataNotFound
+            }
+
+            let trimmed = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+            metadata.userNotes = (trimmed?.isEmpty == true) ? nil : trimmed
+            metadata.updatedAt = Date()
+            try metadata.update(db)
+        }
+    }
+
+    func setLastViewed(_ date: Date, for object: any DataObject) async throws {
+        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+
+        try await dbQueue.write { db in
+            guard var metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else {
+                throw PlayaDBError.metadataNotFound
+            }
+
+            metadata.lastViewed = date
+            metadata.updatedAt = Date()
+            try metadata.update(db)
+        }
+    }
     
     // MARK: - Data Import
     

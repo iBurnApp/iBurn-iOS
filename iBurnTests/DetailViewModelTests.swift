@@ -61,7 +61,7 @@ class DetailViewModelTests: XCTestCase {
     // MARK: - Initialization Tests
     
     func testInitialization() {
-        XCTAssertEqual(viewModel.dataObject.title, "Sample Art Installation")
+        XCTAssertEqual(viewModel.title, "Sample Art Installation")
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertNil(viewModel.error)
         XCTAssertTrue(viewModel.cells.isEmpty) // Not loaded until onAppear
@@ -78,7 +78,7 @@ class DetailViewModelTests: XCTestCase {
             coordinator: MockTestDetailActionCoordinator()
         )
         
-        XCTAssertTrue(newViewModel.metadata.isFavorite)
+        XCTAssertTrue(newViewModel.isFavorite)
     }
     
     // MARK: - Data Loading Tests
@@ -96,24 +96,24 @@ class DetailViewModelTests: XCTestCase {
     
     func testToggleFavoriteFromFalseToTrue() async {
         mockDataService.favoriteStatus = false
-        viewModel.metadata.isFavorite = false
+        viewModel.isFavorite = false
         
         await viewModel.toggleFavorite()
         
         XCTAssertTrue(mockDataService.updateFavoriteCalled)
         XCTAssertEqual(mockDataService.lastFavoriteValue, true)
-        XCTAssertTrue(viewModel.metadata.isFavorite)
+        XCTAssertTrue(viewModel.isFavorite)
     }
     
     func testToggleFavoriteFromTrueToFalse() async {
         mockDataService.favoriteStatus = true
-        viewModel.metadata.isFavorite = true
+        viewModel.isFavorite = true
         
         await viewModel.toggleFavorite()
         
         XCTAssertTrue(mockDataService.updateFavoriteCalled)
         XCTAssertEqual(mockDataService.lastFavoriteValue, false)
-        XCTAssertFalse(viewModel.metadata.isFavorite)
+        XCTAssertFalse(viewModel.isFavorite)
     }
     
     func testToggleFavoriteHandlesError() async {
@@ -134,7 +134,7 @@ class DetailViewModelTests: XCTestCase {
         await viewModel.updateNotes(newNotes)
         
         XCTAssertTrue(mockDataService.updateNotesCalled)
-        XCTAssertEqual(viewModel.metadata.userNotes, newNotes)
+        XCTAssertEqual(viewModel.userNotes, newNotes)
     }
     
     func testUpdateNotesHandlesError() async {
