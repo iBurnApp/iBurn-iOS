@@ -32,10 +32,9 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
 
     private let dataProvider: any ObjectListDataProvider<Object, Filter>
     private let locationProvider: LocationProvider
-    private let legacyDataStore: any LegacyFavoritesStoring
-    private let legacyType: DataObjectType
     private let filterStorageKey: String
     private let effectiveFilterForObservation: (Filter) -> Filter
+    private let favoritesFilterForObservation: (Filter) -> Filter
     private let matchesSearch: (Object, String) -> Bool
     private let isDatabaseSeeded: (() async -> Bool)?
 
@@ -43,7 +42,7 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
 
     private var observationTask: Task<Void, Never>?
     private var locationTask: Task<Void, Never>?
-    private var favoritesTask: Task<Void, Never>?
+    private var favoritesObservationTask: Task<Void, Never>?
     private var loadingGateTask: Task<Void, Never>?
 
     // MARK: - Init
@@ -51,20 +50,18 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
     init<DataProvider: ObjectListDataProvider>(
         dataProvider: DataProvider,
         locationProvider: LocationProvider,
-        legacyType: DataObjectType,
         filterStorageKey: String,
         initialFilter: Filter,
-        legacyDataStore: any LegacyFavoritesStoring = LegacyDataStore(),
         effectiveFilterForObservation: @escaping (Filter) -> Filter,
+        favoritesFilterForObservation: @escaping (Filter) -> Filter,
         matchesSearch: @escaping (Object, String) -> Bool,
         isDatabaseSeeded: (() async -> Bool)? = nil
     ) where DataProvider.Object == Object, DataProvider.Filter == Filter {
         self.dataProvider = dataProvider
         self.locationProvider = locationProvider
-        self.legacyDataStore = legacyDataStore
-        self.legacyType = legacyType
         self.filterStorageKey = filterStorageKey
         self.effectiveFilterForObservation = effectiveFilterForObservation
+        self.favoritesFilterForObservation = favoritesFilterForObservation
         self.matchesSearch = matchesSearch
         self.isDatabaseSeeded = isDatabaseSeeded
 
@@ -72,14 +69,14 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
         self.currentLocation = locationProvider.currentLocation
 
         startObserving()
+        startObservingFavorites()
         startLocationUpdates()
-        refreshFavorites()
     }
 
     deinit {
         observationTask?.cancel()
         locationTask?.cancel()
-        favoritesTask?.cancel()
+        favoritesObservationTask?.cancel()
         loadingGateTask?.cancel()
     }
 
@@ -94,42 +91,31 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
     }
 
     var filteredItems: [Object] {
-        let baseItems = filter.onlyFavorites
-            ? items.filter { favoriteIDs.contains($0.uid) }
-            : items
-
-        guard !searchText.isEmpty else { return baseItems }
+        guard !searchText.isEmpty else { return items }
         let q = searchText.lowercased()
-        return baseItems.filter { matchesSearch($0, q) }
+        return items.filter { matchesSearch($0, q) }
     }
 
     // MARK: - Actions
 
     func toggleFavorite(_ object: Object) async {
-        // Legacy (Yap) favorites are the current UI source of truth during migration.
-        // PlayaDB may be out-of-sync initially, so always drive the desired state from the UI.
-        let desiredIsFavorite = !isFavorite(object)
-
-        // Optimistically update UI to keep the row responsive.
+        let desiredIsFavorite = !favoriteIDs.contains(object.uid)
         if desiredIsFavorite {
             favoriteIDs.insert(object.uid)
         } else {
             favoriteIDs.remove(object.uid)
         }
-
-        await legacyDataStore.updateFavoriteStatus(
-            uid: object.uid,
-            type: legacyType,
-            isFavorite: desiredIsFavorite
-        )
-
         do {
-            try await ensurePlayaDBFavoriteMatches(object, desiredIsFavorite: desiredIsFavorite)
+            try await dataProvider.toggleFavorite(object)
         } catch {
-            print("Error syncing PlayaDB favorite for \(object.name): \(error)")
+            // Revert optimistic UI if write fails.
+            if desiredIsFavorite {
+                favoriteIDs.remove(object.uid)
+            } else {
+                favoriteIDs.insert(object.uid)
+            }
+            print("Error toggling favorite for \(object.name): \(error)")
         }
-
-        refreshFavorites()
     }
 
     // MARK: - Observation
@@ -214,26 +200,24 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
 
     private func restartObservation() {
         startObserving()
-        refreshFavorites()
+        startObservingFavorites()
     }
 
     // MARK: - Favorites
 
-    private func refreshFavorites() {
-        favoritesTask?.cancel()
-        favoritesTask = Task { [weak self] in
+    private func startObservingFavorites() {
+        favoritesObservationTask?.cancel()
+        let favoritesFilter = favoritesFilterForObservation(filter)
+
+        favoritesObservationTask = Task { [weak self] in
             guard let self else { return }
-            let ids = await self.legacyDataStore.favoriteIDs(for: self.legacyType)
-            await MainActor.run {
-                self.favoriteIDs = ids
+            for await favorites in self.dataProvider.observeObjects(filter: favoritesFilter) {
+                let ids = Set(favorites.map(\.uid))
+                await MainActor.run {
+                    self.favoriteIDs = ids
+                }
             }
         }
-    }
-
-    private func ensurePlayaDBFavoriteMatches(_ object: Object, desiredIsFavorite: Bool) async throws {
-        let current = try await dataProvider.isFavorite(object)
-        guard current != desiredIsFavorite else { return }
-        try await dataProvider.toggleFavorite(object)
     }
 
     // MARK: - Filter Persistence

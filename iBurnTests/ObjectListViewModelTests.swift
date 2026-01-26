@@ -27,51 +27,29 @@ private struct TestFilter: Codable, FavoritesFilterable, Equatable {
     }
 }
 
-private final class TestLegacyFavoritesStore: LegacyFavoritesStoring {
-    private(set) var ids: Set<String>
-    private(set) var writes: [(uid: String, type: DataObjectType, isFavorite: Bool)] = []
-
-    init(ids: Set<String> = []) {
-        self.ids = ids
-    }
-
-    func favoriteIDs(for type: DataObjectType) async -> Set<String> {
-        ids
-    }
-
-    func updateFavoriteStatus(uid: String, type: DataObjectType, isFavorite: Bool) async {
-        writes.append((uid: uid, type: type, isFavorite: isFavorite))
-        if isFavorite {
-            ids.insert(uid)
-        } else {
-            ids.remove(uid)
-        }
-    }
-}
-
 private final class TestDataProvider: ObjectListDataProvider {
     typealias Object = TestObject
     typealias Filter = TestFilter
 
-    private(set) var lastObservedFilter: TestFilter?
+    private(set) var lastObservedFilters: [TestFilter] = []
     private(set) var favoriteCalls: [String] = []
     private(set) var favorites: Set<String> = []
 
-    private var continuation: AsyncStream<[TestObject]>.Continuation?
+    private var continuations: [String: AsyncStream<[TestObject]>.Continuation] = [:]
 
     func observeObjects(filter: TestFilter) -> AsyncStream<[TestObject]> {
-        lastObservedFilter = filter
+        lastObservedFilters.append(filter)
         return AsyncStream { continuation in
-            self.continuation = continuation
+            self.continuations[filter.tag] = continuation
         }
     }
 
-    func yield(_ objects: [TestObject]) {
-        continuation?.yield(objects)
+    func yield(_ objects: [TestObject], tag: String = "main") {
+        continuations[tag]?.yield(objects)
     }
 
-    func finish() {
-        continuation?.finish()
+    func finish(tag: String = "main") {
+        continuations[tag]?.finish()
     }
 
     func toggleFavorite(_ object: TestObject) async throws {
@@ -113,19 +91,22 @@ final class ObjectListViewModelTests: XCTestCase {
 
     func testLoadingStaysTrueUntilSeededWhenFirstEmissionIsEmpty() async {
         let provider = TestDataProvider()
-        let legacy = TestLegacyFavoritesStore()
 
         var seeded = false
         let vm = ObjectListViewModel<TestObject, TestFilter>(
             dataProvider: provider,
             locationProvider: MockLocationProvider(),
-            legacyType: .art,
             filterStorageKey: "ObjectListViewModelTests.loading.\(UUID().uuidString)",
             initialFilter: TestFilter(),
-            legacyDataStore: legacy,
             effectiveFilterForObservation: { f in
                 var f = f
-                f.onlyFavorites = false
+                f.tag = "main"
+                return f
+            },
+            favoritesFilterForObservation: { f in
+                var f = f
+                f.tag = "favorites"
+                f.onlyFavorites = true
                 return f
             },
             matchesSearch: { obj, q in obj.name.lowercased().contains(q) },
@@ -135,7 +116,7 @@ final class ObjectListViewModelTests: XCTestCase {
         // Let observation task start.
         await Task.yield()
 
-        provider.yield([]) // First emission empty (common during seeding)
+        provider.yield([], tag: "main") // First emission empty (common during seeding)
 
         let stillLoading = await eventually { vm.isLoading == true }
         XCTAssertTrue(stillLoading, "Expected isLoading to remain true after an initial empty emission while not seeded")
@@ -147,41 +128,79 @@ final class ObjectListViewModelTests: XCTestCase {
 
     func testLoadingBecomesFalseOnFirstNonEmptyEmission() async {
         let provider = TestDataProvider()
-        let legacy = TestLegacyFavoritesStore()
 
         let vm = ObjectListViewModel<TestObject, TestFilter>(
             dataProvider: provider,
             locationProvider: MockLocationProvider(),
-            legacyType: .art,
             filterStorageKey: "ObjectListViewModelTests.loading2.\(UUID().uuidString)",
             initialFilter: TestFilter(),
-            legacyDataStore: legacy,
-            effectiveFilterForObservation: { $0 },
+            effectiveFilterForObservation: { f in
+                var f = f
+                f.tag = "main"
+                return f
+            },
+            favoritesFilterForObservation: { f in
+                var f = f
+                f.tag = "favorites"
+                f.onlyFavorites = true
+                return f
+            },
             matchesSearch: { obj, q in obj.name.lowercased().contains(q) },
             isDatabaseSeeded: { false }
         )
 
         await Task.yield()
-        provider.yield([TestObject(name: "Hello", description: nil, uid: "1")])
+        provider.yield([TestObject(name: "Hello", description: nil, uid: "1")], tag: "main")
 
         let ok = await eventually { vm.isLoading == false && vm.items.count == 1 }
         XCTAssertTrue(ok, "Expected isLoading to become false and items to be populated on first non-empty emission")
     }
 
-    func testOnlyFavoritesFilterIsAppliedClientSideButNotSentToObservation() async {
+    func testFavoriteIDsComeFromFavoritesObservation() async {
         let provider = TestDataProvider()
-        let legacy = TestLegacyFavoritesStore(ids: ["fav"])
 
         let vm = ObjectListViewModel<TestObject, TestFilter>(
             dataProvider: provider,
             locationProvider: MockLocationProvider(),
-            legacyType: .art,
             filterStorageKey: "ObjectListViewModelTests.favorites.\(UUID().uuidString)",
-            initialFilter: TestFilter(onlyFavorites: true),
-            legacyDataStore: legacy,
-            effectiveFilterForObservation: { filter in
-                var f = filter
-                f.onlyFavorites = false
+            initialFilter: TestFilter(),
+            effectiveFilterForObservation: { f in
+                var f = f
+                f.tag = "main"
+                return f
+            },
+            favoritesFilterForObservation: { f in
+                var f = f
+                f.tag = "favorites"
+                f.onlyFavorites = true
+                return f
+            },
+            matchesSearch: { obj, q in obj.name.lowercased().contains(q) }
+        )
+
+        await Task.yield()
+        provider.yield([TestObject(name: "Fav", description: nil, uid: "fav")], tag: "favorites")
+        let ok = await eventually { vm.favoriteIDs == ["fav"] }
+        XCTAssertTrue(ok)
+    }
+
+    func testToggleFavoriteCallsProvider() async {
+        let provider = TestDataProvider()
+
+        let vm = ObjectListViewModel<TestObject, TestFilter>(
+            dataProvider: provider,
+            locationProvider: MockLocationProvider(),
+            filterStorageKey: "ObjectListViewModelTests.toggle.\(UUID().uuidString)",
+            initialFilter: TestFilter(),
+            effectiveFilterForObservation: { f in
+                var f = f
+                f.tag = "main"
+                return f
+            },
+            favoritesFilterForObservation: { f in
+                var f = f
+                f.tag = "favorites"
+                f.onlyFavorites = true
                 return f
             },
             matchesSearch: { obj, q in obj.name.lowercased().contains(q) }
@@ -189,37 +208,8 @@ final class ObjectListViewModelTests: XCTestCase {
 
         await Task.yield()
 
-        XCTAssertEqual(provider.lastObservedFilter?.onlyFavorites, false)
-
-        provider.yield([
-            TestObject(name: "Fav", description: nil, uid: "fav"),
-            TestObject(name: "Other", description: nil, uid: "other"),
-        ])
-
-        let ok = await eventually { vm.filteredItems.count == 1 }
-        XCTAssertTrue(ok)
-        XCTAssertEqual(vm.filteredItems.first?.uid, "fav")
-    }
-
-    func testToggleFavoriteWritesLegacyAndReconcilesProvider() async {
-        let provider = TestDataProvider()
-        let legacy = TestLegacyFavoritesStore()
-
-        let vm = ObjectListViewModel<TestObject, TestFilter>(
-            dataProvider: provider,
-            locationProvider: MockLocationProvider(),
-            legacyType: .camp,
-            filterStorageKey: "ObjectListViewModelTests.toggle.\(UUID().uuidString)",
-            initialFilter: TestFilter(),
-            legacyDataStore: legacy,
-            effectiveFilterForObservation: { $0 },
-            matchesSearch: { obj, q in obj.name.lowercased().contains(q) }
-        )
-
-        await Task.yield()
-
         let obj = TestObject(name: "Thing", description: nil, uid: "x")
-        provider.yield([obj])
+        provider.yield([obj], tag: "main")
 
         let gotItem = await eventually { vm.items.count == 1 }
         XCTAssertTrue(gotItem)
@@ -228,16 +218,12 @@ final class ObjectListViewModelTests: XCTestCase {
         await vm.toggleFavorite(obj)
         let favorited = await eventually { vm.isFavorite(obj) }
         XCTAssertTrue(favorited)
-        XCTAssertEqual(legacy.writes.last?.uid, "x")
-        XCTAssertEqual(legacy.writes.last?.type, .camp)
-        XCTAssertEqual(legacy.writes.last?.isFavorite, true)
         XCTAssertEqual(provider.favoriteCalls, ["x"])
 
         // Second toggle should flip back and also toggle provider again.
         await vm.toggleFavorite(obj)
         let unfavorited = await eventually { vm.isFavorite(obj) == false }
         XCTAssertTrue(unfavorited)
-        XCTAssertEqual(legacy.writes.last?.isFavorite, false)
         XCTAssertEqual(provider.favoriteCalls, ["x", "x"])
     }
 }

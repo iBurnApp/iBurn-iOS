@@ -23,15 +23,18 @@ struct ArtListView: View {
     @StateObject private var viewModel: ArtListViewModel
     @State private var showingFilterSheet = false
     @Environment(\.themeColors) var themeColors
+    private let audioPlayer: any AudioPlayerProtocol
     private let onSelect: (ArtObject) -> Void
     private let onShowMap: ([ArtObject]) -> Void
 
     init(
         viewModel: ArtListViewModel,
+        audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance,
         onSelect: @escaping (ArtObject) -> Void = { _ in },
         onShowMap: @escaping ([ArtObject]) -> Void = { _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.audioPlayer = audioPlayer
         self.onSelect = onSelect
         self.onShowMap = onShowMap
     }
@@ -49,9 +52,21 @@ struct ArtListView: View {
                         onFavoriteTap: {
                             Task { await viewModel.toggleFavorite(art) }
                         }
-                    ) {
-                        // TODO: Add audio button when audio data is migrated to PlayaDB
-                        EmptyView()
+                    ) { assets in
+                        if let audioURL = assets.audioURL {
+                            AudioTourButton(
+                                track: BRCAudioTourTrack(
+                                    uid: art.uid,
+                                    title: art.name,
+                                    artist: art.artist,
+                                    audioURL: audioURL,
+                                    artworkURL: BRCMediaDownloader.localMediaURL("\(art.uid).jpg")
+                                ),
+                                audioPlayer: audioPlayer
+                            )
+                        } else {
+                            EmptyView()
+                        }
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -153,13 +168,14 @@ struct ArtListView: View {
             viewModel: ArtListViewModel(
                 dataProvider: PreviewArtDataProvider(),
                 locationProvider: MockLocationProvider(),
-                legacyType: .art,
                 filterStorageKey: "artListFilter.preview",
                 initialFilter: .all,
-                legacyDataStore: PreviewLegacyFavoritesStore(),
-                effectiveFilterForObservation: { filter in
+                effectiveFilterForObservation: { $0 },
+                favoritesFilterForObservation: { filter in
                     var f = filter
-                    f.onlyFavorites = false
+                    f.searchText = nil
+                    f.onlyWithEvents = false
+                    f.onlyFavorites = true
                     return f
                 },
                 matchesSearch: { art, q in
@@ -178,13 +194,14 @@ struct ArtListView: View {
             viewModel: ArtListViewModel(
                 dataProvider: PreviewArtDataProvider(),
                 locationProvider: MockLocationProvider(),
-                legacyType: .art,
                 filterStorageKey: "artListFilter.preview",
                 initialFilter: ArtFilter(onlyWithEvents: true),
-                legacyDataStore: PreviewLegacyFavoritesStore(),
-                effectiveFilterForObservation: { filter in
+                effectiveFilterForObservation: { $0 },
+                favoritesFilterForObservation: { filter in
                     var f = filter
-                    f.onlyFavorites = false
+                    f.searchText = nil
+                    f.onlyWithEvents = false
+                    f.onlyFavorites = true
                     return f
                 },
                 matchesSearch: { art, q in
@@ -231,7 +248,4 @@ private class PreviewArtDataProvider: ArtDataProvider {
     }
 }
 
-private final class PreviewLegacyFavoritesStore: LegacyFavoritesStoring {
-    func favoriteIDs(for type: DataObjectType) async -> Set<String> { [] }
-    func updateFavoriteStatus(uid: String, type: DataObjectType, isFavorite: Bool) async {}
-}
+// Legacy favorites store is no longer used by SwiftUI lists.

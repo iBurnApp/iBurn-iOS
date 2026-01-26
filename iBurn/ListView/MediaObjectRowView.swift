@@ -15,7 +15,7 @@ struct MediaObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let rightSubtitle: String?
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
-    @ViewBuilder let actions: () -> Actions
+    @ViewBuilder let actions: (RowAssetsLoader) -> Actions
 
     @StateObject private var assets: RowAssetsLoader
 
@@ -25,7 +25,7 @@ struct MediaObjectRowView<Object: DisplayableObject, Actions: View>: View {
         rightSubtitle: String?,
         isFavorite: Bool,
         onFavoriteTap: @escaping () -> Void,
-        @ViewBuilder actions: @escaping () -> Actions
+        @ViewBuilder actions: @escaping (RowAssetsLoader) -> Actions
     ) {
         self.object = object
         self.subtitle = subtitle
@@ -45,7 +45,7 @@ struct MediaObjectRowView<Object: DisplayableObject, Actions: View>: View {
             rightSubtitle: rightSubtitle,
             isFavorite: isFavorite,
             onFavoriteTap: onFavoriteTap,
-            actions: actions
+            actions: { actions(assets) }
         )
         .onAppear { assets.startIfNeeded() }
     }

@@ -13,6 +13,7 @@ import UIImageColors
 final class RowAssetsLoader: ObservableObject {
     @Published private(set) var thumbnail: UIImage?
     @Published private(set) var colors: BRCImageColors?
+    @Published private(set) var audioURL: URL?
 
     private let objectID: String
     private let provider: MediaAssetProviding
@@ -32,6 +33,12 @@ final class RowAssetsLoader: ObservableObject {
         return cache
     }()
 
+    private static let audioURLCache: NSCache<NSString, NSURL> = {
+        let cache = NSCache<NSString, NSURL>()
+        cache.countLimit = 500
+        return cache
+    }()
+
     init(
         objectID: String,
         provider: MediaAssetProviding = BRCMediaAssetProvider()
@@ -43,6 +50,7 @@ final class RowAssetsLoader: ObservableObject {
         let cacheKey = objectID as NSString
         self.thumbnail = Self.thumbnailCache.object(forKey: cacheKey)
         self.colors = Self.colorsCache.object(forKey: cacheKey)
+        self.audioURL = Self.audioURLCache.object(forKey: cacheKey) as URL?
 
         // The legacy thumbnail cache is on-disk and is fast to load.
         // Load the thumbnail synchronously (colors can be computed later).
@@ -52,6 +60,13 @@ final class RowAssetsLoader: ObservableObject {
                 Self.thumbnailCache.setObject(image, forKey: cacheKey)
                 self.thumbnail = image
             }
+        }
+
+        // Audio tour is sourced from the filesystem/bundle. This is also fast to resolve.
+        if self.audioURL == nil,
+           let url = provider.localAudioURL(objectID: objectID) {
+            Self.audioURLCache.setObject(url as NSURL, forKey: cacheKey)
+            self.audioURL = url
         }
     }
 

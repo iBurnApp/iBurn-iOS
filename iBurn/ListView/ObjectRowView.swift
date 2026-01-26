@@ -77,12 +77,16 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                     if let subtitle {
                         Text(subtitle)
                             .font(.subheadline)
-                            .frame(width: thumbnailSize, alignment: .leading)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .layoutPriority(1)
                     } else {
                         Text("🚶🏽 ? min   🚴🏽 ? min")
                             .font(.subheadline)
                             .foregroundColor(colors.secondaryColor)
-                            .frame(width: thumbnailSize, alignment: .leading)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .layoutPriority(1)
                     }
 
                     Spacer(minLength: 0)
@@ -104,7 +108,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 0)
         .listRowBackground(listRowBackground)
     }
 
@@ -121,7 +125,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
 
     @ViewBuilder
     private var thumbnailView: some View {
-        let shape = Rectangle()
+        let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
 
         ZStack {
             shape.fill(Color.black.opacity(0.06))
@@ -142,6 +146,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         }
         .clipShape(shape)
         .contentShape(shape)
+        .overlay(shape.stroke(Color.black.opacity(0.08), lineWidth: 1))
         .clipped()
         .animation(.easeInOut(duration: 0.22), value: thumbnail != nil)
     }

@@ -71,12 +71,14 @@ class DependencyContainer {
         ObjectListViewModel(
             dataProvider: artDataProvider,
             locationProvider: locationProvider,
-            legacyType: .art,
             filterStorageKey: "artListFilter",
             initialFilter: initialFilter,
-            effectiveFilterForObservation: { filter in
+            effectiveFilterForObservation: { $0 },
+            favoritesFilterForObservation: { filter in
                 var f = filter
-                f.onlyFavorites = false
+                f.searchText = nil
+                f.onlyWithEvents = false
+                f.onlyFavorites = true
                 return f
             },
             matchesSearch: { art, q in
@@ -97,12 +99,13 @@ class DependencyContainer {
         ObjectListViewModel(
             dataProvider: campDataProvider,
             locationProvider: locationProvider,
-            legacyType: .camp,
             filterStorageKey: "campListFilter",
             initialFilter: initialFilter,
-            effectiveFilterForObservation: { filter in
+            effectiveFilterForObservation: { $0 },
+            favoritesFilterForObservation: { filter in
                 var f = filter
-                f.onlyFavorites = false
+                f.searchText = nil
+                f.onlyFavorites = true
                 return f
             },
             matchesSearch: { camp, q in

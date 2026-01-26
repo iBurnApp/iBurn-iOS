@@ -25,8 +25,7 @@ Also added a loading gate so the lists show a spinner instead of immediately sho
 Files:
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ObjectListViewModel.swift` (new; shared logic)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/FavoritesFilterable.swift` (new; protocol + ArtFilter/CampFilter conformance)
-- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/LegacyFavoritesStoring.swift` (new; protocol for favorites only)
-- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/LegacyDataStore.swift` (updated; conforms to `LegacyFavoritesStoring`)
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ObjectListViewModel.swift` (updated; now uses PlayaDB favorites only)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ArtListViewModel.swift` (updated; now a typealias)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/CampListViewModel.swift` (updated; now a typealias)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ArtDataProvider.swift` (updated; `isDatabaseSeeded()` helper)
@@ -35,17 +34,14 @@ Files:
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ArtListView.swift` (updated previews; avoids Yap usage)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/CampListView.swift` (updated previews; avoids Yap usage)
 
-**Favorites toggle sync (legacy -> PlayaDB)**
+**Favorites (PlayaDB-only)**
 
-During migration the SwiftUI list UI reads favorites from legacy Yap metadata (`LegacyDataStore.favoriteIDs(...)`). PlayaDB favorites can drift, so toggling now:
-1) derives the desired state from UI
-2) optimistically updates local `favoriteIDs` for responsiveness
-3) writes desired state to legacy metadata
-4) reconciles PlayaDB to match (only toggling if needed)
+The SwiftUI Art/Camp lists no longer read or write favorites via Yap metadata. Favorites now:
+1) are written via `PlayaDB.toggleFavorite(...)`
+2) are kept up-to-date for heart icon display by running a second PlayaDB observation with `onlyFavorites = true` and maintaining `favoriteIDs` in the view model.
 
 Files:
-- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ArtListViewModel.swift`
-- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/CampListViewModel.swift`
+- `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/ObjectListViewModel.swift`
 
 ### Build / Tests (iOS 26.2 simulator)
 
@@ -65,8 +61,8 @@ Added focused tests for the new shared list view model:
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurnTests/ObjectListViewModelTests.swift`
   - Loading gate behavior (empty first emission remains loading until seeded)
   - Non-empty first emission clears loading
-  - Favorites-only filtering is client-side while observation receives `onlyFavorites = false`
-  - Favorite toggling writes legacy and reconciles the provider
+  - Favorites IDs come from the dedicated favorites observation
+  - Favorite toggling calls provider and updates local `favoriteIDs`
 
 ### List Cell Parity Progress
 
@@ -146,6 +142,16 @@ Media lookup (no YapDB objects; reuse legacy disk cache):
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/MediaAssetProviding.swift` (protocol; default uses `BRCMediaDownloader.localMediaURL("\(uid).jpg")`)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/RowAssetsLoader.swift` (sync thumbnail load, async colors, in-memory caches)
 - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/ListView/MediaObjectRowView.swift` (row wrapper that owns `RowAssetsLoader`)
+
+Audio tour button (SwiftUI Art list):
+- Implemented without adding PlayaDB columns. The source of truth is the filesystem/bundled media:
+  - `BRCMediaDownloader.localMediaURL("\(uid).m4a")` determines if a row has audio.
+- Refactored `BRCAudioPlayer` to support a shared underlying representation (`BRCAudioTourTrack`), keeping legacy `[BRCArtObject]` entry points for backward compatibility.
+- SwiftUI button matches legacy emoji affordance (“🔈 ▶️” / “🔊 ⏸”) and listens for `BRCAudioPlayerChangeNotification` to stay in sync.
+
+Favorites (SwiftUI lists):
+- Removed Yap/legacy favorites dependency from `ObjectListViewModel`.
+- Favorites are now sourced from PlayaDB only; the view model maintains `favoriteIDs` via a second PlayaDB observation (`onlyFavorites = true`) to keep heart icons in sync.
 
 ### Build / Tests (iOS 26.2 simulator)
 

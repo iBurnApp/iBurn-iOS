@@ -9,6 +9,7 @@ import Foundation
 
 protocol MediaAssetProviding {
     func localThumbnailURL(objectID: String) -> URL?
+    func localAudioURL(objectID: String) -> URL?
 }
 
 /// Default implementation that matches the legacy media cache layout:
@@ -17,5 +18,8 @@ final class BRCMediaAssetProvider: MediaAssetProviding {
     func localThumbnailURL(objectID: String) -> URL? {
         BRCMediaDownloader.localMediaURL("\(objectID).jpg")
     }
-}
 
+    func localAudioURL(objectID: String) -> URL? {
+        BRCMediaDownloader.localMediaURL("\(objectID).m4a")
+    }
+}

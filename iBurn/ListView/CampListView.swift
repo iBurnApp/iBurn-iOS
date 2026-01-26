@@ -39,7 +39,7 @@ struct CampListView: View {
                         onFavoriteTap: {
                             Task { await viewModel.toggleFavorite(camp) }
                         }
-                    ) {
+                    ) { _ in
                         EmptyView()
                     }
                     .contentShape(Rectangle())
@@ -135,13 +135,13 @@ struct CampListView: View {
             viewModel: CampListViewModel(
                 dataProvider: PreviewCampDataProvider(),
                 locationProvider: MockLocationProvider(),
-                legacyType: .camp,
                 filterStorageKey: "campListFilter.preview",
                 initialFilter: .all,
-                legacyDataStore: PreviewLegacyFavoritesStore(),
-                effectiveFilterForObservation: { filter in
+                effectiveFilterForObservation: { $0 },
+                favoritesFilterForObservation: { filter in
                     var f = filter
-                    f.onlyFavorites = false
+                    f.searchText = nil
+                    f.onlyFavorites = true
                     return f
                 },
                 matchesSearch: { camp, q in
@@ -187,7 +187,4 @@ private class PreviewCampDataProvider: CampDataProvider {
     }
 }
 
-private final class PreviewLegacyFavoritesStore: LegacyFavoritesStoring {
-    func favoriteIDs(for type: DataObjectType) async -> Set<String> { [] }
-    func updateFavoriteStatus(uid: String, type: DataObjectType, isFavorite: Bool) async {}
-}
+// Legacy favorites store is no longer used by SwiftUI lists.
