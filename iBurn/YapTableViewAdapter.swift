@@ -8,6 +8,7 @@
 
 import Foundation
 
+@MainActor
 @objc public protocol YapTableViewAdapterDelegate: NSObjectProtocol {
     func didSelectObject(_ adapter: YapTableViewAdapter,
                          object: DataObject,

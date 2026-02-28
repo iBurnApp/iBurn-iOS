@@ -22,6 +22,7 @@ public enum ViewControllerEvent {
 // MARK: - Protocols
 
 /// Protocol for containers that want to receive view controller lifecycle events
+@MainActor
 public protocol DynamicViewControllerEventHandler: AnyObject {
     /// Called when a view controller triggers an event
     /// - Parameters:
@@ -31,6 +32,7 @@ public protocol DynamicViewControllerEventHandler: AnyObject {
 }
 
 /// Protocol for view controllers that can notify containers about lifecycle events
+@MainActor
 public protocol DynamicViewController: AnyObject {
     /// The handler that will receive event notifications
     var eventHandler: DynamicViewControllerEventHandler? { get set }

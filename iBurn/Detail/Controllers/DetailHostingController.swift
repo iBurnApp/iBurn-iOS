@@ -38,11 +38,16 @@ extension UIViewController {
     }
 }
 
+@MainActor
 class DetailHostingController: UIHostingController<DetailView>, DynamicViewController {
     let viewModel: DetailViewModel
     let coordinator: DetailActionCoordinator
     var indexPath: IndexPath?
     private let titleText: String
+
+    var colors: BRCImageColors {
+        viewModel.getThemeBRCColors()
+    }
     
     // MARK: - DynamicViewController
     var eventHandler: DynamicViewControllerEventHandler?

@@ -86,7 +86,10 @@ class DetailViewModel: ObservableObject {
         self.coordinator = coordinator
         self.rowAssets = rowAssets
 
-        let md = dataService.getMetadata(for: dataObject) ?? BRCObjectMetadata()
+        // `BRCObjectMetadata`'s default init comes from Mantle (Obj-C) and may be imported as optional.
+        // In practice it should always succeed; force-unwrap so downstream APIs can keep using a
+        // non-optional metadata object.
+        let md = dataService.getMetadata(for: dataObject) ?? BRCObjectMetadata()!
         self.legacyMetadata = md
         self.isFavorite = md.isFavorite
         self.userNotes = md.userNotes ?? ""
@@ -103,21 +106,32 @@ class DetailViewModel: ObservableObject {
 
     /// PlayaDB-backed initializer.
     init(
-        object: any PlayaDB.DataObject,
+        subject: DetailSubject,
         playaDB: PlayaDB,
         locationService: LocationServiceProtocol,
         coordinator: DetailActionCoordinator,
         mediaProvider: MediaAssetProviding = BRCMediaAssetProvider(),
         audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance
     ) {
+        precondition(
+            {
+                if case .legacy = subject { return false }
+                return true
+            }(),
+            "Use the legacy initializer for BRCDataObject"
+        )
+
         let rowAssets: RowAssetsLoader?
-        if object.objectType == .art || object.objectType == .camp {
-            rowAssets = RowAssetsLoader(objectID: object.uid, provider: mediaProvider)
-        } else {
+        switch subject {
+        case .art(let art):
+            rowAssets = RowAssetsLoader(objectID: art.uid, provider: mediaProvider)
+        case .camp(let camp):
+            rowAssets = RowAssetsLoader(objectID: camp.uid, provider: mediaProvider)
+        case .event, .legacy:
             rowAssets = nil
         }
 
-        self.subject = .playa(object)
+        self.subject = subject
         self.dataService = nil
         self.playaDB = playaDB
         self.mediaProvider = mediaProvider
@@ -175,19 +189,41 @@ class DetailViewModel: ObservableObject {
                 isAudioPlaying = audioService?.isPlaying(artObject: artObject) ?? false
             }
 
-        case .playa(let obj):
+        case .art(let art):
             guard let playaDB else { break }
             do {
-                let md = try await playaDB.metadata(for: obj)
+                let md = try await playaDB.metadata(for: art)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
-                try await playaDB.setLastViewed(Date(), for: obj)
+                try await playaDB.setLastViewed(Date(), for: art)
             } catch {
                 self.error = error
             }
 
-            if localAudioURL(objectID: obj.uid) != nil {
-                isAudioPlaying = audioPlayer.isPlaying(id: obj.uid)
+            if localAudioURL(objectID: art.uid) != nil {
+                isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
+            }
+
+        case .camp(let camp):
+            guard let playaDB else { break }
+            do {
+                let md = try await playaDB.metadata(for: camp)
+                isFavorite = md.isFavorite
+                userNotes = md.userNotes ?? ""
+                try await playaDB.setLastViewed(Date(), for: camp)
+            } catch {
+                self.error = error
+            }
+
+        case .event(let event):
+            guard let playaDB else { break }
+            do {
+                let md = try await playaDB.metadata(for: event)
+                isFavorite = md.isFavorite
+                userNotes = md.userNotes ?? ""
+                try await playaDB.setLastViewed(Date(), for: event)
+            } catch {
+                self.error = error
             }
         }
 
@@ -205,10 +241,18 @@ class DetailViewModel: ObservableObject {
                 try await dataService.updateFavoriteStatus(for: obj, isFavorite: newFavoriteStatus)
                 legacyMetadata?.isFavorite = newFavoriteStatus
                 isFavorite = newFavoriteStatus
-            case .playa(let obj):
+            case .art(let art):
                 guard let playaDB else { throw DetailError.invalidData }
-                try await playaDB.toggleFavorite(obj)
-                isFavorite = try await playaDB.isFavorite(obj)
+                try await playaDB.toggleFavorite(art)
+                isFavorite = try await playaDB.isFavorite(art)
+            case .camp(let camp):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.toggleFavorite(camp)
+                isFavorite = try await playaDB.isFavorite(camp)
+            case .event(let event):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.toggleFavorite(event)
+                isFavorite = try await playaDB.isFavorite(event)
             }
 
             self.cells = generateCells()
@@ -226,9 +270,17 @@ class DetailViewModel: ObservableObject {
                 try await dataService.updateUserNotes(for: obj, notes: notes)
                 legacyMetadata?.userNotes = notes
                 userNotes = notes
-            case .playa(let obj):
+            case .art(let art):
                 guard let playaDB else { throw DetailError.invalidData }
-                try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: obj)
+                try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
+                userNotes = notes
+            case .camp(let camp):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
+                userNotes = notes
+            case .event(let event):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 userNotes = notes
             }
 
@@ -296,10 +348,16 @@ class DetailViewModel: ObservableObject {
                 switch subject {
                 case .legacy(let legacyObject):
                     coordinator.handle(.showMap(legacyObject))
-                case .playa(let obj):
-                    if let annotation = playaAnnotation(for: obj) {
-                        coordinator.handle(.showMapAnnotation(annotation, title: "Map - \(obj.name)"))
+                case .art(let art):
+                    if let annotation = PlayaObjectAnnotation(art: art) {
+                        coordinator.handle(.showMapAnnotation(annotation, title: "Map - \(art.name)"))
                     }
+                case .camp(let camp):
+                    if let annotation = PlayaObjectAnnotation(camp: camp) {
+                        coordinator.handle(.showMapAnnotation(annotation, title: "Map - \(camp.name)"))
+                    }
+                case .event:
+                    break
                 }
             }
             
@@ -350,56 +408,68 @@ class DetailViewModel: ObservableObject {
         case .legacy(let legacyObject):
             // Show QR code share screen instead of direct share sheet
             coordinator.handle(.showShareScreen(legacyObject))
-        case .playa(let obj):
-            let text = "\(obj.objectType.displayName): \(obj.name)\nID: \(obj.uid)"
-            coordinator.handle(.share([text]))
+        case .art(let art):
+            coordinator.handle(.share(["Art: \(art.name)\nID: \(art.uid)"]))
+        case .camp(let camp):
+            coordinator.handle(.share(["Camp: \(camp.name)\nID: \(camp.uid)"]))
+        case .event(let event):
+            coordinator.handle(.share(["Event: \(event.name)\nID: \(event.uid)"]))
         }
     }
     
     /// Extract theme colors following the same logic as BRCDetailViewController
     func getThemeColors() -> ImageColors {
+        ImageColors(getThemeBRCColors())
+    }
+
+    /// UIKit-friendly theme colors for navigation bar theming and legacy parity.
+    func getThemeBRCColors() -> BRCImageColors {
         // If image colors theming is disabled, always return global theme colors
         if !Appearance.useImageColorsTheming {
-            return ImageColors(Appearance.currentColors)
+            return Appearance.currentColors
         }
 
         switch subject {
         case .legacy(let legacyObject):
             // Special handling for events - try to get colors from hosting camp first
             if let eventObject = legacyObject as? BRCEventObject {
-                return getEventThemeColors(for: eventObject)
+                return getEventThemeBRCColors(for: eventObject)
             }
 
             // For Art/Camp objects, check if metadata has thumbnail colors
             if let artMetadata = legacyMetadata as? BRCArtMetadata,
                let imageColors = artMetadata.thumbnailImageColors {
-                return ImageColors(imageColors)
+                return imageColors
             } else if let campMetadata = legacyMetadata as? BRCCampMetadata,
                       let imageColors = campMetadata.thumbnailImageColors {
-                return ImageColors(imageColors)
+                return imageColors
             }
 
-            return ImageColors(Appearance.currentColors)
+            return Appearance.currentColors
 
-        case .playa:
+        case .art, .camp, .event:
             if let colors = extractedImageColors {
-                return ImageColors(colors)
+                return colors
             }
-            return ImageColors(Appearance.currentColors)
+            return Appearance.currentColors
         }
     }
     
     // MARK: - Audio State Management
     
     private func setupAudioNotificationObserver() {
-        audioNotificationObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name(BRCAudioPlayer.BRCAudioPlayerChangeNotification),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.updateAudioPlayingState()
-        }
-    }
+	        audioNotificationObserver = NotificationCenter.default.addObserver(
+	            forName: Notification.Name(BRCAudioPlayer.BRCAudioPlayerChangeNotification),
+	            object: nil,
+	            queue: .main
+	        ) { [weak self] _ in
+	            // The notification is delivered on the main queue; keep the update synchronous so
+	            // UI/tests that expect immediate state changes behave deterministically.
+	            MainActor.assumeIsolated {
+	                self?.updateAudioPlayingState()
+	            }
+	        }
+	    }
     
     private func updateAudioPlayingState() {
         let wasPlaying = isAudioPlaying
@@ -412,9 +482,12 @@ class DetailViewModel: ObservableObject {
             }
             isAudioPlaying = audioService?.isPlaying(artObject: artObject) ?? false
 
-        case .playa(let obj):
-            guard localAudioURL(objectID: obj.uid) != nil else { return }
-            isAudioPlaying = audioPlayer.isPlaying(id: obj.uid)
+        case .art(let art):
+            guard localAudioURL(objectID: art.uid) != nil else { return }
+            isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
+
+        case .camp, .event:
+            return
         }
 
         if wasPlaying != isAudioPlaying {
@@ -423,7 +496,7 @@ class DetailViewModel: ObservableObject {
     }
     
     /// Handle event-specific color logic - try hosting camp colors first
-    private func getEventThemeColors(for event: BRCEventObject) -> ImageColors {
+    private func getEventThemeBRCColors(for event: BRCEventObject) -> BRCImageColors {
         // Try to get colors from hosting camp's image first
         if let campId = event.hostedByCampUniqueID,
            let dataService,
@@ -432,12 +505,12 @@ class DetailViewModel: ObservableObject {
             // Get camp metadata and check for image colors
             if let campMetadata = dataService.getMetadata(for: camp) as? BRCCampMetadata,
                let campImageColors = campMetadata.thumbnailImageColors {
-                return ImageColors(campImageColors)
+                return campImageColors
             }
         }
         
         // Fallback to event type colors
-        return ImageColors(BRCImageColors.colors(for: event.eventType))
+        return BRCImageColors.colors(for: event.eventType)
     }
     
     // MARK: - Private Methods
@@ -451,11 +524,15 @@ class DetailViewModel: ObservableObject {
         switch subject {
         case .legacy(let legacyObject):
             guard let dataService else { return [] }
-            let md = legacyMetadata ?? BRCObjectMetadata()
+            let md = legacyMetadata ?? BRCObjectMetadata()!
             return generateLegacyCellTypes(legacyObject, metadata: md, dataService: dataService)
 
-        case .playa(let obj):
-            return generatePlayaCellTypes(obj)
+        case .art(let art):
+            return generatePlayaArtCellTypes(art)
+        case .camp(let camp):
+            return generatePlayaCampCellTypes(camp)
+        case .event(let event):
+            return generatePlayaEventCellTypes(event)
         }
     }
 
@@ -531,11 +608,11 @@ class DetailViewModel: ObservableObject {
         return cellTypes
     }
 
-    private func generatePlayaCellTypes(_ object: any PlayaDB.DataObject) -> [DetailCellType] {
+    private func generatePlayaArtCellTypes(_ art: ArtObject) -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
         var hasImage = false
 
-        if let imageURL = localThumbnailURL(objectID: object.uid),
+        if let imageURL = localThumbnailURL(objectID: art.uid),
            let image = loadImage(from: imageURL) {
             let aspectRatio = image.size.width / image.size.height
             cellTypes.append(.image(image, aspectRatio: aspectRatio))
@@ -543,76 +620,156 @@ class DetailViewModel: ObservableObject {
         }
 
         let canShowLocation = BRCEmbargo.allowEmbargoedData()
-        if canShowLocation, let annotation = playaAnnotation(for: object), !hasImage {
-            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(object.name)"))
+        if canShowLocation, let annotation = PlayaObjectAnnotation(art: art), !hasImage {
+            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(art.name)"))
         }
 
-        cellTypes.append(.text(object.name, style: .title))
+        cellTypes.append(.text(art.name, style: .title))
 
-        if let description = object.description, !description.isEmpty {
+        if let description = art.description, !description.isEmpty {
             cellTypes.append(.text(description, style: .body))
         }
 
-        // Type-specific bits
-        if let art = object as? ArtObject {
-            if let artist = art.artist, !artist.isEmpty {
-                cellTypes.append(.text("Artist: \(artist)", style: .subtitle))
-            }
-        } else if let camp = object as? CampObject {
-            if let hometown = camp.hometown, !hometown.isEmpty {
-                cellTypes.append(.text("Hometown: \(hometown)", style: .caption))
-            }
-            if let landmark = camp.landmark, !landmark.isEmpty {
-                cellTypes.append(.landmark(landmark))
-            }
+        if let artist = art.artist, !artist.isEmpty {
+            cellTypes.append(.text("Artist: \(artist)", style: .subtitle))
         }
 
         // Location with embargo handling
         let locationValue: String
-        if canShowLocation {
-            locationValue = object.location != nil ? (subject.locationString ?? "Unknown") : "Unknown"
+        if canShowLocation, art.location != nil {
+            locationValue = art.locationString ?? art.timeBasedAddress ?? "Unknown"
+        } else if canShowLocation {
+            locationValue = "Unknown"
         } else {
             locationValue = "Restricted"
         }
-        cellTypes.append(.playaAddress(locationValue, tappable: canShowLocation && object.location != nil))
+        cellTypes.append(.playaAddress(locationValue, tappable: canShowLocation && art.location != nil))
 
-        // Media-driven audio tour
-        if let audioURL = localAudioURL(objectID: object.uid),
-           let track = makeAudioTrack(objectID: object.uid, title: object.name, artist: (object as? ArtObject)?.artist, audioURL: audioURL) {
+        // Media-driven audio tour (filesystem/bundle as source of truth)
+        if let audioURL = localAudioURL(objectID: art.uid),
+           let track = makeAudioTrack(objectID: art.uid, title: art.name, artist: art.artist, audioURL: audioURL) {
             cellTypes.append(.audioTrack(track, isPlaying: isAudioPlaying))
         }
 
         // Email / URL
-        if let art = object as? ArtObject, let email = art.contactEmail, !email.isEmpty {
-            cellTypes.append(.email(email, label: "Contact"))
-        } else if let camp = object as? CampObject, let email = camp.contactEmail, !email.isEmpty {
+        if let email = art.contactEmail, !email.isEmpty {
             cellTypes.append(.email(email, label: "Contact"))
         }
-        if let art = object as? ArtObject, let url = art.url {
-            cellTypes.append(.url(url, title: "Website"))
-        } else if let camp = object as? CampObject, let url = camp.url {
+        if let url = art.url {
             cellTypes.append(.url(url, title: "Website"))
         }
 
         // Map preview before coordinates if we have a header image
-        if canShowLocation, let annotation = playaAnnotation(for: object), hasImage {
-            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(object.name)"))
+        if canShowLocation, let annotation = PlayaObjectAnnotation(art: art), hasImage {
+            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(art.name)"))
         }
 
         // GPS coordinates
-        if canShowLocation, let location = object.location {
+        if canShowLocation, let location = art.location {
             cellTypes.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
         }
 
         // Distance / travel time
-        if canShowLocation, let distance = distanceToLocation(object.location) {
+        if canShowLocation, let distance = distanceToLocation(art.location) {
             cellTypes.append(.distance(distance))
             cellTypes.append(.travelTime(distance))
         }
 
         // Notes (stored in PlayaDB metadata)
         cellTypes.append(.userNotes(userNotes))
+        return cellTypes
+    }
 
+    private func generatePlayaCampCellTypes(_ camp: CampObject) -> [DetailCellType] {
+        var cellTypes: [DetailCellType] = []
+        var hasImage = false
+
+        if let imageURL = localThumbnailURL(objectID: camp.uid),
+           let image = loadImage(from: imageURL) {
+            let aspectRatio = image.size.width / image.size.height
+            cellTypes.append(.image(image, aspectRatio: aspectRatio))
+            hasImage = true
+        }
+
+        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        if canShowLocation, let annotation = PlayaObjectAnnotation(camp: camp), !hasImage {
+            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(camp.name)"))
+        }
+
+        cellTypes.append(.text(camp.name, style: .title))
+
+        if let description = camp.description, !description.isEmpty {
+            cellTypes.append(.text(description, style: .body))
+        }
+
+        if let hometown = camp.hometown, !hometown.isEmpty {
+            cellTypes.append(.text("Hometown: \(hometown)", style: .caption))
+        }
+        if let landmark = camp.landmark, !landmark.isEmpty {
+            cellTypes.append(.landmark(landmark))
+        }
+
+        let locationValue: String
+        if canShowLocation, camp.location != nil {
+            locationValue = camp.locationString ?? camp.intersection ?? "Unknown"
+        } else if canShowLocation {
+            locationValue = "Unknown"
+        } else {
+            locationValue = "Restricted"
+        }
+        cellTypes.append(.playaAddress(locationValue, tappable: canShowLocation && camp.location != nil))
+
+        // Email / URL
+        if let email = camp.contactEmail, !email.isEmpty {
+            cellTypes.append(.email(email, label: "Contact"))
+        }
+        if let url = camp.url {
+            cellTypes.append(.url(url, title: "Website"))
+        }
+
+        if canShowLocation, let annotation = PlayaObjectAnnotation(camp: camp), hasImage {
+            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(camp.name)"))
+        }
+
+        if canShowLocation, let location = camp.location {
+            cellTypes.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
+        }
+
+        if canShowLocation, let distance = distanceToLocation(camp.location) {
+            cellTypes.append(.distance(distance))
+            cellTypes.append(.travelTime(distance))
+        }
+
+        cellTypes.append(.userNotes(userNotes))
+        return cellTypes
+    }
+
+    private func generatePlayaEventCellTypes(_ event: EventObject) -> [DetailCellType] {
+        var cellTypes: [DetailCellType] = []
+
+        cellTypes.append(.text(event.name, style: .title))
+
+        if let description = event.description, !description.isEmpty {
+            cellTypes.append(.text(description, style: .body))
+        }
+
+        // TODO(PlayaDB): resolve location string via host camp/art lookup.
+        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let locationValue: String
+        if canShowLocation, !event.otherLocation.isEmpty {
+            locationValue = event.otherLocation
+        } else if canShowLocation {
+            locationValue = "Unknown"
+        } else {
+            locationValue = "Restricted"
+        }
+        cellTypes.append(.playaAddress(locationValue, tappable: false))
+
+        if let url = event.url {
+            cellTypes.append(.url(url, title: "Website"))
+        }
+
+        cellTypes.append(.userNotes(userNotes))
         return cellTypes
     }
     
@@ -812,6 +969,7 @@ class DetailViewModel: ObservableObject {
     }
     
     private func getHostDescription(for event: BRCEventObject) -> String? {
+        guard let dataService else { return nil }
         if let campId = event.hostedByCampUniqueID,
            let camp = dataService.getCamp(withId: campId),
            let description = camp.detailDescription,
@@ -932,17 +1090,6 @@ class DetailViewModel: ObservableObject {
 
     private func localAudioURL(objectID: String) -> URL? {
         mediaProvider.localAudioURL(objectID: objectID)
-    }
-
-    private func playaAnnotation(for object: any PlayaDB.DataObject) -> PlayaObjectAnnotation? {
-        if let art = object as? ArtObject {
-            return PlayaObjectAnnotation(art: art)
-        }
-        if let camp = object as? CampObject {
-            return PlayaObjectAnnotation(camp: camp)
-        }
-        // Event annotations not supported yet (event occurrences are the map unit).
-        return nil
     }
 
     private func makeAudioTrack(

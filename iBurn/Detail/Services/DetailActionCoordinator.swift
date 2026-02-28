@@ -14,6 +14,7 @@ import SwiftUI
 // MARK: - Protocol
 
 /// Coordinator responsible for handling detail view actions
+@MainActor
 protocol DetailActionCoordinator: AnyObject {
     func handle(_ action: DetailAction)
     func updateNavigator(_ navigator: Navigable?)
@@ -49,6 +50,7 @@ struct DetailActionCoordinatorDependencies {
 // MARK: - Factory
 
 /// Factory for creating DetailActionCoordinator instances
+@MainActor
 enum DetailActionCoordinatorFactory {
     /// Creates a coordinator for production use
     static func makeCoordinator(presenter: Presentable? = nil, navigator: Navigable? = nil) -> DetailActionCoordinator {

@@ -268,8 +268,10 @@ extension MapViewAdapter: MLNMapViewDelegate {
             break
         case .info:
             if let data = annotation as? DataObjectAnnotation, let parentVC = parent {
-                let vc = DetailViewControllerFactory.createDetailViewController(for: data.object)
-                parentVC.navigationController?.pushViewController(vc, animated: true)
+                Task { @MainActor in
+                    let vc = DetailViewControllerFactory.createDetailViewController(for: data.object)
+                    parentVC.navigationController?.pushViewController(vc, animated: true)
+                }
                 return
             }
 

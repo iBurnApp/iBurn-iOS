@@ -227,3 +227,65 @@ xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'pl
      - map callout info -> detail works
      - favorites + notes persist via PlayaDB
      - embargo hides art/camp pins when locked
+
+---
+
+## 2026-01-25 Late Session Progress (Detail Unification + Build Fixes)
+
+### Context: Sandbox vs Local Builds
+
+When running under a sandboxed coding-agent environment, `xcodebuild` reported:
+```text
+xcodebuild: error: 'iBurn.xcworkspace' is not a workspace file.
+```
+
+Running the same command **outside** the sandbox (elevated) succeeded and surfaced real compile errors.
+
+Commands used (xcsift parsing):
+```bash
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
+```
+
+Note: `-quiet` can result in **zero output** on an incremental success build; `xcsift` then prints `Error: No input provided`. In that case, re-run without `-quiet`.
+
+### Build Break: Errors Observed
+
+Local build surfaced a set of concurrency + refactor errors (e.g. main-actor isolation in factories/coordinators, and missing properties after moving detail into SwiftUI).
+
+Representative errors (xcsift summary excerpt):
+```text
+errors:
+  PageViewManager.swift: value of type 'DetailHostingController' has no member 'colors'
+  DetailViewControllerFactory.swift: call to main actor-isolated initializer ... in a synchronous nonisolated context
+  DetailSubject.swift: value of type 'EventObject' has no member 'locationString'
+  DetailViewModel.swift: optional metadata must be unwrapped ...
+```
+
+### Fixes Applied (Build Restored)
+
+After the fixes below, `xcodebuild ... | xcsift` reports `status: success` with `errors: 0` and `warnings: 0`.
+
+**Key code changes**
+- Added UIKit-friendly theme colors access for SwiftUI detail hosting controller:
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/ViewModels/DetailViewModel.swift`
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/Controllers/DetailHostingController.swift`
+- Enforced main-actor boundaries where required for synchronous UI construction:
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/PageViewManager.swift` (now `@MainActor`)
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/Controllers/DetailViewControllerFactory.swift` (now `@MainActor`)
+- Fixed PlayaDB `EventObject` location compilation issue by using `otherLocation` as a stopgap:
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/Models/DetailSubject.swift`
+  - TODO: replace with host camp/art location string via PlayaDB lookup (see “Remaining work”).
+- Fixed optionality around Mantle-imported metadata init (`BRCObjectMetadata()` is imported as optional in Swift):
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/ViewModels/DetailViewModel.swift`
+- Fixed actor-isolation warnings by adjusting protocols and moving main-actor work into `Task { @MainActor in ... }` where needed:
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/YapTableViewAdapter.swift` (`YapTableViewAdapterDelegate` is `@MainActor`)
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/MapViewAdapter.swift` (push detail VC via `Task { @MainActor ... }`)
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/Controllers/DynamicViewControllerProtocols.swift` (`@MainActor` protocols)
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn/Detail/Services/DetailActionCoordinator.swift` (`@MainActor` coordinator protocol/factory)
+- Updated build docs to reflect xcsift usage and the `-quiet` empty-output caveat:
+  - `/Users/chrisbal/Documents/Code/iBurn-iOS/CLAUDE.md`
+
+### Remaining Work (Next Session)
+- **Event detail location string**: do a PlayaDB lookup for host camp/art and derive the displayed location string from the host’s location (not `EventObject.primaryLocationString`, not a field on the event itself).
+- **Media dependencies**: protocolize `BRCMediaDownloader` lookups for local cached thumbnails and audio (dependency injection).
+- **Unit tests**: add tests for the new shared detail logic (especially host-lookup formatting and concurrency-safe routing).

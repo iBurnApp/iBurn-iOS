@@ -10,6 +10,7 @@ import UIKit
 import PlayaDB
 
 /// Factory for creating detail view controllers
+@MainActor
 class DetailViewControllerFactory {
     
     /// Creates a detail view controller using the preference system to determine implementation
@@ -88,16 +89,24 @@ class DetailViewControllerFactory {
         return controller
     }
 
-    /// Creates a SwiftUI detail controller for a PlayaDB-backed object.
-    static func create(
-        with object: any PlayaDB.DataObject,
-        playaDB: PlayaDB
-    ) -> DetailHostingController {
+    static func create(with art: ArtObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .art(art), playaDB: playaDB)
+    }
+
+    static func create(with camp: CampObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .camp(camp), playaDB: playaDB)
+    }
+
+    static func create(with event: EventObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .event(event), playaDB: playaDB)
+    }
+
+    static func create(with subject: DetailSubject, playaDB: PlayaDB) -> DetailHostingController {
         let coordinator = DetailActionCoordinatorFactory.makeCoordinator()
         let locationService = LocationService()
 
         let viewModel = DetailViewModel(
-            object: object,
+            subject: subject,
             playaDB: playaDB,
             locationService: locationService,
             coordinator: coordinator
@@ -106,7 +115,7 @@ class DetailViewControllerFactory {
         let controller = DetailHostingController(
             viewModel: viewModel,
             coordinator: coordinator,
-            title: object.name
+            title: viewModel.title
         )
 
         coordinator.updatePresenter(controller)

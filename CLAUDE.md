@@ -63,6 +63,19 @@ open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
 
 ## Development Commands
 
+### Build/Test Output Parsing (xcsift)
+
+This repo uses `xcsift` to parse and format `xcodebuild` / SwiftPM output for coding agents.
+
+Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
+
+Examples:
+```bash
+xcodebuild build ... 2>&1 | xcsift -f toon -w
+xcodebuild test ... 2>&1 | xcsift -f toon -w
+swift test 2>&1 | xcsift -f toon -w
+```
+
 ### Building and Dependencies
 - `pod install` - Install CocoaPods dependencies (required after cloning)
 - `git submodule update --init` - Initialize git submodules (required after cloning)
@@ -70,37 +83,40 @@ open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
 
 ### Build Commands
 
-**Preferred Build Command (quiet, arm64 simulator)**:
+**Preferred Build Command (arm64 simulator, parsed via xcsift)**:
 ```bash
-# Build for iOS Simulator with quiet output
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+# Build for iOS Simulator (quiet xcodebuild + xcsift parsing)
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
+#
+# Note: if xcsift prints "Error: No input provided", xcodebuild likely produced no output (e.g. a fully
+# incremental build with `-quiet`). Re-run without `-quiet`.
 
-# Build and show all output (for debugging)
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64'
+# Build and show full xcodebuild output (debugging)
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
 ```
 
 **Testing Commands**:
 ```bash
 # Run tests on simulator with quiet output
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
 
 # Run tests with full output (for debugging)
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64'
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
 
 # Run PlayaKit tests
-xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
 
-# Run SPM tests (quietly by default)
-swift test --quiet
+# Run SwiftPM tests (note: may require elevated permissions in sandboxed environments)
+swift test 2>&1 | xcsift -f toon -w
 ```
 
 **Utility Commands**:
 ```bash
 # Clean build products
-xcodebuild clean -workspace iBurn.xcworkspace -scheme iBurn
+xcodebuild clean -workspace iBurn.xcworkspace -scheme iBurn 2>&1 | xcsift -f toon -w
 
 # Show build settings
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -showBuildSettings
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -showBuildSettings 2>&1 | xcsift -f toon -w
 ```
 
 ### Simulator Management
@@ -112,16 +128,16 @@ Basic simulator control using standard tools:
 xcrun simctl list devices available
 
 # Boot a simulator
-xcrun simctl boot "iPhone 16 Pro"
+xcrun simctl boot "iPhone 17 Pro Max"
 
 # Open Simulator app
 open -a Simulator
 
 # Shutdown simulator
-xcrun simctl shutdown "iPhone 16 Pro"
+xcrun simctl shutdown "iPhone 17 Pro Max"
 
 # Erase simulator content
-xcrun simctl erase "iPhone 16 Pro"
+xcrun simctl erase "iPhone 17 Pro Max"
 ```
 
 ### Fastlane Commands

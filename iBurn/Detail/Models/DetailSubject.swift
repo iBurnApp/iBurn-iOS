@@ -73,8 +73,10 @@ extension DetailSubject {
         case .camp(let camp):
             return camp.locationString ?? camp.intersection
         case .event(let event):
-            return event.locationString
+            // NOTE: For events, the desired display string is typically derived from the host
+            // camp/art location string (requires a DB lookup). `otherLocation` is the only
+            // locally-available string on the event itself.
+            return event.otherLocation.isEmpty ? nil : event.otherLocation
         }
     }
 }
-
