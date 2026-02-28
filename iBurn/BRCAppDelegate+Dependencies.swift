@@ -29,4 +29,24 @@ extension BRCAppDelegate {
             }
         }
     }
+
+    /// Creates the events view controller, using SwiftUI when the feature flag is enabled.
+    /// Callable from ObjC for tab bar setup.
+    @MainActor @objc
+    func createEventsViewController() -> UIViewController {
+        #if DEBUG
+        let preferenceService = PreferenceServiceFactory.shared
+        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
+            return EventListHostingController(dependencies: dependencies)
+        }
+        #endif
+
+        let dbManager = BRCDatabaseManager.shared
+        let legacyVC = EventListViewController(
+            viewName: dbManager.eventsFilteredByDayExpirationAndTypeViewName,
+            searchViewName: dbManager.searchEventsView
+        )
+        legacyVC.title = "Events"
+        return legacyVC
+    }
 }

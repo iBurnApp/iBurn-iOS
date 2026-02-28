@@ -263,8 +263,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (void)setupDefaultTabBarController
 {
-    BRCDatabaseManager *dbManager = BRCDatabaseManager.shared;
-
     self.mapViewController = [[MainMapViewController alloc] init];
     UINavigationController *mapNavController = [[NavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
@@ -289,9 +287,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
-    self.eventsViewController = [[EventListViewController alloc] initWithViewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
-    self.eventsViewController.title = @"Events";
-    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:self.eventsViewController];
+    UIViewController *eventsVC = [self createEventsViewController];
+    eventsVC.title = @"Events";
+    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:eventsVC];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     MoreViewController *moreViewController = [[MoreViewController alloc] init];

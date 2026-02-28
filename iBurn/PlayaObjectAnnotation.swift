@@ -48,6 +48,16 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
         )
     }
 
+    convenience init?(event: EventObjectOccurrence) {
+        guard let location = event.location, CLLocationCoordinate2DIsValid(location.coordinate) else { return nil }
+        self.init(
+            id: event.event.anyID,
+            coordinate: location.coordinate,
+            title: event.name,
+            subtitle: event.startAndEndString
+        )
+    }
+
     var title: String? { titleText }
     var subtitle: String? { subtitleText }
 

@@ -607,6 +607,38 @@ internal class PlayaDBImpl: PlayaDB {
         return objects
     }
 
+    // MARK: - Single Object Fetch
+
+    func fetchArt(uid: String) async throws -> ArtObject? {
+        let art = try await dbQueue.read { db in
+            try ArtObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let art {
+            try await ensureMetadata(for: .art, ids: [art.uid])
+        }
+        return art
+    }
+
+    func fetchCamp(uid: String) async throws -> CampObject? {
+        let camp = try await dbQueue.read { db in
+            try CampObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let camp {
+            try await ensureMetadata(for: .camp, ids: [camp.uid])
+        }
+        return camp
+    }
+
+    func fetchEvent(uid: String) async throws -> EventObject? {
+        let event = try await dbQueue.read { db in
+            try EventObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let event {
+            try await ensureMetadata(for: .event, ids: [event.uid])
+        }
+        return event
+    }
+
     // MARK: - Filtered Data Access (Internal Request Builders)
 
     /// Build an art query from filter options (internal - uses GRDB types)
@@ -685,6 +717,14 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.notExpired()
         }
 
+        // Apply date range filters
+        if let startDate = filter.startDate {
+            request = request.filter(EventOccurrence.Columns.startTime >= startDate)
+        }
+        if let endDate = filter.endDate {
+            request = request.filter(EventOccurrence.Columns.startTime < endDate)
+        }
+
         // Default ordering by start time
         return request.orderedByStartTime()
     }
@@ -743,6 +783,12 @@ internal class PlayaDBImpl: PlayaDB {
                 let nameMatch = event.name.lowercased().contains(lowerSearch)
                 let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
                 if !nameMatch && !descMatch {
+                    includeEvent = false
+                }
+            }
+
+            if let allowedTypes = filter.eventTypeCodes, !allowedTypes.isEmpty {
+                if !allowedTypes.contains(event.eventTypeCode) {
                     includeEvent = false
                 }
             }

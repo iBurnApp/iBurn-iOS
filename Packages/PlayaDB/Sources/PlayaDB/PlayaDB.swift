@@ -101,8 +101,19 @@ public protocol PlayaDB {
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
     
+    // MARK: - Single Object Fetch
+
+    /// Fetch a single art object by UID
+    func fetchArt(uid: String) async throws -> ArtObject?
+
+    /// Fetch a single camp object by UID
+    func fetchCamp(uid: String) async throws -> CampObject?
+
+    /// Fetch a single event object by UID
+    func fetchEvent(uid: String) async throws -> EventObject?
+
     // MARK: - Metadata Operations
-    
+
     /// Fetch metadata for the specified object, creating a default record if needed.
     func metadata(for object: any DataObject) async throws -> ObjectMetadata
     

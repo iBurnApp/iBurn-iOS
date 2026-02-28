@@ -57,6 +57,8 @@ class DetailViewModel: ObservableObject {
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private var audioNotificationObserver: NSObjectProtocol?
+    /// Resolved host camp or art name for events (set during loadContent)
+    private var resolvedHostName: String?
     
     // MARK: - Initialization
 
@@ -222,6 +224,13 @@ class DetailViewModel: ObservableObject {
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
                 try await playaDB.setLastViewed(Date(), for: event)
+
+                // Resolve host camp/art name for location display
+                if let campUID = event.hostedByCamp {
+                    resolvedHostName = try? await playaDB.fetchCamp(uid: campUID)?.name
+                } else if let artUID = event.locatedAtArt {
+                    resolvedHostName = try? await playaDB.fetchArt(uid: artUID)?.name
+                }
             } catch {
                 self.error = error
             }
@@ -753,10 +762,11 @@ class DetailViewModel: ObservableObject {
             cellTypes.append(.text(description, style: .body))
         }
 
-        // TODO(PlayaDB): resolve location string via host camp/art lookup.
         let canShowLocation = BRCEmbargo.allowEmbargoedData()
         let locationValue: String
-        if canShowLocation, !event.otherLocation.isEmpty {
+        if canShowLocation, let hostName = resolvedHostName {
+            locationValue = hostName
+        } else if canShowLocation, !event.otherLocation.isEmpty {
             locationValue = event.otherLocation
         } else if canShowLocation {
             locationValue = "Unknown"

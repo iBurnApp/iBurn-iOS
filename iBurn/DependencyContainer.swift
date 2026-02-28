@@ -40,6 +40,11 @@ class DependencyContainer {
         CampDataProvider(playaDB: playaDB)
     }()
 
+    /// Data provider for Event objects
+    private(set) lazy var eventDataProvider: EventDataProvider = {
+        EventDataProvider(playaDB: playaDB)
+    }()
+
     // MARK: - Initialization
 
     /// Initialize the dependency container
@@ -89,6 +94,16 @@ class DependencyContainer {
             isDatabaseSeeded: { [artDataProvider] in
                 await artDataProvider.isDatabaseSeeded()
             }
+        )
+    }
+
+    /// Create an EventListViewModel with injected dependencies
+    /// - Returns: Configured EventListViewModel
+    func makeEventListViewModel() -> EventListViewModel {
+        EventListViewModel(
+            dataProvider: eventDataProvider,
+            locationProvider: locationProvider,
+            festivalDays: YearSettings.festivalDays
         )
     }
 

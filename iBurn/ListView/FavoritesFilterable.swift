@@ -18,4 +18,5 @@ protocol FavoritesFilterable {
 
 extension ArtFilter: FavoritesFilterable {}
 extension CampFilter: FavoritesFilterable {}
+extension EventFilter: FavoritesFilterable {}
 
