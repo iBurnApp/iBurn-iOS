@@ -3,6 +3,15 @@ import Dispatch
 import Foundation
 import PlayaDB
 
+/// Resolved host information for an event (camp or art installation).
+struct ResolvedEventHost {
+    let name: String
+    let address: String?
+    let description: String?
+    let thumbnailObjectID: String?
+    let isArt: Bool
+}
+
 @MainActor
 final class EventListViewModel: ObservableObject {
     // MARK: - Published
@@ -21,8 +30,8 @@ final class EventListViewModel: ObservableObject {
     @Published var currentLocation: CLLocation?
     @Published private(set) var favoriteIDs: Set<String> = []
 
-    /// Resolved location names for events (event UID → display string)
-    @Published private(set) var resolvedLocationNames: [String: String] = [:]
+    /// Resolved host data for events (event UID → host info)
+    @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
 
     /// Currently selected day (drives day-scoped observation)
     @Published var selectedDay: Date {
@@ -98,10 +107,15 @@ final class EventListViewModel: ObservableObject {
         dataProvider.distanceAttributedString(from: currentLocation, to: object)
     }
 
+    /// Returns the resolved host for an event, or nil if no host was resolved.
+    func resolvedHost(for event: EventObjectOccurrence) -> ResolvedEventHost? {
+        resolvedHosts[event.event.uid]
+    }
+
     /// Returns the resolved location string for an event, or nil if no location.
     func locationString(for event: EventObjectOccurrence) -> String? {
-        if let resolved = resolvedLocationNames[event.event.uid] {
-            return resolved
+        if let resolved = resolvedHosts[event.event.uid] {
+            return resolved.name
         }
         return event.event.hasOtherLocation ? event.event.otherLocation : nil
     }
@@ -189,7 +203,7 @@ final class EventListViewModel: ObservableObject {
                     if !observedItems.isEmpty {
                         self.isLoading = false
                     }
-                    self.resolveLocationNames(for: observedItems)
+                    self.resolveHosts(for: observedItems)
                 }
 
                 if didReceiveFirstEmission, !observedItems.isEmpty {
@@ -279,38 +293,49 @@ final class EventListViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Location Resolution
+    // MARK: - Host Resolution
 
-    /// Resolve host camp/art names for events that reference them by UID.
-    private func resolveLocationNames(for events: [EventObjectOccurrence]) {
-        // Collect events that need resolution and aren't already cached
+    /// Resolve host camp/art data for events that reference them by UID.
+    private func resolveHosts(for events: [EventObjectOccurrence]) {
         let needsResolution = events.filter { event in
             let uid = event.event.uid
-            if resolvedLocationNames[uid] != nil { return false }
+            if resolvedHosts[uid] != nil { return false }
             return event.event.isHostedByCamp || event.event.isLocatedAtArt
         }
         guard !needsResolution.isEmpty else { return }
 
         Task { [weak self, dataProvider] in
             guard let self else { return }
-            var newNames: [String: String] = [:]
+            var newHosts: [String: ResolvedEventHost] = [:]
 
             for event in needsResolution {
                 let eventUID = event.event.uid
                 if let campUID = event.event.hostedByCamp {
                     if let camp = try? await dataProvider.playaDB.fetchCamp(uid: campUID) {
-                        newNames[eventUID] = camp.name
+                        newHosts[eventUID] = ResolvedEventHost(
+                            name: camp.name,
+                            address: camp.locationString,
+                            description: camp.description,
+                            thumbnailObjectID: campUID,
+                            isArt: false
+                        )
                     }
                 } else if let artUID = event.event.locatedAtArt {
                     if let art = try? await dataProvider.playaDB.fetchArt(uid: artUID) {
-                        newNames[eventUID] = art.name
+                        newHosts[eventUID] = ResolvedEventHost(
+                            name: art.name,
+                            address: art.locationString ?? art.timeBasedAddress,
+                            description: art.description,
+                            thumbnailObjectID: artUID,
+                            isArt: true
+                        )
                     }
                 }
             }
 
-            guard !newNames.isEmpty else { return }
+            guard !newHosts.isEmpty else { return }
             await MainActor.run {
-                self.resolvedLocationNames.merge(newNames) { _, new in new }
+                self.resolvedHosts.merge(newHosts) { _, new in new }
             }
         }
     }

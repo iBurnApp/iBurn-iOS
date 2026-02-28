@@ -223,7 +223,66 @@ Changed cell type associated values from concrete ObjC types to plain Swift valu
 - **Build**: 0 errors, 0 warnings
 - **Existing tests**: Not affected (legacy path produces same behavior, just with new signatures)
 
+---
+
+## Session 3: Match EventRowView to Old UIKit Event Cell Design
+
+### Problem
+The new SwiftUI `EventRowView` did not match the original UIKit `BRCEventObjectTableViewCell` layout from the XIB. Key differences:
+- Missing camp/art thumbnail image (75×75 next to description)
+- Missing playa address on the right side of the host name row
+- Missing host description appended to event description
+- Layout order was wrong (emoji on left, heart on right)
+- Time/status format didn't match old ObjC format (missing day abbreviation, different "starting soon" format)
+- No image color theming from camp thumbnails
+
+### Solution
+Restructured `EventRowView` to match the old XIB layout exactly, expanded `EventListViewModel` to resolve full host data (not just names), and added `RowAssetsLoader` integration for camp thumbnails + color theming.
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `iBurn/ListView/EventListViewModel.swift` | Added `ResolvedEventHost` struct (name, address, description, thumbnailObjectID, isArt). Replaced `resolvedLocationNames: [String: String]` with `resolvedHosts: [String: ResolvedEventHost]`. Renamed `resolveLocationNames()` → `resolveHosts()` which now fetches camp address (`locationString`), art address (`locationString ?? timeBasedAddress`), descriptions, and UID for thumbnail loading. Added `resolvedHost(for:)` accessor. |
+| `iBurn/ListView/EventRowView.swift` | Complete rewrite. New parameters: hostName, hostAddress, hostDescription, campUID, isArtHosted. New layout matching old XIB: Row1=[Heart][Title][TypeEmoji], Row2=[HostName]...[Address], Row3=[Thumbnail 75×75][Description], Row4=[Distance]...[Time/Status]. Added `@StateObject RowAssetsLoader` for camp thumbnail + `ImageColors` theming. Combined description (event + host). Status text matches old ObjC format ("Mon 10:00am (duration)", "Starts Xm (duration)", "10:00am (Xm left)"). Art hosts prefixed with 🎨. List row background tinted from image colors. |
+| `iBurn/ListView/EventListView.swift` | Extracted `eventRow(for:)` helper. Passes full host data: hostName (with otherLocation fallback), hostAddress, hostDescription, campUID, isArtHosted from `viewModel.resolvedHost(for:)`. |
+
+### Layout Comparison (Old XIB vs New SwiftUI)
+
+```
+Old UIKit Cell (BRCEventObjectTableViewCell.xib):
+┌─────────────────────────────────────────────────┐
+│ [♡25×25] [Title.....................] [🍺25px]  │
+│ [Host Name...........] [6:30 & A right-aligned] │
+│ [Thumb 75×75] [Description text wrapping to     │
+│              │  multiple lines within 75px ht]   │
+│ [🚶 20m 🚴 5m.......] [10:00am - 12:00pm]      │
+└─────────────────────────────────────────────────┘
+
+New SwiftUI Cell (EventRowView):
+┌─────────────────────────────────────────────────┐
+│ [♡25×25] [Title.....................] [🍺25px]  │
+│ [Host Name...........] [6:30 & A right-aligned] │
+│ [Thumb 75×75] [Description text wrapping to     │
+│              │  multiple lines within 75px ht]   │
+│ [🚶 20m 🚴 5m.......] [mon 10:00am (2h)]       │
+└─────────────────────────────────────────────────┘
+```
+
+### Key Design Decisions
+
+1. **RowAssetsLoader with empty ID**: When no campUID exists, `RowAssetsLoader` is created with empty string ID — it will find no thumbnail and do no work. This avoids optional StateObject complexity.
+
+2. **ImageColors theming**: Follows same pattern as `ObjectRowView` — when `RowAssetsLoader` extracts colors from the camp thumbnail, the entire row's text colors shift to match. Background also tints via `listRowBackground`.
+
+3. **Combined description**: Event description + host (camp/art) description joined with newline, matching the old ObjC logic in `BRCEventObjectTableViewCell.m:114-119`.
+
+4. **Status text format**: Matches old ObjC `defaultEventText` format: "Mon 10:00am (2h)" lowercased. "Starting soon" shows duration: "Starts 5m (2h)". "Currently happening" shows time left: "10:00am (45m left)".
+
+### Build Status
+- **Build**: Succeeded (0 errors, 0 warnings)
+
 ## Branch & Repo Status
 - **Branch**: `playadb-migration`
 - **Working tree**: Modified (uncommitted changes from this session)
-- **Last commit**: `4bb6923` ("Working on some more stuff")
+- **Last commit**: `3688eb7` ("More updates")
