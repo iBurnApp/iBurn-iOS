@@ -164,6 +164,7 @@ When enabled, all three lists (Art, Camps, Events) use the new SwiftUI implement
 ### Known Issues
 - **PlayaKitTests scheme**: Broken — references non-existent target `D960F24D1F74E65A00144290`. The actual PlayaDB tests run fine via `swift test`.
 - **Event detail location string**: ~~Shows "Hosted by Camp" placeholder~~ FIXED — resolves actual camp/art names via PlayaDB single-object fetch.
+- **showMap crash on duplicate keys**: ~~`Dictionary(uniqueKeysWithValues:)` in `EventListHostingController.showMap(for:)` crashed when multiple `EventObjectOccurrence`s shared the same underlying `EventObject` (same event, different time slots). 1304 events → 1230 unique keys.~~ FIXED — replaced with `Dictionary(_:uniquingKeysWith:)` to keep first occurrence.
 
 ## Remaining Work (Future Sessions)
 - **Event list tests**: Unit tests for EventListViewModel (day selection, grouping, filter persistence)
@@ -173,6 +174,54 @@ When enabled, all three lists (Art, Camps, Events) use the new SwiftUI implement
 - **Protocolize BRCMediaDownloader**: Dependency injection for media lookups (testability)
 - **Favorites tab migration**: Replace YapDB-backed FavoritesViewController with PlayaDB
 - **Data sync migration**: Wire `BRCDataImporter` updates to PlayaDB (or replace entirely)
+
+---
+
+## Session 2: Dual-Backend Event Detail View
+
+### Problem
+The SwiftUI `DetailView` renders event details from `DetailCellType`. Two code paths exist:
+- **Legacy** (`generateEventCells`): Comprehensive — host relationship, schedule with color-coded time, event type, next event by host, "all events by host" link, host description
+- **PlayaDB** (`generatePlayaEventCellTypes`): Minimal — only title, description, location, URL, notes
+
+The PlayaDB path couldn't produce the full set because several `DetailCellType` cases carried legacy ObjC types as associated values. Additionally, the event list passed `EventObject` (no timing) instead of `EventObjectOccurrence`.
+
+### Solution: Value Types + Closures
+Changed cell type associated values from concrete ObjC types to plain Swift values + closures for tap actions. The ViewModel constructs closures at cell-generation time, capturing coordinator + objects.
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `Packages/PlayaDB/.../PlayaDB.swift` | Added `fetchEvents(hostedByCampUID:)` and `fetchEvents(locatedAtArtUID:)` protocol methods |
+| `Packages/PlayaDB/.../PlayaDBImpl.swift` | Implemented both fetch methods — filter by `hosted_by_camp`/`located_at_art`, join occurrences, sort by startDate |
+| `iBurn/Detail/Models/DetailSubject.swift` | Added `.eventOccurrence(EventObjectOccurrence)` case, updated all computed properties |
+| `iBurn/Detail/Models/DetailCellType.swift` | Decoupled 4 cell cases from ObjC types (relationship, nextHostEvent, eventRelationship→count-based, eventType→emoji+label), added `.navigateToViewController` action |
+| `iBurn/Detail/Views/DetailView.swift` | Updated 4 cell view structs to use plain values, updated `isCellTappable` for closure-based nil checks |
+| `iBurn/Detail/ViewModels/DetailViewModel.swift` | Updated handleCellTap (closures), legacy cell gen (closures + new signatures), added `generatePlayaEventOccurrenceCellTypes` with comprehensive cells, added `formatEventTimeAndDuration` static helper, added `formatPlayaEventSchedule`, added resolved host properties, handled `.eventOccurrence` in all switch cases |
+| `iBurn/Detail/Services/DetailActionCoordinator.swift` | Handle `.navigateToViewController(let vc)` |
+| `iBurn/Detail/Controllers/DetailViewControllerFactory.swift` | Added `create(with: EventObjectOccurrence, playaDB:)` factory method |
+| `iBurn/ListView/EventListHostingController.swift` | Pass full `EventObjectOccurrence` to detail factory instead of `.event` |
+
+### New File Created
+
+| File | Purpose |
+|------|---------|
+| `iBurn/Detail/Controllers/PlayaHostedEventsViewController.swift` | UIHostingController wrapping SwiftUI list of hosted events. Used for "See all N events" tap. |
+
+### Key Design Decisions
+
+1. **Closures over protocols**: Cell types carry `onTap: (() -> Void)?` closures instead of requiring protocol conformance on legacy objects. ViewModel constructs closures at cell-generation time, keeping views purely presentational.
+
+2. **`eventOccurrence` vs `event`**: Added a distinct `DetailSubject.eventOccurrence` case rather than converting to `.event` so the detail screen has access to timing info for schedule display.
+
+3. **Resolved host properties**: During `loadData`, the ViewModel resolves host camp/art details (name, subject, description, location, events) and caches them as private properties. This avoids async calls during cell generation.
+
+4. **Static `formatEventTimeAndDuration`**: Extracted from the old `DetailNextHostEventCell` view into a static method on `DetailViewModel` so it can be shared between legacy cell generation, PlayaDB cell generation, and the hosted events list.
+
+### Build Status
+- **Build**: 0 errors, 0 warnings
+- **Existing tests**: Not affected (legacy path produces same behavior, just with new signatures)
 
 ## Branch & Repo Status
 - **Branch**: `playadb-migration`

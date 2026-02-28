@@ -112,6 +112,12 @@ public protocol PlayaDB {
     /// Fetch a single event object by UID
     func fetchEvent(uid: String) async throws -> EventObject?
 
+    /// Fetch event occurrences hosted by a specific camp
+    func fetchEvents(hostedByCampUID: String) async throws -> [EventObjectOccurrence]
+
+    /// Fetch event occurrences located at a specific art installation
+    func fetchEvents(locatedAtArtUID: String) async throws -> [EventObjectOccurrence]
+
     // MARK: - Metadata Operations
 
     /// Fetch metadata for the specified object, creating a default record if needed.

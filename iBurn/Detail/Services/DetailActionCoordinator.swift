@@ -294,9 +294,16 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
                 print("❌ Cannot show share screen: No presenter available")
                 return
             }
-            
+
             let shareViewController = ShareQRCodeHostingController(dataObject: dataObject)
             presenter.present(shareViewController, animated: true, completion: nil)
+
+        case .navigateToViewController(let viewController):
+            guard let navigator = dependencies.navigator else {
+                print("❌ Navigation FAILED: Navigator is nil")
+                return
+            }
+            navigator.pushViewController(viewController, animated: true)
         }
     }
     

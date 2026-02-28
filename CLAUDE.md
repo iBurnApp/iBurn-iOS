@@ -65,7 +65,7 @@ open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
 
 ### Build/Test Output Parsing (xcsift)
 
-This repo uses `xcsift` to parse and format `xcodebuild` / SwiftPM output for coding agents.
+This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
 
 Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
 

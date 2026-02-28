@@ -639,6 +639,44 @@ internal class PlayaDBImpl: PlayaDB {
         return event
     }
 
+    func fetchEvents(hostedByCampUID campUID: String) async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
+            let eventObjects = try EventObject
+                .filter(Column("hosted_by_camp") == campUID)
+                .fetchAll(db)
+            var result: [EventObjectOccurrence] = []
+            for event in eventObjects {
+                let occurrences = try event.occurrences.fetchAll(db)
+                for occ in occurrences {
+                    result.append(EventObjectOccurrence(event: event, occurrence: occ))
+                }
+            }
+            return result
+        }
+        let sorted = events.sorted { $0.startDate < $1.startDate }
+        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
+        return sorted
+    }
+
+    func fetchEvents(locatedAtArtUID artUID: String) async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
+            let eventObjects = try EventObject
+                .filter(Column("located_at_art") == artUID)
+                .fetchAll(db)
+            var result: [EventObjectOccurrence] = []
+            for event in eventObjects {
+                let occurrences = try event.occurrences.fetchAll(db)
+                for occ in occurrences {
+                    result.append(EventObjectOccurrence(event: event, occurrence: occ))
+                }
+            }
+            return result
+        }
+        let sorted = events.sorted { $0.startDate < $1.startDate }
+        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
+        return sorted
+    }
+
     // MARK: - Filtered Data Access (Internal Request Builders)
 
     /// Build an art query from filter options (internal - uses GRDB types)

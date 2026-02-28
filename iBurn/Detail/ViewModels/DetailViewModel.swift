@@ -59,6 +59,14 @@ class DetailViewModel: ObservableObject {
     private var audioNotificationObserver: NSObjectProtocol?
     /// Resolved host camp or art name for events (set during loadContent)
     private var resolvedHostName: String?
+    /// Resolved host subject for navigation from event occurrence detail
+    private var resolvedHostSubject: DetailSubject?
+    /// Resolved host description text
+    private var resolvedHostDescription: String?
+    /// Resolved host location string
+    private var resolvedHostLocation: String?
+    /// Resolved events from the same host
+    private var resolvedHostEvents: [EventObjectOccurrence] = []
     
     // MARK: - Initialization
 
@@ -129,7 +137,7 @@ class DetailViewModel: ObservableObject {
             rowAssets = RowAssetsLoader(objectID: art.uid, provider: mediaProvider)
         case .camp(let camp):
             rowAssets = RowAssetsLoader(objectID: camp.uid, provider: mediaProvider)
-        case .event, .legacy:
+        case .event, .eventOccurrence, .legacy:
             rowAssets = nil
         }
 
@@ -234,6 +242,34 @@ class DetailViewModel: ObservableObject {
             } catch {
                 self.error = error
             }
+
+        case .eventOccurrence(let occ):
+            guard let playaDB else { break }
+            do {
+                let md = try await playaDB.metadata(for: occ.event)
+                isFavorite = md.isFavorite
+                userNotes = md.userNotes ?? ""
+                try await playaDB.setLastViewed(Date(), for: occ.event)
+
+                // Resolve host details
+                if let campUID = occ.hostedByCamp,
+                   let camp = try? await playaDB.fetchCamp(uid: campUID) {
+                    resolvedHostName = camp.name
+                    resolvedHostSubject = .camp(camp)
+                    resolvedHostDescription = camp.description
+                    resolvedHostLocation = camp.locationString ?? camp.intersection
+                    resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campUID)) ?? []
+                } else if let artUID = occ.locatedAtArt,
+                          let art = try? await playaDB.fetchArt(uid: artUID) {
+                    resolvedHostName = art.name
+                    resolvedHostSubject = .art(art)
+                    resolvedHostDescription = art.description
+                    resolvedHostLocation = art.locationString ?? art.timeBasedAddress
+                    resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artUID)) ?? []
+                }
+            } catch {
+                self.error = error
+            }
         }
 
         rowAssets?.startIfNeeded()
@@ -262,6 +298,10 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(event)
                 isFavorite = try await playaDB.isFavorite(event)
+            case .eventOccurrence(let occ):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.toggleFavorite(occ.event)
+                isFavorite = try await playaDB.isFavorite(occ.event)
             }
 
             self.cells = generateCells()
@@ -291,15 +331,19 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 userNotes = notes
+            case .eventOccurrence(let occ):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: occ.event)
+                userNotes = notes
             }
 
             self.cells = generateCells()
-            
+
         } catch {
             self.error = error
         }
     }
-    
+
     func updateVisitStatus(_ status: BRCVisitStatus) async {
         do {
             guard case .legacy(let obj) = subject, let dataService else {
@@ -325,32 +369,17 @@ class DetailViewModel: ObservableObject {
         case .coordinates(let coordinate, _):
             coordinator.handle(.shareCoordinates(coordinate))
             
-        case .relationship(let object, _):
-            coordinator.handle(.navigateToObject(object))
-            
-        case .eventRelationship(let events, let hostName):
-            coordinator.handle(.showEventsList(events, hostName: hostName))
-            
-        case .nextHostEvent(let nextEvent, _):
-            coordinator.handle(.showNextEvent(nextEvent))
-            
-        case .allHostEvents(_, let hostName):
-            // Get all events for this host and show them
-            guard case .legacy(let legacyObject) = subject,
-                  let eventObject = legacyObject as? BRCEventObject,
-                  let dataService else {
-                break
-            }
-            let hostId = eventObject.hostedByCampUniqueID ?? eventObject.hostedByArtUniqueID
-            if let hostId = hostId {
-                var allEvents: [BRCEventObject] = []
-                if let camp = dataService.getCamp(withId: hostId) {
-                    allEvents = dataService.getEvents(for: camp) ?? []
-                } else if let art = dataService.getArt(withId: hostId) {
-                    allEvents = dataService.getEvents(for: art) ?? []
-                }
-                coordinator.handle(.showEventsList(allEvents, hostName: hostName))
-            }
+        case .relationship(_, _, let onTap):
+            onTap?()
+
+        case .eventRelationship(_, _, let onTap):
+            onTap?()
+
+        case .nextHostEvent(_, _, _, let onTap):
+            onTap?()
+
+        case .allHostEvents(_, _, let onTap):
+            onTap?()
             
         case .playaAddress(_, let tappable):
             if tappable {
@@ -365,7 +394,7 @@ class DetailViewModel: ObservableObject {
                     if let annotation = PlayaObjectAnnotation(camp: camp) {
                         coordinator.handle(.showMapAnnotation(annotation, title: "Map - \(camp.name)"))
                     }
-                case .event:
+                case .event, .eventOccurrence:
                     break
                 }
             }
@@ -423,6 +452,8 @@ class DetailViewModel: ObservableObject {
             coordinator.handle(.share(["Camp: \(camp.name)\nID: \(camp.uid)"]))
         case .event(let event):
             coordinator.handle(.share(["Event: \(event.name)\nID: \(event.uid)"]))
+        case .eventOccurrence(let occ):
+            coordinator.handle(.share(["Event: \(occ.name)\nID: \(occ.event.uid)"]))
         }
     }
     
@@ -456,7 +487,7 @@ class DetailViewModel: ObservableObject {
 
             return Appearance.currentColors
 
-        case .art, .camp, .event:
+        case .art, .camp, .event, .eventOccurrence:
             if let colors = extractedImageColors {
                 return colors
             }
@@ -495,7 +526,7 @@ class DetailViewModel: ObservableObject {
             guard localAudioURL(objectID: art.uid) != nil else { return }
             isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
 
-        case .camp, .event:
+        case .camp, .event, .eventOccurrence:
             return
         }
 
@@ -542,6 +573,8 @@ class DetailViewModel: ObservableObject {
             return generatePlayaCampCellTypes(camp)
         case .event(let event):
             return generatePlayaEventCellTypes(event)
+        case .eventOccurrence(let occ):
+            return generatePlayaEventOccurrenceCellTypes(occ)
         }
     }
 
@@ -782,7 +815,157 @@ class DetailViewModel: ObservableObject {
         cellTypes.append(.userNotes(userNotes))
         return cellTypes
     }
-    
+
+    private func generatePlayaEventOccurrenceCellTypes(_ occ: EventObjectOccurrence) -> [DetailCellType] {
+        var cellTypes: [DetailCellType] = []
+        guard let playaDB else { return cellTypes }
+
+        // Title
+        cellTypes.append(.text(occ.name, style: .title))
+
+        // Description
+        if let description = occ.description, !description.isEmpty {
+            cellTypes.append(.text(description, style: .body))
+        }
+
+        // Host relationship
+        if let hostName = resolvedHostName, let hostSubject = resolvedHostSubject {
+            let relationshipType: RelationshipType = occ.isHostedByCamp
+                ? .hostedBy(hostName)
+                : .presentedBy(hostName)
+            cellTypes.append(.relationship(
+                title: hostName,
+                type: relationshipType,
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = DetailViewControllerFactory.create(with: hostSubject, playaDB: playaDB)
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // Next event by same host
+        let otherEvents = resolvedHostEvents.filter { $0.event.uid != occ.event.uid }
+        let now = Date()
+        if let nextEvent = otherEvents.first(where: { $0.startDate > now }) {
+            let scheduleText = Self.formatEventTimeAndDuration(
+                startDate: nextEvent.startDate,
+                endDate: nextEvent.endDate
+            )
+            cellTypes.append(.nextHostEvent(
+                title: nextEvent.name,
+                scheduleText: scheduleText,
+                hostName: resolvedHostName ?? "",
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = DetailViewControllerFactory.create(with: nextEvent, playaDB: playaDB)
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // All events by host
+        if otherEvents.count > 0, let hostName = resolvedHostName {
+            cellTypes.append(.allHostEvents(
+                count: otherEvents.count,
+                hostName: hostName,
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = PlayaHostedEventsViewController(
+                        events: self.resolvedHostEvents,
+                        hostName: hostName,
+                        playaDB: playaDB
+                    )
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // Schedule with color-coded time
+        let scheduleString = formatPlayaEventSchedule(occ: occ)
+        cellTypes.append(.schedule(scheduleString))
+
+        // Location
+        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let locationValue: String
+        if canShowLocation, let hostLoc = resolvedHostLocation, !hostLoc.isEmpty {
+            locationValue = hostLoc
+        } else if canShowLocation, !occ.otherLocation.isEmpty {
+            locationValue = occ.otherLocation
+        } else if canShowLocation {
+            locationValue = "Unknown"
+        } else {
+            locationValue = "Restricted"
+        }
+        cellTypes.append(.playaAddress(locationValue, tappable: false))
+
+        // Event type
+        cellTypes.append(.eventType(
+            emoji: EventTypeInfo.emoji(for: occ.eventTypeCode),
+            label: EventTypeInfo.displayName(for: occ.eventTypeCode)
+        ))
+
+        // Host description
+        if let hostDesc = resolvedHostDescription, !hostDesc.isEmpty {
+            cellTypes.append(.text(hostDesc, style: .body))
+        }
+
+        // Contact / URL
+        if let contact = occ.contact, !contact.isEmpty {
+            if contact.contains("@") {
+                cellTypes.append(.email(contact, label: "Contact"))
+            }
+        }
+        if let url = occ.url {
+            cellTypes.append(.url(url, title: "Website"))
+        }
+
+        // User notes
+        cellTypes.append(.userNotes(userNotes))
+
+        return cellTypes
+    }
+
+    /// Build schedule attributed string for a PlayaDB event occurrence.
+    private func formatPlayaEventSchedule(occ: EventObjectOccurrence) -> NSAttributedString {
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEEE M/d"
+        dayFormatter.timeZone = TimeZone.burningManTimeZone
+
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .short
+        timeFormatter.timeZone = TimeZone.burningManTimeZone
+
+        let dayString = dayFormatter.string(from: occ.startDate)
+        let timeString: String
+        if occ.allDay {
+            let start = timeFormatter.string(from: occ.startDate)
+            let end = timeFormatter.string(from: occ.endDate)
+            timeString = "All Day (\(start) - \(end))"
+        } else {
+            let start = timeFormatter.string(from: occ.startDate)
+            let end = timeFormatter.string(from: occ.endDate)
+            timeString = "\(start) - \(end)"
+        }
+
+        let fullString = "\(dayString)\n\(timeString)"
+        let attributedString = NSMutableAttributedString(string: fullString)
+
+        let now = Date()
+        let timeColor: UIColor
+        if now < occ.startDate {
+            timeColor = .systemGreen
+        } else if now >= occ.startDate && now <= occ.endDate {
+            timeColor = .systemOrange
+        } else {
+            timeColor = .systemRed
+        }
+        let timeRange = NSRange(location: dayString.count + 1, length: timeString.count)
+        attributedString.addAttribute(.foregroundColor, value: timeColor, range: timeRange)
+
+        return attributedString
+    }
+
     private func generateArtCells(_ art: BRCArtObject, dataService: DetailDataServiceProtocol) -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
@@ -809,17 +992,30 @@ class DetailViewModel: ObservableObject {
         
         // Next event
         if let nextEvent = dataService.getNextEvent(for: art) {
-            cells.append(.nextHostEvent(nextEvent, hostName: art.title))
+            let scheduleText = Self.formatEventTimeAndDuration(
+                startDate: nextEvent.startDate as Date?,
+                endDate: nextEvent.endDate as Date?
+            )
+            cells.append(.nextHostEvent(
+                title: nextEvent.title,
+                scheduleText: scheduleText,
+                hostName: art.title,
+                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(nextEvent)) }
+            ))
         }
-        
+
         // Hosted events
         if let events = dataService.getEvents(for: art), !events.isEmpty {
-            cells.append(.eventRelationship(events, hostName: art.title))
+            cells.append(.eventRelationship(
+                count: events.count,
+                hostName: art.title,
+                onTap: { [weak self] in self?.coordinator.handle(.showEventsList(events, hostName: art.title)) }
+            ))
         }
-        
+
         return cells
     }
-    
+
     private func generateCampCells(_ camp: BRCCampObject, dataService: DetailDataServiceProtocol) -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
@@ -839,17 +1035,30 @@ class DetailViewModel: ObservableObject {
         
         // Next event
         if let nextEvent = dataService.getNextEvent(for: camp) {
-            cells.append(.nextHostEvent(nextEvent, hostName: camp.title))
+            let scheduleText = Self.formatEventTimeAndDuration(
+                startDate: nextEvent.startDate as Date?,
+                endDate: nextEvent.endDate as Date?
+            )
+            cells.append(.nextHostEvent(
+                title: nextEvent.title,
+                scheduleText: scheduleText,
+                hostName: camp.title,
+                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(nextEvent)) }
+            ))
         }
-        
+
         // Hosted events
         if let events = dataService.getEvents(for: camp), !events.isEmpty {
-            cells.append(.eventRelationship(events, hostName: camp.title))
+            cells.append(.eventRelationship(
+                count: events.count,
+                hostName: camp.title,
+                onTap: { [weak self] in self?.coordinator.handle(.showEventsList(events, hostName: camp.title)) }
+            ))
         }
-        
+
         return cells
     }
-    
+
     private func generateEventCells(_ event: BRCEventObject, dataService: DetailDataServiceProtocol) -> [DetailCellType] {
         var cells: [DetailCellType] = []
         
@@ -859,12 +1068,20 @@ class DetailViewModel: ObservableObject {
         
         if let campId = event.hostedByCampUniqueID,
            let camp = dataService.getCamp(withId: campId) {
-            cells.append(.relationship(camp, type: .hostedBy(camp.title)))
+            cells.append(.relationship(
+                title: camp.title,
+                type: .hostedBy(camp.title),
+                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(camp)) }
+            ))
             hostName = camp.title
             hostId = campId
         } else if let artId = event.hostedByArtUniqueID,
                   let art = dataService.getArt(withId: artId) {
-            cells.append(.relationship(art, type: .hostedBy(art.title)))
+            cells.append(.relationship(
+                title: art.title,
+                type: .hostedBy(art.title),
+                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(art)) }
+            ))
             hostName = art.title
             hostId = artId
         }
@@ -873,13 +1090,35 @@ class DetailViewModel: ObservableObject {
         if let hostId = hostId, let hostName = hostName {
             // Get next event from the same host
             if let nextEvent = dataService.getNextEvent(forHostId: hostId, after: event) {
-                cells.append(.nextHostEvent(nextEvent, hostName: hostName))
+                let scheduleText = Self.formatEventTimeAndDuration(
+                    startDate: nextEvent.startDate as Date?,
+                    endDate: nextEvent.endDate as Date?
+                )
+                cells.append(.nextHostEvent(
+                    title: nextEvent.title,
+                    scheduleText: scheduleText,
+                    hostName: hostName,
+                    onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(nextEvent)) }
+                ))
             }
-            
+
             // Get count of other events and show "see all" if more than just next event
             let otherEventsCount = dataService.getOtherEventsCount(forHostId: hostId, excluding: event)
             if otherEventsCount > 0 {
-                cells.append(.allHostEvents(count: otherEventsCount, hostName: hostName))
+                cells.append(.allHostEvents(
+                    count: otherEventsCount,
+                    hostName: hostName,
+                    onTap: { [weak self] in
+                        guard let self else { return }
+                        var allEvents: [BRCEventObject] = []
+                        if let camp = dataService.getCamp(withId: hostId) {
+                            allEvents = dataService.getEvents(for: camp) ?? []
+                        } else if let art = dataService.getArt(withId: hostId) {
+                            allEvents = dataService.getEvents(for: art) ?? []
+                        }
+                        self.coordinator.handle(.showEventsList(allEvents, hostName: hostName))
+                    }
+                ))
             }
         }
         
@@ -895,13 +1134,13 @@ class DetailViewModel: ObservableObject {
         cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: event)))
         
         // Event type section
-        cells.append(.eventType(event.eventType))
-        
+        cells.append(.eventType(emoji: event.eventType.emoji, label: event.eventType.displayString))
+
         // Add host description if available
         if let hostDescription = getHostDescription(for: event) {
             cells.append(.text(hostDescription, style: .body))
         }
-        
+
         return cells
     }
     
@@ -948,7 +1187,43 @@ class DetailViewModel: ObservableObject {
             return .systemRed // Past event
         }
     }
-    
+
+    /// Formats start/end dates into a "Day at Time - Duration" string.
+    /// Shared between legacy and PlayaDB paths.
+    static func formatEventTimeAndDuration(startDate: Date?, endDate: Date?) -> String {
+        guard let startDate, let endDate else { return "" }
+        let calendar = Calendar.current
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .short
+        timeFormatter.timeZone = TimeZone.burningManTimeZone
+
+        var timeString: String
+        if calendar.isDateInToday(startDate) {
+            timeString = "Today at \(timeFormatter.string(from: startDate))"
+        } else if calendar.isDateInTomorrow(startDate) {
+            timeString = "Tomorrow at \(timeFormatter.string(from: startDate))"
+        } else {
+            let dayFormatter = DateFormatter()
+            dayFormatter.dateFormat = "EEEE M/d"
+            dayFormatter.timeZone = TimeZone.burningManTimeZone
+            timeString = "\(dayFormatter.string(from: startDate)) at \(timeFormatter.string(from: startDate))"
+        }
+
+        let durationMinutes = Int(endDate.timeIntervalSince(startDate) / 60)
+        let hours = durationMinutes / 60
+        let minutes = durationMinutes % 60
+        let durationString: String
+        if hours > 0 && minutes > 0 {
+            durationString = "\(hours)h \(minutes)m"
+        } else if hours > 0 {
+            durationString = "\(hours)h"
+        } else {
+            durationString = "\(minutes)m"
+        }
+
+        return "\(timeString) \u{2022} \(durationString)"
+    }
+
     private func getLocationValue(for object: BRCDataObject, dataService: DetailDataServiceProtocol) -> String {
         if !dataService.canShowLocation(for: object) {
             return "Restricted"

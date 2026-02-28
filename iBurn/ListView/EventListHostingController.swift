@@ -33,7 +33,7 @@ class EventListHostingController: UIHostingController<EventListView> {
     // MARK: - Navigation
 
     private func showDetail(for event: EventObjectOccurrence) {
-        let detailVC = DetailViewControllerFactory.create(with: event.event, playaDB: playaDB)
+        let detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
         navigationController?.pushViewController(detailVC, animated: true)
     }
 
@@ -49,10 +49,13 @@ class EventListHostingController: UIHostingController<EventListView> {
             return
         }
 
-        let lookup = Dictionary(uniqueKeysWithValues: events.compactMap { event -> (AnyDataObjectID, EventObjectOccurrence)? in
-            guard event.hasLocation else { return nil }
-            return (event.event.anyID, event)
-        })
+        let lookup = Dictionary(
+            events.compactMap { event -> (AnyDataObjectID, EventObjectOccurrence)? in
+                guard event.hasLocation else { return nil }
+                return (event.event.anyID, event)
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
         let dataSource = StaticAnnotationDataSource(annotations: annotations)
         let mapVC = MapListViewController(dataSource: dataSource)
         mapVC.mapViewAdapter.onPlayaInfoTapped = { [weak self] anyID in

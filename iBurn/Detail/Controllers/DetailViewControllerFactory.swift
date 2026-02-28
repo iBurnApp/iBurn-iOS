@@ -101,6 +101,10 @@ class DetailViewControllerFactory {
         create(with: .event(event), playaDB: playaDB)
     }
 
+    static func create(with occurrence: EventObjectOccurrence, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .eventOccurrence(occurrence), playaDB: playaDB)
+    }
+
     static func create(with subject: DetailSubject, playaDB: PlayaDB) -> DetailHostingController {
         let coordinator = DetailActionCoordinatorFactory.makeCoordinator()
         let locationService = LocationService()

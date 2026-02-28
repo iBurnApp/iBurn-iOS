@@ -19,6 +19,7 @@ enum DetailSubject {
     case art(ArtObject)
     case camp(CampObject)
     case event(EventObject)
+    case eventOccurrence(EventObjectOccurrence)
 }
 
 extension DetailSubject {
@@ -32,6 +33,8 @@ extension DetailSubject {
             return camp.name
         case .event(let event):
             return event.name
+        case .eventOccurrence(let occ):
+            return occ.name
         }
     }
 
@@ -45,6 +48,8 @@ extension DetailSubject {
             return camp.uid
         case .event(let event):
             return event.uid
+        case .eventOccurrence(let occ):
+            return occ.event.uid
         }
     }
 
@@ -58,6 +63,8 @@ extension DetailSubject {
             return camp.location
         case .event(let event):
             return event.location
+        case .eventOccurrence(let occ):
+            return occ.location
         }
     }
 
@@ -73,10 +80,9 @@ extension DetailSubject {
         case .camp(let camp):
             return camp.locationString ?? camp.intersection
         case .event(let event):
-            // NOTE: For events, the desired display string is typically derived from the host
-            // camp/art location string (requires a DB lookup). `otherLocation` is the only
-            // locally-available string on the event itself.
             return event.otherLocation.isEmpty ? nil : event.otherLocation
+        case .eventOccurrence(let occ):
+            return occ.otherLocation.isEmpty ? nil : occ.otherLocation
         }
     }
 }
