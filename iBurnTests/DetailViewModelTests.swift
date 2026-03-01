@@ -249,17 +249,19 @@ class DetailViewModelTests: XCTestCase {
     
     func testCellTapRelationshipTriggersNavigation() {
         let relatedObject = MockDataObjects.campObject
-        let relationshipCellType = DetailCellType.relationship(relatedObject, type: .relatedCamp)
+        var tapCalled = false
+        let relationshipCellType = DetailCellType.relationship(
+            title: relatedObject.title,
+            type: .relatedCamp,
+            onTap: {
+                tapCalled = true
+            }
+        )
         let relationshipCell = DetailCell(relationshipCellType)
-        
+
         viewModel.handleCellTap(relationshipCell)
-        
-        XCTAssertEqual(capturedActions.count, 1)
-        if case .navigateToObject(let object) = capturedActions.first {
-            XCTAssertEqual(object.title, relatedObject.title)
-        } else {
-            XCTFail("Expected navigateToObject action")
-        }
+
+        XCTAssertTrue(tapCalled)
     }
     
     func testCellTapAudioTogglesPlayback() {

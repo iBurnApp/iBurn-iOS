@@ -210,6 +210,9 @@ class DetailViewModel: ObservableObject {
                 self.error = error
             }
 
+            // Resolve hosted events for this art installation
+            resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: art.uid)) ?? []
+
             if localAudioURL(objectID: art.uid) != nil {
                 isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
             }
@@ -224,6 +227,9 @@ class DetailViewModel: ObservableObject {
             } catch {
                 self.error = error
             }
+
+            // Resolve hosted events for this camp
+            resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: camp.uid)) ?? []
 
         case .event(let event):
             guard let playaDB else { break }
@@ -701,24 +707,17 @@ class DetailViewModel: ObservableObject {
             cellTypes.append(.url(url, title: "Website"))
         }
 
-        // Map preview before coordinates if we have a header image
-        if canShowLocation, let annotation = PlayaObjectAnnotation(art: art), hasImage {
-            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(art.name)"))
-        }
+        // Hosted events
+        cellTypes.append(contentsOf: generateHostedEventCells(hostName: art.name))
 
-        // GPS coordinates
-        if canShowLocation, let location = art.location {
-            cellTypes.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
-        }
-
-        // Distance / travel time
-        if canShowLocation, let distance = distanceToLocation(art.location) {
-            cellTypes.append(.distance(distance))
-            cellTypes.append(.travelTime(distance))
-        }
-
-        // Notes (stored in PlayaDB metadata)
-        cellTypes.append(.userNotes(userNotes))
+        // Footer: map (if image), GPS, distance, travel time, notes
+        cellTypes.append(contentsOf: generatePlayaFooterCells(
+            annotation: PlayaObjectAnnotation(art: art),
+            location: art.location,
+            hasImage: hasImage,
+            canShowLocation: canShowLocation,
+            mapTitle: "Map - \(art.name)"
+        ))
         return cellTypes
     }
 
@@ -769,20 +768,17 @@ class DetailViewModel: ObservableObject {
             cellTypes.append(.url(url, title: "Website"))
         }
 
-        if canShowLocation, let annotation = PlayaObjectAnnotation(camp: camp), hasImage {
-            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(camp.name)"))
-        }
+        // Hosted events
+        cellTypes.append(contentsOf: generateHostedEventCells(hostName: camp.name))
 
-        if canShowLocation, let location = camp.location {
-            cellTypes.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
-        }
-
-        if canShowLocation, let distance = distanceToLocation(camp.location) {
-            cellTypes.append(.distance(distance))
-            cellTypes.append(.travelTime(distance))
-        }
-
-        cellTypes.append(.userNotes(userNotes))
+        // Footer: map (if image), GPS, distance, travel time, notes
+        cellTypes.append(contentsOf: generatePlayaFooterCells(
+            annotation: PlayaObjectAnnotation(camp: camp),
+            location: camp.location,
+            hasImage: hasImage,
+            canShowLocation: canShowLocation,
+            mapTitle: "Map - \(camp.name)"
+        ))
         return cellTypes
     }
 
@@ -819,6 +815,25 @@ class DetailViewModel: ObservableObject {
     private func generatePlayaEventOccurrenceCellTypes(_ occ: EventObjectOccurrence) -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
         guard let playaDB else { return cellTypes }
+
+        var hasImage = false
+
+        // Host image (camp or art thumbnail)
+        let hostUID = occ.hostedByCamp ?? occ.locatedAtArt
+        if let hostUID,
+           let imageURL = localThumbnailURL(objectID: hostUID),
+           let image = loadImage(from: imageURL) {
+            let aspectRatio = image.size.width / image.size.height
+            cellTypes.append(.image(image, aspectRatio: aspectRatio))
+            hasImage = true
+        }
+
+        // Map before title if no host image
+        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let annotation = eventAnnotation(for: occ)
+        if canShowLocation, let annotation, !hasImage {
+            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(occ.name)"))
+        }
 
         // Title
         cellTypes.append(.text(occ.name, style: .title))
@@ -886,7 +901,6 @@ class DetailViewModel: ObservableObject {
         cellTypes.append(.schedule(scheduleString))
 
         // Location
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
         let locationValue: String
         if canShowLocation, let hostLoc = resolvedHostLocation, !hostLoc.isEmpty {
             locationValue = hostLoc
@@ -920,8 +934,15 @@ class DetailViewModel: ObservableObject {
             cellTypes.append(.url(url, title: "Website"))
         }
 
-        // User notes
-        cellTypes.append(.userNotes(userNotes))
+        // Footer: map (if image), GPS, distance, travel time, notes
+        let location = effectiveLocation(for: occ)
+        cellTypes.append(contentsOf: generatePlayaFooterCells(
+            annotation: annotation,
+            location: location,
+            hasImage: hasImage,
+            canShowLocation: canShowLocation,
+            mapTitle: "Map - \(occ.name)"
+        ))
 
         return cellTypes
     }
@@ -1396,7 +1417,92 @@ class DetailViewModel: ObservableObject {
         guard let location, let current = locationService.getCurrentLocation() else { return nil }
         return current.distance(from: location)
     }
-    
+
+    /// Best available CLLocation for an event occurrence — prefers event's own GPS, falls back to host.
+    private func effectiveLocation(for occ: EventObjectOccurrence) -> CLLocation? {
+        if let loc = occ.location { return loc }
+        switch resolvedHostSubject {
+        case .camp(let camp): return camp.location
+        case .art(let art): return art.location
+        default: return nil
+        }
+    }
+
+    /// Map annotation for an event — tries event's own GPS, falls back to host camp/art.
+    private func eventAnnotation(for occ: EventObjectOccurrence) -> PlayaObjectAnnotation? {
+        if let annotation = PlayaObjectAnnotation(event: occ) { return annotation }
+        switch resolvedHostSubject {
+        case .camp(let camp): return PlayaObjectAnnotation(camp: camp)
+        case .art(let art): return PlayaObjectAnnotation(art: art)
+        default: return nil
+        }
+    }
+
+    /// Shared footer cells: map (if header image exists), GPS, distance, travel time, user notes.
+    private func generatePlayaFooterCells(
+        annotation: PlayaObjectAnnotation?,
+        location: CLLocation?,
+        hasImage: Bool,
+        canShowLocation: Bool,
+        mapTitle: String
+    ) -> [DetailCellType] {
+        var cells: [DetailCellType] = []
+        if canShowLocation, let annotation, hasImage {
+            cells.append(.mapAnnotation(annotation, title: mapTitle))
+        }
+        if canShowLocation, let location {
+            cells.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
+        }
+        if canShowLocation, let distance = distanceToLocation(location) {
+            cells.append(.distance(distance))
+            cells.append(.travelTime(distance))
+        }
+        cells.append(.userNotes(userNotes))
+        return cells
+    }
+
+    /// Generate hosted event cells (next event + all events) for a camp/art detail screen.
+    private func generateHostedEventCells(hostName: String) -> [DetailCellType] {
+        guard let playaDB, !resolvedHostEvents.isEmpty else { return [] }
+        var cells: [DetailCellType] = []
+        let now = Date()
+
+        // Next upcoming event
+        if let nextEvent = resolvedHostEvents.first(where: { $0.startDate > now }) {
+            let scheduleText = Self.formatEventTimeAndDuration(
+                startDate: nextEvent.startDate,
+                endDate: nextEvent.endDate
+            )
+            cells.append(.nextHostEvent(
+                title: nextEvent.name,
+                scheduleText: scheduleText,
+                hostName: hostName,
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = DetailViewControllerFactory.create(with: nextEvent, playaDB: playaDB)
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // All events button
+        cells.append(.allHostEvents(
+            count: resolvedHostEvents.count,
+            hostName: hostName,
+            onTap: { [weak self] in
+                guard let self else { return }
+                let vc = PlayaHostedEventsViewController(
+                    events: self.resolvedHostEvents,
+                    hostName: hostName,
+                    playaDB: playaDB
+                )
+                self.coordinator.handle(.navigateToViewController(vc))
+            }
+        ))
+
+        return cells
+    }
+
     /// Determines if map should be shown based on location and embargo status
     /// Following the same logic as BRCDetailViewController.setupMapViewWithObject:
     private func shouldShowMap(_ dataObject: BRCDataObject) -> Bool {

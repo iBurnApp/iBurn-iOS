@@ -282,7 +282,73 @@ New SwiftUI Cell (EventRowView):
 ### Build Status
 - **Build**: Succeeded (0 errors, 0 warnings)
 
+---
+
+## Session 4: Close Gaps Between PlayaDB and Legacy Detail Screens
+
+### Problem
+An audit of PlayaDB detail screens vs legacy (YapDB) screens identified three categories of missing features:
+1. **Event detail**: Missing host image, map, GPS coordinates, distance, travel time
+2. **Art/Camp detail**: Missing hosted events (next event + all events cells)
+3. **Footer duplication**: Art/camp/event paths duplicated identical footer cell logic (map, GPS, distance, travel time, notes)
+
+Visit status was intentionally deferred — requires a PlayaDB schema migration.
+
+### Solution
+All changes confined to `iBurn/Detail/ViewModels/DetailViewModel.swift` (142 insertions, 36 deletions).
+
+### Changes Made
+
+#### 1. Four shared helper methods added (after `distanceToLocation`)
+- **`effectiveLocation(for: EventObjectOccurrence)`** — Returns event's own GPS or falls back to host camp/art location
+- **`eventAnnotation(for: EventObjectOccurrence)`** — Returns event annotation or falls back to host camp/art annotation
+- **`generatePlayaFooterCells(...)`** — Shared footer: map (if image), GPS coordinates, distance, travel time, user notes
+- **`generateHostedEventCells(hostName:)`** — Next upcoming event + "All N events" button for camp/art detail screens
+
+#### 2. Host event resolution in `loadContent`
+- **Art case**: Added `resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: art.uid)) ?? []`
+- **Camp case**: Added `resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: camp.uid)) ?? []`
+
+#### 3. `generatePlayaArtCellTypes` — hosted events + refactored footer
+- Added `generateHostedEventCells(hostName: art.name)` after URL cell
+- Replaced 19 lines of duplicated map/GPS/distance/travelTime/notes with `generatePlayaFooterCells(...)` call
+
+#### 4. `generatePlayaCampCellTypes` — hosted events + refactored footer
+- Added `generateHostedEventCells(hostName: camp.name)` after URL cell
+- Replaced 15 lines of duplicated footer logic with `generatePlayaFooterCells(...)` call
+
+#### 5. `generatePlayaEventOccurrenceCellTypes` — host image, map, footer
+New cell sequence:
+| # | Cell | Source |
+|---|------|--------|
+| 1 | Host image | `localThumbnailURL(objectID: hostUID)` |
+| 2 | Map (if no image) | `eventAnnotation(for: occ)` |
+| 3 | Title | `occ.name` |
+| 4 | Description | `occ.description` |
+| 5 | Host relationship | `resolvedHostName` / `resolvedHostSubject` |
+| 6 | Next host event | `resolvedHostEvents` (filtered) |
+| 7 | All host events | `resolvedHostEvents` |
+| 8 | Schedule | `formatPlayaEventSchedule(occ:)` |
+| 9 | Location address | `resolvedHostLocation` / `occ.otherLocation` |
+| 10 | Event type | `EventTypeInfo` |
+| 11 | Host description | `resolvedHostDescription` |
+| 12 | Contact email | `occ.contact` |
+| 13 | Website | `occ.url` |
+| 14–18 | Footer | `generatePlayaFooterCells(...)` with `effectiveLocation(for: occ)` |
+
+Key additions vs previous code:
+- Host image at top (from camp or art thumbnail)
+- Map before title when no host image
+- Full footer with map-if-image, GPS, distance, travel time (replaced bare `.userNotes`)
+
+### Build Status
+- **Build**: Succeeded (0 errors, 0 warnings)
+- **Tests**: `iBurnTests` has pre-existing compilation error in `DetailViewModelTests.swift:252` (old `DetailCellType.relationship` signature) unrelated to this change. The 4 data import tests pass.
+
+### Deferred
+- **Visit status**: PlayaDB `ObjectMetadata` lacks a `visitStatus` column. Requires GRDB migration + new API surface. Tracked separately.
+
 ## Branch & Repo Status
 - **Branch**: `playadb-migration`
 - **Working tree**: Modified (uncommitted changes from this session)
-- **Last commit**: `3688eb7` ("More updates")
+- **Last commit**: `5cc81a2` ("More siwftui updates")
