@@ -118,6 +118,50 @@ final class APIParserTests: XCTestCase {
         }
     }
     
+    // MARK: - MutantVehicle Parsing Tests
+
+    func testParseMutantVehicles_ValidJSON_ReturnsCorrectData() throws {
+        let mvObjects = try parser.parseMutantVehicles(from: MockAPIData.mutantVehicleJSON)
+
+        XCTAssertEqual(mvObjects.count, 2)
+
+        let mv = mvObjects[0]
+        XCTAssertEqual(mv.uid.value, "a6BVI000000Le0r2AC")
+        XCTAssertEqual(mv.name, "Moebius Omnibus")
+        XCTAssertEqual(mv.year, 2026)
+        XCTAssertNil(mv.url)
+        XCTAssertNil(mv.donationLink)
+        XCTAssertEqual(mv.contactEmail, "p4l@hotmail.com")
+        XCTAssertEqual(mv.hometown, "Oakley, CA")
+        XCTAssertEqual(mv.artist, "Phil 'pEEf' Sadow")
+        XCTAssertEqual(mv.images.count, 1)
+        XCTAssertEqual(mv.images[0].thumbnailUrl?.absoluteString, "https://example.com/mv-image.jpeg")
+        XCTAssertEqual(mv.tags, ["Round", "Flying Saucer", "Circular"])
+
+        let mv2 = mvObjects[1]
+        XCTAssertEqual(mv2.name, "Dragon Wagon")
+        XCTAssertEqual(mv2.url?.absoluteString, "https://dragonwagon.art")
+        XCTAssertEqual(mv2.donationLink?.absoluteString, "https://donate.example.com/dragon")
+        XCTAssertNil(mv2.contactEmail)
+        XCTAssertTrue(mv2.images.isEmpty)
+        XCTAssertEqual(mv2.tags, ["Dragon", "Fire"])
+    }
+
+    func testParseMutantVehicles_InvalidJSON_ThrowsError() {
+        let invalidJSON = "invalid json".data(using: .utf8)!
+
+        XCTAssertThrowsError(try parser.parseMutantVehicles(from: invalidJSON)) { error in
+            XCTAssertTrue(error is DecodingError)
+        }
+    }
+
+    func testParseMutantVehicles_EmptyArray_ReturnsEmptyArray() throws {
+        let emptyJSON = "[]".data(using: .utf8)!
+        let mvObjects = try parser.parseMutantVehicles(from: emptyJSON)
+
+        XCTAssertTrue(mvObjects.isEmpty)
+    }
+
     // MARK: - UpdateInfo Parsing Tests
     
     func testParseUpdateInfo_ValidJSON_ReturnsCorrectData() throws {
