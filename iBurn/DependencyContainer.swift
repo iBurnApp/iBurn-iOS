@@ -28,6 +28,9 @@ class DependencyContainer {
     /// Background seeder for PlayaDB
     private let playaDBSeeder: PlayaDBSeeder
 
+    /// MV image downloader
+    private let mvImageDownloader: MutantVehicleImageDownloader
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
@@ -43,6 +46,11 @@ class DependencyContainer {
     /// Data provider for Event objects
     private(set) lazy var eventDataProvider: EventDataProvider = {
         EventDataProvider(playaDB: playaDB)
+    }()
+
+    /// Data provider for MutantVehicle objects
+    private(set) lazy var mutantVehicleDataProvider: MutantVehicleDataProvider = {
+        MutantVehicleDataProvider(playaDB: playaDB)
     }()
 
     // MARK: - Initialization
@@ -65,6 +73,9 @@ class DependencyContainer {
 
         self.playaDBSeeder = PlayaDBSeeder(playaDB: self.playaDB)
         self.playaDBSeeder.seedIfNeeded()
+
+        self.mvImageDownloader = MutantVehicleImageDownloader(playaDB: self.playaDB)
+        self.mvImageDownloader.downloadUncachedImages()
     }
 
     // MARK: - Factory Methods
@@ -104,6 +115,33 @@ class DependencyContainer {
             dataProvider: eventDataProvider,
             locationProvider: locationProvider,
             festivalDays: YearSettings.festivalDays
+        )
+    }
+
+    /// Create a MutantVehicleListViewModel with injected dependencies
+    func makeMutantVehicleListViewModel(initialFilter: MutantVehicleFilter = .all) -> MutantVehicleListViewModel {
+        ObjectListViewModel(
+            dataProvider: mutantVehicleDataProvider,
+            locationProvider: locationProvider,
+            filterStorageKey: "mvListFilter",
+            initialFilter: initialFilter,
+            effectiveFilterForObservation: { $0 },
+            favoritesFilterForObservation: { filter in
+                var f = filter
+                f.searchText = nil
+                f.tag = nil
+                f.onlyFavorites = true
+                return f
+            },
+            matchesSearch: { mv, q in
+                mv.name.lowercased().contains(q) ||
+                mv.description?.lowercased().contains(q) == true ||
+                mv.artist?.lowercased().contains(q) == true ||
+                mv.hometown?.lowercased().contains(q) == true
+            },
+            isDatabaseSeeded: { [mutantVehicleDataProvider] in
+                await mutantVehicleDataProvider.isDatabaseSeeded()
+            }
         )
     }
 

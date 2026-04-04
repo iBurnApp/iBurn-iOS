@@ -101,6 +101,10 @@ class DetailViewControllerFactory {
         create(with: .event(event), playaDB: playaDB)
     }
 
+    static func create(with mv: MutantVehicleObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .mutantVehicle(mv), playaDB: playaDB)
+    }
+
     static func create(with occurrence: EventObjectOccurrence, playaDB: PlayaDB) -> DetailHostingController {
         create(with: .eventOccurrence(occurrence), playaDB: playaDB)
     }

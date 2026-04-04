@@ -20,6 +20,7 @@ enum DetailSubject {
     case camp(CampObject)
     case event(EventObject)
     case eventOccurrence(EventObjectOccurrence)
+    case mutantVehicle(MutantVehicleObject)
 }
 
 extension DetailSubject {
@@ -35,6 +36,8 @@ extension DetailSubject {
             return event.name
         case .eventOccurrence(let occ):
             return occ.name
+        case .mutantVehicle(let mv):
+            return mv.name
         }
     }
 
@@ -50,6 +53,8 @@ extension DetailSubject {
             return event.uid
         case .eventOccurrence(let occ):
             return occ.event.uid
+        case .mutantVehicle(let mv):
+            return mv.uid
         }
     }
 
@@ -65,6 +70,8 @@ extension DetailSubject {
             return event.location
         case .eventOccurrence(let occ):
             return occ.location
+        case .mutantVehicle:
+            return nil
         }
     }
 
@@ -83,6 +90,8 @@ extension DetailSubject {
             return event.otherLocation.isEmpty ? nil : event.otherLocation
         case .eventOccurrence(let occ):
             return occ.otherLocation.isEmpty ? nil : occ.otherLocation
+        case .mutantVehicle:
+            return nil
         }
     }
 }

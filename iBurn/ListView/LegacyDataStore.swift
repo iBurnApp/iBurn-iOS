@@ -103,6 +103,8 @@ final class LegacyDataStore: LegacyFavoritesStoring {
             return transaction.object(forKey: uid, inCollection: BRCCampObject.yapCollection) as? BRCCampObject
         case .event:
             return transaction.object(forKey: uid, inCollection: BRCEventObject.yapCollection) as? BRCEventObject
+        case .mutantVehicle:
+            return nil // MVs are PlayaDB-only, not in YapDatabase
         }
     }
 
@@ -114,6 +116,8 @@ final class LegacyDataStore: LegacyFavoritesStoring {
             return BRCCampObject.yapCollection
         case .event:
             return BRCEventObject.yapCollection
+        case .mutantVehicle:
+            return nil
         }
     }
 }

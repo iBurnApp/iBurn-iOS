@@ -137,6 +137,8 @@ class DetailViewModel: ObservableObject {
             rowAssets = RowAssetsLoader(objectID: art.uid, provider: mediaProvider)
         case .camp(let camp):
             rowAssets = RowAssetsLoader(objectID: camp.uid, provider: mediaProvider)
+        case .mutantVehicle(let mv):
+            rowAssets = RowAssetsLoader(objectID: mv.uid, provider: mediaProvider)
         case .event, .eventOccurrence, .legacy:
             rowAssets = nil
         }
@@ -276,6 +278,17 @@ class DetailViewModel: ObservableObject {
             } catch {
                 self.error = error
             }
+
+        case .mutantVehicle(let mv):
+            guard let playaDB else { break }
+            do {
+                let md = try await playaDB.metadata(for: mv)
+                isFavorite = md.isFavorite
+                userNotes = md.userNotes ?? ""
+                try await playaDB.setLastViewed(Date(), for: mv)
+            } catch {
+                self.error = error
+            }
         }
 
         rowAssets?.startIfNeeded()
@@ -308,6 +321,10 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(occ.event)
                 isFavorite = try await playaDB.isFavorite(occ.event)
+            case .mutantVehicle(let mv):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.toggleFavorite(mv)
+                isFavorite = try await playaDB.isFavorite(mv)
             }
 
             self.cells = generateCells()
@@ -340,6 +357,10 @@ class DetailViewModel: ObservableObject {
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: occ.event)
+                userNotes = notes
+            case .mutantVehicle(let mv):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: mv)
                 userNotes = notes
             }
 
@@ -400,7 +421,7 @@ class DetailViewModel: ObservableObject {
                     if let annotation = PlayaObjectAnnotation(camp: camp) {
                         coordinator.handle(.showMapAnnotation(annotation, title: "Map - \(camp.name)"))
                     }
-                case .event, .eventOccurrence:
+                case .event, .eventOccurrence, .mutantVehicle:
                     break
                 }
             }
@@ -460,6 +481,8 @@ class DetailViewModel: ObservableObject {
             coordinator.handle(.share(["Event: \(event.name)\nID: \(event.uid)"]))
         case .eventOccurrence(let occ):
             coordinator.handle(.share(["Event: \(occ.name)\nID: \(occ.event.uid)"]))
+        case .mutantVehicle(let mv):
+            coordinator.handle(.share(["Mutant Vehicle: \(mv.name)\nID: \(mv.uid)"]))
         }
     }
     
@@ -493,7 +516,7 @@ class DetailViewModel: ObservableObject {
 
             return Appearance.currentColors
 
-        case .art, .camp, .event, .eventOccurrence:
+        case .art, .camp, .event, .eventOccurrence, .mutantVehicle:
             if let colors = extractedImageColors {
                 return colors
             }
@@ -532,7 +555,7 @@ class DetailViewModel: ObservableObject {
             guard localAudioURL(objectID: art.uid) != nil else { return }
             isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
 
-        case .camp, .event, .eventOccurrence:
+        case .camp, .event, .eventOccurrence, .mutantVehicle:
             return
         }
 
@@ -581,6 +604,8 @@ class DetailViewModel: ObservableObject {
             return generatePlayaEventCellTypes(event)
         case .eventOccurrence(let occ):
             return generatePlayaEventOccurrenceCellTypes(occ)
+        case .mutantVehicle(let mv):
+            return generatePlayaMutantVehicleCellTypes(mv)
         }
     }
 
@@ -779,6 +804,44 @@ class DetailViewModel: ObservableObject {
             canShowLocation: canShowLocation,
             mapTitle: "Map - \(camp.name)"
         ))
+        return cellTypes
+    }
+
+    private func generatePlayaMutantVehicleCellTypes(_ mv: MutantVehicleObject) -> [DetailCellType] {
+        var cellTypes: [DetailCellType] = []
+
+        if let imageURL = localThumbnailURL(objectID: mv.uid),
+           let image = loadImage(from: imageURL) {
+            let aspectRatio = image.size.width / image.size.height
+            cellTypes.append(.image(image, aspectRatio: aspectRatio))
+        }
+
+        cellTypes.append(.text(mv.name, style: .title))
+
+        if let description = mv.description, !description.isEmpty {
+            cellTypes.append(.text(description, style: .body))
+        }
+
+        if let artist = mv.artist, !artist.isEmpty {
+            cellTypes.append(.text("Artist: \(artist)", style: .subtitle))
+        }
+
+        if let hometown = mv.hometown, !hometown.isEmpty {
+            cellTypes.append(.text("Hometown: \(hometown)", style: .caption))
+        }
+
+        if let email = mv.contactEmail, !email.isEmpty {
+            cellTypes.append(.email(email, label: "Contact"))
+        }
+        if let url = mv.url {
+            cellTypes.append(.url(url, title: "Website"))
+        }
+        if let donationLink = mv.donationLink {
+            cellTypes.append(.url(donationLink, title: "Donate"))
+        }
+
+        cellTypes.append(.userNotes(userNotes))
+
         return cellTypes
     }
 

@@ -28,3 +28,4 @@ import PlayaDB
 extension ArtObject: DisplayableObject {}
 extension CampObject: DisplayableObject {}
 extension EventObjectOccurrence: DisplayableObject {}
+extension MutantVehicleObject: DisplayableObject {}

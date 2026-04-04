@@ -58,6 +58,11 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
         )
     }
 
+    convenience init?(mutantVehicle: MutantVehicleObject) {
+        // Mutant vehicles are mobile and have no fixed location
+        return nil
+    }
+
     var title: String? { titleText }
     var subtitle: String? { subtitleText }
 
@@ -69,6 +74,8 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
             return UIImage(named: "BRCPurplePin")
         case .event:
             return UIImage(named: "BRCPurplePin")
+        case .mutantVehicle:
+            return UIImage(named: "BRCGreenPin")
         }
     }
 }
