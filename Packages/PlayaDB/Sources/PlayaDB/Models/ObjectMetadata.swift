@@ -110,4 +110,13 @@ public extension ObjectMetadata {
             isFavorite: isFavorite
         )
     }
+
+    /// Create metadata for a mutant vehicle
+    static func forMutantVehicle(id: String, isFavorite: Bool = false) -> ObjectMetadata {
+        ObjectMetadata(
+            objectType: DataObjectType.mutantVehicle.rawValue,
+            objectId: id,
+            isFavorite: isFavorite
+        )
+    }
 }

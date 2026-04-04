@@ -17,3 +17,7 @@ extension CampObject: Identifiable {
 extension EventObject: Identifiable {
     public var id: EventID { EventID(uid) }
 }
+
+extension MutantVehicleObject: Identifiable {
+    public var id: MutantVehicleID { MutantVehicleID(uid) }
+}

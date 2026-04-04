@@ -49,6 +49,14 @@ public enum BundleDataLoader {
         return try loadDataFile(named: "event", from: bundle)
     }
     
+    /// Load mutant vehicle data from bundle
+    /// - Parameter bundle: Optional bundle to load from. If nil, attempts to find appropriate bundle.
+    /// - Returns: JSON data for mutant vehicles
+    /// - Throws: LoadError if data cannot be loaded
+    public static func loadMutantVehicles(from bundle: Bundle? = nil) throws -> Data {
+        return try loadDataFile(named: "mv", from: bundle)
+    }
+
     /// Load update info data from bundle
     /// - Parameter bundle: Optional bundle to load from. If nil, attempts to find appropriate bundle.
     /// - Returns: JSON data for update information
