@@ -1,20 +1,15 @@
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '14.0'
+platform :ios, '16.0'
 inhibit_all_warnings!
 use_modular_headers!
-
-target 'PlayaKitTests' do
-	pod 'CocoaLumberjack/Swift'
-	pod 'YapDatabase'
-end 
 
 target 'iBurn' do
 	target 'iBurnTests'
 
 	pod 'Anchorage'
 
-	pod 'YapDatabase'
+	pod 'YapDatabase', :path => 'Submodules/YapDatabase/YapDatabase.podspec'
 
 	pod 'CocoaLumberjack/Swift'
 	pod 'Mantle', '~> 2.0'
@@ -41,8 +36,8 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 16.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
       end
     end
   end
