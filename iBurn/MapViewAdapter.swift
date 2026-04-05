@@ -13,6 +13,7 @@ import BButton
 import CocoaLumberjack
 import SafariServices
 import EventKitUI
+import PlayaDB
 import SwiftUI
 import PlayaDB
 
@@ -269,7 +270,8 @@ extension MapViewAdapter: MLNMapViewDelegate {
         case .info:
             if let data = annotation as? DataObjectAnnotation, let parentVC = parent {
                 Task { @MainActor in
-                    let vc = DetailViewControllerFactory.createDetailViewController(for: data.object)
+                    let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+                    let vc = await DetailViewControllerFactory.createDetailViewController(for: data.object, playaDB: playaDB)
                     parentVC.navigationController?.pushViewController(vc, animated: true)
                 }
                 return

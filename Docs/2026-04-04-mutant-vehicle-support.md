@@ -221,3 +221,77 @@ Created SwiftUI `NearbyView` + `NearbyViewModel` backed by PlayaDB spatial obser
 6. Time Shift: Warp → TimeShiftViewController → apply → results update
 7. Map button: shows nearby results on map
 8. Feature flag off: legacy NearbyViewController still works
+
+---
+
+# Detail Data Service Dual-Write: YapDB ↔ PlayaDB Sync
+
+## Problem
+During the YapDB→PlayaDB migration, favorites and user notes set in one database were invisible to views backed by the other. Legacy detail views (from deep links, map annotation taps, page swiping) wrote to YapDB only. New SwiftUI detail views wrote to PlayaDB only.
+
+## Solution
+Dual-write: every favorite/note change writes to both YapDB and PlayaDB, keeping both databases in sync during the transition.
+
+## Key Design Decisions
+- **`setFavorite(_:Bool, for:)` API**: Added to PlayaDB protocol (vs `toggleFavorite`-then-check) for reliable sync — avoids race conditions.
+- **Fire-and-forget sync**: Secondary write is best-effort (logged errors, no throw). Primary write blocks; sync runs in background `Task`.
+- **No MV sync**: Mutant vehicles are PlayaDB-only, no YapDB equivalent exists.
+- **Typed column constants**: Replaced raw `Column("string")` with `ObjectMetadata.Columns` enum in PlayaDB metadata queries.
+
+## Files Created (0)
+
+## Files Modified (5)
+
+### PlayaDB Package
+- `PlayaDB.swift` — Added `setFavorite(_:Bool, for:)` protocol method
+- `PlayaDBImpl.swift` — Implemented `setFavorite`, migrated `toggleFavorite`/`isFavorite` to use `ObjectMetadata.Columns` constants
+
+### App
+- `DetailDataService.swift` — Accepts `PlayaDB?`, syncs favorites/notes to PlayaDB after YapDB writes
+- `DetailViewModel.swift` — Added `syncFavoriteToYapDB`/`syncNotesToYapDB` helpers, called after PlayaDB writes for art/camp/event cases
+- `DetailViewControllerFactory.swift` — Injects `PlayaDB` into `DetailDataService` via `BRCAppDelegate.shared.dependencies.playaDB`
+- `BRCDataObjectTableViewCell.swift` — Fire-and-forget PlayaDB sync after YapDB favorite toggle
+
+## Files Deleted (2)
+- `LegacyDataStore.swift` — Zero callers, dead code
+- `LegacyFavoritesStoring.swift` — Zero callers, dead code
+
+## Verification
+1. Build succeeds (0 errors)
+2. All iBurnTests pass
+3. Favorite in SwiftUI detail → appears in legacy views (and vice versa)
+4. User notes in SwiftUI detail → persist in legacy detail (and vice versa)
+
+---
+
+# Detail Read Paths Migration: YapDB → PlayaDB
+
+## Problem
+`DetailViewModel` had two init paths: a legacy path that read all data from YapDB via `DetailDataService`, and a PlayaDB path that read directly from PlayaDB. Several call sites (deep links, map callouts, relationship navigation) still entered through the legacy path because they had a `BRCDataObject` in hand, causing detail views to read from YapDB instead of PlayaDB.
+
+## Solution
+Added an async bridge factory method to `DetailViewControllerFactory` that resolves a `BRCDataObject` to its PlayaDB equivalent by UID, then creates the detail view via the PlayaDB path. Migrated 3 of 4 legacy call sites; deferred PageViewManager (requires synchronous VC creation from UIPageViewControllerDataSource).
+
+## Key Design Decisions
+- **Async bridge**: All 3 migrated call sites already supported async (Task blocks or DispatchQueue.main.async). No need for blocking synchronous reads.
+- **Fallback to legacy**: If PlayaDB fetch fails, falls back to existing legacy path. Safe during transition.
+- **PageViewManager deferred**: UIPageViewControllerDataSource requires synchronous VC return. Will migrate naturally when list views move to PlayaDB.
+- **No PlayaDB protocol changes**: All needed fetch methods already existed.
+
+## Files Modified (4)
+- `DetailViewControllerFactory.swift` — Added `createDetailViewController(for:playaDB:) async` bridge method
+- `BRCDeepLinkRouter.swift` — Replaced YapDB lookup with PlayaDB async fetch in `navigateToObject`
+- `MapViewAdapter.swift` — Map callout info button now uses async PlayaDB bridge
+- `DetailActionCoordinator.swift` — Relationship navigation wrapped in Task, uses async PlayaDB bridge
+
+## Files Unchanged
+- `PageViewManager.swift` — Deferred (synchronous UIPageViewControllerDataSource requirement)
+- `DetailDataService.swift` — Read methods retained for PageViewManager's legacy path
+
+## Verification
+1. Build succeeds (0 errors)
+2. All iBurnTests pass
+3. Deep links open detail views via PlayaDB path
+4. Map callout info button opens detail views via PlayaDB path
+5. Relationship navigation in detail view uses PlayaDB path
+6. Page swiping in legacy list views still works (unchanged)

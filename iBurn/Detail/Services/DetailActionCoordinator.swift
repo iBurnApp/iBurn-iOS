@@ -10,6 +10,7 @@ import UIKit
 import SafariServices
 import EventKitUI
 import SwiftUI
+import PlayaDB
 
 // MARK: - Protocol
 
@@ -168,20 +169,12 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             navigator.pushViewController(mapViewController, animated: true)
             
         case .navigateToObject(let object):
-            print("🧭 Attempting navigation to object: \(object.title)")
-            
-            guard let navigator = dependencies.navigator else {
-                print("❌ Navigation FAILED: Navigator is nil")
-                print("   Presenter: \(type(of: dependencies.presenter))")
-                return
+            guard let navigator = dependencies.navigator else { return }
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            Task { @MainActor in
+                let detailVC = await DetailViewControllerFactory.createDetailViewController(for: object, playaDB: playaDB)
+                navigator.pushViewController(detailVC, animated: true)
             }
-            
-            print("✅ Navigator found: \(type(of: navigator))")
-            
-            let detailVC = DetailViewControllerFactory.createDetailViewController(for: object)
-            
-            print("🚀 Pushing view controller: \(type(of: detailVC))")
-            navigator.pushViewController(detailVC, animated: true)
             
         case .showEventsList(let events, let hostName):
             print("🎪 Attempting to show \(events.count) events for \(hostName)")

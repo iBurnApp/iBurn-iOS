@@ -10,6 +10,7 @@ import UIKit
 import CoreLocation
 import YapDatabase
 import CocoaLumberjack
+import PlayaDB
 
 enum DeepLinkObjectType: String {
     case art = "art"
@@ -98,58 +99,54 @@ enum DeepLinkObjectType: String {
     
     private func navigateToObject(uid: String, type: String, metadata: [String: String]) -> Bool {
         guard let tabController = tabController else { return false }
-        
-        // Find object in database
-        let connection = BRCDatabaseManager.shared.uiConnection
-        var object: BRCDataObject?
-        
-        connection.read { transaction in
+
+        Task { @MainActor in
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            var detailVC: UIViewController?
             switch type {
             case "art":
-                object = transaction.object(forKey: uid, inCollection: BRCArtObject.yapCollection) as? BRCArtObject
+                if let art = try? await playaDB.fetchArt(uid: uid) {
+                    detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
+                }
             case "camp":
-                object = transaction.object(forKey: uid, inCollection: BRCCampObject.yapCollection) as? BRCCampObject
+                if let camp = try? await playaDB.fetchCamp(uid: uid) {
+                    detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
+                }
             case "event":
-                object = transaction.object(forKey: uid, inCollection: BRCEventObject.yapCollection) as? BRCEventObject
+                if let event = try? await playaDB.fetchEvent(uid: uid) {
+                    detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
+                }
             default:
                 break
             }
-        }
-        
-        guard let dataObject = object else {
-            DDLogWarn("Object not found for UID: \(uid) type: \(type)")
-            // Object not found - show error or search
-            showObjectNotFound(uid: uid, type: type, metadata: metadata)
-            return false
-        }
-        
-        DDLogInfo("Found object: \(dataObject.title) for UID: \(uid)")
-        
-        // Navigate to object - present as sheet over current interface
-        DispatchQueue.main.async {
-            let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
-            
+
+            guard let vc = detailVC else {
+                DDLogWarn("Object not found for UID: \(uid) type: \(type)")
+                self.showObjectNotFound(uid: uid, type: type, metadata: metadata)
+                return
+            }
+
+            DDLogInfo("Found object for UID: \(uid)")
+
             // Wrap in navigation controller for sheet presentation
-            let navController = UINavigationController(rootViewController: detailVC)
+            let navController = UINavigationController(rootViewController: vc)
             navController.modalPresentationStyle = .pageSheet
-            
+
             // Add close button to navigation bar
-            detailVC.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            vc.navigationItem.leftBarButtonItem = UIBarButtonItem(
                 barButtonSystemItem: .done,
                 target: self,
                 action: #selector(self.dismissDetailSheet)
             )
-            
+
             // Present over current interface
             if let presentedVC = tabController.presentedViewController {
-                // If something is already presented, present over it
                 presentedVC.present(navController, animated: true)
             } else {
-                // Present over tab controller
                 tabController.present(navController, animated: true)
             }
         }
-        
+
         return true
     }
     
