@@ -24,13 +24,15 @@ import PlayaDB
 @MainActor
 class ArtListHostingController: UIHostingController<ArtListView> {
     private let playaDB: PlayaDB
+    private let viewModel: ArtListViewModel
+    private var pagingDataSource: DetailPagingDataSource?
 
     /// Initialize the hosting controller with dependencies
     /// - Parameter dependencies: The dependency container providing PlayaDB and other services
     /// - Throws: Errors from creating the view model
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
-        let viewModel = dependencies.makeArtListViewModel()
+        self.viewModel = dependencies.makeArtListViewModel()
         super.init(rootView: ArtListView(viewModel: viewModel))
         self.rootView = ArtListView(
             viewModel: viewModel,
@@ -51,8 +53,12 @@ class ArtListHostingController: UIHostingController<ArtListView> {
     // MARK: - Navigation
 
     private func showDetail(for art: ArtObject) {
-        let detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let subjects = viewModel.filteredItems.map { DetailSubject.art($0) }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.uid == art.uid }) else { return }
+        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        self.pagingDataSource = dataSource
+        let pageVC = dataSource.makePageViewController(initialIndex: index)
+        navigationController?.pushViewController(pageVC, animated: true)
     }
 
     private func showMap(for arts: [ArtObject]) {

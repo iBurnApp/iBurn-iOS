@@ -9,17 +9,28 @@
 import Foundation
 import CocoaLumberjack
 import BButton
+import MapKit
+import PlayaDB
 
 public class UserMapViewAdapter: MapViewAdapter {
-    
+
     // MARK: - Private
-    
+
+    private var _playaDB: PlayaDB?
+    @MainActor var playaDB: PlayaDB {
+        _playaDB ?? BRCAppDelegate.shared.dependencies.playaDB
+    }
+
     @objc public override init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
         super.init(mapView: mapView, dataSource: dataSource)
     }
-    
-    let writeConnection: YapDatabaseConnection = BRCDatabaseManager.shared.readWriteConnection
+
+    init(mapView: MLNMapView, dataSource: AnnotationDataSource? = nil, playaDB: PlayaDB) {
+        self._playaDB = playaDB
+        super.init(mapView: mapView, dataSource: dataSource)
+    }
+
     private let mapRegionAnnotations = MapRegionDataSource()
     
     /// Set this if you want draggable
@@ -52,11 +63,9 @@ public class UserMapViewAdapter: MapViewAdapter {
             imageAnnotationView.isUserInteractionEnabled = true
             imageAnnotationView.addLongPressGestureIfNeeded(target: self, action: #selector(handleCalloutLongPress(_:)), minimumPressDuration: 0.5)
             imageAnnotationView.onDragEnded = { [weak self] annotation in
-                if let mapPoint = annotation as? BRCMapPoint {
-                    // Just save to database, don't remove or reload
-                    self?.writeConnection.readWrite({ (transaction) in
-                        mapPoint.save(with: transaction, metadata: nil)
-                    })
+                if let mapPoint = annotation as? BRCUserMapPoint {
+                    let pin = mapPoint.toUserMapPin()
+                    Task { try? await self?.playaDB.saveUserMapPin(pin) }
                     DDLogInfo("Saved dragged annotation: \(mapPoint)")
                 }
             }
@@ -165,41 +174,68 @@ public class UserMapViewAdapter: MapViewAdapter {
     
     override public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
         let zoomLevel = mapView.zoomLevel
-        let labelIsHidden = mapView.zoomLevel <= 13.0
+        let labelIsHidden = zoomLevel <= 13.0
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
         }
-        if mapView.zoomLevel >= 16.0 {
-            let coordinateBounds = mapView.visibleCoordinateBounds
-            BRCDatabaseManager.shared.queryObjects(inMinCoord: coordinateBounds.sw, maxCoord: coordinateBounds.ne, completionQueue: DispatchQueue.global(qos: .default)) { (objects) in
-                var objects = objects.filter {
-                    if let event = $0 as? BRCEventObject {
-                        return event.shouldShowOnMap()
-                    } else if let _ = $0 as? BRCCampObject {
-                        // Show camps at zoom 17+ if zoomed-only mode
-                        if UserSettings.showCampsOnlyZoomedIn {
-                            return zoomLevel >= 17.0
-                        }
-                        return false
-                    } else if let _ = $0 as? BRCArtObject {
-                        // Show art at zoom 16+ if zoomed-only mode
+        if zoomLevel >= 16.0 {
+            let bounds = mapView.visibleCoordinateBounds
+            let region = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(
+                    latitude: (bounds.sw.latitude + bounds.ne.latitude) / 2,
+                    longitude: (bounds.sw.longitude + bounds.ne.longitude) / 2
+                ),
+                span: MKCoordinateSpan(
+                    latitudeDelta: bounds.ne.latitude - bounds.sw.latitude,
+                    longitudeDelta: bounds.ne.longitude - bounds.sw.longitude
+                )
+            )
+            Task { @MainActor in
+                guard let objects = try? await playaDB.fetchObjects(in: region) else { return }
+                let now = Date.present
+                let startingSoonThreshold: TimeInterval = 30 * 60
+                let endingSoonThreshold: TimeInterval = 15 * 60
+
+                // Fetch current/upcoming events once for time filtering
+                let currentEvents = (try? await playaDB.fetchUpcomingEvents(within: 1, from: now)) ?? []
+                let activeEventUIDs = Set(currentEvents.compactMap { occ -> String? in
+                    let hasEnded = now > occ.occurrence.endTime
+                    let isHappening = now >= occ.occurrence.startTime && now <= occ.occurrence.endTime
+                    let timeUntilStart = occ.occurrence.startTime.timeIntervalSince(now)
+                    let isStartingSoon = timeUntilStart > 0 && timeUntilStart < startingSoonThreshold
+                    let timeUntilEnd = occ.occurrence.endTime.timeIntervalSince(now)
+                    let isEndingSoon = timeUntilEnd > 0 && timeUntilEnd < endingSoonThreshold
+                    if !hasEnded && (isHappening || isStartingSoon) && !isEndingSoon {
+                        return occ.event.uid
+                    }
+                    return nil
+                })
+
+                var annotations: [MLNAnnotation] = []
+                for object in objects {
+                    if let art = object as? ArtObject {
                         if UserSettings.showArtOnlyZoomedIn {
-                            return zoomLevel >= 16.0
+                            if let annotation = PlayaObjectAnnotation(art: art) {
+                                annotations.append(annotation)
+                            }
                         }
-                        return false
-                    } else {
-                        return true
+                    } else if let camp = object as? CampObject {
+                        if UserSettings.showCampsOnlyZoomedIn && zoomLevel >= 17.0 {
+                            if let annotation = PlayaObjectAnnotation(camp: camp) {
+                                annotations.append(annotation)
+                            }
+                        }
+                    } else if let event = object as? EventObject {
+                        if activeEventUIDs.contains(event.uid),
+                           let annotation = PlayaObjectAnnotation(event: event) {
+                            annotations.append(annotation)
+                        }
                     }
                 }
-                objects.sort { $0.title < $1.title }
-                var annotations: [MLNAnnotation] = []
-                BRCDatabaseManager.shared.backgroundReadConnection.asyncRead({ (t) in
-                    annotations = objects.compactMap { $0.annotation(transaction: t) }
-                }, completionBlock: {
-                    self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
-                    self.mapRegionAnnotations.annotations = annotations
-                    self.addAnnotations(annotations)
-                })
+                annotations.sort { ($0.title.flatMap { $0 } ?? "") < ($1.title.flatMap { $0 } ?? "") }
+                self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
+                self.mapRegionAnnotations.annotations = annotations
+                self.addAnnotations(annotations)
             }
         } else {
             removeAnnotations(mapRegionAnnotations.allAnnotations())
@@ -218,35 +254,32 @@ private extension UserMapViewAdapter {
     }
     
     func saveMapPoint(_ mapPoint: BRCMapPoint) {
-        writeConnection.readWrite({ (transaction) in
-            mapPoint.save(with: transaction, metadata: nil)
-        })
-        
+        if let userPin = mapPoint as? BRCUserMapPoint {
+            let pin = userPin.toUserMapPin()
+            Task { try? await playaDB.saveUserMapPin(pin) }
+        }
+
         // For new/edited pins, just clear the editing reference
         // Don't remove from map - it should stay visible
         if mapPoint === editingAnnotation {
             editingAnnotation = nil
-            // Don't remove the annotation - keep it on the map
         }
-        
+
         DDLogInfo("Saved user annotation: \(mapPoint)")
-        // Don't reload - it will read from stale connection
     }
-    
+
     func deleteMapPoint(_ mapPoint: BRCMapPoint) {
-        writeConnection.readWrite({ (transaction) in
-            mapPoint.remove(with: transaction)
-        })
-        
+        if let userPin = mapPoint as? BRCUserMapPoint {
+            Task { try? await playaDB.deleteUserMapPin(id: userPin.pinId) }
+        }
+
         // Remove from map immediately
         if mapPoint === editingAnnotation {
             editingAnnotation = nil
         }
         mapView.removeAnnotation(mapPoint)
-        
+
         DDLogInfo("Deleted user annotation: \(mapPoint)")
-        // Don't reload - it will read from stale connection
-        // The annotation is already removed from the map
     }
 }
 

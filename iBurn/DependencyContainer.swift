@@ -31,6 +31,9 @@ class DependencyContainer {
     /// MV image downloader
     private let mvImageDownloader: MutantVehicleImageDownloader
 
+    /// Art/camp thumbnail image downloader
+    private let thumbnailImageDownloader: ThumbnailImageDownloader
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
@@ -76,6 +79,9 @@ class DependencyContainer {
 
         self.mvImageDownloader = MutantVehicleImageDownloader(playaDB: self.playaDB)
         self.mvImageDownloader.downloadUncachedImages()
+
+        self.thumbnailImageDownloader = ThumbnailImageDownloader(playaDB: self.playaDB)
+        self.thumbnailImageDownloader.downloadUncachedImages()
     }
 
     // MARK: - Factory Methods

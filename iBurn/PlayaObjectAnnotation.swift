@@ -58,6 +58,16 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
         )
     }
 
+    convenience init?(event: EventObject) {
+        guard let location = event.location, CLLocationCoordinate2DIsValid(location.coordinate) else { return nil }
+        self.init(
+            id: event.anyID,
+            coordinate: location.coordinate,
+            title: event.name,
+            subtitle: event.primaryLocationString
+        )
+    }
+
     convenience init?(mutantVehicle: MutantVehicleObject) {
         // Mutant vehicles are mobile and have no fixed location
         return nil

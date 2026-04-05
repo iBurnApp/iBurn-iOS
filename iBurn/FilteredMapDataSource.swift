@@ -6,32 +6,35 @@
 //
 
 import Foundation
-import YapDatabase
 import CoreLocation
 import PlayaDB
 
 /// Data source that filters map annotations based on user preferences.
 /// PlayaDB observations provide art/camp/event/favorites annotations reactively.
-/// User pins (BRCUserMapPoint) still come from YapDatabase.
+/// User pins also come from PlayaDB.
 public class FilteredMapDataSource: NSObject, AnnotationDataSource {
 
-    private let userDataSource: YapCollectionAnnotationDataSource
+    private var userAnnotations: [BRCUserMapPoint] = []
+    private var userPinObservation: PlayaDBObservationToken?
     private let playaDataSource: PlayaDBAnnotationDataSource
 
     /// Called on the main queue when PlayaDB observations push new data.
     var onAnnotationsChanged: (() -> Void)?
 
     init(playaDB: PlayaDB) {
-        userDataSource = YapCollectionAnnotationDataSource(collection: BRCUserMapPoint.yapCollection)
-        userDataSource.allowedClass = BRCUserMapPoint.self
         playaDataSource = PlayaDBAnnotationDataSource(playaDB: playaDB)
         super.init()
         playaDataSource.delegate = self
         playaDataSource.startObserving()
+
+        userPinObservation = playaDB.observeUserMapPins { [weak self] pins in
+            self?.userAnnotations = pins.map { BRCUserMapPoint(userMapPin: $0) }
+            self?.onAnnotationsChanged?()
+        }
     }
 
     public func allAnnotations() -> [MLNAnnotation] {
-        userDataSource.allAnnotations() + playaDataSource.allAnnotations()
+        userAnnotations + playaDataSource.allAnnotations()
     }
 
     /// Tear down and recreate observations with current UserSettings.

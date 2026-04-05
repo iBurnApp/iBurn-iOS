@@ -167,37 +167,35 @@ enum DeepLinkObjectType: String {
         }
         
         let title = metadata["title"] ?? "Custom Pin"
-        let _ = metadata["desc"]
-        let _ = metadata["addr"]
-        let _ = metadata["color"] ?? "red"
-        
-        // Create and save custom pin as BRCUserMapPoint
-        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        let pin = BRCUserMapPoint(title: title, coordinate: coordinate, type: .userStar)
-        // BRCUserMapPoint uses yapKey generated from creationDate
-        
-        // Save to database
-        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-            transaction.setObject(pin, forKey: pin.yapKey, inCollection: pin.yapCollection)
+
+        // Save to PlayaDB
+        let pin = UserMapPin(
+            title: title,
+            latitude: latitude,
+            longitude: longitude,
+            pinType: BRCMapPointType.userStar.pinTypeString
+        )
+        Task { @MainActor in
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            try? await playaDB.saveUserMapPin(pin)
         }
-        
+
         // Show confirmation that pin was added
-        DispatchQueue.main.async {
+        Task { @MainActor in
             guard let tabController = self.tabController else { return }
-            
+
             let message = "Custom pin \"\(title)\" has been added to your map."
             let alert = UIAlertController(title: "Pin Added", message: message, preferredStyle: .alert)
-            
+
             alert.addAction(UIAlertAction(title: "View on Map", style: .default) { _ in
-                // Switch to map tab to show the pin
                 tabController.selectedIndex = 0
             })
-            
+
             alert.addAction(UIAlertAction(title: "OK", style: .cancel))
-            
+
             tabController.present(alert, animated: true)
         }
-        
+
         return true
     }
     

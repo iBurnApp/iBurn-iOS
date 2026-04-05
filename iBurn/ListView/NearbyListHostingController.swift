@@ -7,6 +7,7 @@ import PlayaGeocoder
 class NearbyListHostingController: UIHostingController<NearbyView> {
     private let playaDB: PlayaDB
     private let viewModel: NearbyViewModel
+    private var pagingDataSource: DetailPagingDataSource?
     private var geocoderTimer: Timer?
 
     init(dependencies: DependencyContainer) {
@@ -59,8 +60,18 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
     // MARK: - Navigation
 
     private func showDetail(_ subject: DetailSubject) {
-        let detailVC = DetailViewControllerFactory.create(with: subject, playaDB: playaDB)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let allItems = viewModel.sections.flatMap(\.items)
+        let subjects = allItems.map(\.detailSubject)
+        let uid = subject.uid
+        if let index = subjects.firstIndex(where: { $0.uid == uid }) {
+            let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+            self.pagingDataSource = dataSource
+            let pageVC = dataSource.makePageViewController(initialIndex: index)
+            navigationController?.pushViewController(pageVC, animated: true)
+        } else {
+            let detailVC = DetailViewControllerFactory.create(with: subject, playaDB: playaDB)
+            navigationController?.pushViewController(detailVC, animated: true)
+        }
     }
 
     private func showMap(annotations: [PlayaObjectAnnotation]) {

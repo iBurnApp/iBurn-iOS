@@ -295,3 +295,132 @@ Added an async bridge factory method to `DetailViewControllerFactory` that resol
 4. Map callout info button opens detail views via PlayaDB path
 5. Relationship navigation in detail view uses PlayaDB path
 6. Page swiping in legacy list views still works (unchanged)
+
+---
+
+# User Map Pins Migration: YapDB → PlayaDB
+
+## Problem
+User map pins (`BRCUserMapPoint` — home, bike, star) were stored in YapDB. All CRUD operations (create, drag-save, rename, delete) and reads (map display, "find nearest" navigation) went through YapDB connections.
+
+## Solution
+Added a `user_map_pins` table to PlayaDB with a `UserMapPin` GRDB record model. All pin storage now goes through PlayaDB with GRDB observations for reactive map updates. `BRCUserMapPoint` remains as the MLNAnnotation class on the map; conversion helpers bridge between the storage and annotation models.
+
+## Key Design Decisions
+- **Keep `BRCUserMapPoint` as annotation class**: Deeply integrated with MapLibre drag/callout/view system. Only storage moved to PlayaDB.
+- **Bridge pattern**: `UserMapPin` (GRDB struct) ↔ `BRCUserMapPoint` (MLNAnnotation) via conversion helpers with `pinId` associated object for identity tracking.
+- **Reactive observation**: `FilteredMapDataSource` observes `user_map_pins` table for automatic map updates when pins change.
+
+## Files Created (2)
+- `Packages/PlayaDB/Sources/PlayaDB/Models/UserMapPin.swift` — GRDB record model
+- `iBurn/BRCUserMapPoint+PlayaDB.swift` — Conversion helpers + BRCMapPointType string mapping
+
+## Files Modified (7)
+- `Packages/PlayaDB/Sources/PlayaDB/PlayaDB.swift` — Added saveUserMapPin, deleteUserMapPin, fetchUserMapPins, observeUserMapPins
+- `Packages/PlayaDB/Sources/PlayaDB/PlayaDBImpl.swift` — Schema + implementations
+- `iBurn/FilteredMapDataSource.swift` — PlayaDB observation replaces YapCollectionAnnotationDataSource
+- `iBurn/UserMapViewAdapter.swift` — PlayaDB writes replace YapDB connections
+- `iBurn/MainMapViewController.swift` — findNearest uses async PlayaDB
+- `iBurn/BRCDeepLinkRouter.swift` — createMapPin saves to PlayaDB
+- `iBurn/UserGuidance.swift` — Async PlayaDB fetch replaces YapDB transaction
+
+## Verification
+1. Build succeeds (0 errors)
+2. All iBurnTests pass
+3. Place/drag/rename/delete pins via PlayaDB
+4. Sidebar "find bike/home" navigates to nearest pin
+5. Deep link pins saved to PlayaDB
+
+---
+
+# Image Downloader Migration: YapDB → PlayaDB
+
+## Problem
+`BRCMediaDownloader` (image instance) used YapDB filtered views (`artImagesViewName`) to enumerate art/camp objects with remote thumbnail URLs but no local files. This was one of the remaining YapDB read paths.
+
+## Solution
+Created `ThumbnailImageDownloader` backed by PlayaDB, following the existing `MutantVehicleImageDownloader` pattern. Added `fetchArtImageURLs()` and `fetchCampImageURLs()` to PlayaDB protocol. Removed the `imageDownloader` instance from `BRCAppDelegate`.
+
+## What's Deferred
+- **Audio downloader**: PlayaDB `ArtObject` has no `audioUrl` field yet. `_audioDownloader` stays on YapDB.
+- **ColorCache**: Legacy UIKit cells still read `thumbnailImageColors` from YapDB metadata. New SwiftUI path (`RowAssetsLoader`) computes colors fresh. ColorCache stays on YapDB until legacy cells are retired.
+
+## Files Created (1)
+- `iBurn/ThumbnailImageDownloader.swift` — PlayaDB-backed downloader for art/camp thumbnails
+
+## Files Modified (4)
+- `Packages/PlayaDB/Sources/PlayaDB/PlayaDB.swift` — `fetchArtImageURLs()`, `fetchCampImageURLs()`
+- `Packages/PlayaDB/Sources/PlayaDB/PlayaDBImpl.swift` — Implementations querying `ArtImage`/`CampImage` tables
+- `iBurn/DependencyContainer.swift` — Wire up `ThumbnailImageDownloader`
+- `iBurn/BRCAppDelegate.m` — Remove `_imageDownloader` property and background session handler
+
+## Verification
+1. Build succeeds (0 errors, 4 pre-existing warnings)
+2. All iBurnTests pass
+3. Art/camp thumbnails download and display in list views
+
+---
+
+# Map Spatial Queries & Breadcrumbs: YapDB → PlayaDB
+
+## Problem
+Two remaining new-code-path dependencies on YapDB:
+1. `UserMapViewAdapter.regionDidChangeAnimated` used YapDB R-Tree spatial queries (`BRCDatabaseManager.shared.queryObjects(inMinCoord:maxCoord:)`) to show art/camp/event annotations when zoomed in on the map.
+2. `BRCAppDelegate.m` location delegate wrote `BRCBreadcrumbPoint` objects to YapDB on location updates, duplicating work already done by `LocationStorage` (GRDB-backed).
+
+## Solution
+1. Replaced YapDB spatial query with `playaDB.fetchObjects(in:)` (already implemented with its own R-Tree). Converts results to `PlayaObjectAnnotation` instead of `DataObjectAnnotation`. Event time filtering uses `fetchUpcomingEvents(within:from:)` to find active/starting-soon events.
+2. Removed YapDB breadcrumb writes from AppDelegate — `LocationStorage` already handles breadcrumb tracking via its own `CLLocationManagerDelegate`.
+
+## Also done
+- Removed `_audioDownloader` from `BRCAppDelegate.m` — audio tour files are bundled, not downloaded. The `audio_tour_url` field only existed in 2016 data.
+
+## Files Modified (3)
+- `iBurn/UserMapViewAdapter.swift` — `regionDidChangeAnimated` uses PlayaDB spatial queries + `PlayaObjectAnnotation`
+- `iBurn/PlayaObjectAnnotation.swift` — Added `convenience init?(event: EventObject)` for non-occurrence events
+- `iBurn/BRCAppDelegate.m` — Removed breadcrumb YapDB writes, removed `_audioDownloader`
+
+## Remaining YapDB in New Code Path
+- `DetailViewModel.syncFavoriteToYapDB/syncNotesToYapDB` — dual-write to keep legacy favorites list in sync. Intentionally kept until legacy UIKit is fully retired.
+
+## Verification
+1. Build succeeds (0 errors, 4 pre-existing warnings)
+2. All iBurnTests pass
+3. Map zoom-in shows art/camp/event annotations via PlayaDB
+4. Breadcrumb tracking works via LocationStorage
+
+---
+
+# Detail Page Swiping for New SwiftUI Lists
+
+## Problem
+The legacy UIKit list path (`PageViewManager` + `DetailPageViewController`) wraps detail views in a `UIPageViewController`, letting users swipe left/right to navigate to adjacent items in the list. The new SwiftUI hosting controllers pushed detail VCs directly with no swiping support.
+
+## Solution
+Created `DetailPagingDataSource` — a reusable class that takes a `[DetailSubject]` snapshot and `PlayaDB`, conforms to `UIPageViewControllerDataSource/Delegate`, and wraps detail views in the existing `DetailPageViewController`.
+
+## Key Design Decisions
+- **Snapshot over live data**: Captures `filteredItems` at tap time. The old `PageViewManager` used a live `UITableView` reference which caused occasional crashes when filters changed mid-swipe.
+- **`DetailSubject` as common type**: Avoids generics. All 4 object types already have `DetailSubject` cases, and `DetailViewControllerFactory.create(with:playaDB:)` already accepts it.
+- **Reuses existing `DetailPageViewController`**: Navigation item forwarding, `DynamicViewController` events all work as-is.
+- **Favorites deferred**: Heterogeneous mixed-type list needs different treatment.
+
+## Files Created (1)
+- `iBurn/DetailPagingDataSource.swift` — `UIPageViewControllerDataSource/Delegate`, creates `DetailPageViewController` with adjacent-item swiping
+
+## Files Modified (8)
+- `iBurn/ListView/ArtListHostingController.swift` — `showDetail` wraps in page VC, stores viewModel + pagingDataSource
+- `iBurn/ListView/CampListHostingController.swift` — Same pattern
+- `iBurn/ListView/EventListHostingController.swift` — Same pattern (maps `EventObjectOccurrence` → `.eventOccurrence`)
+- `iBurn/ListView/MutantVehicleListHostingController.swift` — Same pattern
+- `iBurn/ListView/FavoritesListHostingController.swift` — Flattens `allFavoriteItems` → `[DetailSubject]` via `detailSubject` property
+- `iBurn/ListView/NearbyListHostingController.swift` — Flattens `sections` → `[DetailSubject]` via `NearbyItem.detailSubject`
+- `iBurn/ListView/FavoriteItem.swift` — Added `detailSubject` computed property
+- `iBurn/ListView/NearbyItem.swift` — Added `detailSubject` computed property
+
+## Verification
+1. Build succeeds (0 errors, 1 pre-existing warning)
+2. Tap any item in art/camp/event/MV list → detail view in page VC
+3. Swipe left/right → navigates to adjacent items in the filtered list
+4. Favorites/Nearby: swiping crosses type boundaries (art → camp → event)
+5. Navigation bar title/items update correctly on swipe

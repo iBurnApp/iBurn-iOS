@@ -54,6 +54,15 @@ enum FavoriteItem: Identifiable {
         case .mutantVehicle: .mutantVehicle
         }
     }
+
+    var detailSubject: DetailSubject {
+        switch self {
+        case .art(let o): .art(o)
+        case .camp(let o): .camp(o)
+        case .event(let o): .eventOccurrence(o)
+        case .mutantVehicle(let o): .mutantVehicle(o)
+        }
+    }
 }
 
 /// A section of favorite items grouped by type

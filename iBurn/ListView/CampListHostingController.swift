@@ -13,10 +13,12 @@ import PlayaDB
 @MainActor
 class CampListHostingController: UIHostingController<CampListView> {
     private let playaDB: PlayaDB
+    private let viewModel: CampListViewModel
+    private var pagingDataSource: DetailPagingDataSource?
 
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
-        let viewModel = dependencies.makeCampListViewModel()
+        self.viewModel = dependencies.makeCampListViewModel()
         super.init(rootView: CampListView(viewModel: viewModel))
         self.rootView = CampListView(
             viewModel: viewModel,
@@ -35,8 +37,12 @@ class CampListHostingController: UIHostingController<CampListView> {
     }
 
     private func showDetail(for camp: CampObject) {
-        let detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let subjects = viewModel.filteredItems.map { DetailSubject.camp($0) }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.uid == camp.uid }) else { return }
+        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        self.pagingDataSource = dataSource
+        let pageVC = dataSource.makePageViewController(initialIndex: index)
+        navigationController?.pushViewController(pageVC, animated: true)
     }
 
     private func showMap(for camps: [CampObject]) {

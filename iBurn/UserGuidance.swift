@@ -7,27 +7,27 @@
 //
 
 import Foundation
+import CoreLocation
+import PlayaDB
 
 class UserGuidance {
-    
-    struct DistanceEntry {
-        let point: BRCMapPoint
-        let distance: CLLocationDistance
-    }
-    
-    static func findNearest(userLocation: CLLocation,
-                            mapPointType: BRCMapPointType,
-                            transaction: YapDatabaseReadTransaction) -> BRCMapPoint? {
-        let yapCollection = BRCMapPoint.yapCollection(for: mapPointType)
-        var distances: [DistanceEntry] = []
-        transaction.iterateKeysAndObjects(inCollection: yapCollection) { (key, point: BRCMapPoint, stop) in
-            guard point.type == mapPointType,
-                let location = point.location() else { return }
-            let distance = userLocation.distance(from: location)
-            let entry = DistanceEntry(point: point, distance: distance)
-            distances.append(entry)
-        }
-        distances.sort { $0.distance > $1.distance }
-        return distances.first?.point
+
+    static func findNearest(
+        userLocation: CLLocation,
+        mapPointType: BRCMapPointType,
+        playaDB: PlayaDB
+    ) async -> BRCUserMapPoint? {
+        guard let pins = try? await playaDB.fetchUserMapPins() else { return nil }
+        let targetType = mapPointType.pinTypeString
+
+        return pins
+            .filter { $0.pinType == targetType }
+            .compactMap { pin -> (BRCUserMapPoint, CLLocationDistance)? in
+                let loc = CLLocation(latitude: pin.latitude, longitude: pin.longitude)
+                let distance = userLocation.distance(from: loc)
+                return (BRCUserMapPoint(userMapPin: pin), distance)
+            }
+            .min(by: { $0.1 < $1.1 })?
+            .0
     }
 }

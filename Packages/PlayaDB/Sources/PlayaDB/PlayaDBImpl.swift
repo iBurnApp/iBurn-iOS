@@ -201,6 +201,19 @@ internal class PlayaDBImpl: PlayaDB {
                 )
             """)
             
+            // Create user_map_pins table
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS user_map_pins (
+                    id TEXT PRIMARY KEY,
+                    title TEXT,
+                    latitude REAL NOT NULL,
+                    longitude REAL NOT NULL,
+                    pin_type TEXT NOT NULL,
+                    created_date TEXT NOT NULL,
+                    modified_date TEXT NOT NULL
+                )
+            """)
+
             // Create indexes for performance
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_art_gps ON art_objects(gps_latitude, gps_longitude)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_camp_gps ON camp_objects(gps_latitude, gps_longitude)")
@@ -805,6 +818,36 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    func fetchArtImageURLs() async throws -> [String: URL] {
+        try await dbQueue.read { db in
+            let images = try ArtImage
+                .filter(ArtImage.Columns.thumbnailUrl != nil)
+                .fetchAll(db)
+            var result: [String: URL] = [:]
+            for image in images {
+                if let url = image.thumbnailUrl, result[image.artId] == nil {
+                    result[image.artId] = url
+                }
+            }
+            return result
+        }
+    }
+
+    func fetchCampImageURLs() async throws -> [String: URL] {
+        try await dbQueue.read { db in
+            let images = try CampImage
+                .filter(CampImage.Columns.thumbnailUrl != nil)
+                .fetchAll(db)
+            var result: [String: URL] = [:]
+            for image in images {
+                if let url = image.thumbnailUrl, result[image.campId] == nil {
+                    result[image.campId] = url
+                }
+            }
+            return result
+        }
+    }
+
     // MARK: - Filtered Data Access (Internal Request Builders)
 
     /// Build an art query from filter options (internal - uses GRDB types)
@@ -1117,6 +1160,45 @@ internal class PlayaDBImpl: PlayaDB {
             onChange: onChange,
             onError: onError
         )
+    }
+
+    // MARK: - User Map Pins
+
+    func saveUserMapPin(_ pin: UserMapPin) async throws {
+        try await dbQueue.write { db in
+            var pin = pin
+            try pin.save(db, onConflict: .replace)
+        }
+    }
+
+    func deleteUserMapPin(id: String) async throws {
+        _ = try await dbQueue.write { db in
+            try UserMapPin.deleteOne(db, key: id)
+        }
+    }
+
+    func fetchUserMapPins() async throws -> [UserMapPin] {
+        try await dbQueue.read { db in
+            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+        }
+    }
+
+    func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+        }
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: { error in
+                print("UserMapPin observation error: \(error)")
+            },
+            onChange: { pins in
+                DispatchQueue.main.async {
+                    onChange(pins)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
     }
 
     // MARK: - Metadata Helpers

@@ -47,6 +47,12 @@ public protocol PlayaDB {
     /// Fetch remote thumbnail URLs for mutant vehicles (uid -> URL)
     func fetchMutantVehicleImageURLs() async throws -> [String: URL]
 
+    /// Fetch remote thumbnail URLs for art objects (uid -> URL)
+    func fetchArtImageURLs() async throws -> [String: URL]
+
+    /// Fetch remote thumbnail URLs for camp objects (uid -> URL)
+    func fetchCampImageURLs() async throws -> [String: URL]
+
     /// Fetch all objects within a geographic region
     func fetchObjects(in region: MKCoordinateRegion) async throws -> [any DataObject]
 
@@ -161,6 +167,21 @@ public protocol PlayaDB {
     /// Mark an object as viewed at the provided date (used for recents, etc.).
     func setLastViewed(_ date: Date, for object: any DataObject) async throws
     
+    // MARK: - User Map Pins
+
+    /// Save (insert or update) a user map pin.
+    func saveUserMapPin(_ pin: UserMapPin) async throws
+
+    /// Delete a user map pin by id.
+    func deleteUserMapPin(id: String) async throws
+
+    /// Fetch all user map pins.
+    func fetchUserMapPins() async throws -> [UserMapPin]
+
+    /// Observe all user map pins reactively.
+    @discardableResult
+    func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken
+
     // MARK: - Data Import
     
     /// Import data from the PlayaAPI

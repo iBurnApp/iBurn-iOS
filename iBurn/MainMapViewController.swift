@@ -194,17 +194,17 @@ private extension MainMapViewController {
 
     func setupUserGuide() {
         sidebarButtons.findNearestAction = { [weak self] mapPointType, sender in
-            guard let location = self?.mapView.userLocation?.location else {
+            guard let self, let location = self.mapView.userLocation?.location else {
                 DDLogWarn("User location not found!")
                 return
             }
-            self?.uiConnection.read { transaction in
-                if let point = UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, transaction: transaction) {
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            Task { @MainActor in
+                if let point = await UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, playaDB: playaDB) {
                     DDLogInfo("Found closest point: \(point)")
-                    self?.mapView.selectAnnotation(point, animated: true, completionHandler: nil)
+                    self.mapView.selectAnnotation(point, animated: true, completionHandler: nil)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
-                    // If we can't find your bike or home, let's make a new one
-                    self?.addUserMapPoint(type: mapPointType)
+                    self.addUserMapPoint(type: mapPointType)
                 }
             }
         }

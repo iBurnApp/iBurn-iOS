@@ -10,6 +10,7 @@ import PlayaDB
 class GlobalSearchHostingController: UIHostingController<GlobalSearchView> {
     let viewModel: GlobalSearchViewModel
     private let playaDB: PlayaDB
+    private var pagingDataSource: DetailPagingDataSource?
 
     init(viewModel: GlobalSearchViewModel, playaDB: PlayaDB) {
         self.viewModel = viewModel
@@ -18,16 +19,16 @@ class GlobalSearchHostingController: UIHostingController<GlobalSearchView> {
         self.rootView = GlobalSearchView(
             viewModel: viewModel,
             onSelectArt: { [weak self] art in
-                self?.showDetail(for: art)
+                self?.showDetail(for: .art(art))
             },
             onSelectCamp: { [weak self] camp in
-                self?.showDetail(for: camp)
+                self?.showDetail(for: .camp(camp))
             },
             onSelectEvent: { [weak self] event in
-                self?.showDetail(for: event)
+                self?.showDetail(for: .event(event))
             },
             onSelectMV: { [weak self] mv in
-                self?.showDetail(for: mv)
+                self?.showDetail(for: .mutantVehicle(mv))
             }
         )
     }
@@ -38,24 +39,18 @@ class GlobalSearchHostingController: UIHostingController<GlobalSearchView> {
 
     // MARK: - Navigation
 
-    private func showDetail(for art: ArtObject) {
-        let detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
-        presentingNavigationController?.pushViewController(detailVC, animated: true)
-    }
-
-    private func showDetail(for camp: CampObject) {
-        let detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
-        presentingNavigationController?.pushViewController(detailVC, animated: true)
-    }
-
-    private func showDetail(for event: EventObject) {
-        let detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
-        presentingNavigationController?.pushViewController(detailVC, animated: true)
-    }
-
-    private func showDetail(for mv: MutantVehicleObject) {
-        let detailVC = DetailViewControllerFactory.create(with: mv, playaDB: playaDB)
-        presentingNavigationController?.pushViewController(detailVC, animated: true)
+    private func showDetail(for item: SearchResultItem) {
+        let allItems = viewModel.sections.flatMap(\.items)
+        let subjects = allItems.map(\.detailSubject)
+        if let index = allItems.firstIndex(where: { $0.uid == item.uid }) {
+            let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+            self.pagingDataSource = dataSource
+            let pageVC = dataSource.makePageViewController(initialIndex: index)
+            presentingNavigationController?.pushViewController(pageVC, animated: true)
+        } else {
+            let detailVC = DetailViewControllerFactory.create(with: item.detailSubject, playaDB: playaDB)
+            presentingNavigationController?.pushViewController(detailVC, animated: true)
+        }
     }
 
     /// Find the navigation controller that presented the search.

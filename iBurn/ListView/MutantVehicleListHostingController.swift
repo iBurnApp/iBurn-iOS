@@ -5,10 +5,12 @@ import PlayaDB
 @MainActor
 class MutantVehicleListHostingController: UIHostingController<MutantVehicleListView> {
     private let playaDB: PlayaDB
+    private let viewModel: MutantVehicleListViewModel
+    private var pagingDataSource: DetailPagingDataSource?
 
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
-        let viewModel = dependencies.makeMutantVehicleListViewModel()
+        self.viewModel = dependencies.makeMutantVehicleListViewModel()
         super.init(rootView: MutantVehicleListView(viewModel: viewModel))
         self.rootView = MutantVehicleListView(
             viewModel: viewModel,
@@ -24,7 +26,11 @@ class MutantVehicleListHostingController: UIHostingController<MutantVehicleListV
     }
 
     private func showDetail(for mv: MutantVehicleObject) {
-        let detailVC = DetailViewControllerFactory.create(with: mv, playaDB: playaDB)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let subjects = viewModel.filteredItems.map { DetailSubject.mutantVehicle($0) }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.uid == mv.uid }) else { return }
+        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        self.pagingDataSource = dataSource
+        let pageVC = dataSource.makePageViewController(initialIndex: index)
+        navigationController?.pushViewController(pageVC, animated: true)
     }
 }

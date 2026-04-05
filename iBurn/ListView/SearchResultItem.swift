@@ -45,6 +45,15 @@ enum SearchResultItem: Identifiable {
         case .mutantVehicle: nil
         }
     }
+
+    var detailSubject: DetailSubject {
+        switch self {
+        case .art(let o): .art(o)
+        case .camp(let o): .camp(o)
+        case .event(let o): .event(o)
+        case .mutantVehicle(let o): .mutantVehicle(o)
+        }
+    }
 }
 
 /// A section of search results grouped by type

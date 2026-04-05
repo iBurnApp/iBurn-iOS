@@ -9,10 +9,12 @@ import PlayaDB
 @MainActor
 class EventListHostingController: UIHostingController<EventListView> {
     private let playaDB: PlayaDB
+    private let viewModel: EventListViewModel
+    private var pagingDataSource: DetailPagingDataSource?
 
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
-        let viewModel = dependencies.makeEventListViewModel()
+        self.viewModel = dependencies.makeEventListViewModel()
         super.init(rootView: EventListView(viewModel: viewModel))
         self.rootView = EventListView(
             viewModel: viewModel,
@@ -33,8 +35,12 @@ class EventListHostingController: UIHostingController<EventListView> {
     // MARK: - Navigation
 
     private func showDetail(for event: EventObjectOccurrence) {
-        let detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let subjects = viewModel.filteredItems.map { DetailSubject.eventOccurrence($0) }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.event.uid == event.event.uid && $0.occurrence.startTime == event.occurrence.startTime }) else { return }
+        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        self.pagingDataSource = dataSource
+        let pageVC = dataSource.makePageViewController(initialIndex: index)
+        navigationController?.pushViewController(pageVC, animated: true)
     }
 
     private func showMap(for events: [EventObjectOccurrence]) {

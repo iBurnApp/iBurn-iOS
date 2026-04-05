@@ -9,10 +9,12 @@ import PlayaDB
 @MainActor
 class FavoritesListHostingController: UIHostingController<FavoritesView> {
     private let playaDB: PlayaDB
+    private let viewModel: FavoritesViewModel
+    private var pagingDataSource: DetailPagingDataSource?
 
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
-        let viewModel = dependencies.makeFavoritesViewModel()
+        self.viewModel = dependencies.makeFavoritesViewModel()
         super.init(rootView: FavoritesView(viewModel: viewModel))
         self.rootView = FavoritesView(
             viewModel: viewModel,
@@ -42,18 +44,13 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
     // MARK: - Navigation
 
     private func showDetail(for item: FavoriteItem) {
-        let detailVC: UIViewController
-        switch item {
-        case .art(let art):
-            detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
-        case .camp(let camp):
-            detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
-        case .event(let event):
-            detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
-        case .mutantVehicle(let mv):
-            detailVC = DetailViewControllerFactory.create(with: mv, playaDB: playaDB)
-        }
-        navigationController?.pushViewController(detailVC, animated: true)
+        let allItems = viewModel.allFavoriteItems
+        let subjects = allItems.map { $0.detailSubject }
+        guard let index = allItems.firstIndex(where: { $0.uid == item.uid }) else { return }
+        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        self.pagingDataSource = dataSource
+        let pageVC = dataSource.makePageViewController(initialIndex: index)
+        navigationController?.pushViewController(pageVC, animated: true)
     }
 
     private func showMap(annotations: [PlayaObjectAnnotation]) {

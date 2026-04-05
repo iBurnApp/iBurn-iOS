@@ -44,4 +44,12 @@ enum NearbyItem: Identifiable {
         case .event(let o): o.location
         }
     }
+
+    var detailSubject: DetailSubject {
+        switch self {
+        case .art(let o): .art(o)
+        case .camp(let o): .camp(o)
+        case .event(let o): .eventOccurrence(o)
+        }
+    }
 }
