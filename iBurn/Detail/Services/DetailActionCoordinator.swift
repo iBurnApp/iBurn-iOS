@@ -177,42 +177,25 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             }
             
         case .showEventsList(let events, let hostName):
-            print("🎪 Attempting to show \(events.count) events for \(hostName)")
-            
-            guard let navigator = dependencies.navigator else {
-                print("❌ Navigation FAILED: Navigator is nil")
-                return
+            guard let navigator = dependencies.navigator else { return }
+            guard let firstEvent = events.first else { return }
+
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            Task { @MainActor in
+                var playaEvents: [EventObjectOccurrence] = []
+                if let campId = firstEvent.hostedByCampUniqueID {
+                    playaEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campId)) ?? []
+                } else if let artId = firstEvent.hostedByArtUniqueID {
+                    playaEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artId)) ?? []
+                }
+
+                let eventsVC = PlayaHostedEventsViewController(
+                    events: playaEvents,
+                    hostName: hostName,
+                    playaDB: playaDB
+                )
+                navigator.pushViewController(eventsVC, animated: true)
             }
-            
-            guard let firstEvent = events.first else {
-                print("❌ No events provided for \(hostName)")
-                return
-            }
-            
-            var relatedObject: BRCDataObject?
-            
-            // Use database transaction to get the host object
-            BRCDatabaseManager.shared.uiConnection.read { transaction in
-                relatedObject = firstEvent.host(with: transaction)
-            }
-            
-            guard let host = relatedObject else {
-                print("❌ Could not find host object for events")
-                return
-            }
-            
-            print("✅ Found host object: \(host.title)")
-            
-            // Create and push HostedEventsViewController (matching old BRCDetailViewController pattern)
-            let eventsVC = HostedEventsViewController(
-                style: .grouped,
-                extensionName: BRCDatabaseManager.shared.relationships,
-                relatedObject: host
-            )
-            eventsVC.title = "Events - \(hostName)"
-            
-            print("🚀 Pushing HostedEventsViewController")
-            navigator.pushViewController(eventsVC, animated: true)
             
         case .showNextEvent(let nextEvent):
             print("⏭️ Attempting to show next event: \(nextEvent.title)")
