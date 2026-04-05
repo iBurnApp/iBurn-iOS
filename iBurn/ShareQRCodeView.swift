@@ -12,26 +12,29 @@ import CoreImage.CIFilterBuiltins
 struct ShareQRCodeView: View {
     let title: String
     let locationText: String?
-    let shareURL: URL
+    @State private var shareURL: URL
     let themeColors: BRCImageColors
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @State private var qrCodeImage: UIImage?
-    
+    private let dataObject: BRCDataObject?
+
     // Convenience init for BRCDataObject
     init(dataObject: BRCDataObject, themeColors: BRCImageColors? = nil) {
         self.title = dataObject.title
         self.locationText = dataObject.playaLocation
-        self.shareURL = dataObject.generateShareURL() ?? URL(string: "https://iburnapp.com")!
+        self._shareURL = State(initialValue: URL(string: "https://iburnapp.com")!)
         self.themeColors = themeColors ?? BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
+        self.dataObject = dataObject
     }
-    
+
     // New init for BRCMapPoint
     init(mapPoint: BRCMapPoint) {
         self.title = mapPoint.title ?? "Custom Map Pin"
         self.locationText = nil // Map points don't have playa location text
-        self.shareURL = mapPoint.generateShareURL() ?? URL(string: "https://iburnapp.com")!
+        self._shareURL = State(initialValue: mapPoint.generateShareURL() ?? URL(string: "https://iburnapp.com")!)
         self.themeColors = Appearance.currentColors
+        self.dataObject = nil
     }
     
     private var accentColor: Color {
@@ -143,7 +146,10 @@ struct ShareQRCodeView: View {
                 }
             }
         }
-        .onAppear {
+        .task {
+            if let dataObject, let url = await dataObject.generateShareURL() {
+                shareURL = url
+            }
             generateQRCode()
         }
     }

@@ -237,9 +237,10 @@ enum DeepLinkObjectType: String {
 
 extension BRCDataObject {
     
-    @objc func generateShareURL() -> URL? {
+    @MainActor
+    func generateShareURL() async -> URL? {
         var components = URLComponents(string: "https://iburnapp.com")!
-        
+
         // Set path based on object type
         if self is BRCArtObject {
             components.path = "/art/"
@@ -250,66 +251,67 @@ extension BRCDataObject {
         } else {
             return nil
         }
-        
+
         // Add query parameters
         var queryItems: [URLQueryItem] = []
-        
+
         // UID as query parameter
         queryItems.append(URLQueryItem(name: "uid", value: uniqueID))
-        
+
         // Universal parameters
         queryItems.append(URLQueryItem(name: "title", value: title))
-        
+
         // Only include location data if embargo allows it
         if BRCEmbargo.canShowLocation(for: self) {
             if let location = location {
                 queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", location.coordinate.latitude)))
                 queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", location.coordinate.longitude)))
             }
-            
+
             if let playaLocation = playaLocation, !playaLocation.isEmpty {
                 queryItems.append(URLQueryItem(name: "addr", value: playaLocation))
             }
         }
-        
+
         if let description = detailDescription, !description.isEmpty {
             let truncated = String(description.prefix(100))
             queryItems.append(URLQueryItem(name: "desc", value: truncated))
         }
-        
+
         // Event-specific parameters
         if let event = self as? BRCEventObject {
             let startDate = event.startDate
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withYear, .withMonth, .withDay, .withTime, .withColonSeparatorInTime]
             queryItems.append(URLQueryItem(name: "start", value: formatter.string(from: startDate)))
-            
+
             let endDate = event.endDate
             queryItems.append(URLQueryItem(name: "end", value: formatter.string(from: endDate)))
-            
-            // Add host information
-            BRCDatabaseManager.shared.uiConnection.read { transaction in
-                if let campHost = event.hostedByCamp(with: transaction) {
-                    queryItems.append(URLQueryItem(name: "host", value: campHost.title))
-                    queryItems.append(URLQueryItem(name: "host_id", value: campHost.uniqueID))
-                    queryItems.append(URLQueryItem(name: "host_type", value: "camp"))
-                } else if let artHost = event.hostedByArt(with: transaction) {
-                    queryItems.append(URLQueryItem(name: "host", value: artHost.title))
-                    queryItems.append(URLQueryItem(name: "host_id", value: artHost.uniqueID))
-                    queryItems.append(URLQueryItem(name: "host_type", value: "art"))
-                }
+
+            // Add host information via PlayaDB
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            if let campId = event.hostedByCampUniqueID, !campId.isEmpty {
+                let campName = try? await playaDB.fetchCamp(uid: campId)?.name
+                if let campName { queryItems.append(URLQueryItem(name: "host", value: campName)) }
+                queryItems.append(URLQueryItem(name: "host_id", value: campId))
+                queryItems.append(URLQueryItem(name: "host_type", value: "camp"))
+            } else if let artId = event.hostedByArtUniqueID, !artId.isEmpty {
+                let artName = try? await playaDB.fetchArt(uid: artId)?.name
+                if let artName { queryItems.append(URLQueryItem(name: "host", value: artName)) }
+                queryItems.append(URLQueryItem(name: "host_id", value: artId))
+                queryItems.append(URLQueryItem(name: "host_type", value: "art"))
             }
-            
+
             if event.isAllDay {
                 queryItems.append(URLQueryItem(name: "all_day", value: "true"))
             }
         }
-        
+
         // Add year
         queryItems.append(URLQueryItem(name: "year", value: YearSettings.playaYear))
-        
+
         components.queryItems = queryItems
-        
+
         return components.url
     }
 }
