@@ -236,6 +236,158 @@ final class PlayaDBRealDataTests: XCTestCase {
         XCTAssertTrue(isFavorite, "First art object should be marked as favorite")
     }
 
+    // MARK: - AI Search Scenario Tests
+    //
+    // These tests validate that the PlayaDB queries underlying the AI search tools
+    // produce meaningful results for various search patterns. The on-device Foundation
+    // Model would call these same queries via Tool wrappers.
+
+    func testSearchByKeyword_MultipleTypes() async throws {
+        try await importAllRealData()
+
+        // A keyword search should return results across multiple object types
+        let results = try await playaDB.searchObjects("fire")
+        let types = Set(results.map { $0.objectType })
+
+        XCTAssertGreaterThan(results.count, 0, "Should find results for 'fire'")
+        print("'fire' search: \(results.count) results across types: \(types)")
+
+        // Verify result objects have names (tool would format these for the model)
+        for result in results.prefix(5) {
+            XCTAssertFalse(result.name.isEmpty, "Each result should have a name")
+            XCTAssertFalse(result.uid.isEmpty, "Each result should have a uid")
+        }
+    }
+
+    func testSearchByKeyword_SingleWordQueries() async throws {
+        try await importAllRealData()
+
+        // Test various single-word queries that an AI model might decompose from natural language
+        let queries = ["music", "dance", "yoga", "art", "temple", "burn"]
+        for query in queries {
+            let results = try await playaDB.searchObjects(query)
+            print("'\(query)' search: \(results.count) results")
+            // Most common festival terms should find something
+            XCTAssertGreaterThan(results.count, 0, "Should find results for '\(query)'")
+        }
+    }
+
+    func testFetchArtWithFilter_KeywordSearch() async throws {
+        try await importAllRealData()
+
+        // Simulate what FetchArtTool would do
+        var filter = ArtFilter.all
+        filter.searchText = "temple"
+        let results = try await playaDB.fetchArt(filter: filter)
+
+        XCTAssertGreaterThan(results.count, 0, "Should find art matching 'temple'")
+        for art in results {
+            XCTAssertFalse(art.name.isEmpty)
+            XCTAssertFalse(art.uid.isEmpty)
+        }
+        print("Art filter 'temple': \(results.count) results")
+    }
+
+    func testFetchCampsWithFilter_KeywordSearch() async throws {
+        try await importAllRealData()
+
+        // Simulate what FetchCampsTool would do
+        var filter = CampFilter.all
+        filter.searchText = "music"
+        let results = try await playaDB.fetchCamps(filter: filter)
+
+        XCTAssertGreaterThan(results.count, 0, "Should find camps matching 'music'")
+        for camp in results {
+            XCTAssertFalse(camp.name.isEmpty)
+            XCTAssertFalse(camp.uid.isEmpty)
+        }
+        print("Camp filter 'music': \(results.count) results")
+    }
+
+    func testFetchMVsWithFilter_KeywordSearch() async throws {
+        try await importAllRealData()
+
+        // Simulate what FetchMutantVehiclesTool would do
+        var filter = MutantVehicleFilter.all
+        filter.searchText = "dragon"
+        let results = try await playaDB.fetchMutantVehicles(filter: filter)
+
+        XCTAssertGreaterThan(results.count, 0, "Should find MVs matching 'dragon'")
+        for mv in results {
+            XCTAssertFalse(mv.name.isEmpty)
+            XCTAssertFalse(mv.uid.isEmpty)
+        }
+        print("MV filter 'dragon': \(results.count) results")
+    }
+
+    func testToolOutputFormatting_ResultsAreConcise() async throws {
+        try await importAllRealData()
+
+        // Verify that search results can be formatted concisely for the on-device model's
+        // 4096 token context window. Each result should be expressible in ~100 chars.
+        let results = try await playaDB.searchObjects("camp")
+        let formatted = results.prefix(15).map { obj in
+            "\(obj.objectType.rawValue): \(obj.name) (uid: \(obj.uid))"
+        }.joined(separator: "\n")
+
+        // 15 results formatted should fit comfortably in the context window
+        XCTAssertLessThan(formatted.count, 3000, "Formatted results should be concise enough for context window")
+        print("Formatted output (\(formatted.count) chars):\n\(formatted)")
+    }
+
+    func testSearchObjectsFetchByUID_Roundtrip() async throws {
+        try await importAllRealData()
+
+        // Simulate the AI search flow: search -> get UIDs -> fetch individual objects
+        let searchResults = try await playaDB.searchObjects("fire")
+        XCTAssertGreaterThan(searchResults.count, 0)
+
+        // For each result, verify we can fetch it back by UID (as mergeAIResults does)
+        for result in searchResults.prefix(5) {
+            switch result.objectType {
+            case .art:
+                let fetched = try await playaDB.fetchArt(uid: result.uid)
+                XCTAssertNotNil(fetched, "Should fetch art by uid: \(result.uid)")
+                XCTAssertEqual(fetched?.name, result.name)
+            case .camp:
+                let fetched = try await playaDB.fetchCamp(uid: result.uid)
+                XCTAssertNotNil(fetched, "Should fetch camp by uid: \(result.uid)")
+                XCTAssertEqual(fetched?.name, result.name)
+            case .event:
+                let fetched = try await playaDB.fetchEvent(uid: result.uid)
+                XCTAssertNotNil(fetched, "Should fetch event by uid: \(result.uid)")
+                XCTAssertEqual(fetched?.name, result.name)
+            case .mutantVehicle:
+                let fetched = try await playaDB.fetchMutantVehicle(uid: result.uid)
+                XCTAssertNotNil(fetched, "Should fetch MV by uid: \(result.uid)")
+                XCTAssertEqual(fetched?.name, result.name)
+            }
+        }
+    }
+
+    func testMultipleToolCallScenario_DecomposedQuery() async throws {
+        try await importAllRealData()
+
+        // Simulate what the AI model would do for "interactive fire art":
+        // 1. Call searchByKeyword("fire") for broad results
+        let fireResults = try await playaDB.searchObjects("fire")
+
+        // 2. Call fetchArt(keyword: "interactive") for targeted art search
+        var artFilter = ArtFilter.all
+        artFilter.searchText = "interactive"
+        let interactiveArt = try await playaDB.fetchArt(filter: artFilter)
+
+        // 3. Both calls should return results
+        XCTAssertGreaterThan(fireResults.count, 0, "Should find results for 'fire'")
+        XCTAssertGreaterThan(interactiveArt.count, 0, "Should find interactive art")
+
+        // 4. The model would intersect/rank these -- verify UIDs are usable
+        let fireUIDs = Set(fireResults.map { $0.uid })
+        let interactiveUIDs = Set(interactiveArt.map { $0.uid })
+        let overlap = fireUIDs.intersection(interactiveUIDs)
+        print("'fire' results: \(fireResults.count), 'interactive' art: \(interactiveArt.count), overlap: \(overlap.count)")
+    }
+
     // MARK: - Query Extension Performance Tests
 
     func testQueryExtensions_OrderedByNamePerformance() async throws {

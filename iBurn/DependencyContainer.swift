@@ -56,6 +56,11 @@ class DependencyContainer {
         MutantVehicleDataProvider(playaDB: playaDB)
     }()
 
+    /// AI search service (nil if device doesn't support Apple Intelligence)
+    private(set) lazy var aiSearchService: AISearchService? = {
+        AISearchServiceFactory.create(playaDB: playaDB)
+    }()
+
     // MARK: - Initialization
 
     /// Initialize the dependency container
@@ -88,7 +93,7 @@ class DependencyContainer {
 
     /// Create a GlobalSearchViewModel with injected dependencies
     func makeGlobalSearchViewModel() -> GlobalSearchViewModel {
-        GlobalSearchViewModel(playaDB: playaDB)
+        GlobalSearchViewModel(playaDB: playaDB, aiSearchService: aiSearchService)
     }
 
     /// Create a GlobalSearchHostingController for use as UISearchController.searchResultsController
