@@ -10,6 +10,7 @@ import UIKit
 import CoreLocation
 import YapDatabase
 import CocoaLumberjack
+import PlayaDB
 
 enum DeepLinkObjectType: String {
     case art = "art"
@@ -98,58 +99,54 @@ enum DeepLinkObjectType: String {
     
     private func navigateToObject(uid: String, type: String, metadata: [String: String]) -> Bool {
         guard let tabController = tabController else { return false }
-        
-        // Find object in database
-        let connection = BRCDatabaseManager.shared.uiConnection
-        var object: BRCDataObject?
-        
-        connection.read { transaction in
+
+        Task { @MainActor in
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            var detailVC: UIViewController?
             switch type {
             case "art":
-                object = transaction.object(forKey: uid, inCollection: BRCArtObject.yapCollection) as? BRCArtObject
+                if let art = try? await playaDB.fetchArt(uid: uid) {
+                    detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
+                }
             case "camp":
-                object = transaction.object(forKey: uid, inCollection: BRCCampObject.yapCollection) as? BRCCampObject
+                if let camp = try? await playaDB.fetchCamp(uid: uid) {
+                    detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
+                }
             case "event":
-                object = transaction.object(forKey: uid, inCollection: BRCEventObject.yapCollection) as? BRCEventObject
+                if let event = try? await playaDB.fetchEvent(uid: uid) {
+                    detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
+                }
             default:
                 break
             }
-        }
-        
-        guard let dataObject = object else {
-            DDLogWarn("Object not found for UID: \(uid) type: \(type)")
-            // Object not found - show error or search
-            showObjectNotFound(uid: uid, type: type, metadata: metadata)
-            return false
-        }
-        
-        DDLogInfo("Found object: \(dataObject.title) for UID: \(uid)")
-        
-        // Navigate to object - present as sheet over current interface
-        DispatchQueue.main.async {
-            let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
-            
+
+            guard let vc = detailVC else {
+                DDLogWarn("Object not found for UID: \(uid) type: \(type)")
+                self.showObjectNotFound(uid: uid, type: type, metadata: metadata)
+                return
+            }
+
+            DDLogInfo("Found object for UID: \(uid)")
+
             // Wrap in navigation controller for sheet presentation
-            let navController = UINavigationController(rootViewController: detailVC)
+            let navController = UINavigationController(rootViewController: vc)
             navController.modalPresentationStyle = .pageSheet
-            
+
             // Add close button to navigation bar
-            detailVC.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            vc.navigationItem.leftBarButtonItem = UIBarButtonItem(
                 barButtonSystemItem: .done,
                 target: self,
                 action: #selector(self.dismissDetailSheet)
             )
-            
+
             // Present over current interface
             if let presentedVC = tabController.presentedViewController {
-                // If something is already presented, present over it
                 presentedVC.present(navController, animated: true)
             } else {
-                // Present over tab controller
                 tabController.present(navController, animated: true)
             }
         }
-        
+
         return true
     }
     
@@ -170,37 +167,35 @@ enum DeepLinkObjectType: String {
         }
         
         let title = metadata["title"] ?? "Custom Pin"
-        let _ = metadata["desc"]
-        let _ = metadata["addr"]
-        let _ = metadata["color"] ?? "red"
-        
-        // Create and save custom pin as BRCUserMapPoint
-        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        let pin = BRCUserMapPoint(title: title, coordinate: coordinate, type: .userStar)
-        // BRCUserMapPoint uses yapKey generated from creationDate
-        
-        // Save to database
-        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-            transaction.setObject(pin, forKey: pin.yapKey, inCollection: pin.yapCollection)
+
+        // Save to PlayaDB
+        let pin = UserMapPin(
+            title: title,
+            latitude: latitude,
+            longitude: longitude,
+            pinType: BRCMapPointType.userStar.pinTypeString
+        )
+        Task { @MainActor in
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            try? await playaDB.saveUserMapPin(pin)
         }
-        
+
         // Show confirmation that pin was added
-        DispatchQueue.main.async {
+        Task { @MainActor in
             guard let tabController = self.tabController else { return }
-            
+
             let message = "Custom pin \"\(title)\" has been added to your map."
             let alert = UIAlertController(title: "Pin Added", message: message, preferredStyle: .alert)
-            
+
             alert.addAction(UIAlertAction(title: "View on Map", style: .default) { _ in
-                // Switch to map tab to show the pin
                 tabController.selectedIndex = 0
             })
-            
+
             alert.addAction(UIAlertAction(title: "OK", style: .cancel))
-            
+
             tabController.present(alert, animated: true)
         }
-        
+
         return true
     }
     
@@ -240,9 +235,10 @@ enum DeepLinkObjectType: String {
 
 extension BRCDataObject {
     
-    @objc func generateShareURL() -> URL? {
+    @MainActor
+    func generateShareURL() async -> URL? {
         var components = URLComponents(string: "https://iburnapp.com")!
-        
+
         // Set path based on object type
         if self is BRCArtObject {
             components.path = "/art/"
@@ -253,66 +249,67 @@ extension BRCDataObject {
         } else {
             return nil
         }
-        
+
         // Add query parameters
         var queryItems: [URLQueryItem] = []
-        
+
         // UID as query parameter
         queryItems.append(URLQueryItem(name: "uid", value: uniqueID))
-        
+
         // Universal parameters
         queryItems.append(URLQueryItem(name: "title", value: title))
-        
+
         // Only include location data if embargo allows it
         if BRCEmbargo.canShowLocation(for: self) {
             if let location = location {
                 queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", location.coordinate.latitude)))
                 queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", location.coordinate.longitude)))
             }
-            
+
             if let playaLocation = playaLocation, !playaLocation.isEmpty {
                 queryItems.append(URLQueryItem(name: "addr", value: playaLocation))
             }
         }
-        
+
         if let description = detailDescription, !description.isEmpty {
             let truncated = String(description.prefix(100))
             queryItems.append(URLQueryItem(name: "desc", value: truncated))
         }
-        
+
         // Event-specific parameters
         if let event = self as? BRCEventObject {
             let startDate = event.startDate
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withYear, .withMonth, .withDay, .withTime, .withColonSeparatorInTime]
             queryItems.append(URLQueryItem(name: "start", value: formatter.string(from: startDate)))
-            
+
             let endDate = event.endDate
             queryItems.append(URLQueryItem(name: "end", value: formatter.string(from: endDate)))
-            
-            // Add host information
-            BRCDatabaseManager.shared.uiConnection.read { transaction in
-                if let campHost = event.hostedByCamp(with: transaction) {
-                    queryItems.append(URLQueryItem(name: "host", value: campHost.title))
-                    queryItems.append(URLQueryItem(name: "host_id", value: campHost.uniqueID))
-                    queryItems.append(URLQueryItem(name: "host_type", value: "camp"))
-                } else if let artHost = event.hostedByArt(with: transaction) {
-                    queryItems.append(URLQueryItem(name: "host", value: artHost.title))
-                    queryItems.append(URLQueryItem(name: "host_id", value: artHost.uniqueID))
-                    queryItems.append(URLQueryItem(name: "host_type", value: "art"))
-                }
+
+            // Add host information via PlayaDB
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            if let campId = event.hostedByCampUniqueID, !campId.isEmpty {
+                let campName = try? await playaDB.fetchCamp(uid: campId)?.name
+                if let campName { queryItems.append(URLQueryItem(name: "host", value: campName)) }
+                queryItems.append(URLQueryItem(name: "host_id", value: campId))
+                queryItems.append(URLQueryItem(name: "host_type", value: "camp"))
+            } else if let artId = event.hostedByArtUniqueID, !artId.isEmpty {
+                let artName = try? await playaDB.fetchArt(uid: artId)?.name
+                if let artName { queryItems.append(URLQueryItem(name: "host", value: artName)) }
+                queryItems.append(URLQueryItem(name: "host_id", value: artId))
+                queryItems.append(URLQueryItem(name: "host_type", value: "art"))
             }
-            
+
             if event.isAllDay {
                 queryItems.append(URLQueryItem(name: "all_day", value: "true"))
             }
         }
-        
+
         // Add year
         queryItems.append(URLQueryItem(name: "year", value: YearSettings.playaYear))
-        
+
         components.queryItems = queryItems
-        
+
         return components.url
     }
 }

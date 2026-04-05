@@ -30,12 +30,13 @@ final class PlayaDBSeeder {
                 let updateInfo = try await playaDB.getUpdateInfo()
                 guard updateInfo.isEmpty else { return }
 
-                let (artData, campData, eventData) = try await Self.loadSeedData(from: dataBundle)
+                let seedData = try await Self.loadSeedData(from: dataBundle)
 
                 try await playaDB.importFromData(
-                    artData: artData,
-                    campData: campData,
-                    eventData: eventData
+                    artData: seedData.artData,
+                    campData: seedData.campData,
+                    eventData: seedData.eventData,
+                    mvData: seedData.mvData
                 )
             } catch {
                 print("PlayaDB seed failed: \(error)")
@@ -43,14 +44,27 @@ final class PlayaDBSeeder {
         }
     }
 
-    private static func loadSeedData(from bundle: Bundle) async throws -> (Data, Data, Data) {
+    private struct SeedData {
+        let artData: Data
+        let campData: Data
+        let eventData: Data
+        let mvData: Data?
+    }
+
+    private static func loadSeedData(from bundle: Bundle) async throws -> SeedData {
         try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .background).async {
                 do {
                     let artData = try BundleDataLoader.loadArt(from: bundle)
                     let campData = try BundleDataLoader.loadCamps(from: bundle)
                     let eventData = try BundleDataLoader.loadEvents(from: bundle)
-                    continuation.resume(returning: (artData, campData, eventData))
+                    let mvData = try? BundleDataLoader.loadMutantVehicles(from: bundle)
+                    continuation.resume(returning: SeedData(
+                        artData: artData,
+                        campData: campData,
+                        eventData: eventData,
+                        mvData: mvData
+                    ))
                 } catch {
                     continuation.resume(throwing: error)
                 }

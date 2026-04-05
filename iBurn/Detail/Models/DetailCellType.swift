@@ -9,6 +9,7 @@
 import Foundation
 import SwiftUI
 import CoreLocation
+import MapLibre
 
 // MARK: - DetailCell Wrapper
 
@@ -28,23 +29,25 @@ struct DetailCell: Identifiable {
 enum DetailCellType {
     case image(UIImage, aspectRatio: CGFloat)
     case mapView(BRCDataObject, metadata: BRCObjectMetadata?)
+    case mapAnnotation(MLNAnnotation, title: String)
     case text(String, style: DetailTextStyle)
     case email(String, label: String?)
     case url(URL, title: String)
     case coordinates(CLLocationCoordinate2D, label: String)
     case schedule(NSAttributedString)
-    case relationship(BRCDataObject, type: RelationshipType)
-    case eventRelationship([BRCEventObject], hostName: String)
-    case nextHostEvent(BRCEventObject, hostName: String)
-    case allHostEvents(count: Int, hostName: String)
+    case relationship(title: String, type: RelationshipType, onTap: (() -> Void)?)
+    case eventRelationship(count: Int, hostName: String, onTap: (() -> Void)?)
+    case nextHostEvent(title: String, scheduleText: String, hostName: String, onTap: (() -> Void)?)
+    case allHostEvents(count: Int, hostName: String, onTap: (() -> Void)?)
     case playaAddress(String, tappable: Bool)
     case distance(CLLocationDistance)
     case travelTime(CLLocationDistance)
     case audio(BRCArtObject, isPlaying: Bool)
+    case audioTrack(BRCAudioTourTrack, isPlaying: Bool)
     case userNotes(String)
     case date(Date, format: String)
     case landmark(String)
-    case eventType(BRCEventType)
+    case eventType(emoji: String, label: String)
     case visitStatus(BRCVisitStatus)
 }
 
@@ -75,6 +78,7 @@ enum DetailAction {
     case openEmail(String)
     case openURL(URL)
     case showMap(BRCDataObject)
+    case showMapAnnotation(MLNAnnotation, title: String)
     case navigateToObject(BRCDataObject)
     case showEventsList([BRCEventObject], hostName: String)
     case showNextEvent(BRCEventObject)
@@ -85,6 +89,7 @@ enum DetailAction {
     case showEventEditor(BRCEventObject)
     case share([Any])
     case showShareScreen(BRCDataObject)
+    case navigateToViewController(UIViewController)
 }
 
 // MARK: - Error Types

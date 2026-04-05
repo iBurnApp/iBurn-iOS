@@ -10,6 +10,7 @@ import UIKit
 import SafariServices
 import EventKitUI
 
+@MainActor
 @objc public final class PageViewManager: NSObject {
     
     var tableView: UITableView

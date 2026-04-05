@@ -26,7 +26,6 @@
 @import TTTAttributedLabel;
 #import "iBurn-Swift.h"
 #import "NSUserDefaults+iBurn.h"
-#import "BRCBreadcrumbPoint.h"
 #import "BRCDataImporter_Private.h"
 @import PermissionScope;
 #import "NSDate+iBurn.h"
@@ -43,8 +42,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 
 @interface BRCAppDelegate() <UINavigationControllerDelegate, UNUserNotificationCenterDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
-@property (nonatomic, strong, readonly) BRCMediaDownloader *audioDownloader;
-@property (nonatomic, strong, readonly) BRCMediaDownloader *imageDownloader;
 
 @end
 
@@ -145,9 +142,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = UIColor.systemBackgroundColor;
-    _audioDownloader = [[BRCMediaDownloader alloc] initWithConnection:[BRCDatabaseManager.shared.database newConnection] viewName:BRCDatabaseManager.shared.audioTourViewName downloadType:BRCMediaDownloadTypeAudio];
-    _imageDownloader = [[BRCMediaDownloader alloc] initWithConnection:[BRCDatabaseManager.shared.database newConnection] viewName:BRCDatabaseManager.shared.artImagesViewName downloadType:BRCMediaDownloadTypeImage];
-    
+
     // Show onboarding.. or not
     BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
     if (!hasViewedOnboarding) {
@@ -249,10 +244,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
     if ([identifier isEqualToString:kBRCBackgroundFetchIdentifier]) {
         [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
-    } else if ([identifier isEqualToString:self.audioDownloader.backgroundSessionIdentifier]) {
-        self.audioDownloader.backgroundCompletion = completionHandler;
-    } else if ([identifier isEqualToString:self.imageDownloader.backgroundSessionIdentifier]) {
-        self.imageDownloader.backgroundCompletion = completionHandler;
     }
 }
 
@@ -263,35 +254,22 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (void)setupDefaultTabBarController
 {
-    BRCDatabaseManager *dbManager = BRCDatabaseManager.shared;
-
     self.mapViewController = [[MainMapViewController alloc] init];
     UINavigationController *mapNavController = [[NavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    NearbyViewController *nearbyVC = [[NearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.rTreeIndex];
-    nearbyVC.title = @"Nearby";
+    UIViewController *nearbyVC = [self createNearbyViewController];
     UINavigationController *nearbyNav = [[NavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
     
-    // Choose the appropriate view based on user setting
-    BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowExpiredEventsInFavoritesKey"];
-    // Default to true if not set
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"kBRCShowExpiredEventsInFavoritesKey"]) {
-        showExpiredEvents = YES;
-    }
-    NSString *favoritesViewName = showExpiredEvents ?
-        BRCDatabaseManager.shared.everythingFilteredByFavorite :
-        BRCDatabaseManager.shared.everythingFilteredByFavoriteAndExpiration;
-    self.favoritesViewController = [[FavoritesViewController alloc] initWithViewName:favoritesViewName searchViewName:BRCDatabaseManager.shared.searchFavoritesView];
-    self.favoritesViewController.title = @"Favorites";
-    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:self.favoritesViewController];
+    UIViewController *favoritesVC = [self createFavoritesViewController];
+    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:favoritesVC];
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     
-    self.eventsViewController = [[EventListViewController alloc] initWithViewName:dbManager.eventsFilteredByDayExpirationAndTypeViewName searchViewName:dbManager.searchEventsView];
-    self.eventsViewController.title = @"Events";
-    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:self.eventsViewController];
+    UIViewController *eventsVC = [self createEventsViewController];
+    eventsVC.title = @"Events";
+    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:eventsVC];
     eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
     
     MoreViewController *moreViewController = [[MoreViewController alloc] init];
@@ -375,19 +353,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
         [self enteredBurningManRegion];
     }
-    
-    // gathering breadcrumbs!
-    [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction * transaction) {
-        [locations enumerateObjectsUsingBlock:^(CLLocation *location, NSUInteger idx, BOOL *stop) {
-            // only track locations within burning man
-            if ([self.burningManRegion containsCoordinate:lastLocation.coordinate]) {
-                BRCBreadcrumbPoint *point = [[BRCBreadcrumbPoint alloc] initWithLocation:location];
-                if (point) {
-                    [point saveWithTransaction:transaction metadata:nil];
-                }
-            }
-        }];
-    }];
+    // Breadcrumb tracking is handled by LocationStorage (GRDB-backed)
 }
 
 #pragma mark UITabBarControllerDelegate

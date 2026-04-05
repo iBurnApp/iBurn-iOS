@@ -36,28 +36,72 @@ final class PlayaDBRealDataTests: XCTestCase {
     
     // MARK: - Real Data Import Tests
     
+    private func loadAllRealData() throws -> (art: Data, camp: Data, event: Data, mv: Data) {
+        (
+            art: try iBurn2025APIData.DataFile.art.loadData(),
+            camp: try iBurn2025APIData.DataFile.camp.loadData(),
+            event: try iBurn2025APIData.DataFile.event.loadData(),
+            mv: try iBurn2025APIData.DataFile.mv.loadData()
+        )
+    }
+
+    private func importAllRealData() async throws {
+        let data = try loadAllRealData()
+        try await playaDB.importFromData(artData: data.art, campData: data.camp, eventData: data.event, mvData: data.mv)
+    }
+
     func testImportRealDataFromiBurnBundle() async throws {
         // Given: Load real data from iBurn2025APIData bundle
         let artData = try iBurn2025APIData.DataFile.art.loadData()
         let campData = try iBurn2025APIData.DataFile.camp.loadData()
         let eventData = try iBurn2025APIData.DataFile.event.loadData()
-        
+        let mvData = try iBurn2025APIData.DataFile.mv.loadData()
+
         // When: Import data into PlayaDB
-        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
-        
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData, mvData: mvData)
+
         // Then: Verify we have the real data
         let artObjects = try await playaDB.fetchArt()
         let campObjects = try await playaDB.fetchCamps()
         let eventObjects = try await playaDB.fetchEvents()
-        
+        let mvObjects = try await playaDB.fetchMutantVehicles()
+
         // These should have substantial amounts of real data
         XCTAssertGreaterThan(artObjects.count, 50, "Should have many art objects from real data")
         XCTAssertGreaterThan(campObjects.count, 100, "Should have many camp objects from real data")
         XCTAssertGreaterThan(eventObjects.count, 100, "Should have many event objects from real data")
-        
-        print("Imported \(artObjects.count) art objects, \(campObjects.count) camps, \(eventObjects.count) event occurrences")
+        XCTAssertGreaterThan(mvObjects.count, 100, "Should have many MV objects from real data")
+
+        print("Imported \(artObjects.count) art, \(campObjects.count) camps, \(eventObjects.count) events, \(mvObjects.count) mutant vehicles")
     }
     
+    func testMutantVehicleRealDataImport() async throws {
+        try await importAllRealData()
+
+        let mvObjects = try await playaDB.fetchMutantVehicles()
+        XCTAssertGreaterThan(mvObjects.count, 100, "Should have many MV objects")
+
+        // Verify MVs have no location
+        for mv in mvObjects.prefix(10) {
+            XCTAssertFalse(mv.hasLocation, "MVs should have no location")
+            XCTAssertNil(mv.location, "MVs should have nil location")
+            XCTAssertEqual(mv.objectType, .mutantVehicle)
+            XCTAssertFalse(mv.name.isEmpty)
+        }
+
+        // Verify image URLs are loaded
+        let imageURLs = try await playaDB.fetchMutantVehicleImageURLs()
+        XCTAssertGreaterThan(imageURLs.count, 50, "Many MVs should have images")
+
+        // Verify search works with real MV data
+        let searchResults = try await playaDB.searchObjects("dragon")
+        let mvResults = searchResults.filter { $0.objectType == .mutantVehicle }
+        // "dragon" is a common MV theme
+        XCTAssertGreaterThan(mvResults.count, 0, "Should find MVs when searching 'dragon'")
+
+        print("MV real data: \(mvObjects.count) vehicles, \(imageURLs.count) with images")
+    }
+
     func testRealDataHasGPSCoordinates() async throws {
         // Given: Import real data
         let artData = try iBurn2025APIData.DataFile.art.loadData()

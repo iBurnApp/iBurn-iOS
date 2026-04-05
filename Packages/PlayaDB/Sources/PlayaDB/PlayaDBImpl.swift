@@ -141,6 +141,41 @@ internal class PlayaDBImpl: PlayaDB {
                 )
             """)
             
+            // Create mv_objects table
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS mv_objects (
+                    uid TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    year INTEGER NOT NULL,
+                    url TEXT,
+                    contact_email TEXT,
+                    hometown TEXT,
+                    description TEXT,
+                    artist TEXT,
+                    donation_link TEXT
+                )
+            """)
+
+            // Create mv_images table
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS mv_images (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    mv_id TEXT NOT NULL,
+                    thumbnail_url TEXT,
+                    FOREIGN KEY (mv_id) REFERENCES mv_objects(uid)
+                )
+            """)
+
+            // Create mv_tags table
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS mv_tags (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    mv_id TEXT NOT NULL,
+                    tag TEXT NOT NULL,
+                    FOREIGN KEY (mv_id) REFERENCES mv_objects(uid)
+                )
+            """)
+
             // Create object_metadata table
             try db.execute(sql: """
                 CREATE TABLE IF NOT EXISTS object_metadata (
@@ -166,6 +201,19 @@ internal class PlayaDBImpl: PlayaDB {
                 )
             """)
             
+            // Create user_map_pins table
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS user_map_pins (
+                    id TEXT PRIMARY KEY,
+                    title TEXT,
+                    latitude REAL NOT NULL,
+                    longitude REAL NOT NULL,
+                    pin_type TEXT NOT NULL,
+                    created_date TEXT NOT NULL,
+                    modified_date TEXT NOT NULL
+                )
+            """)
+
             // Create indexes for performance
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_art_gps ON art_objects(gps_latitude, gps_longitude)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_camp_gps ON camp_objects(gps_latitude, gps_longitude)")
@@ -174,6 +222,9 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_event_occurrences_start_time ON event_occurrences(start_time)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_art_images_art_id ON art_images(art_id)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_camp_images_camp_id ON camp_images(camp_id)")
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_mv_images_mv_id ON mv_images(mv_id)")
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_mv_tags_mv_id ON mv_tags(mv_id)")
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_mv_tags_tag ON mv_tags(tag)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_favorite ON object_metadata(is_favorite)")
             
             // Create FTS5 virtual tables for full-text search
@@ -293,6 +344,42 @@ internal class PlayaDBImpl: PlayaDB {
                 DELETE FROM event_objects_fts WHERE rowid = old.rowid;
                 INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
                 VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
+            END
+        """)
+
+        // Create FTS5 table for mutant vehicle objects
+        try db.execute(sql: """
+            CREATE VIRTUAL TABLE IF NOT EXISTS mv_objects_fts USING fts5(
+                uid UNINDEXED,
+                name,
+                description,
+                artist,
+                hometown,
+                content=mv_objects,
+                content_rowid=rowid,
+                tokenize='porter unicode61'
+            )
+        """)
+
+        // MV triggers
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS mv_objects_ai AFTER INSERT ON mv_objects BEGIN
+                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown);
+            END
+        """)
+
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS mv_objects_ad AFTER DELETE ON mv_objects BEGIN
+                DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
+            END
+        """)
+
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS mv_objects_au AFTER UPDATE ON mv_objects BEGIN
+                DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
+                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown);
             END
         """)
     }
@@ -562,7 +649,7 @@ internal class PlayaDBImpl: PlayaDB {
     }
     
     func searchObjects(_ query: String) async throws -> [any DataObject] {
-        let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject]) in
+        let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject], [MutantVehicleObject]) in
             // Prepare search query for FTS5 (escape special characters)
             let ftsQuery = query.replacingOccurrences(of: "\"", with: "\"\"")
 
@@ -593,18 +680,172 @@ internal class PlayaDBImpl: PlayaDB {
             """
             let eventObjects = try EventObject.fetchAll(db, sql: eventSQL, arguments: [ftsQuery])
 
-            return (artObjects, campObjects, eventObjects)
+            let mvSQL = """
+                SELECT mv_objects.*
+                FROM mv_objects
+                JOIN mv_objects_fts ON mv_objects.rowid = mv_objects_fts.rowid
+                WHERE mv_objects_fts MATCH ?
+                ORDER BY rank
+            """
+            let mvObjects = try MutantVehicleObject.fetchAll(db, sql: mvSQL, arguments: [ftsQuery])
+
+            return (artObjects, campObjects, eventObjects, mvObjects)
         }
 
         try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
         try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
         try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
+        try await ensureMetadata(for: .mutantVehicle, ids: result.3.map(\.uid))
 
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
         objects.append(contentsOf: result.1)
         objects.append(contentsOf: result.2)
+        objects.append(contentsOf: result.3)
         return objects
+    }
+
+    // MARK: - Single Object Fetch
+
+    func fetchArt(uid: String) async throws -> ArtObject? {
+        let art = try await dbQueue.read { db in
+            try ArtObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let art {
+            try await ensureMetadata(for: .art, ids: [art.uid])
+        }
+        return art
+    }
+
+    func fetchCamp(uid: String) async throws -> CampObject? {
+        let camp = try await dbQueue.read { db in
+            try CampObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let camp {
+            try await ensureMetadata(for: .camp, ids: [camp.uid])
+        }
+        return camp
+    }
+
+    func fetchEvent(uid: String) async throws -> EventObject? {
+        let event = try await dbQueue.read { db in
+            try EventObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let event {
+            try await ensureMetadata(for: .event, ids: [event.uid])
+        }
+        return event
+    }
+
+    func fetchEvents(hostedByCampUID campUID: String) async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
+            let eventObjects = try EventObject
+                .filter(Column("hosted_by_camp") == campUID)
+                .fetchAll(db)
+            var result: [EventObjectOccurrence] = []
+            for event in eventObjects {
+                let occurrences = try event.occurrences.fetchAll(db)
+                for occ in occurrences {
+                    result.append(EventObjectOccurrence(event: event, occurrence: occ))
+                }
+            }
+            return result
+        }
+        let sorted = events.sorted { $0.startDate < $1.startDate }
+        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
+        return sorted
+    }
+
+    func fetchEvents(locatedAtArtUID artUID: String) async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
+            let eventObjects = try EventObject
+                .filter(Column("located_at_art") == artUID)
+                .fetchAll(db)
+            var result: [EventObjectOccurrence] = []
+            for event in eventObjects {
+                let occurrences = try event.occurrences.fetchAll(db)
+                for occ in occurrences {
+                    result.append(EventObjectOccurrence(event: event, occurrence: occ))
+                }
+            }
+            return result
+        }
+        let sorted = events.sorted { $0.startDate < $1.startDate }
+        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
+        return sorted
+    }
+
+    // MARK: - Mutant Vehicle Data Access
+
+    func fetchMutantVehicles() async throws -> [MutantVehicleObject] {
+        let mvs = try await dbQueue.read { db in
+            try MutantVehicleObject.fetchAll(db)
+        }
+        try await ensureMetadata(for: .mutantVehicle, ids: mvs.map(\.uid))
+        return mvs
+    }
+
+    func fetchMutantVehicles(filter: MutantVehicleFilter) async throws -> [MutantVehicleObject] {
+        let mvs = try await dbQueue.read { db in
+            try self.mutantVehicleRequest(filter: filter).fetchAll(db)
+        }
+        try await ensureMetadata(for: .mutantVehicle, ids: mvs.map(\.uid))
+        return mvs
+    }
+
+    func fetchMutantVehicle(uid: String) async throws -> MutantVehicleObject? {
+        let mv = try await dbQueue.read { db in
+            try MutantVehicleObject.filter(Column("uid") == uid).fetchOne(db)
+        }
+        if let mv {
+            try await ensureMetadata(for: .mutantVehicle, ids: [mv.uid])
+        }
+        return mv
+    }
+
+    func fetchMutantVehicleImageURLs() async throws -> [String: URL] {
+        try await dbQueue.read { db in
+            let images = try MutantVehicleImage
+                .filter(MutantVehicleImage.Columns.thumbnailUrl != nil)
+                .fetchAll(db)
+            var result: [String: URL] = [:]
+            for image in images {
+                if let url = image.thumbnailUrl, result[image.mvId] == nil {
+                    result[image.mvId] = url
+                }
+            }
+            return result
+        }
+    }
+
+    func fetchArtImageURLs() async throws -> [String: URL] {
+        try await dbQueue.read { db in
+            let images = try ArtImage
+                .filter(ArtImage.Columns.thumbnailUrl != nil)
+                .fetchAll(db)
+            var result: [String: URL] = [:]
+            for image in images {
+                if let url = image.thumbnailUrl, result[image.artId] == nil {
+                    result[image.artId] = url
+                }
+            }
+            return result
+        }
+    }
+
+    func fetchCampImageURLs() async throws -> [String: URL] {
+        try await dbQueue.read { db in
+            let images = try CampImage
+                .filter(CampImage.Columns.thumbnailUrl != nil)
+                .fetchAll(db)
+            var result: [String: URL] = [:]
+            for image in images {
+                if let url = image.thumbnailUrl, result[image.campId] == nil {
+                    result[image.campId] = url
+                }
+            }
+            return result
+        }
     }
 
     // MARK: - Filtered Data Access (Internal Request Builders)
@@ -669,6 +910,36 @@ internal class PlayaDBImpl: PlayaDB {
         return request.orderedByName()
     }
 
+    /// Build a mutant vehicle query from filter options
+    internal func mutantVehicleRequest(filter: MutantVehicleFilter) -> QueryInterfaceRequest<MutantVehicleObject> {
+        var request = MutantVehicleObject.all()
+
+        if let year = filter.year {
+            request = request.forYear(year)
+        }
+
+        if let searchText = filter.searchText {
+            request = request.matching(searchText: searchText)
+        }
+
+        if filter.onlyFavorites {
+            request = request.onlyFavorites(ofType: .mutantVehicle)
+        }
+
+        if let tag = filter.tag {
+            request = request.filter(sql: """
+                EXISTS (
+                    SELECT 1
+                    FROM mv_tags
+                    WHERE mv_tags.mv_id = mv_objects.uid
+                      AND mv_tags.tag = ?
+                )
+            """, arguments: [tag])
+        }
+
+        return request.orderedByName()
+    }
+
     /// Build an event occurrence query from filter options (internal - uses GRDB types)
     internal func eventOccurrenceRequest(filter: EventFilter) -> QueryInterfaceRequest<EventOccurrence> {
         var request = EventOccurrence.all()
@@ -683,6 +954,14 @@ internal class PlayaDBImpl: PlayaDB {
         } else if !filter.includeExpired {
             // Exclude expired events
             request = request.notExpired()
+        }
+
+        // Apply date range filters
+        if let startDate = filter.startDate {
+            request = request.filter(EventOccurrence.Columns.startTime >= startDate)
+        }
+        if let endDate = filter.endDate {
+            request = request.filter(EventOccurrence.Columns.startTime < endDate)
         }
 
         // Default ordering by start time
@@ -743,6 +1022,12 @@ internal class PlayaDBImpl: PlayaDB {
                 let nameMatch = event.name.lowercased().contains(lowerSearch)
                 let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
                 if !nameMatch && !descMatch {
+                    includeEvent = false
+                }
+            }
+
+            if let allowedTypes = filter.eventTypeCodes, !allowedTypes.isEmpty {
+                if !allowedTypes.contains(event.eventTypeCode) {
                     includeEvent = false
                 }
             }
@@ -860,6 +1145,62 @@ internal class PlayaDBImpl: PlayaDB {
         )
     }
 
+    func observeMutantVehicles(
+        filter: MutantVehicleFilter,
+        onChange: @escaping ([MutantVehicleObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observe(
+            type: .mutantVehicle,
+            ids: { $0.map(\.uid) },
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.mutantVehicleRequest(filter: filter).fetchAll(db)
+            },
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    // MARK: - User Map Pins
+
+    func saveUserMapPin(_ pin: UserMapPin) async throws {
+        try await dbQueue.write { db in
+            var pin = pin
+            try pin.save(db, onConflict: .replace)
+        }
+    }
+
+    func deleteUserMapPin(id: String) async throws {
+        _ = try await dbQueue.write { db in
+            try UserMapPin.deleteOne(db, key: id)
+        }
+    }
+
+    func fetchUserMapPins() async throws -> [UserMapPin] {
+        try await dbQueue.read { db in
+            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+        }
+    }
+
+    func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+        }
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: { error in
+                print("UserMapPin observation error: \(error)")
+            },
+            onChange: { pins in
+                DispatchQueue.main.async {
+                    onChange(pins)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
     // MARK: - Metadata Helpers
 
     private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
@@ -933,6 +1274,10 @@ internal class PlayaDBImpl: PlayaDB {
                     if let eventObject = try EventObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
                         objects.append(eventObject)
                     }
+                case .mutantVehicle:
+                    if let mvObject = try MutantVehicleObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
+                        objects.append(mvObject)
+                    }
                 case .none:
                     continue
                 }
@@ -946,22 +1291,17 @@ internal class PlayaDBImpl: PlayaDB {
         try await dbQueue.write { db in
             let objectType = object.objectType.rawValue
             let objectId = object.uid
-            
-            // Get existing metadata
+
             let existingMetadata = try ObjectMetadata
-                .filter(Column("object_type") == objectType && Column("object_id") == objectId)
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
                 .fetchOne(db)
-            
-            if let metadata = existingMetadata {
-                // Update existing metadata
-                let newFavoriteStatus = !metadata.isFavorite
-                let now = Date()
-                var updatedMetadata = metadata
-                updatedMetadata.isFavorite = newFavoriteStatus
-                updatedMetadata.updatedAt = now
-                try updatedMetadata.update(db)
+
+            if var metadata = existingMetadata {
+                metadata.isFavorite = !metadata.isFavorite
+                metadata.updatedAt = Date()
+                try metadata.update(db)
             } else {
-                // Create new metadata
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
                     objectId: objectId,
@@ -971,17 +1311,79 @@ internal class PlayaDBImpl: PlayaDB {
             }
         }
     }
-    
-    func isFavorite(_ object: any DataObject) async throws -> Bool {
-        return try await dbQueue.read { db in
+
+    func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {
+        try await dbQueue.write { db in
             let objectType = object.objectType.rawValue
             let objectId = object.uid
-            
-            let metadata = try ObjectMetadata
-                .filter(Column("object_type") == objectType && Column("object_id") == objectId)
+
+            let existingMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
                 .fetchOne(db)
-            
+
+            if var metadata = existingMetadata {
+                guard metadata.isFavorite != isFavorite else { return }
+                metadata.isFavorite = isFavorite
+                metadata.updatedAt = Date()
+                try metadata.update(db)
+            } else {
+                var newMetadata = ObjectMetadata(
+                    objectType: objectType,
+                    objectId: objectId,
+                    isFavorite: isFavorite
+                )
+                try newMetadata.insert(db)
+            }
+        }
+    }
+
+    func isFavorite(_ object: any DataObject) async throws -> Bool {
+        try await dbQueue.read { db in
+            let objectType = object.objectType.rawValue
+            let objectId = object.uid
+
+            let metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
+                .fetchOne(db)
+
             return metadata?.isFavorite ?? false
+        }
+    }
+
+    func setUserNotes(_ notes: String?, for object: any DataObject) async throws {
+        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+
+        try await dbQueue.write { db in
+            guard var metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else {
+                throw PlayaDBError.metadataNotFound
+            }
+
+            let trimmed = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+            metadata.userNotes = (trimmed?.isEmpty == true) ? nil : trimmed
+            metadata.updatedAt = Date()
+            try metadata.update(db)
+        }
+    }
+
+    func setLastViewed(_ date: Date, for object: any DataObject) async throws {
+        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+
+        try await dbQueue.write { db in
+            guard var metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else {
+                throw PlayaDBError.metadataNotFound
+            }
+
+            metadata.lastViewed = date
+            metadata.updatedAt = Date()
+            try metadata.update(db)
         }
     }
     
@@ -996,7 +1398,7 @@ internal class PlayaDBImpl: PlayaDB {
         try await importFromData(artData: artData, campData: campData, eventData: eventData)
     }
     
-    func importFromData(artData: Data, campData: Data, eventData: Data) async throws {
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws {
         let apiParser = APIParserFactory.create()
         
         try await dbQueue.write { db in
@@ -1106,10 +1508,46 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
             
+            // Step 3b: Import mutant vehicles (if data provided)
+            var mvCount = 0
+            if let mvData = mvData {
+                let apiMVObjects = try apiParser.parseMutantVehicles(from: mvData)
+                mvCount = apiMVObjects.count
+
+                // Clear existing MV data
+                try MutantVehicleTag.deleteAll(db)
+                try MutantVehicleImage.deleteAll(db)
+                try MutantVehicleObject.deleteAll(db)
+
+                for apiMV in apiMVObjects {
+                    var mvObject = self.convertMutantVehicleObject(from: apiMV)
+                    try mvObject.insert(db)
+
+                    for apiImage in apiMV.images {
+                        var mvImage = MutantVehicleImage(
+                            mvId: apiMV.uid.value,
+                            thumbnailUrl: apiImage.thumbnailUrl
+                        )
+                        try mvImage.insert(db)
+                    }
+
+                    for tagString in apiMV.tags {
+                        var mvTag = MutantVehicleTag(
+                            mvId: apiMV.uid.value,
+                            tag: tagString
+                        )
+                        try mvTag.insert(db)
+                    }
+                }
+            }
+
             // Step 4: Rebuild FTS indexes (in case triggers weren't created yet)
             try db.execute(sql: "INSERT INTO art_objects_fts(art_objects_fts) VALUES('rebuild')")
             try db.execute(sql: "INSERT INTO camp_objects_fts(camp_objects_fts) VALUES('rebuild')")
             try db.execute(sql: "INSERT INTO event_objects_fts(event_objects_fts) VALUES('rebuild')")
+            if mvData != nil {
+                try db.execute(sql: "INSERT INTO mv_objects_fts(mv_objects_fts) VALUES('rebuild')")
+            }
             
             // Step 4b: Rebuild spatial index
             // Clear existing spatial data
@@ -1179,6 +1617,17 @@ internal class PlayaDBImpl: PlayaDB {
                 createdAt: now
             )
             try eventUpdateInfo.insert(db)
+
+            if mvData != nil {
+                var mvUpdateInfo = UpdateInfo(
+                    dataType: DataObjectType.mutantVehicle.rawValue,
+                    lastUpdated: now,
+                    version: nil,
+                    totalCount: mvCount,
+                    createdAt: now
+                )
+                try mvUpdateInfo.insert(db)
+            }
         }
     }
     
@@ -1254,6 +1703,20 @@ internal class PlayaDBImpl: PlayaDB {
         )
     }
     
+    private func convertMutantVehicleObject(from apiMV: MutantVehicle) -> MutantVehicleObject {
+        MutantVehicleObject(
+            uid: apiMV.uid.value,
+            name: apiMV.name,
+            year: apiMV.year,
+            url: apiMV.url,
+            contactEmail: apiMV.contactEmail,
+            hometown: apiMV.hometown,
+            description: apiMV.description,
+            artist: apiMV.artist,
+            donationLink: apiMV.donationLink
+        )
+    }
+
     func getUpdateInfo() async throws -> [UpdateInfo] {
         return try await dbQueue.read { db in
             try UpdateInfo.fetchAll(db)
@@ -1265,6 +1728,7 @@ internal class PlayaDBImpl: PlayaDB {
     private var _allArt: [ArtObject] = []
     private var _allCamps: [CampObject] = []
     private var _allEvents: [EventObjectOccurrence] = []
+    private var _allMutantVehicles: [MutantVehicleObject] = []
     private var _favorites: [ObjectMetadata] = []
     
     private var observations: [DatabaseCancellable] = []
@@ -1279,6 +1743,10 @@ internal class PlayaDBImpl: PlayaDB {
     
     var allEvents: [EventObjectOccurrence] {
         _allEvents
+    }
+
+    var allMutantVehicles: [MutantVehicleObject] {
+        _allMutantVehicles
     }
     
     var favorites: [ObjectMetadata] {
@@ -1351,6 +1819,25 @@ internal class PlayaDBImpl: PlayaDB {
             }
         )
         
+        // Observe mutant vehicle objects
+        let mvObservation = ValueObservation.tracking { db in
+            try MutantVehicleObject.fetchAll(db)
+        }
+        let mvCancellable = mvObservation.start(
+            in: dbQueue,
+            onError: { error in
+                print("Error observing mutant vehicles: \(error)")
+            },
+            onChange: { [weak self] mvObjects in
+                if !mvObjects.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: .mutantVehicle, ids: mvObjects.map(\.uid))
+                    }
+                }
+                self?._allMutantVehicles = mvObjects
+            }
+        )
+
         // Observe favorites
         let favoritesObservation = ValueObservation.tracking { db in
             try ObjectMetadata.filter(Column("is_favorite") == true).fetchAll(db)
@@ -1370,6 +1857,7 @@ internal class PlayaDBImpl: PlayaDB {
             artCancellable,
             campCancellable,
             eventCancellable,
+            mvCancellable,
             favoritesCancellable
         ]
     }

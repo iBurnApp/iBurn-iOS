@@ -31,14 +31,15 @@ struct CampListView: View {
         ZStack {
             List {
                 ForEach(viewModel.filteredItems, id: \.uid) { camp in
-                    ObjectRowView(
+                    MediaObjectRowView(
                         object: camp,
-                        distance: viewModel.distanceString(for: camp),
+                        subtitle: viewModel.distanceAttributedString(for: camp),
+                        rightSubtitle: rightSubtitle(for: camp),
                         isFavorite: viewModel.isFavorite(camp),
                         onFavoriteTap: {
                             Task { await viewModel.toggleFavorite(camp) }
                         }
-                    ) {
+                    ) { _ in
                         EmptyView()
                     }
                     .contentShape(Rectangle())
@@ -119,6 +120,13 @@ struct CampListView: View {
     private func showMap() {
         onShowMap(viewModel.filteredItems)
     }
+
+    private func rightSubtitle(for camp: CampObject) -> String? {
+        if BRCEmbargo.allowEmbargoedData() {
+            return camp.locationString ?? camp.intersection ?? "Location Unknown"
+        }
+        return "Location Restricted"
+    }
 }
 
 #Preview("Camp List") {
@@ -127,7 +135,22 @@ struct CampListView: View {
             viewModel: CampListViewModel(
                 dataProvider: PreviewCampDataProvider(),
                 locationProvider: MockLocationProvider(),
-                initialFilter: .all
+                filterStorageKey: "campListFilter.preview",
+                initialFilter: .all,
+                effectiveFilterForObservation: { $0 },
+                favoritesFilterForObservation: { filter in
+                    var f = filter
+                    f.searchText = nil
+                    f.onlyFavorites = true
+                    return f
+                },
+                matchesSearch: { camp, q in
+                    camp.name.lowercased().contains(q) ||
+                    camp.description?.lowercased().contains(q) == true ||
+                    camp.hometown?.lowercased().contains(q) == true ||
+                    camp.landmark?.lowercased().contains(q) == true ||
+                    camp.locationString?.lowercased().contains(q) == true
+                }
             )
         )
     }
@@ -163,3 +186,5 @@ private class PreviewCampDataProvider: CampDataProvider {
         )
     }
 }
+
+// Legacy favorites store is no longer used by SwiftUI lists.

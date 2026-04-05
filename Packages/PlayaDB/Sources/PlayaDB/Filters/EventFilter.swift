@@ -22,7 +22,7 @@ import MapKit
 /// )
 /// let events = try await playaDB.fetchEvents(filter: filter)
 /// ```
-public struct EventFilter: Hashable {
+public struct EventFilter: Hashable, Codable {
     /// Filter by year (e.g., 2025)
     public var year: Int?
 
@@ -47,6 +47,16 @@ public struct EventFilter: Hashable {
     /// Example: startingWithinHours = 2 shows events starting in next 2 hours
     public var startingWithinHours: Int?
 
+    /// Filter to occurrences starting on or after this date
+    public var startDate: Date?
+
+    /// Filter to occurrences starting before this date
+    public var endDate: Date?
+
+    /// Filter by event type codes (e.g. "work", "prty", "food")
+    /// When nil, all event types are included.
+    public var eventTypeCodes: Set<String>?
+
     /// Create a new event filter
     public init(
         year: Int? = nil,
@@ -55,7 +65,10 @@ public struct EventFilter: Hashable {
         onlyFavorites: Bool = false,
         includeExpired: Bool = true,
         happeningNow: Bool = false,
-        startingWithinHours: Int? = nil
+        startingWithinHours: Int? = nil,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        eventTypeCodes: Set<String>? = nil
     ) {
         self.year = year
         self.regionStorage = region.map(FilterRegion.init)
@@ -64,6 +77,9 @@ public struct EventFilter: Hashable {
         self.includeExpired = includeExpired
         self.happeningNow = happeningNow
         self.startingWithinHours = startingWithinHours
+        self.startDate = startDate
+        self.endDate = endDate
+        self.eventTypeCodes = eventTypeCodes
     }
 
     /// Filter that matches all events (no filtering)
@@ -84,6 +100,14 @@ public struct EventFilter: Hashable {
     /// Filter for events starting within the next N hours
     public static func startingSoon(hours: Int) -> EventFilter {
         EventFilter(startingWithinHours: hours)
+    }
+
+    /// Filter for events on a specific day
+    public static func forDay(_ date: Date) -> EventFilter {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        return EventFilter(startDate: startOfDay, endDate: endOfDay)
     }
 
     /// Region expressed as `MKCoordinateRegion`.

@@ -52,9 +52,10 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     enum DetailViewsRow: Int, CaseIterable {
         case art = 0
         case camps = 1
-        case visitList = 2
-        case audioTour = 3
-        case locationHistory = 4
+        case mutantVehicles = 2
+        case visitList = 3
+        case audioTour = 4
+        case locationHistory = 5
     }
     
     enum CustomizationRow: Int, CaseIterable {
@@ -181,6 +182,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
                 moreCell.configure(title: "Art", imageName: "BRCArtIcon", tag: row.rawValue)
             case .camps:
                 moreCell.configure(title: "Camps", imageName: "BRCCampIcon", tag: row.rawValue)
+            case .mutantVehicles:
+                moreCell.configure(title: "Mutant Vehicles", systemImageName: "car.fill", tag: row.rawValue)
             case .visitList:
                 moreCell.configure(title: "Visit List", systemImageName: "bookmark.circle", tag: row.rawValue)
             case .audioTour:
@@ -268,6 +271,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             switch row {
             case .art: pushArtView()
             case .camps: pushCampsView()
+            case .mutantVehicles: pushMutantVehiclesView()
             case .visitList: pushVisitListView()
             case .audioTour: showAudioTour()
             case .locationHistory: pushTracksView()
@@ -359,6 +363,12 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         navigationController?.pushViewController(campsVC, animated: true)
     }
     
+    func pushMutantVehiclesView() {
+        let mvVC = MutantVehicleListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
+        mvVC.title = "Mutant Vehicles"
+        navigationController?.pushViewController(mvVC, animated: true)
+    }
+
     func pushVisitListView() {
         let visitVC = VisitListViewController()
         visitVC.title = "Visit List"

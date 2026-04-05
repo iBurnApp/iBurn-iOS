@@ -38,12 +38,16 @@ extension UIViewController {
     }
 }
 
+@MainActor
 class DetailHostingController: UIHostingController<DetailView>, DynamicViewController {
     let viewModel: DetailViewModel
-    let colors: BRCImageColors
     let coordinator: DetailActionCoordinator
     var indexPath: IndexPath?
-    private let dataObject: BRCDataObject
+    private let titleText: String
+
+    var colors: BRCImageColors {
+        viewModel.getThemeBRCColors()
+    }
     
     // MARK: - DynamicViewController
     var eventHandler: DynamicViewControllerEventHandler?
@@ -51,17 +55,15 @@ class DetailHostingController: UIHostingController<DetailView>, DynamicViewContr
     init(
         viewModel: DetailViewModel,
         coordinator: DetailActionCoordinator,
-        colors: BRCImageColors,
-        dataObject: BRCDataObject
+        title: String
     ) {
         self.viewModel = viewModel
         self.coordinator = coordinator
-        self.colors = colors
-        self.dataObject = dataObject
+        self.titleText = title
         
         super.init(rootView: DetailView(viewModel: viewModel))
         
-        self.title = dataObject.title
+        self.title = titleText
         self.hidesBottomBarWhenPushed = true
     }
     

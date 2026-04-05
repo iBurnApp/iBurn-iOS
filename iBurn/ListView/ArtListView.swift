@@ -23,15 +23,18 @@ struct ArtListView: View {
     @StateObject private var viewModel: ArtListViewModel
     @State private var showingFilterSheet = false
     @Environment(\.themeColors) var themeColors
+    private let audioPlayer: any AudioPlayerProtocol
     private let onSelect: (ArtObject) -> Void
     private let onShowMap: ([ArtObject]) -> Void
 
     init(
         viewModel: ArtListViewModel,
+        audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance,
         onSelect: @escaping (ArtObject) -> Void = { _ in },
         onShowMap: @escaping ([ArtObject]) -> Void = { _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.audioPlayer = audioPlayer
         self.onSelect = onSelect
         self.onShowMap = onShowMap
     }
@@ -41,16 +44,29 @@ struct ArtListView: View {
             // Main list content
             List {
                 ForEach(viewModel.filteredItems, id: \.uid) { art in
-                    ObjectRowView(
+                    MediaObjectRowView(
                         object: art,
-                        distance: viewModel.distanceString(for: art),
+                        subtitle: viewModel.distanceAttributedString(for: art),
+                        rightSubtitle: art.artist,
                         isFavorite: viewModel.isFavorite(art),
                         onFavoriteTap: {
                             Task { await viewModel.toggleFavorite(art) }
                         }
-                    ) {
-                        // TODO: Add audio button when audio data is migrated to PlayaDB
-                        EmptyView()
+                    ) { assets in
+                        if let audioURL = assets.audioURL {
+                            AudioTourButton(
+                                track: BRCAudioTourTrack(
+                                    uid: art.uid,
+                                    title: art.name,
+                                    artist: art.artist,
+                                    audioURL: audioURL,
+                                    artworkURL: BRCMediaDownloader.localMediaURL("\(art.uid).jpg")
+                                ),
+                                audioPlayer: audioPlayer
+                            )
+                        } else {
+                            EmptyView()
+                        }
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -152,7 +168,21 @@ struct ArtListView: View {
             viewModel: ArtListViewModel(
                 dataProvider: PreviewArtDataProvider(),
                 locationProvider: MockLocationProvider(),
-                initialFilter: .all
+                filterStorageKey: "artListFilter.preview",
+                initialFilter: .all,
+                effectiveFilterForObservation: { $0 },
+                favoritesFilterForObservation: { filter in
+                    var f = filter
+                    f.searchText = nil
+                    f.onlyWithEvents = false
+                    f.onlyFavorites = true
+                    return f
+                },
+                matchesSearch: { art, q in
+                    art.name.lowercased().contains(q) ||
+                    art.description?.lowercased().contains(q) == true ||
+                    art.artist?.lowercased().contains(q) == true
+                }
             )
         )
     }
@@ -164,7 +194,21 @@ struct ArtListView: View {
             viewModel: ArtListViewModel(
                 dataProvider: PreviewArtDataProvider(),
                 locationProvider: MockLocationProvider(),
-                initialFilter: ArtFilter(onlyWithEvents: true)
+                filterStorageKey: "artListFilter.preview",
+                initialFilter: ArtFilter(onlyWithEvents: true),
+                effectiveFilterForObservation: { $0 },
+                favoritesFilterForObservation: { filter in
+                    var f = filter
+                    f.searchText = nil
+                    f.onlyWithEvents = false
+                    f.onlyFavorites = true
+                    return f
+                },
+                matchesSearch: { art, q in
+                    art.name.lowercased().contains(q) ||
+                    art.description?.lowercased().contains(q) == true ||
+                    art.artist?.lowercased().contains(q) == true
+                }
             )
         )
     }
@@ -203,3 +247,5 @@ private class PreviewArtDataProvider: ArtDataProvider {
         )
     }
 }
+
+// Legacy favorites store is no longer used by SwiftUI lists.

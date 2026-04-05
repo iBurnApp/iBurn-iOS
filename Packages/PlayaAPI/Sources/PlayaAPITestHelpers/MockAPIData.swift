@@ -96,6 +96,55 @@ public enum MockAPIData {
     ]
     """.data(using: .utf8)!
     
+    public static let mutantVehicleJSON = """
+    [
+        {
+            "uid": "a6BVI000000Le0r2AC",
+            "name": "Moebius Omnibus",
+            "year": 2026,
+            "url": null,
+            "donation_link": null,
+            "contact_email": "p4l@hotmail.com",
+            "hometown": "Oakley, CA",
+            "description": "An 8' round omnidirectional flying saucer morphed into a comfy couch.",
+            "artist": "Phil 'pEEf' Sadow",
+            "images": [
+                {
+                    "thumbnail_url": "https://example.com/mv-image.jpeg"
+                }
+            ],
+            "tags": ["Round", "Flying Saucer", "Circular"]
+        },
+        {
+            "uid": "a6BVI000000Xf1r3BC",
+            "name": "Dragon Wagon",
+            "year": 2026,
+            "url": "https://dragonwagon.art",
+            "donation_link": "https://donate.example.com/dragon",
+            "contact_email": null,
+            "hometown": "Portland, OR",
+            "description": "A fire-breathing dragon on wheels.",
+            "artist": "Dragon Collective",
+            "images": [],
+            "tags": ["Dragon", "Fire"]
+        }
+    ]
+    """.data(using: .utf8)!
+
+    public static let mockMutantVehicle = MutantVehicle(
+        uid: "a6BVI000000Le0r2AC",
+        name: "Moebius Omnibus",
+        year: 2026,
+        contactEmail: "p4l@hotmail.com",
+        hometown: "Oakley, CA",
+        description: "An 8' round omnidirectional flying saucer morphed into a comfy couch.",
+        artist: "Phil 'pEEf' Sadow",
+        images: [
+            MutantVehicleImage(thumbnailUrl: URL(string: "https://example.com/mv-image.jpeg"))
+        ],
+        tags: ["Round", "Flying Saucer", "Circular"]
+    )
+
     public static let updateInfoJSON = """
     {
         "art": {

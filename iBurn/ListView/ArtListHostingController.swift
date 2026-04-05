@@ -23,14 +23,16 @@ import PlayaDB
 /// ```
 @MainActor
 class ArtListHostingController: UIHostingController<ArtListView> {
-    private let legacyDataStore: LegacyDataStore
+    private let playaDB: PlayaDB
+    private let viewModel: ArtListViewModel
+    private var pagingDataSource: DetailPagingDataSource?
 
     /// Initialize the hosting controller with dependencies
     /// - Parameter dependencies: The dependency container providing PlayaDB and other services
     /// - Throws: Errors from creating the view model
     init(dependencies: DependencyContainer) {
-        self.legacyDataStore = LegacyDataStore()
-        let viewModel = dependencies.makeArtListViewModel()
+        self.playaDB = dependencies.playaDB
+        self.viewModel = dependencies.makeArtListViewModel()
         super.init(rootView: ArtListView(viewModel: viewModel))
         self.rootView = ArtListView(
             viewModel: viewModel,
@@ -51,41 +53,42 @@ class ArtListHostingController: UIHostingController<ArtListView> {
     // MARK: - Navigation
 
     private func showDetail(for art: ArtObject) {
-        guard let dataObject = legacyDataStore.dataObject(for: art.uid, type: .art) else {
-            showMissingObjectAlert(name: art.name)
-            return
-        }
-
-        let detailVC = DetailViewControllerFactory.createDetailViewController(for: dataObject)
-        navigationController?.pushViewController(detailVC, animated: true)
+        let subjects = viewModel.filteredItems.map { DetailSubject.art($0) }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.uid == art.uid }) else { return }
+        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        self.pagingDataSource = dataSource
+        let pageVC = dataSource.makePageViewController(initialIndex: index)
+        navigationController?.pushViewController(pageVC, animated: true)
     }
 
     private func showMap(for arts: [ArtObject]) {
-        let annotations = legacyDataStore.annotations(for: arts)
+        guard BRCEmbargo.allowEmbargoedData() else {
+            showMissingMapAlert()
+            return
+        }
+
+        let annotations = arts.compactMap { PlayaObjectAnnotation(art: $0) }
         guard !annotations.isEmpty else {
             showMissingMapAlert()
             return
         }
 
+        let lookup = Dictionary(uniqueKeysWithValues: arts.map { ($0.anyID, $0) })
         let dataSource = StaticAnnotationDataSource(annotations: annotations)
         let mapVC = MapListViewController(dataSource: dataSource)
+        mapVC.mapViewAdapter.onPlayaInfoTapped = { [weak self] anyID in
+            guard let art = lookup[anyID] else { return }
+            self?.showDetail(for: art)
+        }
         navigationController?.pushViewController(mapVC, animated: true)
-    }
-
-    private func showMissingObjectAlert(name: String) {
-        let alert = UIAlertController(
-            title: "Unable to Load Detail",
-            message: "Could not find details for \(name).",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
 
     private func showMissingMapAlert() {
         let alert = UIAlertController(
             title: "No Mappable Art",
-            message: "None of the selected art items have map coordinates.",
+            message: BRCEmbargo.allowEmbargoedData()
+                ? "None of the selected art items have map coordinates."
+                : "Location data is currently restricted.",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))

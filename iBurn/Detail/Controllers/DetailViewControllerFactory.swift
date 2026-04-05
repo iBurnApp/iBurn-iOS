@@ -7,8 +7,10 @@
 //
 
 import UIKit
+import PlayaDB
 
 /// Factory for creating detail view controllers
+@MainActor
 class DetailViewControllerFactory {
     
     /// Creates a detail view controller using the preference system to determine implementation
@@ -34,9 +36,9 @@ class DetailViewControllerFactory {
     static func create(
         with dataObject: BRCDataObject
     ) -> DetailHostingController {
-        
-        // Create concrete service instances
-        let dataService = DetailDataService()
+
+        // Create concrete service instances with PlayaDB for dual-write sync
+        let dataService = DetailDataService(playaDB: BRCAppDelegate.shared.dependencies.playaDB)
         let audioService = AudioService()
         let locationService = LocationService()
         
@@ -74,20 +76,79 @@ class DetailViewControllerFactory {
             coordinator: coordinator
         )
         
-        // Determine colors based on data object type
-        let colors = BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
-        
         // Create controller with all dependencies
         let controller = DetailHostingController(
             viewModel: viewModel,
             coordinator: coordinator,
-            colors: colors,
-            dataObject: dataObject
+            title: dataObject.title
         )
         
         // Update coordinator with the real presenter
         coordinator.updatePresenter(controller)
         
+        return controller
+    }
+
+    static func create(with art: ArtObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .art(art), playaDB: playaDB)
+    }
+
+    static func create(with camp: CampObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .camp(camp), playaDB: playaDB)
+    }
+
+    static func create(with event: EventObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .event(event), playaDB: playaDB)
+    }
+
+    static func create(with mv: MutantVehicleObject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .mutantVehicle(mv), playaDB: playaDB)
+    }
+
+    static func create(with occurrence: EventObjectOccurrence, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: .eventOccurrence(occurrence), playaDB: playaDB)
+    }
+
+    /// Resolves a legacy BRCDataObject to a PlayaDB-backed detail view, falling back to legacy.
+    static func createDetailViewController(
+        for dataObject: BRCDataObject,
+        playaDB: PlayaDB
+    ) async -> UIViewController {
+        let uid = dataObject.uniqueID
+        if dataObject is BRCArtObject,
+           let art = try? await playaDB.fetchArt(uid: uid) {
+            return create(with: art, playaDB: playaDB)
+        }
+        if dataObject is BRCCampObject,
+           let camp = try? await playaDB.fetchCamp(uid: uid) {
+            return create(with: camp, playaDB: playaDB)
+        }
+        if dataObject is BRCEventObject,
+           let event = try? await playaDB.fetchEvent(uid: uid) {
+            return create(with: event, playaDB: playaDB)
+        }
+        // Fallback to legacy
+        return createDetailViewController(for: dataObject)
+    }
+
+    static func create(with subject: DetailSubject, playaDB: PlayaDB) -> DetailHostingController {
+        let coordinator = DetailActionCoordinatorFactory.makeCoordinator()
+        let locationService = LocationService()
+
+        let viewModel = DetailViewModel(
+            subject: subject,
+            playaDB: playaDB,
+            locationService: locationService,
+            coordinator: coordinator
+        )
+
+        let controller = DetailHostingController(
+            viewModel: viewModel,
+            coordinator: coordinator,
+            title: viewModel.title
+        )
+
+        coordinator.updatePresenter(controller)
         return controller
     }
 }

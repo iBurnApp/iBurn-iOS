@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import PlayaDB
 
 extension BRCDataObjectTableViewCell {
     class func cell(at indexPath: IndexPath,
@@ -26,6 +27,23 @@ extension BRCDataObjectTableViewCell {
                 guard let metadata = dataObject.object.metadata(with: transaction).copyAsSelf() else { return }
                 metadata.isFavorite = isFavorite
                 dataObject.object.replace(metadata, transaction: transaction)
+            }
+            // Sync to PlayaDB
+            let uid = dataObject.object.uniqueID
+            let obj = dataObject.object
+            Task { @MainActor in
+                let db = BRCAppDelegate.shared.dependencies.playaDB
+                do {
+                    if obj is BRCArtObject, let art = try await db.fetchArt(uid: uid) {
+                        try await db.setFavorite(isFavorite, for: art)
+                    } else if obj is BRCCampObject, let camp = try await db.fetchCamp(uid: uid) {
+                        try await db.setFavorite(isFavorite, for: camp)
+                    } else if obj is BRCEventObject, let event = try await db.fetchEvent(uid: uid) {
+                        try await db.setFavorite(isFavorite, for: event)
+                    }
+                } catch {
+                    print("PlayaDB cell favorite sync failed for \(uid): \(error)")
+                }
             }
         }
         if let artCell = cell as? BRCArtObjectTableViewCell, let art = dataObject.object as? BRCArtObject {

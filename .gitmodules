@@ -11,3 +11,6 @@
 [submodule "Submodules/PermissionScope"]
 	path = Submodules/PermissionScope
 	url = git@github.com:Burning-Man-Earth/PermissionScope.git
+[submodule "Submodules/YapDatabase"]
+	path = Submodules/YapDatabase
+	url = git@github.com:iBurnApp/YapDatabase.git

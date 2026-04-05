@@ -11,6 +11,9 @@ public protocol APIParserProtocol {
     /// Parse an array of Event objects from JSON data
     func parseEvents(from data: Data) throws -> [Event]
     
+    /// Parse an array of MutantVehicle objects from JSON data
+    func parseMutantVehicles(from data: Data) throws -> [MutantVehicle]
+
     /// Parse UpdateInfo from JSON data
     func parseUpdateInfo(from data: Data) throws -> UpdateInfo
 }
@@ -43,7 +46,11 @@ struct APIParserImpl: APIParserProtocol {
     func parseEvents(from data: Data) throws -> [Event] {
         try decoder.decode([Event].self, from: data)
     }
-    
+
+    func parseMutantVehicles(from data: Data) throws -> [MutantVehicle] {
+        try decoder.decode([MutantVehicle].self, from: data)
+    }
+
     func parseUpdateInfo(from data: Data) throws -> UpdateInfo {
         try decoder.decode(UpdateInfo.self, from: data)
     }

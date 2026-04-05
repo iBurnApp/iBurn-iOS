@@ -28,6 +28,12 @@ class DependencyContainer {
     /// Background seeder for PlayaDB
     private let playaDBSeeder: PlayaDBSeeder
 
+    /// MV image downloader
+    private let mvImageDownloader: MutantVehicleImageDownloader
+
+    /// Art/camp thumbnail image downloader
+    private let thumbnailImageDownloader: ThumbnailImageDownloader
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
@@ -38,6 +44,16 @@ class DependencyContainer {
     /// Data provider for Camp objects
     private(set) lazy var campDataProvider: CampDataProvider = {
         CampDataProvider(playaDB: playaDB)
+    }()
+
+    /// Data provider for Event objects
+    private(set) lazy var eventDataProvider: EventDataProvider = {
+        EventDataProvider(playaDB: playaDB)
+    }()
+
+    /// Data provider for MutantVehicle objects
+    private(set) lazy var mutantVehicleDataProvider: MutantVehicleDataProvider = {
+        MutantVehicleDataProvider(playaDB: playaDB)
     }()
 
     // MARK: - Initialization
@@ -60,18 +76,111 @@ class DependencyContainer {
 
         self.playaDBSeeder = PlayaDBSeeder(playaDB: self.playaDB)
         self.playaDBSeeder.seedIfNeeded()
+
+        self.mvImageDownloader = MutantVehicleImageDownloader(playaDB: self.playaDB)
+        self.mvImageDownloader.downloadUncachedImages()
+
+        self.thumbnailImageDownloader = ThumbnailImageDownloader(playaDB: self.playaDB)
+        self.thumbnailImageDownloader.downloadUncachedImages()
     }
 
     // MARK: - Factory Methods
+
+    /// Create a GlobalSearchViewModel with injected dependencies
+    func makeGlobalSearchViewModel() -> GlobalSearchViewModel {
+        GlobalSearchViewModel(playaDB: playaDB)
+    }
+
+    /// Create a GlobalSearchHostingController for use as UISearchController.searchResultsController
+    func makeGlobalSearchHostingController() -> GlobalSearchHostingController {
+        let vm = makeGlobalSearchViewModel()
+        return GlobalSearchHostingController(viewModel: vm, playaDB: playaDB)
+    }
 
     /// Create an ArtListViewModel with injected dependencies
     /// - Parameter initialFilter: Optional initial filter (defaults to .all)
     /// - Returns: Configured ArtListViewModel
     func makeArtListViewModel(initialFilter: ArtFilter = .all) -> ArtListViewModel {
-        ArtListViewModel(
+        ObjectListViewModel(
             dataProvider: artDataProvider,
             locationProvider: locationProvider,
-            initialFilter: initialFilter
+            filterStorageKey: "artListFilter",
+            initialFilter: initialFilter,
+            effectiveFilterForObservation: { $0 },
+            favoritesFilterForObservation: { filter in
+                var f = filter
+                f.searchText = nil
+                f.onlyWithEvents = false
+                f.onlyFavorites = true
+                return f
+            },
+            matchesSearch: { art, q in
+                art.name.lowercased().contains(q) ||
+                art.description?.lowercased().contains(q) == true ||
+                art.artist?.lowercased().contains(q) == true
+            },
+            isDatabaseSeeded: { [artDataProvider] in
+                await artDataProvider.isDatabaseSeeded()
+            }
+        )
+    }
+
+    /// Create an EventListViewModel with injected dependencies
+    /// - Returns: Configured EventListViewModel
+    func makeEventListViewModel() -> EventListViewModel {
+        EventListViewModel(
+            dataProvider: eventDataProvider,
+            locationProvider: locationProvider,
+            festivalDays: YearSettings.festivalDays
+        )
+    }
+
+    /// Create a MutantVehicleListViewModel with injected dependencies
+    func makeMutantVehicleListViewModel(initialFilter: MutantVehicleFilter = .all) -> MutantVehicleListViewModel {
+        ObjectListViewModel(
+            dataProvider: mutantVehicleDataProvider,
+            locationProvider: locationProvider,
+            filterStorageKey: "mvListFilter",
+            initialFilter: initialFilter,
+            effectiveFilterForObservation: { $0 },
+            favoritesFilterForObservation: { filter in
+                var f = filter
+                f.searchText = nil
+                f.tag = nil
+                f.onlyFavorites = true
+                return f
+            },
+            matchesSearch: { mv, q in
+                mv.name.lowercased().contains(q) ||
+                mv.description?.lowercased().contains(q) == true ||
+                mv.artist?.lowercased().contains(q) == true ||
+                mv.hometown?.lowercased().contains(q) == true
+            },
+            isDatabaseSeeded: { [mutantVehicleDataProvider] in
+                await mutantVehicleDataProvider.isDatabaseSeeded()
+            }
+        )
+    }
+
+    /// Create a NearbyViewModel with injected dependencies
+    func makeNearbyViewModel() -> NearbyViewModel {
+        NearbyViewModel(
+            playaDB: playaDB,
+            artProvider: artDataProvider,
+            campProvider: campDataProvider,
+            eventProvider: eventDataProvider,
+            locationProvider: locationProvider
+        )
+    }
+
+    /// Create a FavoritesViewModel with injected dependencies
+    func makeFavoritesViewModel() -> FavoritesViewModel {
+        FavoritesViewModel(
+            artProvider: artDataProvider,
+            campProvider: campDataProvider,
+            eventProvider: eventDataProvider,
+            mvProvider: mutantVehicleDataProvider,
+            locationProvider: locationProvider
         )
     }
 
@@ -79,10 +188,28 @@ class DependencyContainer {
     /// - Parameter initialFilter: Optional initial filter (defaults to .all)
     /// - Returns: Configured CampListViewModel
     func makeCampListViewModel(initialFilter: CampFilter = .all) -> CampListViewModel {
-        CampListViewModel(
+        ObjectListViewModel(
             dataProvider: campDataProvider,
             locationProvider: locationProvider,
-            initialFilter: initialFilter
+            filterStorageKey: "campListFilter",
+            initialFilter: initialFilter,
+            effectiveFilterForObservation: { $0 },
+            favoritesFilterForObservation: { filter in
+                var f = filter
+                f.searchText = nil
+                f.onlyFavorites = true
+                return f
+            },
+            matchesSearch: { camp, q in
+                camp.name.lowercased().contains(q) ||
+                camp.description?.lowercased().contains(q) == true ||
+                camp.hometown?.lowercased().contains(q) == true ||
+                camp.landmark?.lowercased().contains(q) == true ||
+                camp.locationString?.lowercased().contains(q) == true
+            },
+            isDatabaseSeeded: { [campDataProvider] in
+                await campDataProvider.isDatabaseSeeded()
+            }
         )
     }
 }

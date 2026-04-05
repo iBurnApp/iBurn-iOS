@@ -27,6 +27,32 @@ public protocol PlayaDB {
     /// Fetch upcoming events (starting within the next N hours)
     func fetchUpcomingEvents(within hours: Int, from now: Date) async throws -> [EventObjectOccurrence]
 
+    /// Fetch all mutant vehicles
+    func fetchMutantVehicles() async throws -> [MutantVehicleObject]
+
+    /// Fetch mutant vehicles matching the specified filter criteria
+    func fetchMutantVehicles(filter: MutantVehicleFilter) async throws -> [MutantVehicleObject]
+
+    /// Fetch a single mutant vehicle by UID
+    func fetchMutantVehicle(uid: String) async throws -> MutantVehicleObject?
+
+    /// Observe mutant vehicles matching the specified filter criteria.
+    @discardableResult
+    func observeMutantVehicles(
+        filter: MutantVehicleFilter,
+        onChange: @escaping ([MutantVehicleObject]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
+
+    /// Fetch remote thumbnail URLs for mutant vehicles (uid -> URL)
+    func fetchMutantVehicleImageURLs() async throws -> [String: URL]
+
+    /// Fetch remote thumbnail URLs for art objects (uid -> URL)
+    func fetchArtImageURLs() async throws -> [String: URL]
+
+    /// Fetch remote thumbnail URLs for camp objects (uid -> URL)
+    func fetchCampImageURLs() async throws -> [String: URL]
+
     /// Fetch all objects within a geographic region
     func fetchObjects(in region: MKCoordinateRegion) async throws -> [any DataObject]
 
@@ -101,8 +127,25 @@ public protocol PlayaDB {
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
     
+    // MARK: - Single Object Fetch
+
+    /// Fetch a single art object by UID
+    func fetchArt(uid: String) async throws -> ArtObject?
+
+    /// Fetch a single camp object by UID
+    func fetchCamp(uid: String) async throws -> CampObject?
+
+    /// Fetch a single event object by UID
+    func fetchEvent(uid: String) async throws -> EventObject?
+
+    /// Fetch event occurrences hosted by a specific camp
+    func fetchEvents(hostedByCampUID: String) async throws -> [EventObjectOccurrence]
+
+    /// Fetch event occurrences located at a specific art installation
+    func fetchEvents(locatedAtArtUID: String) async throws -> [EventObjectOccurrence]
+
     // MARK: - Metadata Operations
-    
+
     /// Fetch metadata for the specified object, creating a default record if needed.
     func metadata(for object: any DataObject) async throws -> ObjectMetadata
     
@@ -111,17 +154,41 @@ public protocol PlayaDB {
     
     /// Toggle the favorite status of an object
     func toggleFavorite(_ object: any DataObject) async throws
-    
+
+    /// Set the favorite status of an object to a specific value
+    func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws
+
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
+
+    /// Update user notes for an object (nil/empty clears notes).
+    func setUserNotes(_ notes: String?, for object: any DataObject) async throws
+
+    /// Mark an object as viewed at the provided date (used for recents, etc.).
+    func setLastViewed(_ date: Date, for object: any DataObject) async throws
     
+    // MARK: - User Map Pins
+
+    /// Save (insert or update) a user map pin.
+    func saveUserMapPin(_ pin: UserMapPin) async throws
+
+    /// Delete a user map pin by id.
+    func deleteUserMapPin(id: String) async throws
+
+    /// Fetch all user map pins.
+    func fetchUserMapPins() async throws -> [UserMapPin]
+
+    /// Observe all user map pins reactively.
+    @discardableResult
+    func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken
+
     // MARK: - Data Import
     
     /// Import data from the PlayaAPI
     func importFromPlayaAPI() async throws
     
     /// Import data from provided JSON data (for testing)
-    func importFromData(artData: Data, campData: Data, eventData: Data) async throws
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws
     
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
@@ -130,12 +197,15 @@ public protocol PlayaDB {
     
     /// All art objects (reactive)
     var allArt: [ArtObject] { get }
-    
+
     /// All camps (reactive)
     var allCamps: [CampObject] { get }
-    
+
     /// All events with their occurrences (reactive)
     var allEvents: [EventObjectOccurrence] { get }
+
+    /// All mutant vehicles (reactive)
+    var allMutantVehicles: [MutantVehicleObject] { get }
     
     /// All favorited objects metadata (reactive)
     var favorites: [ObjectMetadata] { get }
@@ -166,6 +236,19 @@ public extension PlayaDB {
         onChange: @escaping ([EventObjectOccurrence]) -> Void
     ) -> PlayaDBObservationToken {
         observeEvents(filter: filter, onChange: onChange, onError: { _ in })
+    }
+
+    @discardableResult
+    func observeMutantVehicles(
+        filter: MutantVehicleFilter,
+        onChange: @escaping ([MutantVehicleObject]) -> Void
+    ) -> PlayaDBObservationToken {
+        observeMutantVehicles(filter: filter, onChange: onChange, onError: { _ in })
+    }
+
+    /// Convenience overload for importFromData without MV data
+    func importFromData(artData: Data, campData: Data, eventData: Data) async throws {
+        try await importFromData(artData: artData, campData: campData, eventData: eventData, mvData: nil)
     }
 }
 

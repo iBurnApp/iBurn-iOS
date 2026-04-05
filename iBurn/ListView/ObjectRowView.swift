@@ -9,6 +9,7 @@
 import SwiftUI
 import PlayaDB
 import CoreLocation
+import UIKit
 
 /// Generic row view for displaying data objects in list views
 ///
@@ -31,55 +32,123 @@ import CoreLocation
 /// ```
 struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let object: Object
-    let distance: String?
+    let thumbnail: UIImage?
+    let colorsOverride: BRCImageColors?
+    let subtitle: AttributedString?
+    let rightSubtitle: String?
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
 
     @ViewBuilder let actions: () -> Actions
     @Environment(\.themeColors) var themeColors
 
+    private let thumbnailSize: CGFloat = 100
+
     var body: some View {
+        let colors = colorsOverride.map(ImageColors.init) ?? themeColors
+
         HStack(alignment: .top, spacing: 12) {
-            // Main content
-            VStack(alignment: .leading, spacing: 4) {
-                // Name
-                Text(object.name)
-                    .font(.headline)
-                    .foregroundColor(themeColors.primaryColor)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(object.name)
+                        .font(.headline)
+                        .foregroundColor(colors.primaryColor)
+                        .lineLimit(1)
 
-                // Description (if available)
-                if let description = object.description, !description.isEmpty {
-                    Text(description)
+                    Spacer(minLength: 0)
+
+                    actions()
+                }
+
+                HStack(alignment: .top, spacing: 8) {
+                    thumbnailView
+                        .frame(width: thumbnailSize, height: thumbnailSize)
+
+                    Text(object.description ?? "")
                         .font(.subheadline)
-                        .foregroundColor(themeColors.secondaryColor)
-                        .lineLimit(2)
+                        .foregroundColor(colors.detailColor)
+                        .lineLimit(nil)
+                        .truncationMode(.tail)
+                        .frame(height: thumbnailSize, alignment: .topLeading)
                 }
+                .padding(.top, 4)
 
-                // Distance (if available)
-                if let distance = distance {
-                    Text(distance)
-                        .font(.caption)
-                        .foregroundColor(themeColors.detailColor)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .layoutPriority(1)
+                    } else {
+                        Text("🚶🏽 ? min   🚴🏽 ? min")
+                            .font(.subheadline)
+                            .foregroundColor(colors.secondaryColor)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .layoutPriority(1)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if let rightSubtitle, !rightSubtitle.isEmpty {
+                        Text(rightSubtitle)
+                            .font(.subheadline)
+                            .foregroundColor(colors.secondaryColor)
+                            .lineLimit(1)
+                    }
                 }
+                .padding(.top, 8)
             }
 
-            Spacer()
+            Button(action: onFavoriteTap) {
+                Image(systemName: isFavorite ? "heart.fill" : "heart")
+                    .foregroundColor(isFavorite ? .pink : colors.detailColor)
+                    .imageScale(.large)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 0)
+        .listRowBackground(listRowBackground)
+    }
 
-            // Action buttons
-            HStack(spacing: 8) {
-                // Type-specific actions (audio button, etc.)
-                actions()
-
-                // Favorite button
-                Button(action: onFavoriteTap) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .pink : themeColors.detailColor)
-                        .imageScale(.large)
-                }
-                .buttonStyle(.plain) // Prevent List row selection on tap
+    private var listRowBackground: some View {
+        ZStack {
+            themeColors.backgroundColor
+            if let override = colorsOverride {
+                Color(override.backgroundColor)
+                    .transition(.opacity)
             }
         }
-        .padding(.vertical, 8)
+        .animation(.easeInOut(duration: 0.22), value: colorsOverride != nil)
+    }
+
+    @ViewBuilder
+    private var thumbnailView: some View {
+        let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
+
+        ZStack {
+            shape.fill(Color.black.opacity(0.06))
+
+            if let thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: thumbnailSize, height: thumbnailSize)
+                    .clipped()
+                    .transition(.opacity)
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundColor(.black.opacity(0.25))
+                    .frame(width: thumbnailSize, height: thumbnailSize)
+            }
+        }
+        .clipShape(shape)
+        .contentShape(shape)
+        .overlay(shape.stroke(Color.black.opacity(0.08), lineWidth: 1))
+        .clipped()
+        .animation(.easeInOut(duration: 0.22), value: thumbnail != nil)
     }
 }
 

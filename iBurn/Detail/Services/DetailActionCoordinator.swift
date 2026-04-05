@@ -10,10 +10,12 @@ import UIKit
 import SafariServices
 import EventKitUI
 import SwiftUI
+import PlayaDB
 
 // MARK: - Protocol
 
 /// Coordinator responsible for handling detail view actions
+@MainActor
 protocol DetailActionCoordinator: AnyObject {
     func handle(_ action: DetailAction)
     func updateNavigator(_ navigator: Navigable?)
@@ -49,6 +51,7 @@ struct DetailActionCoordinatorDependencies {
 // MARK: - Factory
 
 /// Factory for creating DetailActionCoordinator instances
+@MainActor
 enum DetailActionCoordinatorFactory {
     /// Creates a coordinator for production use
     static func makeCoordinator(presenter: Presentable? = nil, navigator: Navigable? = nil) -> DetailActionCoordinator {
@@ -166,58 +169,33 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             navigator.pushViewController(mapViewController, animated: true)
             
         case .navigateToObject(let object):
-            print("🧭 Attempting navigation to object: \(object.title)")
-            
-            guard let navigator = dependencies.navigator else {
-                print("❌ Navigation FAILED: Navigator is nil")
-                print("   Presenter: \(type(of: dependencies.presenter))")
-                return
+            guard let navigator = dependencies.navigator else { return }
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            Task { @MainActor in
+                let detailVC = await DetailViewControllerFactory.createDetailViewController(for: object, playaDB: playaDB)
+                navigator.pushViewController(detailVC, animated: true)
             }
-            
-            print("✅ Navigator found: \(type(of: navigator))")
-            
-            let detailVC = DetailViewControllerFactory.createDetailViewController(for: object)
-            
-            print("🚀 Pushing view controller: \(type(of: detailVC))")
-            navigator.pushViewController(detailVC, animated: true)
             
         case .showEventsList(let events, let hostName):
-            print("🎪 Attempting to show \(events.count) events for \(hostName)")
-            
-            guard let navigator = dependencies.navigator else {
-                print("❌ Navigation FAILED: Navigator is nil")
-                return
+            guard let navigator = dependencies.navigator else { return }
+            guard let firstEvent = events.first else { return }
+
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            Task { @MainActor in
+                var playaEvents: [EventObjectOccurrence] = []
+                if let campId = firstEvent.hostedByCampUniqueID {
+                    playaEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campId)) ?? []
+                } else if let artId = firstEvent.hostedByArtUniqueID {
+                    playaEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artId)) ?? []
+                }
+
+                let eventsVC = PlayaHostedEventsViewController(
+                    events: playaEvents,
+                    hostName: hostName,
+                    playaDB: playaDB
+                )
+                navigator.pushViewController(eventsVC, animated: true)
             }
-            
-            guard let firstEvent = events.first else {
-                print("❌ No events provided for \(hostName)")
-                return
-            }
-            
-            var relatedObject: BRCDataObject?
-            
-            // Use database transaction to get the host object
-            BRCDatabaseManager.shared.uiConnection.read { transaction in
-                relatedObject = firstEvent.host(with: transaction)
-            }
-            
-            guard let host = relatedObject else {
-                print("❌ Could not find host object for events")
-                return
-            }
-            
-            print("✅ Found host object: \(host.title)")
-            
-            // Create and push HostedEventsViewController (matching old BRCDetailViewController pattern)
-            let eventsVC = HostedEventsViewController(
-                style: .grouped,
-                extensionName: BRCDatabaseManager.shared.relationships,
-                relatedObject: host
-            )
-            eventsVC.title = "Events - \(hostName)"
-            
-            print("🚀 Pushing HostedEventsViewController")
-            navigator.pushViewController(eventsVC, animated: true)
             
         case .showNextEvent(let nextEvent):
             print("⏭️ Attempting to show next event: \(nextEvent.title)")
@@ -229,6 +207,16 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             
             // Navigate to the next event's detail view
             self.handle(.navigateToObject(nextEvent))
+
+        case .showMapAnnotation(let annotation, let title):
+            guard let navigator = dependencies.navigator else {
+                print("❌ Cannot show map: Navigator is nil")
+                return
+            }
+            let dataSource = StaticAnnotationDataSource(annotation: annotation)
+            let mapVC = MapListViewController(dataSource: dataSource)
+            mapVC.title = title
+            navigator.pushViewController(mapVC, animated: true)
             
         case .playAudio(_):
             // Audio is handled directly by AudioService in ViewModel
@@ -282,9 +270,16 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
                 print("❌ Cannot show share screen: No presenter available")
                 return
             }
-            
+
             let shareViewController = ShareQRCodeHostingController(dataObject: dataObject)
             presenter.present(shareViewController, animated: true, completion: nil)
+
+        case .navigateToViewController(let viewController):
+            guard let navigator = dependencies.navigator else {
+                print("❌ Navigation FAILED: Navigator is nil")
+                return
+            }
+            navigator.pushViewController(viewController, animated: true)
         }
     }
     

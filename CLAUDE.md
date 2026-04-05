@@ -29,13 +29,9 @@ Each document should include:
 * **Related Work**: Reference previous documents and build upon them
 * **Completion**: Mark final outcomes and any remaining work
 
-## Planning
-
-When working in plan mode, we can consult Gemini 2.5 Pro with `gemini -p "example prompt"` command. This model has a large context window (1M tokens) and is especially helpful when iterating on architecture decisions and proposed code changes. After you've come up with a solid plan, consult Gemini for feedback (or at any time when prompted by the user).
-
 ## Source Control
 
-IMPORTANT: After completing a task (and updating our documentation), we should always commit our changes. Only perform safe operations like `git add` and `git commit`. Never attempt to rewrite history, pull from remote, squash, merge or rebase.
+IMPORTANT: Do not perform any operations that result in git writes, the user will handle `git add`, `git commit`, etc. Never attempt to rewrite history, pull from remote, squash, merge or rebase. You can use read-only operations like `git show`, `git log` etc.
 
 ## Project Overview
 
@@ -67,6 +63,19 @@ open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
 
 ## Development Commands
 
+### Build/Test Output Parsing (xcsift)
+
+This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
+
+Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
+
+Examples:
+```bash
+xcodebuild build ... 2>&1 | xcsift -f toon -w
+xcodebuild test ... 2>&1 | xcsift -f toon -w
+swift test 2>&1 | xcsift -f toon -w
+```
+
 ### Building and Dependencies
 - `pod install` - Install CocoaPods dependencies (required after cloning)
 - `git submodule update --init` - Initialize git submodules (required after cloning)
@@ -74,34 +83,40 @@ open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
 
 ### Build Commands
 
-**Preferred Build Command (quiet, arm64 simulator)**:
+**Preferred Build Command (arm64 simulator, parsed via xcsift)**:
 ```bash
-# Build for iOS Simulator with quiet output
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+# Build for iOS Simulator (quiet xcodebuild + xcsift parsing)
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
+#
+# Note: if xcsift prints "Error: No input provided", xcodebuild likely produced no output (e.g. a fully
+# incremental build with `-quiet`). Re-run without `-quiet`.
 
-# Build and show all output (for debugging)
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64'
+# Build and show full xcodebuild output (debugging)
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
 ```
 
 **Testing Commands**:
 ```bash
 # Run tests on simulator with quiet output
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
 
 # Run tests with full output (for debugging)
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64'
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
 
 # Run PlayaKit tests
-xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64' -quiet
+xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
+
+# Run SwiftPM tests (note: may require elevated permissions in sandboxed environments)
+swift test 2>&1 | xcsift -f toon -w
 ```
 
 **Utility Commands**:
 ```bash
 # Clean build products
-xcodebuild clean -workspace iBurn.xcworkspace -scheme iBurn
+xcodebuild clean -workspace iBurn.xcworkspace -scheme iBurn 2>&1 | xcsift -f toon -w
 
 # Show build settings
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -showBuildSettings
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -showBuildSettings 2>&1 | xcsift -f toon -w
 ```
 
 ### Simulator Management
@@ -113,29 +128,29 @@ Basic simulator control using standard tools:
 xcrun simctl list devices available
 
 # Boot a simulator
-xcrun simctl boot "iPhone 16 Pro"
+xcrun simctl boot "iPhone 17 Pro Max"
 
 # Open Simulator app
 open -a Simulator
 
 # Shutdown simulator
-xcrun simctl shutdown "iPhone 16 Pro"
+xcrun simctl shutdown "iPhone 17 Pro Max"
 
 # Erase simulator content
-xcrun simctl erase "iPhone 16 Pro"
+xcrun simctl erase "iPhone 17 Pro Max"
 ```
-
-
-
 
 ### Fastlane Commands
 - `fastlane ios beta` - Build and upload to TestFlight
 - `fastlane ios refresh_dsyms` - Download and upload crash symbols
 
 ### Testing
+
+When adding new functionality, make sure to plan for testability. When your feature is complete, add tests to validate your business logic, and then ensure they are passing.
+
 - **Command Line**: Use xcodebuild test commands shown above for automated testing
 - **Xcode GUI**: Run tests through Xcode Test Navigator or `Cmd+U`  
-- **Test targets**: `iBurnTests`, `PlayaKitTests`
+- **Test targets**: `iBurnTests`, `PlayaKitTests`, and local Swift Package targets for `PlayaDB` and `PlayaAPI`
 
 ## Architecture Overview
 

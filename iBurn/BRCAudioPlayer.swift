@@ -10,6 +10,28 @@ import Foundation
 import AVFoundation
 import MediaPlayer
 
+public struct BRCAudioTourTrack: Equatable {
+    public let uid: String
+    public let title: String
+    public let artist: String?
+    public let audioURL: URL
+    public let artworkURL: URL?
+
+    public init(
+        uid: String,
+        title: String,
+        artist: String?,
+        audioURL: URL,
+        artworkURL: URL? = nil
+    ) {
+        self.uid = uid
+        self.title = title
+        self.artist = artist
+        self.audioURL = audioURL
+        self.artworkURL = artworkURL
+    }
+}
+
 // FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
 // Consider refactoring the code to use the non-optional operators.
 fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
@@ -58,12 +80,12 @@ public final class BRCAudioPlayer: NSObject {
             }
         }
     }
-    fileprivate var nowPlaying: BRCArtObject? {
+    fileprivate var nowPlaying: BRCAudioTourTrack? {
         didSet {
             handlePlayerItemChange()
         }
     }
-    fileprivate var queuedObjects: [BRCArtObject] = []
+    fileprivate var queuedObjects: [BRCAudioTourTrack] = []
     private var itemObserver: NSKeyValueObservation!
     private var rateObserver: NSKeyValueObservation!
     private var statusObserver: NSObjectProtocol!
@@ -97,45 +119,60 @@ public final class BRCAudioPlayer: NSObject {
     }
     
     @objc public func isPlaying(_ item: BRCArtObject) -> Bool {
-        if nowPlaying?.uniqueID == item.uniqueID && player?.rate > 0 {
-            return true
-        }
-        return false
+        isPlaying(id: item.uniqueID)
+    }
+
+    public func isPlaying(id: String) -> Bool {
+        nowPlaying?.uid == id && (player?.rate ?? 0) > 0
     }
     
     /// Check if an item is currently loaded (playing or paused)
     @objc public func hasItem(_ item: BRCArtObject) -> Bool {
-        return nowPlaying?.uniqueID == item.uniqueID && player != nil
+        hasItem(id: item.uniqueID)
+    }
+
+    public func hasItem(id: String) -> Bool {
+        nowPlaying?.uid == id && player != nil
     }
     
     /** Plays audio tour for items, if they are the same it will pause */
     @objc public func playAudioTour(_ items: [BRCArtObject]) {
+        let tracks = items.compactMap { obj -> BRCAudioTourTrack? in
+            guard let url = obj.audioURL else { return nil }
+            return BRCAudioTourTrack(
+                uid: obj.uniqueID,
+                title: obj.title,
+                artist: obj.artistName,
+                audioURL: url,
+                artworkURL: obj.localThumbnailURL
+            )
+        }
+        playAudioTour(tracks)
+    }
+
+    /// Swift-only entry point for PlayaDB-backed lists.
+    public func playAudioTour(_ tracks: [BRCAudioTourTrack]) {
         // this should never happen
-        if items.count == 0 {
+        if tracks.isEmpty {
             reset()
             fireChangeNotification()
             return
         }
-        if items == queuedObjects {
+        if tracks == queuedObjects {
             togglePlayPause()
             return
         }
-        if nowPlaying?.uniqueID == items.first?.uniqueID {
+        if nowPlaying?.uid == tracks.first?.uid {
             togglePlayPause()
             return
         }
-        queuedObjects = items
-        var playerItems: [AVPlayerItem] = []
-        for item in items {
-            if let url = item.audioURL {
-                let playerItem = AVPlayerItem(url: url)
-                playerItems.append(playerItem)
-            }
-        }
-        if items.count > 0 {
+
+        queuedObjects = tracks
+        let playerItems = tracks.map { AVPlayerItem(url: $0.audioURL) }
+        if !playerItems.isEmpty {
             player = AVQueuePlayer(items: playerItems)
             play()
-            nowPlaying = items.first
+            nowPlaying = tracks.first
         } else {
             reset()
         }
@@ -252,14 +289,14 @@ public final class BRCAudioPlayer: NSObject {
         if let nowPlaying {
             var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String : Any]()
             nowPlayingInfo[MPMediaItemPropertyTitle] = nowPlaying.title
-            nowPlayingInfo[MPMediaItemPropertyArtist] = nowPlaying.artistName
+            nowPlayingInfo[MPMediaItemPropertyArtist] = nowPlaying.artist ?? ""
             nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = "Burning Man 2023 Audio Tour"
             // we could do better with these calculations
             nowPlayingInfo[MPMediaItemPropertyAlbumTrackCount] = queuedObjects.count
             nowPlayingInfo[MPMediaItemPropertyAlbumTrackNumber] = 1
             // it would be better to load these off of the main thread
-            if let localThumbnailURL = nowPlaying.localThumbnailURL,
-               let image = UIImage(contentsOfFile: localThumbnailURL.path) {
+            if let artworkURL = nowPlaying.artworkURL,
+               let image = UIImage(contentsOfFile: artworkURL.path) {
                 nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { size in
                     if #available(iOS 15.0, *) {
                         return image.preparingThumbnail(of: size) ?? image
@@ -304,9 +341,9 @@ public final class BRCAudioPlayer: NSObject {
         } else if (player?.items().count > 1) {
             // Not the best way to find nowPlaying..
             if let asset = player?.items()[1].asset as? AVURLAsset {
-                for object in queuedObjects {
-                    if object.audioURL == asset.url {
-                        nowPlaying = object
+                for track in queuedObjects {
+                    if track.audioURL == asset.url {
+                        nowPlaying = track
                         break
                     }
                 }
@@ -339,8 +376,8 @@ public final class BRCAudioPlayer: NSObject {
         guard currentIndex >= 0, currentIndex < queuedObjects.count else {
             return .noSuchContent
         }
-        guard let newURL = queuedObjects[currentIndex - 1].audioURL,
-              let currentItem = player?.currentItem else {
+        let newURL = queuedObjects[currentIndex - 1].audioURL
+        guard let currentItem = player?.currentItem else {
             return .noSuchContent
         }
         let newItem = AVPlayerItem(url: newURL)

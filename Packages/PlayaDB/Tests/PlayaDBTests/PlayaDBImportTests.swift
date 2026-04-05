@@ -250,8 +250,8 @@ final class PlayaDBImportTests: XCTestCase {
         let campData = MockAPIData.campJSON
         let eventData = MockAPIData.eventJSON
         let parser = APIParserFactory.create()
-        let expectedEventObjects = try parser.parseEvents(from: eventData)
-        // let totalExpectedOccurrences = expectedEventObjects.reduce(0) { $0 + $1.occurrenceSet.count }
+        _ = try parser.parseEvents(from: eventData)
+        // Note: we currently don't assert occurrence counts here; this parse call just sanity-checks the fixture.
         
         // When: Import data into PlayaDB
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
@@ -387,5 +387,223 @@ final class PlayaDBImportTests: XCTestCase {
             XCTAssertFalse(eventObject.name.isEmpty, "Event object should have name")
             XCTAssertGreaterThan(eventObject.year, 0, "Event object should have valid year")
         }
+    }
+
+    // MARK: - Mutant Vehicle Import Tests
+
+    func testMutantVehicleImport() async throws {
+        let artData = MockAPIData.artJSON
+        let campData = MockAPIData.campJSON
+        let eventData = MockAPIData.eventJSON
+        let mvData = MockAPIData.mutantVehicleJSON
+        let parser = APIParserFactory.create()
+        let expectedMVs = try parser.parseMutantVehicles(from: mvData)
+
+        try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData, mvData: mvData)
+
+        let fetchedMVs = try await playaDB.fetchMutantVehicles()
+
+        XCTAssertEqual(fetchedMVs.count, expectedMVs.count,
+                      "Should fetch same number of MVs as imported")
+
+        guard let firstExpected = expectedMVs.first,
+              let firstFetched = fetchedMVs.first(where: { $0.uid == firstExpected.uid.value }) else {
+            XCTFail("Could not find matching MV objects")
+            return
+        }
+
+        XCTAssertEqual(firstFetched.name, firstExpected.name)
+        XCTAssertEqual(firstFetched.year, firstExpected.year)
+        XCTAssertEqual(firstFetched.artist, firstExpected.artist)
+        XCTAssertEqual(firstFetched.description, firstExpected.description)
+        XCTAssertEqual(firstFetched.contactEmail, firstExpected.contactEmail)
+        XCTAssertEqual(firstFetched.hometown, firstExpected.hometown)
+        XCTAssertNil(firstFetched.location, "MVs should have no location")
+        XCTAssertFalse(firstFetched.hasLocation, "MVs should report no location")
+        XCTAssertEqual(firstFetched.objectType, .mutantVehicle)
+    }
+
+    func testMutantVehicleImageURLs() async throws {
+        let mvData = MockAPIData.mutantVehicleJSON
+
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: mvData
+        )
+
+        let imageURLs = try await playaDB.fetchMutantVehicleImageURLs()
+
+        // First MV has an image, second doesn't
+        XCTAssertEqual(imageURLs.count, 1)
+        XCTAssertEqual(imageURLs["a6BVI000000Le0r2AC"]?.absoluteString, "https://example.com/mv-image.jpeg")
+    }
+
+    func testMutantVehicleSearch() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        let results = try await playaDB.searchObjects("dragon")
+
+        XCTAssertTrue(results.contains(where: { $0.uid == "a6BVI000000Xf1r3BC" }),
+                      "Search should find Dragon Wagon MV")
+    }
+
+    func testMutantVehicleFavorite() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        let mvs = try await playaDB.fetchMutantVehicles()
+        let mv = mvs[0]
+
+        let isFavBefore = try await playaDB.isFavorite(mv)
+        XCTAssertFalse(isFavBefore)
+
+        try await playaDB.toggleFavorite(mv)
+        let isFavAfter = try await playaDB.isFavorite(mv)
+        XCTAssertTrue(isFavAfter)
+
+        let favorites = try await playaDB.getFavorites()
+        XCTAssertTrue(favorites.contains(where: { $0.uid == mv.uid }))
+    }
+
+    func testMutantVehicleFilterByFavorites() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        let mvs = try await playaDB.fetchMutantVehicles()
+        try await playaDB.toggleFavorite(mvs[0])
+
+        let favFilter = MutantVehicleFilter(onlyFavorites: true)
+        let favMVs = try await playaDB.fetchMutantVehicles(filter: favFilter)
+
+        XCTAssertEqual(favMVs.count, 1)
+        XCTAssertEqual(favMVs[0].uid, mvs[0].uid)
+    }
+
+    func testMutantVehicleImportWithNilData() async throws {
+        // Import without MV data
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: nil
+        )
+
+        let mvs = try await playaDB.fetchMutantVehicles()
+        XCTAssertTrue(mvs.isEmpty, "No MVs should be imported when mvData is nil")
+    }
+
+    // MARK: - Global Search Tests
+
+    func testSearchReturnsMultipleTypes() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // Search for a term that exists in art mock data
+        let artResults = try await playaDB.searchObjects("Curiosity")
+        XCTAssertFalse(artResults.isEmpty, "Should find results for 'Curiosity'")
+
+        // Verify we get typed results
+        let hasArt = artResults.contains(where: { $0.objectType == .art })
+        XCTAssertTrue(hasArt, "Search results should include art objects")
+    }
+
+    func testSearchReturnsEmptyForNoMatch() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        let results = try await playaDB.searchObjects("zzzznonexistent")
+        XCTAssertTrue(results.isEmpty, "Should return empty for non-matching query")
+    }
+
+    func testSearchFindsMutantVehicleByArtist() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // "pEEf" is the artist for Moebius Omnibus in mock data
+        let results = try await playaDB.searchObjects("Sadow")
+        let hasMV = results.contains(where: { $0.objectType == .mutantVehicle })
+        XCTAssertTrue(hasMV, "Should find MV by artist name")
+    }
+
+    // MARK: - Favorites Cross-Type Tests
+
+    func testGetFavoritesReturnsMultipleTypes() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // Favorite one of each type
+        let arts = try await playaDB.fetchArt()
+        let camps = try await playaDB.fetchCamps()
+        let events = try await playaDB.fetchEvents()
+        let mvs = try await playaDB.fetchMutantVehicles()
+
+        XCTAssertFalse(arts.isEmpty)
+        XCTAssertFalse(camps.isEmpty)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertFalse(mvs.isEmpty)
+
+        try await playaDB.toggleFavorite(arts[0])
+        try await playaDB.toggleFavorite(camps[0])
+        try await playaDB.toggleFavorite(events[0].event)
+        try await playaDB.toggleFavorite(mvs[0])
+
+        let favorites = try await playaDB.getFavorites()
+        XCTAssertEqual(favorites.count, 4, "Should have 4 favorites (one of each type)")
+
+        let types = Set(favorites.map { $0.objectType })
+        XCTAssertTrue(types.contains(.art))
+        XCTAssertTrue(types.contains(.camp))
+        XCTAssertTrue(types.contains(.event))
+        XCTAssertTrue(types.contains(.mutantVehicle))
+    }
+
+    func testUnfavoriteRemovesFromGetFavorites() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON
+        )
+
+        let arts = try await playaDB.fetchArt()
+        let art = arts[0]
+
+        try await playaDB.toggleFavorite(art)
+        let favsBefore = try await playaDB.getFavorites()
+        XCTAssertTrue(favsBefore.contains(where: { $0.uid == art.uid }))
+
+        try await playaDB.toggleFavorite(art) // unfavorite
+        let favsAfter = try await playaDB.getFavorites()
+        XCTAssertFalse(favsAfter.contains(where: { $0.uid == art.uid }))
     }
 }

@@ -54,7 +54,7 @@ struct DetailView: View {
         .environment(\.themeColors, viewModel.getThemeColors())
         .background(backgroundColor)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(viewModel.dataObject.title)
+        .navigationTitle(viewModel.title)
         .sheet(isPresented: imageViewerBinding) {
             if let selected = viewModel.selectedImage {
                 ImageViewerSheet(image: selected)
@@ -72,7 +72,7 @@ struct DetailView: View {
                 }
                 
                 // Add to Calendar button for events
-                if viewModel.dataObject is BRCEventObject {
+                if viewModel.showsCalendarButton {
                     Button(action: {
                         viewModel.showEventEditor()
                     }) {
@@ -86,10 +86,10 @@ struct DetailView: View {
                 Button(action: {
                     Task { await viewModel.toggleFavorite() }
                 }) {
-                    Image(systemName: viewModel.metadata.isFavorite ? "heart.fill" : "heart")
+                    Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
                         .font(.body)
-                        .accessibilityLabel(viewModel.metadata.isFavorite ?  "Remove Favorite" : "Add Favorite")
-                        .foregroundColor(viewModel.metadata.isFavorite ? .pink : themeColors.detailColor)
+                        .accessibilityLabel(viewModel.isFavorite ?  "Remove Favorite" : "Add Favorite")
+                        .foregroundColor(viewModel.isFavorite ? .pink : themeColors.detailColor)
                 }
             }
         }
@@ -197,17 +197,20 @@ struct DetailCellView: View {
             
         case .audio(let artObject, let isPlaying):
             DetailAudioCell(artObject: artObject, isPlaying: isPlaying)
+
+        case .audioTrack(let track, let isPlaying):
+            DetailAudioTrackCell(track: track, isPlaying: isPlaying)
             
-        case .relationship(let object, let type):
-            DetailRelationshipCell(object: object, type: type)
-            
-        case .eventRelationship(let events, let hostName):
-            DetailEventRelationshipCell(events: events, hostName: hostName)
-            
-        case .nextHostEvent(let nextEvent, let hostName):
-            DetailNextHostEventCell(nextEvent: nextEvent, hostName: hostName)
-            
-        case .allHostEvents(let count, let hostName):
+        case .relationship(let title, let type, _):
+            DetailRelationshipCell(title: title, type: type)
+
+        case .eventRelationship(let count, let hostName, _):
+            DetailEventRelationshipCell(count: count, hostName: hostName)
+
+        case .nextHostEvent(let title, let scheduleText, _, _):
+            DetailNextHostEventCell(title: title, scheduleText: scheduleText)
+
+        case .allHostEvents(let count, let hostName, _):
             DetailAllHostEventsCell(count: count, hostName: hostName)
             
         case .schedule(let attributedString):
@@ -227,12 +230,18 @@ struct DetailCellView: View {
                 viewModel.handleCellTap(cell)
             }
             .frame(height: 200)
+
+        case .mapAnnotation(let annotation, _):
+            DetailMapViewRepresentable(annotation: annotation) {
+                viewModel.handleCellTap(cell)
+            }
+            .frame(height: 200)
             
         case .landmark(let landmark):
             DetailLandmarkCell(landmark: landmark)
             
-        case .eventType(let eventType):
-            DetailEventTypeCell(eventType: eventType)
+        case .eventType(let emoji, let label):
+            DetailEventTypeCell(emoji: emoji, label: label)
             
         case .visitStatus(let status):
             DetailVisitStatusCell(
@@ -246,8 +255,16 @@ struct DetailCellView: View {
     
     private func isCellTappable(_ cellType: DetailCellType) -> Bool {
         switch cellType {
-        case .email, .url, .coordinates, .relationship, .eventRelationship, .nextHostEvent, .allHostEvents, .audio, .userNotes, .mapView:
+        case .email, .url, .coordinates, .audio, .audioTrack, .userNotes, .mapView, .mapAnnotation:
             return true
+        case .relationship(_, _, let onTap):
+            return onTap != nil
+        case .eventRelationship(_, _, let onTap):
+            return onTap != nil
+        case .nextHostEvent(_, _, _, let onTap):
+            return onTap != nil
+        case .allHostEvents(_, _, let onTap):
+            return onTap != nil
         case .playaAddress(_, let tappable):
             return tappable
         case .text, .distance, .travelTime, .schedule, .date, .landmark, .eventType:
@@ -255,7 +272,7 @@ struct DetailCellView: View {
         case .image:
             return true
         case .visitStatus:
-            return false // The Menu handles the interaction
+            return false
         }
     }
 }
@@ -494,11 +511,27 @@ struct DetailAudioCell: View {
     }
 }
 
+struct DetailAudioTrackCell: View {
+    let track: BRCAudioTourTrack
+    let isPlaying: Bool
+    @Environment(\.themeColors) var themeColors
+
+    var body: some View {
+        HStack {
+            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                .foregroundColor(themeColors.primaryColor)
+                .font(.title2)
+            Text("Audio Tour")
+            Spacer()
+        }
+    }
+}
+
 struct DetailRelationshipCell: View {
-    let object: BRCDataObject
+    let title: String
     let type: RelationshipType
     @Environment(\.themeColors) var themeColors
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(sectionTitle)
@@ -506,11 +539,11 @@ struct DetailRelationshipCell: View {
                 .fontWeight(.semibold)
                 .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
-            
+
             HStack {
                 Image(systemName: "arrow.right.circle")
                     .foregroundColor(themeColors.primaryColor)
-                Text(object.title)
+                Text(title)
                     .foregroundColor(themeColors.primaryColor)
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -519,7 +552,7 @@ struct DetailRelationshipCell: View {
             }
         }
     }
-    
+
     private var sectionTitle: String {
         switch type {
         case .hostedBy:
@@ -537,10 +570,10 @@ struct DetailRelationshipCell: View {
 }
 
 struct DetailEventRelationshipCell: View {
-    let events: [BRCEventObject]
+    let count: Int
     let hostName: String
     @Environment(\.themeColors) var themeColors
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("OTHER EVENTS")
@@ -548,14 +581,14 @@ struct DetailEventRelationshipCell: View {
                 .fontWeight(.semibold)
                 .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
-            
+
             HStack {
                 Image(systemName: "calendar")
                     .foregroundColor(themeColors.primaryColor)
                 Text("Hosted Events")
                     .foregroundColor(themeColors.primaryColor)
                 Spacer()
-                Text("\(events.count)")
+                Text("\(count)")
                     .foregroundColor(themeColors.detailColor)
                 Image(systemName: "chevron.right")
                     .foregroundColor(themeColors.primaryColor)
@@ -608,10 +641,10 @@ struct DetailDateCell: View {
 }
 
 struct DetailNextHostEventCell: View {
-    let nextEvent: BRCEventObject
-    let hostName: String
+    let title: String
+    let scheduleText: String
     @Environment(\.themeColors) var themeColors
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("NEXT EVENT")
@@ -619,74 +652,29 @@ struct DetailNextHostEventCell: View {
                 .fontWeight(.semibold)
                 .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
-            
+
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text(nextEvent.title)
+                    Text(title)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(themeColors.primaryColor)
                         .lineLimit(2)
-                    
+
                     Spacer()
-                    
+
                     Image(systemName: "chevron.right")
                         .foregroundColor(themeColors.primaryColor)
                         .font(.caption)
                 }
-                
-                if let startDate = nextEvent.startDate as Date?,
-                   let endDate = nextEvent.endDate as Date? {
-                    Text(formatEventTimeAndDuration(startDate: startDate, endDate: endDate))
+
+                if !scheduleText.isEmpty {
+                    Text(scheduleText)
                         .font(.caption)
                         .foregroundColor(themeColors.secondaryColor)
                 }
-                
-                if let description = nextEvent.detailDescription, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(themeColors.detailColor)
-                        .lineLimit(1)
-                }
             }
         }
-    }
-    
-    private func formatEventTimeAndDuration(startDate: Date, endDate: Date) -> String {
-        let calendar = Calendar.current
-        let timeFormatter = DateFormatter()
-        timeFormatter.timeStyle = .short
-        timeFormatter.timeZone = TimeZone.burningManTimeZone
-        
-        var timeString: String
-        
-        // Format day and time
-        if calendar.isDateInToday(startDate) {
-            timeString = "Today at \(timeFormatter.string(from: startDate))"
-        } else if calendar.isDateInTomorrow(startDate) {
-            timeString = "Tomorrow at \(timeFormatter.string(from: startDate))"
-        } else {
-            let dayFormatter = DateFormatter()
-            dayFormatter.dateFormat = "EEEE M/d" // e.g., "Friday 8/25"
-            dayFormatter.timeZone = TimeZone.burningManTimeZone
-            timeString = "\(dayFormatter.string(from: startDate)) at \(timeFormatter.string(from: startDate))"
-        }
-        
-        // Add duration
-        let durationMinutes = Int(endDate.timeIntervalSince(startDate) / 60)
-        let hours = durationMinutes / 60
-        let minutes = durationMinutes % 60
-        
-        var durationString: String
-        if hours > 0 && minutes > 0 {
-            durationString = "\(hours)h \(minutes)m"
-        } else if hours > 0 {
-            durationString = "\(hours)h"
-        } else {
-            durationString = "\(minutes)m"
-        }
-        
-        return "\(timeString) • \(durationString)"
     }
 }
 
@@ -737,9 +725,10 @@ struct DetailLandmarkCell: View {
 }
 
 struct DetailEventTypeCell: View {
-    let eventType: BRCEventType
+    let emoji: String
+    let label: String
     @Environment(\.themeColors) var themeColors
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("EVENT TYPE")
@@ -747,8 +736,8 @@ struct DetailEventTypeCell: View {
                 .fontWeight(.semibold)
                 .foregroundColor(themeColors.detailColor)
                 .textCase(.uppercase)
-            
-            Text("\(eventType.emoji) \(eventType.displayString)")
+
+            Text("\(emoji) \(label)")
                 .foregroundColor(themeColors.secondaryColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -793,4 +782,3 @@ struct DetailVisitStatusCell: View {
         }
     }
 }
-

@@ -79,6 +79,18 @@ final class BundleDataIntegrationTests: XCTestCase {
         XCTAssertEqual(updateInfo.events?.file, "event.json", "Events file should be event.json")
     }
     
+    func testLoadMutantVehicleDataFromBundle() throws {
+        let data = try iBurn2025APIData.DataFile.mv.loadData()
+        XCTAssertFalse(data.isEmpty, "MV data should not be empty")
+
+        let mvObjects = try parser.parseMutantVehicles(from: data)
+        XCTAssertFalse(mvObjects.isEmpty, "Should have mutant vehicle objects in 2025 data")
+
+        let firstMV = mvObjects[0]
+        XCTAssertFalse(firstMV.uid.value.isEmpty, "MV UID should not be empty")
+        XCTAssertFalse(firstMV.name.isEmpty, "MV name should not be empty")
+    }
+
     // MARK: - Additional Data Files Tests
     
     func testLoadCreditsFromBundle() throws {
@@ -152,5 +164,6 @@ final class BundleDataIntegrationTests: XCTestCase {
         XCTAssertNoThrow(try BundleDataLoader.loadCredits(from: iBurn2025APIData.bundle))
         XCTAssertNoThrow(try BundleDataLoader.loadDatesInfo(from: iBurn2025APIData.bundle))
         XCTAssertNoThrow(try BundleDataLoader.loadPoints(from: iBurn2025APIData.bundle))
+        XCTAssertNoThrow(try BundleDataLoader.loadMutantVehicles(from: iBurn2025APIData.bundle))
     }
 }

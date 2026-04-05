@@ -26,6 +26,11 @@ class ArtDataProvider: ObjectListDataProvider {
         self.playaDB = playaDB
     }
 
+    func isDatabaseSeeded() async -> Bool {
+        guard let updateInfo = try? await playaDB.getUpdateInfo() else { return false }
+        return !updateInfo.isEmpty
+    }
+
     // MARK: - ObjectListDataProvider
 
     func observeObjects(filter: ArtFilter) -> AsyncStream<[ArtObject]> {
@@ -52,7 +57,7 @@ class ArtDataProvider: ObjectListDataProvider {
         try await playaDB.isFavorite(object)
     }
 
-    func distanceString(from location: CLLocation?, to object: ArtObject) -> String? {
+    func distanceAttributedString(from location: CLLocation?, to object: ArtObject) -> AttributedString? {
         guard let location = location,
               let objectLocation = object.location else {
             return nil
@@ -60,8 +65,10 @@ class ArtDataProvider: ObjectListDataProvider {
 
         let distance = location.distance(from: objectLocation)
 
-        // Use existing TTTLocationFormatter for consistent formatting
-        let attributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance)
-        return attributedString?.string
+        // Use existing TTTLocationFormatter for consistent walk/bike estimates + coloring.
+        guard let nsAttributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) else {
+            return nil
+        }
+        return AttributedString(nsAttributedString)
     }
 }

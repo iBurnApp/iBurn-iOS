@@ -15,6 +15,7 @@ import Foundation
     let tableViewAdapter: YapTableViewAdapter
     weak var parent: UIViewController?
     
+    @MainActor
     init(viewName: String,
          searchViewName: String,
          tableView: UITableView,
@@ -33,6 +34,7 @@ import Foundation
 }
 
 extension ListCoordinator: YapTableViewAdapterDelegate {
+    @MainActor
     public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
         let nav = parent?.presentingViewController?.navigationController ??
          parent?.navigationController
@@ -42,6 +44,7 @@ extension ListCoordinator: YapTableViewAdapterDelegate {
 }
 
 extension ListCoordinator: UISearchControllerDelegate {
+    @MainActor
     func didPresentSearchController(_ searchController: UISearchController) {
         pageViewManager.tableView = self.searchDisplayManager.tableViewAdapter.tableView
         pageViewManager.objectProvider = self.searchDisplayManager.viewHandler
@@ -53,6 +56,7 @@ extension ListCoordinator: UISearchControllerDelegate {
         }
     }
     
+    @MainActor
     func didDismissSearchController(_ searchController: UISearchController) {
         pageViewManager.tableView = self.tableViewAdapter.tableView
         pageViewManager.objectProvider = self.tableViewAdapter.viewHandler

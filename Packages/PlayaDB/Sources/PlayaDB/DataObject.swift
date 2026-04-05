@@ -30,13 +30,15 @@ public enum DataObjectType: String, CaseIterable, Codable {
     case art
     case camp
     case event
-    
+    case mutantVehicle
+
     /// Display name for the object type
     public var displayName: String {
         switch self {
         case .art: return "Art"
         case .camp: return "Camp"
         case .event: return "Event"
+        case .mutantVehicle: return "Mutant Vehicles"
         }
     }
 }

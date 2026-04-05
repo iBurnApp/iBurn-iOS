@@ -43,3 +43,6 @@ public typealias CampID = ID<Camp>
 
 /// Strongly-typed identifier for Event objects
 public typealias EventID = ID<Event>
+
+/// Strongly-typed identifier for MutantVehicle objects
+public typealias MutantVehicleID = ID<MutantVehicle>

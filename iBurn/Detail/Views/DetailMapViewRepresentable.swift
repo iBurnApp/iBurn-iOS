@@ -11,9 +11,27 @@ import MapLibre
 
 /// SwiftUI wrapper for MLNMapView to display embedded map previews in DetailView
 struct DetailMapViewRepresentable: UIViewRepresentable {
-    let dataObject: BRCDataObject
-    let metadata: BRCObjectMetadata?
+    private let annotationProvider: () -> MLNAnnotation?
     let onTap: () -> Void
+
+    init(
+        dataObject: BRCDataObject,
+        metadata: BRCObjectMetadata?,
+        onTap: @escaping () -> Void
+    ) {
+        self.annotationProvider = {
+            DataObjectAnnotation(object: dataObject, metadata: metadata ?? BRCObjectMetadata())
+        }
+        self.onTap = onTap
+    }
+
+    init(
+        annotation: MLNAnnotation,
+        onTap: @escaping () -> Void
+    ) {
+        self.annotationProvider = { annotation }
+        self.onTap = onTap
+    }
     
     func makeUIView(context: Context) -> MLNMapView {
         // Create map view with iBurn defaults (no side effects)
@@ -29,7 +47,7 @@ struct DetailMapViewRepresentable: UIViewRepresentable {
     
     func updateUIView(_ uiView: MLNMapView, context: Context) {
         // Always update annotation when called (handles data changes)
-        guard let annotation = DataObjectAnnotation(object: dataObject, metadata: metadata ?? BRCObjectMetadata()) else {
+        guard let annotation = annotationProvider() else {
             return
         }
         
@@ -42,7 +60,7 @@ struct DetailMapViewRepresentable: UIViewRepresentable {
         // Always perform zoom for current data
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let padding = UIEdgeInsets(top: 45, left: 45, bottom: 45, right: 45)
-            uiView.brc_showDestination(for: dataObject, metadata: metadata ?? BRCObjectMetadata(), animated: true, padding: padding)
+            uiView.brc_showDestination(annotation, animated: true, padding: padding)
         }
     }
     

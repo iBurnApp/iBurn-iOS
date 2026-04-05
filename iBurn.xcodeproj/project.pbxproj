@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 90;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -81,12 +81,14 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		D960F2601F74E65A00144290 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolder = Frameworks;
+			dstSubfolderSpec = 10;
 			files = (
 				D9CB2A69211897FB00A0F2AE /* PlayaGeocoder.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -174,6 +176,7 @@
 /* Begin PBXFrameworksBuildPhase section */
 		63CE2A511987140F00F65B01 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				D966562928A9B86F002FA471 /* Zip in Frameworks */,
 				D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */,
@@ -198,12 +201,15 @@
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D980A9071B3F5A6400BE3682 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -408,7 +414,7 @@
 				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */,
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
-			preferredProjectObjectVersion = 90;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
@@ -459,128 +465,146 @@
 /* Begin PBXResourcesBuildPhase section */
 		63CE2A521987140F00F65B01 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D980A9081B3F5A6400BE3682 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		494E5894B2B0684522784BC0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-iBurn-iBurnTests-checkManifestLockResult.txt",
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = (
-				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
-				"if [ $? != 0 ] ; then",
-				"    # print error to STDERR",
-				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
-				"    exit 1",
-				"fi",
-				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
-				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
-				"",
-				"",
-			);
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			shellPath = /bin/sh;
-			shellScript = (
-				"\"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources.sh\"",
-				"",
-				"",
+			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D7B18F91C1AE7095AA93FD85 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-iBurn-checkManifestLockResult.txt",
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = (
-				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
-				"if [ $? != 0 ] ; then",
-				"    # print error to STDERR",
-				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
-				"    exit 1",
-				"fi",
-				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
-				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
-				"",
-				"",
-			);
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D907AD6821215F20004A255A /* Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
 				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
 			name = Crashlytics;
-			shellPath = /bin/sh;
-			shellScript = (
-				"\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"",
-				"",
-				"",
+			outputFileListPaths = (
 			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n\n";
 		};
 		D9915F632A76D2D40015C87D /* LicensePlist */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
 			name = LicensePlist;
+			outputFileListPaths = (
+			);
 			outputPaths = (
 				"$(SRCROOT)/iBurn/Settings.bundle/com.mono0926.LicensePlist.plist",
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = (
-				"${PODS_ROOT}/LicensePlist/license-plist --output-path $PRODUCT_NAME/Settings.bundle --add-version-numbers --suppress-opening-directory || true",
-				"",
-				"",
-			);
+			shellScript = "${PODS_ROOT}/LicensePlist/license-plist --output-path $PRODUCT_NAME/Settings.bundle --add-version-numbers --suppress-opening-directory || true\n\n";
 		};
 		F0F8D9D639BE0D2FDC435A0E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			shellPath = /bin/sh;
-			shellScript = (
-				"\"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources.sh\"",
-				"",
-				"",
+			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -588,13 +612,17 @@
 /* Begin PBXSourcesBuildPhase section */
 		63CE2A501987140F00F65B01 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D980A9061B3F5A6400BE3682 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -612,7 +640,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		63CE2A7E1987140F00F65B01 /* Debug configuration for PBXProject "iBurn" */ = {
+		63CE2A7E1987140F00F65B01 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -671,7 +699,7 @@
 			};
 			name = Debug;
 		};
-		63CE2A7F1987140F00F65B01 /* Release configuration for PBXProject "iBurn" */ = {
+		63CE2A7F1987140F00F65B01 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -726,7 +754,7 @@
 			};
 			name = Release;
 		};
-		63CE2A811987140F00F65B01 /* Debug configuration for PBXNativeTarget "iBurn" */ = {
+		63CE2A811987140F00F65B01 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */;
 			buildSettings = {
@@ -763,7 +791,7 @@
 			};
 			name = Debug;
 		};
-		63CE2A821987140F00F65B01 /* Release configuration for PBXNativeTarget "iBurn" */ = {
+		63CE2A821987140F00F65B01 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */;
 			buildSettings = {
@@ -798,7 +826,7 @@
 			};
 			name = Release;
 		};
-		D980A9121B3F5A6400BE3682 /* Debug configuration for PBXNativeTarget "iBurnTests" */ = {
+		D980A9121B3F5A6400BE3682 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */;
 			buildSettings = {
@@ -825,7 +853,7 @@
 			};
 			name = Debug;
 		};
-		D980A9131B3F5A6400BE3682 /* Release configuration for PBXNativeTarget "iBurnTests" */ = {
+		D980A9131B3F5A6400BE3682 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */;
 			buildSettings = {
@@ -858,25 +886,28 @@
 		63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				63CE2A7E1987140F00F65B01 /* Debug configuration for PBXProject "iBurn" */,
-				63CE2A7F1987140F00F65B01 /* Release configuration for PBXProject "iBurn" */,
+				63CE2A7E1987140F00F65B01 /* Debug */,
+				63CE2A7F1987140F00F65B01 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		63CE2A801987140F00F65B01 /* Build configuration list for PBXNativeTarget "iBurn" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				63CE2A811987140F00F65B01 /* Debug configuration for PBXNativeTarget "iBurn" */,
-				63CE2A821987140F00F65B01 /* Release configuration for PBXNativeTarget "iBurn" */,
+				63CE2A811987140F00F65B01 /* Debug */,
+				63CE2A821987140F00F65B01 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		D980A9141B3F5A6400BE3682 /* Build configuration list for PBXNativeTarget "iBurnTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D980A9121B3F5A6400BE3682 /* Debug configuration for PBXNativeTarget "iBurnTests" */,
-				D980A9131B3F5A6400BE3682 /* Release configuration for PBXNativeTarget "iBurnTests" */,
+				D980A9121B3F5A6400BE3682 /* Debug */,
+				D980A9131B3F5A6400BE3682 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
