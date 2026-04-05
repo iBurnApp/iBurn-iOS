@@ -15,6 +15,7 @@ import PlayaGeocoder
 import SafariServices
 import EventKitUI
 import SwiftUI
+import PlayaDB
 
 public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     let uiConnection: YapDatabaseConnection
@@ -22,8 +23,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
     let geocoder = PlayaGeocoder.shared
-    let search: SearchDisplayManager
-    private var observer: NSObjectProtocol?
+    private let globalSearchController: UISearchController
+    private let globalSearchHostingController: GlobalSearchHostingController
+    private let filteredDataSource: FilteredMapDataSource
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
     }
@@ -33,33 +35,72 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
             geocoderTimer?.tolerance = 1
         }
     }
-    
+
     deinit {
-        if let observer = observer {
-            NotificationCenter.default.removeObserver(observer)
-        }
         geocoderTimer?.invalidate()
     }
-    
+
     public init() {
+        let dependencies = BRCAppDelegate.shared.dependencies
         uiConnection = BRCDatabaseManager.shared.uiConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
-        search = SearchDisplayManager(viewName: BRCDatabaseManager.shared.searchEverythingView)
-        search.tableViewAdapter.groupTransformer = GroupTransformers.searchGroup
+
+        // Set up PlayaDB-backed global search
+        let searchHosting = dependencies.makeGlobalSearchHostingController()
+        globalSearchHostingController = searchHosting
+        globalSearchController = UISearchController(searchResultsController: searchHosting)
+        globalSearchController.searchBar.barStyle = Appearance.currentBarStyle
+        globalSearchController.obscuresBackgroundDuringPresentation = true
+        globalSearchController.hidesNavigationBarDuringPresentation = false
+
+        // PlayaDB-backed map annotations (replaces YapDB data sources)
+        let dataSource = FilteredMapDataSource(playaDB: dependencies.playaDB)
+        filteredDataSource = dataSource
+
         let mapView = MLNMapView.brcMapView()
-        let dataSource = FilteredMapDataSource()
         let mapViewAdapter = UserMapViewAdapter(mapView: mapView, dataSource: dataSource)
         super.init(mapViewAdapter: mapViewAdapter)
+
+        // Reactive annotation updates from PlayaDB observations
+        dataSource.onAnnotationsChanged = { [weak self] in
+            self?.mapViewAdapter.reloadAnnotations()
+        }
+
+        // Route PlayaDB annotation info-button taps to detail views
+        mapViewAdapter.onPlayaInfoTapped = { [weak self] anyID in
+            guard let self else { return }
+            let playaDB = dependencies.playaDB
+            Task { @MainActor in
+                let uid = anyID.uid
+                var detailVC: UIViewController?
+                switch anyID.objectType {
+                case .art:
+                    if let art = try? await playaDB.fetchArt(uid: uid) {
+                        detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
+                    }
+                case .camp:
+                    if let camp = try? await playaDB.fetchCamp(uid: uid) {
+                        detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
+                    }
+                case .event:
+                    if let event = try? await playaDB.fetchEvent(uid: uid) {
+                        detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
+                    }
+                case .mutantVehicle:
+                    if let mv = try? await playaDB.fetchMutantVehicle(uid: uid) {
+                        detailVC = DetailViewControllerFactory.create(with: mv, playaDB: playaDB)
+                    }
+                }
+                if let detailVC {
+                    self.navigationController?.pushViewController(detailVC, animated: true)
+                }
+            }
+        }
+
+        globalSearchController.searchResultsUpdater = self
         title = NSLocalizedString("Map", comment: "title for map view")
         setupUserGuide()
-        
-        self.observer = NotificationCenter.default.addObserver(forName: .BRCDatabaseExtensionRegistered,
-                                                               object: BRCDatabaseManager.shared,
-                                                               queue: .main,
-                                                               using: { [weak self] (notification) in
-                                                                self?.extensionRegisteredNotification(notification: notification)
-        })
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -75,7 +116,6 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         setupSearchButton()
         setupListButton()
         setupFilterButton()
-        search.tableViewAdapter.delegate = self
         definesPresentationContext = true
         
     }
@@ -106,13 +146,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     
     @objc func filterButtonPressed(_ sender: Any?) {
         let filterVC = MapFilterViewController { [weak self] in
-            // Recreate data source with new filter settings
-            guard let self = self else { return }
-            let newDataSource = FilteredMapDataSource()
-            if let userAdapter = self.userMapViewAdapter {
-                userAdapter.dataSource = newDataSource
-                self.mapViewAdapter.reloadAnnotations()
-            }
+            guard let self else { return }
+            // Update PlayaDB observations with new filter settings
+            self.filteredDataSource.updateFilters()
             // Update map layers based on new filter settings
             self.mapLayerManager.updateAllLayers()
         }
@@ -153,15 +189,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
 }
 
 private extension MainMapViewController {
-    
-    func extensionRegisteredNotification(notification: Notification) {
-        guard let extensionName = notification.userInfo?["extensionName"] as? String,
-            extensionName == BRCDatabaseManager.shared.everythingFilteredByFavorite else { return }
-        self.mapViewAdapter.reloadAnnotations()
-    }
-    
+
     // MARK: - Annotations
-    
+
     func setupUserGuide() {
         sidebarButtons.findNearestAction = { [weak self] mapPointType, sender in
             guard let location = self?.mapView.userLocation?.location else {
@@ -201,17 +231,14 @@ private extension MainMapViewController {
     }
 }
 
-extension MainMapViewController: YapTableViewAdapterDelegate {
-    public func didSelectObject(_ adapter: YapTableViewAdapter, object: DataObject, in tableView: UITableView, at indexPath: IndexPath) {
-        let nav = presentingViewController?.navigationController ??
-            navigationController
-        let detail = DetailViewControllerFactory.createDetailViewController(for: object.object)
-        nav?.pushViewController(detail, animated: true)
+extension MainMapViewController: UISearchResultsUpdating {
+    public func updateSearchResults(for searchController: UISearchController) {
+        globalSearchHostingController.viewModel.searchText = searchController.searchBar.text ?? ""
     }
 }
 
 extension MainMapViewController: SearchCooordinator {
     var searchController: UISearchController {
-        return search.searchController
+        return globalSearchController
     }
 }

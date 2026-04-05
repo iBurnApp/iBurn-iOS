@@ -30,6 +30,30 @@ extension BRCAppDelegate {
         }
     }
 
+    /// Creates the favorites view controller, using SwiftUI when the feature flag is enabled.
+    /// Callable from ObjC for tab bar setup.
+    @MainActor @objc
+    func createFavoritesViewController() -> UIViewController {
+        #if DEBUG
+        let preferenceService = PreferenceServiceFactory.shared
+        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
+            return FavoritesListHostingController(dependencies: dependencies)
+        }
+        #endif
+
+        let dbManager = BRCDatabaseManager.shared
+        let showExpiredEvents = UserSettings.showExpiredEventsInFavorites
+        let favoritesViewName = showExpiredEvents
+            ? dbManager.everythingFilteredByFavorite
+            : dbManager.everythingFilteredByFavoriteAndExpiration
+        let legacyVC = FavoritesViewController(
+            viewName: favoritesViewName,
+            searchViewName: dbManager.searchFavoritesView
+        )
+        legacyVC.title = "Favorites"
+        return legacyVC
+    }
+
     /// Creates the events view controller, using SwiftUI when the feature flag is enabled.
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc

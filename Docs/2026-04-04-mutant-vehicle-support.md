@@ -77,3 +77,109 @@ Added mutant vehicles as a first-class data type in the PlayaDB layer (GRDB, no 
 - Add unit tests for MV JSON parsing and DB import
 - Consider adding tag-based filtering UI (chips/picker)
 - `BRCGreenPin` asset doesn't exist yet -- add or use existing pin color
+
+---
+
+# Favorites View Migration: YapDB → PlayaDB + SwiftUI
+
+## Problem
+The Favorites tab used `FavoritesViewController`, a UIKit view built on YapDatabase filtered views with 60-second polling. It only supported Art, Camps, and Events. Mutant Vehicles (newly added) were not shown. The view needed migration to PlayaDB for reactive updates and consistency with the rest of the SwiftUI migration.
+
+## Solution
+Created a new SwiftUI `FavoritesView` + `FavoritesViewModel` that observes all 4 object types (Art, Camps, Events, MVs) via PlayaDB, with reactive GRDB updates (no polling). Feature-flagged behind `useSwiftUILists` (same as Events migration).
+
+## Key Design Decisions
+- **Dedicated FavoritesViewModel** (not generic `ObjectListViewModel`) because favorites is multi-type. Same precedent as `EventListViewModel`.
+- **4 parallel GRDB observation streams** -- each fires independently, simpler than merged query.
+- **`FavoriteItem` enum** for type-safe multi-type rendering at the view layer.
+- **`FavoritesTypeFilter`** extends the old `FavoritesFilter` with `.mutantVehicle` case. Uses same UserDefaults key for backward compat.
+- **Reuses existing views**: `EventRowView`, `MediaObjectRowView`, `FavoritesFilterView`.
+
+## Files Created (4)
+- `iBurn/ListView/FavoriteItem.swift` - `FavoriteItem` enum, `FavoriteSection`, `FavoritesTypeFilter`
+- `iBurn/ListView/FavoritesViewModel.swift` - Multi-type VM with 4 observations, search, host resolution
+- `iBurn/ListView/FavoritesView.swift` - SwiftUI view with segmented control, sectioned list, filter/map buttons
+- `iBurn/ListView/FavoritesListHostingController.swift` - UIKit bridge for tab bar
+
+## Files Modified (4)
+- `iBurn/DependencyContainer.swift` - Added `makeFavoritesViewModel()` factory
+- `iBurn/BRCAppDelegate+Dependencies.swift` - Added `createFavoritesViewController()` with feature flag
+- `iBurn/BRCAppDelegate.m` - Replaced inline favorites setup with `createFavoritesViewController()` call
+- `iBurn/UserSettings.swift` - Added `favoritesTypeFilter` property (same key, supports MV case)
+
+## Verification
+1. Build succeeds
+2. Enable `useSwiftUILists` feature flag in debug settings
+3. Favorites tab shows segmented control (All/Art/Camps/Events/Vehicles)
+4. Favorited items appear grouped by type with reactive updates
+5. Search, filter sheet, map button, detail navigation all work
+6. Disable feature flag → legacy FavoritesViewController still works
+
+---
+
+# Global Search Migration: YapDB → PlayaDB FTS5 + SwiftUI
+
+## Problem
+The global search (map tab) used `SearchDisplayManager`, tightly coupled to YapDatabase's `YapDatabaseSearchResultsView` and `YapDatabaseSearchQueue`. It only searched Art, Camps, and Events (no Mutant Vehicles). PlayaDB already had `searchObjects(_:)` with FTS5 across all 4 types.
+
+## Solution
+Created a reusable `GlobalSearchView` + `GlobalSearchViewModel` backed by PlayaDB FTS5, integrated into `MainMapViewController` via `UISearchController.searchResultsController`.
+
+## Key Design Decisions
+- **SwiftUI results inside UISearchController** -- preserves native iOS search UX (bar in nav, dimming) while using SwiftUI for rendering
+- **Debounced search** (0.3s) via `Task.sleep` in the ViewModel, minimum 2 chars
+- **Results grouped by type** (Art/Camps/Events/Vehicles) with section headers
+- **Type-specific rows**: `MediaObjectRowView` for art/camp/MV, custom event row with emoji + type label
+- **Standalone reusable view** -- can be embedded in any context
+
+## Files Created (4)
+- `iBurn/ListView/SearchResultItem.swift` - `SearchResultItem` enum, `SearchResultSection`
+- `iBurn/ListView/GlobalSearchViewModel.swift` - VM with debounced FTS5 search via `playaDB.searchObjects(_:)`
+- `iBurn/ListView/GlobalSearchView.swift` - SwiftUI view with sectioned results, empty states
+- `iBurn/ListView/GlobalSearchHostingController.swift` - UIKit bridge for UISearchController integration
+
+## Files Modified (3)
+- `iBurn/MainMapViewController.swift` - Replaced `SearchDisplayManager` with `GlobalSearchHostingController` + `UISearchController`, removed `YapTableViewAdapterDelegate`
+- `iBurn/DependencyContainer.swift` - Added `makeGlobalSearchViewModel()` and `makeGlobalSearchHostingController()` factories
+- `iBurn/ListView/DisplayableObject.swift` - Added `EventObject: DisplayableObject` conformance
+
+## Verification
+1. Build succeeds
+2. Map tab → tap search bar → type query → results appear grouped by type
+3. Tap result → navigates to detail view
+4. All 4 types searchable (including MVs, which YapDB search didn't support)
+
+---
+
+# Map Annotations Migration: YapDB → PlayaDB
+
+## Problem
+The map tab's annotation data sources (`FilteredMapDataSource`) used 4 `YapViewAnnotationDataSource` instances to show art, camps, events, and favorites on the map. These were synchronous reads from YapDatabase views. PlayaDB already had observation APIs and `PlayaObjectAnnotation` had convenience initializers for all types.
+
+## Solution
+Replaced YapDB annotation data sources with a `PlayaDBAnnotationDataSource` using a cache-and-observe pattern: GRDB observations push data changes, cached annotations are returned synchronously via the existing `AnnotationDataSource` protocol, and a delegate notifies the map to reload.
+
+## Key Design Decisions
+- **Cache-and-observe pattern**: `AnnotationDataSource.allAnnotations()` stays synchronous. GRDB observations update per-category caches asynchronously, then merge and notify via delegate.
+- **6 separate observations**: art, camps, events, fav-art, fav-camps, fav-events. Each fires independently, can be enabled/disabled per UserSettings.
+- **Embargo via `BRCEmbargo.allowEmbargoedData()`**: Global boolean check. If false, all observations produce empty arrays.
+- **Event type filtering at query level**: `EventFilter.eventTypeCodes` with `BRCEventType.playaDBCode` mapping handles type filtering in the DB.
+- **User pins stay on YapDB**: `BRCUserMapPoint` is deeply coupled to YapDB save/load/edit, separate migration scope.
+- **No changes to `MapViewAdapter` or `PlayaObjectAnnotation`**: Already fully compatible with PlayaDB annotations.
+
+## Files Created (2)
+- `iBurn/PlayaDBAnnotationDataSource.swift` - Cache-and-observe data source with 6 GRDB observations
+- `iBurn/BRCEventType+PlayaDB.swift` - Maps `BRCEventType` enum to PlayaDB event type code strings
+
+## Files Modified (2)
+- `iBurn/FilteredMapDataSource.swift` - Rewritten to use `PlayaDBAnnotationDataSource` + `YapCollectionAnnotationDataSource` (user pins). Now takes `PlayaDB` in init.
+- `iBurn/MainMapViewController.swift` - Injects `PlayaDB` into `FilteredMapDataSource`, wires reactive `onAnnotationsChanged` callback, wires `onPlayaInfoTapped` for detail navigation, filter changes call `updateFilters()` instead of recreating data source, removed YapDB extension registration observer.
+
+## Verification
+1. Build succeeds (0 errors)
+2. All 43 iBurnTests pass
+3. Map tab: art/camp/event pins appear based on filter settings
+4. Filter changes: toggle art/camps/events → pins update reactively
+5. Favorites: favorite an item → pin appears on map
+6. Callout: tap pin → info button → detail view opens
+7. User pins (home, bike, star) still work via YapDB

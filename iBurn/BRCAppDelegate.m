@@ -272,18 +272,8 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     UINavigationController *nearbyNav = [[NavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
     
-    // Choose the appropriate view based on user setting
-    BOOL showExpiredEvents = [[NSUserDefaults standardUserDefaults] boolForKey:@"kBRCShowExpiredEventsInFavoritesKey"];
-    // Default to true if not set
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"kBRCShowExpiredEventsInFavoritesKey"]) {
-        showExpiredEvents = YES;
-    }
-    NSString *favoritesViewName = showExpiredEvents ?
-        BRCDatabaseManager.shared.everythingFilteredByFavorite :
-        BRCDatabaseManager.shared.everythingFilteredByFavoriteAndExpiration;
-    self.favoritesViewController = [[FavoritesViewController alloc] initWithViewName:favoritesViewName searchViewName:BRCDatabaseManager.shared.searchFavoritesView];
-    self.favoritesViewController.title = @"Favorites";
-    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:self.favoritesViewController];
+    UIViewController *favoritesVC = [self createFavoritesViewController];
+    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:favoritesVC];
     favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
     favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
     

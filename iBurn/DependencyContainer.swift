@@ -80,6 +80,17 @@ class DependencyContainer {
 
     // MARK: - Factory Methods
 
+    /// Create a GlobalSearchViewModel with injected dependencies
+    func makeGlobalSearchViewModel() -> GlobalSearchViewModel {
+        GlobalSearchViewModel(playaDB: playaDB)
+    }
+
+    /// Create a GlobalSearchHostingController for use as UISearchController.searchResultsController
+    func makeGlobalSearchHostingController() -> GlobalSearchHostingController {
+        let vm = makeGlobalSearchViewModel()
+        return GlobalSearchHostingController(viewModel: vm, playaDB: playaDB)
+    }
+
     /// Create an ArtListViewModel with injected dependencies
     /// - Parameter initialFilter: Optional initial filter (defaults to .all)
     /// - Returns: Configured ArtListViewModel
@@ -142,6 +153,17 @@ class DependencyContainer {
             isDatabaseSeeded: { [mutantVehicleDataProvider] in
                 await mutantVehicleDataProvider.isDatabaseSeeded()
             }
+        )
+    }
+
+    /// Create a FavoritesViewModel with injected dependencies
+    func makeFavoritesViewModel() -> FavoritesViewModel {
+        FavoritesViewModel(
+            artProvider: artDataProvider,
+            campProvider: campDataProvider,
+            eventProvider: eventDataProvider,
+            mvProvider: mutantVehicleDataProvider,
+            locationProvider: locationProvider
         )
     }
 

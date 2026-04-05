@@ -47,7 +47,7 @@ public final class UserSettings: NSObject {
         static let showBigCampNames = "kBRCShowBigCampNamesKey"
     }
     
-    /// Selected favorites filter
+    /// Selected favorites filter (legacy, used by FavoritesViewController)
     public static var favoritesFilter: FavoritesFilter {
         set {
             UserDefaults.standard.set(newValue.rawValue, forKey: Keys.favoritesFilter)
@@ -56,6 +56,21 @@ public final class UserSettings: NSObject {
             guard let string = UserDefaults.standard.string(forKey: Keys.favoritesFilter),
                 let filter = FavoritesFilter(rawValue: string) else {
                     return .all
+            }
+            return filter
+        }
+    }
+
+    /// Selected favorites type filter (SwiftUI, supports all types including MVs)
+    /// Uses the same key as favoritesFilter for backward compatibility
+    static var favoritesTypeFilter: FavoritesTypeFilter {
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: Keys.favoritesFilter)
+        }
+        get {
+            guard let string = UserDefaults.standard.string(forKey: Keys.favoritesFilter),
+                  let filter = FavoritesTypeFilter(rawValue: string) else {
+                return .all
             }
             return filter
         }

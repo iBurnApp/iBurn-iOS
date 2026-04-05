@@ -506,4 +506,104 @@ final class PlayaDBImportTests: XCTestCase {
         let mvs = try await playaDB.fetchMutantVehicles()
         XCTAssertTrue(mvs.isEmpty, "No MVs should be imported when mvData is nil")
     }
+
+    // MARK: - Global Search Tests
+
+    func testSearchReturnsMultipleTypes() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // Search for a term that exists in art mock data
+        let artResults = try await playaDB.searchObjects("Curiosity")
+        XCTAssertFalse(artResults.isEmpty, "Should find results for 'Curiosity'")
+
+        // Verify we get typed results
+        let hasArt = artResults.contains(where: { $0.objectType == .art })
+        XCTAssertTrue(hasArt, "Search results should include art objects")
+    }
+
+    func testSearchReturnsEmptyForNoMatch() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        let results = try await playaDB.searchObjects("zzzznonexistent")
+        XCTAssertTrue(results.isEmpty, "Should return empty for non-matching query")
+    }
+
+    func testSearchFindsMutantVehicleByArtist() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // "pEEf" is the artist for Moebius Omnibus in mock data
+        let results = try await playaDB.searchObjects("Sadow")
+        let hasMV = results.contains(where: { $0.objectType == .mutantVehicle })
+        XCTAssertTrue(hasMV, "Should find MV by artist name")
+    }
+
+    // MARK: - Favorites Cross-Type Tests
+
+    func testGetFavoritesReturnsMultipleTypes() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // Favorite one of each type
+        let arts = try await playaDB.fetchArt()
+        let camps = try await playaDB.fetchCamps()
+        let events = try await playaDB.fetchEvents()
+        let mvs = try await playaDB.fetchMutantVehicles()
+
+        XCTAssertFalse(arts.isEmpty)
+        XCTAssertFalse(camps.isEmpty)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertFalse(mvs.isEmpty)
+
+        try await playaDB.toggleFavorite(arts[0])
+        try await playaDB.toggleFavorite(camps[0])
+        try await playaDB.toggleFavorite(events[0].event)
+        try await playaDB.toggleFavorite(mvs[0])
+
+        let favorites = try await playaDB.getFavorites()
+        XCTAssertEqual(favorites.count, 4, "Should have 4 favorites (one of each type)")
+
+        let types = Set(favorites.map { $0.objectType })
+        XCTAssertTrue(types.contains(.art))
+        XCTAssertTrue(types.contains(.camp))
+        XCTAssertTrue(types.contains(.event))
+        XCTAssertTrue(types.contains(.mutantVehicle))
+    }
+
+    func testUnfavoriteRemovesFromGetFavorites() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON
+        )
+
+        let arts = try await playaDB.fetchArt()
+        let art = arts[0]
+
+        try await playaDB.toggleFavorite(art)
+        let favsBefore = try await playaDB.getFavorites()
+        XCTAssertTrue(favsBefore.contains(where: { $0.uid == art.uid }))
+
+        try await playaDB.toggleFavorite(art) // unfavorite
+        let favsAfter = try await playaDB.getFavorites()
+        XCTAssertFalse(favsAfter.contains(where: { $0.uid == art.uid }))
+    }
 }
