@@ -53,9 +53,10 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         case art = 0
         case camps = 1
         case mutantVehicles = 2
-        case visitList = 3
-        case audioTour = 4
-        case locationHistory = 5
+        case aiAssistant = 3
+        case visitList = 4
+        case audioTour = 5
+        case locationHistory = 6
     }
     
     enum CustomizationRow: Int, CaseIterable {
@@ -85,13 +86,13 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         case contact(ContactRow)
         case extras(ExtrasRow)
         
-        init?(indexPath: IndexPath) {
+        init?(indexPath: IndexPath, visibleDetailRows: [DetailViewsRow]) {
             guard let section = Section(rawValue: indexPath.section) else { return nil }
-            
+
             switch section {
             case .detailViews:
-                guard let row = DetailViewsRow(rawValue: indexPath.row) else { return nil }
-                self = .detailViews(row)
+                guard indexPath.row < visibleDetailRows.count else { return nil }
+                self = .detailViews(visibleDetailRows[indexPath.row])
             case .customization:
                 guard let row = CustomizationRow(rawValue: indexPath.row) else { return nil }
                 self = .customization(row)
@@ -150,11 +151,20 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         return Section.allCases.count
     }
     
+    private var visibleDetailViewRows: [DetailViewsRow] {
+        DetailViewsRow.allCases.filter { row in
+            if row == .aiAssistant {
+                return BRCAppDelegate.shared.dependencies.aiAssistantService != nil
+            }
+            return true
+        }
+    }
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let section = Section(rawValue: section) else { return 0 }
-        
+
         switch section {
-        case .detailViews: return DetailViewsRow.allCases.count
+        case .detailViews: return visibleDetailViewRows.count
         case .customization: return CustomizationRow.allCases.count
         case .contact: return ContactRow.allCases.count
         case .extras: return ExtrasRow.allCases.count
@@ -168,7 +178,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cellType = CellType(indexPath: indexPath) else {
+        guard let cellType = CellType(indexPath: indexPath, visibleDetailRows: visibleDetailViewRows) else {
             fatalError("Invalid index path")
         }
         
@@ -184,6 +194,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
                 moreCell.configure(title: "Camps", imageName: "BRCCampIcon", tag: row.rawValue)
             case .mutantVehicles:
                 moreCell.configure(title: "Mutant Vehicles", systemImageName: "car.fill", tag: row.rawValue)
+            case .aiAssistant:
+                moreCell.configure(title: "AI Assistant", systemImageName: "sparkles", tag: row.rawValue)
             case .visitList:
                 moreCell.configure(title: "Visit List", systemImageName: "bookmark.circle", tag: row.rawValue)
             case .audioTour:
@@ -262,7 +274,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let cellType = CellType(indexPath: indexPath) else { return }
+        guard let cellType = CellType(indexPath: indexPath, visibleDetailRows: visibleDetailViewRows) else { return }
         
         let cell = tableView.cellForRow(at: indexPath)
         
@@ -272,6 +284,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             case .art: pushArtView()
             case .camps: pushCampsView()
             case .mutantVehicles: pushMutantVehiclesView()
+            case .aiAssistant: pushAIAssistantView()
             case .visitList: pushVisitListView()
             case .audioTour: showAudioTour()
             case .locationHistory: pushTracksView()
@@ -363,6 +376,15 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         navigationController?.pushViewController(campsVC, animated: true)
     }
     
+    func pushAIAssistantView() {
+        guard let vm = BRCAppDelegate.shared.dependencies.makeAIAssistantViewModel() else { return }
+        let view = AIAssistantView(viewModel: vm)
+        let hostingVC = UIHostingController(rootView: view)
+        hostingVC.title = "AI Assistant"
+        hostingVC.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(hostingVC, animated: true)
+    }
+
     func pushMutantVehiclesView() {
         let mvVC = MutantVehicleListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
         mvVC.title = "Mutant Vehicles"

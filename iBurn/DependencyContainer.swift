@@ -61,6 +61,11 @@ class DependencyContainer {
         AISearchServiceFactory.create(playaDB: playaDB)
     }()
 
+    /// AI assistant service for recommendations, day planner, nearby (nil if unavailable)
+    private(set) lazy var aiAssistantService: AIAssistantService? = {
+        AISearchServiceFactory.createAssistant(playaDB: playaDB)
+    }()
+
     // MARK: - Initialization
 
     /// Initialize the dependency container
@@ -164,6 +169,16 @@ class DependencyContainer {
             isDatabaseSeeded: { [mutantVehicleDataProvider] in
                 await mutantVehicleDataProvider.isDatabaseSeeded()
             }
+        )
+    }
+
+    /// Create an AIAssistantViewModel (nil if AI not available)
+    func makeAIAssistantViewModel() -> AIAssistantViewModel? {
+        guard let aiService = aiAssistantService else { return nil }
+        return AIAssistantViewModel(
+            aiService: aiService,
+            playaDB: playaDB,
+            locationProvider: locationProvider
         )
     }
 

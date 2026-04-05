@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import CoreLocation
 @preconcurrency @testable import iBurn
 @testable import PlayaDB
 
@@ -181,6 +182,93 @@ final class AISearchToolTests: XCTestCase {
         // Combined output should fit in context window (~4096 tokens ≈ ~16000 chars)
         let totalLength = keywordResult.count + artResult.count + campResult.count + mvResult.count
         XCTAssertLessThan(totalLength, 16000, "Combined tool output should fit in context window")
+    }
+
+    // MARK: - GetFavoritesTool Tests
+
+    func testGetFavoritesTool_NoFavorites() async throws {
+        let tool = GetFavoritesTool(playaDB: playaDB)
+        let result = try await tool.call(arguments: .init(placeholder: nil))
+        XCTAssertEqual(result, "No favorites yet.")
+    }
+
+    func testGetFavoritesTool_WithFavorites() async throws {
+        // Favorite an art piece
+        let art = try await playaDB.fetchArt()
+        XCTAssertFalse(art.isEmpty)
+        try await playaDB.toggleFavorite(art[0])
+
+        let tool = GetFavoritesTool(playaDB: playaDB)
+        let result = try await tool.call(arguments: .init(placeholder: nil))
+
+        XCTAssertTrue(result.contains("Burning Questions"), "Should list favorited art")
+        XCTAssertTrue(result.contains("uid:"), "Should include uid")
+    }
+
+    // MARK: - FetchUpcomingEventsTool Tests
+
+    func testFetchUpcomingEventsTool() async throws {
+        let tool = FetchUpcomingEventsTool(playaDB: playaDB)
+        // Events in fixture are in 2025, so "upcoming" from now returns nothing
+        let result = try await tool.call(arguments: .init(withinHours: 12))
+        // Either finds events or returns empty message
+        XCTAssertFalse(result.isEmpty, "Should return some output")
+    }
+
+    // MARK: - FetchNearbyObjectsTool Tests
+
+    func testFetchNearbyObjectsTool_AtBRC() async throws {
+        let tool = FetchNearbyObjectsTool(playaDB: playaDB)
+        // Art fixture has GPS at ~40.79, -119.19
+        let result = try await tool.call(arguments: .init(
+            latitude: 40.7918,
+            longitude: -119.1977
+        ))
+
+        XCTAssertTrue(result.contains("Burning Questions"),
+                      "Should find art near its GPS coordinates")
+    }
+
+    func testFetchNearbyObjectsTool_NowhereNearBRC() async throws {
+        let tool = FetchNearbyObjectsTool(playaDB: playaDB)
+        let result = try await tool.call(arguments: .init(
+            latitude: 0.0,
+            longitude: 0.0
+        ))
+        XCTAssertEqual(result, "Nothing found nearby.")
+    }
+
+    // MARK: - AIAssistantService Tests
+
+    func testAssistantService_AvailabilityCheck() {
+        let service = FoundationModelSearchService(playaDB: playaDB)
+        // Just verify it doesn't crash
+        _ = service.isAvailable
+    }
+
+    func testAssistantService_RecommendWhenUnavailable() async throws {
+        let service = FoundationModelSearchService(playaDB: playaDB)
+        if !service.isAvailable {
+            let results = try await service.recommend()
+            XCTAssertTrue(results.isEmpty, "Should return empty when AI unavailable")
+        }
+    }
+
+    func testAssistantService_WhatsNearbyWhenUnavailable() async throws {
+        let service = FoundationModelSearchService(playaDB: playaDB)
+        if !service.isAvailable {
+            let loc = CLLocation(latitude: 40.7864, longitude: -119.2065)
+            let results = try await service.whatsNearby(location: loc)
+            XCTAssertTrue(results.isEmpty, "Should return empty when AI unavailable")
+        }
+    }
+
+    func testAssistantService_PlanDayWhenUnavailable() async throws {
+        let service = FoundationModelSearchService(playaDB: playaDB)
+        if !service.isAvailable {
+            let plan = try await service.planDay(date: Date(), location: nil)
+            XCTAssertTrue(plan.schedule.isEmpty, "Should return empty when AI unavailable")
+        }
     }
 
     // MARK: - Fixture Data

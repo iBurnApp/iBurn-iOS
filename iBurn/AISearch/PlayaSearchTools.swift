@@ -8,6 +8,8 @@
 
 #if canImport(FoundationModels)
 import Foundation
+import CoreLocation
+import MapKit
 import FoundationModels
 @preconcurrency import PlayaDB
 
@@ -112,6 +114,95 @@ struct FetchMutantVehiclesTool: Tool {
         return results.prefix(10).map { mv in
             let desc = mv.description?.prefix(80) ?? "no description"
             return "vehicle: \(mv.name) - \(desc) (uid: \(mv.uid))"
+        }.joined(separator: "\n")
+    }
+}
+
+// MARK: - Get Favorites (taste profile)
+
+@available(iOS 26, *)
+struct GetFavoritesTool: Tool {
+    let name = "getFavorites"
+    let description = "Get the user's favorited art, camps, events, and vehicles"
+
+    @Generable
+    struct Arguments {
+        @Guide(description: "Unused, pass empty string")
+        var placeholder: String?
+    }
+
+    let playaDB: PlayaDB
+
+    func call(arguments: Arguments) async throws -> String {
+        let favorites = try await playaDB.getFavorites()
+        if favorites.isEmpty { return "No favorites yet." }
+        return favorites.prefix(20).map { obj in
+            "\(obj.objectType.rawValue): \(obj.name) (uid: \(obj.uid))"
+        }.joined(separator: "\n")
+    }
+}
+
+// MARK: - Fetch Upcoming Events
+
+@available(iOS 26, *)
+struct FetchUpcomingEventsTool: Tool {
+    let name = "fetchUpcomingEvents"
+    let description = "Find events starting within the next few hours"
+
+    @Generable
+    struct Arguments {
+        @Guide(description: "Hours ahead to look", .range(1...12))
+        var withinHours: Int
+    }
+
+    let playaDB: PlayaDB
+
+    func call(arguments: Arguments) async throws -> String {
+        let events = try await playaDB.fetchUpcomingEvents(
+            within: arguments.withinHours, from: Date()
+        )
+        if events.isEmpty { return "No upcoming events found." }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.timeZone = TimeZone(identifier: "America/Los_Angeles")
+        return events.prefix(15).map { occ in
+            let time = formatter.string(from: occ.startDate)
+            let desc = occ.event.description?.prefix(60) ?? ""
+            return "event: \(occ.event.name) at \(time) - \(desc) (uid: \(occ.event.uid))"
+        }.joined(separator: "\n")
+    }
+}
+
+// MARK: - Fetch Nearby Objects
+
+@available(iOS 26, *)
+struct FetchNearbyObjectsTool: Tool {
+    let name = "fetchNearby"
+    let description = "Find art, camps, and events near a GPS location"
+
+    @Generable
+    struct Arguments {
+        @Guide(description: "GPS latitude")
+        var latitude: Double
+        @Guide(description: "GPS longitude")
+        var longitude: Double
+    }
+
+    let playaDB: PlayaDB
+
+    func call(arguments: Arguments) async throws -> String {
+        let center = CLLocationCoordinate2D(
+            latitude: arguments.latitude,
+            longitude: arguments.longitude
+        )
+        let region = MKCoordinateRegion(
+            center: center,
+            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+        )
+        let objects = try await playaDB.fetchObjects(in: region)
+        if objects.isEmpty { return "Nothing found nearby." }
+        return objects.prefix(15).map { obj in
+            "\(obj.objectType.rawValue): \(obj.name) (uid: \(obj.uid))"
         }.joined(separator: "\n")
     }
 }

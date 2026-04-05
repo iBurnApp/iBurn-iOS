@@ -1,4 +1,4 @@
-# Apple Foundation Models: AI-Powered Search
+# Apple Foundation Models: AI-Powered Search & Assistant
 
 ## High-Level Plan
 
@@ -88,10 +88,36 @@ GlobalSearchViewModel
 - **Tests:** All iBurnTests pass
 - **Xcode version:** 26.4
 
+## AI Assistant (Second Commit)
+
+Expanded Foundation Models integration into a full AI assistant with three features:
+
+### New Tools Added
+- **GetFavoritesTool** — reads user's favorites as a "taste profile" for recommendations
+- **FetchUpcomingEventsTool** — time-aware event discovery (1-12 hours ahead)
+- **FetchNearbyObjectsTool** — location-aware search via GPS coordinates + MKCoordinateRegion
+
+### Three AI Features
+1. **For You** — recommends items based on favorited art/camps/events
+2. **Day Planner** — generates a time-ordered schedule mixing interests with discoveries
+3. **What's Nearby** — curates interesting nearby items prioritizing events starting soon
+
+### Architecture
+- `AIAssistantService` protocol extends `AISearchService` with `recommend()`, `planDay()`, `whatsNearby()`
+- Each method creates a fresh `LanguageModelSession` with tailored instructions and 3-5 tool subset
+- `AIAssistantView` + `AIAssistantViewModel` — SwiftUI view with segmented picker for features
+- Entry point: "AI Assistant" row in More screen (hidden when AI unavailable)
+
+### Files
+- `iBurn/AISearch/AIAssistantModels.swift` — `@Generable` response types + public result structs
+- `iBurn/AISearch/AIAssistantView.swift` — SwiftUI UI
+- `iBurn/AISearch/AIAssistantViewModel.swift` — drives the view, resolves UIDs to display objects
+- Modified: `AISearchService.swift`, `PlayaSearchTools.swift`, `DependencyContainer.swift`, `MoreViewController.swift`
+
 ## Remaining Work
 
 - Test on physical device with Apple Intelligence enabled
-- Consider adding AI search to individual list views (not just global search)
 - When mv-tag-search branch merges, add `tagsText` to `FetchMutantVehiclesTool` output
 - Consider custom adapter training with Burning Man-specific vocabulary
-- Add error handling UI if AI search times out
+- Add detail view navigation from AI assistant result rows
+- Add caching of AI results to avoid re-running on tab switches
