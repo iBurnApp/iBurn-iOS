@@ -154,7 +154,8 @@ class DependencyContainer {
                 mv.name.lowercased().contains(q) ||
                 mv.description?.lowercased().contains(q) == true ||
                 mv.artist?.lowercased().contains(q) == true ||
-                mv.hometown?.lowercased().contains(q) == true
+                mv.hometown?.lowercased().contains(q) == true ||
+                mv.tagsText?.lowercased().contains(q) == true
             },
             isDatabaseSeeded: { [mutantVehicleDataProvider] in
                 await mutantVehicleDataProvider.isDatabaseSeeded()

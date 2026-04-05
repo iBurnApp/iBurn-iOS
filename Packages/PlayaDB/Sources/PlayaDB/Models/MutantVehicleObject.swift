@@ -35,6 +35,7 @@ public struct MutantVehicleObject: DataObject, Codable, FetchableRecord, Mutable
         // MV-specific columns
         case artist
         case donationLink = "donation_link"
+        case tagsText = "tags_text"
     }
 
     // Use Columns as CodingKeys
@@ -51,6 +52,7 @@ public struct MutantVehicleObject: DataObject, Codable, FetchableRecord, Mutable
     public var description: String?
     public var artist: String?
     public var donationLink: URL?
+    public var tagsText: String?
 
     public init(
         uid: String,
@@ -61,7 +63,8 @@ public struct MutantVehicleObject: DataObject, Codable, FetchableRecord, Mutable
         hometown: String? = nil,
         description: String? = nil,
         artist: String? = nil,
-        donationLink: URL? = nil
+        donationLink: URL? = nil,
+        tagsText: String? = nil
     ) {
         self.uid = uid
         self.name = name
@@ -72,6 +75,7 @@ public struct MutantVehicleObject: DataObject, Codable, FetchableRecord, Mutable
         self.description = description
         self.artist = artist
         self.donationLink = donationLink
+        self.tagsText = tagsText
     }
 }
 
@@ -117,9 +121,10 @@ public extension MutantVehicleObject {
         []
     }
 
-    /// Associated tags (populated by the database layer)
-    var tags: [MutantVehicleTag] {
-        []
+    /// Tags as an array, split from the denormalized `tagsText` column
+    var tagsList: [String] {
+        guard let tagsText, !tagsText.isEmpty else { return [] }
+        return tagsText.components(separatedBy: " ").filter { !$0.isEmpty }
     }
 }
 

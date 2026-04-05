@@ -857,6 +857,11 @@ class DetailViewModel: ObservableObject {
             cellTypes.append(.text(description, style: .body))
         }
 
+        let tags = mv.tagsList
+        if !tags.isEmpty {
+            cellTypes.append(.text(tags.joined(separator: " · "), style: .caption))
+        }
+
         if let artist = mv.artist, !artist.isEmpty {
             cellTypes.append(.text("Artist: \(artist)", style: .subtitle))
         }
