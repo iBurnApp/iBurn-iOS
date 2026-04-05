@@ -31,7 +31,7 @@ Each document should include:
 
 ## Source Control
 
-IMPORTANT: Do not perform any operations that result in git writes, the user will handle `git add`, `git commit`, etc. Never attempt to rewrite history, pull from remote, squash, merge or rebase. You can use read-only operations like `git show`, `git log` etc.
+IMPORTANT: Do not perform any operations that result in git writes unless authorized by the user. Never attempt to rewrite history, pull from remote, squash, merge or rebase unless authorized. You can use read-only operations like `git show`, `git log` etc.
 
 ## Project Overview
 

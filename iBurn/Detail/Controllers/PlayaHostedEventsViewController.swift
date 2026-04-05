@@ -26,36 +26,56 @@ struct PlayaHostedEventsView: View {
     let hostName: String
     let playaDB: PlayaDB
     @Environment(\.themeColors) var themeColors
+    @State private var favoriteIDs: Set<String> = []
+    @State private var now = Date()
 
     var body: some View {
         List(events, id: \.uid) { event in
             Button {
                 pushDetail(for: event)
             } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(event.name)
-                        .font(.headline)
-                        .foregroundColor(themeColors.primaryColor)
-
-                    Text(DetailViewModel.formatEventTimeAndDuration(
-                        startDate: event.startDate,
-                        endDate: event.endDate
-                    ))
-                    .font(.caption)
-                    .foregroundColor(themeColors.secondaryColor)
-
-                    if let desc = event.description, !desc.isEmpty {
-                        Text(desc)
-                            .font(.caption)
-                            .foregroundColor(themeColors.detailColor)
-                            .lineLimit(2)
+                EventRowView(
+                    event: event,
+                    hostName: hostName,
+                    hostAddress: nil,
+                    hostDescription: nil,
+                    campUID: event.hostedByCamp,
+                    isArtHosted: event.locatedAtArt != nil,
+                    distanceString: nil,
+                    isFavorite: favoriteIDs.contains(event.uid),
+                    now: now,
+                    onFavoriteTap: {
+                        Task { await toggleFavorite(event) }
                     }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                )
             }
+            .buttonStyle(.plain)
             .listRowBackground(themeColors.backgroundColor)
         }
         .listStyle(.plain)
+        .task { await loadFavorites() }
+    }
+
+    private func loadFavorites() async {
+        for event in events {
+            if let isFav = try? await playaDB.isFavorite(event), isFav {
+                favoriteIDs.insert(event.uid)
+            }
+        }
+    }
+
+    private func toggleFavorite(_ event: EventObjectOccurrence) async {
+        do {
+            try await playaDB.toggleFavorite(event)
+            let isFav = try await playaDB.isFavorite(event)
+            if isFav {
+                favoriteIDs.insert(event.uid)
+            } else {
+                favoriteIDs.remove(event.uid)
+            }
+        } catch {
+            print("Error toggling favorite: \(error)")
+        }
     }
 
     private func pushDetail(for event: EventObjectOccurrence) {
@@ -70,23 +90,3 @@ struct PlayaHostedEventsView: View {
     }
 }
 
-private extension UIViewController {
-    func findNavigationController() -> UINavigationController? {
-        if let nav = self as? UINavigationController {
-            return nav.visibleViewController?.findNavigationController() ?? nav
-        }
-        if let tab = self as? UITabBarController,
-           let selected = tab.selectedViewController {
-            return selected.findNavigationController()
-        }
-        if let nav = navigationController {
-            return nav
-        }
-        for child in children {
-            if let nav = child.findNavigationController() {
-                return nav
-            }
-        }
-        return nil
-    }
-}

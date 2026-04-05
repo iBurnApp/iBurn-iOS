@@ -38,12 +38,11 @@ class EventDataProvider: ObjectListDataProvider {
     }
 
     func toggleFavorite(_ object: EventObjectOccurrence) async throws {
-        // Favorites are stored per event, not per occurrence
-        try await playaDB.toggleFavorite(object.event)
+        try await playaDB.toggleFavorite(object)
     }
 
     func isFavorite(_ object: EventObjectOccurrence) async throws -> Bool {
-        try await playaDB.isFavorite(object.event)
+        try await playaDB.isFavorite(object)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: EventObjectOccurrence) -> AttributedString? {

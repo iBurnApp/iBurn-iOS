@@ -994,8 +994,12 @@ internal class PlayaDBImpl: PlayaDB {
             }
 
             var includeEvent = true
-            if filter.onlyFavorites && !favoriteEventIds.contains(event.uid) {
-                includeEvent = false
+            if filter.onlyFavorites {
+                // Check both occurrence-specific uid and parent event uid for backward compat
+                let occurrenceUID = "\(event.uid)_\(occurrence.id ?? 0)"
+                if !favoriteEventIds.contains(occurrenceUID) && !favoriteEventIds.contains(event.uid) {
+                    includeEvent = false
+                }
             }
 
             if let year = filter.year, event.year != year {

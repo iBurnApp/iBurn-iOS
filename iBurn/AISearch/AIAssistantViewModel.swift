@@ -30,21 +30,30 @@ final class AIAssistantViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    /// Resolved objects for display (uid -> name, type, etc.)
-    @Published var resolvedObjects: [String: ResolvedItem] = [:]
+    /// Resolved objects for display (uid -> actual PlayaDB model)
+    @Published var resolvedObjects: [String: ResolvedObject] = [:]
+    @Published var favoriteIDs: Set<String> = []
 
-    struct ResolvedItem: Identifiable {
-        let uid: String
-        let name: String
-        let objectType: DataObjectType
-        let subtitle: String?
-        var id: String { uid }
+    enum ResolvedObject {
+        case art(ArtObject)
+        case camp(CampObject)
+        case event(EventObject)
+        case mutantVehicle(MutantVehicleObject)
+
+        var objectType: DataObjectType {
+            switch self {
+            case .art: return .art
+            case .camp: return .camp
+            case .event: return .event
+            case .mutantVehicle: return .mutantVehicle
+            }
+        }
     }
 
     // MARK: - Dependencies
 
     private let aiService: AIAssistantService
-    private let playaDB: PlayaDB
+    let playaDB: PlayaDB
     private let locationProvider: LocationProvider
 
     private var loadTask: Task<Void, Never>?
@@ -104,30 +113,56 @@ final class AIAssistantViewModel: ObservableObject {
         }
     }
 
-    /// Fetch actual objects from PlayaDB to get display names
+    /// Fetch actual objects from PlayaDB for display and navigation
     private func resolveUIDs(_ uids: [String]) async {
         for uid in uids where resolvedObjects[uid] == nil {
             if let art = try? await playaDB.fetchArt(uid: uid) {
-                resolvedObjects[uid] = ResolvedItem(
-                    uid: uid, name: art.name, objectType: .art,
-                    subtitle: art.artist
-                )
+                resolvedObjects[uid] = .art(art)
+                if let isFav = try? await playaDB.isFavorite(art), isFav {
+                    favoriteIDs.insert(uid)
+                }
             } else if let camp = try? await playaDB.fetchCamp(uid: uid) {
-                resolvedObjects[uid] = ResolvedItem(
-                    uid: uid, name: camp.name, objectType: .camp,
-                    subtitle: camp.hometown
-                )
+                resolvedObjects[uid] = .camp(camp)
+                if let isFav = try? await playaDB.isFavorite(camp), isFav {
+                    favoriteIDs.insert(uid)
+                }
             } else if let event = try? await playaDB.fetchEvent(uid: uid) {
-                resolvedObjects[uid] = ResolvedItem(
-                    uid: uid, name: event.name, objectType: .event,
-                    subtitle: event.eventTypeLabel
-                )
+                resolvedObjects[uid] = .event(event)
+                if let isFav = try? await playaDB.isFavorite(event), isFav {
+                    favoriteIDs.insert(uid)
+                }
             } else if let mv = try? await playaDB.fetchMutantVehicle(uid: uid) {
-                resolvedObjects[uid] = ResolvedItem(
-                    uid: uid, name: mv.name, objectType: .mutantVehicle,
-                    subtitle: mv.artist
-                )
+                resolvedObjects[uid] = .mutantVehicle(mv)
+                if let isFav = try? await playaDB.isFavorite(mv), isFav {
+                    favoriteIDs.insert(uid)
+                }
             }
+        }
+    }
+
+    func toggleFavorite(_ uid: String) async {
+        guard let resolved = resolvedObjects[uid] else { return }
+        do {
+            switch resolved {
+            case .art(let art):
+                try await playaDB.toggleFavorite(art)
+                let isFav = try await playaDB.isFavorite(art)
+                if isFav { favoriteIDs.insert(uid) } else { favoriteIDs.remove(uid) }
+            case .camp(let camp):
+                try await playaDB.toggleFavorite(camp)
+                let isFav = try await playaDB.isFavorite(camp)
+                if isFav { favoriteIDs.insert(uid) } else { favoriteIDs.remove(uid) }
+            case .event(let event):
+                try await playaDB.toggleFavorite(event)
+                let isFav = try await playaDB.isFavorite(event)
+                if isFav { favoriteIDs.insert(uid) } else { favoriteIDs.remove(uid) }
+            case .mutantVehicle(let mv):
+                try await playaDB.toggleFavorite(mv)
+                let isFav = try await playaDB.isFavorite(mv)
+                if isFav { favoriteIDs.insert(uid) } else { favoriteIDs.remove(uid) }
+            }
+        } catch {
+            print("Error toggling favorite: \(error)")
         }
     }
 }

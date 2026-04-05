@@ -55,6 +55,7 @@ class DetailViewModel: ObservableObject {
     private let rowAssets: RowAssetsLoader?
     
     // MARK: - Private Properties
+    private var preloadedImages: [String: UIImage] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var audioNotificationObserver: NSObjectProtocol?
     /// Resolved host camp or art name for events (set during loadContent)
@@ -185,18 +186,26 @@ class DetailViewModel: ObservableObject {
     
     func loadData() async {
         isLoading = true
-        defer { isLoading = false }
 
+        // Phase 1: Load essential metadata (fast) and show cells immediately
+        await loadMetadata()
+        isLoading = false
+        self.cells = generateCells()
+
+        // Phase 2: Load expensive data in background, then refresh cells
+        await loadDeferredData()
+    }
+
+    /// Phase 1: Quick metadata queries to show content ASAP
+    private func loadMetadata() async {
         switch subject {
         case .legacy(let obj):
             guard let dataService else { break }
-
             if let updated = dataService.getMetadata(for: obj) {
                 legacyMetadata = updated
                 isFavorite = updated.isFavorite
                 userNotes = updated.userNotes ?? ""
             }
-
             if let artObject = obj as? BRCArtObject, artObject.audioURL != nil {
                 isAudioPlaying = audioService?.isPlaying(artObject: artObject) ?? false
             }
@@ -207,14 +216,9 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: art)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
-                try await playaDB.setLastViewed(Date(), for: art)
             } catch {
                 self.error = error
             }
-
-            // Resolve hosted events for this art installation
-            resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: art.uid)) ?? []
-
             if localAudioURL(objectID: art.uid) != nil {
                 isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
             }
@@ -225,13 +229,9 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: camp)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
-                try await playaDB.setLastViewed(Date(), for: camp)
             } catch {
                 self.error = error
             }
-
-            // Resolve hosted events for this camp
-            resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: camp.uid)) ?? []
 
         case .event(let event):
             guard let playaDB else { break }
@@ -239,14 +239,6 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: event)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
-                try await playaDB.setLastViewed(Date(), for: event)
-
-                // Resolve host camp/art name for location display
-                if let campUID = event.hostedByCamp {
-                    resolvedHostName = try? await playaDB.fetchCamp(uid: campUID)?.name
-                } else if let artUID = event.locatedAtArt {
-                    resolvedHostName = try? await playaDB.fetchArt(uid: artUID)?.name
-                }
             } catch {
                 self.error = error
             }
@@ -254,27 +246,9 @@ class DetailViewModel: ObservableObject {
         case .eventOccurrence(let occ):
             guard let playaDB else { break }
             do {
-                let md = try await playaDB.metadata(for: occ.event)
+                let md = try await playaDB.metadata(for: occ)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
-                try await playaDB.setLastViewed(Date(), for: occ.event)
-
-                // Resolve host details
-                if let campUID = occ.hostedByCamp,
-                   let camp = try? await playaDB.fetchCamp(uid: campUID) {
-                    resolvedHostName = camp.name
-                    resolvedHostSubject = .camp(camp)
-                    resolvedHostDescription = camp.description
-                    resolvedHostLocation = camp.locationString ?? camp.intersection
-                    resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campUID)) ?? []
-                } else if let artUID = occ.locatedAtArt,
-                          let art = try? await playaDB.fetchArt(uid: artUID) {
-                    resolvedHostName = art.name
-                    resolvedHostSubject = .art(art)
-                    resolvedHostDescription = art.description
-                    resolvedHostLocation = art.locationString ?? art.timeBasedAddress
-                    resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artUID)) ?? []
-                }
             } catch {
                 self.error = error
             }
@@ -285,14 +259,84 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: mv)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
-                try await playaDB.setLastViewed(Date(), for: mv)
             } catch {
                 self.error = error
             }
         }
+    }
+
+    /// Phase 2: Expensive work (images, hosted events, setLastViewed) then refresh
+    private func loadDeferredData() async {
+        var needsRefresh = false
+
+        // Preload images off main thread
+        await preloadImages()
+        needsRefresh = !preloadedImages.isEmpty
+
+        switch subject {
+        case .legacy:
+            break
+
+        case .art(let art):
+            guard let playaDB else { break }
+            try? await playaDB.setLastViewed(Date(), for: art)
+            let events = (try? await playaDB.fetchEvents(locatedAtArtUID: art.uid)) ?? []
+            if !events.isEmpty {
+                resolvedHostEvents = events
+                needsRefresh = true
+            }
+
+        case .camp(let camp):
+            guard let playaDB else { break }
+            try? await playaDB.setLastViewed(Date(), for: camp)
+            let events = (try? await playaDB.fetchEvents(hostedByCampUID: camp.uid)) ?? []
+            if !events.isEmpty {
+                resolvedHostEvents = events
+                needsRefresh = true
+            }
+
+        case .event(let event):
+            guard let playaDB else { break }
+            try? await playaDB.setLastViewed(Date(), for: event)
+            if let campUID = event.hostedByCamp {
+                resolvedHostName = try? await playaDB.fetchCamp(uid: campUID)?.name
+                needsRefresh = true
+            } else if let artUID = event.locatedAtArt {
+                resolvedHostName = try? await playaDB.fetchArt(uid: artUID)?.name
+                needsRefresh = true
+            }
+
+        case .eventOccurrence(let occ):
+            guard let playaDB else { break }
+            try? await playaDB.setLastViewed(Date(), for: occ)
+            if let campUID = occ.hostedByCamp,
+               let camp = try? await playaDB.fetchCamp(uid: campUID) {
+                resolvedHostName = camp.name
+                resolvedHostSubject = .camp(camp)
+                resolvedHostDescription = camp.description
+                resolvedHostLocation = camp.locationString ?? camp.intersection
+                resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campUID)) ?? []
+                needsRefresh = true
+            } else if let artUID = occ.locatedAtArt,
+                      let art = try? await playaDB.fetchArt(uid: artUID) {
+                resolvedHostName = art.name
+                resolvedHostSubject = .art(art)
+                resolvedHostDescription = art.description
+                resolvedHostLocation = art.locationString ?? art.timeBasedAddress
+                resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artUID)) ?? []
+                needsRefresh = true
+            }
+
+        case .mutantVehicle(let mv):
+            guard let playaDB else { break }
+            try? await playaDB.setLastViewed(Date(), for: mv)
+        }
 
         rowAssets?.startIfNeeded()
-        self.cells = generateCells()
+
+        if needsRefresh {
+            self.cells = generateCells()
+        }
     }
     
     func toggleFavorite() async {
@@ -322,8 +366,8 @@ class DetailViewModel: ObservableObject {
                 syncFavoriteToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
-                try await playaDB.toggleFavorite(occ.event)
-                isFavorite = try await playaDB.isFavorite(occ.event)
+                try await playaDB.toggleFavorite(occ)
+                isFavorite = try await playaDB.isFavorite(occ)
                 syncFavoriteToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
@@ -1457,34 +1501,83 @@ class DetailViewModel: ObservableObject {
     }
     
     private func loadImage(from url: URL) -> UIImage? {
-        // Check if file exists
+        // Check preloaded cache first
+        if let cached = preloadedImages[url.path] {
+            return cached
+        }
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        
-        // Load image from disk
         return UIImage(contentsOfFile: url.path)
     }
-    
+
+    /// Preload images off the main thread before cell generation
+    private func preloadImages() async {
+        var urls: [URL] = []
+
+        switch subject {
+        case .legacy(let obj):
+            if let artObj = obj as? BRCArtObject, let url = artObj.localThumbnailURL {
+                urls.append(url)
+            } else if let campObj = obj as? BRCCampObject, let url = campObj.localThumbnailURL {
+                urls.append(url)
+            } else if let eventObj = obj as? BRCEventObject {
+                if let campId = eventObj.hostedByCampUniqueID,
+                   let camp = dataService?.getCamp(withId: campId),
+                   let url = camp.localThumbnailURL {
+                    urls.append(url)
+                }
+                if let artId = eventObj.hostedByArtUniqueID,
+                   let art = dataService?.getArt(withId: artId),
+                   let url = art.localThumbnailURL {
+                    urls.append(url)
+                }
+            }
+        case .art(let art):
+            if let url = localThumbnailURL(objectID: art.uid) { urls.append(url) }
+        case .camp(let camp):
+            if let url = localThumbnailURL(objectID: camp.uid) { urls.append(url) }
+        case .event(let event):
+            if let hostUID = event.hostedByCamp ?? event.locatedAtArt,
+               let url = localThumbnailURL(objectID: hostUID) { urls.append(url) }
+        case .eventOccurrence(let occ):
+            if let hostUID = occ.hostedByCamp ?? occ.locatedAtArt,
+               let url = localThumbnailURL(objectID: hostUID) { urls.append(url) }
+        case .mutantVehicle(let mv):
+            if let url = localThumbnailURL(objectID: mv.uid) { urls.append(url) }
+        }
+
+        let loaded = await Task.detached(priority: .userInitiated) {
+            var result: [String: UIImage] = [:]
+            for url in urls {
+                if FileManager.default.fileExists(atPath: url.path),
+                   let image = UIImage(contentsOfFile: url.path) {
+                    result[url.path] = image
+                }
+            }
+            return result
+        }.value
+
+        preloadedImages = loaded
+    }
+
     private func loadHostCampImage(for event: BRCEventObject, dataService: DetailDataServiceProtocol) -> UIImage? {
         guard let campId = event.hostedByCampUniqueID else { return nil }
-        
-        // Get camp from database
+
         if let camp = dataService.getCamp(withId: campId),
            let imageURL = camp.localThumbnailURL {
             return loadImage(from: imageURL)
         }
-        
+
         return nil
     }
-    
+
     private func loadHostArtImage(for event: BRCEventObject, dataService: DetailDataServiceProtocol) -> UIImage? {
         guard let artId = event.hostedByArtUniqueID else { return nil }
-        
-        // Get art from database
+
         if let art = dataService.getArt(withId: artId),
            let imageURL = art.localThumbnailURL {
             return loadImage(from: imageURL)
         }
-        
+
         return nil
     }
 
