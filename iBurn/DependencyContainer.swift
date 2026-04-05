@@ -156,6 +156,17 @@ class DependencyContainer {
         )
     }
 
+    /// Create a NearbyViewModel with injected dependencies
+    func makeNearbyViewModel() -> NearbyViewModel {
+        NearbyViewModel(
+            playaDB: playaDB,
+            artProvider: artDataProvider,
+            campProvider: campDataProvider,
+            eventProvider: eventDataProvider,
+            locationProvider: locationProvider
+        )
+    }
+
     /// Create a FavoritesViewModel with injected dependencies
     func makeFavoritesViewModel() -> FavoritesViewModel {
         FavoritesViewModel(

@@ -267,8 +267,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     UINavigationController *mapNavController = [[NavigationController alloc] initWithRootViewController:self.mapViewController];
     mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
     
-    NearbyViewController *nearbyVC = [[NearbyViewController alloc] initWithStyle:UITableViewStyleGrouped extensionName:BRCDatabaseManager.shared.rTreeIndex];
-    nearbyVC.title = @"Nearby";
+    UIViewController *nearbyVC = [self createNearbyViewController];
     UINavigationController *nearbyNav = [[NavigationController alloc] initWithRootViewController:nearbyVC];
     nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
     

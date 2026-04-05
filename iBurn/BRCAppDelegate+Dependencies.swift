@@ -54,6 +54,25 @@ extension BRCAppDelegate {
         return legacyVC
     }
 
+    /// Creates the nearby view controller, using SwiftUI when the feature flag is enabled.
+    /// Callable from ObjC for tab bar setup.
+    @MainActor @objc
+    func createNearbyViewController() -> UIViewController {
+        #if DEBUG
+        let preferenceService = PreferenceServiceFactory.shared
+        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
+            return NearbyListHostingController(dependencies: dependencies)
+        }
+        #endif
+
+        let nearbyVC = NearbyViewController(
+            style: .grouped,
+            extensionName: BRCDatabaseManager.shared.rTreeIndex
+        )
+        nearbyVC.title = "Nearby"
+        return nearbyVC
+    }
+
     /// Creates the events view controller, using SwiftUI when the feature flag is enabled.
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc

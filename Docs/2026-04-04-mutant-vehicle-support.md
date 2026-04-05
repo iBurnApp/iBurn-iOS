@@ -183,3 +183,41 @@ Replaced YapDB annotation data sources with a `PlayaDBAnnotationDataSource` usin
 5. Favorites: favorite an item → pin appears on map
 6. Callout: tap pin → info button → detail view opens
 7. User pins (home, bike, star) still work via YapDB
+
+---
+
+# Nearby View Migration: YapDB → PlayaDB + SwiftUI
+
+## Problem
+The Nearby tab (`NearbyViewController`) was a UIKit view backed by YapDB R-Tree spatial queries, `BRCDataSorter` for sorting, and `BRCDataObjectTableViewCell` for rendering. It used 60-second polling, had no reactive updates, and couldn't benefit from PlayaDB's observation APIs.
+
+## Solution
+Created SwiftUI `NearbyView` + `NearbyViewModel` backed by PlayaDB spatial observations with 3 parallel observation streams (art, camps, events) using region filters. Feature-flagged behind `useSwiftUILists`.
+
+## Key Design Decisions
+- **Observation with region filter + restart on change**: Efficient DB-level spatial filtering. Observations restart only on significant location change (>50m), stepper change, or warp apply.
+- **Client-side event time filtering**: `EventFilter.happeningNow` can't accept warped time. Solution: observe all events in region (`includeExpired: true`), client-side filter for `startTime <= effectiveDate && endTime > effectiveDate`.
+- **Reuse existing `TimeShiftViewController`**: Already SwiftUI modal, presented from hosting controller.
+- **Distance sorting**: Art/camps sorted by `CLLocation.distance(from:)`, events by `startTime`.
+- **Feature-flagged**: `useSwiftUILists` gates new view, legacy `NearbyViewController` as fallback.
+
+## Files Created (4)
+- `iBurn/ListView/NearbyItem.swift` - `NearbyItem` enum, `NearbySection`, `NearbySectionID`
+- `iBurn/ListView/NearbyViewModel.swift` - Location-dependent VM with 3 region-filtered observations, distance sorting, client-side event filtering, host resolution, time shift support
+- `iBurn/ListView/NearbyView.swift` - SwiftUI view with distance stepper, type filter, warp button, sectioned list
+- `iBurn/ListView/NearbyListHostingController.swift` - UIKit bridge with detail/map/time-shift navigation, geocoded nav bar
+
+## Files Modified (3)
+- `iBurn/DependencyContainer.swift` - Added `makeNearbyViewModel()` factory
+- `iBurn/BRCAppDelegate+Dependencies.swift` - Added `createNearbyViewController()` with feature flag
+- `iBurn/BRCAppDelegate.m` - Replaced inline NearbyViewController creation with `createNearbyViewController` call
+
+## Verification
+1. Build succeeds (0 errors)
+2. All 43 iBurnTests pass
+3. Nearby tab: shows art/camps/events sorted by distance/time within search radius
+4. Stepper: adjusting radius updates results reactively
+5. Type filter: segmented control filters by type
+6. Time Shift: Warp → TimeShiftViewController → apply → results update
+7. Map button: shows nearby results on map
+8. Feature flag off: legacy NearbyViewController still works
