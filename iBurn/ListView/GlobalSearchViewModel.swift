@@ -12,38 +12,57 @@ final class GlobalSearchViewModel: ObservableObject {
     @Published var sections: [SearchResultSection] = []
     @Published var isSearching: Bool = false
 
+    /// UIDs of results that came from AI semantic search (not FTS5)
+    @Published var aiSuggestedUIDs: Set<String> = []
+
+    /// Whether AI search is currently running (FTS5 results already shown)
+    @Published var isAISearching: Bool = false
+
     // MARK: - Dependencies
 
     private let playaDB: PlayaDB
+    private let aiSearchService: AISearchService?
 
     // MARK: - Tasks
 
     private var searchTask: Task<Void, Never>?
+    private var aiSearchTask: Task<Void, Never>?
 
     // MARK: - Init
 
-    init(playaDB: PlayaDB) {
+    init(playaDB: PlayaDB, aiSearchService: AISearchService? = nil) {
         self.playaDB = playaDB
+        self.aiSearchService = aiSearchService
     }
 
     deinit {
         searchTask?.cancel()
+        aiSearchTask?.cancel()
+    }
+
+    /// Whether AI-enhanced search is available on this device
+    var isAISearchAvailable: Bool {
+        aiSearchService?.isAvailable == true
     }
 
     // MARK: - Search
 
     private func scheduleSearch() {
         searchTask?.cancel()
+        aiSearchTask?.cancel()
 
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard query.count >= 2 else {
             sections = []
+            aiSuggestedUIDs = []
             isSearching = false
+            isAISearching = false
             return
         }
 
         isSearching = true
+        aiSuggestedUIDs = []
 
         searchTask = Task { [weak self] in
             // Debounce 0.3 seconds
@@ -56,9 +75,16 @@ final class GlobalSearchViewModel: ObservableObject {
                 let results = try await self.playaDB.searchObjects(query)
                 guard !Task.isCancelled else { return }
 
+                let ftsUIDs = Set(results.map { $0.uid })
+
                 await MainActor.run {
                     self.sections = Self.groupResults(results)
                     self.isSearching = false
+                }
+
+                // Launch AI search in parallel if available
+                if let aiService = self.aiSearchService, aiService.isAvailable {
+                    await self.runAISearch(query: query, ftsUIDs: ftsUIDs)
                 }
             } catch {
                 guard !Task.isCancelled else { return }
@@ -69,6 +95,81 @@ final class GlobalSearchViewModel: ObservableObject {
                 print("Search error: \(error)")
             }
         }
+    }
+
+    /// Run AI search and merge any new results not found by FTS5
+    private func runAISearch(query: String, ftsUIDs: Set<String>) async {
+        guard let aiService = aiSearchService else { return }
+        guard !Task.isCancelled else { return }
+
+        await MainActor.run { self.isAISearching = true }
+
+        do {
+            let aiResults = try await aiService.search(query)
+            guard !Task.isCancelled else { return }
+
+            // Find UIDs that AI found but FTS5 missed
+            let newUIDs = aiResults.map(\.uid).filter { !ftsUIDs.contains($0) }
+
+            if !newUIDs.isEmpty {
+                // Fetch the actual objects for these UIDs and build SearchResultItems
+                var newItems: [SearchResultItem] = []
+                for uid in newUIDs {
+                    if let art = try? await playaDB.fetchArt(uid: uid) {
+                        newItems.append(.art(art))
+                    } else if let camp = try? await playaDB.fetchCamp(uid: uid) {
+                        newItems.append(.camp(camp))
+                    } else if let event = try? await playaDB.fetchEvent(uid: uid) {
+                        newItems.append(.event(event))
+                    } else if let mv = try? await playaDB.fetchMutantVehicle(uid: uid) {
+                        newItems.append(.mutantVehicle(mv))
+                    }
+                }
+
+                await MainActor.run {
+                    self.aiSuggestedUIDs = Set(newUIDs)
+                    self.mergeAIResults(newItems)
+                    self.isAISearching = false
+                }
+            } else {
+                await MainActor.run { self.isAISearching = false }
+            }
+        } catch {
+            print("AI search error: \(error)")
+            await MainActor.run { self.isAISearching = false }
+        }
+    }
+
+    /// Merge AI-discovered items into existing sections
+    private func mergeAIResults(_ newItems: [SearchResultItem]) {
+        var artItems = sections.first(where: { $0.id == .art })?.items ?? []
+        var campItems = sections.first(where: { $0.id == .camp })?.items ?? []
+        var eventItems = sections.first(where: { $0.id == .event })?.items ?? []
+        var mvItems = sections.first(where: { $0.id == .mutantVehicle })?.items ?? []
+
+        for item in newItems {
+            switch item {
+            case .art: artItems.append(item)
+            case .camp: campItems.append(item)
+            case .event: eventItems.append(item)
+            case .mutantVehicle: mvItems.append(item)
+            }
+        }
+
+        var newSections: [SearchResultSection] = []
+        if !artItems.isEmpty {
+            newSections.append(SearchResultSection(id: .art, title: "Art", items: artItems))
+        }
+        if !campItems.isEmpty {
+            newSections.append(SearchResultSection(id: .camp, title: "Camps", items: campItems))
+        }
+        if !eventItems.isEmpty {
+            newSections.append(SearchResultSection(id: .event, title: "Events", items: eventItems))
+        }
+        if !mvItems.isEmpty {
+            newSections.append(SearchResultSection(id: .mutantVehicle, title: "Vehicles", items: mvItems))
+        }
+        self.sections = newSections
     }
 
     // MARK: - Grouping

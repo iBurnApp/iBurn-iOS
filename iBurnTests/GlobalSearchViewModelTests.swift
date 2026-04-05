@@ -118,4 +118,69 @@ final class GlobalSearchViewModelTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - AI Search Integration Tests
+
+    func testInitialStateHasNoAISuggestions() {
+        XCTAssertTrue(viewModel.aiSuggestedUIDs.isEmpty)
+        XCTAssertFalse(viewModel.isAISearching)
+    }
+
+    func testAISearchNotAvailableWithoutService() {
+        // Default viewModel has no AI service
+        XCTAssertFalse(viewModel.isAISearchAvailable)
+    }
+
+    func testViewModelWithMockAIService() async {
+        let mockAI = MockAISearchService(results: [
+            AISearchResult(uid: "ai-uid-1", reason: "semantically relevant")
+        ])
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI)
+
+        XCTAssertTrue(vm.isAISearchAvailable)
+
+        // Search should trigger FTS5 + AI
+        vm.searchText = "Burning"
+
+        // FTS5 results should appear
+        let hasResults = await eventually { !vm.sections.isEmpty }
+        XCTAssertTrue(hasResults, "Should have FTS5 results")
+
+        // AI search runs but the mock UID won't resolve to a real object,
+        // so aiSuggestedUIDs should be populated but no extra items merged
+        let aiDone = await eventually { !vm.isAISearching }
+        XCTAssertTrue(aiDone, "AI search should complete")
+    }
+
+    func testClearSearchClearsAISuggestions() async {
+        let mockAI = MockAISearchService(results: [
+            AISearchResult(uid: "ai-uid-1", reason: "test")
+        ])
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI)
+
+        vm.searchText = "Burning"
+        let hasResults = await eventually { !vm.sections.isEmpty }
+        XCTAssertTrue(hasResults)
+
+        vm.searchText = ""
+        let cleared = await eventually { vm.aiSuggestedUIDs.isEmpty }
+        XCTAssertTrue(cleared, "Clearing search should clear AI suggestions")
+    }
+}
+
+// MARK: - Mock AI Search Service
+
+private final class MockAISearchService: AISearchService, @unchecked Sendable {
+    let results: [AISearchResult]
+    var isAvailable: Bool = true
+
+    init(results: [AISearchResult]) {
+        self.results = results
+    }
+
+    func search(_ query: String) async throws -> [AISearchResult] {
+        // Small delay to simulate model inference
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        return results
+    }
 }

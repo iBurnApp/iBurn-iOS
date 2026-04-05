@@ -72,6 +72,18 @@ struct GlobalSearchView: View {
                             }
                         }
                     }
+                    if viewModel.isAISearching {
+                        Section {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                Text("Finding more with AI...")
+                                    .font(.caption)
+                                    .foregroundColor(themeColors.secondaryColor)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .listRowBackground(Color.clear)
+                        }
+                    }
                 }
                 .listStyle(.plain)
             }
@@ -82,6 +94,7 @@ struct GlobalSearchView: View {
 
     @ViewBuilder
     private func resultRow(for item: SearchResultItem) -> some View {
+        let isAISuggested = viewModel.aiSuggestedUIDs.contains(item.uid)
         switch item {
         case .art(let art):
             MediaObjectRowView(
@@ -91,6 +104,7 @@ struct GlobalSearchView: View {
                 isFavorite: false,
                 onFavoriteTap: { }
             ) { _ in EmptyView() }
+            .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
             .contentShape(Rectangle())
             .onTapGesture { onSelectArt(art) }
 
@@ -102,11 +116,13 @@ struct GlobalSearchView: View {
                 isFavorite: false,
                 onFavoriteTap: { }
             ) { _ in EmptyView() }
+            .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
             .contentShape(Rectangle())
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event):
             eventResultRow(for: event)
+                .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
 
         case .mutantVehicle(let mv):
             MediaObjectRowView(
@@ -116,8 +132,19 @@ struct GlobalSearchView: View {
                 isFavorite: false,
                 onFavoriteTap: { }
             ) { _ in EmptyView() }
+            .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
             .contentShape(Rectangle())
             .onTapGesture { onSelectMV(mv) }
+        }
+    }
+
+    @ViewBuilder
+    private func aiBadge(visible: Bool) -> some View {
+        if visible {
+            Image(systemName: "sparkles")
+                .font(.caption2)
+                .foregroundStyle(.purple)
+                .padding(2)
         }
     }
 
