@@ -36,9 +36,9 @@ class DetailViewControllerFactory {
     static func create(
         with dataObject: BRCDataObject
     ) -> DetailHostingController {
-        
-        // Create concrete service instances
-        let dataService = DetailDataService()
+
+        // Create concrete service instances with PlayaDB for dual-write sync
+        let dataService = DetailDataService(playaDB: BRCAppDelegate.shared.dependencies.playaDB)
         let audioService = AudioService()
         let locationService = LocationService()
         
@@ -107,6 +107,28 @@ class DetailViewControllerFactory {
 
     static func create(with occurrence: EventObjectOccurrence, playaDB: PlayaDB) -> DetailHostingController {
         create(with: .eventOccurrence(occurrence), playaDB: playaDB)
+    }
+
+    /// Resolves a legacy BRCDataObject to a PlayaDB-backed detail view, falling back to legacy.
+    static func createDetailViewController(
+        for dataObject: BRCDataObject,
+        playaDB: PlayaDB
+    ) async -> UIViewController {
+        let uid = dataObject.uniqueID
+        if dataObject is BRCArtObject,
+           let art = try? await playaDB.fetchArt(uid: uid) {
+            return create(with: art, playaDB: playaDB)
+        }
+        if dataObject is BRCCampObject,
+           let camp = try? await playaDB.fetchCamp(uid: uid) {
+            return create(with: camp, playaDB: playaDB)
+        }
+        if dataObject is BRCEventObject,
+           let event = try? await playaDB.fetchEvent(uid: uid) {
+            return create(with: event, playaDB: playaDB)
+        }
+        // Fallback to legacy
+        return createDetailViewController(for: dataObject)
     }
 
     static func create(with subject: DetailSubject, playaDB: PlayaDB) -> DetailHostingController {

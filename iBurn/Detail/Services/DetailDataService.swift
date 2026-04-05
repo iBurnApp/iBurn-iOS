@@ -7,24 +7,29 @@
 //
 
 import Foundation
+import PlayaDB
 import YapDatabase
 
 /// Concrete implementation of DetailDataServiceProtocol
 class DetailDataService: DetailDataServiceProtocol {
-    
+    private let playaDB: PlayaDB?
+
+    init(playaDB: PlayaDB? = nil) {
+        self.playaDB = playaDB
+    }
+
     func updateFavoriteStatus(for object: BRCDataObject, isFavorite: Bool) async throws {
         guard let metadata = getMetadata(for: object) else {
             throw DetailError.invalidData
         }
-        
+
         let newMetadata = metadata.metadataCopy()
         newMetadata.isFavorite = isFavorite
-        
-        return await withCheckedContinuation { continuation in
+
+        await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
-                
-                // Handle calendar integration for events (existing behavior)
+
                 if let event = object as? BRCEventObject {
                     event.refreshCalendarEntry(transaction)
                 }
@@ -32,23 +37,27 @@ class DetailDataService: DetailDataServiceProtocol {
                 continuation.resume()
             }
         }
+
+        syncFavoriteToPlayaDB(for: object, isFavorite: isFavorite)
     }
-    
+
     func updateUserNotes(for object: BRCDataObject, notes: String) async throws {
         guard let metadata = getMetadata(for: object) else {
             throw DetailError.invalidData
         }
-        
+
         let newMetadata = metadata.metadataCopy()
         newMetadata.userNotes = notes
-        
-        return await withCheckedContinuation { continuation in
+
+        await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
             } completionBlock: {
                 continuation.resume()
             }
         }
+
+        syncNotesToPlayaDB(for: object, notes: notes)
     }
     
     func updateVisitStatus(for object: BRCDataObject, visitStatus: BRCVisitStatus) async throws {
@@ -199,20 +208,60 @@ class DetailDataService: DetailDataServiceProtocol {
     
     func getNextEvent(for art: BRCArtObject) -> BRCEventObject? {
         var nextEvent: BRCEventObject?
-        
+
         BRCDatabaseManager.shared.uiConnection.read { transaction in
             let allEvents = art.events(with: transaction)
             let now = Date()
-            
+
             // Get events that start after now
             let futureEvents = allEvents.filter { event in
                 return event.startDate.compare(now) == .orderedDescending
             }
-            
+
             // Sort by start date and get the next one
             nextEvent = futureEvents.sorted { $0.startDate.compare($1.startDate) == .orderedAscending }.first
         }
-        
+
         return nextEvent
+    }
+
+    // MARK: - PlayaDB Sync
+
+    private func syncFavoriteToPlayaDB(for object: BRCDataObject, isFavorite: Bool) {
+        guard let playaDB else { return }
+        let uid = object.uniqueID
+
+        Task {
+            do {
+                if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
+                    try await playaDB.setFavorite(isFavorite, for: art)
+                } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
+                    try await playaDB.setFavorite(isFavorite, for: camp)
+                } else if object is BRCEventObject, let event = try await playaDB.fetchEvent(uid: uid) {
+                    try await playaDB.setFavorite(isFavorite, for: event)
+                }
+            } catch {
+                print("PlayaDB favorite sync failed for \(uid): \(error)")
+            }
+        }
+    }
+
+    private func syncNotesToPlayaDB(for object: BRCDataObject, notes: String) {
+        guard let playaDB else { return }
+        let uid = object.uniqueID
+
+        Task {
+            do {
+                if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
+                    try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
+                } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
+                    try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
+                } else if object is BRCEventObject, let event = try await playaDB.fetchEvent(uid: uid) {
+                    try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
+                }
+            } catch {
+                print("PlayaDB notes sync failed for \(uid): \(error)")
+            }
+        }
     }
 }

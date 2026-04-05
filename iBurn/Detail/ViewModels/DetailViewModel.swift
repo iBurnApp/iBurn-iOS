@@ -297,7 +297,7 @@ class DetailViewModel: ObservableObject {
     
     func toggleFavorite() async {
         let newFavoriteStatus = !isFavorite
-        
+
         do {
             switch subject {
             case .legacy(let obj):
@@ -309,18 +309,22 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(art)
                 isFavorite = try await playaDB.isFavorite(art)
+                syncFavoriteToYapDB(uid: art.uid, yapCollection: BRCArtObject.yapCollection, isFavorite: isFavorite)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(camp)
                 isFavorite = try await playaDB.isFavorite(camp)
+                syncFavoriteToYapDB(uid: camp.uid, yapCollection: BRCCampObject.yapCollection, isFavorite: isFavorite)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(event)
                 isFavorite = try await playaDB.isFavorite(event)
+                syncFavoriteToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(occ.event)
                 isFavorite = try await playaDB.isFavorite(occ.event)
+                syncFavoriteToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(mv)
@@ -328,12 +332,12 @@ class DetailViewModel: ObservableObject {
             }
 
             self.cells = generateCells()
-            
+
         } catch {
             self.error = error
         }
     }
-    
+
     func updateNotes(_ notes: String) async {
         do {
             switch subject {
@@ -346,18 +350,22 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
                 userNotes = notes
+                syncNotesToYapDB(uid: art.uid, yapCollection: BRCArtObject.yapCollection, notes: notes)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
                 userNotes = notes
+                syncNotesToYapDB(uid: camp.uid, yapCollection: BRCCampObject.yapCollection, notes: notes)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 userNotes = notes
+                syncNotesToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, notes: notes)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: occ.event)
                 userNotes = notes
+                syncNotesToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, notes: notes)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: mv)
@@ -384,7 +392,34 @@ class DetailViewModel: ObservableObject {
             self.error = error
         }
     }
-    
+
+    // MARK: - YapDB Sync (backward compat during migration)
+
+    private func syncFavoriteToYapDB(uid: String, yapCollection: String, isFavorite: Bool, isEvent: Bool = false) {
+        Task.detached {
+            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+                guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
+                let metadata = object.metadata(with: transaction).metadataCopy()
+                metadata.isFavorite = isFavorite
+                object.replace(metadata, transaction: transaction)
+                if isEvent, let event = object as? BRCEventObject {
+                    event.refreshCalendarEntry(transaction)
+                }
+            }
+        }
+    }
+
+    private func syncNotesToYapDB(uid: String, yapCollection: String, notes: String) {
+        Task.detached {
+            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+                guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
+                let metadata = object.metadata(with: transaction).metadataCopy()
+                metadata.userNotes = notes
+                object.replace(metadata, transaction: transaction)
+            }
+        }
+    }
+
     func handleCellTap(_ cell: DetailCell) {
         switch cell.type {
         case .email(let email, _):

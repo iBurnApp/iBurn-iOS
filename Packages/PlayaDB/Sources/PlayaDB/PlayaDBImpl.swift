@@ -1209,22 +1209,17 @@ internal class PlayaDBImpl: PlayaDB {
         try await dbQueue.write { db in
             let objectType = object.objectType.rawValue
             let objectId = object.uid
-            
-            // Get existing metadata
+
             let existingMetadata = try ObjectMetadata
-                .filter(Column("object_type") == objectType && Column("object_id") == objectId)
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
                 .fetchOne(db)
-            
-            if let metadata = existingMetadata {
-                // Update existing metadata
-                let newFavoriteStatus = !metadata.isFavorite
-                let now = Date()
-                var updatedMetadata = metadata
-                updatedMetadata.isFavorite = newFavoriteStatus
-                updatedMetadata.updatedAt = now
-                try updatedMetadata.update(db)
+
+            if var metadata = existingMetadata {
+                metadata.isFavorite = !metadata.isFavorite
+                metadata.updatedAt = Date()
+                try metadata.update(db)
             } else {
-                // Create new metadata
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
                     objectId: objectId,
@@ -1234,16 +1229,43 @@ internal class PlayaDBImpl: PlayaDB {
             }
         }
     }
-    
-    func isFavorite(_ object: any DataObject) async throws -> Bool {
-        return try await dbQueue.read { db in
+
+    func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {
+        try await dbQueue.write { db in
             let objectType = object.objectType.rawValue
             let objectId = object.uid
-            
-            let metadata = try ObjectMetadata
-                .filter(Column("object_type") == objectType && Column("object_id") == objectId)
+
+            let existingMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
                 .fetchOne(db)
-            
+
+            if var metadata = existingMetadata {
+                guard metadata.isFavorite != isFavorite else { return }
+                metadata.isFavorite = isFavorite
+                metadata.updatedAt = Date()
+                try metadata.update(db)
+            } else {
+                var newMetadata = ObjectMetadata(
+                    objectType: objectType,
+                    objectId: objectId,
+                    isFavorite: isFavorite
+                )
+                try newMetadata.insert(db)
+            }
+        }
+    }
+
+    func isFavorite(_ object: any DataObject) async throws -> Bool {
+        try await dbQueue.read { db in
+            let objectType = object.objectType.rawValue
+            let objectId = object.uid
+
+            let metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
+                .fetchOne(db)
+
             return metadata?.isFavorite ?? false
         }
     }

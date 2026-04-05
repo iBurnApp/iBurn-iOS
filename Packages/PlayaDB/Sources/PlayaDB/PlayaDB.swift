@@ -148,7 +148,10 @@ public protocol PlayaDB {
     
     /// Toggle the favorite status of an object
     func toggleFavorite(_ object: any DataObject) async throws
-    
+
+    /// Set the favorite status of an object to a specific value
+    func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws
+
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
 
