@@ -454,6 +454,31 @@ final class PlayaDBImportTests: XCTestCase {
                       "Search should find Dragon Wagon MV")
     }
 
+    func testMutantVehicleSearchByTag() async throws {
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: MockAPIData.mutantVehicleJSON
+        )
+
+        // "Fire" is a tag on Dragon Wagon
+        let fireResults = try await playaDB.searchObjects("Fire")
+        XCTAssertTrue(fireResults.contains(where: { $0.uid == "a6BVI000000Xf1r3BC" }),
+                      "FTS should find Dragon Wagon by its 'Fire' tag")
+
+        // "Circular" is a tag on Moebius Omnibus
+        let circularResults = try await playaDB.searchObjects("Circular")
+        XCTAssertTrue(circularResults.contains(where: { $0.uid == "a6BVI000000Le0r2AC" }),
+                      "FTS should find Moebius Omnibus by its 'Circular' tag")
+
+        // Verify tagsText is populated
+        let mvs = try await playaDB.fetchMutantVehicles()
+        let dragonWagon = mvs.first(where: { $0.uid == "a6BVI000000Xf1r3BC" })
+        XCTAssertNotNil(dragonWagon?.tagsText)
+        XCTAssertEqual(dragonWagon?.tagsList.sorted(), ["Dragon", "Fire"])
+    }
+
     func testMutantVehicleFavorite() async throws {
         try await playaDB.importFromData(
             artData: MockAPIData.artJSON,

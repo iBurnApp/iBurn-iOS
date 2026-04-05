@@ -152,7 +152,8 @@ internal class PlayaDBImpl: PlayaDB {
                     hometown TEXT,
                     description TEXT,
                     artist TEXT,
-                    donation_link TEXT
+                    donation_link TEXT,
+                    tags_text TEXT
                 )
             """)
 
@@ -355,6 +356,7 @@ internal class PlayaDBImpl: PlayaDB {
                 description,
                 artist,
                 hometown,
+                tags_text,
                 content=mv_objects,
                 content_rowid=rowid,
                 tokenize='porter unicode61'
@@ -364,8 +366,8 @@ internal class PlayaDBImpl: PlayaDB {
         // MV triggers
         try db.execute(sql: """
             CREATE TRIGGER IF NOT EXISTS mv_objects_ai AFTER INSERT ON mv_objects BEGIN
-                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown);
+                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown, tags_text)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.tags_text);
             END
         """)
 
@@ -378,8 +380,8 @@ internal class PlayaDBImpl: PlayaDB {
         try db.execute(sql: """
             CREATE TRIGGER IF NOT EXISTS mv_objects_au AFTER UPDATE ON mv_objects BEGIN
                 DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown);
+                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown, tags_text)
+                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.tags_text);
             END
         """)
     }
@@ -1521,6 +1523,7 @@ internal class PlayaDBImpl: PlayaDB {
 
                 for apiMV in apiMVObjects {
                     var mvObject = self.convertMutantVehicleObject(from: apiMV)
+                    mvObject.tagsText = apiMV.tags.isEmpty ? nil : apiMV.tags.joined(separator: " ")
                     try mvObject.insert(db)
 
                     for apiImage in apiMV.images {
