@@ -8,6 +8,7 @@
 
 import SwiftUI
 import PlayaDB
+import UIKit
 
 struct AIAssistantView: View {
     @ObservedObject var viewModel: AIAssistantViewModel
@@ -85,7 +86,7 @@ struct AIAssistantView: View {
                 )
             } else {
                 List(viewModel.recommendations) { rec in
-                    aiItemRow(uid: rec.uid, reason: rec.reason)
+                    objectRow(uid: rec.uid, reason: rec.reason)
                 }
                 .listStyle(.plain)
             }
@@ -107,28 +108,13 @@ struct AIAssistantView: View {
                     }
                     Section(header: Text("Schedule")) {
                         ForEach(plan.schedule) { item in
-                            HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text(item.startTime)
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundColor(themeColors.detailColor)
-                                    .frame(width: 60, alignment: .trailing)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    if let resolved = viewModel.resolvedObjects[item.uid] {
-                                        Text(resolved.name)
-                                            .font(.headline)
-                                            .foregroundColor(themeColors.primaryColor)
-                                    } else {
-                                        Text(item.uid)
-                                            .font(.headline)
-                                            .foregroundColor(themeColors.primaryColor)
-                                    }
-                                    Text(item.reason)
-                                        .font(.caption)
-                                        .foregroundColor(themeColors.secondaryColor)
-                                }
+                                objectRow(uid: item.uid, reason: item.reason)
                             }
-                            .padding(.vertical, 4)
                         }
                     }
                 }
@@ -155,7 +141,7 @@ struct AIAssistantView: View {
                 )
             } else {
                 List(viewModel.nearbyHighlights) { highlight in
-                    aiItemRow(uid: highlight.uid, reason: highlight.reason)
+                    objectRow(uid: highlight.uid, reason: highlight.reason)
                 }
                 .listStyle(.plain)
             }
@@ -164,44 +150,98 @@ struct AIAssistantView: View {
 
     // MARK: - Shared Components
 
-    private func aiItemRow(uid: String, reason: String) -> some View {
-        HStack(spacing: 12) {
-            if let resolved = viewModel.resolvedObjects[uid] {
-                VStack(alignment: .leading, spacing: 2) {
+    @ViewBuilder
+    private func objectRow(uid: String, reason: String) -> some View {
+        if let resolved = viewModel.resolvedObjects[uid] {
+            Button {
+                navigateToDetail(uid: uid)
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    resolvedRow(uid: uid, resolved: resolved)
                     HStack(spacing: 4) {
-                        Text(typeEmoji(resolved.objectType))
-                        Text(resolved.name)
-                            .font(.headline)
-                            .foregroundColor(themeColors.primaryColor)
-                            .lineLimit(1)
-                    }
-                    if let subtitle = resolved.subtitle {
-                        Text(subtitle)
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                            .foregroundStyle(.purple)
+                        Text(reason)
                             .font(.caption)
-                            .foregroundColor(themeColors.detailColor)
-                            .lineLimit(1)
+                            .foregroundColor(themeColors.secondaryColor)
+                            .lineLimit(2)
                     }
-                    Text(reason)
-                        .font(.caption)
-                        .foregroundColor(themeColors.secondaryColor)
-                        .lineLimit(2)
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(uid)
-                        .font(.headline)
-                        .foregroundColor(themeColors.primaryColor)
-                    Text(reason)
-                        .font(.caption)
-                        .foregroundColor(themeColors.secondaryColor)
                 }
             }
-            Spacer(minLength: 0)
-            Image(systemName: "sparkles")
-                .font(.caption2)
-                .foregroundStyle(.purple)
+            .buttonStyle(.plain)
+        } else {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(uid)
+                    .font(.headline)
+                    .foregroundColor(themeColors.primaryColor)
+                Text(reason)
+                    .font(.caption)
+                    .foregroundColor(themeColors.secondaryColor)
+            }
         }
-        .padding(.vertical, 4)
+    }
+
+    @ViewBuilder
+    private func resolvedRow(uid: String, resolved: AIAssistantViewModel.ResolvedObject) -> some View {
+        let isFavorite = viewModel.favoriteIDs.contains(uid)
+        let onFavoriteTap: () -> Void = { Task { await viewModel.toggleFavorite(uid) } }
+        switch resolved {
+        case .art(let art):
+            MediaObjectRowView(
+                object: art,
+                subtitle: nil,
+                rightSubtitle: art.artist,
+                isFavorite: isFavorite,
+                onFavoriteTap: onFavoriteTap
+            ) { _ in EmptyView() }
+        case .camp(let camp):
+            MediaObjectRowView(
+                object: camp,
+                subtitle: nil,
+                rightSubtitle: camp.hometown,
+                isFavorite: isFavorite,
+                onFavoriteTap: onFavoriteTap
+            ) { _ in EmptyView() }
+        case .event(let event):
+            MediaObjectRowView(
+                object: event,
+                subtitle: nil,
+                rightSubtitle: event.eventTypeLabel,
+                isFavorite: isFavorite,
+                onFavoriteTap: onFavoriteTap
+            ) { _ in EmptyView() }
+        case .mutantVehicle(let mv):
+            MediaObjectRowView(
+                object: mv,
+                subtitle: nil,
+                rightSubtitle: mv.artist,
+                isFavorite: isFavorite,
+                onFavoriteTap: onFavoriteTap
+            ) { _ in EmptyView() }
+        }
+    }
+
+    private func navigateToDetail(uid: String) {
+        guard let resolved = viewModel.resolvedObjects[uid] else { return }
+        let playaDB = viewModel.playaDB
+        let detailVC: UIViewController
+        switch resolved {
+        case .art(let art):
+            detailVC = DetailViewControllerFactory.create(with: art, playaDB: playaDB)
+        case .camp(let camp):
+            detailVC = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
+        case .event(let event):
+            detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
+        case .mutantVehicle(let mv):
+            detailVC = DetailViewControllerFactory.create(with: mv, playaDB: playaDB)
+        }
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first,
+              let navController = window.rootViewController?.findNavigationController() else {
+            return
+        }
+        navController.pushViewController(detailVC, animated: true)
     }
 
     private func emptyState(icon: String, title: String, subtitle: String) -> some View {
@@ -226,12 +266,4 @@ struct AIAssistantView: View {
         .padding()
     }
 
-    private func typeEmoji(_ type: DataObjectType) -> String {
-        switch type {
-        case .art: return "🎨"
-        case .camp: return "⛺"
-        case .event: return "📅"
-        case .mutantVehicle: return "🚗"
-        }
-    }
 }

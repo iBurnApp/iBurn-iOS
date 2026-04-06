@@ -34,50 +34,59 @@ struct DetailMapViewRepresentable: UIViewRepresentable {
     }
     
     func makeUIView(context: Context) -> MLNMapView {
-        // Create map view with iBurn defaults (no side effects)
         let mapView = MLNMapView.brcMapView()
         mapView.isUserInteractionEnabled = false
-        
-        // Add tap gesture recognizer for navigation
+        mapView.delegate = context.coordinator
+
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
         mapView.addGestureRecognizer(tapGesture)
-        
+
         return mapView
     }
-    
+
     func updateUIView(_ uiView: MLNMapView, context: Context) {
-        // Always update annotation when called (handles data changes)
         guard let annotation = annotationProvider() else {
             return
         }
-        
-        // Create fresh data source and adapter for current data
+
         let dataSource = StaticAnnotationDataSource(annotation: annotation)
         let mapViewAdapter = MapViewAdapter(mapView: uiView, dataSource: dataSource)
         mapViewAdapter.reloadAnnotations()
         context.coordinator.mapViewAdapter = mapViewAdapter
-        
-        // Always perform zoom for current data
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        context.coordinator.pendingAnnotation = annotation
+
+        // If map is already loaded, zoom immediately; otherwise the delegate will handle it
+        if context.coordinator.isMapLoaded {
             let padding = UIEdgeInsets(top: 45, left: 45, bottom: 45, right: 45)
             uiView.brc_showDestination(annotation, animated: true, padding: padding)
         }
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(onTap: onTap)
     }
-    
-    class Coordinator: NSObject {
+
+    class Coordinator: NSObject, MLNMapViewDelegate {
         let onTap: () -> Void
         var mapViewAdapter: MapViewAdapter?
-        
+        var pendingAnnotation: MLNAnnotation?
+        var isMapLoaded = false
+
         init(onTap: @escaping () -> Void) {
             self.onTap = onTap
         }
-        
+
         @objc func handleTap() {
             onTap()
+        }
+
+        func mapViewDidFinishLoadingMap(_ mapView: MLNMapView) {
+            isMapLoaded = true
+            if let annotation = pendingAnnotation {
+                let padding = UIEdgeInsets(top: 45, left: 45, bottom: 45, right: 45)
+                mapView.brc_showDestination(annotation, animated: true, padding: padding)
+                pendingAnnotation = nil
+            }
         }
     }
 }

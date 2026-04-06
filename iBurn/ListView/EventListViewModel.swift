@@ -99,8 +99,7 @@ final class EventListViewModel: ObservableObject {
     // MARK: - Derived
 
     func isFavorite(_ object: EventObjectOccurrence) -> Bool {
-        // Favorites are stored per event UID, not per occurrence UID
-        favoriteIDs.contains(object.event.uid)
+        favoriteIDs.contains(object.uid)
     }
 
     func distanceAttributedString(for object: EventObjectOccurrence) -> AttributedString? {
@@ -152,21 +151,21 @@ final class EventListViewModel: ObservableObject {
     // MARK: - Actions
 
     func toggleFavorite(_ object: EventObjectOccurrence) async {
-        let eventUID = object.event.uid
-        let desiredIsFavorite = !favoriteIDs.contains(eventUID)
+        let occurrenceUID = object.uid
+        let desiredIsFavorite = !favoriteIDs.contains(occurrenceUID)
         if desiredIsFavorite {
-            favoriteIDs.insert(eventUID)
+            favoriteIDs.insert(occurrenceUID)
         } else {
-            favoriteIDs.remove(eventUID)
+            favoriteIDs.remove(occurrenceUID)
         }
         do {
             try await dataProvider.toggleFavorite(object)
         } catch {
             // Revert optimistic UI if write fails.
             if desiredIsFavorite {
-                favoriteIDs.remove(eventUID)
+                favoriteIDs.remove(occurrenceUID)
             } else {
-                favoriteIDs.insert(eventUID)
+                favoriteIDs.insert(occurrenceUID)
             }
             print("Error toggling favorite for \(object.name): \(error)")
         }
@@ -284,8 +283,7 @@ final class EventListViewModel: ObservableObject {
         favoritesObservationTask = Task { [weak self] in
             guard let self else { return }
             for await favorites in self.dataProvider.observeObjects(filter: favFilter) {
-                // Map to event UIDs (not occurrence UIDs) since favorites are per-event
-                let ids = Set(favorites.map(\.event.uid))
+                let ids = Set(favorites.map(\.uid))
                 await MainActor.run {
                     self.favoriteIDs = ids
                 }
