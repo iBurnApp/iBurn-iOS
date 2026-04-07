@@ -735,6 +735,16 @@ internal class PlayaDBImpl: PlayaDB {
         return event
     }
 
+    func fetchOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
+            guard let event = try EventObject.filter(Column("uid") == uid).fetchOne(db) else {
+                return []
+            }
+            return try eventObjectOccurrences(for: [event], db: db)
+        }
+        return events.sorted { $0.startDate < $1.startDate }
+    }
+
     func fetchEvents(hostedByCampUID campUID: String) async throws -> [EventObjectOccurrence] {
         let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
             let eventObjects = try EventObject
@@ -1383,12 +1393,24 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func setLastViewed(_ date: Date, for object: any DataObject) async throws {
-        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+        // For event occurrences, track the parent event so recently viewed lookups work.
+        // EventObjectOccurrence has a synthesized UID that won't match the EventObject table.
+        let trackingUID: String
+        let trackingType: DataObjectType
+        if let occ = object as? EventObjectOccurrence {
+            trackingUID = occ.event.uid
+            trackingType = .event
+        } else {
+            trackingUID = object.uid
+            trackingType = object.objectType
+        }
+
+        try await ensureMetadata(for: trackingType, ids: [trackingUID])
 
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .filter(ObjectMetadata.Columns.objectType == trackingType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == trackingUID)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }

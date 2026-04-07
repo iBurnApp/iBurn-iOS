@@ -176,27 +176,14 @@ struct RecentlyViewedView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event, _):
-            Button { onSelectEvent(event) } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(event.name)
-                            .font(.body)
-                            .foregroundColor(themeColors.primaryColor)
-                        Spacer()
-                        Button(action: favAction) {
-                            Image(systemName: isFav ? "heart.fill" : "heart")
-                                .foregroundColor(isFav ? .red : .gray)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    if let sub = subtitle {
-                        Text(sub)
-                            .font(.caption)
-                            .foregroundColor(themeColors.secondaryColor)
-                    }
-                }
-            }
-            .buttonStyle(.plain)
+            EventRecentRow(
+                event: event,
+                subtitle: subtitle,
+                isFavorite: isFav,
+                onFavoriteTap: favAction
+            )
+            .contentShape(Rectangle())
+            .onTapGesture { onSelectEvent(event) }
 
         case .mutantVehicle(let mv, _):
             MediaObjectRowView(
@@ -214,15 +201,41 @@ struct RecentlyViewedView: View {
     // MARK: - Subtitle
 
     private func subtitleString(for item: RecentlyViewedItem) -> AttributedString? {
-        var parts: [String] = []
+        guard let dist = viewModel.distanceString(for: item) else { return nil }
+        return AttributedString(dist)
+    }
+}
 
-        parts.append(viewModel.lastViewedString(for: item))
+/// Event row that loads the host camp/art thumbnail instead of the event's own (nonexistent) image.
+private struct EventRecentRow: View {
+    let event: EventObject
+    let subtitle: AttributedString?
+    let isFavorite: Bool
+    let onFavoriteTap: () -> Void
 
-        if let dist = viewModel.distanceString(for: item) {
-            parts.append(dist)
-        }
+    @StateObject private var assets: RowAssetsLoader
 
-        guard !parts.isEmpty else { return nil }
-        return AttributedString(parts.joined(separator: " · "))
+    init(event: EventObject, subtitle: AttributedString?, isFavorite: Bool, onFavoriteTap: @escaping () -> Void) {
+        self.event = event
+        self.subtitle = subtitle
+        self.isFavorite = isFavorite
+        self.onFavoriteTap = onFavoriteTap
+        // Load thumbnail from the hosting camp or art, not the event itself
+        let hostUID = event.hostedByCamp ?? event.locatedAtArt ?? event.uid
+        _assets = StateObject(wrappedValue: RowAssetsLoader(objectID: hostUID))
+    }
+
+    var body: some View {
+        ObjectRowView(
+            object: event,
+            thumbnail: assets.thumbnail,
+            colorsOverride: assets.colors,
+            subtitle: subtitle,
+            rightSubtitle: event.eventTypeLabel,
+            isFavorite: isFavorite,
+            onFavoriteTap: onFavoriteTap,
+            actions: { EmptyView() }
+        )
+        .onAppear { assets.startIfNeeded() }
     }
 }

@@ -92,6 +92,10 @@ final class RecentlyViewedViewModel: ObservableObject {
         switch sortOrder {
         case .recentFirst:
             return items.sorted { $0.lastViewed > $1.lastViewed }
+        case .firstViewed:
+            return items.sorted {
+                ($0.firstViewed ?? $0.lastViewed) < ($1.firstViewed ?? $1.lastViewed)
+            }
         case .nearest:
             guard let location = currentLocation else {
                 return items.sorted { $0.lastViewed > $1.lastViewed }

@@ -138,6 +138,9 @@ public protocol PlayaDB {
     /// Fetch a single event object by UID
     func fetchEvent(uid: String) async throws -> EventObject?
 
+    /// Fetch all occurrences for a specific event by its UID
+    func fetchOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence]
+
     /// Fetch event occurrences hosted by a specific camp
     func fetchEvents(hostedByCampUID: String) async throws -> [EventObjectOccurrence]
 

@@ -24,8 +24,7 @@ class RecentlyViewedHostingController: UIHostingController<RecentlyViewedView> {
                 self?.showDetail(for: .camp(camp, ViewDates(firstViewed: nil, lastViewed: Date())))
             },
             onSelectEvent: { [weak self] event in
-                let detailVC = DetailViewControllerFactory.create(with: event, playaDB: dependencies.playaDB)
-                self?.navigationController?.pushViewController(detailVC, animated: true)
+                self?.showDetail(for: .event(event, ViewDates(firstViewed: nil, lastViewed: Date())))
             },
             onSelectMV: { [weak self] mv in
                 self?.showDetail(for: .mutantVehicle(mv, ViewDates(firstViewed: nil, lastViewed: Date())))

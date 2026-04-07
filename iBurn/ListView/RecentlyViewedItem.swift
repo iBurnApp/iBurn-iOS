@@ -13,6 +13,7 @@ enum RecentlyViewedTypeFilter: String, CaseIterable, Codable {
 /// Sort order for recently viewed list
 enum RecentlyViewedSortOrder: String, CaseIterable {
     case recentFirst = "Recent"
+    case firstViewed = "First Viewed"
     case nearest = "Nearest"
 }
 
