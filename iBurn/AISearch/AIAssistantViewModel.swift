@@ -115,28 +115,26 @@ final class AIAssistantViewModel: ObservableObject {
 
     /// Fetch actual objects from PlayaDB for display and navigation
     private func resolveUIDs(_ uids: [String]) async {
-        for uid in uids where resolvedObjects[uid] == nil {
-            if let art = try? await playaDB.fetchArt(uid: uid) {
-                resolvedObjects[uid] = .art(art)
-                if let isFav = try? await playaDB.isFavorite(art), isFav {
-                    favoriteIDs.insert(uid)
-                }
-            } else if let camp = try? await playaDB.fetchCamp(uid: uid) {
-                resolvedObjects[uid] = .camp(camp)
-                if let isFav = try? await playaDB.isFavorite(camp), isFav {
-                    favoriteIDs.insert(uid)
-                }
-            } else if let event = try? await playaDB.fetchEvent(uid: uid) {
-                resolvedObjects[uid] = .event(event)
-                if let isFav = try? await playaDB.isFavorite(event), isFav {
-                    favoriteIDs.insert(uid)
-                }
-            } else if let mv = try? await playaDB.fetchMutantVehicle(uid: uid) {
-                resolvedObjects[uid] = .mutantVehicle(mv)
-                if let isFav = try? await playaDB.isFavorite(mv), isFav {
-                    favoriteIDs.insert(uid)
-                }
+        let unresolvedUIDs = uids.filter { resolvedObjects[$0] == nil }
+        guard !unresolvedUIDs.isEmpty else { return }
+
+        guard let objects = try? await playaDB.fetchObjects(byUIDs: unresolvedUIDs) else { return }
+        for obj in objects {
+            if let art = obj as? ArtObject {
+                resolvedObjects[art.uid] = .art(art)
+            } else if let camp = obj as? CampObject {
+                resolvedObjects[camp.uid] = .camp(camp)
+            } else if let event = obj as? EventObject {
+                resolvedObjects[event.uid] = .event(event)
+            } else if let mv = obj as? MutantVehicleObject {
+                resolvedObjects[mv.uid] = .mutantVehicle(mv)
             }
+        }
+
+        let favorites = (try? await playaDB.getFavorites()) ?? []
+        let favUIDs = Set(favorites.map(\.uid))
+        for uid in unresolvedUIDs where favUIDs.contains(uid) {
+            favoriteIDs.insert(uid)
         }
     }
 

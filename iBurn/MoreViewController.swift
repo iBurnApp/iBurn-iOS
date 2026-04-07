@@ -53,10 +53,11 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         case art = 0
         case camps = 1
         case mutantVehicles = 2
-        case aiAssistant = 3
-        case visitList = 4
-        case audioTour = 5
-        case locationHistory = 6
+        case recentlyViewed = 3
+        case aiGuide = 4
+        case visitList = 5
+        case audioTour = 6
+        case locationHistory = 7
     }
     
     enum CustomizationRow: Int, CaseIterable {
@@ -153,8 +154,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     private var visibleDetailViewRows: [DetailViewsRow] {
         DetailViewsRow.allCases.filter { row in
-            if row == .aiAssistant {
-                return BRCAppDelegate.shared.dependencies.aiAssistantService != nil
+            if row == .aiGuide {
+                return BRCAppDelegate.shared.dependencies.makeAIGuideViewModel() != nil
             }
             return true
         }
@@ -194,8 +195,10 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
                 moreCell.configure(title: "Camps", imageName: "BRCCampIcon", tag: row.rawValue)
             case .mutantVehicles:
                 moreCell.configure(title: "Mutant Vehicles", systemImageName: "car.fill", tag: row.rawValue)
-            case .aiAssistant:
-                moreCell.configure(title: "AI Assistant", systemImageName: "sparkles", tag: row.rawValue)
+            case .recentlyViewed:
+                moreCell.configure(title: "Recently Viewed", systemImageName: "clock.arrow.circlepath", tag: row.rawValue)
+            case .aiGuide:
+                moreCell.configure(title: "AI Guide", systemImageName: "sparkles", tag: row.rawValue)
             case .visitList:
                 moreCell.configure(title: "Visit List", systemImageName: "bookmark.circle", tag: row.rawValue)
             case .audioTour:
@@ -284,7 +287,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             case .art: pushArtView()
             case .camps: pushCampsView()
             case .mutantVehicles: pushMutantVehiclesView()
-            case .aiAssistant: pushAIAssistantView()
+            case .recentlyViewed: pushRecentlyViewedView()
+            case .aiGuide: pushAIGuideView()
             case .visitList: pushVisitListView()
             case .audioTour: showAudioTour()
             case .locationHistory: pushTracksView()
@@ -376,13 +380,22 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         navigationController?.pushViewController(campsVC, animated: true)
     }
     
-    func pushAIAssistantView() {
-        guard let vm = BRCAppDelegate.shared.dependencies.makeAIAssistantViewModel() else { return }
-        let view = AIAssistantView(viewModel: vm)
-        let hostingVC = UIHostingController(rootView: view)
-        hostingVC.title = "AI Assistant"
-        hostingVC.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(hostingVC, animated: true)
+    func pushAIGuideView() {
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            guard let vm = BRCAppDelegate.shared.dependencies.makeAIGuideViewModel() as? AIGuideViewModel else { return }
+            let view = NavigationView { AIGuideView(viewModel: vm) }
+            let hostingVC = UIHostingController(rootView: view)
+            hostingVC.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(hostingVC, animated: true)
+        }
+        #endif
+    }
+
+    func pushRecentlyViewedView() {
+        let recentVC = RecentlyViewedHostingController(dependencies: BRCAppDelegate.shared.dependencies)
+        recentVC.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(recentVC, animated: true)
     }
 
     func pushMutantVehiclesView() {

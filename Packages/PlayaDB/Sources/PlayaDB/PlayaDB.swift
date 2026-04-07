@@ -166,7 +166,25 @@ public protocol PlayaDB {
 
     /// Mark an object as viewed at the provided date (used for recents, etc.).
     func setLastViewed(_ date: Date, for object: any DataObject) async throws
-    
+
+    /// Fetch recently viewed objects, ordered by most recent first
+    func fetchRecentlyViewed(limit: Int) async throws -> [any DataObject]
+
+    /// Fetch recently viewed objects with their view dates, ordered by most recent first
+    func fetchRecentlyViewedWithDates(limit: Int) async throws -> [(object: any DataObject, firstViewed: Date?, lastViewed: Date)]
+
+    /// Clear the last-viewed date for a single object (removes it from recently viewed)
+    func clearLastViewed(for object: any DataObject) async throws
+
+    /// Clear all recently viewed history
+    func clearAllRecentlyViewed() async throws
+
+    /// Fetch favorited events with their occurrences (for schedule optimization)
+    func fetchFavoriteEvents() async throws -> [EventObjectOccurrence]
+
+    /// Batch fetch objects of any type by their UIDs (4 queries total, one per type)
+    func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject]
+
     // MARK: - User Map Pins
 
     /// Save (insert or update) a user map pin.

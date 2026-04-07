@@ -250,6 +250,9 @@ struct DetailCellView: View {
                     Task { await viewModel.updateVisitStatus(newStatus) }
                 }
             )
+
+        case .viewHistory(let firstViewed, let lastViewed):
+            DetailViewHistoryCell(firstViewed: firstViewed, lastViewed: lastViewed)
         }
     }
     
@@ -271,7 +274,7 @@ struct DetailCellView: View {
             return false
         case .image:
             return true
-        case .visitStatus:
+        case .visitStatus, .viewHistory:
             return false
         }
     }
@@ -780,5 +783,44 @@ struct DetailVisitStatusCell: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
+    }
+}
+
+struct DetailViewHistoryCell: View {
+    let firstViewed: Date?
+    let lastViewed: Date?
+    @Environment(\.themeColors) var themeColors
+
+    private static let formatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f
+    }()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.caption)
+                    .foregroundColor(themeColors.secondaryColor)
+                Text("View History")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(themeColors.secondaryColor)
+            }
+
+            if let lastViewed {
+                Text("Last viewed: \(Self.formatter.string(from: lastViewed))")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+            if let firstViewed {
+                Text("First viewed: \(Self.formatter.string(from: firstViewed))")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }

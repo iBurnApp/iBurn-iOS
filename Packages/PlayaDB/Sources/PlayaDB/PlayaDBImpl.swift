@@ -183,6 +183,7 @@ internal class PlayaDBImpl: PlayaDB {
                     object_type TEXT NOT NULL,
                     object_id TEXT NOT NULL,
                     is_favorite INTEGER NOT NULL DEFAULT 0,
+                    first_viewed TEXT,
                     last_viewed TEXT,
                     user_notes TEXT,
                     created_at TEXT NOT NULL,
@@ -227,7 +228,25 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_mv_tags_mv_id ON mv_tags(mv_id)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_mv_tags_tag ON mv_tags(tag)")
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_favorite ON object_metadata(is_favorite)")
-            
+
+            // Foreign key indexes for event lookups (camp crawl, event-at-art queries)
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_event_hosted_by_camp ON event_objects(hosted_by_camp)")
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_event_located_at_art ON event_objects(located_at_art)")
+
+            // Composite index for type+favorite queries (getFavorites, onlyFavorites filter)
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_type_favorite ON object_metadata(object_type, is_favorite)")
+
+            // Composite index for event occurrences (time-range queries)
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_event_occurrences_event_start ON event_occurrences(event_id, start_time)")
+
+            // Index for last_viewed queries (fetchRecentlyViewed)
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_last_viewed ON object_metadata(last_viewed)")
+
+            // Migration: add first_viewed column for existing databases
+            if try !db.columns(in: "object_metadata").contains(where: { $0.name == "first_viewed" }) {
+                try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN first_viewed TEXT")
+            }
+
             // Create FTS5 virtual tables for full-text search
             try setupFTS5Tables(db)
             
@@ -496,19 +515,8 @@ internal class PlayaDBImpl: PlayaDB {
     
     func fetchEvents() async throws -> [EventObjectOccurrence] {
         let events = try await dbQueue.read { db in
-            // Fetch events with their occurrences
-            let events = try EventObject.including(all: EventObject.occurrences).fetchAll(db)
-            
-            // Convert to EventObjectOccurrence instances
-            var eventObjectOccurrences: [EventObjectOccurrence] = []
-            for event in events {
-                let occurrences = try event.occurrences.fetchAll(db)
-                for occurrence in occurrences {
-                    eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
-                }
-            }
-            
-            return eventObjectOccurrences
+            let events = try EventObject.fetchAll(db)
+            return try eventObjectOccurrences(for: events, db: db)
         }
         try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
         return events
@@ -519,70 +527,47 @@ internal class PlayaDBImpl: PlayaDB {
             let calendar = Calendar.current
             let dayStart = calendar.startOfDay(for: date)
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
-            
+
             // Find occurrences that overlap with this day
             // Event overlaps if: starts before day ends AND ends after day starts
             let occurrences = try EventOccurrence
                 .filter(Column("start_time") < dayEnd && Column("end_time") > dayStart)
-                .including(required: EventOccurrence.event)
                 .fetchAll(db)
-            
-            // Convert to EventObjectOccurrence instances
-            return try occurrences.map { occurrence in
-                let event = try occurrence.event.fetchOne(db)!
-                return EventObjectOccurrence(event: event, occurrence: occurrence)
-            }
+
+            return try eventObjectOccurrences(for: occurrences, db: db)
         }
     }
     
     func fetchEvents(from startDate: Date, to endDate: Date) async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
-            // Find occurrences that overlap with this date range
             let occurrences = try EventOccurrence
                 .filter(Column("start_time") < endDate && Column("end_time") > startDate)
-                .including(required: EventOccurrence.event)
                 .fetchAll(db)
-            
-            // Convert to EventObjectOccurrence instances
-            return try occurrences.map { occurrence in
-                let event = try occurrence.event.fetchOne(db)!
-                return EventObjectOccurrence(event: event, occurrence: occurrence)
-            }
+
+            return try eventObjectOccurrences(for: occurrences, db: db)
         }
     }
     
     func fetchCurrentEvents(_ now: Date = Date()) async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
-            // Find occurrences happening right now
             let occurrences = try EventOccurrence
                 .filter(Column("start_time") <= now && Column("end_time") > now)
-                .including(required: EventOccurrence.event)
                 .fetchAll(db)
-            
-            // Convert to EventObjectOccurrence instances
-            return try occurrences.map { occurrence in
-                let event = try occurrence.event.fetchOne(db)!
-                return EventObjectOccurrence(event: event, occurrence: occurrence)
-            }
+
+            return try eventObjectOccurrences(for: occurrences, db: db)
         }
     }
     
     func fetchUpcomingEvents(within hours: Int = 24, from now: Date = Date()) async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
             let futureTime = now.addingTimeInterval(TimeInterval(hours * 3600))
-            
-            // Find occurrences starting within the next N hours
+
             let occurrences = try EventOccurrence
                 .filter(Column("start_time") > now && Column("start_time") <= futureTime)
-                .including(required: EventOccurrence.event)
                 .order(Column("start_time"))
                 .fetchAll(db)
-            
-            // Convert to EventObjectOccurrence instances
-            return try occurrences.map { occurrence in
-                let event = try occurrence.event.fetchOne(db)!
-                return EventObjectOccurrence(event: event, occurrence: occurrence)
-            }
+
+            return try eventObjectOccurrences(for: occurrences, db: db)
         }
     }
     
@@ -639,9 +624,11 @@ internal class PlayaDBImpl: PlayaDB {
             return (artObjects, campObjects, eventObjects)
         }
 
-        try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
-        try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
-        try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
+        try await ensureMetadata(for: [
+            (.art, result.0.map(\.uid)),
+            (.camp, result.1.map(\.uid)),
+            (.event, result.2.map(\.uid)),
+        ])
 
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
@@ -652,8 +639,15 @@ internal class PlayaDBImpl: PlayaDB {
     
     func searchObjects(_ query: String) async throws -> [any DataObject] {
         let result = try await dbQueue.read { db -> ([ArtObject], [CampObject], [EventObject], [MutantVehicleObject]) in
-            // Prepare search query for FTS5 (escape special characters)
-            let ftsQuery = query.replacingOccurrences(of: "\"", with: "\"\"")
+            // Prepare search query for FTS5
+            // Wrap in double quotes to treat as a phrase, escaping internal quotes
+            let sanitized = query
+                .replacingOccurrences(of: "\"", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !sanitized.isEmpty else {
+                return ([], [], [], [])
+            }
+            let ftsQuery = "\"\(sanitized)\""
 
             let artSQL = """
                 SELECT art_objects.*
@@ -694,10 +688,12 @@ internal class PlayaDBImpl: PlayaDB {
             return (artObjects, campObjects, eventObjects, mvObjects)
         }
 
-        try await ensureMetadata(for: .art, ids: result.0.map(\.uid))
-        try await ensureMetadata(for: .camp, ids: result.1.map(\.uid))
-        try await ensureMetadata(for: .event, ids: result.2.map(\.uid))
-        try await ensureMetadata(for: .mutantVehicle, ids: result.3.map(\.uid))
+        try await ensureMetadata(for: [
+            (.art, result.0.map(\.uid)),
+            (.camp, result.1.map(\.uid)),
+            (.event, result.2.map(\.uid)),
+            (.mutantVehicle, result.3.map(\.uid)),
+        ])
 
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
@@ -744,14 +740,7 @@ internal class PlayaDBImpl: PlayaDB {
             let eventObjects = try EventObject
                 .filter(Column("hosted_by_camp") == campUID)
                 .fetchAll(db)
-            var result: [EventObjectOccurrence] = []
-            for event in eventObjects {
-                let occurrences = try event.occurrences.fetchAll(db)
-                for occ in occurrences {
-                    result.append(EventObjectOccurrence(event: event, occurrence: occ))
-                }
-            }
-            return result
+            return try eventObjectOccurrences(for: eventObjects, db: db)
         }
         let sorted = events.sorted { $0.startDate < $1.startDate }
         try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
@@ -763,14 +752,7 @@ internal class PlayaDBImpl: PlayaDB {
             let eventObjects = try EventObject
                 .filter(Column("located_at_art") == artUID)
                 .fetchAll(db)
-            var result: [EventObjectOccurrence] = []
-            for event in eventObjects {
-                let occurrences = try event.occurrences.fetchAll(db)
-                for occ in occurrences {
-                    result.append(EventObjectOccurrence(event: event, occurrence: occ))
-                }
-            }
-            return result
+            return try eventObjectOccurrences(for: eventObjects, db: db)
         }
         let sorted = events.sorted { $0.startDate < $1.startDate }
         try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
@@ -975,9 +957,11 @@ internal class PlayaDBImpl: PlayaDB {
         db: Database
     ) throws -> [EventObjectOccurrence] {
         let occurrenceRequest = eventOccurrenceRequest(filter: filter)
-            .including(required: EventOccurrence.event)
-
         let occurrences = try occurrenceRequest.fetchAll(db)
+
+        // Batch-resolve parent events
+        let pairs = try eventObjectOccurrences(for: occurrences, db: db)
+
         let favoriteEventIds: Set<String>
         if filter.onlyFavorites {
             let metadata = try ObjectMetadata
@@ -989,37 +973,29 @@ internal class PlayaDBImpl: PlayaDB {
             favoriteEventIds = []
         }
 
-        var eventObjectOccurrences: [EventObjectOccurrence] = []
-        for occurrence in occurrences {
-            guard let event = try occurrence.event.fetchOne(db) else {
-                continue
-            }
+        return pairs.filter { pair in
+            let event = pair.event
+            let occurrence = pair.occurrence
 
-            var includeEvent = true
             if filter.onlyFavorites {
-                // Check both occurrence-specific uid and parent event uid for backward compat
                 let occurrenceUID = "\(event.uid)_\(occurrence.id ?? 0)"
                 if !favoriteEventIds.contains(occurrenceUID) && !favoriteEventIds.contains(event.uid) {
-                    includeEvent = false
+                    return false
                 }
             }
 
             if let year = filter.year, event.year != year {
-                includeEvent = false
+                return false
             }
 
             if let region = filter.region {
-                if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
-                    let minLat = region.center.latitude - region.span.latitudeDelta / 2
-                    let maxLat = region.center.latitude + region.span.latitudeDelta / 2
-                    let minLon = region.center.longitude - region.span.longitudeDelta / 2
-                    let maxLon = region.center.longitude + region.span.longitudeDelta / 2
-
-                    if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
-                        includeEvent = false
-                    }
-                } else {
-                    includeEvent = false
+                guard let lat = event.gpsLatitude, let lon = event.gpsLongitude else { return false }
+                let minLat = region.center.latitude - region.span.latitudeDelta / 2
+                let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+                let minLon = region.center.longitude - region.span.longitudeDelta / 2
+                let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+                if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
+                    return false
                 }
             }
 
@@ -1028,22 +1004,18 @@ internal class PlayaDBImpl: PlayaDB {
                 let nameMatch = event.name.lowercased().contains(lowerSearch)
                 let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
                 if !nameMatch && !descMatch {
-                    includeEvent = false
+                    return false
                 }
             }
 
             if let allowedTypes = filter.eventTypeCodes, !allowedTypes.isEmpty {
                 if !allowedTypes.contains(event.eventTypeCode) {
-                    includeEvent = false
+                    return false
                 }
             }
 
-            if includeEvent {
-                eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
-            }
+            return true
         }
-
-        return eventObjectOccurrences
     }
 
     // MARK: - Filtered Data Access (Public API)
@@ -1210,33 +1182,68 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Metadata Helpers
 
     private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
-        let uniqueIds = Set(ids)
-        guard !uniqueIds.isEmpty else { return }
+        try await ensureMetadata(for: [(type, ids)])
+    }
+
+    private func ensureMetadata(for items: [(DataObjectType, [String])]) async throws {
+        let nonEmpty = items.filter { !$0.1.isEmpty }
+        guard !nonEmpty.isEmpty else { return }
 
         try await dbQueue.write { db in
-            let existingIds = try Set(
-                String.fetchAll(
-                    db,
-                    ObjectMetadata
-                        .select(ObjectMetadata.Columns.objectId)
-                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
-                        .filter(uniqueIds.contains(ObjectMetadata.Columns.objectId))
-                )
-            )
-
-            let missingIds = uniqueIds.subtracting(existingIds)
-            guard !missingIds.isEmpty else { return }
-
             let now = Date()
-            for id in missingIds {
-                var metadata = ObjectMetadata(
-                    objectType: type.rawValue,
-                    objectId: id,
-                    createdAt: now,
-                    updatedAt: now
+            for (type, ids) in nonEmpty {
+                let uniqueIds = Set(ids)
+                let existingIds = try Set(
+                    String.fetchAll(
+                        db,
+                        ObjectMetadata
+                            .select(ObjectMetadata.Columns.objectId)
+                            .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                            .filter(uniqueIds.contains(ObjectMetadata.Columns.objectId))
+                    )
                 )
-                try metadata.insert(db)
+
+                for id in uniqueIds.subtracting(existingIds) {
+                    var metadata = ObjectMetadata(
+                        objectType: type.rawValue,
+                        objectId: id,
+                        createdAt: now,
+                        updatedAt: now
+                    )
+                    try metadata.insert(db)
+                }
             }
+        }
+    }
+
+    // MARK: - Event Occurrence Batch Helpers
+
+    /// Batch-fetch occurrences for a set of events in one query, returning EventObjectOccurrence pairs.
+    /// Replaces per-event `event.occurrences.fetchAll(db)` N+1 pattern.
+    private func eventObjectOccurrences(for events: [EventObject], db: Database) throws -> [EventObjectOccurrence] {
+        guard !events.isEmpty else { return [] }
+        let eventsByUID = Dictionary(uniqueKeysWithValues: events.map { ($0.uid, $0) })
+        let occurrences = try EventOccurrence
+            .filter(eventsByUID.keys.contains(Column("event_id")))
+            .fetchAll(db)
+        return occurrences.compactMap { occ in
+            guard let event = eventsByUID[occ.eventId] else { return nil }
+            return EventObjectOccurrence(event: event, occurrence: occ)
+        }
+    }
+
+    /// Batch-resolve parent events for a set of occurrences in one query, returning EventObjectOccurrence pairs.
+    /// Replaces per-occurrence `occurrence.event.fetchOne(db)` N+1 pattern.
+    private func eventObjectOccurrences(for occurrences: [EventOccurrence], db: Database) throws -> [EventObjectOccurrence] {
+        guard !occurrences.isEmpty else { return [] }
+        let eventIDs = Set(occurrences.map(\.eventId))
+        let events = try EventObject
+            .filter(eventIDs.contains(Column("uid")))
+            .fetchAll(db)
+        let eventsByUID = Dictionary(uniqueKeysWithValues: events.map { ($0.uid, $0) })
+        return occurrences.compactMap { occ in
+            guard let event = eventsByUID[occ.eventId] else { return nil }
+            return EventObjectOccurrence(event: event, occurrence: occ)
         }
     }
 
@@ -1258,37 +1265,36 @@ internal class PlayaDBImpl: PlayaDB {
     
     func getFavorites() async throws -> [any DataObject] {
         return try await dbQueue.read { db in
-            var objects: [any DataObject] = []
-            
-            // Get favorite metadata  
             let favoriteMetadata = try ObjectMetadata
                 .filter(Column("is_favorite") == true)
                 .fetchAll(db)
-            
-            // Fetch corresponding objects
-            for metadata in favoriteMetadata {
-                switch metadata.dataObjectType {
-                case .art:
-                    if let artObject = try ArtObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
-                        objects.append(artObject)
-                    }
-                case .camp:
-                    if let campObject = try CampObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
-                        objects.append(campObject)
-                    }
-                case .event:
-                    if let eventObject = try EventObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
-                        objects.append(eventObject)
-                    }
-                case .mutantVehicle:
-                    if let mvObject = try MutantVehicleObject.filter(Column("uid") == metadata.objectId).fetchOne(db) {
-                        objects.append(mvObject)
-                    }
-                case .none:
-                    continue
+
+            // Group by type for batch fetching
+            var artIDs: [String] = [], campIDs: [String] = []
+            var eventIDs: [String] = [], mvIDs: [String] = []
+            for meta in favoriteMetadata {
+                switch meta.dataObjectType {
+                case .art: artIDs.append(meta.objectId)
+                case .camp: campIDs.append(meta.objectId)
+                case .event: eventIDs.append(meta.objectId)
+                case .mutantVehicle: mvIDs.append(meta.objectId)
+                case .none: break
                 }
             }
-            
+
+            var objects: [any DataObject] = []
+            if !artIDs.isEmpty {
+                objects += try ArtObject.filter(artIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !campIDs.isEmpty {
+                objects += try CampObject.filter(campIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !eventIDs.isEmpty {
+                objects += try EventObject.filter(eventIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !mvIDs.isEmpty {
+                objects += try MutantVehicleObject.filter(mvIDs.contains(Column("uid"))).fetchAll(db)
+            }
             return objects
         }
     }
@@ -1387,14 +1393,178 @@ internal class PlayaDBImpl: PlayaDB {
                 throw PlayaDBError.metadataNotFound
             }
 
+            if metadata.firstViewed == nil {
+                metadata.firstViewed = date
+            }
             metadata.lastViewed = date
             metadata.updatedAt = Date()
             try metadata.update(db)
         }
     }
     
+    // MARK: - Recently Viewed & Favorite Events
+
+    func fetchRecentlyViewed(limit: Int) async throws -> [any DataObject] {
+        try await dbQueue.read { db in
+            let metadataRows = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.lastViewed != nil)
+                .order(ObjectMetadata.Columns.lastViewed.desc)
+                .limit(limit)
+                .fetchAll(db)
+
+            // Group by type for batch fetching
+            var artIDs: [String] = [], campIDs: [String] = []
+            var eventIDs: [String] = [], mvIDs: [String] = []
+            for meta in metadataRows {
+                switch meta.dataObjectType {
+                case .art: artIDs.append(meta.objectId)
+                case .camp: campIDs.append(meta.objectId)
+                case .event: eventIDs.append(meta.objectId)
+                case .mutantVehicle: mvIDs.append(meta.objectId)
+                case .none: break
+                }
+            }
+
+            // Batch fetch each type
+            var objectsByUID: [String: any DataObject] = [:]
+            if !artIDs.isEmpty {
+                for obj in try ArtObject.filter(artIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+            if !campIDs.isEmpty {
+                for obj in try CampObject.filter(campIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+            if !eventIDs.isEmpty {
+                for obj in try EventObject.filter(eventIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+            if !mvIDs.isEmpty {
+                for obj in try MutantVehicleObject.filter(mvIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+
+            // Preserve original ordering (most recently viewed first)
+            return metadataRows.compactMap { objectsByUID[$0.objectId] }
+        }
+    }
+
+    func fetchRecentlyViewedWithDates(limit: Int) async throws -> [(object: any DataObject, firstViewed: Date?, lastViewed: Date)] {
+        try await dbQueue.read { db in
+            let metadataRows = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.lastViewed != nil)
+                .order(ObjectMetadata.Columns.lastViewed.desc)
+                .limit(limit)
+                .fetchAll(db)
+
+            // Group by type for batch fetching
+            var artIDs: [String] = [], campIDs: [String] = []
+            var eventIDs: [String] = [], mvIDs: [String] = []
+            for meta in metadataRows {
+                switch meta.dataObjectType {
+                case .art: artIDs.append(meta.objectId)
+                case .camp: campIDs.append(meta.objectId)
+                case .event: eventIDs.append(meta.objectId)
+                case .mutantVehicle: mvIDs.append(meta.objectId)
+                case .none: break
+                }
+            }
+
+            var objectsByUID: [String: any DataObject] = [:]
+            if !artIDs.isEmpty {
+                for obj in try ArtObject.filter(artIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+            if !campIDs.isEmpty {
+                for obj in try CampObject.filter(campIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+            if !eventIDs.isEmpty {
+                for obj in try EventObject.filter(eventIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+            if !mvIDs.isEmpty {
+                for obj in try MutantVehicleObject.filter(mvIDs.contains(Column("uid"))).fetchAll(db) {
+                    objectsByUID[obj.uid] = obj
+                }
+            }
+
+            return metadataRows.compactMap { meta in
+                guard let obj = objectsByUID[meta.objectId],
+                      let lastViewed = meta.lastViewed else { return nil }
+                return (object: obj, firstViewed: meta.firstViewed, lastViewed: lastViewed)
+            }
+        }
+    }
+
+    func clearLastViewed(for object: any DataObject) async throws {
+        try await dbQueue.write { db in
+            guard var metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .fetchOne(db) else { return }
+
+            metadata.lastViewed = nil
+            metadata.updatedAt = Date()
+            try metadata.update(db)
+        }
+    }
+
+    func clearAllRecentlyViewed() async throws {
+        try await dbQueue.write { db in
+            try db.execute(sql: """
+                UPDATE object_metadata SET last_viewed = NULL, updated_at = ?
+                WHERE last_viewed IS NOT NULL
+            """, arguments: [Date()])
+        }
+    }
+
+    func fetchFavoriteEvents() async throws -> [EventObjectOccurrence] {
+        let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
+            let favoriteMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.isFavorite == true)
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .fetchAll(db)
+
+            let favoriteIds = Set(favoriteMetadata.map(\.objectId))
+            guard !favoriteIds.isEmpty else { return [] }
+
+            // Batch fetch all favorite events at once
+            let eventObjects = try EventObject
+                .filter(favoriteIds.contains(Column("uid")))
+                .fetchAll(db)
+
+            return try eventObjectOccurrences(for: eventObjects, db: db)
+        }
+        let sorted = events.sorted { $0.startDate < $1.startDate }
+        if !sorted.isEmpty {
+            try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
+        }
+        return sorted
+    }
+
+    func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject] {
+        guard !uids.isEmpty else { return [] }
+        return try await dbQueue.read { db in
+            let uidSet = Set(uids)
+            var objects: [any DataObject] = []
+            objects += try ArtObject.filter(uidSet.contains(Column("uid"))).fetchAll(db)
+            objects += try CampObject.filter(uidSet.contains(Column("uid"))).fetchAll(db)
+            objects += try EventObject.filter(uidSet.contains(Column("uid"))).fetchAll(db)
+            objects += try MutantVehicleObject.filter(uidSet.contains(Column("uid"))).fetchAll(db)
+            return objects
+        }
+    }
+
     // MARK: - Data Import
-    
+
     func importFromPlayaAPI() async throws {
         // Load data from bundles and parse
         let artData = try BundleDataLoader.loadArt()
@@ -1800,16 +1970,9 @@ internal class PlayaDBImpl: PlayaDB {
         )
         
         // Observe event objects with occurrences
-        let eventObservation = ValueObservation.tracking { db in
-            let events = try EventObject.including(all: EventObject.occurrences).fetchAll(db)
-            var eventObjectOccurrences: [EventObjectOccurrence] = []
-            for event in events {
-                let occurrences = try event.occurrences.fetchAll(db)
-                for occurrence in occurrences {
-                    eventObjectOccurrences.append(EventObjectOccurrence(event: event, occurrence: occurrence))
-                }
-            }
-            return eventObjectOccurrences
+        let eventObservation = ValueObservation.tracking { [self] db in
+            let events = try EventObject.fetchAll(db)
+            return try eventObjectOccurrences(for: events, db: db)
         }
         let eventCancellable = eventObservation.start(
             in: dbQueue,

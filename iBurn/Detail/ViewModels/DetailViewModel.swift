@@ -35,6 +35,8 @@ class DetailViewModel: ObservableObject {
     @Published var legacyMetadata: BRCObjectMetadata?
     @Published var isFavorite: Bool
     @Published var userNotes: String
+    @Published var firstViewed: Date?
+    @Published var lastViewed: Date?
     @Published var extractedImageColors: BRCImageColors?
     @Published var cells: [DetailCell] = []
     @Published var isLoading = false
@@ -216,6 +218,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: art)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -229,6 +233,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: camp)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -239,6 +245,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: event)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -249,6 +257,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: occ)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -259,6 +269,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: mv)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -1654,6 +1666,9 @@ class DetailViewModel: ObservableObject {
             cells.append(.travelTime(distance))
         }
         cells.append(.userNotes(userNotes))
+        if firstViewed != nil || lastViewed != nil {
+            cells.append(.viewHistory(firstViewed: firstViewed, lastViewed: lastViewed))
+        }
         return cells
     }
 
