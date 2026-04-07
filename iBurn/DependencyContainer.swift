@@ -173,7 +173,19 @@ class DependencyContainer {
         )
     }
 
-    /// Create an AIAssistantViewModel (nil if AI not available)
+    /// Create an AIGuideViewModel for the unified AI Guide (nil if AI not available)
+    func makeAIGuideViewModel() -> AnyObject? {
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            let orchestrator = AgentOrchestrator(playaDB: playaDB, locationProvider: locationProvider)
+            guard orchestrator.isAvailable else { return nil }
+            return AIGuideViewModel(playaDB: playaDB, orchestrator: orchestrator)
+        }
+        #endif
+        return nil
+    }
+
+    /// Create an AIAssistantViewModel (nil if AI not available) — legacy, kept for backward compat
     func makeAIAssistantViewModel() -> AIAssistantViewModel? {
         guard let aiService = aiAssistantService else { return nil }
         return AIAssistantViewModel(
