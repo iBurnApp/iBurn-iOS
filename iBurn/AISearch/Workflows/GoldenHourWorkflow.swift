@@ -104,65 +104,32 @@ struct GoldenHourWorkflow: Workflow {
 
         // Step 4: Calculate route — map numeric IDs back
         onProgress(.stepStarted(name: "route", description: "Planning your golden hour route..."))
-        let selectedUIDs = selection.stops.compactMap { artIdMap[$0.number]?.uid }
-        let reasonMap = Dictionary(selection.stops.compactMap { stop -> (String, String)? in
+        let routeSelections = selection.stops.compactMap { stop -> (uid: String, reason: String, typeOverride: DataObjectType?)? in
             guard let art = artIdMap[stop.number] else { return nil }
-            return (art.uid, stop.reason)
-        }, uniquingKeysWith: { first, _ in first })
-
-        var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
-        var artNames: [String: String] = [:]
-
-        for uid in selectedUIDs {
-            if let art = artWithGPS.first(where: { $0.uid == uid }),
-               let lat = art.gpsLatitude, let lon = art.gpsLongitude {
-                stopsWithCoords.append((uid: uid, coord: CLLocationCoordinate2D(latitude: lat, longitude: lon)))
-                artNames[uid] = art.name
-            }
+            return (uid: art.uid, reason: stop.reason, typeOverride: .art)
         }
-
-        let optimized = optimizeRoute(from: context.location?.coordinate, stops: stopsWithCoords)
-
-        var totalWalkMinutes = 0
-        var routeStops: [RouteStop] = []
-        var previousCoord: CLLocationCoordinate2D? = context.location?.coordinate
-
-        for stop in optimized {
-            var walkMin: Int? = nil
-            if let prev = previousCoord {
-                walkMin = playaWalkMinutes(from: prev, to: stop.coord)
-                totalWalkMinutes += walkMin ?? 0
-                previousCoord = stop.coord
-            }
-
-            routeStops.append(RouteStop(
-                id: stop.uid,
-                name: artNames[stop.uid] ?? stop.uid,
-                type: .art,
-                reason: reasonMap[stop.uid] ?? "",
-                walkMinutesFromPrevious: walkMin,
-                latitude: stop.coord.latitude,
-                longitude: stop.coord.longitude
-            ))
-        }
+        let route = await buildRoute(
+            selections: routeSelections,
+            startLocation: context.location?.coordinate,
+            playaDB: context.playaDB
+        )
         onProgress(.stepCompleted(name: "route"))
 
         // Generate narrative
         onProgress(.stepStarted(name: "narrative", description: "Setting the mood..."))
         let narrativeSession = LanguageModelSession(instructions: """
-            Write an evocative intro for a golden hour art tour at Burning Man. \
-            Target: \(targetTime). Be poetic but concise.
+            Evocative golden hour art tour intro. Target: \(targetTime). Be poetic, concise.
             """)
         let narrative = try await narrativeSession.respond(
-            to: Prompt("Art route for \(targetTime): \(routeStops.map(\.name).joined(separator: " -> "))"),
+            to: Prompt("Art route: \(route.stops.map(\.name).joined(separator: " -> "))"),
             generating: GenerableGoldenHourNarrative.self
         )
         onProgress(.stepCompleted(name: "narrative"))
 
         return RouteResult(
-            stops: routeStops,
-            narrative: narrative.content.intro + "\n\nLeave ~30 min before \(targetTime) to reach the first stop. Total walk: ~\(totalWalkMinutes) min.",
-            totalWalkMinutes: totalWalkMinutes
+            stops: route.stops,
+            narrative: narrative.content.intro + "\n\nLeave ~30 min before \(targetTime). Total walk: ~\(route.totalWalkMinutes) min.",
+            totalWalkMinutes: route.totalWalkMinutes
         )
     }
 }

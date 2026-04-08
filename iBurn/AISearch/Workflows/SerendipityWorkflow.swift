@@ -117,7 +117,10 @@ struct SerendipityWorkflow: Workflow {
         onProgress(.stepCompleted(name: "pitch"))
 
         // Resolve UIDs to objects
-        let items = await resolveItems(response.content.picks, playaDB: context.playaDB)
+        let items = await resolveDiscoveryItems(
+            picks: response.content.picks.map { (uid: $0.uid, pitch: $0.pitch) },
+            playaDB: context.playaDB
+        )
 
         return DiscoveryResult(
             items: items,
@@ -125,21 +128,6 @@ struct SerendipityWorkflow: Workflow {
         )
     }
 
-    private func resolveItems(_ picks: [GenerableSerendipityPitch], playaDB: PlayaDB) async -> [DiscoveryItem] {
-        var result: [DiscoveryItem] = []
-        for pick in picks {
-            if let art = try? await playaDB.fetchArt(uid: pick.uid) {
-                result.append(DiscoveryItem(uid: pick.uid, name: art.name, type: .art, pitch: pick.pitch))
-            } else if let camp = try? await playaDB.fetchCamp(uid: pick.uid) {
-                result.append(DiscoveryItem(uid: pick.uid, name: camp.name, type: .camp, pitch: pick.pitch))
-            } else if let event = try? await playaDB.fetchEvent(uid: pick.uid) {
-                result.append(DiscoveryItem(uid: pick.uid, name: event.name, type: .event, pitch: pick.pitch))
-            } else if let mv = try? await playaDB.fetchMutantVehicle(uid: pick.uid) {
-                result.append(DiscoveryItem(uid: pick.uid, name: mv.name, type: .mutantVehicle, pitch: pick.pitch))
-            }
-        }
-        return result
-    }
 
     private func extractKeywords(from objects: [Any]) -> [String] {
         var keywords: [String] = []

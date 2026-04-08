@@ -160,18 +160,17 @@ struct ScheduleOptimizerWorkflow: Workflow {
         )
         onProgress(.stepCompleted(name: "summary"))
 
-        // Merge notes into entries
-        let notesByName = Dictionary(summary.content.notes.map { ($0.eventName.lowercased(), $0.note) }, uniquingKeysWith: { first, _ in first })
-        let finalEntries = entries.map { entry in
-            DayPlanEntry(
-                uid: entry.uid,
-                name: entry.name,
-                startTime: entry.startTime,
-                endTime: entry.endTime,
-                reason: notesByName[entry.name.lowercased()] ?? "",
-                walkMinutesFromPrevious: entry.walkMinutesFromPrevious
-            )
-        }
+        // Merge notes into entries by matching event name
+        let finalEntries = mergeNotesByName(
+            entries: entries,
+            notes: summary.content.notes.map { (name: $0.eventName, text: $0.note) },
+            entryName: { $0.name },
+            merge: { entry, note in
+                DayPlanEntry(uid: entry.uid, name: entry.name, startTime: entry.startTime,
+                             endTime: entry.endTime, reason: note,
+                             walkMinutesFromPrevious: entry.walkMinutesFromPrevious)
+            }
+        )
 
         return ScheduleOptimizerResult(
             items: finalEntries,

@@ -78,29 +78,15 @@ struct GeneralChatWorkflow: Workflow {
         onProgress(.stepCompleted(name: "search"))
 
         // Resolve items to get their names and types
-        let items = await resolveItems(response.content.items, playaDB: context.playaDB)
+        let items = await resolveDiscoveryItems(
+            picks: response.content.items.map { (uid: $0.uid, pitch: $0.pitch) },
+            playaDB: context.playaDB
+        )
 
         return DiscoveryResult(
             items: items,
             intro: response.content.response
         )
-    }
-
-    private func resolveItems(_ items: [GenerableChatItem], playaDB: PlayaDB) async -> [DiscoveryItem] {
-        var result: [DiscoveryItem] = []
-        for item in items {
-            if let art = try? await playaDB.fetchArt(uid: item.uid) {
-                result.append(DiscoveryItem(uid: item.uid, name: art.name, type: .art, pitch: item.pitch))
-            } else if let camp = try? await playaDB.fetchCamp(uid: item.uid) {
-                result.append(DiscoveryItem(uid: item.uid, name: camp.name, type: .camp, pitch: item.pitch))
-            } else if let event = try? await playaDB.fetchEvent(uid: item.uid) {
-                result.append(DiscoveryItem(uid: item.uid, name: event.name, type: .event, pitch: item.pitch))
-            } else if let mv = try? await playaDB.fetchMutantVehicle(uid: item.uid) {
-                result.append(DiscoveryItem(uid: item.uid, name: mv.name, type: .mutantVehicle, pitch: item.pitch))
-            }
-            // Skip invalid UIDs silently
-        }
-        return result
     }
 }
 

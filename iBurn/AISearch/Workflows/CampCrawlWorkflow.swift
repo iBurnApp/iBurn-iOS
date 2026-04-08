@@ -112,73 +112,35 @@ struct CampCrawlWorkflow: Workflow {
         }
         onProgress(.stepCompleted(name: "curate"))
 
-        // Step 5: Calculate walking route — map numeric IDs back to UIDs
+        // Step 5: Build optimized route
         onProgress(.stepStarted(name: "route", description: "Building your route..."))
-        let selectedCamps = selection.camps.compactMap { campIdMap[$0.number] }
-        let selectedUIDs = selectedCamps.map(\.uid)
-        let tipMap = Dictionary(selection.camps.compactMap { stop -> (String, String)? in
+        let routeSelections = selection.camps.compactMap { stop -> (uid: String, reason: String, typeOverride: DataObjectType?)? in
             guard let camp = campIdMap[stop.number] else { return nil }
-            return (camp.uid, stop.tip)
-        }, uniquingKeysWith: { first, _ in first })
-
-        var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
-        var campNames: [String: String] = [:]
-
-        for uid in selectedUIDs {
-            if let camp = campCandidates.first(where: { $0.uid == uid }),
-               let lat = camp.gpsLatitude, let lon = camp.gpsLongitude {
-                stopsWithCoords.append((uid: uid, coord: CLLocationCoordinate2D(latitude: lat, longitude: lon)))
-                campNames[uid] = camp.name
-            } else if let camp = campCandidates.first(where: { $0.uid == uid }) {
-                campNames[uid] = camp.name
-            }
+            return (uid: camp.uid, reason: stop.tip, typeOverride: .camp)
         }
-
-        let optimized = optimizeRoute(from: context.location?.coordinate, stops: stopsWithCoords)
-        let optimizedUIDs = optimized.map(\.uid) + selectedUIDs.filter { uid in !optimized.contains(where: { $0.uid == uid }) }
-
-        var totalWalkMinutes = 0
-        var routeStops: [RouteStop] = []
-        var previousCoord: CLLocationCoordinate2D? = context.location?.coordinate
-
-        for uid in optimizedUIDs {
-            let coord = optimized.first(where: { $0.uid == uid })?.coord
-
-            var walkMin: Int? = nil
-            if let prev = previousCoord, let curr = coord {
-                walkMin = playaWalkMinutes(from: prev, to: curr)
-                totalWalkMinutes += walkMin ?? 0
-                previousCoord = curr
-            }
-
-            routeStops.append(RouteStop(
-                id: uid,
-                name: campNames[uid] ?? uid,
-                type: .camp,
-                reason: tipMap[uid] ?? "",
-                walkMinutesFromPrevious: walkMin,
-                latitude: coord?.latitude,
-                longitude: coord?.longitude
-            ))
-        }
+        let route = await buildRoute(
+            selections: routeSelections,
+            startLocation: context.location?.coordinate,
+            playaDB: context.playaDB
+        )
         onProgress(.stepCompleted(name: "route"))
 
         // Step 6: Generate narrative
         onProgress(.stepStarted(name: "narrative", description: "Writing your crawl guide..."))
+        let stopsText = route.stops.map(\.name).joined(separator: " -> ")
         let narrativeSession = LanguageModelSession(instructions: """
-            Write a fun, short intro for a Burning Man camp crawl. Theme: "\(theme)".
+            Write a fun, short intro for a "\(theme)" camp crawl.
             """)
-        let stopsText = routeStops.map(\.name).joined(separator: " -> ")
         let narrative = try await narrativeSession.respond(
-            to: Prompt("Camp crawl route: \(stopsText)"),
+            to: Prompt("Route: \(stopsText)"),
             generating: GenerableCrawlNarrative.self
         )
         onProgress(.stepCompleted(name: "narrative"))
 
         return RouteResult(
-            stops: routeStops,
+            stops: route.stops,
             narrative: narrative.content.intro,
-            totalWalkMinutes: totalWalkMinutes
+            totalWalkMinutes: route.totalWalkMinutes
         )
     }
 
