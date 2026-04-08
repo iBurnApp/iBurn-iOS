@@ -79,31 +79,34 @@ struct GoldenHourWorkflow: Workflow {
             return RouteResult(stops: [], narrative: "No art with location data found.", totalWalkMinutes: 0)
         }
 
-        // Step 3: LLM selects art best for golden hour
+        // Step 3: LLM selects art best for golden hour (with retry, filtering problematic candidates)
         onProgress(.stepStarted(name: "curate", description: "Curating golden hour art..."))
-        let candidateText = artWithGPS.prefix(20).map { art in
-            let desc = art.description?.prefix(80) ?? ""
-            let cat = art.category ?? ""
-            return "art: \(art.name) - \(desc) | category: \(cat) (uid: \(art.uid))"
-        }.joined(separator: "\n")
-
-        let session = LanguageModelSession(instructions: """
-            You are selecting art installations for golden hour viewing at Burning Man. \
-            Pick art that would look amazing in \(targetTime) light: \
-            large-scale sculptures, reflective/metallic pieces, fire art (for sunset), \
-            and installations with interesting silhouettes. Avoid indoor/shaded pieces.
-            """)
-
-        let selection = try await session.respond(
-            to: Prompt("Available art:\n\(candidateText)\n\nSelect the best art for \(targetTime) viewing."),
-            generating: GenerableGoldenHourSelection.self
-        )
+        let selection: GenerableGoldenHourSelection = try await retryWithCandidateFiltering(
+            candidates: Array(artWithGPS.prefix(20)),
+            format: { $0.name }
+        ) { batch in
+            let text = batch.map { art in
+                let desc = art.description?.prefix(80) ?? ""
+                let cat = art.category ?? ""
+                return "art: \(art.name) - \(desc) | category: \(cat) (uid: \(art.uid))"
+            }.joined(separator: "\n")
+            let session = LanguageModelSession(instructions: """
+                You are selecting art installations for golden hour viewing at Burning Man. \
+                Pick art that would look amazing in \(targetTime) light: \
+                large-scale sculptures, reflective/metallic pieces, fire art (for sunset), \
+                and installations with interesting silhouettes. Avoid indoor/shaded pieces.
+                """)
+            return try await session.respond(
+                to: Prompt("Available art:\n\(text)\n\nSelect the best art for \(targetTime) viewing."),
+                generating: GenerableGoldenHourSelection.self
+            ).content
+        }
         onProgress(.stepCompleted(name: "curate"))
 
         // Step 4: Calculate route arriving 30 min before golden hour
         onProgress(.stepStarted(name: "route", description: "Planning your golden hour route..."))
-        let selectedUIDs = selection.content.stops.map(\.uid)
-        let reasonMap = Dictionary(selection.content.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
+        let selectedUIDs = selection.stops.map(\.uid)
+        let reasonMap = Dictionary(selection.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
 
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
         var artNames: [String: String] = [:]

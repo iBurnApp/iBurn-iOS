@@ -223,4 +223,54 @@ func brcSunTimes(for date: Date) -> (sunrise: Date, sunset: Date) {
     return (sunrise, sunset)
 }
 
+/// Retry an LLM generation call with progressive candidate filtering.
+/// On failure with the full set, tries each half, then individual items to isolate problematic ones.
+@available(iOS 26, *)
+func retryWithCandidateFiltering<T, R>(
+    candidates: [T],
+    minimumCount: Int = 3,
+    format: (T) -> String,
+    attempt: ([T]) async throws -> R
+) async throws -> R {
+    guard !candidates.isEmpty else {
+        throw NSError(domain: "Workflow", code: -1, userInfo: [NSLocalizedDescriptionKey: "No candidates"])
+    }
+
+    // First try with all candidates
+    do {
+        return try await attempt(candidates)
+    } catch {
+        print("LLM curate failed with \(candidates.count) candidates: \(error)")
+    }
+
+    // Split in half and try each half
+    let mid = candidates.count / 2
+    let firstHalf = Array(candidates.prefix(mid))
+    let secondHalf = Array(candidates.suffix(from: mid))
+
+    if firstHalf.count >= minimumCount, let result = try? await attempt(firstHalf) {
+        return result
+    }
+    if secondHalf.count >= minimumCount, let result = try? await attempt(secondHalf) {
+        return result
+    }
+
+    // Last resort: test candidates individually, collect safe ones
+    var safe: [T] = []
+    for item in candidates {
+        do {
+            _ = try await attempt([item])
+            safe.append(item)
+            if safe.count >= candidates.count / 2 { break }
+        } catch {
+            print("Filtering out candidate: \(format(item))")
+        }
+    }
+
+    guard safe.count >= minimumCount else {
+        throw NSError(domain: "Workflow", code: -1, userInfo: [NSLocalizedDescriptionKey: "Too many candidates trigger content filters"])
+    }
+    return try await attempt(safe)
+}
+
 #endif

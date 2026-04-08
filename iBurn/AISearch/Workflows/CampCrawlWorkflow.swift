@@ -89,28 +89,32 @@ struct CampCrawlWorkflow: Workflow {
         }
         onProgress(.stepCompleted(name: "events"))
 
-        // Step 4: LLM selects best camps
+        // Step 4: LLM selects best camps (with retry, filtering problematic candidates)
         onProgress(.stepStarted(name: "curate", description: "Curating the best stops..."))
-        let candidateText = campCandidates.prefix(10).map { camp in
-            let desc = camp.description?.prefix(60) ?? ""
-            let events = campEventInfo[camp.uid].map { " | Events: \($0)" } ?? ""
-            return "camp: \(camp.name) - \(desc)\(events) (uid: \(camp.uid))"
-        }.joined(separator: "\n")
-
-        let selectionSession = LanguageModelSession(instructions: """
-            Select 4-6 camps for a themed camp crawl. Theme: "\(theme)". \
-            Prefer camps with interesting events. Order for a good experience flow.
-            """)
-        let selection = try await selectionSession.respond(
-            to: Prompt("Candidates:\n\(candidateText)"),
-            generating: GenerableCampSelection.self
-        )
+        let selection: GenerableCampSelection = try await retryWithCandidateFiltering(
+            candidates: Array(campCandidates.prefix(12)),
+            format: { $0.name }
+        ) { batch in
+            let text = batch.map { camp in
+                let desc = camp.description?.prefix(60) ?? ""
+                let events = campEventInfo[camp.uid].map { " | Events: \($0)" } ?? ""
+                return "camp: \(camp.name) - \(desc)\(events) (uid: \(camp.uid))"
+            }.joined(separator: "\n")
+            let session = LanguageModelSession(instructions: """
+                Select 3-\(min(6, batch.count)) camps for a themed camp crawl. Theme: "\(theme)". \
+                Prefer camps with interesting events. Order for a good experience flow.
+                """)
+            return try await session.respond(
+                to: Prompt("Candidates:\n\(text)"),
+                generating: GenerableCampSelection.self
+            ).content
+        }
         onProgress(.stepCompleted(name: "curate"))
 
         // Step 5: Calculate walking route
         onProgress(.stepStarted(name: "route", description: "Building your route..."))
-        let selectedUIDs = selection.content.camps.map(\.uid)
-        let tipMap = Dictionary(selection.content.camps.map { ($0.uid, $0.tip) }, uniquingKeysWith: { first, _ in first })
+        let selectedUIDs = selection.camps.map(\.uid)
+        let tipMap = Dictionary(selection.camps.map { ($0.uid, $0.tip) }, uniquingKeysWith: { first, _ in first })
 
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
         var campNames: [String: String] = [:]
@@ -172,6 +176,7 @@ struct CampCrawlWorkflow: Workflow {
             totalWalkMinutes: totalWalkMinutes
         )
     }
+
 }
 
 #endif

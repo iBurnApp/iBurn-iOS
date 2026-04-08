@@ -96,27 +96,29 @@ struct AdventureWorkflow: Workflow {
             return RouteResult(stops: [], narrative: "Couldn't find enough items for this adventure theme.", totalWalkMinutes: 0)
         }
 
-        // Step 3: LLM selects best stops
+        // Step 3: LLM selects best stops (with retry, filtering problematic candidates)
         onProgress(.stepStarted(name: "curate", description: "Curating the best stops..."))
-        let candidateText = allCandidates.prefix(20).map { obj in
-            formatObject(obj, detail: .normal)
-        }.joined(separator: "\n")
-
-        let selectionSession = LanguageModelSession(instructions: """
-            You are curating a themed Burning Man adventure. Pick 5-7 stops \
-            that best match the theme "\(theme)". Choose a mix of types \
-            (art, camps, events) for variety. Order them for a good experience flow.
-            """)
-        let selection = try await selectionSession.respond(
-            to: Prompt("Candidates:\n\(candidateText)\n\nSelect the best stops for this adventure."),
-            generating: GenerableStopSelection.self
-        )
+        let selection: GenerableStopSelection = try await retryWithCandidateFiltering(
+            candidates: Array(allCandidates.prefix(20)),
+            format: { objectName($0) ?? "unknown" }
+        ) { batch in
+            let text = batch.map { obj in formatObject(obj, detail: .normal) }.joined(separator: "\n")
+            let session = LanguageModelSession(instructions: """
+                You are curating a themed Burning Man adventure. Pick 3-\(min(7, batch.count)) stops \
+                that best match the theme "\(theme)". Choose a mix of types \
+                (art, camps, events) for variety. Order them for a good experience flow.
+                """)
+            return try await session.respond(
+                to: Prompt("Candidates:\n\(text)\n\nSelect the best stops for this adventure."),
+                generating: GenerableStopSelection.self
+            ).content
+        }
         onProgress(.stepCompleted(name: "curate"))
 
         // Step 4: Route optimization
         onProgress(.stepStarted(name: "route", description: "Optimizing your route..."))
-        let selectedUIDs = selection.content.stops.map(\.uid)
-        let reasonMap = Dictionary(selection.content.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
+        let selectedUIDs = selection.stops.map(\.uid)
+        let reasonMap = Dictionary(selection.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
 
         // Get coordinates for selected items
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []

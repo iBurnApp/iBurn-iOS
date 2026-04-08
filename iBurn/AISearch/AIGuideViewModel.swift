@@ -145,47 +145,66 @@ final class AIGuideViewModel: ObservableObject {
         attempt: Int
     ) async {
         do {
-            try await executeWorkflow(workflowID, theme: theme, hoursBack: hoursBack, isSafeRetry: attempt > 0)
+            try await executeWorkflow(workflowID, theme: theme, hoursBack: hoursBack, attempt: attempt)
             executionState = .completed
             saveCurrentWorkflowState()
         } catch is CancellationError {
             // Ignored
         } catch {
             guard !Task.isCancelled else { return }
+            print("Workflow error (attempt \(attempt + 1)/\(Self.maxRetries + 1)): \(error)")
 
-            if isRetryableError(error), attempt < Self.maxRetries {
-                // Recoverable error — retry with a different approach
+            if attempt < Self.maxRetries {
                 markCurrentStepFailed()
+                #if DEBUG
+                addStep("⚠️ \(shortErrorDescription(error))")
+                #endif
+                // Clear steps from failed attempt before retrying
+                steps.removeAll()
                 addStep(retryMessage(for: error, attempt: attempt))
                 await executeWithRetry(workflowID, theme: theme, hoursBack: hoursBack, attempt: attempt + 1)
             } else {
                 markCurrentStepFailed()
+                #if DEBUG
+                let debugMsg = "\(userFacingMessage(for: error))\n\n[DEBUG: \(shortErrorDescription(error))]"
+                executionState = .failed(debugMsg)
+                #else
                 executionState = .failed(userFacingMessage(for: error))
+                #endif
                 saveCurrentWorkflowState()
-                print("Workflow error: \(error)")
             }
         }
+    }
+
+    private func shortErrorDescription(_ error: Error) -> String {
+        let desc = String(describing: error)
+        // Truncate long error descriptions for readability
+        if desc.count > 200 {
+            return String(desc.prefix(200)) + "..."
+        }
+        return desc
     }
 
     private func executeWorkflow(
         _ workflowID: WorkflowID,
         theme: String?,
         hoursBack: Int?,
-        isSafeRetry: Bool
+        attempt: Int
     ) async throws {
+        let safe = attempt > 0
         switch workflowID {
         case .forYou:
-            try await runRecommendations(safe: isSafeRetry)
+            try await runRecommendations(safe: safe)
         case .surpriseMe:
-            try await runSerendipity(safe: isSafeRetry)
+            try await runSerendipity(safe: safe)
         case .whatDidIMiss:
             try await runWhatDidIMiss(hoursBack: hoursBack ?? 24)
         case .dayPlanner:
-            try await runDayPlan(safe: isSafeRetry)
+            try await runDayPlan(safe: safe)
         case .adventure:
-            try await runAdventure(theme: theme ?? "best of the playa", safe: isSafeRetry)
+            try await runAdventure(theme: theme ?? "best of the playa", safe: safe)
         case .campCrawl:
-            try await runCampCrawl(theme: theme ?? "eclectic experience", safe: isSafeRetry)
+            try await runCampCrawl(theme: theme ?? "eclectic experience", safe: safe)
         case .goldenHour:
             try await runGoldenHour()
         case .scheduleOptimizer:
@@ -201,14 +220,15 @@ final class AIGuideViewModel: ObservableObject {
 
     private func retryMessage(for error: Error, attempt: Int) -> String {
         let desc = String(describing: error)
+        let suffix = attempt > 0 ? " (attempt \(attempt + 1)/\(Self.maxRetries + 1))" : ""
         if desc.contains("guardrailViolation") {
-            return "Taking a more family-friendly approach..."
+            return "Taking a more family-friendly approach...\(suffix)"
         } else if desc.contains("unsupportedLanguage") || desc.contains("unsupportedLocale") {
-            return "Adjusting language settings and trying again..."
+            return "Adjusting language settings...\(suffix)"
         } else if desc.contains("fts5") {
-            return "Simplifying the search query..."
+            return "Simplifying the search query...\(suffix)"
         } else {
-            return "Dusting off and trying a different path..."
+            return "Dusting off and trying again...\(suffix)"
         }
     }
 
