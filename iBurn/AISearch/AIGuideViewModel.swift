@@ -77,7 +77,7 @@ final class AIGuideViewModel: ObservableObject {
     let playaDB: PlayaDB
     let orchestrator: AgentOrchestrator
     private var currentTask: Task<Void, Never>?
-    private static let maxRetries = 2
+    private static let maxRetries = 3
 
     init(playaDB: PlayaDB, orchestrator: AgentOrchestrator) {
         self.playaDB = playaDB
@@ -196,12 +196,7 @@ final class AIGuideViewModel: ObservableObject {
     // MARK: - Error Classification & Retry
 
     private func isRetryableError(_ error: Error) -> Bool {
-        let desc = String(describing: error)
-        return desc.contains("guardrailViolation")
-            || desc.contains("unsupportedLanguage")
-            || desc.contains("unsupportedLocale")
-            || desc.contains("fts5: syntax error")
-            || desc.contains("resourceExhausted")
+        true
     }
 
     private func retryMessage(for error: Error, attempt: Int) -> String {

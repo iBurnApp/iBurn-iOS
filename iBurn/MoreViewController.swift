@@ -384,13 +384,32 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         #if canImport(FoundationModels)
         if #available(iOS 26, *) {
             guard let vm = BRCAppDelegate.shared.dependencies.makeAIGuideViewModel() as? AIGuideViewModel else { return }
-            let view = NavigationView { AIGuideView(viewModel: vm) }
+            let view = AIGuideView(viewModel: vm) { [weak self] workflow in
+                self?.pushWorkflowDetail(workflow: workflow, viewModel: vm)
+            }
             let hostingVC = UIHostingController(rootView: view)
+            hostingVC.title = "AI Guide"
             hostingVC.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(hostingVC, animated: true)
         }
         #endif
     }
+
+    #if canImport(FoundationModels)
+    @available(iOS 26, *)
+    private func pushWorkflowDetail(workflow: WorkflowInfo, viewModel: AIGuideViewModel) {
+        let view = WorkflowDetailView(
+            workflowInfo: workflow,
+            viewModel: viewModel,
+            onNavigateToDetail: { [weak self] detailVC in
+                self?.navigationController?.pushViewController(detailVC, animated: true)
+            }
+        )
+        let hostingVC = UIHostingController(rootView: view)
+        hostingVC.title = workflow.title
+        navigationController?.pushViewController(hostingVC, animated: true)
+    }
+    #endif
 
     func pushRecentlyViewedView() {
         let recentVC = RecentlyViewedHostingController(dependencies: BRCAppDelegate.shared.dependencies)

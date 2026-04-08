@@ -15,6 +15,7 @@ import UIKit
 struct AIGuideView: View {
     @ObservedObject var viewModel: AIGuideViewModel
     @Environment(\.themeColors) var themeColors
+    let onSelectWorkflow: (WorkflowInfo) -> Void
 
     var body: some View {
         List {
@@ -23,11 +24,8 @@ struct AIGuideView: View {
                 if !workflows.isEmpty {
                     Section(header: Text(section.rawValue)) {
                         ForEach(workflows) { workflow in
-                            NavigationLink {
-                                WorkflowDetailView(
-                                    workflowInfo: workflow,
-                                    viewModel: viewModel
-                                )
+                            Button {
+                                onSelectWorkflow(workflow)
                             } label: {
                                 WorkflowRow(info: workflow, themeColors: themeColors)
                             }
@@ -37,8 +35,6 @@ struct AIGuideView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("AI Guide")
-        .navigationBarTitleDisplayMode(.large)
     }
 }
 

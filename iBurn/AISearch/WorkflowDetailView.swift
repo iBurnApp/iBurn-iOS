@@ -15,6 +15,7 @@ import UIKit
 struct WorkflowDetailView: View {
     let workflowInfo: WorkflowInfo
     @ObservedObject var viewModel: AIGuideViewModel
+    let onNavigateToDetail: (UIViewController) -> Void
     @Environment(\.themeColors) var themeColors
 
     // MARK: - Workflow-specific configuration
@@ -50,8 +51,6 @@ struct WorkflowDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(workflowInfo.title)
-        .navigationBarTitleDisplayMode(.inline)
         .task {
             // Load cached state for this workflow
             viewModel.loadWorkflow(workflowInfo.id)
@@ -389,6 +388,7 @@ struct WorkflowDetailView: View {
                 }
             }
             .buttonStyle(.plain)
+            .id(uid)
         } else {
             Text(uid)
                 .font(.caption)
@@ -461,10 +461,7 @@ struct WorkflowDetailView: View {
         case .mutantVehicle(let mv):
             detailVC = DetailViewControllerFactory.create(with: mv, playaDB: playaDB)
         }
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let navController = window.rootViewController?.findNavigationController() else { return }
-        navController.pushViewController(detailVC, animated: true)
+        onNavigateToDetail(detailVC)
     }
 }
 
