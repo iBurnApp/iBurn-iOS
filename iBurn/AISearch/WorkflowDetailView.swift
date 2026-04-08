@@ -22,6 +22,8 @@ struct WorkflowDetailView: View {
     @State private var themeText: String = ""
     @State private var hoursBack: Double = 24
 
+    @FocusState private var isTextFieldFocused: Bool
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -51,6 +53,8 @@ struct WorkflowDetailView: View {
             }
             .padding()
         }
+        .onTapGesture { isTextFieldFocused = false }
+        .scrollDismissesKeyboard(.interactively)
         .task {
             // Load cached state for this workflow
             viewModel.loadWorkflow(workflowInfo.id)
@@ -97,6 +101,7 @@ struct WorkflowDetailView: View {
                     .foregroundColor(themeColors.secondaryColor)
                 TextField("e.g. fire art, interactive, deep playa...", text: $themeText)
                     .textFieldStyle(.roundedBorder)
+                    .focused($isTextFieldFocused)
                     .onSubmit { runWorkflow() }
             }
 
@@ -108,6 +113,7 @@ struct WorkflowDetailView: View {
                     .foregroundColor(themeColors.secondaryColor)
                 TextField("e.g. coffee, music, workshops...", text: $themeText)
                     .textFieldStyle(.roundedBorder)
+                    .focused($isTextFieldFocused)
                     .onSubmit { runWorkflow() }
             }
 
@@ -440,6 +446,7 @@ struct WorkflowDetailView: View {
     // MARK: - Navigation
 
     private func runWorkflow() {
+        isTextFieldFocused = false
         viewModel.run(
             workflowInfo.id,
             theme: themeText.isEmpty ? nil : themeText,
