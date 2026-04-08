@@ -95,21 +95,16 @@ struct ScheduleOptimizerWorkflow: Workflow {
                 // Skip if one was already removed
                 guard !removedUIDs.contains(eventA.event.uid) && !removedUIDs.contains(eventB.event.uid) else { continue }
 
-                let descA = eventA.event.description?.prefix(60) ?? ""
-                let descB = eventB.event.description?.prefix(60) ?? ""
                 let timeA = formatter.string(from: eventA.startDate)
                 let timeB = formatter.string(from: eventB.startDate)
 
                 let conflictPrompt = """
-                    Two events overlap:
-                    A: \(eventA.event.name) at \(timeA) - \(descA) (uid: \(eventA.event.uid))
-                    B: \(eventB.event.name) at \(timeB) - \(descB) (uid: \(eventB.event.uid))
-                    Which should be kept?
+                    Overlap: A) \(eventA.event.name) at \(timeA) (\(eventA.event.eventTypeLabel)) uid:\(eventA.event.uid)
+                    B) \(eventB.event.name) at \(timeB) (\(eventB.event.eventTypeLabel)) uid:\(eventB.event.uid)
                     """
 
                 let session = LanguageModelSession(instructions: """
-                    You resolve schedule conflicts at Burning Man. Pick the event \
-                    that offers a more unique or time-sensitive experience.
+                    Pick the more unique/time-sensitive event to keep.
                     """)
                 let resolution = try await session.respond(
                     to: Prompt(conflictPrompt),

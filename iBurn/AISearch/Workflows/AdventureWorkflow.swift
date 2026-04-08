@@ -24,8 +24,8 @@ struct GenerableKeywords {
 @available(iOS 26, *)
 @Generable
 struct GenerableSelectedStop {
-    @Guide(description: "UID of the selected stop")
-    var uid: String
+    @Guide(description: "Stop number from the list")
+    var number: Int
     @Guide(description: "Brief reason why this stop was selected")
     var reason: String
 }
@@ -33,7 +33,7 @@ struct GenerableSelectedStop {
 @available(iOS 26, *)
 @Generable
 struct GenerableStopSelection {
-    @Guide(description: "Selected stops for the adventure, each with its UID and reason", .count(3...8))
+    @Guide(description: "Selected stops for the adventure", .count(3...7))
     var stops: [GenerableSelectedStop]
 }
 
@@ -96,29 +96,38 @@ struct AdventureWorkflow: Workflow {
             return RouteResult(stops: [], narrative: "Couldn't find enough items for this adventure theme.", totalWalkMinutes: 0)
         }
 
-        // Step 3: LLM selects best stops (with retry, filtering problematic candidates)
+        // Step 3: LLM selects best stops (numeric IDs to save tokens)
         onProgress(.stepStarted(name: "curate", description: "Curating the best stops..."))
+        let candidateSlice = Array(allCandidates.prefix(18))
+        let objIdMap = Dictionary(uniqueKeysWithValues: candidateSlice.enumerated().map { ($0.offset + 1, $0.element) })
+
         let selection: GenerableStopSelection = try await retryWithCandidateFiltering(
-            candidates: Array(allCandidates.prefix(20)),
-            format: { objectName($0) ?? "unknown" }
+            candidates: Array(candidateSlice.enumerated()),
+            format: { objectName($0.element) ?? "unknown" }
         ) { batch in
-            let text = batch.map { obj in formatObject(obj, detail: .normal) }.joined(separator: "\n")
+            let text = batch.map { idx, obj in
+                "\(idx + 1). \(formatObject(obj, detail: .brief))"
+            }.joined(separator: "\n")
             let session = LanguageModelSession(instructions: """
-                You are curating a themed Burning Man adventure. Pick 3-\(min(7, batch.count)) stops \
-                that best match the theme "\(theme)". Choose a mix of types \
-                (art, camps, events) for variety. Order them for a good experience flow.
+                Pick 4-7 stops for a "\(theme)" Burning Man adventure. Mix types. Use the numbers.
                 """)
             return try await session.respond(
-                to: Prompt("Candidates:\n\(text)\n\nSelect the best stops for this adventure."),
+                to: Prompt("Stops:\n\(text)"),
                 generating: GenerableStopSelection.self
             ).content
         }
         onProgress(.stepCompleted(name: "curate"))
 
-        // Step 4: Route optimization
+        // Step 4: Route optimization — map numeric IDs back
         onProgress(.stepStarted(name: "route", description: "Optimizing your route..."))
-        let selectedUIDs = selection.stops.map(\.uid)
-        let reasonMap = Dictionary(selection.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
+        let selectedUIDs = selection.stops.compactMap { stop -> String? in
+            guard let obj = objIdMap[stop.number] else { return nil }
+            return objectUID(obj)
+        }
+        let reasonMap = Dictionary(selection.stops.compactMap { stop -> (String, String)? in
+            guard let obj = objIdMap[stop.number], let uid = objectUID(obj) else { return nil }
+            return (uid, stop.reason)
+        }, uniquingKeysWith: { first, _ in first })
 
         // Get coordinates for selected items
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []

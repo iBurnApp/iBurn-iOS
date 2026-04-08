@@ -97,24 +97,17 @@ struct SerendipityWorkflow: Workflow {
         // Step 3 & 4: LLM finds creative connections and generates pitches
         onProgress(.stepStarted(name: "pitch", description: "Finding the magic connections..."))
         let candidateText = candidates.map { obj in
-            formatObject(obj, detail: .normal)
+            formatObject(obj, detail: .brief)
         }.joined(separator: "\n")
 
         let session = LanguageModelSession(instructions: """
-            You are a whimsical Burning Man guide who finds unexpected connections. \
-            Given the user's taste and a set of random items, pick 3-5 that would \
-            surprise and delight them. Write creative, playful pitches that explain \
-            the unexpected connection. Be imaginative and fun.
+            Whimsical Burning Man guide. Pick 3-5 surprising items and write playful pitches.
             """)
 
         let prompt = """
-            User's taste:
-            \(tasteProfile)
-
+            Taste: \(tasteProfile)
             Candidates:
             \(candidateText)
-
-            Pick the most surprisingly delightful items and pitch them.
             """
 
         let response = try await session.respond(

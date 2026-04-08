@@ -105,12 +105,11 @@ struct WhatDidIMissWorkflow: Workflow {
         // Step 5: LLM curates the most interesting missed items
         onProgress(.stepStarted(name: "curate", description: "Finding hidden gems you walked past..."))
         let candidateText = missedObjects.prefix(15).map { obj in
-            formatObject(obj, detail: .normal)
+            formatObject(obj, detail: .brief)
         }.joined(separator: "\n")
 
         let session = LanguageModelSession(instructions: """
-            You help Burning Man attendees discover things they walked past but missed. \
-            Pick the most interesting and unique items. Write compelling reasons to go back.
+            Pick the most interesting missed items. Write compelling reasons to go back.
             """)
 
         let response = try await session.respond(

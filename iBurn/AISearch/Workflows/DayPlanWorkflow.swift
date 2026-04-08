@@ -35,8 +35,8 @@ struct DayPlanEntry: Sendable {
 @available(iOS 26, *)
 @Generable
 struct GenerableDayPlanSelection {
-    @Guide(description: "Selected event UIDs in chronological order", .count(3...10))
-    var selectedUIDs: [String]
+    @Guide(description: "Selected event numbers from the list, in chronological order", .count(3...6))
+    var selectedNumbers: [Int]
     @Guide(description: "One-sentence theme for the day")
     var dayTheme: String
 }
@@ -107,25 +107,25 @@ struct DayPlanWorkflow: Workflow {
         let conflicts = detectConflicts(allCandidates)
 
         // Step 4: LLM selects best events
-        let candidateText = allCandidates.prefix(20).map { occ in
+        // Use short numeric IDs to save tokens (4096 context limit)
+        let candidateSlice = Array(allCandidates.prefix(20))
+        let idMap = Dictionary(uniqueKeysWithValues: candidateSlice.enumerated().map { ($0.offset + 1, $0.element.event.uid) })
+        let candidateText = candidateSlice.enumerated().map { idx, occ in
             let time = formatter.string(from: occ.startDate)
-            let desc = occ.event.description?.prefix(60) ?? ""
-            return "\(occ.event.name) at \(time) - \(desc) (uid: \(occ.event.uid))"
+            return "\(idx + 1). \(occ.event.name) at \(time) (\(occ.event.eventTypeLabel))"
         }.joined(separator: "\n")
 
-        var selectionPrompt = "Select 5-8 events for a great day. Order by time."
+        var selectionPrompt = "Pick 4-6 events for a great day. Use the numbers."
         if !conflicts.isEmpty {
-            let conflictText = conflicts.prefix(3).map { "\($0.0.event.name) vs \($0.1.event.name)" }.joined(separator: ", ")
-            selectionPrompt += " Resolve these conflicts by picking the better one: \(conflictText)"
+            let conflictText = conflicts.prefix(2).map { "\($0.0.event.name) vs \($0.1.event.name)" }.joined(separator: ", ")
+            selectionPrompt += " Conflicts: \(conflictText)"
         }
         if !tasteKeywords.isEmpty {
-            selectionPrompt += " User likes: \(tasteKeywords.joined(separator: ", "))"
+            selectionPrompt += " Likes: \(tasteKeywords.prefix(3).joined(separator: ", "))"
         }
 
         let session = LanguageModelSession(instructions: """
-            You are scheduling a day at Burning Man. Pick the best events \
-            that create a balanced, enjoyable day. Mix familiar interests \
-            with new discoveries. Resolve any time conflicts.
+            Schedule a day at Burning Man. Pick balanced, enjoyable events. Resolve time conflicts.
             """)
 
         let selection = try await session.respond(
@@ -136,7 +136,7 @@ struct DayPlanWorkflow: Workflow {
 
         // Step 5: Calculate walk times
         onProgress(.stepStarted(name: "route", description: "Calculating walking routes..."))
-        let selectedUIDs = selection.content.selectedUIDs
+        let selectedUIDs = selection.content.selectedNumbers.compactMap { idMap[$0] }
         let selectedEvents = selectedUIDs.compactMap { uid in
             allCandidates.first { $0.event.uid == uid }
         }
@@ -176,11 +176,10 @@ struct DayPlanWorkflow: Workflow {
         }.joined(separator: "\n")
 
         let narrativeSession = LanguageModelSession(instructions: """
-            Write brief, fun transition notes for a Burning Man day schedule. \
-            Each note should be one sentence about what to expect or why it's exciting.
+            Write one fun sentence per event and an overall summary.
             """)
         let narrative = try await narrativeSession.respond(
-            to: Prompt("Schedule:\n\(scheduleText)\n\nWrite one transition note per event and an overall summary."),
+            to: Prompt("Schedule:\n\(scheduleText)"),
             generating: GenerableDayPlanNarrative.self
         )
         onProgress(.stepCompleted(name: "narrative"))

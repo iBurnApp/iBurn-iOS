@@ -17,16 +17,16 @@ import FoundationModels
 @available(iOS 26, *)
 @Generable
 struct GenerableCampStop {
-    @Guide(description: "Camp UID")
-    var uid: String
-    @Guide(description: "Brief visit tip for this specific camp")
+    @Guide(description: "Camp number from the list")
+    var number: Int
+    @Guide(description: "Brief visit tip for this camp")
     var tip: String
 }
 
 @available(iOS 26, *)
 @Generable
 struct GenerableCampSelection {
-    @Guide(description: "Selected camps for the crawl, each with its UID and tip", .count(3...6))
+    @Guide(description: "Selected camps for the crawl", .count(3...6))
     var camps: [GenerableCampStop]
 }
 
@@ -89,32 +89,37 @@ struct CampCrawlWorkflow: Workflow {
         }
         onProgress(.stepCompleted(name: "events"))
 
-        // Step 4: LLM selects best camps (with retry, filtering problematic candidates)
+        // Step 4: LLM selects best camps (numeric IDs to save tokens)
         onProgress(.stepStarted(name: "curate", description: "Curating the best stops..."))
+        let candidateSlice = Array(campCandidates.prefix(15))
+        let campIdMap = Dictionary(uniqueKeysWithValues: candidateSlice.enumerated().map { ($0.offset + 1, $0.element) })
+
         let selection: GenerableCampSelection = try await retryWithCandidateFiltering(
-            candidates: Array(campCandidates.prefix(12)),
-            format: { $0.name }
+            candidates: Array(candidateSlice.enumerated()),
+            format: { "\($0.element.name)" }
         ) { batch in
-            let text = batch.map { camp in
-                let desc = camp.description?.prefix(60) ?? ""
-                let events = campEventInfo[camp.uid].map { " | Events: \($0)" } ?? ""
-                return "camp: \(camp.name) - \(desc)\(events) (uid: \(camp.uid))"
+            let text = batch.map { idx, camp in
+                let events = campEventInfo[camp.uid].map { " events: \($0)" } ?? ""
+                return "\(idx + 1). \(camp.name)\(events)"
             }.joined(separator: "\n")
             let session = LanguageModelSession(instructions: """
-                Select 3-\(min(6, batch.count)) camps for a themed camp crawl. Theme: "\(theme)". \
-                Prefer camps with interesting events. Order for a good experience flow.
+                Pick 4-6 camps for a "\(theme)" camp crawl. Use the numbers.
                 """)
             return try await session.respond(
-                to: Prompt("Candidates:\n\(text)"),
+                to: Prompt("Camps:\n\(text)"),
                 generating: GenerableCampSelection.self
             ).content
         }
         onProgress(.stepCompleted(name: "curate"))
 
-        // Step 5: Calculate walking route
+        // Step 5: Calculate walking route — map numeric IDs back to UIDs
         onProgress(.stepStarted(name: "route", description: "Building your route..."))
-        let selectedUIDs = selection.camps.map(\.uid)
-        let tipMap = Dictionary(selection.camps.map { ($0.uid, $0.tip) }, uniquingKeysWith: { first, _ in first })
+        let selectedCamps = selection.camps.compactMap { campIdMap[$0.number] }
+        let selectedUIDs = selectedCamps.map(\.uid)
+        let tipMap = Dictionary(selection.camps.compactMap { stop -> (String, String)? in
+            guard let camp = campIdMap[stop.number] else { return nil }
+            return (camp.uid, stop.tip)
+        }, uniquingKeysWith: { first, _ in first })
 
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
         var campNames: [String: String] = [:]

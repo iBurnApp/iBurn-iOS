@@ -17,8 +17,8 @@ import FoundationModels
 @available(iOS 26, *)
 @Generable
 struct GenerableGoldenHourStop {
-    @Guide(description: "Art UID")
-    var uid: String
+    @Guide(description: "Art number from the list")
+    var number: Int
     @Guide(description: "Why this art is great at golden hour")
     var reason: String
 }
@@ -26,7 +26,7 @@ struct GenerableGoldenHourStop {
 @available(iOS 26, *)
 @Generable
 struct GenerableGoldenHourSelection {
-    @Guide(description: "Selected art for golden hour viewing, each with UID and reason", .count(3...6))
+    @Guide(description: "Selected art for golden hour viewing", .count(3...6))
     var stops: [GenerableGoldenHourStop]
 }
 
@@ -79,34 +79,36 @@ struct GoldenHourWorkflow: Workflow {
             return RouteResult(stops: [], narrative: "No art with location data found.", totalWalkMinutes: 0)
         }
 
-        // Step 3: LLM selects art best for golden hour (with retry, filtering problematic candidates)
+        // Step 3: LLM selects art best for golden hour (numeric IDs to save tokens)
         onProgress(.stepStarted(name: "curate", description: "Curating golden hour art..."))
+        let artSlice = Array(artWithGPS.prefix(18))
+        let artIdMap = Dictionary(uniqueKeysWithValues: artSlice.enumerated().map { ($0.offset + 1, $0.element) })
+
         let selection: GenerableGoldenHourSelection = try await retryWithCandidateFiltering(
-            candidates: Array(artWithGPS.prefix(20)),
-            format: { $0.name }
+            candidates: Array(artSlice.enumerated()),
+            format: { "\($0.element.name)" }
         ) { batch in
-            let text = batch.map { art in
-                let desc = art.description?.prefix(80) ?? ""
+            let text = batch.map { idx, art in
                 let cat = art.category ?? ""
-                return "art: \(art.name) - \(desc) | category: \(cat) (uid: \(art.uid))"
+                return "\(idx + 1). \(art.name)\(cat.isEmpty ? "" : " (\(cat))")"
             }.joined(separator: "\n")
             let session = LanguageModelSession(instructions: """
-                You are selecting art installations for golden hour viewing at Burning Man. \
-                Pick art that would look amazing in \(targetTime) light: \
-                large-scale sculptures, reflective/metallic pieces, fire art (for sunset), \
-                and installations with interesting silhouettes. Avoid indoor/shaded pieces.
+                Pick art for \(targetTime) viewing. Prefer large sculptures, reflective pieces, fire art. Use numbers.
                 """)
             return try await session.respond(
-                to: Prompt("Available art:\n\(text)\n\nSelect the best art for \(targetTime) viewing."),
+                to: Prompt("Art:\n\(text)"),
                 generating: GenerableGoldenHourSelection.self
             ).content
         }
         onProgress(.stepCompleted(name: "curate"))
 
-        // Step 4: Calculate route arriving 30 min before golden hour
+        // Step 4: Calculate route — map numeric IDs back
         onProgress(.stepStarted(name: "route", description: "Planning your golden hour route..."))
-        let selectedUIDs = selection.stops.map(\.uid)
-        let reasonMap = Dictionary(selection.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
+        let selectedUIDs = selection.stops.compactMap { artIdMap[$0.number]?.uid }
+        let reasonMap = Dictionary(selection.stops.compactMap { stop -> (String, String)? in
+            guard let art = artIdMap[stop.number] else { return nil }
+            return (art.uid, stop.reason)
+        }, uniquingKeysWith: { first, _ in first })
 
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
         var artNames: [String: String] = [:]
