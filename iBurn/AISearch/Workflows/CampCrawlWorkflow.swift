@@ -16,11 +16,18 @@ import FoundationModels
 
 @available(iOS 26, *)
 @Generable
+struct GenerableCampStop {
+    @Guide(description: "Camp UID")
+    var uid: String
+    @Guide(description: "Brief visit tip for this specific camp")
+    var tip: String
+}
+
+@available(iOS 26, *)
+@Generable
 struct GenerableCampSelection {
-    @Guide(description: "Selected camp UIDs for the crawl", .count(3...6))
-    var selectedUIDs: [String]
-    @Guide(description: "Brief visit tip per camp, same order as UIDs", .count(3...6))
-    var tips: [String]
+    @Guide(description: "Selected camps for the crawl, each with its UID and tip", .count(3...6))
+    var camps: [GenerableCampStop]
 }
 
 @available(iOS 26, *)
@@ -102,8 +109,8 @@ struct CampCrawlWorkflow: Workflow {
 
         // Step 5: Calculate walking route
         onProgress(.stepStarted(name: "route", description: "Building your route..."))
-        let selectedUIDs = selection.content.selectedUIDs
-        let tipMap = Dictionary(uniqueKeysWithValues: zip(selectedUIDs, selection.content.tips + Array(repeating: "", count: max(0, selectedUIDs.count - selection.content.tips.count))))
+        let selectedUIDs = selection.content.camps.map(\.uid)
+        let tipMap = Dictionary(selection.content.camps.map { ($0.uid, $0.tip) }, uniquingKeysWith: { first, _ in first })
 
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
         var campNames: [String: String] = [:]

@@ -23,11 +23,27 @@ struct GenerableKeywords {
 
 @available(iOS 26, *)
 @Generable
+struct GenerableSelectedStop {
+    @Guide(description: "UID of the selected stop")
+    var uid: String
+    @Guide(description: "Brief reason why this stop was selected")
+    var reason: String
+}
+
+@available(iOS 26, *)
+@Generable
 struct GenerableStopSelection {
-    @Guide(description: "Selected UIDs for the adventure stops, in suggested visit order", .count(3...8))
-    var selectedUIDs: [String]
-    @Guide(description: "Brief reason for each selection, same order as UIDs", .count(3...8))
-    var reasons: [String]
+    @Guide(description: "Selected stops for the adventure, each with its UID and reason", .count(3...8))
+    var stops: [GenerableSelectedStop]
+}
+
+@available(iOS 26, *)
+@Generable
+struct GenerableAdventureTip {
+    @Guide(description: "Name of the stop this tip is for")
+    var stopName: String
+    @Guide(description: "One-line visit tip for this stop")
+    var tip: String
 }
 
 @available(iOS 26, *)
@@ -35,8 +51,8 @@ struct GenerableStopSelection {
 struct GenerableAdventureNarrative {
     @Guide(description: "Two-sentence adventure intro setting the mood")
     var intro: String
-    @Guide(description: "One-line visit tip per stop, same order as stops", .count(1...8))
-    var tips: [String]
+    @Guide(description: "Visit tips, one per stop", .count(1...8))
+    var tips: [GenerableAdventureTip]
 }
 
 // MARK: - Adventure Workflow
@@ -99,8 +115,8 @@ struct AdventureWorkflow: Workflow {
 
         // Step 4: Route optimization
         onProgress(.stepStarted(name: "route", description: "Optimizing your route..."))
-        let selectedUIDs = selection.content.selectedUIDs
-        let reasonMap = Dictionary(uniqueKeysWithValues: zip(selectedUIDs, selection.content.reasons + Array(repeating: "", count: max(0, selectedUIDs.count - selection.content.reasons.count))))
+        let selectedUIDs = selection.content.stops.map(\.uid)
+        let reasonMap = Dictionary(selection.content.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
 
         // Get coordinates for selected items
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
@@ -173,14 +189,15 @@ struct AdventureWorkflow: Workflow {
         )
         onProgress(.stepCompleted(name: "narrative"))
 
-        // Merge tips into stops
-        let tips = narrative.content.tips
-        let finalStops = routeStops.enumerated().map { idx, stop in
-            RouteStop(
+        // Merge tips into stops by matching stop name
+        let tipsByName = Dictionary(narrative.content.tips.map { ($0.stopName.lowercased(), $0.tip) }, uniquingKeysWith: { first, _ in first })
+        let finalStops = routeStops.map { stop in
+            let tip = tipsByName[stop.name.lowercased()]
+            return RouteStop(
                 id: stop.id,
                 name: stop.name,
                 type: stop.type,
-                reason: idx < tips.count ? tips[idx] : stop.reason,
+                reason: tip ?? stop.reason,
                 walkMinutesFromPrevious: stop.walkMinutesFromPrevious,
                 latitude: stop.latitude,
                 longitude: stop.longitude

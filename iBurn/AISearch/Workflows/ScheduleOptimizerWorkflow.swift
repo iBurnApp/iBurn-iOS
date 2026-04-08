@@ -34,11 +34,20 @@ struct GenerableConflictResolution {
 
 @available(iOS 26, *)
 @Generable
+struct GenerableScheduleNote {
+    @Guide(description: "Event name this note is for")
+    var eventName: String
+    @Guide(description: "Brief note about what to expect at this event")
+    var note: String
+}
+
+@available(iOS 26, *)
+@Generable
 struct GenerableScheduleSummary {
     @Guide(description: "One-sentence summary of the optimized schedule")
     var summary: String
-    @Guide(description: "Brief note per event about what to expect", .count(1...10))
-    var notes: [String]
+    @Guide(description: "Notes about events", .count(1...10))
+    var notes: [GenerableScheduleNote]
 }
 
 // MARK: - Schedule Optimizer Workflow
@@ -157,14 +166,14 @@ struct ScheduleOptimizerWorkflow: Workflow {
         onProgress(.stepCompleted(name: "summary"))
 
         // Merge notes into entries
-        let notes = summary.content.notes
-        let finalEntries = entries.enumerated().map { idx, entry in
+        let notesByName = Dictionary(summary.content.notes.map { ($0.eventName.lowercased(), $0.note) }, uniquingKeysWith: { first, _ in first })
+        let finalEntries = entries.map { entry in
             DayPlanEntry(
                 uid: entry.uid,
                 name: entry.name,
                 startTime: entry.startTime,
                 endTime: entry.endTime,
-                reason: idx < notes.count ? notes[idx] : "",
+                reason: notesByName[entry.name.lowercased()] ?? "",
                 walkMinutesFromPrevious: entry.walkMinutesFromPrevious
             )
         }

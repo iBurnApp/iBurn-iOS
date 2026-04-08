@@ -43,9 +43,18 @@ struct GenerableDayPlanSelection {
 
 @available(iOS 26, *)
 @Generable
+struct GenerableDayPlanNote {
+    @Guide(description: "Event name this note is for")
+    var eventName: String
+    @Guide(description: "One-sentence transition note about what to expect")
+    var note: String
+}
+
+@available(iOS 26, *)
+@Generable
 struct GenerableDayPlanNarrative {
-    @Guide(description: "One-sentence transition note per event, same order as schedule", .count(1...10))
-    var transitionNotes: [String]
+    @Guide(description: "Transition notes, one per event", .count(1...10))
+    var transitionNotes: [GenerableDayPlanNote]
     @Guide(description: "Overall day summary, one sentence")
     var summary: String
 }
@@ -176,15 +185,15 @@ struct DayPlanWorkflow: Workflow {
         )
         onProgress(.stepCompleted(name: "narrative"))
 
-        // Merge notes into entries
-        let notes = narrative.content.transitionNotes
-        let finalEntries = entries.enumerated().map { idx, entry in
+        // Merge notes into entries by matching event name
+        let notesByName = Dictionary(narrative.content.transitionNotes.map { ($0.eventName.lowercased(), $0.note) }, uniquingKeysWith: { first, _ in first })
+        let finalEntries = entries.map { entry in
             DayPlanEntry(
                 uid: entry.uid,
                 name: entry.name,
                 startTime: entry.startTime,
                 endTime: entry.endTime,
-                reason: idx < notes.count ? notes[idx] : "",
+                reason: notesByName[entry.name.lowercased()] ?? "",
                 walkMinutesFromPrevious: entry.walkMinutesFromPrevious
             )
         }

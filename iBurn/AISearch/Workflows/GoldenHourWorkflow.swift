@@ -16,11 +16,18 @@ import FoundationModels
 
 @available(iOS 26, *)
 @Generable
+struct GenerableGoldenHourStop {
+    @Guide(description: "Art UID")
+    var uid: String
+    @Guide(description: "Why this art is great at golden hour")
+    var reason: String
+}
+
+@available(iOS 26, *)
+@Generable
 struct GenerableGoldenHourSelection {
-    @Guide(description: "Selected art UIDs best for golden hour viewing", .count(3...6))
-    var selectedUIDs: [String]
-    @Guide(description: "Why each art is great at golden hour, same order as UIDs", .count(3...6))
-    var reasons: [String]
+    @Guide(description: "Selected art for golden hour viewing, each with UID and reason", .count(3...6))
+    var stops: [GenerableGoldenHourStop]
 }
 
 @available(iOS 26, *)
@@ -95,8 +102,8 @@ struct GoldenHourWorkflow: Workflow {
 
         // Step 4: Calculate route arriving 30 min before golden hour
         onProgress(.stepStarted(name: "route", description: "Planning your golden hour route..."))
-        let selectedUIDs = selection.content.selectedUIDs
-        let reasonMap = Dictionary(uniqueKeysWithValues: zip(selectedUIDs, selection.content.reasons + Array(repeating: "", count: max(0, selectedUIDs.count - selection.content.reasons.count))))
+        let selectedUIDs = selection.content.stops.map(\.uid)
+        let reasonMap = Dictionary(selection.content.stops.map { ($0.uid, $0.reason) }, uniquingKeysWith: { first, _ in first })
 
         var stopsWithCoords: [(uid: String, coord: CLLocationCoordinate2D)] = []
         var artNames: [String: String] = [:]
