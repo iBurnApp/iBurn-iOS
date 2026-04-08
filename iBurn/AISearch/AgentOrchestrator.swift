@@ -66,13 +66,14 @@ final class AgentOrchestrator: @unchecked Sendable {
     /// Execute a complete workflow with progress streaming
     func execute<W: Workflow>(
         _ workflow: W,
+        startDate: Date? = nil,
         conversationHistory: [String] = [],
         onProgress: @escaping (WorkflowProgress) -> Void
     ) async throws -> W.Result {
         let context = WorkflowContext(
             playaDB: playaDB,
             location: locationProvider.currentLocation,
-            date: Date(),
+            date: startDate ?? Date(),
             conversationHistory: conversationHistory
         )
         return try await workflow.execute(context: context, onProgress: onProgress)

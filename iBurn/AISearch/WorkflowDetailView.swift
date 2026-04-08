@@ -21,6 +21,7 @@ struct WorkflowDetailView: View {
     // MARK: - Workflow-specific configuration
     @State private var themeText: String = ""
     @State private var hoursBack: Double = 24
+    @State private var startDate: Date = YearSettings.dayWithinFestival(Date())
 
     @FocusState private var isTextFieldFocused: Bool
 
@@ -68,8 +69,8 @@ struct WorkflowDetailView: View {
     /// Whether this workflow needs user input before running
     private var needsUserInput: Bool {
         switch workflowInfo.id {
-        case .adventure, .campCrawl:
-            return true // Need theme
+        case .adventure, .campCrawl, .dayPlanner:
+            return true
         default:
             return false
         }
@@ -115,6 +116,22 @@ struct WorkflowDetailView: View {
                     .textFieldStyle(.roundedBorder)
                     .focused($isTextFieldFocused)
                     .onSubmit { runWorkflow() }
+            }
+
+        case .dayPlanner:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Start Time")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(themeColors.secondaryColor)
+                DatePicker(
+                    "Start",
+                    selection: $startDate,
+                    in: YearSettings.eventStart...YearSettings.eventEnd,
+                    displayedComponents: [.date, .hourAndMinute]
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
             }
 
         case .whatDidIMiss:
@@ -450,7 +467,8 @@ struct WorkflowDetailView: View {
         viewModel.run(
             workflowInfo.id,
             theme: themeText.isEmpty ? nil : themeText,
-            hoursBack: Int(hoursBack)
+            hoursBack: Int(hoursBack),
+            startDate: startDate
         )
     }
 

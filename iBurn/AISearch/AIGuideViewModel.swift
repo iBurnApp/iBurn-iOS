@@ -124,7 +124,8 @@ final class AIGuideViewModel: ObservableObject {
     func run(
         _ workflowID: WorkflowID,
         theme: String? = nil,
-        hoursBack: Int? = nil
+        hoursBack: Int? = nil,
+        startDate: Date? = nil
     ) {
         currentTask?.cancel()
         steps = []
@@ -133,7 +134,7 @@ final class AIGuideViewModel: ObservableObject {
 
         currentTask = Task { [weak self] in
             guard let self else { return }
-            await self.executeWithRetry(workflowID, theme: theme, hoursBack: hoursBack, attempt: 0)
+            await self.executeWithRetry(workflowID, theme: theme, hoursBack: hoursBack, startDate: startDate, attempt: 0)
         }
     }
 
@@ -142,10 +143,11 @@ final class AIGuideViewModel: ObservableObject {
         _ workflowID: WorkflowID,
         theme: String?,
         hoursBack: Int?,
+        startDate: Date?,
         attempt: Int
     ) async {
         do {
-            try await executeWorkflow(workflowID, theme: theme, hoursBack: hoursBack, attempt: attempt)
+            try await executeWorkflow(workflowID, theme: theme, hoursBack: hoursBack, startDate: startDate, attempt: attempt)
             executionState = .completed
             saveCurrentWorkflowState()
         } catch is CancellationError {
@@ -162,7 +164,7 @@ final class AIGuideViewModel: ObservableObject {
                 // Clear steps from failed attempt before retrying
                 steps.removeAll()
                 addStep(retryMessage(for: error, attempt: attempt))
-                await executeWithRetry(workflowID, theme: theme, hoursBack: hoursBack, attempt: attempt + 1)
+                await executeWithRetry(workflowID, theme: theme, hoursBack: hoursBack, startDate: startDate, attempt: attempt + 1)
             } else {
                 markCurrentStepFailed()
                 #if DEBUG
@@ -189,6 +191,7 @@ final class AIGuideViewModel: ObservableObject {
         _ workflowID: WorkflowID,
         theme: String?,
         hoursBack: Int?,
+        startDate: Date?,
         attempt: Int
     ) async throws {
         let safe = attempt > 0
@@ -200,7 +203,7 @@ final class AIGuideViewModel: ObservableObject {
         case .whatDidIMiss:
             try await runWhatDidIMiss(hoursBack: hoursBack ?? 24)
         case .dayPlanner:
-            try await runDayPlan(safe: safe)
+            try await runDayPlan(safe: safe, startDate: startDate)
         case .adventure:
             try await runAdventure(theme: theme ?? "best of the playa", safe: safe)
         case .campCrawl:
@@ -331,10 +334,10 @@ final class AIGuideViewModel: ObservableObject {
         }
     }
 
-    private func runDayPlan(safe: Bool = false) async throws {
+    private func runDayPlan(safe: Bool = false, startDate: Date? = nil) async throws {
         addStep(PlayaProgressMessages.random(from: PlayaProgressMessages.tasteProfiling))
         let workflow = DayPlanWorkflow()
-        let planResult = try await orchestrator.execute(workflow) { [weak self] progress in
+        let planResult = try await orchestrator.execute(workflow, startDate: startDate) { [weak self] progress in
             self?.handleProgress(progress)
         }
         completeCurrentStep()
