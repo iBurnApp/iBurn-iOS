@@ -9,6 +9,7 @@
 #if canImport(FoundationModels)
 import Foundation
 import CoreLocation
+import FoundationModels
 @preconcurrency import PlayaDB
 
 // MARK: - Object Resolution
@@ -145,6 +146,45 @@ func buildNumberedList<T>(
         format(idx + 1, item)
     }.joined(separator: "\n")
     return (text, idMap)
+}
+
+// MARK: - Context Window Management
+
+/// Check if an error is a context window overflow.
+@available(iOS 26, *)
+func isContextWindowError(_ error: Error) -> Bool {
+    if case LanguageModelSession.GenerationError.exceededContextWindowSize = error { return true }
+    return false
+}
+
+/// Check if an error is a guardrail violation.
+@available(iOS 26, *)
+func isGuardrailError(_ error: Error) -> Bool {
+    if case LanguageModelSession.GenerationError.guardrailViolation = error { return true }
+    return false
+}
+
+/// Execute an LLM call, automatically reducing candidate count on context overflow.
+/// The `attempt` closure receives the max candidate count to use.
+/// Starts at `initialCount` and halves on each overflow, down to `minimumCount`.
+@available(iOS 26, *)
+func withContextWindowRetry<R>(
+    initialCount: Int = 20,
+    minimumCount: Int = 5,
+    attempt: (_ maxCandidates: Int) async throws -> R
+) async throws -> R {
+    var count = initialCount
+    while count >= minimumCount {
+        do {
+            return try await attempt(count)
+        } catch let error where isContextWindowError(error) {
+            let newCount = max(minimumCount, count / 2)
+            print("Context window exceeded with \(count) candidates, retrying with \(newCount)")
+            if newCount == count { throw error } // Already at minimum
+            count = newCount
+        }
+    }
+    return try await attempt(minimumCount)
 }
 
 // MARK: - Note Merging

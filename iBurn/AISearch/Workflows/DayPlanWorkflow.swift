@@ -106,32 +106,33 @@ struct DayPlanWorkflow: Workflow {
         onProgress(.stepStarted(name: "optimize", description: "Optimizing your schedule..."))
         let conflicts = detectConflicts(allCandidates)
 
-        // Step 4: LLM selects best events
-        // Use short numeric IDs to save tokens (4096 context limit)
-        let candidateSlice = Array(allCandidates.prefix(20))
-        let idMap = Dictionary(uniqueKeysWithValues: candidateSlice.enumerated().map { ($0.offset + 1, $0.element.event.uid) })
-        let candidateText = candidateSlice.enumerated().map { idx, occ in
-            let time = formatter.string(from: occ.startDate)
-            return "\(idx + 1). \(occ.event.name) at \(time) (\(occ.event.eventTypeLabel))"
-        }.joined(separator: "\n")
+        // Step 4: LLM selects best events (auto-reduce candidates on context overflow)
+        let (selection, idMap) = try await withContextWindowRetry(initialCount: 20, minimumCount: 6) { maxCandidates in
+            let candidateSlice = Array(allCandidates.prefix(maxCandidates))
+            let map = Dictionary(uniqueKeysWithValues: candidateSlice.enumerated().map { ($0.offset + 1, $0.element.event.uid) })
+            let text = candidateSlice.enumerated().map { idx, occ in
+                let time = formatter.string(from: occ.startDate)
+                return "\(idx + 1). \(occ.event.name) at \(time) (\(occ.event.eventTypeLabel))"
+            }.joined(separator: "\n")
 
-        var selectionPrompt = "Pick 4-6 events for a great day. Use the numbers."
-        if !conflicts.isEmpty {
-            let conflictText = conflicts.prefix(2).map { "\($0.0.event.name) vs \($0.1.event.name)" }.joined(separator: ", ")
-            selectionPrompt += " Conflicts: \(conflictText)"
+            var prompt = "Pick 4-6 events for a great day. Use the numbers."
+            if !conflicts.isEmpty {
+                let conflictText = conflicts.prefix(2).map { "\($0.0.event.name) vs \($0.1.event.name)" }.joined(separator: ", ")
+                prompt += " Conflicts: \(conflictText)"
+            }
+            if !tasteKeywords.isEmpty {
+                prompt += " Likes: \(tasteKeywords.prefix(3).joined(separator: ", "))"
+            }
+
+            let session = LanguageModelSession(instructions: """
+                Schedule a day at Burning Man. Pick balanced events. Resolve conflicts.
+                """)
+            let result = try await session.respond(
+                to: Prompt("Events:\n\(text)\n\n\(prompt)"),
+                generating: GenerableDayPlanSelection.self
+            )
+            return (result, map)
         }
-        if !tasteKeywords.isEmpty {
-            selectionPrompt += " Likes: \(tasteKeywords.prefix(3).joined(separator: ", "))"
-        }
-
-        let session = LanguageModelSession(instructions: """
-            Schedule a day at Burning Man. Pick balanced, enjoyable events. Resolve time conflicts.
-            """)
-
-        let selection = try await session.respond(
-            to: Prompt("Available events:\n\(candidateText)\n\n\(selectionPrompt)"),
-            generating: GenerableDayPlanSelection.self
-        )
         onProgress(.stepCompleted(name: "optimize"))
 
         // Step 5: Calculate walk times

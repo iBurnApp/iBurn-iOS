@@ -222,13 +222,16 @@ final class AIGuideViewModel: ObservableObject {
     }
 
     private func retryMessage(for error: Error, attempt: Int) -> String {
-        let desc = String(describing: error)
         let suffix = attempt > 0 ? " (attempt \(attempt + 1)/\(Self.maxRetries + 1))" : ""
-        if desc.contains("guardrailViolation") {
+        if isGuardrailError(error) {
             return "Taking a more family-friendly approach...\(suffix)"
-        } else if desc.contains("unsupportedLanguage") || desc.contains("unsupportedLocale") {
+        } else if isContextWindowError(error) {
+            return "Simplifying the request...\(suffix)"
+        } else if case LanguageModelSession.GenerationError.unsupportedLanguageOrLocale = error {
             return "Adjusting language settings...\(suffix)"
-        } else if desc.contains("fts5") {
+        } else if case LanguageModelSession.GenerationError.rateLimited = error {
+            return "Waiting a moment...\(suffix)"
+        } else if String(describing: error).contains("fts5") {
             return "Simplifying the search query...\(suffix)"
         } else {
             return "Dusting off and trying again...\(suffix)"
@@ -236,13 +239,16 @@ final class AIGuideViewModel: ObservableObject {
     }
 
     private func userFacingMessage(for error: Error) -> String {
-        let desc = String(describing: error)
-        if desc.contains("guardrailViolation") {
+        if isGuardrailError(error) {
             return "The AI couldn't process this request safely. Try a different theme?"
-        } else if desc.contains("unsupportedLanguage") || desc.contains("unsupportedLocale") {
+        } else if isContextWindowError(error) {
+            return "Too much data for the AI to process. Try a more specific theme."
+        } else if case LanguageModelSession.GenerationError.unsupportedLanguageOrLocale = error {
             return "AI features require English language settings on this device."
-        } else if desc.contains("resourceExhausted") || desc.contains("systemState") {
+        } else if case LanguageModelSession.GenerationError.rateLimited = error {
             return "The AI is temporarily busy. Try again in a moment."
+        } else if case LanguageModelSession.GenerationError.assetsUnavailable = error {
+            return "AI model not available. Check that Apple Intelligence is enabled."
         } else {
             return "Something went wrong. Tap Generate to try again."
         }
