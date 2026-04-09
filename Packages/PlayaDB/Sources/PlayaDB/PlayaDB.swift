@@ -213,6 +213,10 @@ public protocol PlayaDB {
     
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
+
+    /// Observe update info changes reactively
+    @discardableResult
+    func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
     
     // MARK: - Reactive Data Access
     

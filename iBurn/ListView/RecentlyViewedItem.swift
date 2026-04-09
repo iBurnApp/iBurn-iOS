@@ -27,7 +27,7 @@ struct ViewDates {
 enum RecentlyViewedItem: Identifiable {
     case art(ArtObject, ViewDates)
     case camp(CampObject, ViewDates)
-    case event(EventObject, ViewDates)
+    case event(EventObjectOccurrence, ViewDates)
     case mutantVehicle(MutantVehicleObject, ViewDates)
 
     var id: String { uid }
@@ -57,8 +57,7 @@ enum RecentlyViewedItem: Identifiable {
         case .camp(let o, _):
             return o.location
         case .event(let o, _):
-            guard let lat = o.gpsLatitude, let lon = o.gpsLongitude else { return nil }
-            return CLLocation(latitude: lat, longitude: lon)
+            return o.location
         case .mutantVehicle:
             return nil
         }
@@ -89,7 +88,7 @@ enum RecentlyViewedItem: Identifiable {
         switch self {
         case .art(let o, _): .art(o)
         case .camp(let o, _): .camp(o)
-        case .event(let o, _): .event(o)
+        case .event(let o, _): .eventOccurrence(o)
         case .mutantVehicle(let o, _): .mutantVehicle(o)
         }
     }
@@ -98,7 +97,7 @@ enum RecentlyViewedItem: Identifiable {
         switch self {
         case .art(let o, _): o
         case .camp(let o, _): o
-        case .event(let o, _): o
+        case .event(let o, _): o.event
         case .mutantVehicle(let o, _): o
         }
     }

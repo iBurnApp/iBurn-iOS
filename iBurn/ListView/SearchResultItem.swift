@@ -5,7 +5,7 @@ import PlayaDB
 enum SearchResultItem: Identifiable {
     case art(ArtObject)
     case camp(CampObject)
-    case event(EventObject)
+    case event(EventObjectOccurrence)
     case mutantVehicle(MutantVehicleObject)
 
     var id: String { uid }
@@ -50,7 +50,7 @@ enum SearchResultItem: Identifiable {
         switch self {
         case .art(let o): .art(o)
         case .camp(let o): .camp(o)
-        case .event(let o): .event(o)
+        case .event(let o): .eventOccurrence(o)
         case .mutantVehicle(let o): .mutantVehicle(o)
         }
     }

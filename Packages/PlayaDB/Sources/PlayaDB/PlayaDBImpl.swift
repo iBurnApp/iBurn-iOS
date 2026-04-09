@@ -247,6 +247,20 @@ internal class PlayaDBImpl: PlayaDB {
                 try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN first_viewed TEXT")
             }
 
+            // Migration: add tags_text column to mv_objects
+            if try !db.columns(in: "mv_objects").contains(where: { $0.name == "tags_text" }) {
+                try db.execute(sql: "ALTER TABLE mv_objects ADD COLUMN tags_text TEXT")
+            }
+
+            // Migration: add tracking fields to update_info
+            if try !db.columns(in: "update_info").contains(where: { $0.name == "file_name" }) {
+                try db.execute(sql: "ALTER TABLE update_info ADD COLUMN file_name TEXT")
+                try db.execute(sql: "ALTER TABLE update_info ADD COLUMN fetch_status TEXT NOT NULL DEFAULT 'unknown'")
+                try db.execute(sql: "ALTER TABLE update_info ADD COLUMN last_checked_date TEXT")
+                try db.execute(sql: "ALTER TABLE update_info ADD COLUMN fetch_date TEXT")
+                try db.execute(sql: "ALTER TABLE update_info ADD COLUMN ingestion_date TEXT")
+            }
+
             // Create FTS5 virtual tables for full-text search
             try setupFTS5Tables(db)
             
@@ -1189,6 +1203,22 @@ internal class PlayaDBImpl: PlayaDB {
         return PlayaDBObservationToken(cancellable)
     }
 
+    func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try UpdateInfo.fetchAll(db)
+        }
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: { infos in
+                DispatchQueue.main.async {
+                    onChange(infos)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
     // MARK: - Metadata Helpers
 
     private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
@@ -1600,9 +1630,12 @@ internal class PlayaDBImpl: PlayaDB {
         let apiParser = APIParserFactory.create()
         
         try await dbQueue.write { db in
+            // Clear update_info first (required for re-imports — primary key conflict otherwise)
+            try UpdateInfo.deleteAll(db)
+
             // Step 1: Import art objects first
             let apiArtObjects = try apiParser.parseArt(from: artData)
-            
+
             // Clear existing art data
             try ArtImage.deleteAll(db)
             try ArtObject.deleteAll(db)
@@ -1654,28 +1687,36 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Track unique events to handle duplicates in data
             var processedEventUIDs = Set<String>()
-            
+            var correctedOccurrenceCount = 0
+
             for apiEvent in apiEventObjects {
                 // Skip duplicate events (keep first occurrence)
                 if processedEventUIDs.contains(apiEvent.uid.value) {
                     print("Warning: Skipping duplicate event UID: \(apiEvent.uid.value)")
-                    
+
                     // Still add the occurrences for this duplicate event
                     for apiOccurrence in apiEvent.occurrenceSet {
+                        let corrected = Self.correctedOccurrenceTimes(
+                            startTime: apiOccurrence.startTime,
+                            endTime: apiOccurrence.endTime
+                        )
+                        if corrected.endTime != apiOccurrence.endTime {
+                            correctedOccurrenceCount += 1
+                        }
                         var eventOccurrence = EventOccurrence(
                             id: nil,
                             eventId: apiEvent.uid.value,
-                            startTime: apiOccurrence.startTime,
-                            endTime: apiOccurrence.endTime
+                            startTime: corrected.startTime,
+                            endTime: corrected.endTime
                         )
                         try eventOccurrence.insert(db)
                     }
                     continue
                 }
                 processedEventUIDs.insert(apiEvent.uid.value)
-                
+
                 var eventObject = try self.convertEventObject(from: apiEvent)
-                
+
                 // Resolve camp relationship and copy GPS coordinates
                 if let campId = apiEvent.hostedByCamp?.value {
                     if let campObject = try CampObject.fetchOne(db, key: campId) {
@@ -1683,7 +1724,7 @@ internal class PlayaDBImpl: PlayaDB {
                         eventObject.gpsLongitude = campObject.gpsLongitude
                     }
                 }
-                
+
                 // Resolve art relationship and copy GPS coordinates
                 if let artId = apiEvent.locatedAtArt?.value {
                     if let artObject = try ArtObject.fetchOne(db, key: artId) {
@@ -1691,19 +1732,30 @@ internal class PlayaDBImpl: PlayaDB {
                         eventObject.gpsLongitude = artObject.gpsLongitude
                     }
                 }
-                
+
                 try eventObject.insert(db)
-                
-                // Insert event occurrences
+
+                // Insert event occurrences with time correction
                 for apiOccurrence in apiEvent.occurrenceSet {
-                    var eventOccurrence = EventOccurrence(
-                        id: nil,
-                        eventId: apiEvent.uid.value,
+                    let corrected = Self.correctedOccurrenceTimes(
                         startTime: apiOccurrence.startTime,
                         endTime: apiOccurrence.endTime
                     )
+                    if corrected.endTime != apiOccurrence.endTime {
+                        correctedOccurrenceCount += 1
+                    }
+                    var eventOccurrence = EventOccurrence(
+                        id: nil,
+                        eventId: apiEvent.uid.value,
+                        startTime: corrected.startTime,
+                        endTime: corrected.endTime
+                    )
                     try eventOccurrence.insert(db)
                 }
+            }
+
+            if correctedOccurrenceCount > 0 {
+                print("PlayaDB: Corrected \(correctedOccurrenceCount) event occurrence times during import")
             }
             
             // Step 3b: Import mutant vehicles (if data provided)
@@ -1789,31 +1841,37 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Step 5: Update import info
             let now = Date()
-            
+
             var artUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.art.rawValue,
                 lastUpdated: now,
-                version: nil,
                 totalCount: apiArtObjects.count,
-                createdAt: now
+                createdAt: now,
+                fetchStatus: "complete",
+                fetchDate: now,
+                ingestionDate: now
             )
             try artUpdateInfo.insert(db)
-            
+
             var campUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.camp.rawValue,
                 lastUpdated: now,
-                version: nil,
                 totalCount: apiCampObjects.count,
-                createdAt: now
+                createdAt: now,
+                fetchStatus: "complete",
+                fetchDate: now,
+                ingestionDate: now
             )
             try campUpdateInfo.insert(db)
-            
+
             var eventUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.event.rawValue,
                 lastUpdated: now,
-                version: nil,
                 totalCount: apiEventObjects.count,
-                createdAt: now
+                createdAt: now,
+                fetchStatus: "complete",
+                fetchDate: now,
+                ingestionDate: now
             )
             try eventUpdateInfo.insert(db)
 
@@ -1821,9 +1879,11 @@ internal class PlayaDBImpl: PlayaDB {
                 var mvUpdateInfo = UpdateInfo(
                     dataType: DataObjectType.mutantVehicle.rawValue,
                     lastUpdated: now,
-                    version: nil,
                     totalCount: mvCount,
-                    createdAt: now
+                    createdAt: now,
+                    fetchStatus: "complete",
+                    fetchDate: now,
+                    ingestionDate: now
                 )
                 try mvUpdateInfo.insert(db)
             }
@@ -1902,6 +1962,61 @@ internal class PlayaDBImpl: PlayaDB {
         )
     }
     
+    // MARK: - Event Occurrence Time Correction
+
+    /// Maximum reasonable duration for a single event occurrence (24 hours).
+    /// Occurrences exceeding this are assumed to have corrupted end dates.
+    private static let maxReasonableOccurrenceDuration: TimeInterval = 24 * 60 * 60
+
+    /// Calendar configured for Black Rock City timezone (Pacific Time)
+    private static var playaCalendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        return cal
+    }()
+
+    /// Corrects corrupted event occurrence times from the API.
+    ///
+    /// The PlayaEvents API returns occurrences where the end date is on the wrong day
+    /// but the time-of-day component is correct. This fixes both negative durations
+    /// (end before start) and excessively long durations (end days after start).
+    ///
+    /// Algorithm: take the time-of-day from endTime, apply it to startTime's calendar date.
+    /// If the result is still before startTime, add 1 day (midnight crossing).
+    static func correctedOccurrenceTimes(
+        startTime: Date,
+        endTime: Date,
+        calendar: Calendar = PlayaDBImpl.playaCalendar
+    ) -> (startTime: Date, endTime: Date) {
+        let duration = endTime.timeIntervalSince(startTime)
+
+        // Normal duration: no correction needed
+        if duration >= 0 && duration <= maxReasonableOccurrenceDuration {
+            return (startTime, endTime)
+        }
+
+        // Extract time-of-day from endTime, apply to startTime's date
+        let endComponents = calendar.dateComponents([.hour, .minute, .second], from: endTime)
+        guard let correctedEnd = calendar.date(
+            bySettingHour: endComponents.hour ?? 0,
+            minute: endComponents.minute ?? 0,
+            second: endComponents.second ?? 0,
+            of: startTime
+        ) else {
+            return (startTime, endTime)
+        }
+
+        // If correctedEnd is before startTime, the event crosses midnight
+        if correctedEnd < startTime {
+            guard let nextDayEnd = calendar.date(byAdding: .day, value: 1, to: correctedEnd) else {
+                return (startTime, endTime)
+            }
+            return (startTime, nextDayEnd)
+        }
+
+        return (startTime, correctedEnd)
+    }
+
     private func convertMutantVehicleObject(from apiMV: MutantVehicle) -> MutantVehicleObject {
         MutantVehicleObject(
             uid: apiMV.uid.value,

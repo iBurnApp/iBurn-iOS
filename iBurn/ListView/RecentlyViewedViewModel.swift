@@ -8,6 +8,7 @@ final class RecentlyViewedViewModel: ObservableObject {
 
     @Published var items: [RecentlyViewedItem] = []
     @Published var favoriteIDs: Set<String> = []
+    @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
 
     @Published var selectedTypeFilter: RecentlyViewedTypeFilter = .all
     @Published var sortOrder: RecentlyViewedSortOrder = .recentFirst
@@ -201,18 +202,22 @@ final class RecentlyViewedViewModel: ObservableObject {
             guard let self else { return }
             do {
                 let results = try await playaDB.fetchRecentlyViewedWithDates(limit: 500)
-                let mapped: [RecentlyViewedItem] = results.compactMap { pair in
+                var mapped: [RecentlyViewedItem] = []
+                for pair in results {
                     let dates = ViewDates(firstViewed: pair.firstViewed, lastViewed: pair.lastViewed)
                     if let art = pair.object as? ArtObject {
-                        return .art(art, dates)
+                        mapped.append(.art(art, dates))
                     } else if let camp = pair.object as? CampObject {
-                        return .camp(camp, dates)
+                        mapped.append(.camp(camp, dates))
                     } else if let event = pair.object as? EventObject {
-                        return .event(event, dates)
+                        // Resolve to first occurrence for EventRowView
+                        if let occurrences = try? await self.playaDB.fetchOccurrences(forEventUID: event.uid),
+                           let occurrence = occurrences.first {
+                            mapped.append(.event(occurrence, dates))
+                        }
                     } else if let mv = pair.object as? MutantVehicleObject {
-                        return .mutantVehicle(mv, dates)
+                        mapped.append(.mutantVehicle(mv, dates))
                     }
-                    return nil
                 }
 
                 // Batch load favorites
@@ -250,6 +255,51 @@ final class RecentlyViewedViewModel: ObservableObject {
             }
         }
         return annotations
+    }
+
+    // MARK: - Event Host Resolution
+
+    func resolvedHost(for event: EventObjectOccurrence) -> ResolvedEventHost? {
+        resolvedHosts[event.event.uid]
+    }
+
+    func resolveHosts(for events: [EventObjectOccurrence]) {
+        let needsResolution = events.filter { resolvedHosts[$0.event.uid] == nil }
+        guard !needsResolution.isEmpty else { return }
+
+        Task { [weak self] in
+            guard let self else { return }
+            var newHosts: [String: ResolvedEventHost] = [:]
+
+            for event in needsResolution {
+                let eventUID = event.event.uid
+                if let campUID = event.event.hostedByCamp {
+                    if let camp = try? await playaDB.fetchCamp(uid: campUID) {
+                        newHosts[eventUID] = ResolvedEventHost(
+                            name: camp.name,
+                            address: camp.locationString,
+                            description: camp.description,
+                            thumbnailObjectID: campUID,
+                            isArt: false
+                        )
+                    }
+                } else if let artUID = event.event.locatedAtArt {
+                    if let art = try? await playaDB.fetchArt(uid: artUID) {
+                        newHosts[eventUID] = ResolvedEventHost(
+                            name: art.name,
+                            address: art.locationString ?? art.timeBasedAddress,
+                            description: art.description,
+                            thumbnailObjectID: artUID,
+                            isArt: true
+                        )
+                    }
+                }
+            }
+
+            await MainActor.run {
+                self.resolvedHosts.merge(newHosts) { _, new in new }
+            }
+        }
     }
 
     // MARK: - Location

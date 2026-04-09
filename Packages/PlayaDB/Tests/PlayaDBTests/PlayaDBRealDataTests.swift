@@ -388,6 +388,66 @@ final class PlayaDBRealDataTests: XCTestCase {
         print("'fire' results: \(fireResults.count), 'interactive' art: \(interactiveArt.count), overlap: \(overlap.count)")
     }
 
+    // MARK: - Re-import Tests
+
+    func testImportFromDataTwice_Succeeds() async throws {
+        // First import
+        try await importAllRealData()
+        let firstInfo = try await playaDB.getUpdateInfo()
+        XCTAssertFalse(firstInfo.isEmpty, "Should have update info after first import")
+        let firstArtCount = firstInfo.first(where: { $0.dataType == "art" })!.totalCount
+
+        // Brief pause so timestamps differ
+        try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+
+        // Second import — this is the scenario that was failing
+        try await importAllRealData()
+        let secondInfo = try await playaDB.getUpdateInfo()
+        XCTAssertFalse(secondInfo.isEmpty, "Should have update info after second import")
+
+        let secondArt = secondInfo.first(where: { $0.dataType == "art" })!
+        XCTAssertEqual(secondArt.totalCount, firstArtCount, "Art count should match")
+        XCTAssertEqual(secondArt.fetchStatus, "complete", "Status should be complete")
+        XCTAssertNotNil(secondArt.ingestionDate, "Ingestion date should be set")
+        XCTAssertNotNil(secondArt.fetchDate, "Fetch date should be set")
+
+        // Verify the timestamps are from the second import, not the first
+        XCTAssertGreaterThan(secondArt.createdAt, firstInfo.first(where: { $0.dataType == "art" })!.createdAt,
+                            "Second import should have later timestamp")
+
+        print("Re-import test passed: \(secondInfo.count) update info rows with status '\(secondArt.fetchStatus)'")
+    }
+
+    // MARK: - Event Occurrence Time Correction Tests
+
+    func testEventOccurrenceDurationsAreReasonable() async throws {
+        try await importAllRealData()
+
+        let dbImpl = playaDB as! PlayaDBImpl
+        let occurrences = try await dbImpl.dbQueue.read { db in
+            try EventOccurrence.fetchAll(db)
+        }
+
+        XCTAssertGreaterThan(occurrences.count, 100, "Should have many occurrences")
+
+        var negativeDurations = 0
+        var excessiveDurations = 0
+        for occ in occurrences {
+            let duration = occ.endTime.timeIntervalSince(occ.startTime)
+            if duration < 0 {
+                negativeDurations += 1
+            }
+            if duration > 24 * 60 * 60 {
+                excessiveDurations += 1
+            }
+        }
+
+        XCTAssertEqual(negativeDurations, 0, "No occurrences should have negative duration after correction")
+        XCTAssertEqual(excessiveDurations, 0, "No occurrences should have >24h duration after correction")
+
+        print("Validated \(occurrences.count) occurrences: 0 negative, 0 excessive durations")
+    }
+
     // MARK: - Query Extension Performance Tests
 
     func testQueryExtensions_OrderedByNamePerformance() async throws {

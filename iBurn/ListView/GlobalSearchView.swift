@@ -8,14 +8,14 @@ struct GlobalSearchView: View {
 
     let onSelectArt: (ArtObject) -> Void
     let onSelectCamp: (CampObject) -> Void
-    let onSelectEvent: (EventObject) -> Void
+    let onSelectEvent: (EventObjectOccurrence) -> Void
     let onSelectMV: (MutantVehicleObject) -> Void
 
     init(
         viewModel: GlobalSearchViewModel,
         onSelectArt: @escaping (ArtObject) -> Void = { _ in },
         onSelectCamp: @escaping (CampObject) -> Void = { _ in },
-        onSelectEvent: @escaping (EventObject) -> Void = { _ in },
+        onSelectEvent: @escaping (EventObjectOccurrence) -> Void = { _ in },
         onSelectMV: @escaping (MutantVehicleObject) -> Void = { _ in }
     ) {
         self.viewModel = viewModel
@@ -121,8 +121,9 @@ struct GlobalSearchView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event):
-            eventResultRow(for: event)
+            eventRow(for: event)
                 .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
+                .onAppear { viewModel.resolveHosts(for: [event]) }
 
         case .mutantVehicle(let mv):
             MediaObjectRowView(
@@ -148,32 +149,23 @@ struct GlobalSearchView: View {
         }
     }
 
-    private func eventResultRow(for event: EventObject) -> some View {
-        Button {
+    private func eventRow(for event: EventObjectOccurrence) -> some View {
+        let host = viewModel.resolvedHost(for: event)
+        return Button {
             onSelectEvent(event)
         } label: {
-            HStack(spacing: 8) {
-                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(event.name)
-                        .font(.headline)
-                        .foregroundColor(themeColors.primaryColor)
-                        .lineLimit(1)
-                    if let desc = event.description, !desc.isEmpty {
-                        Text(desc)
-                            .font(.caption)
-                            .foregroundColor(themeColors.detailColor)
-                            .lineLimit(2)
-                    }
-                }
-                Spacer(minLength: 0)
-                Text(event.eventTypeLabel)
-                    .font(.caption)
-                    .foregroundColor(themeColors.secondaryColor)
-                    .lineLimit(1)
-            }
-            .padding(.vertical, 4)
+            EventRowView(
+                event: event,
+                hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
+                hostAddress: host?.address,
+                hostDescription: host?.description,
+                campUID: host?.thumbnailObjectID,
+                isArtHosted: host?.isArt ?? false,
+                distanceString: nil,
+                isFavorite: false,
+                now: .present,
+                onFavoriteTap: { }
+            )
         }
         .buttonStyle(.plain)
     }

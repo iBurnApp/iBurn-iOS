@@ -8,7 +8,7 @@ struct RecentlyViewedView: View {
 
     let onSelectArt: (ArtObject) -> Void
     let onSelectCamp: (CampObject) -> Void
-    let onSelectEvent: (EventObject) -> Void
+    let onSelectEvent: (EventObjectOccurrence) -> Void
     let onSelectMV: (MutantVehicleObject) -> Void
     let onShowMap: ([PlayaObjectAnnotation]) -> Void
 
@@ -16,7 +16,7 @@ struct RecentlyViewedView: View {
         viewModel: RecentlyViewedViewModel,
         onSelectArt: @escaping (ArtObject) -> Void = { _ in },
         onSelectCamp: @escaping (CampObject) -> Void = { _ in },
-        onSelectEvent: @escaping (EventObject) -> Void = { _ in },
+        onSelectEvent: @escaping (EventObjectOccurrence) -> Void = { _ in },
         onSelectMV: @escaping (MutantVehicleObject) -> Void = { _ in },
         onShowMap: @escaping ([PlayaObjectAnnotation]) -> Void = { _ in }
     ) {
@@ -176,14 +176,8 @@ struct RecentlyViewedView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event, _):
-            EventRecentRow(
-                event: event,
-                subtitle: subtitle,
-                isFavorite: isFav,
-                onFavoriteTap: favAction
-            )
-            .contentShape(Rectangle())
-            .onTapGesture { onSelectEvent(event) }
+            eventRow(for: event, isFavorite: isFav, favAction: favAction)
+                .onAppear { viewModel.resolveHosts(for: [event]) }
 
         case .mutantVehicle(let mv, _):
             MediaObjectRowView(
@@ -198,44 +192,33 @@ struct RecentlyViewedView: View {
         }
     }
 
+    // MARK: - Event Row
+
+    private func eventRow(for event: EventObjectOccurrence, isFavorite: Bool, favAction: @escaping () -> Void) -> some View {
+        let host = viewModel.resolvedHost(for: event)
+        return Button {
+            onSelectEvent(event)
+        } label: {
+            EventRowView(
+                event: event,
+                hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
+                hostAddress: host?.address,
+                hostDescription: host?.description,
+                campUID: host?.thumbnailObjectID,
+                isArtHosted: host?.isArt ?? false,
+                distanceString: subtitleString(for: .event(event, ViewDates(firstViewed: nil, lastViewed: Date()))),
+                isFavorite: isFavorite,
+                now: .present,
+                onFavoriteTap: favAction
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Subtitle
 
     private func subtitleString(for item: RecentlyViewedItem) -> AttributedString? {
         guard let dist = viewModel.distanceString(for: item) else { return nil }
         return AttributedString(dist)
-    }
-}
-
-/// Event row that loads the host camp/art thumbnail instead of the event's own (nonexistent) image.
-private struct EventRecentRow: View {
-    let event: EventObject
-    let subtitle: AttributedString?
-    let isFavorite: Bool
-    let onFavoriteTap: () -> Void
-
-    @StateObject private var assets: RowAssetsLoader
-
-    init(event: EventObject, subtitle: AttributedString?, isFavorite: Bool, onFavoriteTap: @escaping () -> Void) {
-        self.event = event
-        self.subtitle = subtitle
-        self.isFavorite = isFavorite
-        self.onFavoriteTap = onFavoriteTap
-        // Load thumbnail from the hosting camp or art, not the event itself
-        let hostUID = event.hostedByCamp ?? event.locatedAtArt ?? event.uid
-        _assets = StateObject(wrappedValue: RowAssetsLoader(objectID: hostUID))
-    }
-
-    var body: some View {
-        ObjectRowView(
-            object: event,
-            thumbnail: assets.thumbnail,
-            colorsOverride: assets.colors,
-            subtitle: subtitle,
-            rightSubtitle: event.eventTypeLabel,
-            isFavorite: isFavorite,
-            onFavoriteTap: onFavoriteTap,
-            actions: { EmptyView() }
-        )
-        .onAppear { assets.startIfNeeded() }
     }
 }
