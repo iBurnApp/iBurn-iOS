@@ -33,10 +33,10 @@ class CampDataProvider: ObjectListDataProvider {
 
     // MARK: - ObjectListDataProvider
 
-    func observeObjects(filter: CampFilter) -> AsyncStream<[CampObject]> {
+    func observeObjects(filter: CampFilter) -> AsyncStream<[ListRow<CampObject>]> {
         AsyncStream { continuation in
-            let token = playaDB.observeCamps(filter: filter) { objects in
-                continuation.yield(objects)
+            let token = playaDB.observeCamps(filter: filter) { rows in
+                continuation.yield(rows)
             } onError: { error in
                 print("Camp observation error: \(error)")
             }
@@ -49,10 +49,6 @@ class CampDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: CampObject) async throws {
         try await playaDB.toggleFavorite(object)
-    }
-
-    func isFavorite(_ object: CampObject) async throws -> Bool {
-        try await playaDB.isFavorite(object)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: CampObject) -> AttributedString? {

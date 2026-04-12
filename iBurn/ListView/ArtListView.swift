@@ -43,24 +43,25 @@ struct ArtListView: View {
         ZStack {
             // Main list content
             List {
-                ForEach(viewModel.filteredItems, id: \.uid) { art in
+                ForEach(viewModel.filteredItems, id: \.object.uid) { row in
                     ObjectRowView(
-                        object: art,
-                        subtitle: viewModel.distanceAttributedString(for: art),
-                        rightSubtitle: art.artist,
-                        isFavorite: viewModel.isFavorite(art),
+                        object: row.object,
+                        subtitle: viewModel.distanceAttributedString(for: row.object),
+                        rightSubtitle: row.object.artist,
+                        isFavorite: row.isFavorite,
+                        thumbnailColors: row.thumbnailColors,
                         onFavoriteTap: {
-                            Task { await viewModel.toggleFavorite(art) }
+                            Task { await viewModel.toggleFavorite(row) }
                         }
                     ) { assets in
                         if let audioURL = assets.audioURL {
                             AudioTourButton(
                                 track: BRCAudioTourTrack(
-                                    uid: art.uid,
-                                    title: art.name,
-                                    artist: art.artist,
+                                    uid: row.object.uid,
+                                    title: row.object.name,
+                                    artist: row.object.artist,
                                     audioURL: audioURL,
-                                    artworkURL: BRCMediaDownloader.localMediaURL("\(art.uid).jpg")
+                                    artworkURL: BRCMediaDownloader.localMediaURL("\(row.object.uid).jpg")
                                 ),
                                 audioPlayer: audioPlayer
                             )
@@ -70,7 +71,7 @@ struct ArtListView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        onSelect(art)
+                        onSelect(row.object)
                     }
                 }
             }
@@ -154,7 +155,7 @@ struct ArtListView: View {
 
     /// Show the map view with current art items
     private func showMap() {
-        onShowMap(viewModel.filteredItems)
+        onShowMap(viewModel.filteredItems.map(\.object))
     }
 
 }
@@ -223,14 +224,13 @@ private class PreviewArtDataProvider: ArtDataProvider {
         super.init(playaDB: try! createPlayaDB())
     }
 
-    override func observeObjects(filter: ArtFilter) -> AsyncStream<[ArtObject]> {
+    override func observeObjects(filter: ArtFilter) -> AsyncStream<[ListRow<ArtObject>]> {
         AsyncStream { continuation in
-            // Provide mock data for preview
             continuation.yield([
                 Self.createMockArt(name: "Temple of Transition"),
                 Self.createMockArt(name: "The Man"),
                 Self.createMockArt(name: "Galaxy Portal")
-            ])
+            ].map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) })
             continuation.finish()
         }
     }

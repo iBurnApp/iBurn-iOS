@@ -7,9 +7,9 @@ import PlayaDB
 final class NearbyViewModel: ObservableObject {
     // MARK: - Published
 
-    @Published var artItems: [ArtObject] = []
-    @Published var campItems: [CampObject] = []
-    @Published var eventItems: [EventObjectOccurrence] = []
+    @Published var artItems: [ListRow<ArtObject>] = []
+    @Published var campItems: [ListRow<CampObject>] = []
+    @Published var eventItems: [ListRow<EventObjectOccurrence>] = []
 
     @Published var searchDistance: CLLocationDistance = 500 {
         didSet { restartObservations() }
@@ -142,26 +142,26 @@ final class NearbyViewModel: ObservableObject {
 
     // MARK: - Sorting & Filtering
 
-    private var sortedArt: [ArtObject] {
+    private var sortedArt: [ListRow<ArtObject>] {
         guard let loc = currentLocation else { return artItems }
         return artItems.sorted { a, b in
-            distanceTo(a.location, from: loc) < distanceTo(b.location, from: loc)
+            distanceTo(a.object.location, from: loc) < distanceTo(b.object.location, from: loc)
         }
     }
 
-    private var sortedCamps: [CampObject] {
+    private var sortedCamps: [ListRow<CampObject>] {
         guard let loc = currentLocation else { return campItems }
         return campItems.sorted { a, b in
-            distanceTo(a.location, from: loc) < distanceTo(b.location, from: loc)
+            distanceTo(a.object.location, from: loc) < distanceTo(b.object.location, from: loc)
         }
     }
 
     /// Events happening at the effective date, sorted by start time
-    private var happeningEvents: [EventObjectOccurrence] {
+    private var happeningEvents: [ListRow<EventObjectOccurrence>] {
         let date = effectiveDate
         return eventItems
-            .filter { $0.startDate <= date && $0.endDate > date }
-            .sorted { $0.startDate < $1.startDate }
+            .filter { $0.object.startDate <= date && $0.object.endDate > date }
+            .sorted { $0.object.startDate < $1.object.startDate }
     }
 
     private func distanceTo(_ location: CLLocation?, from reference: CLLocation) -> CLLocationDistance {
@@ -173,9 +173,9 @@ final class NearbyViewModel: ObservableObject {
 
     func distanceString(for item: NearbyItem) -> AttributedString? {
         switch item {
-        case .art(let o): artProvider.distanceAttributedString(from: currentLocation, to: o)
-        case .camp(let o): campProvider.distanceAttributedString(from: currentLocation, to: o)
-        case .event(let o): eventProvider.distanceAttributedString(from: currentLocation, to: o)
+        case .art(let r): artProvider.distanceAttributedString(from: currentLocation, to: r.object)
+        case .camp(let r): campProvider.distanceAttributedString(from: currentLocation, to: r.object)
+        case .event(let r): eventProvider.distanceAttributedString(from: currentLocation, to: r.object)
         }
     }
 
@@ -234,9 +234,9 @@ final class NearbyViewModel: ObservableObject {
     func toggleFavorite(_ item: NearbyItem) async {
         do {
             switch item {
-            case .art(let o): try await artProvider.toggleFavorite(o)
-            case .camp(let o): try await campProvider.toggleFavorite(o)
-            case .event(let o): try await eventProvider.toggleFavorite(o)
+            case .art(let o): try await artProvider.toggleFavorite(o.object)
+            case .camp(let o): try await campProvider.toggleFavorite(o.object)
+            case .event(let o): try await eventProvider.toggleFavorite(o.object)
             }
         } catch {
             print("Error toggling favorite for \(item.name): \(error)")
@@ -256,11 +256,11 @@ final class NearbyViewModel: ObservableObject {
             for item in section.items {
                 switch item {
                 case .art(let o):
-                    if let a = PlayaObjectAnnotation(art: o) { annotations.append(a) }
+                    if let a = PlayaObjectAnnotation(art: o.object) { annotations.append(a) }
                 case .camp(let o):
-                    if let a = PlayaObjectAnnotation(camp: o) { annotations.append(a) }
+                    if let a = PlayaObjectAnnotation(camp: o.object) { annotations.append(a) }
                 case .event(let o):
-                    if let a = PlayaObjectAnnotation(event: o) { annotations.append(a) }
+                    if let a = PlayaObjectAnnotation(event: o.object) { annotations.append(a) }
                 }
             }
         }
@@ -330,7 +330,7 @@ final class NearbyViewModel: ObservableObject {
                 await MainActor.run {
                     self.eventItems = items
                     self.markReceived("event")
-                    self.resolveHosts(for: items)
+                    self.resolveHosts(for: items.map(\.object))
                 }
             }
         }

@@ -175,39 +175,42 @@ struct NearbyView: View {
         switch item {
         case .art(let art):
             ObjectRowView(
-                object: art,
+                object: art.object,
                 subtitle: viewModel.distanceString(for: item),
-                rightSubtitle: art.artist,
-                isFavorite: false,
+                rightSubtitle: art.object.artist,
+                isFavorite: art.isFavorite,
+                thumbnailColors: item.thumbnailColors,
                 onFavoriteTap: { Task { await viewModel.toggleFavorite(item) } }
             ) { _ in EmptyView() }
             .contentShape(Rectangle())
-            .onTapGesture { onSelectArt(art) }
+            .onTapGesture { onSelectArt(art.object) }
 
         case .camp(let camp):
             ObjectRowView(
-                object: camp,
+                object: camp.object,
                 subtitle: viewModel.distanceString(for: item),
-                rightSubtitle: camp.hometown,
-                isFavorite: false,
+                rightSubtitle: camp.object.hometown,
+                isFavorite: camp.isFavorite,
+                thumbnailColors: item.thumbnailColors,
                 onFavoriteTap: { Task { await viewModel.toggleFavorite(item) } }
             ) { _ in EmptyView() }
             .contentShape(Rectangle())
-            .onTapGesture { onSelectCamp(camp) }
+            .onTapGesture { onSelectCamp(camp.object) }
 
         case .event(let event):
             ObjectRowView(
-                object: event,
+                object: event.object,
                 subtitle: viewModel.distanceString(for: .event(event)),
-                rightSubtitle: event.timeDescription(now: viewModel.now),
-                isFavorite: false,
+                rightSubtitle: event.object.timeDescription(now: viewModel.now),
+                isFavorite: event.isFavorite,
+                thumbnailColors: item.thumbnailColors,
                 onFavoriteTap: { Task { await viewModel.toggleFavorite(.event(event)) } }
             ) { _ in
-                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                Text(EventTypeInfo.emoji(for: event.object.eventTypeCode))
                     .font(.subheadline)
             }
             .contentShape(Rectangle())
-            .onTapGesture { onSelectEvent(event) }
+            .onTapGesture { onSelectEvent(event.object) }
         }
     }
 }

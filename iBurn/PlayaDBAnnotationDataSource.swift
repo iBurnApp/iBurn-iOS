@@ -58,11 +58,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
         // Art
         if UserSettings.showArtOnMap {
-            let token = playaDB.observeArt(filter: ArtFilter()) { [weak self] objects in
+            let token = playaDB.observeArt(filter: ArtFilter()) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.artAnnotations = embargoAllowed
-                        ? objects.compactMap { PlayaObjectAnnotation(art: $0) }
+                        ? rows.compactMap { PlayaObjectAnnotation(art: $0.object) }
                         : []
                     self.rebuildCache()
                 }
@@ -72,11 +72,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
         // Camps
         if UserSettings.showCampsOnMap {
-            let token = playaDB.observeCamps(filter: CampFilter()) { [weak self] objects in
+            let token = playaDB.observeCamps(filter: CampFilter()) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.campAnnotations = embargoAllowed
-                        ? objects.compactMap { PlayaObjectAnnotation(camp: $0) }
+                        ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object) }
                         : []
                     self.rebuildCache()
                 }
@@ -91,11 +91,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                 happeningNow: true,
                 eventTypeCodes: selectedCodes
             )
-            let token = playaDB.observeEvents(filter: filter) { [weak self] occurrences in
+            let token = playaDB.observeEvents(filter: filter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.eventAnnotations = embargoAllowed
-                        ? occurrences.compactMap { PlayaObjectAnnotation(event: $0) }
+                        ? rows.compactMap { PlayaObjectAnnotation(event: $0.object) }
                         : []
                     self.rebuildCache()
                 }
@@ -105,11 +105,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
         // Favorite art
         if UserSettings.showFavoritesOnMap {
-            let token = playaDB.observeArt(filter: ArtFilter(onlyFavorites: true)) { [weak self] objects in
+            let token = playaDB.observeArt(filter: ArtFilter(onlyFavorites: true)) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.favoriteArtAnnotations = embargoAllowed
-                        ? objects.compactMap { PlayaObjectAnnotation(art: $0) }
+                        ? rows.compactMap { PlayaObjectAnnotation(art: $0.object) }
                         : []
                     self.rebuildCache()
                 }
@@ -119,11 +119,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
         // Favorite camps
         if UserSettings.showFavoritesOnMap {
-            let token = playaDB.observeCamps(filter: CampFilter(onlyFavorites: true)) { [weak self] objects in
+            let token = playaDB.observeCamps(filter: CampFilter(onlyFavorites: true)) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.favoriteCampAnnotations = embargoAllowed
-                        ? objects.compactMap { PlayaObjectAnnotation(camp: $0) }
+                        ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object) }
                         : []
                     self.rebuildCache()
                 }
@@ -143,11 +143,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                 eventFilter.startDate = calendar.startOfDay(for: today)
                 eventFilter.endDate = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: today))
             }
-            let token = playaDB.observeEvents(filter: eventFilter) { [weak self] occurrences in
+            let token = playaDB.observeEvents(filter: eventFilter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.favoriteEventAnnotations = embargoAllowed
-                        ? occurrences.compactMap { PlayaObjectAnnotation(event: $0) }
+                        ? rows.compactMap { PlayaObjectAnnotation(event: $0.object) }
                         : []
                     self.rebuildCache()
                 }

@@ -30,21 +30,22 @@ struct CampListView: View {
     var body: some View {
         ZStack {
             List {
-                ForEach(viewModel.filteredItems, id: \.uid) { camp in
+                ForEach(viewModel.filteredItems, id: \.object.uid) { row in
                     ObjectRowView(
-                        object: camp,
-                        subtitle: viewModel.distanceAttributedString(for: camp),
-                        rightSubtitle: rightSubtitle(for: camp),
-                        isFavorite: viewModel.isFavorite(camp),
+                        object: row.object,
+                        subtitle: viewModel.distanceAttributedString(for: row.object),
+                        rightSubtitle: rightSubtitle(for: row.object),
+                        isFavorite: row.isFavorite,
+                        thumbnailColors: row.thumbnailColors,
                         onFavoriteTap: {
-                            Task { await viewModel.toggleFavorite(camp) }
+                            Task { await viewModel.toggleFavorite(row) }
                         }
                     ) { _ in
                         EmptyView()
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        onSelect(camp)
+                        onSelect(row.object)
                     }
                 }
             }
@@ -118,7 +119,7 @@ struct CampListView: View {
     }
 
     private func showMap() {
-        onShowMap(viewModel.filteredItems)
+        onShowMap(viewModel.filteredItems.map(\.object))
     }
 
     private func rightSubtitle(for camp: CampObject) -> String? {
@@ -162,13 +163,13 @@ private class PreviewCampDataProvider: CampDataProvider {
         super.init(playaDB: try! createPlayaDB())
     }
 
-    override func observeObjects(filter: CampFilter) -> AsyncStream<[CampObject]> {
+    override func observeObjects(filter: CampFilter) -> AsyncStream<[ListRow<CampObject>]> {
         AsyncStream { continuation in
             continuation.yield([
                 Self.createMockCamp(name: "Solaris Camp"),
                 Self.createMockCamp(name: "Dusty Mermaid"),
                 Self.createMockCamp(name: "Roaming Oasis")
-            ])
+            ].map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) })
             continuation.finish()
         }
     }

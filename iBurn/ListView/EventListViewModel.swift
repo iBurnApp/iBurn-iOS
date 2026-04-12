@@ -16,7 +16,7 @@ struct ResolvedEventHost {
 final class EventListViewModel: ObservableObject {
     // MARK: - Published
 
-    @Published var items: [EventObjectOccurrence] = []
+    @Published var items: [ListRow<EventObjectOccurrence>] = []
 
     @Published var filter: EventFilter {
         didSet {
@@ -28,8 +28,6 @@ final class EventListViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var isLoading: Bool = true
     @Published var currentLocation: CLLocation?
-    @Published private(set) var favoriteIDs: Set<String> = []
-
     /// Resolved host data for events (event UID → host info)
     @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
 
@@ -56,7 +54,6 @@ final class EventListViewModel: ObservableObject {
 
     private var observationTask: Task<Void, Never>?
     private var locationTask: Task<Void, Never>?
-    private var favoritesObservationTask: Task<Void, Never>?
     private var loadingGateTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
 
@@ -83,7 +80,6 @@ final class EventListViewModel: ObservableObject {
         self.currentLocation = locationProvider.currentLocation
 
         startObserving()
-        startObservingFavorites()
         startLocationUpdates()
         startRefreshTimer()
     }
@@ -91,7 +87,6 @@ final class EventListViewModel: ObservableObject {
     deinit {
         observationTask?.cancel()
         locationTask?.cancel()
-        favoritesObservationTask?.cancel()
         loadingGateTask?.cancel()
         timerTask?.cancel()
     }
@@ -99,7 +94,7 @@ final class EventListViewModel: ObservableObject {
     // MARK: - Derived
 
     func isFavorite(_ object: EventObjectOccurrence) -> Bool {
-        favoriteIDs.contains(object.uid)
+        items.first(where: { $0.object.uid == object.uid })?.isFavorite ?? false
     }
 
     func distanceAttributedString(for object: EventObjectOccurrence) -> AttributedString? {
@@ -119,55 +114,51 @@ final class EventListViewModel: ObservableObject {
         return event.event.hasOtherLocation ? event.event.otherLocation : nil
     }
 
-    var filteredItems: [EventObjectOccurrence] {
+    var filteredItems: [ListRow<EventObjectOccurrence>] {
         guard !searchText.isEmpty else { return items }
         let q = searchText.lowercased()
         return items.filter {
-            $0.name.lowercased().contains(q) ||
-            $0.description?.lowercased().contains(q) == true ||
-            $0.eventTypeLabel.lowercased().contains(q) == true ||
-            $0.hostedByCamp?.lowercased().contains(q) == true
+            $0.object.name.lowercased().contains(q) ||
+            $0.object.description?.lowercased().contains(q) == true ||
+            $0.object.eventTypeLabel.lowercased().contains(q) == true ||
+            $0.object.hostedByCamp?.lowercased().contains(q) == true
         }
     }
 
     /// Items grouped by hour for sectioned display
-    var groupedItems: [(header: String, items: [EventObjectOccurrence])] {
+    var groupedItems: [(header: String, items: [ListRow<EventObjectOccurrence>])] {
         let filtered = filteredItems
         guard !filtered.isEmpty else { return [] }
 
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filtered) { event -> Int in
-            calendar.component(.hour, from: event.startDate)
+        let grouped = Dictionary(grouping: filtered) { row -> Int in
+            calendar.component(.hour, from: row.object.startDate)
         }
         return grouped
             .sorted { $0.key < $1.key }
-            .map { (hour, events) in
+            .map { (hour, rows) in
                 let displayHour = hour % 12 == 0 ? 12 : hour % 12
                 let ampm = hour >= 12 ? "PM" : "AM"
-                return (header: "\(displayHour) \(ampm)", items: events)
+                return (header: "\(displayHour) \(ampm)", items: rows)
             }
     }
 
     // MARK: - Actions
 
-    func toggleFavorite(_ object: EventObjectOccurrence) async {
-        let occurrenceUID = object.uid
-        let desiredIsFavorite = !favoriteIDs.contains(occurrenceUID)
-        if desiredIsFavorite {
-            favoriteIDs.insert(occurrenceUID)
-        } else {
-            favoriteIDs.remove(occurrenceUID)
+    func toggleFavorite(_ row: ListRow<EventObjectOccurrence>) async {
+        let originalRow = row
+        if let idx = items.firstIndex(where: { $0.object.uid == row.object.uid }) {
+            var updatedMeta = row.metadata
+            updatedMeta?.isFavorite = !row.isFavorite
+            items[idx] = ListRow(object: row.object, metadata: updatedMeta, thumbnailColors: row.thumbnailColors)
         }
         do {
-            try await dataProvider.toggleFavorite(object)
+            try await dataProvider.toggleFavorite(row.object)
         } catch {
-            // Revert optimistic UI if write fails.
-            if desiredIsFavorite {
-                favoriteIDs.remove(occurrenceUID)
-            } else {
-                favoriteIDs.insert(occurrenceUID)
+            if let idx = items.firstIndex(where: { $0.object.uid == originalRow.object.uid }) {
+                items[idx] = originalRow
             }
-            print("Error toggling favorite for \(object.name): \(error)")
+            print("Error toggling favorite for \(row.object.name): \(error)")
         }
     }
 
@@ -195,19 +186,19 @@ final class EventListViewModel: ObservableObject {
             guard let self else { return }
 
             var didReceiveFirstEmission = false
-            for await observedItems in self.dataProvider.observeObjects(filter: filterForObservation) {
+            for await rows in self.dataProvider.observeObjects(filter: filterForObservation) {
                 didReceiveFirstEmission = true
                 await MainActor.run {
-                    self.items = observedItems
-                    if !observedItems.isEmpty {
+                    self.items = rows
+                    if !rows.isEmpty {
                         self.isLoading = false
                     }
-                    self.resolveHosts(for: observedItems)
+                    self.resolveHosts(for: rows.map(\.object))
                 }
 
-                if didReceiveFirstEmission, !observedItems.isEmpty {
+                if didReceiveFirstEmission, !rows.isEmpty {
                     loadingGateTask?.cancel()
-                } else if didReceiveFirstEmission, observedItems.isEmpty {
+                } else if didReceiveFirstEmission, rows.isEmpty {
                     startLoadingGateIfNeeded()
                 }
             }
@@ -261,34 +252,6 @@ final class EventListViewModel: ObservableObject {
 
     private func restartObservation() {
         startObserving()
-        startObservingFavorites()
-    }
-
-    // MARK: - Favorites
-
-    private func startObservingFavorites() {
-        favoritesObservationTask?.cancel()
-
-        // Build a favorites-only filter (clears time/search constraints)
-        var favFilter = filter
-        favFilter.searchText = nil
-        favFilter.happeningNow = false
-        favFilter.includeExpired = true
-        favFilter.startingWithinHours = nil
-        favFilter.startDate = nil
-        favFilter.endDate = nil
-        favFilter.eventTypeCodes = nil
-        favFilter.onlyFavorites = true
-
-        favoritesObservationTask = Task { [weak self] in
-            guard let self else { return }
-            for await favorites in self.dataProvider.observeObjects(filter: favFilter) {
-                let ids = Set(favorites.map(\.uid))
-                await MainActor.run {
-                    self.favoriteIDs = ids
-                }
-            }
-        }
     }
 
     // MARK: - Host Resolution

@@ -88,10 +88,17 @@ class DependencyContainer {
         self.playaDBSeeder.seedIfNeeded()
 
         self.mvImageDownloader = MutantVehicleImageDownloader(playaDB: self.playaDB)
-        self.mvImageDownloader.downloadUncachedImages()
+        let mvTask = self.mvImageDownloader.downloadUncachedImages()
 
         self.thumbnailImageDownloader = ThumbnailImageDownloader(playaDB: self.playaDB)
-        self.thumbnailImageDownloader.downloadUncachedImages()
+        let thumbTask = self.thumbnailImageDownloader.downloadUncachedImages()
+
+        // After downloads complete, prefetch missing thumbnail colors
+        Task.detached(priority: .utility) { [playaDB = self.playaDB] in
+            _ = await mvTask.value
+            _ = await thumbTask.value
+            await ColorPrefetcher.prefetchMissingColors(playaDB: playaDB)
+        }
     }
 
     // MARK: - Factory Methods

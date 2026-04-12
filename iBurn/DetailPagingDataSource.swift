@@ -1,21 +1,39 @@
 import UIKit
 import PlayaDB
 
+/// Pre-loaded data for a single detail page.
+struct DetailPageItem {
+    let subject: DetailSubject
+    let metadata: ObjectMetadata?
+    let thumbnailColors: ThumbnailColors?
+
+    init(subject: DetailSubject, metadata: ObjectMetadata? = nil, thumbnailColors: ThumbnailColors? = nil) {
+        self.subject = subject
+        self.metadata = metadata
+        self.thumbnailColors = thumbnailColors
+    }
+}
+
 /// Data source for swiping between detail views in a UIPageViewController.
 ///
-/// Holds a snapshot of `DetailSubject` items captured at the moment
+/// Holds a snapshot of `DetailPageItem`s captured at the moment
 /// the user taps a list row. The snapshot approach avoids the crashes
 /// that the legacy `PageViewManager` encountered when filters changed
 /// while the user was mid-swipe.
 @MainActor
 final class DetailPagingDataSource: NSObject, UIPageViewControllerDataSource, UIPageViewControllerDelegate {
-    private let subjects: [DetailSubject]
+    private let items: [DetailPageItem]
     private let playaDB: PlayaDB
 
-    init(subjects: [DetailSubject], playaDB: PlayaDB) {
-        self.subjects = subjects
+    init(items: [DetailPageItem], playaDB: PlayaDB) {
+        self.items = items
         self.playaDB = playaDB
         super.init()
+    }
+
+    /// Convenience initializer for callers that only have bare subjects (map, deep link).
+    convenience init(subjects: [DetailSubject], playaDB: PlayaDB) {
+        self.init(items: subjects.map { DetailPageItem(subject: $0) }, playaDB: playaDB)
     }
 
     /// Creates a `DetailPageViewController` showing the item at `initialIndex`,
@@ -48,7 +66,7 @@ final class DetailPagingDataSource: NSObject, UIPageViewControllerDataSource, UI
         _ pageViewController: UIPageViewController,
         viewControllerAfter viewController: UIViewController
     ) -> UIViewController? {
-        guard let index = currentIndex(of: viewController), index < subjects.count - 1 else { return nil }
+        guard let index = currentIndex(of: viewController), index < items.count - 1 else { return nil }
         return makeDetailController(at: index + 1)
     }
 
@@ -67,7 +85,13 @@ final class DetailPagingDataSource: NSObject, UIPageViewControllerDataSource, UI
     // MARK: - Private
 
     private func makeDetailController(at index: Int) -> UIViewController {
-        let controller = DetailViewControllerFactory.create(with: subjects[index], playaDB: playaDB)
+        let item = items[index]
+        let controller = DetailViewControllerFactory.create(
+            with: item.subject,
+            playaDB: playaDB,
+            preloadedMetadata: item.metadata,
+            preloadedColors: item.thumbnailColors
+        )
         controller.indexPath = IndexPath(row: index, section: 0)
         return controller
     }

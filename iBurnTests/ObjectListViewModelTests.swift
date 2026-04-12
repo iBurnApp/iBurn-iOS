@@ -35,9 +35,9 @@ private final class TestDataProvider: ObjectListDataProvider {
     private(set) var favoriteCalls: [String] = []
     private(set) var favorites: Set<String> = []
 
-    private var continuations: [String: AsyncStream<[TestObject]>.Continuation] = [:]
+    var continuations: [String: AsyncStream<[ListRow<TestObject>]>.Continuation] = [:]
 
-    func observeObjects(filter: TestFilter) -> AsyncStream<[TestObject]> {
+    func observeObjects(filter: TestFilter) -> AsyncStream<[ListRow<TestObject>]> {
         lastObservedFilters.append(filter)
         return AsyncStream { continuation in
             self.continuations[filter.tag] = continuation
@@ -45,7 +45,8 @@ private final class TestDataProvider: ObjectListDataProvider {
     }
 
     func yield(_ objects: [TestObject], tag: String = "main") {
-        continuations[tag]?.yield(objects)
+        let rows = objects.map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) }
+        continuations[tag]?.yield(rows)
     }
 
     func finish(tag: String = "main") {
@@ -59,10 +60,6 @@ private final class TestDataProvider: ObjectListDataProvider {
         } else {
             favorites.insert(object.uid)
         }
-    }
-
-    func isFavorite(_ object: TestObject) async throws -> Bool {
-        favorites.contains(object.uid)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: TestObject) -> AttributedString? {
@@ -156,7 +153,7 @@ final class ObjectListViewModelTests: XCTestCase {
         XCTAssertTrue(ok, "Expected isLoading to become false and items to be populated on first non-empty emission")
     }
 
-    func testFavoriteIDsComeFromFavoritesObservation() async {
+    func testFavoritesComeFromListRowMetadata() async {
         let provider = TestDataProvider()
 
         let vm = ObjectListViewModel<TestObject, TestFilter>(
@@ -169,18 +166,18 @@ final class ObjectListViewModelTests: XCTestCase {
                 f.tag = "main"
                 return f
             },
-            favoritesFilterForObservation: { f in
-                var f = f
-                f.tag = "favorites"
-                f.onlyFavorites = true
-                return f
-            },
             matchesSearch: { obj, q in obj.name.lowercased().contains(q) }
         )
 
         await Task.yield()
-        provider.yield([TestObject(name: "Fav", description: nil, uid: "fav")], tag: "favorites")
-        let ok = await eventually { vm.favoriteIDs == ["fav"] }
+
+        // Yield a ListRow with isFavorite metadata
+        let favObj = TestObject(name: "Fav", description: nil, uid: "fav")
+        let meta = ObjectMetadata(objectType: "test", objectId: "fav", isFavorite: true)
+        let row = ListRow(object: favObj, metadata: meta, thumbnailColors: nil)
+        provider.continuations["main"]?.yield([row])
+
+        let ok = await eventually { vm.isFavorite(favObj) }
         XCTAssertTrue(ok)
     }
 
@@ -197,12 +194,6 @@ final class ObjectListViewModelTests: XCTestCase {
                 f.tag = "main"
                 return f
             },
-            favoritesFilterForObservation: { f in
-                var f = f
-                f.tag = "favorites"
-                f.onlyFavorites = true
-                return f
-            },
             matchesSearch: { obj, q in obj.name.lowercased().contains(q) }
         )
 
@@ -215,13 +206,15 @@ final class ObjectListViewModelTests: XCTestCase {
         XCTAssertTrue(gotItem)
         XCTAssertFalse(vm.isFavorite(obj))
 
-        await vm.toggleFavorite(obj)
+        let row = vm.items[0]
+        await vm.toggleFavorite(row)
         let favorited = await eventually { vm.isFavorite(obj) }
         XCTAssertTrue(favorited)
         XCTAssertEqual(provider.favoriteCalls, ["x"])
 
         // Second toggle should flip back and also toggle provider again.
-        await vm.toggleFavorite(obj)
+        let row2 = vm.items[0]
+        await vm.toggleFavorite(row2)
         let unfavorited = await eventually { vm.isFavorite(obj) == false }
         XCTAssertTrue(unfavorited)
         XCTAssertEqual(provider.favoriteCalls, ["x", "x"])

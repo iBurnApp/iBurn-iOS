@@ -26,17 +26,18 @@ protocol ObjectListDataProvider<Object, Filter> {
     /// The type of filter used to query objects (ArtFilter, CampFilter, etc.)
     associatedtype Filter
 
-    /// Observe objects matching the filter, emitting updates via AsyncStream
+    /// Observe fully-inflated list rows matching the filter, emitting updates via AsyncStream.
+    ///
+    /// Each `ListRow` bundles the object with its full metadata and thumbnail colors,
+    /// fetched in a single GRDB read transaction.
     ///
     /// The stream will emit:
-    /// - Initial set of objects matching the filter
-    /// - Updates whenever the underlying data changes (favorites, new imports, etc.)
-    ///
-    /// The stream completes when cancelled or when the provider is deallocated.
+    /// - Initial set of rows matching the filter
+    /// - Updates whenever the underlying data changes (favorites, colors, imports, etc.)
     ///
     /// - Parameter filter: The filter criteria to apply
-    /// - Returns: AsyncStream that yields arrays of matching objects
-    func observeObjects(filter: Filter) -> AsyncStream<[Object]>
+    /// - Returns: AsyncStream that yields arrays of fully-inflated list rows
+    func observeObjects(filter: Filter) -> AsyncStream<[ListRow<Object>]>
 
     /// Toggle the favorite status of an object
     ///
@@ -45,13 +46,6 @@ protocol ObjectListDataProvider<Object, Filter> {
     /// - Parameter object: The object to toggle favorite status for
     /// - Throws: Database errors
     func toggleFavorite(_ object: Object) async throws
-
-    /// Check if an object is marked as a favorite
-    ///
-    /// - Parameter object: The object to check
-    /// - Returns: True if the object is favorited
-    /// - Throws: Database errors
-    func isFavorite(_ object: Object) async throws -> Bool
 
     /// Get a human-readable distance string from a location to an object
     ///

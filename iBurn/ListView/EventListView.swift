@@ -34,11 +34,11 @@ struct EventListView: View {
                 List {
                     ForEach(viewModel.groupedItems, id: \.header) { group in
                         Section(header: Text(group.header)) {
-                            ForEach(group.items, id: \.uid) { event in
+                            ForEach(group.items, id: \.object.uid) { row in
                                 Button {
-                                    onSelect(event)
+                                    onSelect(row.object)
                                 } label: {
-                                    eventRow(for: event)
+                                    eventRow(for: row)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -115,17 +115,18 @@ struct EventListView: View {
 
     // MARK: - Row Builder
 
-    private func eventRow(for event: EventObjectOccurrence) -> some View {
+    private func eventRow(for row: ListRow<EventObjectOccurrence>) -> some View {
         return ObjectRowView(
-            object: event,
-            subtitle: viewModel.distanceAttributedString(for: event),
-            rightSubtitle: event.timeDescription(now: viewModel.now),
-            isFavorite: viewModel.isFavorite(event),
+            object: row.object,
+            subtitle: viewModel.distanceAttributedString(for: row.object),
+            rightSubtitle: row.object.timeDescription(now: viewModel.now),
+            isFavorite: row.isFavorite,
+            thumbnailColors: row.thumbnailColors,
             onFavoriteTap: {
-                Task { await viewModel.toggleFavorite(event) }
+                Task { await viewModel.toggleFavorite(row) }
             }
         ) { _ in
-            Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+            Text(EventTypeInfo.emoji(for: row.object.eventTypeCode))
                 .font(.subheadline)
         }
     }
@@ -142,6 +143,6 @@ struct EventListView: View {
     }
 
     private func showMap() {
-        onShowMap(viewModel.filteredItems)
+        onShowMap(viewModel.filteredItems.map(\.object))
     }
 }
