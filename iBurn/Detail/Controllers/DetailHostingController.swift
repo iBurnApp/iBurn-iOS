@@ -73,11 +73,13 @@ class DetailHostingController: UIHostingController<DetailView>, DynamicViewContr
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Configure navigation bar appearance
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         setupNavigationBarAppearance()
     }
-    
+
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
@@ -107,7 +109,9 @@ class DetailHostingController: UIHostingController<DetailView>, DynamicViewContr
     }
     
     private func setupNavigationBarAppearance() {
-        // This can be customized based on existing app theming
-        // For now, use default appearance
+        if #available(iOS 26, *) {
+            // Transparent nav bar for Liquid Glass effect
+            navigationController?.navigationBar.isTranslucent = true
+        }
     }
 }

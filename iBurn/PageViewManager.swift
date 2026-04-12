@@ -45,7 +45,11 @@ import EventKitUI
         
         pageVC.delegate = self
         pageVC.dataSource = self
-        navBar?.isTranslucent = false
+        if #available(iOS 26, *) {
+            // Let iOS 26 Liquid Glass handle nav bar transparency
+        } else {
+            navBar?.isTranslucent = false
+        }
         navBar?.setColorTheme(colors, animated: false)
         pageVC.setViewControllers([detailVC], direction: .forward, animated: false, completion: nil)
         // Navigation item forwarding is now handled automatically by DetailPageViewController

@@ -190,6 +190,11 @@ extension Appearance {
     }
     
     @objc public static func applyNavigationBarAppearance(_ navBar: UINavigationBar, colors: BRCImageColors, animated: Bool) {
+        if #available(iOS 26, *) {
+            // iOS 26: let system Liquid Glass handle nav bar appearance
+            navBar.tintColor = colors.primaryColor
+            return
+        }
         let appearance = makeNavigationBarAppearance(colors: colors)
         let applyTheme = {
             navBar.standardAppearance = appearance
