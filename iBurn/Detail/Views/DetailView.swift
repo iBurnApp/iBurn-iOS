@@ -55,6 +55,7 @@ struct DetailView: View {
         .background(backgroundColor)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(viewModel.title)
+        .modifier(TransparentNavBarModifier())
         .sheet(isPresented: imageViewerBinding) {
             if let selected = viewModel.selectedImage {
                 ImageViewerSheet(image: selected)
@@ -782,6 +783,17 @@ struct DetailVisitStatusCell: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
+        }
+    }
+}
+
+/// Hides the navigation bar background on iOS 26+ for Liquid Glass transparency.
+private struct TransparentNavBarModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        } else {
+            content
         }
     }
 }
