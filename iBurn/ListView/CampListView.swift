@@ -31,7 +31,7 @@ struct CampListView: View {
         ZStack {
             List {
                 ForEach(viewModel.filteredItems, id: \.uid) { camp in
-                    MediaObjectRowView(
+                    ObjectRowView(
                         object: camp,
                         subtitle: viewModel.distanceAttributedString(for: camp),
                         rightSubtitle: rightSubtitle(for: camp),

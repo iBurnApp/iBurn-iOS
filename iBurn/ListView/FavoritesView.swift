@@ -134,7 +134,7 @@ struct FavoritesView: View {
     private func favoriteRow(for item: FavoriteItem) -> some View {
         switch item {
         case .art(let art):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: art,
                 subtitle: viewModel.distanceAttributedString(for: item),
                 rightSubtitle: art.artist,
@@ -145,7 +145,7 @@ struct FavoritesView: View {
             .onTapGesture { onSelectArt(art) }
 
         case .camp(let camp):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: camp,
                 subtitle: viewModel.distanceAttributedString(for: item),
                 rightSubtitle: camp.hometown,
@@ -156,15 +156,21 @@ struct FavoritesView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event):
-            Button {
-                onSelectEvent(event)
-            } label: {
-                eventRow(for: event)
+            ObjectRowView(
+                object: event,
+                subtitle: viewModel.distanceAttributedString(for: .event(event)),
+                rightSubtitle: event.timeDescription(now: viewModel.now),
+                isFavorite: true,
+                onFavoriteTap: { Task { await viewModel.toggleFavorite(.event(event)) } }
+            ) { _ in
+                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                    .font(.subheadline)
             }
-            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .onTapGesture { onSelectEvent(event) }
 
         case .mutantVehicle(let mv):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: mv,
                 subtitle: nil,
                 rightSubtitle: mv.artist,
@@ -174,24 +180,6 @@ struct FavoritesView: View {
             .contentShape(Rectangle())
             .onTapGesture { onSelectMV(mv) }
         }
-    }
-
-    private func eventRow(for event: EventObjectOccurrence) -> some View {
-        let host = viewModel.resolvedHost(for: event)
-        return EventRowView(
-            event: event,
-            hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
-            hostAddress: host?.address,
-            hostDescription: host?.description,
-            campUID: host?.thumbnailObjectID,
-            isArtHosted: host?.isArt ?? false,
-            distanceString: viewModel.distanceAttributedString(for: .event(event)),
-            isFavorite: true,
-            now: viewModel.now,
-            onFavoriteTap: {
-                Task { await viewModel.toggleFavorite(.event(event)) }
-            }
-        )
     }
 
     // MARK: - Helpers

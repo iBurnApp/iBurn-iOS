@@ -210,7 +210,7 @@ final class RecentlyViewedViewModel: ObservableObject {
                     } else if let camp = pair.object as? CampObject {
                         mapped.append(.camp(camp, dates))
                     } else if let event = pair.object as? EventObject {
-                        // Resolve to first occurrence for EventRowView
+                        // Resolve to first occurrence for display
                         if let occurrences = try? await self.playaDB.fetchOccurrences(forEventUID: event.uid),
                            let occurrence = occurrences.first {
                             mapped.append(.event(occurrence, dates))

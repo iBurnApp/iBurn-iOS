@@ -97,7 +97,7 @@ struct GlobalSearchView: View {
         let isAISuggested = viewModel.aiSuggestedUIDs.contains(item.uid)
         switch item {
         case .art(let art):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: art,
                 subtitle: nil,
                 rightSubtitle: art.artist,
@@ -109,7 +109,7 @@ struct GlobalSearchView: View {
             .onTapGesture { onSelectArt(art) }
 
         case .camp(let camp):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: camp,
                 subtitle: nil,
                 rightSubtitle: camp.hometown,
@@ -121,12 +121,21 @@ struct GlobalSearchView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event):
-            eventRow(for: event)
-                .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
-                .onAppear { viewModel.resolveHosts(for: [event]) }
+            ObjectRowView(
+                object: event,
+                rightSubtitle: event.timeDescription(now: Date()),
+                isFavorite: false,
+                onFavoriteTap: { }
+            ) { _ in
+                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                    .font(.subheadline)
+            }
+            .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
+            .contentShape(Rectangle())
+            .onTapGesture { onSelectEvent(event) }
 
         case .mutantVehicle(let mv):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: mv,
                 subtitle: nil,
                 rightSubtitle: mv.artist,
@@ -149,24 +158,4 @@ struct GlobalSearchView: View {
         }
     }
 
-    private func eventRow(for event: EventObjectOccurrence) -> some View {
-        let host = viewModel.resolvedHost(for: event)
-        return Button {
-            onSelectEvent(event)
-        } label: {
-            EventRowView(
-                event: event,
-                hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
-                hostAddress: host?.address,
-                hostDescription: host?.description,
-                campUID: host?.thumbnailObjectID,
-                isArtHosted: host?.isArt ?? false,
-                distanceString: nil,
-                isFavorite: false,
-                now: .present,
-                onFavoriteTap: { }
-            )
-        }
-        .buttonStyle(.plain)
-    }
 }

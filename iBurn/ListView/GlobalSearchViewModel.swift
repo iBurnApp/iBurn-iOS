@@ -191,7 +191,7 @@ final class GlobalSearchViewModel: ObservableObject {
             } else if let camp = object as? CampObject {
                 campItems.append(.camp(camp))
             } else if let event = object as? EventObject {
-                // Resolve to first occurrence for EventRowView
+                // Resolve to first occurrence for display
                 if let occurrences = try? await playaDB.fetchOccurrences(forEventUID: event.uid),
                    let occurrence = occurrences.first {
                     eventItems.append(.event(occurrence))

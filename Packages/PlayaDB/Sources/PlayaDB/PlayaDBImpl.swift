@@ -1693,24 +1693,6 @@ internal class PlayaDBImpl: PlayaDB {
                 // Skip duplicate events (keep first occurrence)
                 if processedEventUIDs.contains(apiEvent.uid.value) {
                     print("Warning: Skipping duplicate event UID: \(apiEvent.uid.value)")
-
-                    // Still add the occurrences for this duplicate event
-                    for apiOccurrence in apiEvent.occurrenceSet {
-                        let corrected = Self.correctedOccurrenceTimes(
-                            startTime: apiOccurrence.startTime,
-                            endTime: apiOccurrence.endTime
-                        )
-                        if corrected.endTime != apiOccurrence.endTime {
-                            correctedOccurrenceCount += 1
-                        }
-                        var eventOccurrence = EventOccurrence(
-                            id: nil,
-                            eventId: apiEvent.uid.value,
-                            startTime: corrected.startTime,
-                            endTime: corrected.endTime
-                        )
-                        try eventOccurrence.insert(db)
-                    }
                     continue
                 }
                 processedEventUIDs.insert(apiEvent.uid.value)

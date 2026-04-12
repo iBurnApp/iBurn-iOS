@@ -11,41 +11,57 @@ import PlayaDB
 import CoreLocation
 import UIKit
 
-/// Generic row view for displaying data objects in list views
+/// Universal row view for displaying any data object in list views.
 ///
-/// This component provides a consistent row layout while allowing customization
-/// via the `actions` ViewBuilder for type-specific controls (audio button, etc.)
+/// Handles thumbnail + color loading via `RowAssetsLoader`, using the object's
+/// `thumbnailObjectID` property (defaults to `uid`, overridden for events to use host camp/art).
 ///
 /// Usage:
 /// ```swift
 /// ObjectRowView(
 ///     object: artObject,
-///     distance: "0.5 mi",
+///     subtitle: distance,
+///     rightSubtitle: artObject.artist,
 ///     isFavorite: true,
 ///     onFavoriteTap: { ... }
-/// ) {
-///     // Type-specific actions
-///     Button(action: { playAudio() }) {
-///         Image(systemName: "play.circle.fill")
-///     }
+/// ) { assets in
+///     AudioTourButton(...)
 /// }
 /// ```
 struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let object: Object
-    let thumbnail: UIImage?
-    let colorsOverride: BRCImageColors?
     let subtitle: AttributedString?
     let rightSubtitle: String?
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
 
-    @ViewBuilder let actions: () -> Actions
+    @ViewBuilder let actions: (RowAssetsLoader) -> Actions
+    @StateObject private var assets: RowAssetsLoader
     @Environment(\.themeColors) var themeColors
 
     private let thumbnailSize: CGFloat = 100
 
+    init(
+        object: Object,
+        subtitle: AttributedString? = nil,
+        rightSubtitle: String? = nil,
+        isFavorite: Bool,
+        onFavoriteTap: @escaping () -> Void,
+        @ViewBuilder actions: @escaping (RowAssetsLoader) -> Actions = { _ in EmptyView() }
+    ) {
+        self.object = object
+        self.subtitle = subtitle
+        self.rightSubtitle = rightSubtitle
+        self.isFavorite = isFavorite
+        self.onFavoriteTap = onFavoriteTap
+        self.actions = actions
+        _assets = StateObject(wrappedValue: RowAssetsLoader(
+            objectID: object.thumbnailObjectID
+        ))
+    }
+
     var body: some View {
-        let colors = colorsOverride.map(ImageColors.init) ?? themeColors
+        let colors = assets.colors.map(ImageColors.init) ?? themeColors
 
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 0) {
@@ -57,7 +73,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
 
                     Spacer(minLength: 0)
 
-                    actions()
+                    actions(assets)
                 }
 
                 HStack(alignment: .top, spacing: 8) {
@@ -110,17 +126,18 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         }
         .padding(.vertical, 0)
         .listRowBackground(listRowBackground)
+        .onAppear { assets.startIfNeeded() }
     }
 
     private var listRowBackground: some View {
         ZStack {
             themeColors.backgroundColor
-            if let override = colorsOverride {
+            if let override = assets.colors {
                 Color(override.backgroundColor)
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.22), value: colorsOverride != nil)
+        .animation(.easeInOut(duration: 0.22), value: assets.colors != nil)
     }
 
     @ViewBuilder
@@ -130,7 +147,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         ZStack {
             shape.fill(Color.black.opacity(0.06))
 
-            if let thumbnail {
+            if let thumbnail = assets.thumbnail {
                 Image(uiImage: thumbnail)
                     .resizable()
                     .scaledToFill()
@@ -148,15 +165,6 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         .contentShape(shape)
         .overlay(shape.stroke(Color.black.opacity(0.08), lineWidth: 1))
         .clipped()
-        .animation(.easeInOut(duration: 0.22), value: thumbnail != nil)
+        .animation(.easeInOut(duration: 0.22), value: assets.thumbnail != nil)
     }
 }
-
-// MARK: - Preview
-
-// Previews disabled - would require mock ArtObject instance
-// #Preview("Art Object") {
-//     List {
-//         // Preview content here
-//     }
-// }

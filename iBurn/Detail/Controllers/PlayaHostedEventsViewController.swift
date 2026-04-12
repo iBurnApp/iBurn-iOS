@@ -31,25 +31,19 @@ struct PlayaHostedEventsView: View {
 
     var body: some View {
         List(events, id: \.uid) { event in
-            Button {
-                pushDetail(for: event)
-            } label: {
-                EventRowView(
-                    event: event,
-                    hostName: hostName,
-                    hostAddress: nil,
-                    hostDescription: nil,
-                    campUID: event.hostedByCamp,
-                    isArtHosted: event.locatedAtArt != nil,
-                    distanceString: nil,
-                    isFavorite: favoriteIDs.contains(event.uid),
-                    now: now,
-                    onFavoriteTap: {
-                        Task { await toggleFavorite(event) }
-                    }
-                )
+            ObjectRowView(
+                object: event,
+                rightSubtitle: event.timeDescription(now: now),
+                isFavorite: favoriteIDs.contains(event.uid),
+                onFavoriteTap: {
+                    Task { await toggleFavorite(event) }
+                }
+            ) { _ in
+                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                    .font(.subheadline)
             }
-            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .onTapGesture { pushDetail(for: event) }
             .listRowBackground(themeColors.backgroundColor)
         }
         .listStyle(.plain)

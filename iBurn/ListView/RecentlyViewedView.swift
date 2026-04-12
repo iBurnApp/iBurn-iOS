@@ -154,7 +154,7 @@ struct RecentlyViewedView: View {
 
         switch item {
         case .art(let art, _):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: art,
                 subtitle: subtitle,
                 rightSubtitle: art.artist,
@@ -165,7 +165,7 @@ struct RecentlyViewedView: View {
             .onTapGesture { onSelectArt(art) }
 
         case .camp(let camp, _):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: camp,
                 subtitle: subtitle,
                 rightSubtitle: camp.hometown,
@@ -176,11 +176,22 @@ struct RecentlyViewedView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event, _):
-            eventRow(for: event, isFavorite: isFav, favAction: favAction)
-                .onAppear { viewModel.resolveHosts(for: [event]) }
+            ObjectRowView(
+                object: event,
+                subtitle: subtitle,
+                rightSubtitle: event.timeDescription(now: Date()),
+                isFavorite: isFav,
+                onFavoriteTap: favAction
+            ) { _ in
+                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                    .font(.subheadline)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { onSelectEvent(event) }
+            .onAppear { viewModel.resolveHosts(for: [event]) }
 
         case .mutantVehicle(let mv, _):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: mv,
                 subtitle: subtitle,
                 rightSubtitle: mv.artist,
@@ -190,29 +201,6 @@ struct RecentlyViewedView: View {
             .contentShape(Rectangle())
             .onTapGesture { onSelectMV(mv) }
         }
-    }
-
-    // MARK: - Event Row
-
-    private func eventRow(for event: EventObjectOccurrence, isFavorite: Bool, favAction: @escaping () -> Void) -> some View {
-        let host = viewModel.resolvedHost(for: event)
-        return Button {
-            onSelectEvent(event)
-        } label: {
-            EventRowView(
-                event: event,
-                hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
-                hostAddress: host?.address,
-                hostDescription: host?.description,
-                campUID: host?.thumbnailObjectID,
-                isArtHosted: host?.isArt ?? false,
-                distanceString: subtitleString(for: .event(event, ViewDates(firstViewed: nil, lastViewed: Date()))),
-                isFavorite: isFavorite,
-                now: .present,
-                onFavoriteTap: favAction
-            )
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Subtitle

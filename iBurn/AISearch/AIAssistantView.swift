@@ -188,7 +188,7 @@ struct AIAssistantView: View {
         let onFavoriteTap: () -> Void = { Task { await viewModel.toggleFavorite(uid) } }
         switch resolved {
         case .art(let art):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: art,
                 subtitle: nil,
                 rightSubtitle: art.artist,
@@ -196,7 +196,7 @@ struct AIAssistantView: View {
                 onFavoriteTap: onFavoriteTap
             ) { _ in EmptyView() }
         case .camp(let camp):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: camp,
                 subtitle: nil,
                 rightSubtitle: camp.hometown,
@@ -204,7 +204,7 @@ struct AIAssistantView: View {
                 onFavoriteTap: onFavoriteTap
             ) { _ in EmptyView() }
         case .event(let event):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: event,
                 subtitle: nil,
                 rightSubtitle: event.eventTypeLabel,
@@ -212,7 +212,7 @@ struct AIAssistantView: View {
                 onFavoriteTap: onFavoriteTap
             ) { _ in EmptyView() }
         case .mutantVehicle(let mv):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: mv,
                 subtitle: nil,
                 rightSubtitle: mv.artist,
