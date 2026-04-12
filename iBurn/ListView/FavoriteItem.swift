@@ -12,36 +12,36 @@ enum FavoritesTypeFilter: String, CaseIterable, Codable {
 
 /// Type-safe wrapper for a favorited object of any type
 enum FavoriteItem: Identifiable {
-    case art(ArtObject)
-    case camp(CampObject)
-    case event(EventObjectOccurrence)
-    case mutantVehicle(MutantVehicleObject)
+    case art(ListRow<ArtObject>)
+    case camp(ListRow<CampObject>)
+    case event(ListRow<EventObjectOccurrence>)
+    case mutantVehicle(ListRow<MutantVehicleObject>)
 
     var id: String { uid }
 
     var uid: String {
         switch self {
-        case .art(let o): o.uid
-        case .camp(let o): o.uid
-        case .event(let o): o.uid
-        case .mutantVehicle(let o): o.uid
+        case .art(let r): r.object.uid
+        case .camp(let r): r.object.uid
+        case .event(let r): r.object.uid
+        case .mutantVehicle(let r): r.object.uid
         }
     }
 
     var name: String {
         switch self {
-        case .art(let o): o.name
-        case .camp(let o): o.name
-        case .event(let o): o.name
-        case .mutantVehicle(let o): o.name
+        case .art(let r): r.object.name
+        case .camp(let r): r.object.name
+        case .event(let r): r.object.name
+        case .mutantVehicle(let r): r.object.name
         }
     }
 
     var location: CLLocation? {
         switch self {
-        case .art(let o): o.location
-        case .camp(let o): o.location
-        case .event(let o): o.location
+        case .art(let r): r.object.location
+        case .camp(let r): r.object.location
+        case .event(let r): r.object.location
         case .mutantVehicle: nil
         }
     }
@@ -57,10 +57,41 @@ enum FavoriteItem: Identifiable {
 
     var detailSubject: DetailSubject {
         switch self {
-        case .art(let o): .art(o)
-        case .camp(let o): .camp(o)
-        case .event(let o): .eventOccurrence(o)
-        case .mutantVehicle(let o): .mutantVehicle(o)
+        case .art(let r): .art(r.object)
+        case .camp(let r): .camp(r.object)
+        case .event(let r): .eventOccurrence(r.object)
+        case .mutantVehicle(let r): .mutantVehicle(r.object)
+        }
+    }
+
+    var metadata: ObjectMetadata? {
+        switch self {
+        case .art(let r): r.metadata
+        case .camp(let r): r.metadata
+        case .event(let r): r.metadata
+        case .mutantVehicle(let r): r.metadata
+        }
+    }
+
+    var detailPageItem: DetailPageItem {
+        DetailPageItem(subject: detailSubject, metadata: metadata, thumbnailColors: thumbnailColors)
+    }
+
+    var isFavorite: Bool {
+        switch self {
+        case .art(let r): r.isFavorite
+        case .camp(let r): r.isFavorite
+        case .event(let r): r.isFavorite
+        case .mutantVehicle(let r): r.isFavorite
+        }
+    }
+
+    var thumbnailColors: ThumbnailColors? {
+        switch self {
+        case .art(let r): r.thumbnailColors
+        case .camp(let r): r.thumbnailColors
+        case .event(let r): r.thumbnailColors
+        case .mutantVehicle(let r): r.thumbnailColors
         }
     }
 }

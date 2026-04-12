@@ -15,9 +15,12 @@ final class ThumbnailImageDownloader {
         self.session = session
     }
 
-    /// Downloads images for all art and camp objects that don't have a local cache yet.
-    func downloadUncachedImages() {
+    /// Downloads images for all art and camp objects that don't have a valid local cache yet.
+    /// Returns a Task whose value is the set of newly downloaded UIDs.
+    @discardableResult
+    func downloadUncachedImages() -> Task<Set<String>, Never> {
         Task.detached(priority: .utility) { [playaDB, session] in
+            var newlyDownloaded: Set<String> = []
             var imageURLs: [String: URL] = [:]
             do {
                 let artURLs = try await playaDB.fetchArtImageURLs()
@@ -26,13 +29,18 @@ final class ThumbnailImageDownloader {
                 imageURLs.merge(campURLs) { first, _ in first }
             } catch {
                 DDLogError("Thumbnail download: failed to fetch URLs: \(error)")
-                return
+                return newlyDownloaded
             }
 
             for (uid, remoteURL) in imageURLs {
                 let fileName = "\(uid).jpg"
-                if BRCMediaDownloader.localMediaURL(fileName) != nil {
-                    continue
+                // Validate existing file: must exist and be non-empty
+                if let localURL = BRCMediaDownloader.localMediaURL(fileName) {
+                    if let attrs = try? FileManager.default.attributesOfItem(atPath: localURL.path),
+                       let size = attrs[.size] as? Int, size > 0 {
+                        continue
+                    }
+                    try? FileManager.default.removeItem(at: localURL)
                 }
 
                 do {
@@ -49,11 +57,13 @@ final class ThumbnailImageDownloader {
                     }
                     try FileManager.default.moveItem(at: tempURL, to: destURL)
                     try (destURL as NSURL).setResourceValue(true, forKey: .isExcludedFromBackupKey)
+                    newlyDownloaded.insert(uid)
                     DDLogInfo("Thumbnail cached: \(uid)")
                 } catch {
                     DDLogError("Thumbnail download failed for \(uid): \(error)")
                 }
             }
+            return newlyDownloaded
         }
     }
 }

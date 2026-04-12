@@ -75,6 +75,25 @@ extension DetailSubject {
         }
     }
 
+    /// Object ID used for thumbnail and color lookup.
+    /// For events, resolves to the host camp or art UID when available.
+    var thumbnailObjectID: String {
+        switch self {
+        case .legacy(let obj):
+            return obj.uniqueID
+        case .art(let art):
+            return art.uid
+        case .camp(let camp):
+            return camp.uid
+        case .event(let event):
+            return event.uid
+        case .eventOccurrence(let occ):
+            return occ.hostedByCamp ?? occ.locatedAtArt ?? occ.event.uid
+        case .mutantVehicle(let mv):
+            return mv.uid
+        }
+    }
+
     /// Text used for the "OFFICIAL LOCATION" section.
     ///
     /// Note: For PlayaDB objects this should respect embargo rules at the call site.

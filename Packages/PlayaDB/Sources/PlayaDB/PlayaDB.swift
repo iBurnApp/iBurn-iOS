@@ -37,10 +37,11 @@ public protocol PlayaDB {
     func fetchMutantVehicle(uid: String) async throws -> MutantVehicleObject?
 
     /// Observe mutant vehicles matching the specified filter criteria.
+    /// Returns fully-inflated `ListRow`s with metadata and thumbnail colors.
     @discardableResult
     func observeMutantVehicles(
         filter: MutantVehicleFilter,
-        onChange: @escaping ([MutantVehicleObject]) -> Void,
+        onChange: @escaping ([ListRow<MutantVehicleObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
 
@@ -98,32 +99,29 @@ public protocol PlayaDB {
     func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence]
     
     /// Observe art objects matching the specified filter criteria.
-    ///
-    /// - Parameters:
-    ///   - filter: Filter options for art objects.
-    ///   - onChange: Called each time the underlying query results change.
-    ///   - onError: Called if the observation encounters an error.
-    /// - Returns: Token for cancelling the observation.
+    /// Returns fully-inflated `ListRow`s with metadata and thumbnail colors.
     @discardableResult
     func observeArt(
         filter: ArtFilter,
-        onChange: @escaping ([ArtObject]) -> Void,
+        onChange: @escaping ([ListRow<ArtObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
 
     /// Observe camp objects matching the specified filter criteria.
+    /// Returns fully-inflated `ListRow`s with metadata and thumbnail colors.
     @discardableResult
     func observeCamps(
         filter: CampFilter,
-        onChange: @escaping ([CampObject]) -> Void,
+        onChange: @escaping ([ListRow<CampObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
 
     /// Observe event occurrences matching the specified filter criteria.
+    /// Returns fully-inflated `ListRow`s with metadata and thumbnail colors.
     @discardableResult
     func observeEvents(
         filter: EventFilter,
-        onChange: @escaping ([EventObjectOccurrence]) -> Void,
+        onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
     
@@ -188,6 +186,20 @@ public protocol PlayaDB {
     /// Batch fetch objects of any type by their UIDs (4 queries total, one per type)
     func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject]
 
+    // MARK: - Thumbnail Colors
+
+    /// Save (insert or replace) a single thumbnail color entry.
+    func saveThumbnailColors(_ colors: ThumbnailColors) async throws
+
+    /// Save a batch of thumbnail color entries in a single transaction.
+    func saveThumbnailColorsBatch(_ batch: [ThumbnailColors]) async throws
+
+    /// Fetch cached thumbnail colors for an object.
+    func fetchThumbnailColors(objectId: String) async throws -> ThumbnailColors?
+
+    /// Fetch all object IDs that have cached thumbnail colors.
+    func fetchCachedColorObjectIDs() async throws -> Set<String>
+
     // MARK: - User Map Pins
 
     /// Save (insert or update) a user map pin.
@@ -242,7 +254,7 @@ public extension PlayaDB {
     @discardableResult
     func observeArt(
         filter: ArtFilter,
-        onChange: @escaping ([ArtObject]) -> Void
+        onChange: @escaping ([ListRow<ArtObject>]) -> Void
     ) -> PlayaDBObservationToken {
         observeArt(filter: filter, onChange: onChange, onError: { _ in })
     }
@@ -250,7 +262,7 @@ public extension PlayaDB {
     @discardableResult
     func observeCamps(
         filter: CampFilter,
-        onChange: @escaping ([CampObject]) -> Void
+        onChange: @escaping ([ListRow<CampObject>]) -> Void
     ) -> PlayaDBObservationToken {
         observeCamps(filter: filter, onChange: onChange, onError: { _ in })
     }
@@ -258,7 +270,7 @@ public extension PlayaDB {
     @discardableResult
     func observeEvents(
         filter: EventFilter,
-        onChange: @escaping ([EventObjectOccurrence]) -> Void
+        onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void
     ) -> PlayaDBObservationToken {
         observeEvents(filter: filter, onChange: onChange, onError: { _ in })
     }
@@ -266,7 +278,7 @@ public extension PlayaDB {
     @discardableResult
     func observeMutantVehicles(
         filter: MutantVehicleFilter,
-        onChange: @escaping ([MutantVehicleObject]) -> Void
+        onChange: @escaping ([ListRow<MutantVehicleObject>]) -> Void
     ) -> PlayaDBObservationToken {
         observeMutantVehicles(filter: filter, onChange: onChange, onError: { _ in })
     }

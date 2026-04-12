@@ -23,19 +23,28 @@ protocol DisplayableObject {
 
     /// Object ID used for thumbnail lookup (defaults to uid)
     var thumbnailObjectID: String { get }
+
+    /// Whether this type uses thumbnail-derived colors in list rows.
+    /// Only Art and MutantVehicle return true; Camps and Events use the default theme.
+    static var supportsColorTheming: Bool { get }
 }
 
 extension DisplayableObject {
     var thumbnailObjectID: String { uid }
+    static var supportsColorTheming: Bool { false }
 }
 
 // Extend PlayaDB types to conform to DisplayableObject
 import PlayaDB
 
-extension ArtObject: DisplayableObject {}
+extension ArtObject: DisplayableObject {
+    static var supportsColorTheming: Bool { true }
+}
 extension CampObject: DisplayableObject {}
 extension EventObject: DisplayableObject {}
-extension MutantVehicleObject: DisplayableObject {}
+extension MutantVehicleObject: DisplayableObject {
+    static var supportsColorTheming: Bool { true }
+}
 
 extension EventObjectOccurrence: DisplayableObject {
     var thumbnailObjectID: String {

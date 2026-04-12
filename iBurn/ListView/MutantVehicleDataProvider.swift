@@ -17,10 +17,10 @@ class MutantVehicleDataProvider: ObjectListDataProvider {
         return !updateInfo.isEmpty
     }
 
-    func observeObjects(filter: MutantVehicleFilter) -> AsyncStream<[MutantVehicleObject]> {
+    func observeObjects(filter: MutantVehicleFilter) -> AsyncStream<[ListRow<MutantVehicleObject>]> {
         AsyncStream { continuation in
-            let token = playaDB.observeMutantVehicles(filter: filter) { objects in
-                continuation.yield(objects)
+            let token = playaDB.observeMutantVehicles(filter: filter) { rows in
+                continuation.yield(rows)
             } onError: { error in
                 print("MV observation error: \(error)")
             }
@@ -33,10 +33,6 @@ class MutantVehicleDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: MutantVehicleObject) async throws {
         try await playaDB.toggleFavorite(object)
-    }
-
-    func isFavorite(_ object: MutantVehicleObject) async throws -> Bool {
-        try await playaDB.isFavorite(object)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: MutantVehicleObject) -> AttributedString? {

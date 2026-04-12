@@ -132,6 +132,15 @@ class DetailViewControllerFactory {
     }
 
     static func create(with subject: DetailSubject, playaDB: PlayaDB) -> DetailHostingController {
+        create(with: subject, playaDB: playaDB, preloadedMetadata: nil, preloadedColors: nil)
+    }
+
+    static func create(
+        with subject: DetailSubject,
+        playaDB: PlayaDB,
+        preloadedMetadata: ObjectMetadata?,
+        preloadedColors: ThumbnailColors?
+    ) -> DetailHostingController {
         let coordinator = DetailActionCoordinatorFactory.makeCoordinator()
         let locationService = LocationService()
 
@@ -139,7 +148,9 @@ class DetailViewControllerFactory {
             subject: subject,
             playaDB: playaDB,
             locationService: locationService,
-            coordinator: coordinator
+            coordinator: coordinator,
+            preloadedMetadata: preloadedMetadata,
+            preloadedColors: preloadedColors
         )
 
         let controller = DetailHostingController(

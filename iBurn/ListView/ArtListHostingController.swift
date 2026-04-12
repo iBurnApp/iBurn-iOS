@@ -53,9 +53,11 @@ class ArtListHostingController: UIHostingController<ArtListView> {
     // MARK: - Navigation
 
     private func showDetail(for art: ArtObject) {
-        let subjects = viewModel.filteredItems.map { DetailSubject.art($0) }
-        guard let index = viewModel.filteredItems.firstIndex(where: { $0.uid == art.uid }) else { return }
-        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        let pageItems = viewModel.filteredItems.map { row in
+            DetailPageItem(subject: .art(row.object), metadata: row.metadata, thumbnailColors: row.thumbnailColors)
+        }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.object.uid == art.uid }) else { return }
+        let dataSource = DetailPagingDataSource(items: pageItems, playaDB: playaDB)
         self.pagingDataSource = dataSource
         let pageVC = dataSource.makePageViewController(initialIndex: index)
         navigationController?.pushViewController(pageVC, animated: true)

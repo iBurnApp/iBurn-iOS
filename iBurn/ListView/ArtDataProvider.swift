@@ -33,16 +33,14 @@ class ArtDataProvider: ObjectListDataProvider {
 
     // MARK: - ObjectListDataProvider
 
-    func observeObjects(filter: ArtFilter) -> AsyncStream<[ArtObject]> {
+    func observeObjects(filter: ArtFilter) -> AsyncStream<[ListRow<ArtObject>]> {
         AsyncStream { continuation in
-            // Observe art objects from PlayaDB
-            let token = playaDB.observeArt(filter: filter) { objects in
-                continuation.yield(objects)
+            let token = playaDB.observeArt(filter: filter) { rows in
+                continuation.yield(rows)
             } onError: { error in
                 print("Art observation error: \(error)")
             }
 
-            // Cancel observation when stream terminates
             continuation.onTermination = { @Sendable _ in
                 token.cancel()
             }
@@ -51,10 +49,6 @@ class ArtDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: ArtObject) async throws {
         try await playaDB.toggleFavorite(object)
-    }
-
-    func isFavorite(_ object: ArtObject) async throws -> Bool {
-        try await playaDB.isFavorite(object)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: ArtObject) -> AttributedString? {

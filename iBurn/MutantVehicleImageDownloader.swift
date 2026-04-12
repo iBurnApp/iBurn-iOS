@@ -15,21 +15,29 @@ final class MutantVehicleImageDownloader {
         self.session = session
     }
 
-    /// Downloads images for all mutant vehicles that don't have a local cache yet.
-    func downloadUncachedImages() {
+    /// Downloads images for all mutant vehicles that don't have a valid local cache yet.
+    /// Returns a Task whose value is the set of newly downloaded UIDs.
+    @discardableResult
+    func downloadUncachedImages() -> Task<Set<String>, Never> {
         Task.detached(priority: .utility) { [playaDB, session] in
+            var newlyDownloaded: Set<String> = []
             let imageURLs: [String: URL]
             do {
                 imageURLs = try await playaDB.fetchMutantVehicleImageURLs()
             } catch {
                 DDLogError("MV image download: failed to fetch URLs: \(error)")
-                return
+                return newlyDownloaded
             }
 
             for (uid, remoteURL) in imageURLs {
                 let fileName = "\(uid).jpg"
-                if BRCMediaDownloader.localMediaURL(fileName) != nil {
-                    continue
+                // Validate existing file: must exist and be non-empty
+                if let localURL = BRCMediaDownloader.localMediaURL(fileName) {
+                    if let attrs = try? FileManager.default.attributesOfItem(atPath: localURL.path),
+                       let size = attrs[.size] as? Int, size > 0 {
+                        continue
+                    }
+                    try? FileManager.default.removeItem(at: localURL)
                 }
 
                 do {
@@ -46,11 +54,13 @@ final class MutantVehicleImageDownloader {
                     }
                     try FileManager.default.moveItem(at: tempURL, to: destURL)
                     try (destURL as NSURL).setResourceValue(true, forKey: .isExcludedFromBackupKey)
+                    newlyDownloaded.insert(uid)
                     DDLogInfo("MV image cached: \(uid)")
                 } catch {
                     DDLogError("MV image download failed for \(uid): \(error)")
                 }
             }
+            return newlyDownloaded
         }
     }
 }

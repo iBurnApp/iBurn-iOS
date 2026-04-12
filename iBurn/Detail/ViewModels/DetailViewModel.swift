@@ -120,11 +120,16 @@ class DetailViewModel: ObservableObject {
     }
 
     /// PlayaDB-backed initializer.
+    /// - Parameters:
+    ///   - preloadedMetadata: Optional pre-loaded metadata from ListRow (avoids async query on first render).
+    ///   - preloadedColors: Optional pre-loaded thumbnail colors from ListRow (avoids async extraction).
     init(
         subject: DetailSubject,
         playaDB: PlayaDB,
         locationService: LocationServiceProtocol,
         coordinator: DetailActionCoordinator,
+        preloadedMetadata: ObjectMetadata? = nil,
+        preloadedColors: ThumbnailColors? = nil,
         mediaProvider: MediaAssetProviding = BRCMediaAssetProvider(),
         audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance
     ) {
@@ -159,13 +164,31 @@ class DetailViewModel: ObservableObject {
         self.rowAssets = rowAssets
 
         self.legacyMetadata = nil
-        self.isFavorite = false
-        self.userNotes = ""
-        self.extractedImageColors = rowAssets?.colors
 
+        // Apply pre-loaded metadata immediately (avoids async flicker)
+        if let md = preloadedMetadata {
+            self.isFavorite = md.isFavorite
+            self.userNotes = md.userNotes ?? ""
+            self.firstViewed = md.firstViewed
+            self.lastViewed = md.lastViewed
+        } else {
+            self.isFavorite = false
+            self.userNotes = ""
+        }
+
+        // Apply pre-loaded colors immediately, then fall back to RowAssetsLoader cache
+        if let tc = preloadedColors {
+            self.extractedImageColors = tc.brcImageColors
+        } else {
+            self.extractedImageColors = rowAssets?.colors
+        }
+
+        // If RowAssetsLoader extracts colors later (fallback for non-preloaded case),
+        // update — but only if we don't already have colors
         rowAssets?.$colors
             .sink { [weak self] colors in
-                self?.extractedImageColors = colors
+                guard let self, self.extractedImageColors == nil else { return }
+                self.extractedImageColors = colors
             }
             .store(in: &cancellables)
 
@@ -275,6 +298,14 @@ class DetailViewModel: ObservableObject {
                 lastViewed = md.lastViewed
             } catch {
                 self.error = error
+            }
+        }
+
+        // For PlayaDB subjects without pre-loaded colors, try the DB cache.
+        // This is faster than re-extracting from the image via RowAssetsLoader.
+        if extractedImageColors == nil, let playaDB {
+            if let tc = try? await playaDB.fetchThumbnailColors(objectId: subject.thumbnailObjectID) {
+                extractedImageColors = tc.brcImageColors
             }
         }
     }

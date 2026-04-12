@@ -33,6 +33,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let subtitle: AttributedString?
     let rightSubtitle: String?
     let isFavorite: Bool
+    let thumbnailColors: ThumbnailColors?
     let onFavoriteTap: () -> Void
 
     @ViewBuilder let actions: (RowAssetsLoader) -> Actions
@@ -46,6 +47,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         subtitle: AttributedString? = nil,
         rightSubtitle: String? = nil,
         isFavorite: Bool,
+        thumbnailColors: ThumbnailColors? = nil,
         onFavoriteTap: @escaping () -> Void,
         @ViewBuilder actions: @escaping (RowAssetsLoader) -> Actions = { _ in EmptyView() }
     ) {
@@ -53,6 +55,7 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         self.subtitle = subtitle
         self.rightSubtitle = rightSubtitle
         self.isFavorite = isFavorite
+        self.thumbnailColors = thumbnailColors
         self.onFavoriteTap = onFavoriteTap
         self.actions = actions
         _assets = StateObject(wrappedValue: RowAssetsLoader(
@@ -61,7 +64,15 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     }
 
     var body: some View {
-        let colors = assets.colors.map(ImageColors.init) ?? themeColors
+        let colors: ImageColors = {
+            if Object.supportsColorTheming, let tc = thumbnailColors {
+                return tc.imageColors
+            }
+            if Object.supportsColorTheming, let extracted = assets.colors {
+                return ImageColors(extracted)
+            }
+            return themeColors
+        }()
 
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 0) {
@@ -126,18 +137,27 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         }
         .padding(.vertical, 0)
         .listRowBackground(listRowBackground)
-        .onAppear { assets.startIfNeeded() }
+        .onAppear {
+            if Object.supportsColorTheming {
+                assets.startIfNeeded()
+            }
+        }
     }
 
     private var listRowBackground: some View {
         ZStack {
             themeColors.backgroundColor
-            if let override = assets.colors {
-                Color(override.backgroundColor)
-                    .transition(.opacity)
+            if Object.supportsColorTheming {
+                if let tc = thumbnailColors {
+                    Color(tc.backgroundColor)
+                        .transition(.opacity)
+                } else if let override = assets.colors {
+                    Color(override.backgroundColor)
+                        .transition(.opacity)
+                }
             }
         }
-        .animation(.easeInOut(duration: 0.22), value: assets.colors != nil)
+        .animation(.easeInOut(duration: 0.22), value: thumbnailColors != nil || assets.colors != nil)
     }
 
     @ViewBuilder

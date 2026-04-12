@@ -61,10 +61,10 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
 
     private func showDetail(_ subject: DetailSubject) {
         let allItems = viewModel.sections.flatMap(\.items)
-        let subjects = allItems.map(\.detailSubject)
+        let pageItems = allItems.map(\.detailPageItem)
         let uid = subject.uid
-        if let index = subjects.firstIndex(where: { $0.uid == uid }) {
-            let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        if let index = allItems.firstIndex(where: { $0.detailSubject.uid == uid }) {
+            let dataSource = DetailPagingDataSource(items: pageItems, playaDB: playaDB)
             self.pagingDataSource = dataSource
             let pageVC = dataSource.makePageViewController(initialIndex: index)
             navigationController?.pushViewController(pageVC, animated: true)

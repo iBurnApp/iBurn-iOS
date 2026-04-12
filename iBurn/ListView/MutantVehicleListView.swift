@@ -18,21 +18,22 @@ struct MutantVehicleListView: View {
     var body: some View {
         ZStack {
             List {
-                ForEach(viewModel.filteredItems, id: \.uid) { mv in
+                ForEach(viewModel.filteredItems, id: \.object.uid) { row in
                     ObjectRowView(
-                        object: mv,
+                        object: row.object,
                         subtitle: nil,
-                        rightSubtitle: mv.artist,
-                        isFavorite: viewModel.isFavorite(mv),
+                        rightSubtitle: row.object.artist,
+                        isFavorite: row.isFavorite,
+                        thumbnailColors: row.thumbnailColors,
                         onFavoriteTap: {
-                            Task { await viewModel.toggleFavorite(mv) }
+                            Task { await viewModel.toggleFavorite(row) }
                         }
                     ) { _ in
                         EmptyView()
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        onSelect(mv)
+                        onSelect(row.object)
                     }
                 }
             }

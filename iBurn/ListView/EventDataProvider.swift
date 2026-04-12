@@ -23,10 +23,10 @@ class EventDataProvider: ObjectListDataProvider {
 
     // MARK: - ObjectListDataProvider
 
-    func observeObjects(filter: EventFilter) -> AsyncStream<[EventObjectOccurrence]> {
+    func observeObjects(filter: EventFilter) -> AsyncStream<[ListRow<EventObjectOccurrence>]> {
         AsyncStream { continuation in
-            let token = playaDB.observeEvents(filter: filter) { objects in
-                continuation.yield(objects)
+            let token = playaDB.observeEvents(filter: filter) { rows in
+                continuation.yield(rows)
             } onError: { error in
                 print("Event observation error: \(error)")
             }
@@ -39,10 +39,6 @@ class EventDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: EventObjectOccurrence) async throws {
         try await playaDB.toggleFavorite(object)
-    }
-
-    func isFavorite(_ object: EventObjectOccurrence) async throws -> Bool {
-        try await playaDB.isFavorite(object)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: EventObjectOccurrence) -> AttributedString? {

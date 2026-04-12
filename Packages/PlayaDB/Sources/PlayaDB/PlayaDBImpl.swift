@@ -203,6 +203,17 @@ internal class PlayaDBImpl: PlayaDB {
                 )
             """)
             
+            // Create thumbnail_colors table for cached extracted colors
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS thumbnail_colors (
+                    object_id TEXT PRIMARY KEY,
+                    bg_red REAL NOT NULL, bg_green REAL NOT NULL, bg_blue REAL NOT NULL, bg_alpha REAL NOT NULL,
+                    primary_red REAL NOT NULL, primary_green REAL NOT NULL, primary_blue REAL NOT NULL, primary_alpha REAL NOT NULL,
+                    secondary_red REAL NOT NULL, secondary_green REAL NOT NULL, secondary_blue REAL NOT NULL, secondary_alpha REAL NOT NULL,
+                    detail_red REAL NOT NULL, detail_green REAL NOT NULL, detail_blue REAL NOT NULL, detail_alpha REAL NOT NULL
+                )
+            """)
+
             // Create user_map_pins table
             try db.execute(sql: """
                 CREATE TABLE IF NOT EXISTS user_map_pins (
@@ -1070,27 +1081,54 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - Filtered Observation Helpers
 
-    private func observe<T>(
-        type: DataObjectType?,
+    /// Observe objects as fully-inflated ListRows. Fetches objects, metadata, and
+    /// thumbnail colors in a single read transaction.
+    private func observeListRows<T>(
+        type: DataObjectType,
         ids: @escaping ([T]) -> [String],
         value: @escaping @Sendable (Database) throws -> [T],
-        onChange: @escaping ([T]) -> Void,
+        onChange: @escaping ([ListRow<T>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        let observation = ValueObservation.tracking(value)
+        let typeRaw = type.rawValue
+        let observation = ValueObservation.tracking { db -> [ListRow<T>] in
+            let objects = try value(db)
+            let objectIDs = ids(objects)
+            guard !objectIDs.isEmpty else { return [] }
+
+            // Batch fetch full metadata in same transaction
+            let allMeta = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == typeRaw)
+                .filter(objectIDs.contains(ObjectMetadata.Columns.objectId))
+                .fetchAll(db)
+            let metaByID = Dictionary(uniqueKeysWithValues: allMeta.map { ($0.objectId, $0) })
+
+            // Batch fetch thumbnail colors in same transaction
+            let allColors = try ThumbnailColors
+                .filter(objectIDs.contains(ThumbnailColors.Columns.objectId))
+                .fetchAll(db)
+            let colorsByID = Dictionary(uniqueKeysWithValues: allColors.map { ($0.objectId, $0) })
+
+            return objects.map { obj in
+                let uid = ids([obj]).first ?? ""
+                return ListRow(
+                    object: obj,
+                    metadata: metaByID[uid],
+                    thumbnailColors: colorsByID[uid]
+                )
+            }
+        }
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
-            onChange: { [weak self] values in
-                if let type = type {
-                    let identifiers = ids(values)
-                    if !identifiers.isEmpty {
-                        Task {
-                            try? await self?.ensureMetadata(for: type, ids: identifiers)
-                        }
+            onChange: { [weak self] rows in
+                let identifiers = ids(rows.map(\.object))
+                if !identifiers.isEmpty {
+                    Task {
+                        try? await self?.ensureMetadata(for: type, ids: identifiers)
                     }
                 }
-                onChange(values)
+                onChange(rows)
             }
         )
         return PlayaDBObservationToken(cancellable)
@@ -1098,10 +1136,10 @@ internal class PlayaDBImpl: PlayaDB {
 
     func observeArt(
         filter: ArtFilter,
-        onChange: @escaping ([ArtObject]) -> Void,
+        onChange: @escaping ([ListRow<ArtObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observe(
+        observeListRows(
             type: .art,
             ids: { $0.map(\.uid) },
             value: { [weak self, filter] db in
@@ -1115,10 +1153,10 @@ internal class PlayaDBImpl: PlayaDB {
 
     func observeCamps(
         filter: CampFilter,
-        onChange: @escaping ([CampObject]) -> Void,
+        onChange: @escaping ([ListRow<CampObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observe(
+        observeListRows(
             type: .camp,
             ids: { $0.map(\.uid) },
             value: { [weak self, filter] db in
@@ -1132,10 +1170,10 @@ internal class PlayaDBImpl: PlayaDB {
 
     func observeEvents(
         filter: EventFilter,
-        onChange: @escaping ([EventObjectOccurrence]) -> Void,
+        onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observe(
+        observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
             value: { [weak self, filter] db in
@@ -1149,10 +1187,10 @@ internal class PlayaDBImpl: PlayaDB {
 
     func observeMutantVehicles(
         filter: MutantVehicleFilter,
-        onChange: @escaping ([MutantVehicleObject]) -> Void,
+        onChange: @escaping ([ListRow<MutantVehicleObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observe(
+        observeListRows(
             type: .mutantVehicle,
             ids: { $0.map(\.uid) },
             value: { [weak self, filter] db in
@@ -1162,6 +1200,38 @@ internal class PlayaDBImpl: PlayaDB {
             onChange: onChange,
             onError: onError
         )
+    }
+
+    // MARK: - Thumbnail Colors
+
+    func saveThumbnailColors(_ colors: ThumbnailColors) async throws {
+        try await dbQueue.write { db in
+            var colors = colors
+            try colors.save(db, onConflict: .replace)
+        }
+    }
+
+    func saveThumbnailColorsBatch(_ batch: [ThumbnailColors]) async throws {
+        try await dbQueue.write { db in
+            for var colors in batch {
+                try colors.save(db, onConflict: .replace)
+            }
+        }
+    }
+
+    func fetchThumbnailColors(objectId: String) async throws -> ThumbnailColors? {
+        try await dbQueue.read { db in
+            try ThumbnailColors
+                .filter(ThumbnailColors.Columns.objectId == objectId)
+                .fetchOne(db)
+        }
+    }
+
+    func fetchCachedColorObjectIDs() async throws -> Set<String> {
+        try await dbQueue.read { db in
+            let ids = try String.fetchAll(db, sql: "SELECT object_id FROM thumbnail_colors")
+            return Set(ids)
+        }
     }
 
     // MARK: - User Map Pins

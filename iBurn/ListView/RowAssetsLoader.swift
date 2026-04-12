@@ -27,7 +27,7 @@ final class RowAssetsLoader: ObservableObject {
         return cache
     }()
 
-    private static let colorsCache: NSCache<NSString, BRCImageColors> = {
+    static let colorsCache: NSCache<NSString, BRCImageColors> = {
         let cache = NSCache<NSString, BRCImageColors>()
         cache.countLimit = 500
         return cache

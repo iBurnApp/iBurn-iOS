@@ -7,10 +7,10 @@ import PlayaDB
 final class FavoritesViewModel: ObservableObject {
     // MARK: - Published
 
-    @Published var artItems: [ArtObject] = []
-    @Published var campItems: [CampObject] = []
-    @Published var eventItems: [EventObjectOccurrence] = []
-    @Published var mvItems: [MutantVehicleObject] = []
+    @Published var artItems: [ListRow<ArtObject>] = []
+    @Published var campItems: [ListRow<CampObject>] = []
+    @Published var eventItems: [ListRow<EventObjectOccurrence>] = []
+    @Published var mvItems: [ListRow<MutantVehicleObject>] = []
 
     @Published var selectedTypeFilter: FavoritesTypeFilter {
         didSet {
@@ -128,39 +128,39 @@ final class FavoritesViewModel: ObservableObject {
 
     // MARK: - Search Filtering
 
-    private func filteredArt(_ q: String) -> [ArtObject] {
+    private func filteredArt(_ q: String) -> [ListRow<ArtObject>] {
         guard !q.isEmpty else { return artItems }
         return artItems.filter {
-            $0.name.lowercased().contains(q) ||
-            $0.description?.lowercased().contains(q) == true ||
-            $0.artist?.lowercased().contains(q) == true
+            $0.object.name.lowercased().contains(q) ||
+            $0.object.description?.lowercased().contains(q) == true ||
+            $0.object.artist?.lowercased().contains(q) == true
         }
     }
 
-    private func filteredCamps(_ q: String) -> [CampObject] {
+    private func filteredCamps(_ q: String) -> [ListRow<CampObject>] {
         guard !q.isEmpty else { return campItems }
         return campItems.filter {
-            $0.name.lowercased().contains(q) ||
-            $0.description?.lowercased().contains(q) == true ||
-            $0.hometown?.lowercased().contains(q) == true
+            $0.object.name.lowercased().contains(q) ||
+            $0.object.description?.lowercased().contains(q) == true ||
+            $0.object.hometown?.lowercased().contains(q) == true
         }
     }
 
-    private func filteredEvents(_ q: String) -> [EventObjectOccurrence] {
+    private func filteredEvents(_ q: String) -> [ListRow<EventObjectOccurrence>] {
         guard !q.isEmpty else { return eventItems }
         return eventItems.filter {
-            $0.name.lowercased().contains(q) ||
-            $0.description?.lowercased().contains(q) == true ||
-            $0.eventTypeLabel.lowercased().contains(q) == true
+            $0.object.name.lowercased().contains(q) ||
+            $0.object.description?.lowercased().contains(q) == true ||
+            $0.object.eventTypeLabel.lowercased().contains(q) == true
         }
     }
 
-    private func filteredMVs(_ q: String) -> [MutantVehicleObject] {
+    private func filteredMVs(_ q: String) -> [ListRow<MutantVehicleObject>] {
         guard !q.isEmpty else { return mvItems }
         return mvItems.filter {
-            $0.name.lowercased().contains(q) ||
-            $0.description?.lowercased().contains(q) == true ||
-            $0.artist?.lowercased().contains(q) == true
+            $0.object.name.lowercased().contains(q) ||
+            $0.object.description?.lowercased().contains(q) == true ||
+            $0.object.artist?.lowercased().contains(q) == true
         }
     }
 
@@ -173,9 +173,9 @@ final class FavoritesViewModel: ObservableObject {
 
     func distanceAttributedString(for item: FavoriteItem) -> AttributedString? {
         switch item {
-        case .art(let o): artProvider.distanceAttributedString(from: currentLocation, to: o)
-        case .camp(let o): campProvider.distanceAttributedString(from: currentLocation, to: o)
-        case .event(let o): eventProvider.distanceAttributedString(from: currentLocation, to: o)
+        case .art(let r): artProvider.distanceAttributedString(from: currentLocation, to: r.object)
+        case .camp(let r): campProvider.distanceAttributedString(from: currentLocation, to: r.object)
+        case .event(let r): eventProvider.distanceAttributedString(from: currentLocation, to: r.object)
         case .mutantVehicle: nil
         }
     }
@@ -196,10 +196,10 @@ final class FavoritesViewModel: ObservableObject {
     func toggleFavorite(_ item: FavoriteItem) async {
         do {
             switch item {
-            case .art(let o): try await artProvider.toggleFavorite(o)
-            case .camp(let o): try await campProvider.toggleFavorite(o)
-            case .event(let o): try await eventProvider.toggleFavorite(o)
-            case .mutantVehicle(let o): try await mvProvider.toggleFavorite(o)
+            case .art(let r): try await artProvider.toggleFavorite(r.object)
+            case .camp(let r): try await campProvider.toggleFavorite(r.object)
+            case .event(let r): try await eventProvider.toggleFavorite(r.object)
+            case .mutantVehicle(let r): try await mvProvider.toggleFavorite(r.object)
             }
         } catch {
             print("Error toggling favorite for \(item.name): \(error)")
@@ -218,12 +218,12 @@ final class FavoritesViewModel: ObservableObject {
         for section in sections {
             for item in section.items {
                 switch item {
-                case .art(let o):
-                    if let a = PlayaObjectAnnotation(art: o) { annotations.append(a) }
-                case .camp(let o):
-                    if let a = PlayaObjectAnnotation(camp: o) { annotations.append(a) }
-                case .event(let o):
-                    if let a = PlayaObjectAnnotation(event: o) { annotations.append(a) }
+                case .art(let r):
+                    if let a = PlayaObjectAnnotation(art: r.object) { annotations.append(a) }
+                case .camp(let r):
+                    if let a = PlayaObjectAnnotation(camp: r.object) { annotations.append(a) }
+                case .event(let r):
+                    if let a = PlayaObjectAnnotation(event: r.object) { annotations.append(a) }
                 case .mutantVehicle:
                     break // No location
                 }
@@ -289,7 +289,7 @@ final class FavoritesViewModel: ObservableObject {
                 await MainActor.run {
                     self.eventItems = items
                     self.markReceived("event")
-                    self.resolveHosts(for: items)
+                    self.resolveHosts(for: items.map(\.object))
                 }
             }
         }

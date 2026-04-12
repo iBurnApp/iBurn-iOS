@@ -26,9 +26,11 @@ class MutantVehicleListHostingController: UIHostingController<MutantVehicleListV
     }
 
     private func showDetail(for mv: MutantVehicleObject) {
-        let subjects = viewModel.filteredItems.map { DetailSubject.mutantVehicle($0) }
-        guard let index = viewModel.filteredItems.firstIndex(where: { $0.uid == mv.uid }) else { return }
-        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        let pageItems = viewModel.filteredItems.map { row in
+            DetailPageItem(subject: .mutantVehicle(row.object), metadata: row.metadata, thumbnailColors: row.thumbnailColors)
+        }
+        guard let index = viewModel.filteredItems.firstIndex(where: { $0.object.uid == mv.uid }) else { return }
+        let dataSource = DetailPagingDataSource(items: pageItems, playaDB: playaDB)
         self.pagingDataSource = dataSource
         let pageVC = dataSource.makePageViewController(initialIndex: index)
         navigationController?.pushViewController(pageVC, animated: true)

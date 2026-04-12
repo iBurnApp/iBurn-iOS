@@ -19,16 +19,16 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
         self.rootView = FavoritesView(
             viewModel: viewModel,
             onSelectArt: { [weak self] art in
-                self?.showDetail(for: .art(art))
+                self?.showDetail(for: .art(ListRow(object: art, metadata: nil, thumbnailColors: nil)))
             },
             onSelectCamp: { [weak self] camp in
-                self?.showDetail(for: .camp(camp))
+                self?.showDetail(for: .camp(ListRow(object: camp, metadata: nil, thumbnailColors: nil)))
             },
             onSelectEvent: { [weak self] event in
-                self?.showDetail(for: .event(event))
+                self?.showDetail(for: .event(ListRow(object: event, metadata: nil, thumbnailColors: nil)))
             },
             onSelectMV: { [weak self] mv in
-                self?.showDetail(for: .mutantVehicle(mv))
+                self?.showDetail(for: .mutantVehicle(ListRow(object: mv, metadata: nil, thumbnailColors: nil)))
             },
             onShowMap: { [weak self] annotations in
                 self?.showMap(annotations: annotations)
@@ -45,9 +45,9 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
 
     private func showDetail(for item: FavoriteItem) {
         let allItems = viewModel.allFavoriteItems
-        let subjects = allItems.map { $0.detailSubject }
+        let pageItems = allItems.map { $0.detailPageItem }
         guard let index = allItems.firstIndex(where: { $0.uid == item.uid }) else { return }
-        let dataSource = DetailPagingDataSource(subjects: subjects, playaDB: playaDB)
+        let dataSource = DetailPagingDataSource(items: pageItems, playaDB: playaDB)
         self.pagingDataSource = dataSource
         let pageVC = dataSource.makePageViewController(initialIndex: index)
         navigationController?.pushViewController(pageVC, animated: true)
@@ -77,11 +77,11 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
             switch anyID {
             case .art(let id):
                 if let art = try? await playaDB.fetchArt(uid: id.value) {
-                    showDetail(for: .art(art))
+                    showDetail(for: .art(ListRow(object: art, metadata: nil, thumbnailColors: nil)))
                 }
             case .camp(let id):
                 if let camp = try? await playaDB.fetchCamp(uid: id.value) {
-                    showDetail(for: .camp(camp))
+                    showDetail(for: .camp(ListRow(object: camp, metadata: nil, thumbnailColors: nil)))
                 }
             case .event(let id):
                 if let event = try? await playaDB.fetchEvent(uid: id.value) {
@@ -90,7 +90,7 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
                 }
             case .mutantVehicle(let id):
                 if let mv = try? await playaDB.fetchMutantVehicle(uid: id.value) {
-                    showDetail(for: .mutantVehicle(mv))
+                    showDetail(for: .mutantVehicle(ListRow(object: mv, metadata: nil, thumbnailColors: nil)))
                 }
             }
         }

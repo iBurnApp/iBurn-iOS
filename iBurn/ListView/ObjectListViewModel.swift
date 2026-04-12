@@ -14,7 +14,7 @@ import PlayaDB
 final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & FavoritesFilterable>: ObservableObject {
     // MARK: - Published
 
-    @Published var items: [Object] = []
+    @Published var items: [ListRow<Object>] = []
 
     @Published var filter: Filter {
         didSet {
@@ -26,7 +26,6 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
     @Published var searchText: String = ""
     @Published var isLoading: Bool = true
     @Published var currentLocation: CLLocation?
-    @Published private(set) var favoriteIDs: Set<String> = []
 
     // MARK: - Dependencies
 
@@ -34,7 +33,6 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
     private let locationProvider: LocationProvider
     private let filterStorageKey: String
     private let effectiveFilterForObservation: (Filter) -> Filter
-    private let favoritesFilterForObservation: (Filter) -> Filter
     private let matchesSearch: (Object, String) -> Bool
     private let isDatabaseSeeded: (() async -> Bool)?
 
@@ -42,7 +40,6 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
 
     private var observationTask: Task<Void, Never>?
     private var locationTask: Task<Void, Never>?
-    private var favoritesObservationTask: Task<Void, Never>?
     private var loadingGateTask: Task<Void, Never>?
 
     // MARK: - Init
@@ -53,7 +50,7 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
         filterStorageKey: String,
         initialFilter: Filter,
         effectiveFilterForObservation: @escaping (Filter) -> Filter,
-        favoritesFilterForObservation: @escaping (Filter) -> Filter,
+        favoritesFilterForObservation: @escaping (Filter) -> Filter = { $0 },
         matchesSearch: @escaping (Object, String) -> Bool,
         isDatabaseSeeded: (() async -> Bool)? = nil
     ) where DataProvider.Object == Object, DataProvider.Filter == Filter {
@@ -61,7 +58,6 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
         self.locationProvider = locationProvider
         self.filterStorageKey = filterStorageKey
         self.effectiveFilterForObservation = effectiveFilterForObservation
-        self.favoritesFilterForObservation = favoritesFilterForObservation
         self.matchesSearch = matchesSearch
         self.isDatabaseSeeded = isDatabaseSeeded
 
@@ -69,52 +65,49 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
         self.currentLocation = locationProvider.currentLocation
 
         startObserving()
-        startObservingFavorites()
         startLocationUpdates()
     }
 
     deinit {
         observationTask?.cancel()
         locationTask?.cancel()
-        favoritesObservationTask?.cancel()
         loadingGateTask?.cancel()
     }
 
     // MARK: - Derived
 
     func isFavorite(_ object: Object) -> Bool {
-        favoriteIDs.contains(object.uid)
+        items.first(where: { $0.object.uid == object.uid })?.isFavorite ?? false
     }
 
     func distanceAttributedString(for object: Object) -> AttributedString? {
         dataProvider.distanceAttributedString(from: currentLocation, to: object)
     }
 
-    var filteredItems: [Object] {
+    var filteredItems: [ListRow<Object>] {
         guard !searchText.isEmpty else { return items }
         let q = searchText.lowercased()
-        return items.filter { matchesSearch($0, q) }
+        return items.filter { matchesSearch($0.object, q) }
     }
 
     // MARK: - Actions
 
-    func toggleFavorite(_ object: Object) async {
-        let desiredIsFavorite = !favoriteIDs.contains(object.uid)
-        if desiredIsFavorite {
-            favoriteIDs.insert(object.uid)
-        } else {
-            favoriteIDs.remove(object.uid)
+    func toggleFavorite(_ row: ListRow<Object>) async {
+        let originalRow = row
+        // Optimistic update
+        if let idx = items.firstIndex(where: { $0.object.uid == row.object.uid }) {
+            var updatedMeta = row.metadata
+            updatedMeta?.isFavorite = !row.isFavorite
+            items[idx] = ListRow(object: row.object, metadata: updatedMeta, thumbnailColors: row.thumbnailColors)
         }
         do {
-            try await dataProvider.toggleFavorite(object)
+            try await dataProvider.toggleFavorite(row.object)
         } catch {
-            // Revert optimistic UI if write fails.
-            if desiredIsFavorite {
-                favoriteIDs.remove(object.uid)
-            } else {
-                favoriteIDs.insert(object.uid)
+            // Revert on failure
+            if let idx = items.firstIndex(where: { $0.object.uid == originalRow.object.uid }) {
+                items[idx] = originalRow
             }
-            print("Error toggling favorite for \(object.name): \(error)")
+            print("Error toggling favorite for \(row.object.name): \(error)")
         }
     }
 
@@ -131,18 +124,18 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
             guard let self else { return }
 
             var didReceiveFirstEmission = false
-            for await observedItems in self.dataProvider.observeObjects(filter: filterForObservation) {
+            for await rows in self.dataProvider.observeObjects(filter: filterForObservation) {
                 didReceiveFirstEmission = true
                 await MainActor.run {
-                    self.items = observedItems
-                    if !observedItems.isEmpty {
+                    self.items = rows
+                    if !rows.isEmpty {
                         self.isLoading = false
                     }
                 }
 
-                if didReceiveFirstEmission, !observedItems.isEmpty {
+                if didReceiveFirstEmission, !rows.isEmpty {
                     loadingGateTask?.cancel()
-                } else if didReceiveFirstEmission, observedItems.isEmpty {
+                } else if didReceiveFirstEmission, rows.isEmpty {
                     startLoadingGateIfNeeded()
                 }
             }
@@ -200,24 +193,6 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
 
     private func restartObservation() {
         startObserving()
-        startObservingFavorites()
-    }
-
-    // MARK: - Favorites
-
-    private func startObservingFavorites() {
-        favoritesObservationTask?.cancel()
-        let favoritesFilter = favoritesFilterForObservation(filter)
-
-        favoritesObservationTask = Task { [weak self] in
-            guard let self else { return }
-            for await favorites in self.dataProvider.observeObjects(filter: favoritesFilter) {
-                let ids = Set(favorites.map(\.uid))
-                await MainActor.run {
-                    self.favoriteIDs = ids
-                }
-            }
-        }
     }
 
     // MARK: - Filter Persistence
