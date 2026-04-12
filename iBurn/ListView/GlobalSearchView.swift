@@ -8,14 +8,14 @@ struct GlobalSearchView: View {
 
     let onSelectArt: (ArtObject) -> Void
     let onSelectCamp: (CampObject) -> Void
-    let onSelectEvent: (EventObject) -> Void
+    let onSelectEvent: (EventObjectOccurrence) -> Void
     let onSelectMV: (MutantVehicleObject) -> Void
 
     init(
         viewModel: GlobalSearchViewModel,
         onSelectArt: @escaping (ArtObject) -> Void = { _ in },
         onSelectCamp: @escaping (CampObject) -> Void = { _ in },
-        onSelectEvent: @escaping (EventObject) -> Void = { _ in },
+        onSelectEvent: @escaping (EventObjectOccurrence) -> Void = { _ in },
         onSelectMV: @escaping (MutantVehicleObject) -> Void = { _ in }
     ) {
         self.viewModel = viewModel
@@ -97,7 +97,7 @@ struct GlobalSearchView: View {
         let isAISuggested = viewModel.aiSuggestedUIDs.contains(item.uid)
         switch item {
         case .art(let art):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: art,
                 subtitle: nil,
                 rightSubtitle: art.artist,
@@ -109,7 +109,7 @@ struct GlobalSearchView: View {
             .onTapGesture { onSelectArt(art) }
 
         case .camp(let camp):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: camp,
                 subtitle: nil,
                 rightSubtitle: camp.hometown,
@@ -121,11 +121,21 @@ struct GlobalSearchView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event):
-            eventResultRow(for: event)
-                .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
+            ObjectRowView(
+                object: event,
+                rightSubtitle: event.timeDescription(now: Date()),
+                isFavorite: false,
+                onFavoriteTap: { }
+            ) { _ in
+                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                    .font(.subheadline)
+            }
+            .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
+            .contentShape(Rectangle())
+            .onTapGesture { onSelectEvent(event) }
 
         case .mutantVehicle(let mv):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: mv,
                 subtitle: nil,
                 rightSubtitle: mv.artist,
@@ -148,33 +158,4 @@ struct GlobalSearchView: View {
         }
     }
 
-    private func eventResultRow(for event: EventObject) -> some View {
-        Button {
-            onSelectEvent(event)
-        } label: {
-            HStack(spacing: 8) {
-                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(event.name)
-                        .font(.headline)
-                        .foregroundColor(themeColors.primaryColor)
-                        .lineLimit(1)
-                    if let desc = event.description, !desc.isEmpty {
-                        Text(desc)
-                            .font(.caption)
-                            .foregroundColor(themeColors.detailColor)
-                            .lineLimit(2)
-                    }
-                }
-                Spacer(minLength: 0)
-                Text(event.eventTypeLabel)
-                    .font(.caption)
-                    .foregroundColor(themeColors.secondaryColor)
-                    .lineLimit(1)
-            }
-            .padding(.vertical, 4)
-        }
-        .buttonStyle(.plain)
-    }
 }

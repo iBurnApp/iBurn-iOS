@@ -116,21 +116,18 @@ struct EventListView: View {
     // MARK: - Row Builder
 
     private func eventRow(for event: EventObjectOccurrence) -> some View {
-        let host = viewModel.resolvedHost(for: event)
-        return EventRowView(
-            event: event,
-            hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
-            hostAddress: host?.address,
-            hostDescription: host?.description,
-            campUID: host?.thumbnailObjectID,
-            isArtHosted: host?.isArt ?? false,
-            distanceString: viewModel.distanceAttributedString(for: event),
+        return ObjectRowView(
+            object: event,
+            subtitle: viewModel.distanceAttributedString(for: event),
+            rightSubtitle: event.timeDescription(now: viewModel.now),
             isFavorite: viewModel.isFavorite(event),
-            now: viewModel.now,
             onFavoriteTap: {
                 Task { await viewModel.toggleFavorite(event) }
             }
-        )
+        ) { _ in
+            Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                .font(.subheadline)
+        }
     }
 
     // MARK: - Helpers

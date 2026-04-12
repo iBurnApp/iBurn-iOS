@@ -138,6 +138,9 @@ public protocol PlayaDB {
     /// Fetch a single event object by UID
     func fetchEvent(uid: String) async throws -> EventObject?
 
+    /// Fetch all occurrences for a specific event by its UID
+    func fetchOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence]
+
     /// Fetch event occurrences hosted by a specific camp
     func fetchEvents(hostedByCampUID: String) async throws -> [EventObjectOccurrence]
 
@@ -166,7 +169,25 @@ public protocol PlayaDB {
 
     /// Mark an object as viewed at the provided date (used for recents, etc.).
     func setLastViewed(_ date: Date, for object: any DataObject) async throws
-    
+
+    /// Fetch recently viewed objects, ordered by most recent first
+    func fetchRecentlyViewed(limit: Int) async throws -> [any DataObject]
+
+    /// Fetch recently viewed objects with their view dates, ordered by most recent first
+    func fetchRecentlyViewedWithDates(limit: Int) async throws -> [(object: any DataObject, firstViewed: Date?, lastViewed: Date)]
+
+    /// Clear the last-viewed date for a single object (removes it from recently viewed)
+    func clearLastViewed(for object: any DataObject) async throws
+
+    /// Clear all recently viewed history
+    func clearAllRecentlyViewed() async throws
+
+    /// Fetch favorited events with their occurrences (for schedule optimization)
+    func fetchFavoriteEvents() async throws -> [EventObjectOccurrence]
+
+    /// Batch fetch objects of any type by their UIDs (4 queries total, one per type)
+    func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject]
+
     // MARK: - User Map Pins
 
     /// Save (insert or update) a user map pin.
@@ -192,6 +213,10 @@ public protocol PlayaDB {
     
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
+
+    /// Observe update info changes reactively
+    @discardableResult
+    func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
     
     // MARK: - Reactive Data Access
     

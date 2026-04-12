@@ -8,18 +8,23 @@
 
 import SwiftUI
 import Combine
+import struct PlayaDB.UpdateInfo
+import PlayaDB
+import PlayaAPI
 
 final class DataUpdatesFactory {
+    @MainActor
     static func makeViewController() -> UIViewController {
-        DataUpdatesViewController()
+        let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+        return DataUpdatesViewController(playaDB: playaDB)
     }
 }
 
 private final class DataUpdatesViewController: UIHostingController<DataUpdatesView> {
     private let viewModel: DataUpdatesViewModel
-    
-    init() {
-        self.viewModel = .init()
+
+    init(playaDB: PlayaDB) {
+        self.viewModel = .init(playaDB: playaDB)
         super.init(rootView: .init(viewModel: viewModel))
     }
     
@@ -41,6 +46,13 @@ private struct DataUpdatesView: View {
                         Text("Loading...")
                         ProgressView()
                     }
+                }
+            }
+            if let status = viewModel.playaDBStatus {
+                Section {
+                    Text(status)
+                        .font(.caption)
+                        .foregroundColor(status.contains("failed") ? .red : .green)
                 }
             }
             Section {
@@ -93,7 +105,7 @@ private struct DataUpdatesView: View {
 private extension DataUpdatesView {
     @ViewBuilder
     var nerdyStats: some View {
-        Section {
+        Section(header: Text("YapDatabase")) {
             VStack(alignment: .leading) {
                 Text("update.json")
                 Text("Last checked: \(viewModel.lastUpdateCheck.flatMap { Self.dateFormatter.string(from: $0)} ?? "Never")")
@@ -113,6 +125,28 @@ private extension DataUpdatesView {
                 }
             }
         }
+        Section(header: Text("PlayaDB (GRDB)")) {
+            if viewModel.playaDBUpdateInfo.isEmpty {
+                Text("Not seeded yet")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            } else {
+                ForEach(viewModel.playaDBUpdateInfo, id: \.dataType) { info in
+                    VStack(alignment: .leading) {
+                        Text(info.dataType.capitalized)
+                        Group {
+                            Text("Count: \(info.totalCount)")
+                            Text("Status: \(info.fetchStatus)")
+                            Text("Last updated: \(Self.dateFormatter.string(from: info.lastUpdated))")
+                            Text("Fetched from server: \(info.fetchDate.flatMap { Self.dateFormatter.string(from: $0) } ?? "Never")")
+                            Text("Checked for update: \(info.lastCheckedDate.flatMap { Self.dateFormatter.string(from: $0) } ?? "Never")")
+                            Text("Loaded into app: \(info.ingestionDate.flatMap { Self.dateFormatter.string(from: $0) } ?? "Never")")
+                        }
+                        .font(.caption2)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -122,12 +156,17 @@ private final class DataUpdatesViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var showNerdyStats: Bool = false
     @Published var lastUpdateCheck: Date?
+    @Published var playaDBStatus: String?
     private var cancellables: Set<AnyCancellable> = .init()
     private var handlerDelegate: YapViewHandlerDelegateHandler?
     private let handler: YapViewHandler
     @Published var allUpdateInfo: [BRCUpdateInfo] = []
-    
-    init() {
+    @Published var playaDBUpdateInfo: [UpdateInfo] = []
+    private let playaDB: PlayaDB
+    private var updateInfoObservation: PlayaDBObservationToken?
+
+    init(playaDB: PlayaDB) {
+        self.playaDB = playaDB
         handler = YapViewHandler(viewName: BRCDatabaseManager.updateInfoViewName)
         $dataUpdatesEnabled
             .dropFirst()
@@ -143,24 +182,45 @@ private final class DataUpdatesViewModel: ObservableObject {
         })
         handler.delegate = handlerDelegate
         refreshFromDatabase()
+
+        // Observe PlayaDB update info reactively
+        updateInfoObservation = playaDB.observeUpdateInfo(
+            onChange: { [weak self] infos in
+                self?.playaDBUpdateInfo = infos
+            },
+            onError: { error in
+                print("PlayaDB UpdateInfo observation error: \(error)")
+            }
+        )
     }
 
-    
+    deinit {
+        updateInfoObservation?.cancel()
+    }
+
     func didTapReset() {
         showConfirmationAlert = true
     }
-    
+
     func didTapResetConfirmation() {
         isLoading = true
-        DispatchQueue.global().async {
-            BRCAppDelegate.shared.dataImporter.resetUpdates()
-            BRCAppDelegate.shared.preloadExistingData()
-            DispatchQueue.main.async {
-                self.isLoading = false
+        playaDBStatus = "Resetting Yap..."
+        Task {
+            // Yap reset on background queue
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                DispatchQueue.global().async {
+                    BRCAppDelegate.shared.dataImporter.resetUpdates()
+                    BRCAppDelegate.shared.preloadExistingData()
+                    continuation.resume()
+                }
             }
+            playaDBStatus = "Yap done. Re-importing PlayaDB..."
+            // PlayaDB re-import
+            await reimportPlayaDB()
+            isLoading = false
         }
     }
-    
+
     func didTapCheckForUpdates() {
         guard let updateURL = URL(string: kBRCUpdatesURLString) else {
             return
@@ -168,26 +228,58 @@ private final class DataUpdatesViewModel: ObservableObject {
         // allow forcing update check
         UserDefaults.lastUpdateCheck = nil
         self.isLoading = true
-        BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { [weak self] result in
-            NSLog("UPDATE COMPLETE: \(result)")
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                self?.refreshLastUpdateCheck()
+        playaDBStatus = "Checking for updates..."
+        Task {
+            // Yap update
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { result in
+                    NSLog("UPDATE COMPLETE: \(result)")
+                    continuation.resume()
+                }
             }
+            refreshLastUpdateCheck()
+            playaDBStatus = "Yap done. Re-importing PlayaDB..."
+            // PlayaDB re-import
+            await reimportPlayaDB()
+            isLoading = false
         }
     }
-    
+
     func onAppear() {
         dataUpdatesEnabled = !UserDefaults.areDownloadsDisabled
         refreshLastUpdateCheck()
     }
-    
+
     func refreshLastUpdateCheck() {
         lastUpdateCheck = UserDefaults.lastUpdateCheck
     }
-    
+
     func refreshFromDatabase() {
         allUpdateInfo = handler.allObjects(in: 0)
+    }
+
+    /// Re-import PlayaDB from the bundled data to keep both databases in sync.
+    /// UI updates reactively via the GRDB observation — no manual refresh needed.
+    private func reimportPlayaDB() async {
+        let dataBundle = Bundle.brc_dataBundle
+        do {
+            playaDBStatus = "Loading bundle data..."
+            let artData = try BundleDataLoader.loadArt(from: dataBundle)
+            let campData = try BundleDataLoader.loadCamps(from: dataBundle)
+            let eventData = try BundleDataLoader.loadEvents(from: dataBundle)
+            let mvData = try? BundleDataLoader.loadMutantVehicles(from: dataBundle)
+            playaDBStatus = "Importing into PlayaDB..."
+            try await playaDB.importFromData(
+                artData: artData,
+                campData: campData,
+                eventData: eventData,
+                mvData: mvData
+            )
+            playaDBStatus = "PlayaDB re-import complete"
+        } catch {
+            playaDBStatus = "PlayaDB re-import failed: \(error.localizedDescription)"
+            print("PlayaDB: Re-import failed: \(error)")
+        }
     }
 }
 
@@ -211,9 +303,4 @@ final class YapViewHandlerDelegateHandler: NSObject, YapViewHandlerDelegate {
     }
 }
 
-struct DataUpdatesView_Previews: PreviewProvider {
-    private static let viewModel = DataUpdatesViewModel()
-    static var previews: some View {
-        DataUpdatesView(viewModel: viewModel)
-    }
-}
+// Preview requires both YapDB and PlayaDB infrastructure

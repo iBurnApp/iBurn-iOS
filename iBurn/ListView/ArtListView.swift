@@ -44,7 +44,7 @@ struct ArtListView: View {
             // Main list content
             List {
                 ForEach(viewModel.filteredItems, id: \.uid) { art in
-                    MediaObjectRowView(
+                    ObjectRowView(
                         object: art,
                         subtitle: viewModel.distanceAttributedString(for: art),
                         rightSubtitle: art.artist,

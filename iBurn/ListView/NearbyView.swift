@@ -174,7 +174,7 @@ struct NearbyView: View {
     private func nearbyRow(for item: NearbyItem) -> some View {
         switch item {
         case .art(let art):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: art,
                 subtitle: viewModel.distanceString(for: item),
                 rightSubtitle: art.artist,
@@ -185,7 +185,7 @@ struct NearbyView: View {
             .onTapGesture { onSelectArt(art) }
 
         case .camp(let camp):
-            MediaObjectRowView(
+            ObjectRowView(
                 object: camp,
                 subtitle: viewModel.distanceString(for: item),
                 rightSubtitle: camp.hometown,
@@ -196,30 +196,18 @@ struct NearbyView: View {
             .onTapGesture { onSelectCamp(camp) }
 
         case .event(let event):
-            Button {
-                onSelectEvent(event)
-            } label: {
-                eventRow(for: event)
+            ObjectRowView(
+                object: event,
+                subtitle: viewModel.distanceString(for: .event(event)),
+                rightSubtitle: event.timeDescription(now: viewModel.now),
+                isFavorite: false,
+                onFavoriteTap: { Task { await viewModel.toggleFavorite(.event(event)) } }
+            ) { _ in
+                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                    .font(.subheadline)
             }
-            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .onTapGesture { onSelectEvent(event) }
         }
-    }
-
-    private func eventRow(for event: EventObjectOccurrence) -> some View {
-        let host = viewModel.resolvedHost(for: event)
-        return EventRowView(
-            event: event,
-            hostName: host?.name ?? (event.event.hasOtherLocation ? event.event.otherLocation : nil),
-            hostAddress: host?.address,
-            hostDescription: host?.description,
-            campUID: host?.thumbnailObjectID,
-            isArtHosted: host?.isArt ?? false,
-            distanceString: viewModel.distanceString(for: .event(event)),
-            isFavorite: false,
-            now: viewModel.now,
-            onFavoriteTap: {
-                Task { await viewModel.toggleFavorite(.event(event)) }
-            }
-        )
     }
 }

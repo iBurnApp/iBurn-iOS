@@ -35,6 +35,8 @@ class DetailViewModel: ObservableObject {
     @Published var legacyMetadata: BRCObjectMetadata?
     @Published var isFavorite: Bool
     @Published var userNotes: String
+    @Published var firstViewed: Date?
+    @Published var lastViewed: Date?
     @Published var extractedImageColors: BRCImageColors?
     @Published var cells: [DetailCell] = []
     @Published var isLoading = false
@@ -68,6 +70,8 @@ class DetailViewModel: ObservableObject {
     private var resolvedHostLocation: String?
     /// Resolved events from the same host
     private var resolvedHostEvents: [EventObjectOccurrence] = []
+    /// Resolved occurrences for an EventObject (used by .event detail to show schedule)
+    private var resolvedEventOccurrences: [EventObjectOccurrence] = []
     
     // MARK: - Initialization
 
@@ -216,6 +220,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: art)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -229,6 +235,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: camp)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -239,6 +247,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: event)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -249,6 +259,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: occ)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -259,6 +271,8 @@ class DetailViewModel: ObservableObject {
                 let md = try await playaDB.metadata(for: mv)
                 isFavorite = md.isFavorite
                 userNotes = md.userNotes ?? ""
+                firstViewed = md.firstViewed
+                lastViewed = md.lastViewed
             } catch {
                 self.error = error
             }
@@ -298,13 +312,27 @@ class DetailViewModel: ObservableObject {
         case .event(let event):
             guard let playaDB else { break }
             try? await playaDB.setLastViewed(Date(), for: event)
-            if let campUID = event.hostedByCamp {
-                resolvedHostName = try? await playaDB.fetchCamp(uid: campUID)?.name
+            // Resolve occurrences for schedule display
+            resolvedEventOccurrences = (try? await playaDB.fetchOccurrences(forEventUID: event.uid)) ?? []
+            // Resolve host info (mirroring eventOccurrence path)
+            if let campUID = event.hostedByCamp,
+               let camp = try? await playaDB.fetchCamp(uid: campUID) {
+                resolvedHostName = camp.name
+                resolvedHostSubject = .camp(camp)
+                resolvedHostDescription = camp.description
+                resolvedHostLocation = camp.locationString ?? camp.intersection
+                resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campUID)) ?? []
                 needsRefresh = true
-            } else if let artUID = event.locatedAtArt {
-                resolvedHostName = try? await playaDB.fetchArt(uid: artUID)?.name
+            } else if let artUID = event.locatedAtArt,
+                      let art = try? await playaDB.fetchArt(uid: artUID) {
+                resolvedHostName = art.name
+                resolvedHostSubject = .art(art)
+                resolvedHostDescription = art.description
+                resolvedHostLocation = art.locationString ?? art.timeBasedAddress
+                resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artUID)) ?? []
                 needsRefresh = true
             }
+            if !resolvedEventOccurrences.isEmpty { needsRefresh = true }
 
         case .eventOccurrence(let occ):
             guard let playaDB else { break }
@@ -931,17 +959,98 @@ class DetailViewModel: ObservableObject {
 
     private func generatePlayaEventCellTypes(_ event: EventObject) -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
+        guard let playaDB else { return cellTypes }
 
+        var hasImage = false
+
+        // Host image (camp or art thumbnail)
+        let hostUID = event.hostedByCamp ?? event.locatedAtArt
+        if let hostUID,
+           let imageURL = localThumbnailURL(objectID: hostUID),
+           let image = loadImage(from: imageURL) {
+            let aspectRatio = image.size.width / image.size.height
+            cellTypes.append(.image(image, aspectRatio: aspectRatio))
+            hasImage = true
+        }
+
+        // Map before title if no host image
+        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let annotation = eventAnnotation(for: event)
+        if canShowLocation, let annotation, !hasImage {
+            cellTypes.append(.mapAnnotation(annotation, title: "Map - \(event.name)"))
+        }
+
+        // Title
         cellTypes.append(.text(event.name, style: .title))
 
+        // Description
         if let description = event.description, !description.isEmpty {
             cellTypes.append(.text(description, style: .body))
         }
 
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        // Host relationship
+        if let hostName = resolvedHostName, let hostSubject = resolvedHostSubject {
+            let relationshipType: RelationshipType = event.isHostedByCamp
+                ? .hostedBy(hostName)
+                : .presentedBy(hostName)
+            cellTypes.append(.relationship(
+                title: hostName,
+                type: relationshipType,
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = DetailViewControllerFactory.create(with: hostSubject, playaDB: playaDB)
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // Next event by same host
+        let otherEvents = resolvedHostEvents.filter { $0.event.uid != event.uid }
+        let now = Date()
+        if let nextEvent = otherEvents.first(where: { $0.startDate > now }) {
+            let scheduleText = Self.formatEventTimeAndDuration(
+                startDate: nextEvent.startDate,
+                endDate: nextEvent.endDate
+            )
+            cellTypes.append(.nextHostEvent(
+                title: nextEvent.name,
+                scheduleText: scheduleText,
+                hostName: resolvedHostName ?? "",
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = DetailViewControllerFactory.create(with: nextEvent, playaDB: playaDB)
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // All events by host
+        if otherEvents.count > 0, let hostName = resolvedHostName {
+            cellTypes.append(.allHostEvents(
+                count: otherEvents.count,
+                hostName: hostName,
+                onTap: { [weak self] in
+                    guard let self else { return }
+                    let vc = PlayaHostedEventsViewController(
+                        events: self.resolvedHostEvents,
+                        hostName: hostName,
+                        playaDB: playaDB
+                    )
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
+            ))
+        }
+
+        // Schedule (from resolved occurrences)
+        if let bestOcc = resolvedEventOccurrences.first(where: { $0.endDate > now }) ?? resolvedEventOccurrences.first {
+            let scheduleString = formatPlayaEventSchedule(occ: bestOcc)
+            cellTypes.append(.schedule(scheduleString))
+        }
+
+        // Location
         let locationValue: String
-        if canShowLocation, let hostName = resolvedHostName {
-            locationValue = hostName
+        if canShowLocation, let hostLoc = resolvedHostLocation, !hostLoc.isEmpty {
+            locationValue = hostLoc
         } else if canShowLocation, !event.otherLocation.isEmpty {
             locationValue = event.otherLocation
         } else if canShowLocation {
@@ -951,11 +1060,37 @@ class DetailViewModel: ObservableObject {
         }
         cellTypes.append(.playaAddress(locationValue, tappable: false))
 
+        // Event type
+        cellTypes.append(.eventType(
+            emoji: EventTypeInfo.emoji(for: event.eventTypeCode),
+            label: EventTypeInfo.displayName(for: event.eventTypeCode)
+        ))
+
+        // Host description
+        if let hostDesc = resolvedHostDescription, !hostDesc.isEmpty {
+            cellTypes.append(.text(hostDesc, style: .body))
+        }
+
+        // Contact / URL
+        if let contact = event.contact, !contact.isEmpty {
+            if contact.contains("@") {
+                cellTypes.append(.email(contact, label: "Contact"))
+            }
+        }
         if let url = event.url {
             cellTypes.append(.url(url, title: "Website"))
         }
 
-        cellTypes.append(.userNotes(userNotes))
+        // Footer: map (if image), GPS, distance, travel time, notes
+        let location = effectiveLocation(for: event)
+        cellTypes.append(contentsOf: generatePlayaFooterCells(
+            annotation: annotation,
+            location: location,
+            hasImage: hasImage,
+            canShowLocation: canShowLocation,
+            mapTitle: "Map - \(event.name)"
+        ))
+
         return cellTypes
     }
 
@@ -1634,6 +1769,24 @@ class DetailViewModel: ObservableObject {
         }
     }
 
+    private func effectiveLocation(for event: EventObject) -> CLLocation? {
+        if let loc = event.location { return loc }
+        switch resolvedHostSubject {
+        case .camp(let camp): return camp.location
+        case .art(let art): return art.location
+        default: return nil
+        }
+    }
+
+    private func eventAnnotation(for event: EventObject) -> PlayaObjectAnnotation? {
+        if let annotation = PlayaObjectAnnotation(event: event) { return annotation }
+        switch resolvedHostSubject {
+        case .camp(let camp): return PlayaObjectAnnotation(camp: camp)
+        case .art(let art): return PlayaObjectAnnotation(art: art)
+        default: return nil
+        }
+    }
+
     /// Shared footer cells: map (if header image exists), GPS, distance, travel time, user notes.
     private func generatePlayaFooterCells(
         annotation: PlayaObjectAnnotation?,
@@ -1654,6 +1807,9 @@ class DetailViewModel: ObservableObject {
             cells.append(.travelTime(distance))
         }
         cells.append(.userNotes(userNotes))
+        if firstViewed != nil || lastViewed != nil {
+            cells.append(.viewHistory(firstViewed: firstViewed, lastViewed: lastViewed))
+        }
         return cells
     }
 

@@ -49,6 +49,7 @@ enum DetailCellType {
     case landmark(String)
     case eventType(emoji: String, label: String)
     case visitStatus(BRCVisitStatus)
+    case viewHistory(firstViewed: Date?, lastViewed: Date?)
 }
 
 // MARK: - Supporting Types

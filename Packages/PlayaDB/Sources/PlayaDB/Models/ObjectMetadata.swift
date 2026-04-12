@@ -13,6 +13,7 @@ public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord
         case objectType = "object_type"
         case objectId = "object_id"
         case isFavorite = "is_favorite"
+        case firstViewed = "first_viewed"
         case lastViewed = "last_viewed"
         case userNotes = "user_notes"
         case createdAt = "created_at"
@@ -29,7 +30,10 @@ public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord
     
     /// Whether this object is favorited by the user
     public var isFavorite: Bool
-    
+
+    /// When this object was first viewed by the user
+    public var firstViewed: Date?
+
     /// When this object was last viewed by the user
     public var lastViewed: Date?
     
@@ -46,6 +50,7 @@ public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord
         objectType: String,
         objectId: String,
         isFavorite: Bool = false,
+        firstViewed: Date? = nil,
         lastViewed: Date? = nil,
         userNotes: String? = nil,
         createdAt: Date = Date(),
@@ -54,6 +59,7 @@ public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord
         self.objectType = objectType
         self.objectId = objectId
         self.isFavorite = isFavorite
+        self.firstViewed = firstViewed
         self.lastViewed = lastViewed
         self.userNotes = userNotes
         self.createdAt = createdAt

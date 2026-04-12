@@ -19,7 +19,7 @@ struct MutantVehicleListView: View {
         ZStack {
             List {
                 ForEach(viewModel.filteredItems, id: \.uid) { mv in
-                    MediaObjectRowView(
+                    ObjectRowView(
                         object: mv,
                         subtitle: nil,
                         rightSubtitle: mv.artist,

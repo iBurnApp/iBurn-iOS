@@ -27,6 +27,7 @@ class GlobalSearchHostingController: UIHostingController<GlobalSearchView> {
             onSelectEvent: { [weak self] event in
                 self?.showDetail(for: .event(event))
             },
+
             onSelectMV: { [weak self] mv in
                 self?.showDetail(for: .mutantVehicle(mv))
             }
