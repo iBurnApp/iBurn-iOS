@@ -1074,7 +1074,8 @@ class DetailViewModel: ObservableObject {
                     let vc = PlayaHostedEventsViewController(
                         events: self.resolvedHostEvents,
                         hostName: hostName,
-                        playaDB: playaDB
+                        playaDB: playaDB,
+                        eventSummary: self.resolvedEventSummary
                     )
                     self.coordinator.handle(.navigateToViewController(vc))
                 }
@@ -1212,7 +1213,8 @@ class DetailViewModel: ObservableObject {
                     let vc = PlayaHostedEventsViewController(
                         events: self.resolvedHostEvents,
                         hostName: hostName,
-                        playaDB: playaDB
+                        playaDB: playaDB,
+                        eventSummary: self.resolvedEventSummary
                     )
                     self.coordinator.handle(.navigateToViewController(vc))
                 }
@@ -1932,7 +1934,8 @@ class DetailViewModel: ObservableObject {
                 let vc = PlayaHostedEventsViewController(
                     events: self.resolvedHostEvents,
                     hostName: hostName,
-                    playaDB: playaDB
+                    playaDB: playaDB,
+                    eventSummary: self.resolvedEventSummary
                 )
                 self.coordinator.handle(.navigateToViewController(vc))
             }

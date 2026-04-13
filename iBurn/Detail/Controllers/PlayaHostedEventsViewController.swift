@@ -6,11 +6,12 @@ import PlayaDB
 /// Used for the "See all N events" tap from the PlayaDB event detail screen.
 @MainActor
 class PlayaHostedEventsViewController: UIHostingController<PlayaHostedEventsView> {
-    init(events: [EventObjectOccurrence], hostName: String, playaDB: PlayaDB) {
+    init(events: [EventObjectOccurrence], hostName: String, playaDB: PlayaDB, eventSummary: String? = nil) {
         let view = PlayaHostedEventsView(
             events: events,
             hostName: hostName,
-            playaDB: playaDB
+            playaDB: playaDB,
+            eventSummary: eventSummary
         )
         super.init(rootView: view)
         self.title = "Events - \(hostName)"
@@ -25,24 +26,20 @@ struct PlayaHostedEventsView: View {
     let events: [EventObjectOccurrence]
     let hostName: String
     let playaDB: PlayaDB
+    let eventSummary: String?
     @Environment(\.themeColors) var themeColors
     @State private var favoriteIDs: Set<String> = []
     @State private var now = Date()
-    @State private var eventSummary: String?
-    @State private var isLoadingSummary = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            // AI Summary header
-            if eventSummary != nil || isLoadingSummary {
-                EventSummaryHeaderView(summary: eventSummary, isLoading: isLoadingSummary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-
-                Divider()
+        List {
+            // AI Summary as first scrollable row
+            if let eventSummary {
+                EventSummaryHeaderView(summary: eventSummary, isLoading: false)
+                    .listRowBackground(themeColors.backgroundColor)
             }
 
-            List(events, id: \.uid) { event in
+            ForEach(events, id: \.uid) { event in
                 ObjectRowView(
                     object: event,
                     rightSubtitle: event.timeDescription(now: now),
@@ -58,10 +55,9 @@ struct PlayaHostedEventsView: View {
                 .onTapGesture { pushDetail(for: event) }
                 .listRowBackground(themeColors.backgroundColor)
             }
-            .listStyle(.plain)
         }
+        .listStyle(.plain)
         .task { await loadFavorites() }
-        .task { await generateSummary() }
     }
 
     private func loadFavorites() async {
@@ -86,19 +82,6 @@ struct PlayaHostedEventsView: View {
         }
     }
 
-    private func generateSummary() async {
-        #if canImport(FoundationModels)
-        if #available(iOS 26, *) {
-            isLoadingSummary = true
-            eventSummary = await generateEventCollectionSummary(
-                events: events,
-                hostName: hostName
-            )
-            isLoadingSummary = false
-        }
-        #endif
-    }
-
     private func pushDetail(for event: EventObjectOccurrence) {
         let detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
         // Walk the responder chain to find a navigation controller
@@ -110,4 +93,3 @@ struct PlayaHostedEventsView: View {
         navController.pushViewController(detailVC, animated: true)
     }
 }
-
