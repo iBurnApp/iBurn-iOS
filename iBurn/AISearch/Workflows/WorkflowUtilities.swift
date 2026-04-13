@@ -336,15 +336,123 @@ func generateEventCollectionSummary(
     return content
 }
 
-/// LLM-generated overview. Can mention event names and camp offerings, but no timing info.
+// MARK: - Source Data Assembly
+
+/// Build a ground-truth string from event data + host description for fact-checking.
+private func buildSourceDataString(
+    events: [EventObjectOccurrence],
+    hostName: String,
+    hostDescription: String?
+) -> String {
+    var parts: [String] = []
+    if let desc = hostDescription, !desc.isEmpty {
+        parts.append("Camp description: \(desc)")
+    }
+    parts.append("Events:")
+    for event in events.prefix(20) {
+        let type = EventTypeInfo.displayName(for: event.eventTypeCode)
+        let desc = event.description.map { " - \($0)" } ?? ""
+        parts.append("  \(event.name) [\(type)]\(desc)")
+    }
+    return parts.joined(separator: "\n")
+}
+
+/// Extract first 1-2 sentences of host description as fallback summary.
+private func extractHostSummary(hostDescription: String?) -> String? {
+    guard let desc = hostDescription, !desc.isEmpty else { return nil }
+    // Split on sentence-ending punctuation, take first 2
+    var sentences: [String] = []
+    var current = ""
+    for char in desc {
+        current.append(char)
+        if ".!?".contains(char) {
+            let trimmed = current.trimmingCharacters(in: .whitespaces)
+            if !trimmed.isEmpty { sentences.append(trimmed) }
+            current = ""
+            if sentences.count >= 2 { break }
+        }
+    }
+    // If no sentence boundaries found, take first 150 chars
+    if sentences.isEmpty {
+        return String(desc.prefix(150))
+    }
+    return sentences.joined(separator: " ")
+}
+
+/// Clean up text after phrase removal: fix double spaces, dangling punctuation.
+private func cleanStrippedText(_ text: String) -> String? {
+    var result = text
+    // Remove double+ spaces
+    while result.contains("  ") {
+        result = result.replacingOccurrences(of: "  ", with: " ")
+    }
+    // Remove dangling ", and" / ", all" patterns left after stripping
+    result = result.replacingOccurrences(of: ", and ,", with: ",")
+    result = result.replacingOccurrences(of: ", ,", with: ",")
+    result = result.replacingOccurrences(of: ",,", with: ",")
+    result = result.trimmingCharacters(in: .whitespacesAndNewlines)
+    // Remove trailing comma
+    if result.hasSuffix(",") { result = String(result.dropLast()).trimmingCharacters(in: .whitespaces) }
+    // Too short after stripping = not useful
+    if result.count < 20 { return nil }
+    return result
+}
+
+// MARK: - Validation Pipeline
+
+/// Validate LLM-generated overview against source data.
+/// Uses withContextWindowRetry for context overflow and retries on guardrail errors.
+/// Returns cleaned text with unsupported claims removed, or nil on failure.
+@available(iOS 26, *)
+private func validateOverview(overview: String, sourceData: String) async -> String? {
+    do {
+        let factCheck: GenerableFactCheck = try await withContextWindowRetry(
+            initialCount: 1,  // single item, but sourceData may overflow
+            minimumCount: 1
+        ) { _ in
+            let session = LanguageModelSession(instructions: """
+                You are a fact-checker. Compare the summary against the source data below. \
+                List any specific phrases or claims in the summary that are NOT directly \
+                supported by the source data. Only flag fabricated or embellished details, \
+                not reasonable inferences from the data.
+                """)
+            return try await session.respond(
+                to: Prompt("Summary to check:\n\(overview)\n\nSource data:\n\(sourceData)"),
+                generating: GenerableFactCheck.self
+            ).content
+        }
+
+        if factCheck.unsupportedClaims.isEmpty {
+            return overview // Passed validation
+        }
+
+        // Strip flagged phrases
+        var cleaned = overview
+        for claim in factCheck.unsupportedClaims {
+            cleaned = cleaned.replacingOccurrences(of: claim, with: "")
+        }
+        return cleanStrippedText(cleaned)
+    } catch {
+        print("Validation failed, discarding unverified overview: \(error)")
+        return nil
+    }
+}
+
+// MARK: - Overview Generation (Generate → Validate → Strip)
+
+/// LLM-generated overview with two-pass validation.
+/// Each step (generation, validation) handles its own retries via
+/// withContextWindowRetry / retryWithCandidateFiltering.
 @available(iOS 26, *)
 private func generateEventOverview(
     events: [EventObjectOccurrence],
     hostName: String,
     hostDescription: String? = nil
 ) async -> String? {
+    // Pass 1: Generate (retries handled by withContextWindowRetry + retryWithCandidateFiltering)
+    let rawOverview: String?
     do {
-        return try await withContextWindowRetry(
+        rawOverview = try await withContextWindowRetry(
             initialCount: min(events.count, 20),
             minimumCount: 2
         ) { maxCount in
@@ -368,10 +476,8 @@ private func generateEventOverview(
 
                 let session = LanguageModelSession(instructions: """
                     Summarize what \(hostName) offers in 1-2 short sentences. \
-                    You can mention interesting or unique events by name and \
-                    describe what they're about. You can also mention camp \
-                    offerings from the description. Do NOT mention any times, \
-                    days, or schedules — those are shown separately.
+                    Only reference details from the provided data. Do NOT infer \
+                    or assume anything not explicitly stated. No times or schedules.
                     """)
                 return try await session.respond(
                     to: Prompt(prompt),
@@ -382,8 +488,14 @@ private func generateEventOverview(
         }
     } catch {
         print("Event overview generation failed: \(error)")
-        return nil
+        rawOverview = nil
     }
+
+    guard let rawOverview else { return nil }
+
+    // Pass 2: Validate (retries handled by withContextWindowRetry inside validateOverview)
+    let sourceData = buildSourceDataString(events: events, hostName: hostName, hostDescription: hostDescription)
+    return await validateOverview(overview: rawOverview, sourceData: sourceData)
 }
 
 // MARK: - Note Merging
