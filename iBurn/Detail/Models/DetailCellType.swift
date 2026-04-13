@@ -39,6 +39,8 @@ enum DetailCellType {
     case eventRelationship(count: Int, hostName: String, onTap: (() -> Void)?)
     case nextHostEvent(title: String, scheduleText: String, hostName: String, onTap: (() -> Void)?)
     case allHostEvents(count: Int, hostName: String, onTap: (() -> Void)?)
+    case eventSummaryLoading(hostName: String)
+    case eventSummary(String, hostName: String)
     case playaAddress(String, tappable: Bool)
     case distance(CLLocationDistance)
     case travelTime(CLLocationDistance)

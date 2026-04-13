@@ -72,6 +72,10 @@ class DetailViewModel: ObservableObject {
     private var resolvedHostEvents: [EventObjectOccurrence] = []
     /// Resolved occurrences for an EventObject (used by .event detail to show schedule)
     private var resolvedEventOccurrences: [EventObjectOccurrence] = []
+    /// AI-generated summary of hosted events (nil = not yet generated or unavailable)
+    private var resolvedEventSummary: String?
+    /// Whether AI summary generation is in progress
+    private var isGeneratingEventSummary = false
     
     // MARK: - Initialization
 
@@ -395,6 +399,11 @@ class DetailViewModel: ObservableObject {
 
         if needsRefresh {
             self.cells = generateCells()
+        }
+
+        // Phase 3: Generate AI summary of hosted events
+        if !resolvedHostEvents.isEmpty {
+            await generateEventSummaryIfNeeded()
         }
     }
     
@@ -1070,6 +1079,7 @@ class DetailViewModel: ObservableObject {
                     self.coordinator.handle(.navigateToViewController(vc))
                 }
             ))
+            cellTypes.append(contentsOf: generateEventSummaryCells(hostName: hostName))
         }
 
         // Schedule (from resolved occurrences)
@@ -1207,6 +1217,7 @@ class DetailViewModel: ObservableObject {
                     self.coordinator.handle(.navigateToViewController(vc))
                 }
             ))
+            cellTypes.append(contentsOf: generateEventSummaryCells(hostName: hostName))
         }
 
         // Schedule with color-coded time
@@ -1844,6 +1855,50 @@ class DetailViewModel: ObservableObject {
         return cells
     }
 
+    /// Returns AI summary cell (loading, result, or empty) based on current state.
+    private func generateEventSummaryCells(hostName: String) -> [DetailCellType] {
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            if let summary = resolvedEventSummary {
+                return [.eventSummary(summary, hostName: hostName)]
+            } else if isGeneratingEventSummary {
+                return [.eventSummaryLoading(hostName: hostName)]
+            }
+        }
+        #endif
+        return []
+    }
+
+    /// Kick off AI summary generation after hosted events are loaded.
+    private func generateEventSummaryIfNeeded() async {
+        #if canImport(FoundationModels)
+        guard #available(iOS 26, *) else { return }
+        guard !resolvedHostEvents.isEmpty,
+              resolvedEventSummary == nil,
+              !isGeneratingEventSummary else { return }
+
+        let hostName: String
+        switch subject {
+        case .art(let art): hostName = art.name
+        case .camp(let camp): hostName = camp.name
+        case .event, .eventOccurrence: hostName = resolvedHostName ?? "this host"
+        default: return
+        }
+
+        isGeneratingEventSummary = true
+        self.cells = generateCells()
+
+        let summary = await generateEventCollectionSummary(
+            events: resolvedHostEvents,
+            hostName: hostName
+        )
+
+        isGeneratingEventSummary = false
+        resolvedEventSummary = summary
+        self.cells = generateCells()
+        #endif
+    }
+
     /// Generate hosted event cells (next event + all events) for a camp/art detail screen.
     private func generateHostedEventCells(hostName: String) -> [DetailCellType] {
         guard let playaDB, !resolvedHostEvents.isEmpty else { return [] }
@@ -1882,6 +1937,9 @@ class DetailViewModel: ObservableObject {
                 self.coordinator.handle(.navigateToViewController(vc))
             }
         ))
+
+        // AI summary of hosted events
+        cells.append(contentsOf: generateEventSummaryCells(hostName: hostName))
 
         return cells
     }

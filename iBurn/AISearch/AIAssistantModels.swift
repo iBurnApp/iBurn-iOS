@@ -95,4 +95,11 @@ struct GenerableNearbyResponse {
     var highlights: [GenerableNearbyHighlight]
 }
 
+@available(iOS 26, *)
+@Generable
+struct GenerableEventCollectionSummary {
+    @Guide(description: "One to two sentence highlight of what this collection of events offers, like a pro tip for someone deciding whether to visit")
+    var summary: String
+}
+
 #endif

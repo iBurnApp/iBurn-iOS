@@ -28,26 +28,40 @@ struct PlayaHostedEventsView: View {
     @Environment(\.themeColors) var themeColors
     @State private var favoriteIDs: Set<String> = []
     @State private var now = Date()
+    @State private var eventSummary: String?
+    @State private var isLoadingSummary = false
 
     var body: some View {
-        List(events, id: \.uid) { event in
-            ObjectRowView(
-                object: event,
-                rightSubtitle: event.timeDescription(now: now),
-                isFavorite: favoriteIDs.contains(event.uid),
-                onFavoriteTap: {
-                    Task { await toggleFavorite(event) }
-                }
-            ) { _ in
-                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
-                    .font(.subheadline)
+        VStack(spacing: 0) {
+            // AI Summary header
+            if eventSummary != nil || isLoadingSummary {
+                EventSummaryHeaderView(summary: eventSummary, isLoading: isLoadingSummary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+
+                Divider()
             }
-            .contentShape(Rectangle())
-            .onTapGesture { pushDetail(for: event) }
-            .listRowBackground(themeColors.backgroundColor)
+
+            List(events, id: \.uid) { event in
+                ObjectRowView(
+                    object: event,
+                    rightSubtitle: event.timeDescription(now: now),
+                    isFavorite: favoriteIDs.contains(event.uid),
+                    onFavoriteTap: {
+                        Task { await toggleFavorite(event) }
+                    }
+                ) { _ in
+                    Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                        .font(.subheadline)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { pushDetail(for: event) }
+                .listRowBackground(themeColors.backgroundColor)
+            }
+            .listStyle(.plain)
         }
-        .listStyle(.plain)
         .task { await loadFavorites() }
+        .task { await generateSummary() }
     }
 
     private func loadFavorites() async {
@@ -70,6 +84,19 @@ struct PlayaHostedEventsView: View {
         } catch {
             print("Error toggling favorite: \(error)")
         }
+    }
+
+    private func generateSummary() async {
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            isLoadingSummary = true
+            eventSummary = await generateEventCollectionSummary(
+                events: events,
+                hostName: hostName
+            )
+            isLoadingSummary = false
+        }
+        #endif
     }
 
     private func pushDetail(for event: EventObjectOccurrence) {

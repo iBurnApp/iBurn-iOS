@@ -187,6 +187,54 @@ func withContextWindowRetry<R>(
     return try await attempt(minimumCount)
 }
 
+// MARK: - Event Collection Summary
+
+/// Generate an AI summary of a collection of events hosted by a camp/art.
+/// Uses retryWithCandidateFiltering + withContextWindowRetry so we still get
+/// a useful summary even when individual events trigger guardrails or exceed context.
+@available(iOS 26, *)
+func generateEventCollectionSummary(
+    events: [EventObjectOccurrence],
+    hostName: String
+) async -> String? {
+    guard !events.isEmpty else { return nil }
+
+    do {
+        return try await withContextWindowRetry(
+            initialCount: min(events.count, 20),
+            minimumCount: 2
+        ) { maxCount in
+            let slice = Array(events.prefix(maxCount))
+
+            let result: GenerableEventCollectionSummary = try await retryWithCandidateFiltering(
+                candidates: slice,
+                minimumCount: 2,
+                format: { $0.name }
+            ) { batch in
+                let text = batch.enumerated().map { idx, event in
+                    let type = EventTypeInfo.displayName(for: event.eventTypeCode)
+                    let desc = event.description.map { String($0.prefix(120)) } ?? ""
+                    return "\(idx + 1). \(event.name) [\(type)]\(desc.isEmpty ? "" : " - \(desc)")"
+                }.joined(separator: "\n")
+
+                let session = LanguageModelSession(instructions: """
+                    Highlight what \(hostName) offers based on their events. \
+                    Write 1-2 sentences max, like a pro tip for someone deciding whether to visit. \
+                    Focus on standout offerings and variety.
+                    """)
+                return try await session.respond(
+                    to: Prompt("Events hosted by \(hostName):\n\(text)"),
+                    generating: GenerableEventCollectionSummary.self
+                ).content
+            }
+            return result.summary
+        }
+    } catch {
+        print("Event summary generation failed: \(error)")
+        return nil
+    }
+}
+
 // MARK: - Note Merging
 
 /// Merge LLM-generated notes into entries by matching on lowercased name.
