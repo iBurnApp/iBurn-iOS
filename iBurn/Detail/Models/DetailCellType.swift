@@ -40,7 +40,7 @@ enum DetailCellType {
     case nextHostEvent(title: String, scheduleText: String, hostName: String, onTap: (() -> Void)?)
     case allHostEvents(count: Int, hostName: String, onTap: (() -> Void)?)
     case eventSummaryLoading(hostName: String)
-    case eventSummary(String, hostName: String)
+    case eventSummary(EventSummaryContent, hostName: String, onTipTap: ((ScheduleTip) -> Void)?)
     case playaAddress(String, tappable: Bool)
     case distance(CLLocationDistance)
     case travelTime(CLLocationDistance)
@@ -52,6 +52,23 @@ enum DetailCellType {
     case eventType(emoji: String, label: String)
     case visitStatus(BRCVisitStatus)
     case viewHistory(firstViewed: Date?, lastViewed: Date?)
+}
+
+// MARK: - Event Summary Content
+
+/// A single schedule tip built from real event occurrence data.
+struct ScheduleTip: Identifiable {
+    let id = UUID()
+    let text: String           // formatted display text
+    let eventUID: String       // base event uid (for navigation)
+    let isExpired: Bool        // all occurrences have ended
+    let earliestStart: Date    // for day-of-week sorting
+}
+
+/// AI-generated summary of a host's events, with Swift-generated schedule tips.
+struct EventSummaryContent {
+    let summary: String?       // LLM overview (may be nil if generation failed)
+    let tips: [ScheduleTip]    // Swift-generated schedule tips (always factual)
 }
 
 // MARK: - Supporting Types

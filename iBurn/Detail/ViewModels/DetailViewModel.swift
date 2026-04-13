@@ -72,10 +72,12 @@ class DetailViewModel: ObservableObject {
     private var resolvedHostEvents: [EventObjectOccurrence] = []
     /// Resolved occurrences for an EventObject (used by .event detail to show schedule)
     private var resolvedEventOccurrences: [EventObjectOccurrence] = []
-    /// AI-generated summary of hosted events (nil = not yet generated or unavailable)
-    private var resolvedEventSummary: String?
-    /// Whether AI summary generation is in progress
-    private var isGeneratingEventSummary = false
+    /// Swift-generated schedule tips (available instantly when events load)
+    private var resolvedEventTips: [ScheduleTip] = []
+    /// LLM-generated vibe overview (arrives async)
+    private var resolvedEventOverview: String?
+    /// Whether LLM overview generation is in progress
+    private var isGeneratingEventOverview = false
     
     // MARK: - Initialization
 
@@ -1075,7 +1077,7 @@ class DetailViewModel: ObservableObject {
                         events: self.resolvedHostEvents,
                         hostName: hostName,
                         playaDB: playaDB,
-                        eventSummary: self.resolvedEventSummary
+                        eventSummary: self.resolvedEventTips.isEmpty && self.resolvedEventOverview == nil ? nil : EventSummaryContent(summary: self.resolvedEventOverview, tips: self.resolvedEventTips)
                     )
                     self.coordinator.handle(.navigateToViewController(vc))
                 }
@@ -1214,7 +1216,7 @@ class DetailViewModel: ObservableObject {
                         events: self.resolvedHostEvents,
                         hostName: hostName,
                         playaDB: playaDB,
-                        eventSummary: self.resolvedEventSummary
+                        eventSummary: self.resolvedEventTips.isEmpty && self.resolvedEventOverview == nil ? nil : EventSummaryContent(summary: self.resolvedEventOverview, tips: self.resolvedEventTips)
                     )
                     self.coordinator.handle(.navigateToViewController(vc))
                 }
@@ -1857,47 +1859,88 @@ class DetailViewModel: ObservableObject {
         return cells
     }
 
-    /// Returns AI summary cell (loading, result, or empty) based on current state.
+    /// Returns AI summary cell based on current state.
+    /// Tips are always available when events are loaded. Overview arrives async.
     private func generateEventSummaryCells(hostName: String) -> [DetailCellType] {
-        #if canImport(FoundationModels)
-        if #available(iOS 26, *) {
-            if let summary = resolvedEventSummary {
-                return [.eventSummary(summary, hostName: hostName)]
-            } else if isGeneratingEventSummary {
-                return [.eventSummaryLoading(hostName: hostName)]
+        let hasTips = !resolvedEventTips.isEmpty
+        let hasOverview = resolvedEventOverview != nil
+
+        if hasTips || hasOverview {
+            let content = EventSummaryContent(
+                summary: resolvedEventOverview,
+                tips: resolvedEventTips
+            )
+            let onTipTap: ((ScheduleTip) -> Void)? = { [weak self] tip in
+                guard let self, let playaDB else { return }
+                // Find the first matching occurrence for this event
+                if let occ = self.resolvedHostEvents.first(where: { $0.event.uid == tip.eventUID }) {
+                    let vc = DetailViewControllerFactory.create(with: occ, playaDB: playaDB)
+                    self.coordinator.handle(.navigateToViewController(vc))
+                }
             }
+            return [.eventSummary(content, hostName: hostName, onTipTap: onTipTap)]
+        } else if isGeneratingEventOverview {
+            return [.eventSummaryLoading(hostName: hostName)]
         }
-        #endif
         return []
     }
 
-    /// Kick off AI summary generation after hosted events are loaded.
+    /// Compute schedule tips (sync) and kick off LLM overview (async).
     private func generateEventSummaryIfNeeded() async {
-        #if canImport(FoundationModels)
-        guard #available(iOS 26, *) else { return }
         guard !resolvedHostEvents.isEmpty,
-              resolvedEventSummary == nil,
-              !isGeneratingEventSummary else { return }
+              resolvedEventTips.isEmpty,
+              !isGeneratingEventOverview else { return }
 
         let hostName: String
+        let hostUID: String
         switch subject {
-        case .art(let art): hostName = art.name
-        case .camp(let camp): hostName = camp.name
-        case .event, .eventOccurrence: hostName = resolvedHostName ?? "this host"
+        case .art(let art): hostName = art.name; hostUID = art.uid
+        case .camp(let camp): hostName = camp.name; hostUID = camp.uid
+        case .event(let event):
+            hostName = resolvedHostName ?? "this host"
+            hostUID = event.hostedByCamp ?? event.locatedAtArt ?? event.uid
+        case .eventOccurrence(let occ):
+            hostName = resolvedHostName ?? "this host"
+            hostUID = occ.hostedByCamp ?? occ.locatedAtArt ?? occ.event.uid
         default: return
         }
 
-        isGeneratingEventSummary = true
-        self.cells = generateCells()
+        // Check cache first — show immediately without loading spinner
+        if let cached = await EventSummaryCache.shared.get(hostUID) {
+            resolvedEventTips = cached.tips
+            resolvedEventOverview = cached.summary
+            self.cells = generateCells()
+            return
+        }
 
-        let summary = await generateEventCollectionSummary(
-            events: resolvedHostEvents,
-            hostName: hostName
-        )
+        // Step 1: Compute tips instantly from real data (pure Swift)
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            resolvedEventTips = buildScheduleTips(from: resolvedHostEvents)
+        }
+        #endif
+        self.cells = generateCells()  // Show tips immediately
 
-        isGeneratingEventSummary = false
-        resolvedEventSummary = summary
-        self.cells = generateCells()
+        // Step 2: Generate LLM overview asynchronously
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            isGeneratingEventOverview = true
+
+            let content = await generateEventCollectionSummary(
+                events: resolvedHostEvents,
+                hostName: hostName,
+                hostUID: hostUID,
+                hostDescription: resolvedHostDescription
+            )
+
+            isGeneratingEventOverview = false
+            if let content {
+                resolvedEventOverview = content.summary
+                // Update tips from cache if they differ (shouldn't, but be safe)
+                if !content.tips.isEmpty { resolvedEventTips = content.tips }
+            }
+            self.cells = generateCells()
+        }
         #endif
     }
 
@@ -1935,7 +1978,7 @@ class DetailViewModel: ObservableObject {
                     events: self.resolvedHostEvents,
                     hostName: hostName,
                     playaDB: playaDB,
-                    eventSummary: self.resolvedEventSummary
+                    eventSummary: self.resolvedEventTips.isEmpty && self.resolvedEventOverview == nil ? nil : EventSummaryContent(summary: self.resolvedEventOverview, tips: self.resolvedEventTips)
                 )
                 self.coordinator.handle(.navigateToViewController(vc))
             }

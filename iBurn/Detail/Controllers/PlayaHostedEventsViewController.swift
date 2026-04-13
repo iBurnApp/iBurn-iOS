@@ -6,7 +6,7 @@ import PlayaDB
 /// Used for the "See all N events" tap from the PlayaDB event detail screen.
 @MainActor
 class PlayaHostedEventsViewController: UIHostingController<PlayaHostedEventsView> {
-    init(events: [EventObjectOccurrence], hostName: String, playaDB: PlayaDB, eventSummary: String? = nil) {
+    init(events: [EventObjectOccurrence], hostName: String, playaDB: PlayaDB, eventSummary: EventSummaryContent? = nil) {
         let view = PlayaHostedEventsView(
             events: events,
             hostName: hostName,
@@ -26,7 +26,7 @@ struct PlayaHostedEventsView: View {
     let events: [EventObjectOccurrence]
     let hostName: String
     let playaDB: PlayaDB
-    let eventSummary: String?
+    let eventSummary: EventSummaryContent?
     @Environment(\.themeColors) var themeColors
     @State private var favoriteIDs: Set<String> = []
     @State private var now = Date()
@@ -35,8 +35,13 @@ struct PlayaHostedEventsView: View {
         List {
             // AI Summary as first scrollable row
             if let eventSummary {
-                EventSummaryHeaderView(summary: eventSummary, isLoading: false)
-                    .listRowBackground(themeColors.backgroundColor)
+                EventSummaryHeaderView(content: eventSummary, isLoading: false) { tip in
+                    // Navigate to the tapped event
+                    if let occ = events.first(where: { $0.event.uid == tip.eventUID }) {
+                        pushDetail(for: occ)
+                    }
+                }
+                .listRowBackground(themeColors.backgroundColor)
             }
 
             ForEach(events, id: \.uid) { event in

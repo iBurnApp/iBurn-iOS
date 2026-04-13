@@ -215,10 +215,10 @@ struct DetailCellView: View {
             DetailAllHostEventsCell(count: count, hostName: hostName)
 
         case .eventSummaryLoading:
-            EventSummaryHeaderView(summary: nil, isLoading: true)
+            EventSummaryHeaderView(content: nil, isLoading: true)
 
-        case .eventSummary(let summary, _):
-            EventSummaryHeaderView(summary: summary, isLoading: false)
+        case .eventSummary(let content, _, let onTipTap):
+            EventSummaryHeaderView(content: content, isLoading: false, onTipTap: onTipTap)
 
         case .schedule(let attributedString):
             DetailScheduleCell(attributedString: attributedString)
@@ -277,7 +277,7 @@ struct DetailCellView: View {
             return onTap != nil
         case .playaAddress(_, let tappable):
             return tappable
-        case .text, .distance, .travelTime, .schedule, .date, .landmark, .eventType, .eventSummaryLoading, .eventSummary:
+        case .text, .distance, .travelTime, .schedule, .date, .landmark, .eventType, .eventSummaryLoading, .eventSummary(_, _, _):
             return false
         case .image:
             return true
@@ -713,13 +713,14 @@ struct DetailAllHostEventsCell: View {
 
 /// Shared view for AI event summary — used by both DetailView cells and PlayaHostedEventsView.
 struct EventSummaryHeaderView: View {
-    let summary: String?
+    let content: EventSummaryContent?
     let isLoading: Bool
+    var onTipTap: ((ScheduleTip) -> Void)?
     @Environment(\.themeColors) var themeColors
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("AI SUMMARY", systemImage: "sparkles")
+            Label("AI SLOP SUMMARY", systemImage: "sparkles")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundColor(themeColors.detailColor)
@@ -733,11 +734,39 @@ struct EventSummaryHeaderView: View {
                         .font(.caption)
                         .foregroundColor(themeColors.secondaryColor)
                 }
-            } else if let summary {
-                Text(summary)
-                    .font(.subheadline)
-                    .foregroundColor(themeColors.secondaryColor)
-                    .fixedSize(horizontal: false, vertical: true)
+            } else if let content {
+                if let summary = content.summary {
+                    Text(summary)
+                        .font(.subheadline)
+                        .foregroundColor(themeColors.secondaryColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if !content.tips.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(content.tips) { tip in
+                            let expired = tip.isExpired && !YearSettings.isEventOver
+                            if onTipTap != nil {
+                                Button {
+                                    onTipTap?(tip)
+                                } label: {
+                                    Text("• \(tip.text)")
+                                        .font(.caption)
+                                        .foregroundColor(expired ? themeColors.secondaryColor : themeColors.detailColor)
+                                        .strikethrough(expired)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            } else {
+                                Text("• \(tip.text)")
+                                    .font(.caption)
+                                    .foregroundColor(expired ? themeColors.secondaryColor : themeColors.detailColor)
+                                    .strikethrough(expired)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

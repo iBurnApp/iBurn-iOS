@@ -24,10 +24,21 @@ final class AgentOrchestrator: @unchecked Sendable {
     init(playaDB: PlayaDB, locationProvider: LocationProvider) {
         self.playaDB = playaDB
         self.locationProvider = locationProvider
+        Self.warmUpLanguageModel()
     }
 
     var isAvailable: Bool {
         SystemLanguageModel.default.isAvailable
+    }
+
+    /// Pre-warm the on-device language model with a trivial call so it's
+    /// already loaded in memory when the user opens a detail page.
+    private static func warmUpLanguageModel() {
+        guard SystemLanguageModel.default.isAvailable else { return }
+        Task.detached(priority: .background) {
+            let session = LanguageModelSession(instructions: "Reply with OK.")
+            _ = try? await session.respond(to: Prompt("ping"))
+        }
     }
 
     // MARK: - Step Execution

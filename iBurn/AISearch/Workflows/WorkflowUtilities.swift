@@ -187,18 +187,162 @@ func withContextWindowRetry<R>(
     return try await attempt(minimumCount)
 }
 
+// MARK: - Schedule Tip Generator (Pure Swift — No LLM)
+
+/// Build factual schedule tips from actual event occurrence data.
+/// Groups occurrences by event name (merges duplicate EventObjects), detects recurrence,
+/// sorts by day-of-week, marks expired events. Returns up to 5 ScheduleTips.
+func buildScheduleTips(from events: [EventObjectOccurrence]) -> [ScheduleTip] {
+    guard !events.isEmpty else { return [] }
+
+    let now = Date()
+
+    // Formatters in BRC timezone
+    var brcCalendar = Calendar(identifier: .gregorian)
+    brcCalendar.timeZone = TimeZone.burningManTimeZone
+
+    let dayFormatter = DateFormatter()
+    dayFormatter.dateFormat = "EEE"
+    dayFormatter.timeZone = TimeZone.burningManTimeZone
+
+    let timeFormatter = DateFormatter()
+    timeFormatter.dateFormat = "h:mma"
+    timeFormatter.timeZone = TimeZone.burningManTimeZone
+    timeFormatter.amSymbol = "am"
+    timeFormatter.pmSymbol = "pm"
+
+    func shortTime(_ date: Date) -> String {
+        let minute = brcCalendar.component(.minute, from: date)
+        if minute == 0 {
+            let hourFormatter = DateFormatter()
+            hourFormatter.dateFormat = "ha"
+            hourFormatter.timeZone = TimeZone.burningManTimeZone
+            hourFormatter.amSymbol = "am"
+            hourFormatter.pmSymbol = "pm"
+            return hourFormatter.string(from: date)
+        }
+        return timeFormatter.string(from: date)
+    }
+
+    // Group by event NAME to merge duplicate EventObject records
+    struct OccurrenceInfo {
+        let firstEventUID: String  // for navigation
+        let typeEmoji: String
+        let typeName: String
+        var occurrences: [(day: String, startTime: String, endTime: String, startDate: Date, endDate: Date)]
+    }
+
+    var grouped: [String: OccurrenceInfo] = [:]
+    var order: [String] = []
+
+    for event in events {
+        let key = event.name
+        if grouped[key] == nil {
+            grouped[key] = OccurrenceInfo(
+                firstEventUID: event.event.uid,
+                typeEmoji: EventTypeInfo.emoji(for: event.eventTypeCode),
+                typeName: EventTypeInfo.displayName(for: event.eventTypeCode),
+                occurrences: []
+            )
+            order.append(key)
+        }
+        let day = dayFormatter.string(from: event.startDate)
+        let start = shortTime(event.startDate)
+        let end = shortTime(event.endDate)
+        grouped[key]?.occurrences.append((day: day, startTime: start, endTime: end, startDate: event.startDate, endDate: event.endDate))
+    }
+
+    // Deduplicate identical occurrences within each group (same day + same time range)
+    for key in order {
+        guard var info = grouped[key] else { continue }
+        var seen = Set<String>()
+        info.occurrences = info.occurrences.filter { occ in
+            let fingerprint = "\(occ.day)|\(occ.startTime)|\(occ.endTime)"
+            return seen.insert(fingerprint).inserted
+        }
+        grouped[key] = info
+    }
+
+    // Sort by earliest occurrence's day-of-week (Sun=1 → Sat=7)
+    let sorted = order.sorted { a, b in
+        let startA = grouped[a]?.occurrences.first?.startDate ?? .distantFuture
+        let startB = grouped[b]?.occurrences.first?.startDate ?? .distantFuture
+        return startA < startB
+    }
+
+    // Build tips
+    var tips: [ScheduleTip] = []
+    for name in sorted.prefix(5) {
+        guard let info = grouped[name] else { continue }
+
+        let schedule: String
+        if info.occurrences.count == 1 {
+            let occ = info.occurrences[0]
+            schedule = "\(occ.day) \(occ.startTime)-\(occ.endTime)"
+        } else {
+            let timeRanges = Set(info.occurrences.map { "\($0.startTime)-\($0.endTime)" })
+            if timeRanges.count == 1, let timeRange = timeRanges.first {
+                let days = info.occurrences.map(\.day).joined(separator: "/")
+                schedule = "\(days) \(timeRange)"
+            } else {
+                let parts = info.occurrences.map { "\($0.day) \($0.startTime)-\($0.endTime)" }
+                schedule = parts.joined(separator: ", ")
+            }
+        }
+
+        let allExpired = info.occurrences.allSatisfy { $0.endDate < now }
+        let earliest = info.occurrences.map(\.startDate).min() ?? .distantFuture
+
+        tips.append(ScheduleTip(
+            text: "\(name) (\(info.typeEmoji) \(info.typeName)) — \(schedule)",
+            eventUID: info.firstEventUID,
+            isExpired: allExpired,
+            earliestStart: earliest
+        ))
+    }
+
+    return tips
+}
+
 // MARK: - Event Collection Summary
 
-/// Generate an AI summary of a collection of events hosted by a camp/art.
-/// Uses retryWithCandidateFiltering + withContextWindowRetry so we still get
-/// a useful summary even when individual events trigger guardrails or exceed context.
+/// Generate schedule tips (pure Swift) and an AI overview (LLM) for a host's events.
+/// Tips are always factual. The LLM overview may fail — tips alone are returned in that case.
 @available(iOS 26, *)
 func generateEventCollectionSummary(
     events: [EventObjectOccurrence],
-    hostName: String
-) async -> String? {
+    hostName: String,
+    hostUID: String,
+    hostDescription: String? = nil
+) async -> EventSummaryContent? {
     guard !events.isEmpty else { return nil }
 
+    // Check cache first
+    if let cached = await EventSummaryCache.shared.get(hostUID) {
+        return cached
+    }
+
+    // Step 1: Build factual tips from real data (instant, no LLM)
+    let tips = buildScheduleTips(from: events)
+
+    // Step 2: Generate overview via LLM (may fail — that's OK)
+    let overview = await generateEventOverview(events: events, hostName: hostName, hostDescription: hostDescription)
+
+    // Only return content if we have something to show
+    guard overview != nil || !tips.isEmpty else { return nil }
+
+    let content = EventSummaryContent(summary: overview, tips: tips)
+    await EventSummaryCache.shared.set(hostUID, content: content)
+    return content
+}
+
+/// LLM-generated overview. Can mention event names and camp offerings, but no timing info.
+@available(iOS 26, *)
+private func generateEventOverview(
+    events: [EventObjectOccurrence],
+    hostName: String,
+    hostDescription: String? = nil
+) async -> String? {
     do {
         return try await withContextWindowRetry(
             initialCount: min(events.count, 20),
@@ -217,20 +361,27 @@ func generateEventCollectionSummary(
                     return "\(idx + 1). \(event.name) [\(type)]\(desc.isEmpty ? "" : " - \(desc)")"
                 }.joined(separator: "\n")
 
+                var prompt = "Events hosted by \(hostName):\n\(text)"
+                if let hostDesc = hostDescription, !hostDesc.isEmpty {
+                    prompt += "\n\nCamp description: \(String(hostDesc.prefix(200)))"
+                }
+
                 let session = LanguageModelSession(instructions: """
-                    Highlight what \(hostName) offers based on their events. \
-                    Write 1-2 sentences max, like a pro tip for someone deciding whether to visit. \
-                    Focus on standout offerings and variety.
+                    Summarize what \(hostName) offers in 1-2 short sentences. \
+                    You can mention interesting or unique events by name and \
+                    describe what they're about. You can also mention camp \
+                    offerings from the description. Do NOT mention any times, \
+                    days, or schedules — those are shown separately.
                     """)
                 return try await session.respond(
-                    to: Prompt("Events hosted by \(hostName):\n\(text)"),
+                    to: Prompt(prompt),
                     generating: GenerableEventCollectionSummary.self
                 ).content
             }
             return result.summary
         }
     } catch {
-        print("Event summary generation failed: \(error)")
+        print("Event overview generation failed: \(error)")
         return nil
     }
 }
