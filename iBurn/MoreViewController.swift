@@ -340,7 +340,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     func pushTracksView() {
         let tracksVC = TracksViewController()
-        tracksVC.hidesBottomBarWhenPushed = true
         self.navigationController?.pushViewController(tracksVC, animated: true)
     }
 
@@ -389,7 +388,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             }
             let hostingVC = UIHostingController(rootView: view)
             hostingVC.title = "AI Guide"
-            hostingVC.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(hostingVC, animated: true)
         }
         #endif
@@ -413,7 +411,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
 
     func pushRecentlyViewedView() {
         let recentVC = RecentlyViewedHostingController(dependencies: BRCAppDelegate.shared.dependencies)
-        recentVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(recentVC, animated: true)
     }
 
@@ -498,7 +495,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     #if DEBUG
     func pushFeatureFlagsView() {
         let featureFlagsVC = FeatureFlagsHostingController()
-        featureFlagsVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(featureFlagsVC, animated: true)
     }
     #endif
