@@ -120,6 +120,8 @@ struct EventListView: View {
             object: row.object,
             subtitle: viewModel.distanceAttributedString(for: row.object),
             rightSubtitle: row.object.timeDescription(now: viewModel.now),
+            hostName: row.object.hostName,
+            hostAddress: BRCEmbargo.allowEmbargoedData() ? row.object.hostAddress : nil,
             isFavorite: row.isFavorite,
             thumbnailColors: row.thumbnailColors,
             onFavoriteTap: {

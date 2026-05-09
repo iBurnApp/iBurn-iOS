@@ -11,7 +11,6 @@ final class GlobalSearchViewModel: ObservableObject {
 
     @Published var sections: [SearchResultSection] = []
     @Published var isSearching: Bool = false
-    @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
 
     /// UIDs of results that came from AI semantic search (not FTS5)
     @Published var aiSuggestedUIDs: Set<String> = []
@@ -217,48 +216,4 @@ final class GlobalSearchViewModel: ObservableObject {
         return sections
     }
 
-    // MARK: - Event Host Resolution
-
-    func resolvedHost(for event: EventObjectOccurrence) -> ResolvedEventHost? {
-        resolvedHosts[event.event.uid]
-    }
-
-    func resolveHosts(for events: [EventObjectOccurrence]) {
-        let needsResolution = events.filter { resolvedHosts[$0.event.uid] == nil }
-        guard !needsResolution.isEmpty else { return }
-
-        Task { [weak self] in
-            guard let self else { return }
-            var newHosts: [String: ResolvedEventHost] = [:]
-
-            for event in needsResolution {
-                let eventUID = event.event.uid
-                if let campUID = event.event.hostedByCamp {
-                    if let camp = try? await playaDB.fetchCamp(uid: campUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: camp.name,
-                            address: camp.locationString,
-                            description: camp.description,
-                            thumbnailObjectID: campUID,
-                            isArt: false
-                        )
-                    }
-                } else if let artUID = event.event.locatedAtArt {
-                    if let art = try? await playaDB.fetchArt(uid: artUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: art.name,
-                            address: art.locationString ?? art.timeBasedAddress,
-                            description: art.description,
-                            thumbnailObjectID: artUID,
-                            isArt: true
-                        )
-                    }
-                }
-            }
-
-            await MainActor.run {
-                self.resolvedHosts.merge(newHosts) { _, new in new }
-            }
-        }
-    }
 }

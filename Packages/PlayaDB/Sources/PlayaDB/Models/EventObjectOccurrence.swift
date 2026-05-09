@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import GRDB
 
 /// Composite object that combines an EventObject with a specific EventOccurrence
 /// This provides backward compatibility with existing code that expects individual event objects with start/end dates
@@ -8,16 +9,26 @@ public struct EventObjectOccurrence: DataObject {
     
     /// The base event data
     public let event: EventObject
-    
+
     /// The specific occurrence/timing data
     public let occurrence: EventOccurrence
-    
+
+    /// Pre-resolved host object (camp or art), populated during JOIN query
+    public let host: (any PlaceDataObject)?
+
     // MARK: - Initialization
-    
-    public init(event: EventObject, occurrence: EventOccurrence) {
+
+    public init(event: EventObject, occurrence: EventOccurrence, host: (any PlaceDataObject)? = nil) {
         self.event = event
         self.occurrence = occurrence
+        self.host = host
     }
+
+    /// Host name for display in list cells
+    public var hostName: String? { host?.name }
+
+    /// Host address for display in list cells
+    public var hostAddress: String? { host?.address }
     
     // MARK: - DataObject Protocol Conformance
     
@@ -276,5 +287,21 @@ public extension EventObjectOccurrence {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
         return formatter.string(from: startDate)
+    }
+}
+
+// MARK: - GRDB Joined Row
+
+/// Decode struct for EventOccurrence JOIN EventObject LEFT JOIN CampObject LEFT JOIN ArtObject.
+/// GRDB flattens nested association scopes so all four decode at the top level.
+struct EventOccurrenceJoinedRow: Decodable, FetchableRecord {
+    var occurrence: EventOccurrence
+    var event: EventObject
+    var hostedCamp: CampObject?
+    var locatedArt: ArtObject?
+
+    func toEventObjectOccurrence() -> EventObjectOccurrence {
+        let host: (any PlaceDataObject)? = hostedCamp ?? locatedArt
+        return EventObjectOccurrence(event: event, occurrence: occurrence, host: host)
     }
 }

@@ -153,6 +153,150 @@ class EventObjectOccurrenceTests: XCTestCase {
         }
     }
     
+    // MARK: - Host Pre-loading
+
+    private func makeEvent(
+        uid: String = "host-test-event",
+        hostedByCamp: String? = nil,
+        locatedAtArt: String? = nil
+    ) -> EventObject {
+        EventObject(
+            uid: uid,
+            name: "Host Test Event",
+            year: 2025,
+            eventTypeLabel: "Workshop",
+            eventTypeCode: "workshop",
+            hostedByCamp: hostedByCamp,
+            locatedAtArt: locatedAtArt
+        )
+    }
+
+    private func makeOccurrence(eventUID: String, id: Int64 = 1) -> EventOccurrence {
+        let now = Date()
+        return EventOccurrence(
+            id: id,
+            eventId: eventUID,
+            startTime: now,
+            endTime: now.addingTimeInterval(3600)
+        )
+    }
+
+    func testEventObjectOccurrence_HostNameAndAddress_FromCampHost() throws {
+        // Given: a camp host with a locationString
+        let camp = CampObject(
+            uid: "camp-uid-1",
+            name: "Camp Foo",
+            year: 2025,
+            locationString: "7:30 & E",
+            intersection: "Esplanade & 6:00"
+        )
+        let event = makeEvent(hostedByCamp: camp.uid)
+        let occurrence = makeOccurrence(eventUID: event.uid)
+
+        // When: occurrence is constructed with the camp as host
+        let occ = EventObjectOccurrence(event: event, occurrence: occurrence, host: camp)
+
+        // Then: host name + address delegate to the camp
+        let hostName = try XCTUnwrap(occ.hostName)
+        let hostAddress = try XCTUnwrap(occ.hostAddress)
+        XCTAssertEqual(hostName, "Camp Foo")
+        XCTAssertEqual(hostAddress, "7:30 & E")
+    }
+
+    func testEventObjectOccurrence_HostNameAndAddress_FromArtHost() throws {
+        // Given: an art host with no locationString (falls back to timeBasedAddress)
+        let art = ArtObject(
+            uid: "art-uid-1",
+            name: "Big Art",
+            year: 2025,
+            locationString: nil,
+            locationHour: 9,
+            locationMinute: 30,
+            locationDistance: 1200
+        )
+        let event = makeEvent(locatedAtArt: art.uid)
+        let occurrence = makeOccurrence(eventUID: event.uid)
+
+        let occ = EventObjectOccurrence(event: event, occurrence: occurrence, host: art)
+
+        let hostName = try XCTUnwrap(occ.hostName)
+        let hostAddress = try XCTUnwrap(occ.hostAddress)
+        XCTAssertEqual(hostName, "Big Art")
+        XCTAssertEqual(hostAddress, "9:30 & 1200'")
+    }
+
+    func testEventObjectOccurrence_HostNameAndAddress_NilWhenNoHost() {
+        // Given: no host argument (default nil)
+        let event = makeEvent()
+        let occurrence = makeOccurrence(eventUID: event.uid)
+
+        let occ = EventObjectOccurrence(event: event, occurrence: occurrence)
+
+        XCTAssertNil(occ.hostName)
+        XCTAssertNil(occ.hostAddress)
+        XCTAssertNil(occ.host)
+    }
+
+    func testEventOccurrenceJoinedRow_PrefersCampOverArt() throws {
+        // Given: a joined row with both hostedCamp and locatedArt set
+        let camp = CampObject(uid: "c1", name: "Camp", year: 2025, locationString: "Camp Loc")
+        let art = ArtObject(uid: "a1", name: "Art", year: 2025, locationString: "Art Loc")
+        let event = makeEvent(uid: "ev1", hostedByCamp: camp.uid, locatedAtArt: art.uid)
+        let occurrence = makeOccurrence(eventUID: event.uid)
+
+        let row = EventOccurrenceJoinedRow(
+            occurrence: occurrence,
+            event: event,
+            hostedCamp: camp,
+            locatedArt: art
+        )
+
+        // When: convert to EventObjectOccurrence
+        let occ = row.toEventObjectOccurrence()
+
+        // Then: camp wins (hostedCamp ?? locatedArt)
+        let host = try XCTUnwrap(occ.host)
+        XCTAssertEqual(host.uid, camp.uid)
+        XCTAssertEqual(occ.hostName, "Camp")
+        XCTAssertEqual(occ.hostAddress, "Camp Loc")
+    }
+
+    func testEventOccurrenceJoinedRow_FallsBackToArt() throws {
+        let art = ArtObject(uid: "a2", name: "Art Only", year: 2025, locationString: "Deep Playa")
+        let event = makeEvent(uid: "ev2", locatedAtArt: art.uid)
+        let occurrence = makeOccurrence(eventUID: event.uid)
+
+        let row = EventOccurrenceJoinedRow(
+            occurrence: occurrence,
+            event: event,
+            hostedCamp: nil,
+            locatedArt: art
+        )
+
+        let occ = row.toEventObjectOccurrence()
+        let host = try XCTUnwrap(occ.host)
+        XCTAssertEqual(host.uid, art.uid)
+        XCTAssertEqual(occ.hostName, "Art Only")
+        XCTAssertEqual(occ.hostAddress, "Deep Playa")
+    }
+
+    func testEventOccurrenceJoinedRow_NilWhenNeither() {
+        let event = makeEvent(uid: "ev3")
+        let occurrence = makeOccurrence(eventUID: event.uid)
+
+        let row = EventOccurrenceJoinedRow(
+            occurrence: occurrence,
+            event: event,
+            hostedCamp: nil,
+            locatedArt: nil
+        )
+
+        let occ = row.toEventObjectOccurrence()
+        XCTAssertNil(occ.host)
+        XCTAssertNil(occ.hostName)
+        XCTAssertNil(occ.hostAddress)
+    }
+
     func testEventObjectOccurrenceCompatibilityMethods() {
         // Given: An event occurrence
         let now = Date()

@@ -3,15 +3,6 @@ import Dispatch
 import Foundation
 import PlayaDB
 
-/// Resolved host information for an event (camp or art installation).
-struct ResolvedEventHost {
-    let name: String
-    let address: String?
-    let description: String?
-    let thumbnailObjectID: String?
-    let isArt: Bool
-}
-
 @MainActor
 final class EventListViewModel: ObservableObject {
     // MARK: - Published
@@ -28,8 +19,6 @@ final class EventListViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var isLoading: Bool = true
     @Published var currentLocation: CLLocation?
-    /// Resolved host data for events (event UID → host info)
-    @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
 
     /// Currently selected day (drives day-scoped observation)
     @Published var selectedDay: Date {
@@ -99,19 +88,6 @@ final class EventListViewModel: ObservableObject {
 
     func distanceAttributedString(for object: EventObjectOccurrence) -> AttributedString? {
         dataProvider.distanceAttributedString(from: currentLocation, to: object)
-    }
-
-    /// Returns the resolved host for an event, or nil if no host was resolved.
-    func resolvedHost(for event: EventObjectOccurrence) -> ResolvedEventHost? {
-        resolvedHosts[event.event.uid]
-    }
-
-    /// Returns the resolved location string for an event, or nil if no location.
-    func locationString(for event: EventObjectOccurrence) -> String? {
-        if let resolved = resolvedHosts[event.event.uid] {
-            return resolved.name
-        }
-        return event.event.hasOtherLocation ? event.event.otherLocation : nil
     }
 
     var filteredItems: [ListRow<EventObjectOccurrence>] {
@@ -193,7 +169,6 @@ final class EventListViewModel: ObservableObject {
                     if !rows.isEmpty {
                         self.isLoading = false
                     }
-                    self.resolveHosts(for: rows.map(\.object))
                 }
 
                 if didReceiveFirstEmission, !rows.isEmpty {
@@ -252,53 +227,6 @@ final class EventListViewModel: ObservableObject {
 
     private func restartObservation() {
         startObserving()
-    }
-
-    // MARK: - Host Resolution
-
-    /// Resolve host camp/art data for events that reference them by UID.
-    private func resolveHosts(for events: [EventObjectOccurrence]) {
-        let needsResolution = events.filter { event in
-            let uid = event.event.uid
-            if resolvedHosts[uid] != nil { return false }
-            return event.event.isHostedByCamp || event.event.isLocatedAtArt
-        }
-        guard !needsResolution.isEmpty else { return }
-
-        Task { [weak self, dataProvider] in
-            guard let self else { return }
-            var newHosts: [String: ResolvedEventHost] = [:]
-
-            for event in needsResolution {
-                let eventUID = event.event.uid
-                if let campUID = event.event.hostedByCamp {
-                    if let camp = try? await dataProvider.playaDB.fetchCamp(uid: campUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: camp.name,
-                            address: camp.locationString,
-                            description: camp.description,
-                            thumbnailObjectID: campUID,
-                            isArt: false
-                        )
-                    }
-                } else if let artUID = event.event.locatedAtArt {
-                    if let art = try? await dataProvider.playaDB.fetchArt(uid: artUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: art.name,
-                            address: art.locationString ?? art.timeBasedAddress,
-                            description: art.description,
-                            thumbnailObjectID: artUID,
-                            isArt: true
-                        )
-                    }
-                }
-            }
-
-            guard !newHosts.isEmpty else { return }
-            await MainActor.run {
-                self.resolvedHosts.merge(newHosts) { _, new in new }
-            }
-        }
     }
 
     // MARK: - Refresh Timer

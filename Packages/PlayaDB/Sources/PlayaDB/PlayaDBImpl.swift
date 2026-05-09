@@ -994,7 +994,6 @@ internal class PlayaDBImpl: PlayaDB {
         let occurrenceRequest = eventOccurrenceRequest(filter: filter)
         let occurrences = try occurrenceRequest.fetchAll(db)
 
-        // Batch-resolve parent events
         let pairs = try eventObjectOccurrences(for: occurrences, db: db)
 
         let favoriteEventIds: Set<String>
@@ -1083,15 +1082,19 @@ internal class PlayaDBImpl: PlayaDB {
 
     /// Observe objects as fully-inflated ListRows. Fetches objects, metadata, and
     /// thumbnail colors in a single read transaction.
+    /// - Parameter regions: Explicit observation regions. When provided, only changes to these
+    ///   regions trigger re-evaluation. The fetch closure can read from any table freely.
+    ///   When nil, GRDB auto-tracks all tables accessed in the fetch closure.
     private func observeListRows<T>(
         type: DataObjectType,
         ids: @escaping ([T]) -> [String],
+        regions: [any DatabaseRegionConvertible]? = nil,
         value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([ListRow<T>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
         let typeRaw = type.rawValue
-        let observation = ValueObservation.tracking { db -> [ListRow<T>] in
+        let fetch: @Sendable (Database) throws -> [ListRow<T>] = { db in
             let objects = try value(db)
             let objectIDs = ids(objects)
             guard !objectIDs.isEmpty else { return [] }
@@ -1117,6 +1120,13 @@ internal class PlayaDBImpl: PlayaDB {
                     thumbnailColors: colorsByID[uid]
                 )
             }
+        }
+
+        let observation: ValueObservation<ValueReducers.Fetch<[ListRow<T>]>>
+        if let regions {
+            observation = ValueObservation.tracking(regions: regions, fetch: fetch)
+        } else {
+            observation = ValueObservation.tracking(fetch)
         }
         let cancellable = observation.start(
             in: dbQueue,
@@ -1173,9 +1183,13 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
+        // Explicitly scope observation to event tables only.
+        // The fetch closure also JOINs camp_objects/art_objects for host data,
+        // but changes to those tables should not trigger re-evaluation.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
+            regions: [EventOccurrence.all(), EventObject.all()],
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.eventObjectOccurrences(filter: filter, db: db)
@@ -1328,22 +1342,23 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - Event Occurrence Batch Helpers
 
-    /// Batch-fetch occurrences for a set of events in one query, returning EventObjectOccurrence pairs.
-    /// Replaces per-event `event.occurrences.fetchAll(db)` N+1 pattern.
+    /// Fetch occurrences for a set of events, batch-resolving host camp/art in the same transaction.
     private func eventObjectOccurrences(for events: [EventObject], db: Database) throws -> [EventObjectOccurrence] {
         guard !events.isEmpty else { return [] }
         let eventsByUID = Dictionary(uniqueKeysWithValues: events.map { ($0.uid, $0) })
         let occurrences = try EventOccurrence
             .filter(eventsByUID.keys.contains(Column("event_id")))
             .fetchAll(db)
+
+        let hosts = try batchResolveHosts(for: events, db: db)
+
         return occurrences.compactMap { occ in
             guard let event = eventsByUID[occ.eventId] else { return nil }
-            return EventObjectOccurrence(event: event, occurrence: occ)
+            return EventObjectOccurrence(event: event, occurrence: occ, host: hosts[event.uid])
         }
     }
 
-    /// Batch-resolve parent events for a set of occurrences in one query, returning EventObjectOccurrence pairs.
-    /// Replaces per-occurrence `occurrence.event.fetchOne(db)` N+1 pattern.
+    /// Fetch parent events + host data for a set of occurrences via batch queries.
     private func eventObjectOccurrences(for occurrences: [EventOccurrence], db: Database) throws -> [EventObjectOccurrence] {
         guard !occurrences.isEmpty else { return [] }
         let eventIDs = Set(occurrences.map(\.eventId))
@@ -1351,10 +1366,46 @@ internal class PlayaDBImpl: PlayaDB {
             .filter(eventIDs.contains(Column("uid")))
             .fetchAll(db)
         let eventsByUID = Dictionary(uniqueKeysWithValues: events.map { ($0.uid, $0) })
+
+        let hosts = try batchResolveHosts(for: events, db: db)
+
         return occurrences.compactMap { occ in
             guard let event = eventsByUID[occ.eventId] else { return nil }
-            return EventObjectOccurrence(event: event, occurrence: occ)
+            return EventObjectOccurrence(event: event, occurrence: occ, host: hosts[event.uid])
         }
+    }
+
+    /// Batch-fetch host camp/art objects for a set of events (2 queries max).
+    /// Returns a dictionary mapping event UID → PlaceDataObject.
+    private func batchResolveHosts(for events: [EventObject], db: Database) throws -> [String: any PlaceDataObject] {
+        let campUIDs = Set(events.compactMap(\.hostedByCamp))
+        let artUIDs = Set(events.compactMap(\.locatedAtArt))
+
+        var campsByUID: [String: CampObject] = [:]
+        if !campUIDs.isEmpty {
+            let camps = try CampObject
+                .filter(campUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            campsByUID = Dictionary(uniqueKeysWithValues: camps.map { ($0.uid, $0) })
+        }
+
+        var artsByUID: [String: ArtObject] = [:]
+        if !artUIDs.isEmpty {
+            let arts = try ArtObject
+                .filter(artUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            artsByUID = Dictionary(uniqueKeysWithValues: arts.map { ($0.uid, $0) })
+        }
+
+        var hosts: [String: any PlaceDataObject] = [:]
+        for event in events {
+            if let campUID = event.hostedByCamp, let camp = campsByUID[campUID] {
+                hosts[event.uid] = camp
+            } else if let artUID = event.locatedAtArt, let art = artsByUID[artUID] {
+                hosts[event.uid] = art
+            }
+        }
+        return hosts
     }
 
     func metadata(for object: any DataObject) async throws -> ObjectMetadata {
@@ -2158,11 +2209,16 @@ internal class PlayaDBImpl: PlayaDB {
             }
         )
         
-        // Observe event objects with occurrences
-        let eventObservation = ValueObservation.tracking { [self] db in
-            let events = try EventObject.fetchAll(db)
-            return try eventObjectOccurrences(for: events, db: db)
-        }
+        // Observe event objects with occurrences.
+        // Explicit regions: only re-fire on event table changes, not camp/art
+        // (the fetch closure JOINs camp/art for host data but those shouldn't trigger re-evaluation).
+        let eventObservation = ValueObservation.tracking(
+            regions: [EventObject.all(), EventOccurrence.all()],
+            fetch: { [self] db in
+                let events = try EventObject.fetchAll(db)
+                return try eventObjectOccurrences(for: events, db: db)
+            }
+        )
         let eventCancellable = eventObservation.start(
             in: dbQueue,
             onError: { error in

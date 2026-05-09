@@ -242,6 +242,12 @@ public extension ArtObject {
     }
 }
 
+// MARK: - PlaceDataObject
+
+extension ArtObject: PlaceDataObject {
+    public var address: String? { locationString ?? timeBasedAddress }
+}
+
 // MARK: - Relationships
 
 public extension ArtObject {

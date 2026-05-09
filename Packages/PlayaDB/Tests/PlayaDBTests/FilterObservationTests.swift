@@ -126,7 +126,7 @@ final class FilterObservationTests: XCTestCase {
         let token = playaDB.observeArt(
             filter: filter,
             onChange: { art in
-                if art.contains(where: { $0.uid == "art-observe" }) {
+                if art.contains(where: { $0.object.uid == "art-observe" }) {
                     expectation.fulfill()
                 }
             },
@@ -159,7 +159,7 @@ final class FilterObservationTests: XCTestCase {
         let token = playaDB.observeEvents(
             filter: filter,
             onChange: { events in
-                if events.contains(where: { $0.event.uid == "event-observe" }) {
+                if events.contains(where: { $0.object.event.uid == "event-observe" }) {
                     expectation.fulfill()
                 }
             },
@@ -198,7 +198,7 @@ final class FilterObservationTests: XCTestCase {
             onChange: { objects in
                 emissionCount += 1
                 if emissionCount >= 2 {
-                    XCTAssertEqual(objects.map(\.uid), [art.uid])
+                    XCTAssertEqual(objects.map(\.object.uid), [art.uid])
                     favoritesExpectation.fulfill()
                 } else {
                     XCTAssertTrue(objects.isEmpty, "Initial favorites emission should be empty")
@@ -229,7 +229,7 @@ final class FilterObservationTests: XCTestCase {
         let token = playaDB.observeArt(
             filter: ArtFilter(year: year, onlyWithEvents: true),
             onChange: { artObjects in
-                if artObjects.contains(where: { $0.uid == art.uid }) {
+                if artObjects.contains(where: { $0.object.uid == art.uid }) {
                     expectation.fulfill()
                 } else {
                     XCTAssertTrue(artObjects.isEmpty, "Initial emission should be empty before event insertion")

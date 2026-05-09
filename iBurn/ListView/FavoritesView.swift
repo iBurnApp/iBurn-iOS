@@ -162,6 +162,8 @@ struct FavoritesView: View {
                 object: event.object,
                 subtitle: viewModel.distanceAttributedString(for: .event(event)),
                 rightSubtitle: event.object.timeDescription(now: viewModel.now),
+                hostName: event.object.hostName,
+                hostAddress: BRCEmbargo.allowEmbargoedData() ? event.object.hostAddress : nil,
                 isFavorite: event.isFavorite,
                 thumbnailColors: item.thumbnailColors,
                 onFavoriteTap: { Task { await viewModel.toggleFavorite(.event(event)) } }

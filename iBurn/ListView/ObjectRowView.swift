@@ -32,6 +32,8 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let object: Object
     let subtitle: AttributedString?
     let rightSubtitle: String?
+    let hostName: String?
+    let hostAddress: String?
     let isFavorite: Bool
     let thumbnailColors: ThumbnailColors?
     let onFavoriteTap: () -> Void
@@ -46,6 +48,8 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         object: Object,
         subtitle: AttributedString? = nil,
         rightSubtitle: String? = nil,
+        hostName: String? = nil,
+        hostAddress: String? = nil,
         isFavorite: Bool,
         thumbnailColors: ThumbnailColors? = nil,
         onFavoriteTap: @escaping () -> Void,
@@ -54,6 +58,8 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         self.object = object
         self.subtitle = subtitle
         self.rightSubtitle = rightSubtitle
+        self.hostName = hostName
+        self.hostAddress = hostAddress
         self.isFavorite = isFavorite
         self.thumbnailColors = thumbnailColors
         self.onFavoriteTap = onFavoriteTap
@@ -85,6 +91,24 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                     Spacer(minLength: 0)
 
                     actions(assets)
+                }
+
+                if hostName != nil || hostAddress != nil {
+                    HStack(spacing: 8) {
+                        if let hostName {
+                            Text(hostName)
+                                .font(.subheadline)
+                                .foregroundColor(colors.secondaryColor)
+                                .lineLimit(1)
+                        }
+                        Spacer(minLength: 0)
+                        if let hostAddress {
+                            Text(hostAddress)
+                                .font(.subheadline)
+                                .foregroundColor(colors.detailColor)
+                                .lineLimit(1)
+                        }
+                    }
                 }
 
                 HStack(alignment: .top, spacing: 8) {

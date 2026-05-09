@@ -374,21 +374,25 @@ class DetailViewModel: ObservableObject {
         case .eventOccurrence(let occ):
             guard let playaDB else { break }
             try? await playaDB.setLastViewed(Date(), for: occ)
-            if let campUID = occ.hostedByCamp,
-               let camp = try? await playaDB.fetchCamp(uid: campUID) {
-                resolvedHostName = camp.name
-                resolvedHostSubject = .camp(camp)
-                resolvedHostDescription = camp.description
-                resolvedHostLocation = camp.locationString ?? camp.intersection
-                resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campUID)) ?? []
-                needsRefresh = true
-            } else if let artUID = occ.locatedAtArt,
-                      let art = try? await playaDB.fetchArt(uid: artUID) {
-                resolvedHostName = art.name
-                resolvedHostSubject = .art(art)
-                resolvedHostDescription = art.description
-                resolvedHostLocation = art.locationString ?? art.timeBasedAddress
-                resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artUID)) ?? []
+            // Use pre-loaded host from JOIN, fall back to fetch
+            var host: (any PlaceDataObject)? = occ.host
+            if host == nil, let campUID = occ.hostedByCamp {
+                host = try? await playaDB.fetchCamp(uid: campUID)
+            }
+            if host == nil, let artUID = occ.locatedAtArt {
+                host = try? await playaDB.fetchArt(uid: artUID)
+            }
+            if let host {
+                resolvedHostName = host.name
+                resolvedHostDescription = host.description
+                resolvedHostLocation = host.address
+                if let camp = host as? CampObject {
+                    resolvedHostSubject = .camp(camp)
+                    resolvedHostEvents = (try? await playaDB.fetchEvents(hostedByCampUID: camp.uid)) ?? []
+                } else if let art = host as? ArtObject {
+                    resolvedHostSubject = .art(art)
+                    resolvedHostEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: art.uid)) ?? []
+                }
                 needsRefresh = true
             }
 
