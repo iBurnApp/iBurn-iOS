@@ -124,7 +124,17 @@ public protocol PlayaDB {
         onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
-    
+
+    /// Observe event occurrences pre-grouped by hour-of-day. Sections are sorted
+    /// ascending by hour; rows within a section preserve the underlying ordering
+    /// from `observeEvents` (start time).
+    @discardableResult
+    func observeEventsByHour(
+        filter: EventFilter,
+        onChange: @escaping ([EventHourSection]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
+
     // MARK: - Single Object Fetch
 
     /// Fetch a single art object by UID

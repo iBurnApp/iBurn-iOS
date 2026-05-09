@@ -37,6 +37,23 @@ class EventDataProvider: ObjectListDataProvider {
         }
     }
 
+    /// Observe events grouped into hour-of-day sections at the data layer.
+    /// Use this for browse mode (sectioned list + hour quick-scroll strip);
+    /// use `observeObjects` for search mode (flat results).
+    func observeObjectsByHour(filter: EventFilter) -> AsyncStream<[EventHourSection]> {
+        AsyncStream { continuation in
+            let token = playaDB.observeEventsByHour(filter: filter) { sections in
+                continuation.yield(sections)
+            } onError: { error in
+                print("Event observation error: \(error)")
+            }
+
+            continuation.onTermination = { @Sendable _ in
+                token.cancel()
+            }
+        }
+    }
+
     func toggleFavorite(_ object: EventObjectOccurrence) async throws {
         try await playaDB.toggleFavorite(object)
     }

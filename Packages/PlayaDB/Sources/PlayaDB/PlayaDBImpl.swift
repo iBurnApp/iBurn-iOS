@@ -959,8 +959,13 @@ internal class PlayaDBImpl: PlayaDB {
         return request.orderedByName()
     }
 
-    /// Build an event occurrence query from filter options (internal - uses GRDB types)
-    internal func eventOccurrenceRequest(filter: EventFilter) -> QueryInterfaceRequest<EventOccurrence> {
+    /// Build an event occurrence query from filter options (internal - uses GRDB types).
+    /// `matchingEventUIDs` constrains occurrences to events whose UIDs match an FTS query;
+    /// pass `nil` to skip search filtering.
+    internal func eventOccurrenceRequest(
+        filter: EventFilter,
+        matchingEventUIDs: Set<String>? = nil
+    ) -> QueryInterfaceRequest<EventOccurrence> {
         var request = EventOccurrence.all()
 
         // Apply time-based filters
@@ -983,6 +988,11 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.filter(EventOccurrence.Columns.startTime < endDate)
         }
 
+        // FTS5 search constraint (UIDs pre-resolved against event_objects_fts)
+        if let uids = matchingEventUIDs {
+            request = request.filter(uids.contains(EventOccurrence.Columns.eventId))
+        }
+
         // Default ordering by start time
         return request.orderedByStartTime()
     }
@@ -991,7 +1001,25 @@ internal class PlayaDBImpl: PlayaDB {
         filter: EventFilter,
         db: Database
     ) throws -> [EventObjectOccurrence] {
-        let occurrenceRequest = eventOccurrenceRequest(filter: filter)
+        // Pre-resolve FTS5 search to event UIDs against event_objects_fts (parent table).
+        // .matching(searchText:) keys off RowDecoder.databaseTableName + "_fts", and the
+        // events FTS table indexes EventObject columns (name/description/event_type_label/
+        // print_description), not EventOccurrence — so the match must run on EventObject.
+        let matchingEventUIDs: Set<String>?
+        if let searchText = filter.searchText, !searchText.isEmpty {
+            let uids = try EventObject.all()
+                .matching(searchText: searchText)
+                .select(EventObject.Columns.uid, as: String.self)
+                .fetchAll(db)
+            matchingEventUIDs = Set(uids)
+        } else {
+            matchingEventUIDs = nil
+        }
+
+        let occurrenceRequest = eventOccurrenceRequest(
+            filter: filter,
+            matchingEventUIDs: matchingEventUIDs
+        )
         let occurrences = try occurrenceRequest.fetchAll(db)
 
         let pairs = try eventObjectOccurrences(for: occurrences, db: db)
@@ -1029,15 +1057,6 @@ internal class PlayaDBImpl: PlayaDB {
                 let minLon = region.center.longitude - region.span.longitudeDelta / 2
                 let maxLon = region.center.longitude + region.span.longitudeDelta / 2
                 if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
-                    return false
-                }
-            }
-
-            if let searchText = filter.searchText, !searchText.isEmpty {
-                let lowerSearch = searchText.lowercased()
-                let nameMatch = event.name.lowercased().contains(lowerSearch)
-                let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
-                if !nameMatch && !descMatch {
                     return false
                 }
             }
@@ -1214,6 +1233,26 @@ internal class PlayaDBImpl: PlayaDB {
             onChange: onChange,
             onError: onError
         )
+    }
+
+    func observeEventsByHour(
+        filter: EventFilter,
+        onChange: @escaping ([EventHourSection]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observeEvents(filter: filter, onChange: { rows in
+            onChange(Self.groupByHour(rows))
+        }, onError: onError)
+    }
+
+    /// Groups rows by start-time hour-of-day in the device's current calendar.
+    /// Sections are sorted ascending; rows within a section preserve input order
+    /// (which is `orderedByStartTime` from `eventOccurrenceRequest`).
+    static func groupByHour(_ rows: [ListRow<EventObjectOccurrence>]) -> [EventHourSection] {
+        let calendar = Calendar.current
+        return Dictionary(grouping: rows, by: { calendar.component(.hour, from: $0.object.startDate) })
+            .sorted { $0.key < $1.key }
+            .map { EventHourSection(hour: $0.key, rows: $0.value) }
     }
 
     // MARK: - Thumbnail Colors
