@@ -12,6 +12,28 @@ struct EventListView: View {
     private let onSelect: (EventObjectOccurrence) -> Void
     private let onShowMap: ([EventObjectOccurrence]) -> Void
 
+    private static let rowVerticalInset: CGFloat = 11
+    private static let rowLeadingInset: CGFloat = 20
+    private static let rowDefaultTrailingInset: CGFloat = 20
+    /// Fixed trailing inset for browse rows. Sized for the strip's *active* visual
+    /// footprint (digit 18 + 8 leading + 8 trailing pad + 2 gap = 36) so the table
+    /// doesn't reflow when the strip expands on scrub-active.
+    private static let browseRowTrailingInset: CGFloat = 36
+
+    private static let browseRowInsets = EdgeInsets(
+        top: rowVerticalInset,
+        leading: rowLeadingInset,
+        bottom: rowVerticalInset,
+        trailing: browseRowTrailingInset
+    )
+
+    private static let searchRowInsets = EdgeInsets(
+        top: rowVerticalInset,
+        leading: rowLeadingInset,
+        bottom: rowVerticalInset,
+        trailing: rowDefaultTrailingInset
+    )
+
     init(
         viewModel: EventListViewModel,
         onSelect: @escaping (EventObjectOccurrence) -> Void = { _ in },
@@ -40,6 +62,7 @@ struct EventListView: View {
                             ForEach(viewModel.browseSections, id: \.hour) { section in
                                 ForEach(Array(section.rows.enumerated()), id: \.element.object.uid) { idx, row in
                                     rowButton(for: row, scrollAnchorHour: idx == 0 ? section.hour : nil)
+                                        .listRowInsets(Self.browseRowInsets)
                                 }
                             }
                         case .search:
@@ -48,8 +71,10 @@ struct EventListView: View {
                                     onSelect(row.object)
                                 } label: {
                                     eventRow(for: row)
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
+                                .listRowInsets(Self.searchRowInsets)
                             }
                         }
                     }
@@ -65,7 +90,6 @@ struct EventListView: View {
                                     proxy.scrollTo(hour, anchor: .top)
                                 }
                             }
-                            .padding(.trailing, 4)
                         }
                     }
                 }
@@ -152,6 +176,7 @@ struct EventListView: View {
             onSelect(row.object)
         } label: {
             eventRow(for: row)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
 
