@@ -293,12 +293,46 @@ public extension EventObjectOccurrence {
 // MARK: - GRDB Joined Row
 
 /// Decode struct for EventOccurrence JOIN EventObject LEFT JOIN CampObject LEFT JOIN ArtObject.
-/// GRDB flattens nested association scopes so all four decode at the top level.
-struct EventOccurrenceJoinedRow: Decodable, FetchableRecord {
+/// Driving table columns decode from the top-level row; associations decode from named scopes
+/// matching the association `key:` values ("event", "hostedCamp", "locatedArt").
+struct EventOccurrenceJoinedRow: FetchableRecord {
     var occurrence: EventOccurrence
     var event: EventObject
     var hostedCamp: CampObject?
     var locatedArt: ArtObject?
+
+    init(
+        occurrence: EventOccurrence,
+        event: EventObject,
+        hostedCamp: CampObject? = nil,
+        locatedArt: ArtObject? = nil
+    ) {
+        self.occurrence = occurrence
+        self.event = event
+        self.hostedCamp = hostedCamp
+        self.locatedArt = locatedArt
+    }
+
+    init(row: Row) throws {
+        self.occurrence = try EventOccurrence(row: row)
+        guard let eventRow = row.scopes["event"] else {
+            throw DatabaseError(message: "Missing 'event' scope in joined row")
+        }
+        self.event = try EventObject(row: eventRow)
+
+        // Camp/art scopes are nested under the event scope because the associations
+        // chain off EventObject (event → camp/art), not off the driving EventOccurrence.
+        if let campRow = eventRow.scopes["hostedCamp"], campRow["uid"] != nil {
+            self.hostedCamp = try CampObject(row: campRow)
+        } else {
+            self.hostedCamp = nil
+        }
+        if let artRow = eventRow.scopes["locatedArt"], artRow["uid"] != nil {
+            self.locatedArt = try ArtObject(row: artRow)
+        } else {
+            self.locatedArt = nil
+        }
+    }
 
     func toEventObjectOccurrence() -> EventObjectOccurrence {
         let host: (any PlaceDataObject)? = hostedCamp ?? locatedArt

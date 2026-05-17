@@ -54,6 +54,23 @@ class EventDataProvider: ObjectListDataProvider {
         }
     }
 
+    /// Observe events bucketed by day then hour. Use this in browse mode with a full-festival
+    /// filter (no startDate/endDate). The view model slices `dict[selectedDay]` in memory so
+    /// day-tab taps perform zero DB work.
+    func observeObjectsByDayThenHour(filter: EventFilter) -> AsyncStream<[Date: [EventHourSection]]> {
+        AsyncStream { continuation in
+            let token = playaDB.observeEventsByDayThenHour(filter: filter) { bucket in
+                continuation.yield(bucket)
+            } onError: { error in
+                print("Event observation error: \(error)")
+            }
+
+            continuation.onTermination = { @Sendable _ in
+                token.cancel()
+            }
+        }
+    }
+
     func toggleFavorite(_ object: EventObjectOccurrence) async throws {
         try await playaDB.toggleFavorite(object)
     }

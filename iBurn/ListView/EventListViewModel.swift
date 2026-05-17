@@ -13,8 +13,11 @@ final class EventListViewModel: ObservableObject {
 
     // MARK: - Published
 
-    /// Sections for browse mode (search empty). Ordered ascending by hour.
-    @Published var browseSections: [EventHourSection] = []
+    /// Full-festival browse results, bucketed by start-of-day then hour. Built once per
+    /// filter/search change and re-emitted only when underlying data changes (favorites,
+    /// imports). Day-tab switching is a pure in-memory dictionary lookup over this map —
+    /// no observation restart, no DB hit.
+    @Published private(set) var dayBuckets: [Date: [EventHourSection]] = [:]
 
     /// Flat results for search mode (FTS). Empty when not searching.
     @Published var searchResults: [ListRow<EventObjectOccurrence>] = []
@@ -33,10 +36,9 @@ final class EventListViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     @Published var currentLocation: CLLocation?
 
-    /// Currently selected day (drives day-scoped browse observation)
-    @Published var selectedDay: Date {
-        didSet { restartObservation() }
-    }
+    /// Currently selected day. Does NOT trigger an observation restart — the browse
+    /// observation produces all days; the UI slices `dayBuckets` by this value.
+    @Published var selectedDay: Date
 
     /// Current time, updated every 60s for status indicators
     @Published var now: Date = .present
@@ -102,6 +104,13 @@ final class EventListViewModel: ObservableObject {
         dataProvider.distanceAttributedString(from: currentLocation, to: object)
     }
 
+    /// Sections for the currently selected day — pure in-memory dict lookup.
+    /// Returns `[]` for days the user hasn't generated content for.
+    var browseSections: [EventHourSection] {
+        let key = Calendar.current.startOfDay(for: selectedDay)
+        return dayBuckets[key] ?? []
+    }
+
     /// Flat list of all currently visible rows (sections flattened in browse mode).
     /// Used by the hosting controller for detail-paging order.
     var visibleRows: [ListRow<EventObjectOccurrence>] {
@@ -139,14 +148,12 @@ final class EventListViewModel: ObservableObject {
 
     // MARK: - Observation
 
-    /// Browse mode filter: user filters + day-scoped date range, no searchText.
+    /// Browse mode filter: user filters across the full festival. No day scoping (the UI
+    /// slices `dayBuckets[selectedDay]` in memory) and no searchText.
     private func browseFilter() -> EventFilter {
         var f = filter
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: selectedDay)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
-        f.startDate = startOfDay
-        f.endDate = endOfDay
+        f.startDate = nil
+        f.endDate = nil
         f.searchText = nil
         return f
     }
@@ -172,24 +179,24 @@ final class EventListViewModel: ObservableObject {
             observationTask = Task { [weak self] in
                 guard let self else { return }
                 var didReceiveFirstEmission = false
-                for await sections in self.dataProvider.observeObjectsByHour(filter: f) {
+                for await bucket in self.dataProvider.observeObjectsByDayThenHour(filter: f) {
                     didReceiveFirstEmission = true
                     await MainActor.run {
-                        self.browseSections = sections
-                        if !sections.isEmpty {
+                        self.dayBuckets = bucket
+                        if !bucket.isEmpty {
                             self.isLoading = false
                         }
                     }
-                    if didReceiveFirstEmission, !sections.isEmpty {
+                    if didReceiveFirstEmission, !bucket.isEmpty {
                         await MainActor.run { self.loadingGateTask?.cancel() }
-                    } else if didReceiveFirstEmission, sections.isEmpty {
+                    } else if didReceiveFirstEmission, bucket.isEmpty {
                         startLoadingGateIfNeeded()
                     }
                 }
             }
 
         case .search(let query):
-            browseSections = []
+            dayBuckets = [:]
             let f = searchFilter(query: query)
             observationTask = Task { [weak self] in
                 guard let self else { return }

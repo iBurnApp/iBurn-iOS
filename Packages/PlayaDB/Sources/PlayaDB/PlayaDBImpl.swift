@@ -997,6 +997,82 @@ internal class PlayaDBImpl: PlayaDB {
         return request.orderedByStartTime()
     }
 
+    /// JOIN-based variant of `eventObjectOccurrences(filter:db:)` that fetches occurrence +
+    /// parent event + host (camp or art) in a single SQL JOIN. Replaces the prior
+    /// 4-sequential-query pattern (occurrences → events IN(…) → camps IN(…) → arts IN(…)).
+    ///
+    /// Pushes favorites / year / event-type filters into SQL. Region/bbox filter remains
+    /// client-side (sparse GPS on events; no spatial index payoff).
+    internal func eventObjectOccurrencesJoined(
+        filter: EventFilter,
+        db: Database
+    ) throws -> [EventObjectOccurrence] {
+        // FTS5 pre-resolve against event_objects_fts (same pattern as the non-joined helper).
+        let matchingEventUIDs: Set<String>?
+        if let searchText = filter.searchText, !searchText.isEmpty {
+            let uids = try EventObject.all()
+                .matching(searchText: searchText)
+                .select(EventObject.Columns.uid, as: String.self)
+                .fetchAll(db)
+            matchingEventUIDs = Set(uids)
+        } else {
+            matchingEventUIDs = nil
+        }
+
+        // Base occurrence query (date/time/notExpired/search constraints applied via existing helper).
+        // `forKey("event")` overrides GRDB's default scope key (destination type name) so the
+        // joined row exposes the EventObject row under `row.scopes["event"]`, matching
+        // EventOccurrenceJoinedRow.init(row:).
+        let eventAssociation = EventOccurrence.event.forKey("event")
+        var request = eventOccurrenceRequest(
+            filter: filter,
+            matchingEventUIDs: matchingEventUIDs
+        )
+        .including(required: eventAssociation
+            .including(optional: EventObject.hostedCamp)
+            .including(optional: EventObject.locatedArt))
+
+        // Push remaining filters into SQL.
+        if filter.onlyFavorites {
+            let predicate: SQL = SQL("""
+                EXISTS (
+                    SELECT 1 FROM object_metadata
+                    WHERE object_metadata.object_type = \(DataObjectType.event.rawValue)
+                      AND object_metadata.object_id = event_occurrences.event_id
+                      AND object_metadata.is_favorite = 1
+                )
+            """)
+            request = request.filter(predicate)
+        }
+        if let year = filter.year {
+            request = request.joining(required: eventAssociation
+                .filter(EventObject.Columns.year == year))
+        }
+        if let codes = filter.eventTypeCodes, !codes.isEmpty {
+            request = request.joining(required: eventAssociation
+                .filter(codes.contains(EventObject.Columns.eventTypeCode)))
+        }
+
+        let joined = try EventOccurrenceJoinedRow.fetchAll(db, request)
+
+        // Region/bbox stays client-side.
+        let filtered: [EventOccurrenceJoinedRow]
+        if let region = filter.region {
+            let minLat = region.center.latitude - region.span.latitudeDelta / 2
+            let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+            let minLon = region.center.longitude - region.span.longitudeDelta / 2
+            let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+            filtered = joined.filter { row in
+                guard let lat = row.event.gpsLatitude, let lon = row.event.gpsLongitude else { return false }
+                return lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon
+            }
+        } else {
+            filtered = joined
+        }
+
+        return filtered.map { $0.toEventObjectOccurrence() }
+    }
+
     private func eventObjectOccurrences(
         filter: EventFilter,
         db: Database
@@ -1108,6 +1184,7 @@ internal class PlayaDBImpl: PlayaDB {
         type: DataObjectType,
         ids: @escaping ([T]) -> [String],
         regions: [any DatabaseRegionConvertible]? = nil,
+        skipEnsureMetadata: Bool = false,
         value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([ListRow<T>]) -> Void,
         onError: @escaping (Error) -> Void
@@ -1151,10 +1228,12 @@ internal class PlayaDBImpl: PlayaDB {
             in: dbQueue,
             onError: onError,
             onChange: { [weak self] rows in
-                let identifiers = ids(rows.map(\.object))
-                if !identifiers.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: type, ids: identifiers)
+                if !skipEnsureMetadata {
+                    let identifiers = ids(rows.map(\.object))
+                    if !identifiers.isEmpty {
+                        Task {
+                            try? await self?.ensureMetadata(for: type, ids: identifiers)
+                        }
                     }
                 }
                 onChange(rows)
@@ -1245,6 +1324,40 @@ internal class PlayaDBImpl: PlayaDB {
         }, onError: onError)
     }
 
+    func observeEventsByDayThenHour(
+        filter: EventFilter,
+        onChange: @escaping ([Date: [EventHourSection]]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        // Tracked regions: event tables drive bucket membership/order; ObjectMetadata is needed
+        // so favorite toggles refresh the heart UI; ThumbnailColors so cached-color writes refresh
+        // the row chrome. Camp/art tables are intentionally excluded — host edits don't reshuffle
+        // the event list.
+        // skipEnsureMetadata: avoids a startup feedback loop where the first emission
+        // would write 8000+ blank metadata rows, which the ObjectMetadata region would
+        // immediately observe and re-fire the JOIN. Fetch already tolerates nil metadata
+        // via `metaByID[uid]` so blank pre-population is unnecessary.
+        observeListRows(
+            type: .event,
+            ids: { $0.map { $0.event.uid } },
+            regions: [
+                EventOccurrence.all(),
+                EventObject.all(),
+                ObjectMetadata.all(),
+                ThumbnailColors.all()
+            ],
+            skipEnsureMetadata: true,
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.eventObjectOccurrencesJoined(filter: filter, db: db)
+            },
+            onChange: { rows in
+                onChange(Self.bucketByDayThenHour(rows))
+            },
+            onError: onError
+        )
+    }
+
     /// Groups rows by start-time hour-of-day in the device's current calendar.
     /// Sections are sorted ascending; rows within a section preserve input order
     /// (which is `orderedByStartTime` from `eventOccurrenceRequest`).
@@ -1253,6 +1366,75 @@ internal class PlayaDBImpl: PlayaDB {
         return Dictionary(grouping: rows, by: { calendar.component(.hour, from: $0.object.startDate) })
             .sorted { $0.key < $1.key }
             .map { EventHourSection(hour: $0.key, rows: $0.value) }
+    }
+
+    /// Single-pass split of rows pre-sorted by start time into `[Date(startOfDay): [hour sections]]`.
+    /// Day-tab UI then reads `bucket[selectedDay]` with no DB hit.
+    ///
+    /// Calendar boundaries are cached across consecutive rows: since input is sorted by
+    /// start_time, most rows fall into the same hour as their predecessor, so we only
+    /// call `Calendar.startOfDay`/`component` when the row crosses a boundary. Avoids
+    /// ~16k Calendar method calls for a 8k-row dataset (devices show 50–100x latency
+    /// without this — Calendar isn't free under thermal load).
+    static func bucketByDayThenHour(_ rows: [ListRow<EventObjectOccurrence>]) -> [Date: [EventHourSection]] {
+        let calendar = Calendar.current
+        var result: [Date: [EventHourSection]] = [:]
+        var currentDay: Date?
+        var currentDayEnd: Date?       // exclusive upper bound (day + 1d) for cheap "same day?" check
+        var currentHour: Int?
+        var currentHourStart: Date?    // start instant of current hour
+        var currentHourEnd: Date?      // start instant of next hour
+        var currentRows: [ListRow<EventObjectOccurrence>] = []
+        var currentDaySections: [EventHourSection] = []
+
+        func flushHour() {
+            guard let h = currentHour, !currentRows.isEmpty else { return }
+            currentDaySections.append(EventHourSection(hour: h, rows: currentRows))
+            currentRows = []
+        }
+        func flushDay() {
+            flushHour()
+            if let d = currentDay, !currentDaySections.isEmpty {
+                result[d] = currentDaySections
+            }
+            currentDaySections = []
+        }
+
+        for row in rows {
+            let start = row.object.startDate
+
+            // Day boundary check via cached interval (no Calendar call if same day as previous row).
+            if let dayEnd = currentDayEnd, start < dayEnd, let day = currentDay, start >= day {
+                // Same day — fall through to hour check.
+            } else {
+                flushDay()
+                let day = calendar.startOfDay(for: start)
+                currentDay = day
+                currentDayEnd = calendar.date(byAdding: .day, value: 1, to: day) ?? day
+                currentHour = nil
+                currentHourStart = nil
+                currentHourEnd = nil
+            }
+
+            // Hour boundary check via cached interval (no Calendar call if same hour).
+            if let hourEnd = currentHourEnd, start < hourEnd, let hourStart = currentHourStart, start >= hourStart {
+                // Same hour — append below.
+            } else {
+                flushHour()
+                let hour = calendar.component(.hour, from: start)
+                currentHour = hour
+                if let day = currentDay {
+                    currentHourStart = calendar.date(byAdding: .hour, value: hour, to: day)
+                    currentHourEnd = currentHourStart.flatMap {
+                        calendar.date(byAdding: .hour, value: 1, to: $0)
+                    }
+                }
+            }
+
+            currentRows.append(row)
+        }
+        flushDay()
+        return result
     }
 
     // MARK: - Thumbnail Colors

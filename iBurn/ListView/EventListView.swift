@@ -56,29 +56,37 @@ struct EventListView: View {
                 }
 
                 ScrollViewReader { proxy in
-                    List {
-                        switch viewModel.mode {
-                        case .browse:
-                            ForEach(viewModel.browseSections, id: \.hour) { section in
-                                ForEach(Array(section.rows.enumerated()), id: \.element.object.uid) { idx, row in
-                                    rowButton(for: row, scrollAnchorHour: idx == 0 ? section.hour : nil)
-                                        .listRowInsets(Self.browseRowInsets)
+                    // ScrollView+LazyVStack instead of List: SwiftUI's List eagerly processes
+                    // all row identities on diff/recreate, which costs 400-600ms for ~1500
+                    // event rows per day. LazyVStack only materializes visible rows, so day
+                    // swaps are bounded by visible row count, not total row count.
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            switch viewModel.mode {
+                            case .browse:
+                                ForEach(viewModel.browseSections, id: \.hour) { section in
+                                    ForEach(section.rows, id: \.object.uid) { row in
+                                        let isFirstInSection = row.object.uid == section.rows.first?.object.uid
+                                        rowButton(for: row, scrollAnchorHour: isFirstInSection ? section.hour : nil)
+                                            .padding(Self.browseRowInsets)
+                                        Divider()
+                                    }
                                 }
-                            }
-                        case .search:
-                            ForEach(viewModel.searchResults, id: \.object.uid) { row in
-                                Button {
-                                    onSelect(row.object)
-                                } label: {
-                                    eventRow(for: row)
-                                        .contentShape(Rectangle())
+                            case .search:
+                                ForEach(viewModel.searchResults, id: \.object.uid) { row in
+                                    Button {
+                                        onSelect(row.object)
+                                    } label: {
+                                        eventRow(for: row)
+                                            .contentShape(Rectangle())
+                                            .padding(Self.searchRowInsets)
+                                    }
+                                    .buttonStyle(.plain)
+                                    Divider()
                                 }
-                                .buttonStyle(.plain)
-                                .listRowInsets(Self.searchRowInsets)
                             }
                         }
                     }
-                    .listStyle(.plain)
                     .searchable(
                         text: $viewModel.searchText,
                         prompt: "Search events"

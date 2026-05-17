@@ -135,6 +135,17 @@ public protocol PlayaDB {
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken
 
+    /// Observe event occurrences bucketed by start-day then hour-of-day. The day key is
+    /// the device-calendar `startOfDay` for each occurrence's start time. Use this for the
+    /// browse list: subscribe once with a full-festival filter, then slice the result by
+    /// day in the UI so day-tab switching never re-hits the database.
+    @discardableResult
+    func observeEventsByDayThenHour(
+        filter: EventFilter,
+        onChange: @escaping ([Date: [EventHourSection]]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
+
     // MARK: - Single Object Fetch
 
     /// Fetch a single art object by UID
