@@ -118,76 +118,83 @@ func gatherRightNowCandidates(
         )
     }
 
-    var seen = Set<String>()
+    // Camps & art matching the vibe in the area. They serve double duty: they're event
+    // hosts (we expand them to their events below) and the fallback when no events exist.
+    var artFilter = ArtFilter.all
+    artFilter.region = region
+    if !trimmedVibe.isEmpty { artFilter.searchText = trimmedVibe }
+    let artInArea = try await playaDB.fetchArt(filter: artFilter)
 
-    // --- Events happening now (only when the window covers the present) ---
-    var nowEvents: [RNCandidate] = []
-    if includeHappeningNow {
-        for occ in try await playaDB.fetchCurrentEvents(now) {
-            let uid = occ.event.uid
-            guard keep(uid), seen.insert(uid).inserted else { continue }
-            if let codes, !codes.contains(occ.eventTypeCode) { continue }
-            if let region, let coord = eventCoordinate(occ), !region.contains(coord) { continue }
-            nowEvents.append(eventCandidate(occ))
-        }
-    }
+    var campFilter = CampFilter.all
+    campFilter.region = region
+    if !trimmedVibe.isEmpty { campFilter.searchText = trimmedVibe }
+    let campsInArea = try await playaDB.fetchCamps(filter: campFilter)
 
-    // --- Upcoming events within the window. Try the vibe's event types first; if nothing
-    // matches, relax to any event type so we still surface events (not camps). `startDate
-    // >= now` already excludes started/ended events, so includeExpired isn't needed (and
-    // would wrongly drop past-window queries in tests / off-season). ---
-    func fetchUpcoming(_ typeCodes: Set<String>?) async throws -> [EventObjectOccurrence] {
+    // Collect candidate event occurrences from multiple sources:
+    //  (a) the region-scoped event query (catches events whose host GPS is in the join),
+    //  (b) events hosted by the matched camps / art — this catches events the region query
+    //      misses when the event's host GPS isn't populated, and is what surfaces "the camp
+    //      that's serving coffee right now" as its actual event.
+    func regionQuery(_ typeCodes: Set<String>?) async throws -> [EventObjectOccurrence] {
         var filter = EventFilter.all
         filter.region = region
         filter.startDate = max(windowStart, now)
         filter.endDate = windowEnd
         filter.eventTypeCodes = typeCodes
-        return try await playaDB.fetchEvents(filter: filter).sorted { $0.startDate < $1.startDate }
+        return try await playaDB.fetchEvents(filter: filter)
     }
-    var upcomingOccs = try await fetchUpcoming(codes)
-    if upcomingOccs.isEmpty, codes != nil {
-        upcomingOccs = try await fetchUpcoming(nil)
+    var occurrences: [EventObjectOccurrence] = []
+    var regionOccs = try await regionQuery(codes)
+    if regionOccs.isEmpty, codes != nil { regionOccs = try await regionQuery(nil) }
+    occurrences += regionOccs
+    for camp in campsInArea.prefix(10) {
+        occurrences += (try? await playaDB.fetchEvents(hostedByCampUID: camp.uid)) ?? []
     }
-    var upcomingEvents: [RNCandidate] = []
-    for occ in upcomingOccs {
-        guard keep(occ.event.uid), seen.insert(occ.event.uid).inserted else { continue }
-        upcomingEvents.append(eventCandidate(occ))
+    for art in artInArea.prefix(10) {
+        occurrences += (try? await playaDB.fetchEvents(locatedAtArtUID: art.uid)) ?? []
+    }
+
+    // Classify occurrences that overlap the window (and haven't ended) into now / next.
+    let windowFloor = max(windowStart, now)
+    var nowEvents: [RNCandidate] = []
+    var nextEvents: [RNCandidate] = []
+    var seenEvents = Set<String>()
+    for occ in occurrences.sorted(by: { $0.startDate < $1.startDate }) {
+        let uid = occ.event.uid
+        guard keep(uid), seenEvents.insert(uid).inserted else { continue }
+        guard occ.startDate < windowEnd, occ.endDate > windowFloor else { continue }
+        if includeHappeningNow, occ.startDate <= now, occ.endDate > now {
+            nowEvents.append(eventCandidate(occ))
+        } else {
+            nextEvents.append(eventCandidate(occ))
+        }
     }
 
     // Events lead. When any exist, return only events — no camps/art mixed in.
-    if !nowEvents.isEmpty || !upcomingEvents.isEmpty {
-        return (Array(nowEvents.prefix(perBucketCap)), Array(upcomingEvents.prefix(perBucketCap)))
+    if !nowEvents.isEmpty || !nextEvents.isEmpty {
+        return (Array(nowEvents.prefix(perBucketCap)), Array(nextEvents.prefix(perBucketCap)))
     }
 
-    // --- Fallback: no events match → nearby places (camps/art/MVs) matching the vibe. ---
+    // --- Fallback: no events in the window → the matched places themselves. ---
     var places: [RNCandidate] = []
-
-    var artFilter = ArtFilter.all
-    artFilter.region = region
-    if !trimmedVibe.isEmpty { artFilter.searchText = trimmedVibe }
-    for obj in try await playaDB.fetchArt(filter: artFilter) {
-        guard keep(obj.uid), seen.insert(obj.uid).inserted else { continue }
+    var seenPlaces = Set<String>()
+    for obj in artInArea {
+        guard keep(obj.uid), seenPlaces.insert(obj.uid).inserted else { continue }
         let coord = coordinate(lat: obj.gpsLatitude, lon: obj.gpsLongitude)
         places.append(RNCandidate(uid: obj.uid, name: obj.name, type: .art,
                                   coordinate: coord, startDate: nil, timeInfo: nil, walkMinutes: walk(coord)))
     }
-
-    var campFilter = CampFilter.all
-    campFilter.region = region
-    if !trimmedVibe.isEmpty { campFilter.searchText = trimmedVibe }
-    for obj in try await playaDB.fetchCamps(filter: campFilter) {
-        guard keep(obj.uid), seen.insert(obj.uid).inserted else { continue }
+    for obj in campsInArea {
+        guard keep(obj.uid), seenPlaces.insert(obj.uid).inserted else { continue }
         let coord = coordinate(lat: obj.gpsLatitude, lon: obj.gpsLongitude)
         places.append(RNCandidate(uid: obj.uid, name: obj.name, type: .camp,
                                   coordinate: coord, startDate: nil, timeInfo: nil, walkMinutes: walk(coord)))
     }
-
-    // Mutant vehicles (roaming, no GPS → never region-scoped).
     if vibeMentionsVehicles(trimmedVibe) || (trimmedVibe.isEmpty && lean == .surprise) {
         var mvFilter = MutantVehicleFilter.all
         if !trimmedVibe.isEmpty { mvFilter.searchText = trimmedVibe }
         for obj in try await playaDB.fetchMutantVehicles(filter: mvFilter) {
-            guard keep(obj.uid), seen.insert(obj.uid).inserted else { continue }
+            guard keep(obj.uid), seenPlaces.insert(obj.uid).inserted else { continue }
             places.append(RNCandidate(uid: obj.uid, name: obj.name, type: .mutantVehicle,
                                       coordinate: nil, startDate: nil, timeInfo: nil, walkMinutes: nil))
         }
