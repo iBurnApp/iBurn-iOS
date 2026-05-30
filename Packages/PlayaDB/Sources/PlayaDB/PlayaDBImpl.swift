@@ -527,20 +527,32 @@ internal class PlayaDBImpl: PlayaDB {
             END
         """)
 
-        // Spatio-temporal R*Tree over event occurrences: lat/lon (point) + start/end time
-        // (epoch seconds). `id` is event_occurrences.id, so no mapping table is needed.
+        // Spatial R*Tree over event occurrences (point index keyed by event_occurrences.id,
+        // so no mapping table is needed). lat/lon come from the parent event's denormalized
+        // GPS; this is a pure spatial prefilter for region-scoped event queries.
+        //
+        // Migration: an earlier version added minT/maxT time columns. They were never queried
+        // (occurrenceIDsInRegion is spatial-only) and, for occurrences whose stored date
+        // strings don't parse via SQLite strftime (or whose end precedes start), produced
+        // minT > maxT and tripped the rtree's (minT<=maxT) constraint — failing the seed
+        // import outright. Drop that variant and recreate the index spatial-only.
+        let rtreeColumns = try Row.fetchAll(db, sql: "PRAGMA table_info(event_occurrence_rtree)")
+            .compactMap { $0["name"] as String? }
+        if rtreeColumns.contains("minT") {
+            try db.execute(sql: "DROP TRIGGER IF EXISTS event_occurrence_rtree_insert")
+            try db.execute(sql: "DROP TRIGGER IF EXISTS event_occurrence_rtree_delete")
+            try db.execute(sql: "DROP TABLE IF EXISTS event_occurrence_rtree")
+        }
         try db.execute(sql: """
             CREATE VIRTUAL TABLE IF NOT EXISTS event_occurrence_rtree USING rtree(
                 id,
                 minLat, maxLat,
-                minLon, maxLon,
-                minT, maxT
+                minLon, maxLon
             )
         """)
 
         // Maintain the occurrence index on direct writes (import also rebuilds it wholesale).
-        // lat/lon come from the parent event's denormalized GPS; time via strftime epoch
-        // (COALESCEd so a parse surprise can never null an rtree coordinate / fail the insert).
+        // lat/lon come from the parent event's denormalized GPS.
         try db.execute(sql: """
             CREATE TRIGGER IF NOT EXISTS event_occurrence_rtree_insert
             AFTER INSERT ON event_occurrences
@@ -550,10 +562,8 @@ internal class PlayaDBImpl: PlayaDB {
                   AND e.gps_latitude IS NOT NULL AND e.gps_longitude IS NOT NULL
             )
             BEGIN
-                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon, minT, maxT)
-                SELECT NEW.id, e.gps_latitude, e.gps_latitude, e.gps_longitude, e.gps_longitude,
-                       COALESCE(CAST(strftime('%s', NEW.start_time) AS REAL), 0),
-                       COALESCE(CAST(strftime('%s', NEW.end_time) AS REAL), 0)
+                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+                SELECT NEW.id, e.gps_latitude, e.gps_latitude, e.gps_longitude, e.gps_longitude
                 FROM event_objects e WHERE e.uid = NEW.event_id;
             END
         """)
@@ -566,14 +576,12 @@ internal class PlayaDBImpl: PlayaDB {
         """)
     }
 
-    /// Rebuild the occurrence spatio-temporal index from current data. Indexes each occurrence
-    /// whose parent event has GPS, using the event's coordinate and the occurrence start/end as
-    /// epoch seconds (computed in Swift — never parsed from the stored date string).
+    /// Rebuild the occurrence spatial index from current data. Indexes each occurrence whose
+    /// parent event has GPS, using the event's denormalized coordinate as a point.
     func rebuildOccurrenceRTree(_ db: Database) throws {
         try db.execute(sql: "DELETE FROM event_occurrence_rtree")
         let rows = try Row.fetchAll(db, sql: """
-            SELECT o.id AS id, o.start_time AS start_time, o.end_time AS end_time,
-                   e.gps_latitude AS lat, e.gps_longitude AS lon
+            SELECT o.id AS id, e.gps_latitude AS lat, e.gps_longitude AS lon
             FROM event_occurrences o
             JOIN event_objects e ON e.uid = o.event_id
             WHERE e.gps_latitude IS NOT NULL AND e.gps_longitude IS NOT NULL
@@ -582,18 +590,16 @@ internal class PlayaDBImpl: PlayaDB {
             let id: Int64 = row["id"]
             let lat: Double = row["lat"]
             let lon: Double = row["lon"]
-            let start: Date = row["start_time"]
-            let end: Date = row["end_time"]
             try db.execute(sql: """
-                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon, minT, maxT)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, arguments: [id, lat, lat, lon, lon, start.timeIntervalSince1970, end.timeIntervalSince1970])
+                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+                VALUES (?, ?, ?, ?, ?)
+                """, arguments: [id, lat, lat, lon, lon])
         }
     }
 
-    /// Occurrence ids whose host location falls within `region`, via the spatio-temporal R*Tree
-    /// (spatial prefilter only — exact time filtering stays in SQL). Used to push event region
-    /// filtering into the query instead of filtering rows client-side.
+    /// Occurrence ids whose host location falls within `region`, via the spatial R*Tree.
+    /// Time filtering stays in SQL. Used to push event region filtering into the query
+    /// instead of filtering rows client-side.
     private func occurrenceIDsInRegion(_ db: Database, region: MKCoordinateRegion) throws -> [Int64] {
         let minLat = region.center.latitude - region.span.latitudeDelta / 2
         let maxLat = region.center.latitude + region.span.latitudeDelta / 2
