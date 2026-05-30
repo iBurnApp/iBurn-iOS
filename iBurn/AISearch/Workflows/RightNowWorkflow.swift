@@ -54,13 +54,36 @@ struct RNCandidate: Sendable {
 
 enum RNBucket: Sendable { case now, next }
 
+/// Sendable curation result, decoupled from the @Generable type so it can cross a TaskGroup.
+struct CuratedPick: Sendable { let uid: String; let pitch: String }
+struct Curated: Sendable { let intro: String; let now: [CuratedPick]; let next: [CuratedPick] }
+
+/// Run `work`, returning nil if it doesn't finish within `seconds` (or returns nil itself).
+/// The on-device model can be slow or stall on first use; this keeps the UI from hanging.
+func runWithTimeout<T: Sendable>(seconds: Double, _ work: @Sendable @escaping () async -> T?) async -> T? {
+    await withTaskGroup(of: T?.self) { group in
+        group.addTask { await work() }
+        group.addTask {
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            return nil
+        }
+        let first = await group.next() ?? nil
+        group.cancelAll()
+        return first
+    }
+}
+
 // MARK: - Candidate Gathering (pure, no LLM — unit testable)
 
 /// Gather "now" and "next" candidates from the database. No LLM involved so this is
 /// deterministic and testable with an in-memory PlayaDB.
 ///
+/// Event-first: "now" = events happening right now (when the window covers the present),
+/// "next" = events starting within the window. Camps/art are only used as a fallback when
+/// no events match (so the screen is never just a pile of camps when events exist).
+///
 /// - `includeHappeningNow`: when true (the window contains the present), currently-happening
-///   events are pulled into the "now" bucket. Timeless art/camps always go to "now".
+///   events are pulled into the "now" bucket.
 func gatherRightNowCandidates(
     playaDB: PlayaDB,
     region: MKCoordinateRegion?,
@@ -86,95 +109,92 @@ func gatherRightNowCandidates(
         guard let coord else { return nil }
         return playaWalkMinutes(from: origin, to: coord)
     }
+    func eventCandidate(_ occ: EventObjectOccurrence) -> RNCandidate {
+        let coord = eventCoordinate(occ)
+        return RNCandidate(
+            uid: occ.event.uid, name: occ.event.name, type: .event,
+            coordinate: coord, startDate: occ.startDate,
+            timeInfo: formatter.string(from: occ.startDate), walkMinutes: walk(coord)
+        )
+    }
 
-    var nowCandidates: [RNCandidate] = []
-    var nextCandidates: [RNCandidate] = []
     var seen = Set<String>()
 
     // --- Events happening now (only when the window covers the present) ---
+    var nowEvents: [RNCandidate] = []
     if includeHappeningNow {
-        let current = try await playaDB.fetchCurrentEvents(now)
-        for occ in current {
+        for occ in try await playaDB.fetchCurrentEvents(now) {
             let uid = occ.event.uid
             guard keep(uid), seen.insert(uid).inserted else { continue }
             if let codes, !codes.contains(occ.eventTypeCode) { continue }
-            let coord = eventCoordinate(occ)
-            if let region, let coord, !region.contains(coord) { continue }
-            nowCandidates.append(RNCandidate(
-                uid: uid, name: occ.event.name, type: .event,
-                coordinate: coord, startDate: occ.startDate,
-                timeInfo: formatter.string(from: occ.startDate),
-                walkMinutes: walk(coord)
-            ))
+            if let region, let coord = eventCoordinate(occ), !region.contains(coord) { continue }
+            nowEvents.append(eventCandidate(occ))
         }
     }
 
-    // --- Upcoming events starting within the window ("next") ---
-    // `startDate >= now` already excludes anything that has started/ended, so we don't
-    // also set `includeExpired` (which filters against the real current date and would
-    // drop events when querying a window in the past, e.g. tests / off-season).
-    var eventFilter = EventFilter.all
-    eventFilter.region = region
-    eventFilter.startDate = max(windowStart, now)
-    eventFilter.endDate = windowEnd
-    eventFilter.eventTypeCodes = codes
-    let upcoming = try await playaDB.fetchEvents(filter: eventFilter)
-    for occ in upcoming.sorted(by: { $0.startDate < $1.startDate }) {
-        let uid = occ.event.uid
-        guard keep(uid), seen.insert(uid).inserted else { continue }
-        let coord = eventCoordinate(occ)
-        nextCandidates.append(RNCandidate(
-            uid: uid, name: occ.event.name, type: .event,
-            coordinate: coord, startDate: occ.startDate,
-            timeInfo: formatter.string(from: occ.startDate),
-            walkMinutes: walk(coord)
-        ))
+    // --- Upcoming events within the window. Try the vibe's event types first; if nothing
+    // matches, relax to any event type so we still surface events (not camps). `startDate
+    // >= now` already excludes started/ended events, so includeExpired isn't needed (and
+    // would wrongly drop past-window queries in tests / off-season). ---
+    func fetchUpcoming(_ typeCodes: Set<String>?) async throws -> [EventObjectOccurrence] {
+        var filter = EventFilter.all
+        filter.region = region
+        filter.startDate = max(windowStart, now)
+        filter.endDate = windowEnd
+        filter.eventTypeCodes = typeCodes
+        return try await playaDB.fetchEvents(filter: filter).sorted { $0.startDate < $1.startDate }
+    }
+    var upcomingOccs = try await fetchUpcoming(codes)
+    if upcomingOccs.isEmpty, codes != nil {
+        upcomingOccs = try await fetchUpcoming(nil)
+    }
+    var upcomingEvents: [RNCandidate] = []
+    for occ in upcomingOccs {
+        guard keep(occ.event.uid), seen.insert(occ.event.uid).inserted else { continue }
+        upcomingEvents.append(eventCandidate(occ))
     }
 
-    // --- Timeless art & camps near the place ("now near you") ---
+    // Events lead. When any exist, return only events — no camps/art mixed in.
+    if !nowEvents.isEmpty || !upcomingEvents.isEmpty {
+        return (Array(nowEvents.prefix(perBucketCap)), Array(upcomingEvents.prefix(perBucketCap)))
+    }
+
+    // --- Fallback: no events match → nearby places (camps/art/MVs) matching the vibe. ---
+    var places: [RNCandidate] = []
+
     var artFilter = ArtFilter.all
     artFilter.region = region
     if !trimmedVibe.isEmpty { artFilter.searchText = trimmedVibe }
-    let art = try await playaDB.fetchArt(filter: artFilter)
-    for obj in art {
+    for obj in try await playaDB.fetchArt(filter: artFilter) {
         guard keep(obj.uid), seen.insert(obj.uid).inserted else { continue }
         let coord = coordinate(lat: obj.gpsLatitude, lon: obj.gpsLongitude)
-        nowCandidates.append(RNCandidate(
-            uid: obj.uid, name: obj.name, type: .art,
-            coordinate: coord, startDate: nil, timeInfo: nil, walkMinutes: walk(coord)
-        ))
+        places.append(RNCandidate(uid: obj.uid, name: obj.name, type: .art,
+                                  coordinate: coord, startDate: nil, timeInfo: nil, walkMinutes: walk(coord)))
     }
 
     var campFilter = CampFilter.all
     campFilter.region = region
     if !trimmedVibe.isEmpty { campFilter.searchText = trimmedVibe }
-    let camps = try await playaDB.fetchCamps(filter: campFilter)
-    for obj in camps {
+    for obj in try await playaDB.fetchCamps(filter: campFilter) {
         guard keep(obj.uid), seen.insert(obj.uid).inserted else { continue }
         let coord = coordinate(lat: obj.gpsLatitude, lon: obj.gpsLongitude)
-        nowCandidates.append(RNCandidate(
-            uid: obj.uid, name: obj.name, type: .camp,
-            coordinate: coord, startDate: nil, timeInfo: nil, walkMinutes: walk(coord)
-        ))
+        places.append(RNCandidate(uid: obj.uid, name: obj.name, type: .camp,
+                                  coordinate: coord, startDate: nil, timeInfo: nil, walkMinutes: walk(coord)))
     }
 
-    // --- Mutant vehicles (roaming, no GPS → never region-scoped) ---
+    // Mutant vehicles (roaming, no GPS → never region-scoped).
     if vibeMentionsVehicles(trimmedVibe) || (trimmedVibe.isEmpty && lean == .surprise) {
         var mvFilter = MutantVehicleFilter.all
         if !trimmedVibe.isEmpty { mvFilter.searchText = trimmedVibe }
-        let mvs = try await playaDB.fetchMutantVehicles(filter: mvFilter)
-        for obj in mvs {
+        for obj in try await playaDB.fetchMutantVehicles(filter: mvFilter) {
             guard keep(obj.uid), seen.insert(obj.uid).inserted else { continue }
-            nowCandidates.append(RNCandidate(
-                uid: obj.uid, name: obj.name, type: .mutantVehicle,
-                coordinate: nil, startDate: nil, timeInfo: nil, walkMinutes: nil
-            ))
+            places.append(RNCandidate(uid: obj.uid, name: obj.name, type: .mutantVehicle,
+                                      coordinate: nil, startDate: nil, timeInfo: nil, walkMinutes: nil))
         }
     }
 
-    // Order "now" by walking distance (closest first); cap each bucket.
-    nowCandidates.sort { ($0.walkMinutes ?? Int.max) < ($1.walkMinutes ?? Int.max) }
-    return (Array(nowCandidates.prefix(perBucketCap)), Array(nextCandidates.prefix(perBucketCap)))
+    places.sort { ($0.walkMinutes ?? Int.max) < ($1.walkMinutes ?? Int.max) }
+    return (Array(places.prefix(perBucketCap)), [])
 }
 
 // MARK: - Helpers
@@ -279,7 +299,9 @@ struct RightNowWorkflow: Workflow {
             )
         }
 
-        // Step 3: one LLM curation + pitch call
+        // Step 3: LLM curation + pitch — best-effort, bounded by a timeout. If the model
+        // stalls / is filtered / is still loading, fall back to the gathered candidates so
+        // the screen never hangs.
         onProgress(.stepStarted(name: "pick", description: "Picking the best"))
         let candidateByUID = Dictionary(
             (nowCands + nextCands).map { ($0.uid, $0) },
@@ -288,8 +310,51 @@ struct RightNowWorkflow: Workflow {
         let tagged: [(cand: RNCandidate, bucket: RNBucket)] =
             nowCands.map { ($0, .now) } + nextCands.map { ($0, .next) }
 
+        let curated: Curated? = await runWithTimeout(seconds: Self.curationTimeoutSeconds) { [self] in
+            do {
+                return try await curate(tagged: tagged, vibe: context.vibe, taste: tasteProfile)
+            } catch {
+                #if DEBUG
+                print("[RightNow] curation failed: \(error)")
+                #endif
+                return nil
+            }
+        }
+        onProgress(.stepCompleted(name: "pick"))
+
+        var used = Set<String>()
+        let nowItems: [RightNowItem]
+        let nextItems: [RightNowItem]
+        let intro: String
+        if let curated, !(curated.now.isEmpty && curated.next.isEmpty) {
+            // Resolve picks back against the candidate set (drops any hallucinated uids).
+            nowItems = items(from: curated.now, byUID: candidateByUID, used: &used)
+            nextItems = items(from: curated.next, byUID: candidateByUID, used: &used)
+            intro = curated.intro.isEmpty ? "Here's what's around you." : curated.intro
+        } else {
+            // No AI picks (timed out / filtered / model unavailable) — show the candidates.
+            nowItems = fallbackItems(nowCands, used: &used)
+            nextItems = fallbackItems(nextCands, used: &used)
+            intro = "Here's what's around you right now."
+        }
+
+        if nowItems.isEmpty && nextItems.isEmpty {
+            return RightNowResult(intro: "Nothing stood out — try a different vibe or area.",
+                                  now: [], next: [])
+        }
+        return RightNowResult(intro: intro, now: nowItems, next: nextItems)
+    }
+
+    private static let curationTimeoutSeconds: Double = 22
+
+    /// Run the guarded LLM curation and map it to a Sendable `Curated`.
+    private func curate(
+        tagged: [(cand: RNCandidate, bucket: RNBucket)],
+        vibe: String,
+        taste: String
+    ) async throws -> Curated {
         let response: GenerableRightNowResponse = try await withContextWindowRetry(
-            initialCount: min(tagged.count, 18),
+            initialCount: min(tagged.count, 12),
             minimumCount: 4
         ) { maxCount in
             try await retryWithCandidateFiltering(
@@ -297,30 +362,42 @@ struct RightNowWorkflow: Workflow {
                 minimumCount: 2,
                 format: { candidateLine($0.cand) }
             ) { batch in
-                try await self.generate(batch: batch, vibe: context.vibe, taste: tasteProfile)
+                try await self.generate(batch: batch, vibe: vibe, taste: taste)
             }
         }
-        onProgress(.stepCompleted(name: "pick"))
+        return Curated(
+            intro: response.intro,
+            now: response.now.map { CuratedPick(uid: $0.uid, pitch: $0.pitch) },
+            next: response.next.map { CuratedPick(uid: $0.uid, pitch: $0.pitch) }
+        )
+    }
 
-        // Resolve picks back against the candidate set (drops any hallucinated uids).
-        var usedNow = Set<String>()
-        let nowItems = response.now.compactMap { pick -> RightNowItem? in
-            guard let c = candidateByUID[pick.uid], usedNow.insert(pick.uid).inserted else { return nil }
+    /// Resolve LLM picks to display items, skipping unknown/duplicate uids.
+    private func items(
+        from picks: [CuratedPick],
+        byUID: [String: RNCandidate],
+        used: inout Set<String>
+    ) -> [RightNowItem] {
+        picks.compactMap { pick in
+            guard let c = byUID[pick.uid], used.insert(pick.uid).inserted else { return nil }
             return RightNowItem(uid: c.uid, name: c.name, type: c.type, pitch: pick.pitch,
                                 walkMinutes: c.walkMinutes, timeInfo: c.timeInfo)
         }
-        var usedNext = usedNow
-        let nextItems = response.next.compactMap { pick -> RightNowItem? in
-            guard let c = candidateByUID[pick.uid], usedNext.insert(pick.uid).inserted else { return nil }
-            return RightNowItem(uid: c.uid, name: c.name, type: c.type, pitch: pick.pitch,
-                                walkMinutes: c.walkMinutes, timeInfo: c.timeInfo)
-        }
+    }
 
-        if nowItems.isEmpty && nextItems.isEmpty {
-            return RightNowResult(intro: "Nothing stood out just now — try a different vibe or area.",
-                                  now: [], next: [])
+    /// Present gathered candidates directly (no AI pitch) when curation is unavailable.
+    private func fallbackItems(
+        _ candidates: [RNCandidate],
+        used: inout Set<String>,
+        limit: Int = 5
+    ) -> [RightNowItem] {
+        var out: [RightNowItem] = []
+        for c in candidates where used.insert(c.uid).inserted {
+            out.append(RightNowItem(uid: c.uid, name: c.name, type: c.type, pitch: "",
+                                    walkMinutes: c.walkMinutes, timeInfo: c.timeInfo))
+            if out.count >= limit { break }
         }
-        return RightNowResult(intro: response.intro, now: nowItems, next: nextItems)
+        return out
     }
 
     private func generate(
@@ -338,8 +415,10 @@ struct RightNowWorkflow: Workflow {
 
         let session = LanguageModelSession(instructions: """
             You are a concise Burning Man guide. From the candidates, pick the best few for NOW \
-            and the best few for NEXT. Use only the exact uids provided. Keep each pitch under 15 \
-            words, concrete and grounded in the data — no hype, no invented details.
+            and the best few for NEXT. Each candidate is tagged with its type (event, camp, art, \
+            mutantVehicle) — describe it accurately and never call a camp or art piece an "event". \
+            Use only the exact uids provided. Keep each pitch under 15 words, concrete and grounded \
+            in the data — no hype, no invented details.
             """)
         return try await session.respond(
             to: Prompt(prompt),
