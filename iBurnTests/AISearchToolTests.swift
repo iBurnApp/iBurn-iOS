@@ -238,39 +238,6 @@ final class AISearchToolTests: XCTestCase {
         XCTAssertEqual(result, "Nothing found nearby.")
     }
 
-    // MARK: - AIAssistantService Tests
-
-    func testAssistantService_AvailabilityCheck() {
-        let service = FoundationModelSearchService(playaDB: playaDB)
-        // Just verify it doesn't crash
-        _ = service.isAvailable
-    }
-
-    func testAssistantService_RecommendWhenUnavailable() async throws {
-        let service = FoundationModelSearchService(playaDB: playaDB)
-        if !service.isAvailable {
-            let results = try await service.recommend()
-            XCTAssertTrue(results.isEmpty, "Should return empty when AI unavailable")
-        }
-    }
-
-    func testAssistantService_WhatsNearbyWhenUnavailable() async throws {
-        let service = FoundationModelSearchService(playaDB: playaDB)
-        if !service.isAvailable {
-            let loc = CLLocation(latitude: 40.7864, longitude: -119.2065)
-            let results = try await service.whatsNearby(location: loc)
-            XCTAssertTrue(results.isEmpty, "Should return empty when AI unavailable")
-        }
-    }
-
-    func testAssistantService_PlanDayWhenUnavailable() async throws {
-        let service = FoundationModelSearchService(playaDB: playaDB)
-        if !service.isAvailable {
-            let plan = try await service.planDay(date: Date(), location: nil)
-            XCTAssertTrue(plan.schedule.isEmpty, "Should return empty when AI unavailable")
-        }
-    }
-
     // MARK: - Fixture Data
 
     private static let artJSON = """

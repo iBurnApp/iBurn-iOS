@@ -61,11 +61,6 @@ class DependencyContainer {
         AISearchServiceFactory.create(playaDB: playaDB)
     }()
 
-    /// AI assistant service for recommendations, day planner, nearby (nil if unavailable)
-    private(set) lazy var aiAssistantService: AIAssistantService? = {
-        AISearchServiceFactory.createAssistant(playaDB: playaDB)
-    }()
-
     // MARK: - Initialization
 
     /// Initialize the dependency container
@@ -180,26 +175,16 @@ class DependencyContainer {
         )
     }
 
-    /// Create an AIGuideViewModel for the unified AI Guide (nil if AI not available)
+    /// Create the AI Guide "Right Now" view model (nil if AI not available)
     func makeAIGuideViewModel() -> AnyObject? {
         #if canImport(FoundationModels)
         if #available(iOS 26, *) {
             let orchestrator = AgentOrchestrator(playaDB: playaDB, locationProvider: locationProvider)
             guard orchestrator.isAvailable else { return nil }
-            return AIGuideViewModel(playaDB: playaDB, orchestrator: orchestrator)
+            return RightNowViewModel(playaDB: playaDB, orchestrator: orchestrator)
         }
         #endif
         return nil
-    }
-
-    /// Create an AIAssistantViewModel (nil if AI not available) — legacy, kept for backward compat
-    func makeAIAssistantViewModel() -> AIAssistantViewModel? {
-        guard let aiService = aiAssistantService else { return nil }
-        return AIAssistantViewModel(
-            aiService: aiService,
-            playaDB: playaDB,
-            locationProvider: locationProvider
-        )
     }
 
     /// Create a NearbyViewModel with injected dependencies

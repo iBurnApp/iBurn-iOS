@@ -9,6 +9,7 @@
 #if canImport(FoundationModels)
 import Foundation
 import CoreLocation
+import MapKit
 import FoundationModels
 @preconcurrency import PlayaDB
 
@@ -77,15 +78,25 @@ final class AgentOrchestrator: @unchecked Sendable {
     /// Execute a complete workflow with progress streaming
     func execute<W: Workflow>(
         _ workflow: W,
+        region: MKCoordinateRegion? = nil,
+        window: (start: Date, end: Date)? = nil,
+        vibe: String = "",
+        lean: DiscoveryLean = .balanced,
         startDate: Date? = nil,
         conversationHistory: [String] = [],
         onProgress: @escaping (WorkflowProgress) -> Void
     ) async throws -> W.Result {
+        let now = startDate ?? Date.present
         let context = WorkflowContext(
             playaDB: playaDB,
             location: locationProvider.currentLocation,
-            date: startDate ?? Date(),
-            conversationHistory: conversationHistory
+            date: now,
+            conversationHistory: conversationHistory,
+            region: region,
+            windowStart: window?.start,
+            windowEnd: window?.end,
+            vibe: vibe,
+            lean: lean
         )
         return try await workflow.execute(context: context, onProgress: onProgress)
     }

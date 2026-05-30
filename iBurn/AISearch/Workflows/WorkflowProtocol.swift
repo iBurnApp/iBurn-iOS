@@ -9,6 +9,8 @@
 #if canImport(FoundationModels)
 import Foundation
 import CoreLocation
+import MapKit
+import FoundationModels
 @preconcurrency import PlayaDB
 
 // Note: iBurn has a class named DataObject that shadows PlayaDB's DataObject protocol.
@@ -35,11 +37,36 @@ struct WorkflowContext {
     let date: Date
     var conversationHistory: [String]
 
-    init(playaDB: PlayaDB, location: CLLocation? = nil, date: Date = Date(), conversationHistory: [String] = []) {
+    /// Optional map-selected area to scope discovery. When nil, fall back to `location`.
+    let region: MKCoordinateRegion?
+    /// Time window for events ("now or soon" by default).
+    let windowStart: Date
+    let windowEnd: Date
+    /// Free-text or chip-derived vibe ("" = none).
+    let vibe: String
+    /// Personalized vs surprise lean.
+    let lean: DiscoveryLean
+
+    init(
+        playaDB: PlayaDB,
+        location: CLLocation? = nil,
+        date: Date = Date(),
+        conversationHistory: [String] = [],
+        region: MKCoordinateRegion? = nil,
+        windowStart: Date? = nil,
+        windowEnd: Date? = nil,
+        vibe: String = "",
+        lean: DiscoveryLean = .balanced
+    ) {
         self.playaDB = playaDB
         self.location = location
         self.date = date
         self.conversationHistory = conversationHistory
+        self.region = region
+        self.windowStart = windowStart ?? date
+        self.windowEnd = windowEnd ?? date.addingTimeInterval(2 * 3600)
+        self.vibe = vibe
+        self.lean = lean
     }
 }
 
@@ -52,60 +79,10 @@ enum WorkflowProgress: Sendable {
     case intermediateResult(text: String)
 }
 
-// MARK: - Workflow Result Types
-
-/// Result from adventure/crawl workflows that include a route
-struct RouteResult: Sendable {
-    let stops: [RouteStop]
-    let narrative: String
-    let totalWalkMinutes: Int
-}
-
-struct RouteStop: Sendable, Identifiable {
-    let id: String // uid
-    let name: String
-    let type: DataObjectType
-    let reason: String
-    let walkMinutesFromPrevious: Int?
-    let latitude: Double?
-    let longitude: Double?
-}
-
-/// Result from schedule optimization
-struct OptimizedSchedule: Sendable {
-    let items: [ScheduleEntry]
-    let summary: String
-    let conflictsResolved: Int
-}
-
-struct ScheduleEntry: Sendable, Identifiable {
-    var id: String { uid }
-    let uid: String
-    let name: String
-    let startTime: String
-    let endTime: String
-    let reason: String
-    let walkMinutesFromPrevious: Int?
-}
-
-/// Result from serendipity/recommendation workflows
-struct DiscoveryResult: Sendable {
-    let items: [DiscoveryItem]
-    let intro: String
-}
-
-struct DiscoveryItem: Sendable, Identifiable {
-    var id: String { uid }
-    let uid: String
-    let name: String
-    let type: DataObjectType
-    let pitch: String
-}
-
 // MARK: - Utility: Distance Calculation
 
-/// Calculate walking time between two coordinates on the playa
-/// Assumes ~4 km/h walking speed on playa dust
+/// Calculate walking time between two coordinates on the playa.
+/// Assumes ~4 km/h walking speed on playa dust.
 func playaWalkMinutes(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Int {
     let fromLoc = CLLocation(latitude: from.latitude, longitude: from.longitude)
     let toLoc = CLLocation(latitude: to.latitude, longitude: to.longitude)
@@ -113,68 +90,9 @@ func playaWalkMinutes(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) 
     return Int(ceil(meters / 67.0)) // ~4 km/h
 }
 
-/// Simple nearest-neighbor route optimizer
-func optimizeRoute(from start: CLLocationCoordinate2D?, stops: [(uid: String, coord: CLLocationCoordinate2D)]) -> [(uid: String, coord: CLLocationCoordinate2D)] {
-    guard stops.count > 1 else { return stops }
+// MARK: - Utility: Object Field Access (DataObject name-conflict workaround)
 
-    var remaining = stops
-    var ordered: [(uid: String, coord: CLLocationCoordinate2D)] = []
-    var current = start ?? stops.first!.coord
-
-    while !remaining.isEmpty {
-        let nearest = remaining.enumerated().min(by: { a, b in
-            let distA = CLLocation(latitude: current.latitude, longitude: current.longitude)
-                .distance(from: CLLocation(latitude: a.element.coord.latitude, longitude: a.element.coord.longitude))
-            let distB = CLLocation(latitude: current.latitude, longitude: current.longitude)
-                .distance(from: CLLocation(latitude: b.element.coord.latitude, longitude: b.element.coord.longitude))
-            return distA < distB
-        })!
-        ordered.append(remaining.remove(at: nearest.offset))
-        current = ordered.last!.coord
-    }
-    return ordered
-}
-
-/// Detect time conflicts between event occurrences
-func detectConflicts(_ events: [EventObjectOccurrence]) -> [(EventObjectOccurrence, EventObjectOccurrence)] {
-    var conflicts: [(EventObjectOccurrence, EventObjectOccurrence)] = []
-    let sorted = events.sorted { $0.startDate < $1.startDate }
-    for i in 0..<sorted.count {
-        for j in (i+1)..<sorted.count {
-            let a = sorted[i]
-            let b = sorted[j]
-            // Overlap: a starts before b ends AND b starts before a ends
-            if a.startDate < b.endDate && b.startDate < a.endDate {
-                conflicts.append((a, b))
-            }
-        }
-    }
-    return conflicts
-}
-
-/// Cluster GPS coordinates by distance (simple greedy clustering)
-func clusterCoordinates(_ coords: [(lat: Double, lon: Double, timestamp: Date)], thresholdMeters: Double = 200) -> [[(lat: Double, lon: Double, timestamp: Date)]] {
-    var clusters: [[(lat: Double, lon: Double, timestamp: Date)]] = []
-    for point in coords {
-        var added = false
-        for i in 0..<clusters.count {
-            let centroid = clusters[i].first!
-            let dist = CLLocation(latitude: centroid.lat, longitude: centroid.lon)
-                .distance(from: CLLocation(latitude: point.lat, longitude: point.lon))
-            if dist < thresholdMeters {
-                clusters[i].append(point)
-                added = true
-                break
-            }
-        }
-        if !added {
-            clusters.append([point])
-        }
-    }
-    return clusters
-}
-
-/// Extract UID from any PlayaDB object (workaround for DataObject name conflict)
+/// Extract UID from any PlayaDB object.
 func objectUID(_ obj: Any) -> String? {
     if let art = obj as? ArtObject { return art.uid }
     if let camp = obj as? CampObject { return camp.uid }
@@ -183,7 +101,7 @@ func objectUID(_ obj: Any) -> String? {
     return nil
 }
 
-/// Extract name from any PlayaDB object
+/// Extract name from any PlayaDB object.
 func objectName(_ obj: Any) -> String? {
     if let art = obj as? ArtObject { return art.name }
     if let camp = obj as? CampObject { return camp.name }
@@ -192,36 +110,7 @@ func objectName(_ obj: Any) -> String? {
     return nil
 }
 
-/// Extract taste keywords from a list of favorited objects
-func extractTasteKeywords(_ objects: [Any]) -> [String] {
-    var keywords: [String] = []
-    for obj in objects.prefix(10) {
-        if let art = obj as? ArtObject, let cat = art.category { keywords.append(cat) }
-        if let event = obj as? EventObject { keywords.append(event.eventTypeLabel) }
-        if let mv = obj as? MutantVehicleObject, let tags = mv.tagsText {
-            keywords.append(contentsOf: tags.split(separator: " ").map(String.init))
-        }
-    }
-    return Array(Set(keywords)).prefix(5).map { $0 }
-}
-
-/// Calculate sunrise/sunset for Black Rock City coordinates
-/// Returns (sunrise, sunset) as Dates for the given date
-func brcSunTimes(for date: Date) -> (sunrise: Date, sunset: Date) {
-    // BRC coordinates: 40.7864, -119.2065
-    // Approximate solar times for late August at BRC:
-    // Sunrise ~6:15 AM, Sunset ~7:30 PM PDT
-    // This is a simplified calculation; for production, use a proper solar algorithm
-    let calendar = Calendar.current
-    var components = calendar.dateComponents(in: TimeZone(identifier: "America/Los_Angeles")!, from: date)
-    components.hour = 6
-    components.minute = 15
-    let sunrise = calendar.date(from: components)!
-    components.hour = 19
-    components.minute = 30
-    let sunset = calendar.date(from: components)!
-    return (sunrise, sunset)
-}
+// MARK: - Retry: Candidate Filtering
 
 /// Retry an LLM generation call with progressive candidate filtering.
 /// On failure with the full set, tries each half, then individual items to isolate problematic ones.
