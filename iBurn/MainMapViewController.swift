@@ -26,6 +26,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     private let globalSearchController: UISearchController
     private let globalSearchHostingController: GlobalSearchHostingController
     private let filteredDataSource: FilteredMapDataSource
+    private let dependencies: DependencyContainer
+    /// Compact on-map card showing art/camps/events within ~100m of the user.
+    private lazy var nearbyCardController = NearbyCardHostingController(dependencies: dependencies)
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
     }
@@ -42,6 +45,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
 
     public init() {
         let dependencies = BRCAppDelegate.shared.dependencies
+        self.dependencies = dependencies
         uiConnection = BRCDatabaseManager.shared.uiConnection
         writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
@@ -116,8 +120,23 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         setupSearchButton()
         setupListButton()
         setupFilterButton()
+        setupNearbyCard()
         definesPresentationContext = true
-        
+
+    }
+
+    /// Embeds the nearby card as a proper child view controller, bottom-centered. The
+    /// hosting controller uses intrinsic content sizing, so the card/FAB defines its own
+    /// frame and the rest of the map stays interactive around it.
+    private func setupNearbyCard() {
+        addChild(nearbyCardController)
+        let card = nearbyCardController.view!
+        view.addSubview(card)
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.autoAlignAxis(toSuperviewAxis: .vertical)
+        let bottom = card.autoPinEdge(toSuperviewMargin: .bottom)
+        bottom.constant = -12
+        nearbyCardController.didMove(toParent: self)
     }
     
     private func setupSidebarButtons() {
