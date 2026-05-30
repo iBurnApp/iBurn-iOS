@@ -42,7 +42,20 @@ final class RightNowViewModel: ObservableObject {
     @Published var queryText: String = ""
     @Published var selectedChipID: String?
     @Published var timeOfDay: TimeOfDay = .now
+    @Published var selectedDay: Date = RightNowViewModel.defaultFestivalDay()
     @Published var place: PlaceScope = .nearMe
+
+    /// The festival day matching today (in BRC time) if the event is running, otherwise the
+    /// first festival day. Used as the default for the day-of-week selector.
+    static func defaultFestivalDay() -> Date {
+        let now = Date.present
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .burningManTimeZone
+        if let today = YearSettings.festivalDays.first(where: { calendar.isDate($0, inSameDayAs: now) }) {
+            return today
+        }
+        return YearSettings.festivalDays.first ?? now
+    }
 
     // MARK: - Output
     @Published var executionState: WorkflowExecutionState = .idle
@@ -97,7 +110,7 @@ final class RightNowViewModel: ObservableObject {
         case .nearMe: region = nil
         case .area(let r): region = r
         }
-        let window = timeOfDay.dateWindow()
+        let window = timeOfDay.dateWindow(on: selectedDay)
 
         currentTask = Task { [weak self] in
             guard let self else { return }

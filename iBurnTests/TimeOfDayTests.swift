@@ -70,4 +70,28 @@ final class TimeOfDayTests: XCTestCase {
     func testContainsNowIsTrueForNowHorizon() {
         XCTAssertTrue(TimeOfDay.now.containsNow(midFestival))
     }
+
+    func testFestivalCoversAtLeastAWeek() {
+        XCTAssertGreaterThanOrEqual(YearSettings.festivalDays.count, 7,
+                                    "Festival should span roughly Sunday through Sunday")
+    }
+
+    func testDateWindowAnchorsToSelectedDay() throws {
+        let days = YearSettings.festivalDays
+        let interior = try XCTUnwrap(days.count >= 3 ? days[2] : days.first)
+        let window = TimeOfDay.morning.dateWindow(on: interior)
+        XCTAssertEqual(brcCalendar.startOfDay(for: window.start),
+                       brcCalendar.startOfDay(for: interior),
+                       "Morning window should fall on the selected day")
+    }
+
+    func testWindowsOnConsecutiveDaysAreOrdered() {
+        let days = YearSettings.festivalDays
+        guard days.count >= 2 else { return }
+        for i in 1..<days.count {
+            let prev = TimeOfDay.afternoon.dateWindow(on: days[i - 1]).start
+            let curr = TimeOfDay.afternoon.dateWindow(on: days[i]).start
+            XCTAssertLessThanOrEqual(prev, curr, "Day \(i - 1) afternoon should be <= day \(i)")
+        }
+    }
 }

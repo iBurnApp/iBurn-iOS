@@ -76,25 +76,34 @@ enum TimeOfDay: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// Resolve this horizon to a concrete `(start, end)` event window.
-    /// Anchored to the festival day containing `now`, in BRC local time, and clamped
-    /// to the festival's date range so off-season/off-playa queries stay sane.
-    func dateWindow(now: Date = Date.present) -> (start: Date, end: Date) {
+    /// Resolve this horizon to a concrete `(start, end)` event window on the given festival
+    /// `day`, in BRC local time, clamped to the festival's date range so off-season/off-playa
+    /// queries stay sane. `.now` returns the next two hours when `day` is the current day,
+    /// otherwise the whole selected day.
+    func dateWindow(on day: Date, now: Date = Date.present) -> (start: Date, end: Date) {
         let low = YearSettings.eventStart
         let high = YearSettings.eventEnd
         func clamp(_ date: Date) -> Date { min(max(date, low), high) }
 
-        guard let range = hourRange else {
-            // .now → from the current moment through the next two hours.
-            return (clamp(now), clamp(now.addingTimeInterval(2 * 3600)))
-        }
-
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .burningManTimeZone
-        let startOfDay = calendar.startOfDay(for: now)
-        let start = startOfDay.addingTimeInterval(range.start * 3600)
-        let end = startOfDay.addingTimeInterval(range.end * 3600)
+        let dayStart = calendar.startOfDay(for: day)
+
+        guard let range = hourRange else {
+            // .now → the next two hours if we're looking at today, else the whole selected day.
+            if calendar.isDate(day, inSameDayAs: now) {
+                return (clamp(now), clamp(now.addingTimeInterval(2 * 3600)))
+            }
+            return (clamp(dayStart), clamp(dayStart.addingTimeInterval(24 * 3600)))
+        }
+        let start = dayStart.addingTimeInterval(range.start * 3600)
+        let end = dayStart.addingTimeInterval(range.end * 3600)
         return (clamp(start), clamp(end))
+    }
+
+    /// Convenience anchored to the festival day containing `now`.
+    func dateWindow(now: Date = Date.present) -> (start: Date, end: Date) {
+        dateWindow(on: now, now: now)
     }
 
     /// Whether the window contains the current moment (so "happening now" is meaningful).

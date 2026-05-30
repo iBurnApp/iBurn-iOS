@@ -109,36 +109,83 @@ struct RightNowView: View {
     // MARK: - Filter Bar (time-of-day + place)
 
     private var filterBar: some View {
-        HStack(spacing: 12) {
-            Menu {
-                ForEach(TimeOfDay.allCases) { option in
-                    Button {
-                        viewModel.timeOfDay = option
-                    } label: {
-                        Label(option.label, systemImage: option.icon)
-                    }
-                }
-            } label: {
-                filterChip(icon: viewModel.timeOfDay.icon, text: viewModel.timeOfDay.label)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                dayMenu
+                timeMenu
+                placeMenu
             }
-
-            Menu {
-                Button {
-                    viewModel.clearArea()
-                } label: {
-                    Label("Near me", systemImage: "location.fill")
-                }
-                Button {
-                    showAreaPicker = true
-                } label: {
-                    Label("Pick area on map…", systemImage: "map")
-                }
-            } label: {
-                filterChip(icon: placeIcon, text: placeLabel)
-            }
-
-            Spacer()
+            .padding(.vertical, 2)
         }
+    }
+
+    private var dayMenu: some View {
+        Menu {
+            ForEach(YearSettings.festivalDays, id: \.self) { day in
+                Button {
+                    viewModel.selectedDay = day
+                } label: {
+                    Label(dayMenuLabel(day), systemImage: isToday(day) ? "calendar.circle.fill" : "calendar")
+                }
+            }
+        } label: {
+            filterChip(icon: "calendar", text: dayChipLabel(viewModel.selectedDay))
+        }
+    }
+
+    private var timeMenu: some View {
+        Menu {
+            ForEach(TimeOfDay.allCases) { option in
+                Button {
+                    viewModel.timeOfDay = option
+                } label: {
+                    Label(option.label, systemImage: option.icon)
+                }
+            }
+        } label: {
+            filterChip(icon: viewModel.timeOfDay.icon, text: viewModel.timeOfDay.label)
+        }
+    }
+
+    private var placeMenu: some View {
+        Menu {
+            Button {
+                viewModel.clearArea()
+            } label: {
+                Label("Near me", systemImage: "location.fill")
+            }
+            Button {
+                showAreaPicker = true
+            } label: {
+                Label("Pick area on map…", systemImage: "map")
+            }
+        } label: {
+            filterChip(icon: placeIcon, text: placeLabel)
+        }
+    }
+
+    // MARK: - Day labels
+
+    private func isToday(_ day: Date) -> Bool {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .burningManTimeZone
+        return calendar.isDate(day, inSameDayAs: Date.present)
+    }
+
+    private func dayChipLabel(_ day: Date) -> String {
+        if isToday(day) { return "Today" }
+        let formatter = DateFormatter()
+        formatter.timeZone = .burningManTimeZone
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: day)
+    }
+
+    private func dayMenuLabel(_ day: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = .burningManTimeZone
+        formatter.dateFormat = "EEE MMM d"
+        let base = formatter.string(from: day)
+        return isToday(day) ? "\(base) · Today" : base
     }
 
     private var placeIcon: String {
