@@ -35,10 +35,10 @@ class EventListHostingController: UIHostingController<EventListView> {
     // MARK: - Navigation
 
     private func showDetail(for event: EventObjectOccurrence) {
-        let pageItems = viewModel.filteredItems.map { row in
+        let pageItems = viewModel.visibleRows.map { row in
             DetailPageItem(subject: .eventOccurrence(row.object), metadata: row.metadata, thumbnailColors: row.thumbnailColors)
         }
-        guard let index = viewModel.filteredItems.firstIndex(where: { $0.object.event.uid == event.event.uid && $0.object.occurrence.startTime == event.occurrence.startTime }) else { return }
+        guard let index = viewModel.visibleRows.firstIndex(where: { $0.object.event.uid == event.event.uid && $0.object.occurrence.startTime == event.occurrence.startTime }) else { return }
         let dataSource = DetailPagingDataSource(items: pageItems, playaDB: playaDB)
         self.pagingDataSource = dataSource
         let pageVC = dataSource.makePageViewController(initialIndex: index)

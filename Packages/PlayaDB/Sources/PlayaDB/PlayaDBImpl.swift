@@ -277,6 +277,14 @@ internal class PlayaDBImpl: PlayaDB {
             
             // Create R-Tree spatial index for geographic queries
             try setupRTreeIndex(db)
+
+            // Backfill the occurrence index for installs whose DB predates it (existing users
+            // don't re-import; PlayaDBSeeder only imports when update_info is empty).
+            let occRtreeCount = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM event_occurrence_rtree") ?? 0
+            let occCount = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM event_occurrences") ?? 0
+            if occRtreeCount == 0, occCount > 0 {
+                try rebuildOccurrenceRTree(db)
+            }
         }
     }
     
@@ -518,8 +526,91 @@ internal class PlayaDBImpl: PlayaDB {
                 DELETE FROM spatial_objects WHERE object_type = 'event' AND object_uid = OLD.uid;
             END
         """)
+
+        // Spatial R*Tree over event occurrences (point index keyed by event_occurrences.id,
+        // so no mapping table is needed). lat/lon come from the parent event's denormalized
+        // GPS; this is a pure spatial prefilter for region-scoped event queries.
+        //
+        // Migration: an earlier version added minT/maxT time columns. They were never queried
+        // (occurrenceIDsInRegion is spatial-only) and, for occurrences whose stored date
+        // strings don't parse via SQLite strftime (or whose end precedes start), produced
+        // minT > maxT and tripped the rtree's (minT<=maxT) constraint — failing the seed
+        // import outright. Drop that variant and recreate the index spatial-only.
+        let rtreeColumns = try Row.fetchAll(db, sql: "PRAGMA table_info(event_occurrence_rtree)")
+            .compactMap { $0["name"] as String? }
+        if rtreeColumns.contains("minT") {
+            try db.execute(sql: "DROP TRIGGER IF EXISTS event_occurrence_rtree_insert")
+            try db.execute(sql: "DROP TRIGGER IF EXISTS event_occurrence_rtree_delete")
+            try db.execute(sql: "DROP TABLE IF EXISTS event_occurrence_rtree")
+        }
+        try db.execute(sql: """
+            CREATE VIRTUAL TABLE IF NOT EXISTS event_occurrence_rtree USING rtree(
+                id,
+                minLat, maxLat,
+                minLon, maxLon
+            )
+        """)
+
+        // Maintain the occurrence index on direct writes (import also rebuilds it wholesale).
+        // lat/lon come from the parent event's denormalized GPS.
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_occurrence_rtree_insert
+            AFTER INSERT ON event_occurrences
+            WHEN EXISTS (
+                SELECT 1 FROM event_objects e
+                WHERE e.uid = NEW.event_id
+                  AND e.gps_latitude IS NOT NULL AND e.gps_longitude IS NOT NULL
+            )
+            BEGIN
+                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+                SELECT NEW.id, e.gps_latitude, e.gps_latitude, e.gps_longitude, e.gps_longitude
+                FROM event_objects e WHERE e.uid = NEW.event_id;
+            END
+        """)
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_occurrence_rtree_delete
+            AFTER DELETE ON event_occurrences
+            BEGIN
+                DELETE FROM event_occurrence_rtree WHERE id = OLD.id;
+            END
+        """)
     }
-    
+
+    /// Rebuild the occurrence spatial index from current data. Indexes each occurrence whose
+    /// parent event has GPS, using the event's denormalized coordinate as a point.
+    func rebuildOccurrenceRTree(_ db: Database) throws {
+        try db.execute(sql: "DELETE FROM event_occurrence_rtree")
+        let rows = try Row.fetchAll(db, sql: """
+            SELECT o.id AS id, e.gps_latitude AS lat, e.gps_longitude AS lon
+            FROM event_occurrences o
+            JOIN event_objects e ON e.uid = o.event_id
+            WHERE e.gps_latitude IS NOT NULL AND e.gps_longitude IS NOT NULL
+        """)
+        for row in rows {
+            let id: Int64 = row["id"]
+            let lat: Double = row["lat"]
+            let lon: Double = row["lon"]
+            try db.execute(sql: """
+                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+                VALUES (?, ?, ?, ?, ?)
+                """, arguments: [id, lat, lat, lon, lon])
+        }
+    }
+
+    /// Occurrence ids whose host location falls within `region`, via the spatial R*Tree.
+    /// Time filtering stays in SQL. Used to push event region filtering into the query
+    /// instead of filtering rows client-side.
+    private func occurrenceIDsInRegion(_ db: Database, region: MKCoordinateRegion) throws -> [Int64] {
+        let minLat = region.center.latitude - region.span.latitudeDelta / 2
+        let maxLat = region.center.latitude + region.span.latitudeDelta / 2
+        let minLon = region.center.longitude - region.span.longitudeDelta / 2
+        let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+        return try Int64.fetchAll(db, sql: """
+            SELECT id FROM event_occurrence_rtree
+            WHERE maxLat >= ? AND minLat <= ? AND maxLon >= ? AND minLon <= ?
+            """, arguments: [minLat, maxLat, minLon, maxLon])
+    }
+
     // MARK: - Data Access Methods
     
     func fetchArt() async throws -> [ArtObject] {
@@ -959,8 +1050,13 @@ internal class PlayaDBImpl: PlayaDB {
         return request.orderedByName()
     }
 
-    /// Build an event occurrence query from filter options (internal - uses GRDB types)
-    internal func eventOccurrenceRequest(filter: EventFilter) -> QueryInterfaceRequest<EventOccurrence> {
+    /// Build an event occurrence query from filter options (internal - uses GRDB types).
+    /// `matchingEventUIDs` constrains occurrences to events whose UIDs match an FTS query;
+    /// pass `nil` to skip search filtering.
+    internal func eventOccurrenceRequest(
+        filter: EventFilter,
+        matchingEventUIDs: Set<String>? = nil
+    ) -> QueryInterfaceRequest<EventOccurrence> {
         var request = EventOccurrence.all()
 
         // Apply time-based filters
@@ -983,18 +1079,110 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.filter(EventOccurrence.Columns.startTime < endDate)
         }
 
+        // FTS5 search constraint (UIDs pre-resolved against event_objects_fts)
+        if let uids = matchingEventUIDs {
+            request = request.filter(uids.contains(EventOccurrence.Columns.eventId))
+        }
+
         // Default ordering by start time
         return request.orderedByStartTime()
+    }
+
+    /// JOIN-based variant of `eventObjectOccurrences(filter:db:)` that fetches occurrence +
+    /// parent event + host (camp or art) in a single SQL JOIN. Replaces the prior
+    /// 4-sequential-query pattern (occurrences → events IN(…) → camps IN(…) → arts IN(…)).
+    ///
+    /// Pushes favorites / year / event-type filters into SQL. Region/bbox filter remains
+    /// client-side (sparse GPS on events; no spatial index payoff).
+    internal func eventObjectOccurrencesJoined(
+        filter: EventFilter,
+        db: Database
+    ) throws -> [EventObjectOccurrence] {
+        // FTS5 pre-resolve against event_objects_fts (same pattern as the non-joined helper).
+        let matchingEventUIDs: Set<String>?
+        if let searchText = filter.searchText, !searchText.isEmpty {
+            let uids = try EventObject.all()
+                .matching(searchText: searchText)
+                .select(EventObject.Columns.uid, as: String.self)
+                .fetchAll(db)
+            matchingEventUIDs = Set(uids)
+        } else {
+            matchingEventUIDs = nil
+        }
+
+        // Base occurrence query (date/time/notExpired/search constraints applied via existing helper).
+        // `forKey("event")` overrides GRDB's default scope key (destination type name) so the
+        // joined row exposes the EventObject row under `row.scopes["event"]`, matching
+        // EventOccurrenceJoinedRow.init(row:).
+        let eventAssociation = EventOccurrence.event.forKey("event")
+        var request = eventOccurrenceRequest(
+            filter: filter,
+            matchingEventUIDs: matchingEventUIDs
+        )
+        .including(required: eventAssociation
+            .including(optional: EventObject.hostedCamp)
+            .including(optional: EventObject.locatedArt))
+
+        // Push remaining filters into SQL.
+        if filter.onlyFavorites {
+            let predicate: SQL = SQL("""
+                EXISTS (
+                    SELECT 1 FROM object_metadata
+                    WHERE object_metadata.object_type = \(DataObjectType.event.rawValue)
+                      AND object_metadata.object_id = event_occurrences.event_id
+                      AND object_metadata.is_favorite = 1
+                )
+            """)
+            request = request.filter(predicate)
+        }
+        if let year = filter.year {
+            request = request.joining(required: eventAssociation
+                .filter(EventObject.Columns.year == year))
+        }
+        if let codes = filter.eventTypeCodes, !codes.isEmpty {
+            request = request.joining(required: eventAssociation
+                .filter(codes.contains(EventObject.Columns.eventTypeCode)))
+        }
+        // Region → indexed prefilter on occurrence ids (R*Tree), matching the non-joined path.
+        if let region = filter.region {
+            let regionIDs = try occurrenceIDsInRegion(db, region: region)
+            request = request.filter(regionIDs.contains(EventOccurrence.Columns.id))
+        }
+
+        let joined = try EventOccurrenceJoinedRow.fetchAll(db, request)
+        return joined.map { $0.toEventObjectOccurrence() }
     }
 
     private func eventObjectOccurrences(
         filter: EventFilter,
         db: Database
     ) throws -> [EventObjectOccurrence] {
-        let occurrenceRequest = eventOccurrenceRequest(filter: filter)
+        // Pre-resolve FTS5 search to event UIDs against event_objects_fts (parent table).
+        // .matching(searchText:) keys off RowDecoder.databaseTableName + "_fts", and the
+        // events FTS table indexes EventObject columns (name/description/event_type_label/
+        // print_description), not EventOccurrence — so the match must run on EventObject.
+        let matchingEventUIDs: Set<String>?
+        if let searchText = filter.searchText, !searchText.isEmpty {
+            let uids = try EventObject.all()
+                .matching(searchText: searchText)
+                .select(EventObject.Columns.uid, as: String.self)
+                .fetchAll(db)
+            matchingEventUIDs = Set(uids)
+        } else {
+            matchingEventUIDs = nil
+        }
+
+        var occurrenceRequest = eventOccurrenceRequest(
+            filter: filter,
+            matchingEventUIDs: matchingEventUIDs
+        )
+        // Region → indexed prefilter on occurrence ids (R*Tree). Time/type stay exact below.
+        if let region = filter.region {
+            let regionIDs = try occurrenceIDsInRegion(db, region: region)
+            occurrenceRequest = occurrenceRequest.filter(regionIDs.contains(EventOccurrence.Columns.id))
+        }
         let occurrences = try occurrenceRequest.fetchAll(db)
 
-        // Batch-resolve parent events
         let pairs = try eventObjectOccurrences(for: occurrences, db: db)
 
         let favoriteEventIds: Set<String>
@@ -1023,25 +1211,7 @@ internal class PlayaDBImpl: PlayaDB {
                 return false
             }
 
-            if let region = filter.region {
-                guard let lat = event.gpsLatitude, let lon = event.gpsLongitude else { return false }
-                let minLat = region.center.latitude - region.span.latitudeDelta / 2
-                let maxLat = region.center.latitude + region.span.latitudeDelta / 2
-                let minLon = region.center.longitude - region.span.longitudeDelta / 2
-                let maxLon = region.center.longitude + region.span.longitudeDelta / 2
-                if lat < minLat || lat > maxLat || lon < minLon || lon > maxLon {
-                    return false
-                }
-            }
-
-            if let searchText = filter.searchText, !searchText.isEmpty {
-                let lowerSearch = searchText.lowercased()
-                let nameMatch = event.name.lowercased().contains(lowerSearch)
-                let descMatch = event.description?.lowercased().contains(lowerSearch) ?? false
-                if !nameMatch && !descMatch {
-                    return false
-                }
-            }
+            // Region is filtered in SQL via the occurrence R*Tree prefilter (see above).
 
             if let allowedTypes = filter.eventTypeCodes, !allowedTypes.isEmpty {
                 if !allowedTypes.contains(event.eventTypeCode) {
@@ -1083,15 +1253,20 @@ internal class PlayaDBImpl: PlayaDB {
 
     /// Observe objects as fully-inflated ListRows. Fetches objects, metadata, and
     /// thumbnail colors in a single read transaction.
+    /// - Parameter regions: Explicit observation regions. When provided, only changes to these
+    ///   regions trigger re-evaluation. The fetch closure can read from any table freely.
+    ///   When nil, GRDB auto-tracks all tables accessed in the fetch closure.
     private func observeListRows<T>(
         type: DataObjectType,
         ids: @escaping ([T]) -> [String],
+        regions: [any DatabaseRegionConvertible]? = nil,
+        skipEnsureMetadata: Bool = false,
         value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([ListRow<T>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
         let typeRaw = type.rawValue
-        let observation = ValueObservation.tracking { db -> [ListRow<T>] in
+        let fetch: @Sendable (Database) throws -> [ListRow<T>] = { db in
             let objects = try value(db)
             let objectIDs = ids(objects)
             guard !objectIDs.isEmpty else { return [] }
@@ -1118,14 +1293,23 @@ internal class PlayaDBImpl: PlayaDB {
                 )
             }
         }
+
+        let observation: ValueObservation<ValueReducers.Fetch<[ListRow<T>]>>
+        if let regions {
+            observation = ValueObservation.tracking(regions: regions, fetch: fetch)
+        } else {
+            observation = ValueObservation.tracking(fetch)
+        }
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
             onChange: { [weak self] rows in
-                let identifiers = ids(rows.map(\.object))
-                if !identifiers.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: type, ids: identifiers)
+                if !skipEnsureMetadata {
+                    let identifiers = ids(rows.map(\.object))
+                    if !identifiers.isEmpty {
+                        Task {
+                            try? await self?.ensureMetadata(for: type, ids: identifiers)
+                        }
                     }
                 }
                 onChange(rows)
@@ -1173,9 +1357,13 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
+        // Explicitly scope observation to event tables only.
+        // The fetch closure also JOINs camp_objects/art_objects for host data,
+        // but changes to those tables should not trigger re-evaluation.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
+            regions: [EventOccurrence.all(), EventObject.all(), Table("event_occurrence_rtree")],
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.eventObjectOccurrences(filter: filter, db: db)
@@ -1200,6 +1388,130 @@ internal class PlayaDBImpl: PlayaDB {
             onChange: onChange,
             onError: onError
         )
+    }
+
+    func observeEventsByHour(
+        filter: EventFilter,
+        onChange: @escaping ([EventHourSection]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        observeEvents(filter: filter, onChange: { rows in
+            onChange(Self.groupByHour(rows))
+        }, onError: onError)
+    }
+
+    func observeEventsByDayThenHour(
+        filter: EventFilter,
+        onChange: @escaping ([Date: [EventHourSection]]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        // Tracked regions: event tables drive bucket membership/order; ObjectMetadata is needed
+        // so favorite toggles refresh the heart UI; ThumbnailColors so cached-color writes refresh
+        // the row chrome. Camp/art tables are intentionally excluded — host edits don't reshuffle
+        // the event list.
+        // skipEnsureMetadata: avoids a startup feedback loop where the first emission
+        // would write 8000+ blank metadata rows, which the ObjectMetadata region would
+        // immediately observe and re-fire the JOIN. Fetch already tolerates nil metadata
+        // via `metaByID[uid]` so blank pre-population is unnecessary.
+        observeListRows(
+            type: .event,
+            ids: { $0.map { $0.event.uid } },
+            regions: [
+                EventOccurrence.all(),
+                EventObject.all(),
+                ObjectMetadata.all(),
+                ThumbnailColors.all(),
+                Table("event_occurrence_rtree")
+            ],
+            skipEnsureMetadata: true,
+            value: { [weak self, filter] db in
+                guard let self else { return [] }
+                return try self.eventObjectOccurrencesJoined(filter: filter, db: db)
+            },
+            onChange: { rows in
+                onChange(Self.bucketByDayThenHour(rows))
+            },
+            onError: onError
+        )
+    }
+
+    /// Groups rows by start-time hour-of-day in the device's current calendar.
+    /// Sections are sorted ascending; rows within a section preserve input order
+    /// (which is `orderedByStartTime` from `eventOccurrenceRequest`).
+    static func groupByHour(_ rows: [ListRow<EventObjectOccurrence>]) -> [EventHourSection] {
+        let calendar = Calendar.current
+        return Dictionary(grouping: rows, by: { calendar.component(.hour, from: $0.object.startDate) })
+            .sorted { $0.key < $1.key }
+            .map { EventHourSection(hour: $0.key, rows: $0.value) }
+    }
+
+    /// Single-pass split of rows pre-sorted by start time into `[Date(startOfDay): [hour sections]]`.
+    /// Day-tab UI then reads `bucket[selectedDay]` with no DB hit.
+    ///
+    /// Calendar boundaries are cached across consecutive rows: since input is sorted by
+    /// start_time, most rows fall into the same hour as their predecessor, so we only
+    /// call `Calendar.startOfDay`/`component` when the row crosses a boundary. Avoids
+    /// ~16k Calendar method calls for a 8k-row dataset (devices show 50–100x latency
+    /// without this — Calendar isn't free under thermal load).
+    static func bucketByDayThenHour(_ rows: [ListRow<EventObjectOccurrence>]) -> [Date: [EventHourSection]] {
+        let calendar = Calendar.current
+        var result: [Date: [EventHourSection]] = [:]
+        var currentDay: Date?
+        var currentDayEnd: Date?       // exclusive upper bound (day + 1d) for cheap "same day?" check
+        var currentHour: Int?
+        var currentHourStart: Date?    // start instant of current hour
+        var currentHourEnd: Date?      // start instant of next hour
+        var currentRows: [ListRow<EventObjectOccurrence>] = []
+        var currentDaySections: [EventHourSection] = []
+
+        func flushHour() {
+            guard let h = currentHour, !currentRows.isEmpty else { return }
+            currentDaySections.append(EventHourSection(hour: h, rows: currentRows))
+            currentRows = []
+        }
+        func flushDay() {
+            flushHour()
+            if let d = currentDay, !currentDaySections.isEmpty {
+                result[d] = currentDaySections
+            }
+            currentDaySections = []
+        }
+
+        for row in rows {
+            let start = row.object.startDate
+
+            // Day boundary check via cached interval (no Calendar call if same day as previous row).
+            if let dayEnd = currentDayEnd, start < dayEnd, let day = currentDay, start >= day {
+                // Same day — fall through to hour check.
+            } else {
+                flushDay()
+                let day = calendar.startOfDay(for: start)
+                currentDay = day
+                currentDayEnd = calendar.date(byAdding: .day, value: 1, to: day) ?? day
+                currentHour = nil
+                currentHourStart = nil
+                currentHourEnd = nil
+            }
+
+            // Hour boundary check via cached interval (no Calendar call if same hour).
+            if let hourEnd = currentHourEnd, start < hourEnd, let hourStart = currentHourStart, start >= hourStart {
+                // Same hour — append below.
+            } else {
+                flushHour()
+                let hour = calendar.component(.hour, from: start)
+                currentHour = hour
+                if let day = currentDay {
+                    currentHourStart = calendar.date(byAdding: .hour, value: hour, to: day)
+                    currentHourEnd = currentHourStart.flatMap {
+                        calendar.date(byAdding: .hour, value: 1, to: $0)
+                    }
+                }
+            }
+
+            currentRows.append(row)
+        }
+        flushDay()
+        return result
     }
 
     // MARK: - Thumbnail Colors
@@ -1328,22 +1640,23 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - Event Occurrence Batch Helpers
 
-    /// Batch-fetch occurrences for a set of events in one query, returning EventObjectOccurrence pairs.
-    /// Replaces per-event `event.occurrences.fetchAll(db)` N+1 pattern.
+    /// Fetch occurrences for a set of events, batch-resolving host camp/art in the same transaction.
     private func eventObjectOccurrences(for events: [EventObject], db: Database) throws -> [EventObjectOccurrence] {
         guard !events.isEmpty else { return [] }
         let eventsByUID = Dictionary(uniqueKeysWithValues: events.map { ($0.uid, $0) })
         let occurrences = try EventOccurrence
             .filter(eventsByUID.keys.contains(Column("event_id")))
             .fetchAll(db)
+
+        let hosts = try batchResolveHosts(for: events, db: db)
+
         return occurrences.compactMap { occ in
             guard let event = eventsByUID[occ.eventId] else { return nil }
-            return EventObjectOccurrence(event: event, occurrence: occ)
+            return EventObjectOccurrence(event: event, occurrence: occ, host: hosts[event.uid])
         }
     }
 
-    /// Batch-resolve parent events for a set of occurrences in one query, returning EventObjectOccurrence pairs.
-    /// Replaces per-occurrence `occurrence.event.fetchOne(db)` N+1 pattern.
+    /// Fetch parent events + host data for a set of occurrences via batch queries.
     private func eventObjectOccurrences(for occurrences: [EventOccurrence], db: Database) throws -> [EventObjectOccurrence] {
         guard !occurrences.isEmpty else { return [] }
         let eventIDs = Set(occurrences.map(\.eventId))
@@ -1351,10 +1664,46 @@ internal class PlayaDBImpl: PlayaDB {
             .filter(eventIDs.contains(Column("uid")))
             .fetchAll(db)
         let eventsByUID = Dictionary(uniqueKeysWithValues: events.map { ($0.uid, $0) })
+
+        let hosts = try batchResolveHosts(for: events, db: db)
+
         return occurrences.compactMap { occ in
             guard let event = eventsByUID[occ.eventId] else { return nil }
-            return EventObjectOccurrence(event: event, occurrence: occ)
+            return EventObjectOccurrence(event: event, occurrence: occ, host: hosts[event.uid])
         }
+    }
+
+    /// Batch-fetch host camp/art objects for a set of events (2 queries max).
+    /// Returns a dictionary mapping event UID → PlaceDataObject.
+    private func batchResolveHosts(for events: [EventObject], db: Database) throws -> [String: any PlaceDataObject] {
+        let campUIDs = Set(events.compactMap(\.hostedByCamp))
+        let artUIDs = Set(events.compactMap(\.locatedAtArt))
+
+        var campsByUID: [String: CampObject] = [:]
+        if !campUIDs.isEmpty {
+            let camps = try CampObject
+                .filter(campUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            campsByUID = Dictionary(uniqueKeysWithValues: camps.map { ($0.uid, $0) })
+        }
+
+        var artsByUID: [String: ArtObject] = [:]
+        if !artUIDs.isEmpty {
+            let arts = try ArtObject
+                .filter(artUIDs.contains(Column("uid")))
+                .fetchAll(db)
+            artsByUID = Dictionary(uniqueKeysWithValues: arts.map { ($0.uid, $0) })
+        }
+
+        var hosts: [String: any PlaceDataObject] = [:]
+        for event in events {
+            if let campUID = event.hostedByCamp, let camp = campsByUID[campUID] {
+                hosts[event.uid] = camp
+            } else if let artUID = event.locatedAtArt, let art = artsByUID[artUID] {
+                hosts[event.uid] = art
+            }
+        }
+        return hosts
     }
 
     func metadata(for object: any DataObject) async throws -> ObjectMetadata {
@@ -1891,6 +2240,9 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
             
+            // Step 4d: Rebuild the occurrence spatio-temporal index.
+            try rebuildOccurrenceRTree(db)
+
             // Step 5: Update import info
             let now = Date()
 
@@ -2158,11 +2510,16 @@ internal class PlayaDBImpl: PlayaDB {
             }
         )
         
-        // Observe event objects with occurrences
-        let eventObservation = ValueObservation.tracking { [self] db in
-            let events = try EventObject.fetchAll(db)
-            return try eventObjectOccurrences(for: events, db: db)
-        }
+        // Observe event objects with occurrences.
+        // Explicit regions: only re-fire on event table changes, not camp/art
+        // (the fetch closure JOINs camp/art for host data but those shouldn't trigger re-evaluation).
+        let eventObservation = ValueObservation.tracking(
+            regions: [EventObject.all(), EventOccurrence.all()],
+            fetch: { [self] db in
+                let events = try EventObject.fetchAll(db)
+                return try eventObjectOccurrences(for: events, db: db)
+            }
+        )
         let eventCancellable = eventObservation.start(
             in: dbQueue,
             onError: { error in

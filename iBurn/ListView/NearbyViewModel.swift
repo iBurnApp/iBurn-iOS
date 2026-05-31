@@ -28,7 +28,6 @@ final class NearbyViewModel: ObservableObject {
 
     @Published var isLoading: Bool = true
     @Published var now: Date = .present
-    @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
 
     // MARK: - Dependencies
 
@@ -179,56 +178,6 @@ final class NearbyViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Host Resolution
-
-    func resolvedHost(for event: EventObjectOccurrence) -> ResolvedEventHost? {
-        resolvedHosts[event.event.uid]
-    }
-
-    private func resolveHosts(for events: [EventObjectOccurrence]) {
-        let needsResolution = events.filter { event in
-            let uid = event.event.uid
-            if resolvedHosts[uid] != nil { return false }
-            return event.event.isHostedByCamp || event.event.isLocatedAtArt
-        }
-        guard !needsResolution.isEmpty else { return }
-
-        Task { [weak self, playaDB] in
-            guard let self else { return }
-            var newHosts: [String: ResolvedEventHost] = [:]
-
-            for event in needsResolution {
-                let eventUID = event.event.uid
-                if let campUID = event.event.hostedByCamp {
-                    if let camp = try? await playaDB.fetchCamp(uid: campUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: camp.name,
-                            address: camp.locationString,
-                            description: camp.description,
-                            thumbnailObjectID: campUID,
-                            isArt: false
-                        )
-                    }
-                } else if let artUID = event.event.locatedAtArt {
-                    if let art = try? await playaDB.fetchArt(uid: artUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: art.name,
-                            address: art.locationString ?? art.timeBasedAddress,
-                            description: art.description,
-                            thumbnailObjectID: artUID,
-                            isArt: true
-                        )
-                    }
-                }
-            }
-
-            guard !newHosts.isEmpty else { return }
-            await MainActor.run {
-                self.resolvedHosts.merge(newHosts) { _, new in new }
-            }
-        }
-    }
-
     // MARK: - Favorites
 
     func toggleFavorite(_ item: NearbyItem) async {
@@ -330,7 +279,6 @@ final class NearbyViewModel: ObservableObject {
                 await MainActor.run {
                     self.eventItems = items
                     self.markReceived("event")
-                    self.resolveHosts(for: items.map(\.object))
                 }
             }
         }

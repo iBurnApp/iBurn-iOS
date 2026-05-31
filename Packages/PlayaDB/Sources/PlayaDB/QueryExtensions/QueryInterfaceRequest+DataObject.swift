@@ -33,20 +33,6 @@ extension QueryInterfaceRequest where RowDecoder: DataObjectColumnProviding {
 extension QueryInterfaceRequest where RowDecoder: DataObjectColumnProviding, RowDecoder.ColumnSet: GeoLocatableColumns {
     private static var geoColumns: RowDecoder.ColumnSet.Type { RowDecoder.columnSet }
 
-    /// Geographic filtering using an `MKCoordinateRegion` bounding box.
-    public func inRegion(_ region: MKCoordinateRegion) -> Self {
-        let minLat = region.center.latitude - region.span.latitudeDelta / 2
-        let maxLat = region.center.latitude + region.span.latitudeDelta / 2
-        let minLon = region.center.longitude - region.span.longitudeDelta / 2
-        let maxLon = region.center.longitude + region.span.longitudeDelta / 2
-
-        return self
-            .filter(Self.geoColumns.gpsLatitude >= minLat)
-            .filter(Self.geoColumns.gpsLatitude <= maxLat)
-            .filter(Self.geoColumns.gpsLongitude >= minLon)
-            .filter(Self.geoColumns.gpsLongitude <= maxLon)
-    }
-
     /// Only objects with valid GPS coordinates.
     public func withLocation() -> Self {
         self
@@ -60,6 +46,32 @@ extension QueryInterfaceRequest where RowDecoder: DataObjectColumnProviding, Row
         let lonDiff = Self.geoColumns.gpsLongitude - coordinate.longitude
         let distanceApprox = latDiff * latDiff + lonDiff * lonDiff
         return order(distanceApprox.asc)
+    }
+}
+
+// MARK: - Geo-Location via R*Tree
+
+extension QueryInterfaceRequest where RowDecoder: DataObjectColumnProviding & TableRecord, RowDecoder.ColumnSet: GeoLocatableColumns {
+    /// Geographic filtering via the point R*Tree (`spatial_index`), keyed by object type + uid.
+    /// Equivalent to the prior bounding-box filter but served by the spatial index.
+    public func inRegion(_ region: MKCoordinateRegion) -> Self {
+        let b = FilterRegion(region).bounds
+        let type: String
+        switch RowDecoder.databaseTableName {
+        case "art_objects": type = "art"
+        case "camp_objects": type = "camp"
+        case "event_objects": type = "event"
+        default: type = ""
+        }
+        return filter(sql: """
+            uid IN (
+                SELECT so.object_uid FROM spatial_objects so
+                JOIN spatial_index si ON si.id = so.spatial_id
+                WHERE so.object_type = ?
+                  AND si.maxLat >= ? AND si.minLat <= ?
+                  AND si.maxLon >= ? AND si.minLon <= ?
+            )
+            """, arguments: [type, b.minLat, b.maxLat, b.minLon, b.maxLon])
     }
 }
 

@@ -582,4 +582,33 @@ final class FilterRequestBuilderTests: XCTestCase {
         XCTAssertEqual(events.count, 1, "Only Sunrise Yoga should match all event-level filters")
         XCTAssertEqual(events.first?.event.uid, "event-match")
     }
+
+    /// Regression: event search must run through FTS5 (`event_objects_fts`), not in-memory
+    /// `.lowercased().contains(...)`. Porter stemming means a query "yogas" matches a name
+    /// containing "Yoga" — substring matching cannot do this.
+    func testEventSearchUsesFTSStemmingNotSubstring() async throws {
+        let now = Date()
+        try await insertEvent(
+            uid: "event-stem-match",
+            name: "Yoga Class",
+            year: 2025,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Daily flow"
+        )
+        try await insertEvent(
+            uid: "event-stem-miss",
+            name: "Bicycle Tour",
+            year: 2025,
+            start: now.addingTimeInterval(3600),
+            end: now.addingTimeInterval(7200),
+            description: "Group ride"
+        )
+
+        let filter = EventFilter(searchText: "yogas", includeExpired: true)
+        let events = try await playaDB.fetchEvents(filter: filter)
+
+        XCTAssertEqual(events.count, 1, "Stemmed FTS query should match 'Yoga Class' for 'yogas'")
+        XCTAssertEqual(events.first?.event.uid, "event-stem-match")
+    }
 }

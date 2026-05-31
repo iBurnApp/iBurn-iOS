@@ -226,7 +226,15 @@ public extension EventObject {
 public extension EventObject {
     /// Define relationship to event occurrences
     static let occurrences = hasMany(EventOccurrence.self, using: ForeignKey(["event_id"]))
-    
+
+    /// Define relationship to hosting camp
+    static let hostedCamp = belongsTo(CampObject.self, key: "hostedCamp",
+        using: ForeignKey(["hosted_by_camp"], to: ["uid"]))
+
+    /// Define relationship to hosting art installation
+    static let locatedArt = belongsTo(ArtObject.self, key: "locatedArt",
+        using: ForeignKey(["located_at_art"], to: ["uid"]))
+
     /// Associated occurrences request
     var occurrences: QueryInterfaceRequest<EventOccurrence> {
         request(for: EventObject.occurrences)

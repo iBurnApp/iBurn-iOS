@@ -250,6 +250,12 @@ public extension CampObject {
     }
 }
 
+// MARK: - PlaceDataObject
+
+extension CampObject: PlaceDataObject {
+    public var address: String? { locationString ?? intersection }
+}
+
 // MARK: - Relationships
 
 public extension CampObject {

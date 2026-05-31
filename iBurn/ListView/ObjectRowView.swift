@@ -32,6 +32,8 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
     let object: Object
     let subtitle: AttributedString?
     let rightSubtitle: String?
+    let hostName: String?
+    let hostAddress: String?
     let isFavorite: Bool
     let thumbnailColors: ThumbnailColors?
     let onFavoriteTap: () -> Void
@@ -46,6 +48,8 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         object: Object,
         subtitle: AttributedString? = nil,
         rightSubtitle: String? = nil,
+        hostName: String? = nil,
+        hostAddress: String? = nil,
         isFavorite: Bool,
         thumbnailColors: ThumbnailColors? = nil,
         onFavoriteTap: @escaping () -> Void,
@@ -54,6 +58,8 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
         self.object = object
         self.subtitle = subtitle
         self.rightSubtitle = rightSubtitle
+        self.hostName = hostName
+        self.hostAddress = hostAddress
         self.isFavorite = isFavorite
         self.thumbnailColors = thumbnailColors
         self.onFavoriteTap = onFavoriteTap
@@ -74,66 +80,77 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             return themeColors
         }()
 
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(object.name)
-                        .font(.headline)
-                        .foregroundColor(colors.primaryColor)
-                        .lineLimit(1)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                favoriteIcon(colors: colors)
 
+                Text(object.name)
+                    .font(.headline)
+                    .foregroundColor(colors.primaryColor)
+                    .lineLimit(1)
+
+                Spacer(minLength: 0)
+
+                actions(assets)
+            }
+
+            if hostName != nil || hostAddress != nil {
+                HStack(spacing: 8) {
+                    if let hostName {
+                        Text(hostName)
+                            .font(.subheadline)
+                            .foregroundColor(colors.secondaryColor)
+                            .lineLimit(1)
+                    }
                     Spacer(minLength: 0)
-
-                    actions(assets)
+                    if let hostAddress {
+                        Text(hostAddress)
+                            .font(.subheadline)
+                            .foregroundColor(colors.detailColor)
+                            .lineLimit(1)
+                    }
                 }
+            }
 
-                HStack(alignment: .top, spacing: 8) {
-                    thumbnailView
-                        .frame(width: thumbnailSize, height: thumbnailSize)
+            HStack(alignment: .top, spacing: 8) {
+                thumbnailView
+                    .frame(width: thumbnailSize, height: thumbnailSize)
 
-                    Text(object.description ?? "")
+                Text(object.description ?? "")
+                    .font(.subheadline)
+                    .foregroundColor(colors.detailColor)
+                    .lineLimit(nil)
+                    .truncationMode(.tail)
+                    .frame(maxHeight: thumbnailSize, alignment: .topLeading)
+            }
+            .padding(.top, 4)
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                if let subtitle {
+                    Text(subtitle)
                         .font(.subheadline)
-                        .foregroundColor(colors.detailColor)
-                        .lineLimit(nil)
+                        .lineLimit(1)
                         .truncationMode(.tail)
-                        .frame(height: thumbnailSize, alignment: .topLeading)
+                        .layoutPriority(1)
+                } else {
+                    Text("🚶🏽 ? min   🚴🏽 ? min")
+                        .font(.subheadline)
+                        .foregroundColor(colors.secondaryColor)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .layoutPriority(1)
                 }
-                .padding(.top, 4)
 
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .layoutPriority(1)
-                    } else {
-                        Text("🚶🏽 ? min   🚴🏽 ? min")
-                            .font(.subheadline)
-                            .foregroundColor(colors.secondaryColor)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .layoutPriority(1)
-                    }
+                Spacer(minLength: 0)
 
-                    Spacer(minLength: 0)
-
-                    if let rightSubtitle, !rightSubtitle.isEmpty {
-                        Text(rightSubtitle)
-                            .font(.subheadline)
-                            .foregroundColor(colors.secondaryColor)
-                            .lineLimit(1)
-                    }
+                if let rightSubtitle, !rightSubtitle.isEmpty {
+                    Text(rightSubtitle)
+                        .font(.subheadline)
+                        .foregroundColor(colors.secondaryColor)
+                        .lineLimit(1)
                 }
-                .padding(.top, 8)
             }
-
-            Button(action: onFavoriteTap) {
-                Image(systemName: isFavorite ? "heart.fill" : "heart")
-                    .foregroundColor(isFavorite ? .pink : colors.detailColor)
-                    .imageScale(.large)
-            }
-            .buttonStyle(.plain)
+            .padding(.top, 8)
         }
         .padding(.vertical, 0)
         .listRowBackground(listRowBackground)
@@ -142,6 +159,17 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
                 assets.startIfNeeded()
             }
         }
+    }
+
+    /// Leading-edge favorite icon. Uses `Image + onTapGesture` (not `Button`)
+    /// so it doesn't conflict with an outer row-level `Button` for selection.
+    private func favoriteIcon(colors: ImageColors) -> some View {
+        Image(systemName: isFavorite ? "heart.fill" : "heart")
+            .foregroundColor(isFavorite ? .pink : colors.detailColor)
+            .imageScale(.medium)
+            .frame(width: 28, height: 28)
+            .contentShape(Rectangle())
+            .onTapGesture { onFavoriteTap() }
     }
 
     private var listRowBackground: some View {

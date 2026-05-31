@@ -180,6 +180,8 @@ struct RecentlyViewedView: View {
                 object: event,
                 subtitle: subtitle,
                 rightSubtitle: event.timeDescription(now: Date()),
+                hostName: event.hostName,
+                hostAddress: BRCEmbargo.allowEmbargoedData() ? event.hostAddress : nil,
                 isFavorite: isFav,
                 onFavoriteTap: favAction
             ) { _ in
@@ -188,7 +190,6 @@ struct RecentlyViewedView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { onSelectEvent(event) }
-            .onAppear { viewModel.resolveHosts(for: [event]) }
 
         case .mutantVehicle(let mv, _):
             ObjectRowView(

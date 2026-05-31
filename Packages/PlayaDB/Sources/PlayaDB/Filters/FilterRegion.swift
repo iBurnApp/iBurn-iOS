@@ -41,4 +41,10 @@ public struct FilterRegion: Hashable, Codable {
             )
         )
     }
+
+    /// Bounding box derived from center ± span/2.
+    public var bounds: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double) {
+        (centerLatitude - latitudeDelta / 2, centerLatitude + latitudeDelta / 2,
+         centerLongitude - longitudeDelta / 2, centerLongitude + longitudeDelta / 2)
+    }
 }

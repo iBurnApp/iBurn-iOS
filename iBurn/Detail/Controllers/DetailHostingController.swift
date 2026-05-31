@@ -64,7 +64,6 @@ class DetailHostingController: UIHostingController<DetailView>, DynamicViewContr
         super.init(rootView: DetailView(viewModel: viewModel))
         
         self.title = titleText
-        self.hidesBottomBarWhenPushed = true
     }
     
     @MainActor required dynamic init?(coder aDecoder: NSCoder) {

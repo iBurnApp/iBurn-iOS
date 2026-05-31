@@ -3,20 +3,24 @@ import Dispatch
 import Foundation
 import PlayaDB
 
-/// Resolved host information for an event (camp or art installation).
-struct ResolvedEventHost {
-    let name: String
-    let address: String?
-    let description: String?
-    let thumbnailObjectID: String?
-    let isArt: Bool
-}
-
 @MainActor
 final class EventListViewModel: ObservableObject {
+
+    enum Mode: Equatable {
+        case browse
+        case search(String)
+    }
+
     // MARK: - Published
 
-    @Published var items: [ListRow<EventObjectOccurrence>] = []
+    /// Full-festival browse results, bucketed by start-of-day then hour. Built once per
+    /// filter/search change and re-emitted only when underlying data changes (favorites,
+    /// imports). Day-tab switching is a pure in-memory dictionary lookup over this map —
+    /// no observation restart, no DB hit.
+    @Published private(set) var dayBuckets: [Date: [EventHourSection]] = [:]
+
+    /// Flat results for search mode (FTS). Empty when not searching.
+    @Published var searchResults: [ListRow<EventObjectOccurrence>] = []
 
     @Published var filter: EventFilter {
         didSet {
@@ -25,19 +29,22 @@ final class EventListViewModel: ObservableObject {
         }
     }
 
-    @Published var searchText: String = ""
-    @Published var isLoading: Bool = true
-    @Published var currentLocation: CLLocation?
-    /// Resolved host data for events (event UID → host info)
-    @Published private(set) var resolvedHosts: [String: ResolvedEventHost] = [:]
-
-    /// Currently selected day (drives day-scoped observation)
-    @Published var selectedDay: Date {
+    @Published var searchText: String = "" {
         didSet { restartObservation() }
     }
 
+    @Published var isLoading: Bool = true
+    @Published var currentLocation: CLLocation?
+
+    /// Currently selected day. Does NOT trigger an observation restart — the browse
+    /// observation produces all days; the UI slices `dayBuckets` by this value.
+    @Published var selectedDay: Date
+
     /// Current time, updated every 60s for status indicators
     @Published var now: Date = .present
+
+    /// Browse vs. search; derived from `searchText`.
+    var mode: Mode { searchText.isEmpty ? .browse : .search(searchText) }
 
     // MARK: - Dependencies
 
@@ -79,7 +86,7 @@ final class EventListViewModel: ObservableObject {
 
         self.currentLocation = locationProvider.currentLocation
 
-        startObserving()
+        restartObservation()
         startLocationUpdates()
         startRefreshTimer()
     }
@@ -93,113 +100,111 @@ final class EventListViewModel: ObservableObject {
 
     // MARK: - Derived
 
-    func isFavorite(_ object: EventObjectOccurrence) -> Bool {
-        items.first(where: { $0.object.uid == object.uid })?.isFavorite ?? false
-    }
-
     func distanceAttributedString(for object: EventObjectOccurrence) -> AttributedString? {
         dataProvider.distanceAttributedString(from: currentLocation, to: object)
     }
 
-    /// Returns the resolved host for an event, or nil if no host was resolved.
-    func resolvedHost(for event: EventObjectOccurrence) -> ResolvedEventHost? {
-        resolvedHosts[event.event.uid]
+    /// Sections for the currently selected day — pure in-memory dict lookup.
+    /// Returns `[]` for days the user hasn't generated content for.
+    var browseSections: [EventHourSection] {
+        let key = Calendar.current.startOfDay(for: selectedDay)
+        return dayBuckets[key] ?? []
     }
 
-    /// Returns the resolved location string for an event, or nil if no location.
-    func locationString(for event: EventObjectOccurrence) -> String? {
-        if let resolved = resolvedHosts[event.event.uid] {
-            return resolved.name
-        }
-        return event.event.hasOtherLocation ? event.event.otherLocation : nil
-    }
-
-    var filteredItems: [ListRow<EventObjectOccurrence>] {
-        guard !searchText.isEmpty else { return items }
-        let q = searchText.lowercased()
-        return items.filter {
-            $0.object.name.lowercased().contains(q) ||
-            $0.object.description?.lowercased().contains(q) == true ||
-            $0.object.eventTypeLabel.lowercased().contains(q) == true ||
-            $0.object.hostedByCamp?.lowercased().contains(q) == true
+    /// Flat list of all currently visible rows (sections flattened in browse mode).
+    /// Used by the hosting controller for detail-paging order.
+    var visibleRows: [ListRow<EventObjectOccurrence>] {
+        switch mode {
+        case .browse:
+            return browseSections.flatMap { $0.rows }
+        case .search:
+            return searchResults
         }
     }
 
-    /// Items grouped by hour for sectioned display
-    var groupedItems: [(header: String, items: [ListRow<EventObjectOccurrence>])] {
-        let filtered = filteredItems
-        guard !filtered.isEmpty else { return [] }
+    /// Flat list of all currently visible event objects, for the "Show map" action.
+    var visibleObjects: [EventObjectOccurrence] {
+        visibleRows.map(\.object)
+    }
 
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filtered) { row -> Int in
-            calendar.component(.hour, from: row.object.startDate)
+    var isEmpty: Bool {
+        switch mode {
+        case .browse: return browseSections.isEmpty
+        case .search: return searchResults.isEmpty
         }
-        return grouped
-            .sorted { $0.key < $1.key }
-            .map { (hour, rows) in
-                let displayHour = hour % 12 == 0 ? 12 : hour % 12
-                let ampm = hour >= 12 ? "PM" : "AM"
-                return (header: "\(displayHour) \(ampm)", items: rows)
-            }
     }
 
     // MARK: - Actions
 
+    /// Toggle favorite. The DB observation re-emits the updated rows;
+    /// no optimistic in-memory mutation here.
     func toggleFavorite(_ row: ListRow<EventObjectOccurrence>) async {
-        let originalRow = row
-        if let idx = items.firstIndex(where: { $0.object.uid == row.object.uid }) {
-            var updatedMeta = row.metadata
-            updatedMeta?.isFavorite = !row.isFavorite
-            items[idx] = ListRow(object: row.object, metadata: updatedMeta, thumbnailColors: row.thumbnailColors)
-        }
         do {
             try await dataProvider.toggleFavorite(row.object)
         } catch {
-            if let idx = items.firstIndex(where: { $0.object.uid == originalRow.object.uid }) {
-                items[idx] = originalRow
-            }
             print("Error toggling favorite for \(row.object.name): \(error)")
         }
     }
 
     // MARK: - Observation
 
-    /// Build the effective filter by merging selectedDay into the user's filter
-    private func effectiveFilter() -> EventFilter {
+    /// Browse mode filter: user filters across the full festival. No day scoping (the UI
+    /// slices `dayBuckets[selectedDay]` in memory) and no searchText.
+    private func browseFilter() -> EventFilter {
         var f = filter
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: selectedDay)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
-        f.startDate = startOfDay
-        f.endDate = endOfDay
+        f.startDate = nil
+        f.endDate = nil
+        f.searchText = nil
         return f
     }
 
-    private func startObserving() {
+    /// Search mode filter: user filters + searchText, all days (no date scope).
+    private func searchFilter(query: String) -> EventFilter {
+        var f = filter
+        f.startDate = nil
+        f.endDate = nil
+        f.searchText = query
+        return f
+    }
+
+    private func restartObservation() {
         observationTask?.cancel()
         loadingGateTask?.cancel()
-
         isLoading = true
-        let filterForObservation = effectiveFilter()
 
-        observationTask = Task { [weak self] in
-            guard let self else { return }
+        switch mode {
+        case .browse:
+            searchResults = []
+            let f = browseFilter()
+            observationTask = Task { [weak self] in
+                guard let self else { return }
+                var didReceiveFirstEmission = false
+                for await bucket in self.dataProvider.observeObjectsByDayThenHour(filter: f) {
+                    didReceiveFirstEmission = true
+                    await MainActor.run {
+                        self.dayBuckets = bucket
+                        if !bucket.isEmpty {
+                            self.isLoading = false
+                        }
+                    }
+                    if didReceiveFirstEmission, !bucket.isEmpty {
+                        await MainActor.run { self.loadingGateTask?.cancel() }
+                    } else if didReceiveFirstEmission, bucket.isEmpty {
+                        startLoadingGateIfNeeded()
+                    }
+                }
+            }
 
-            var didReceiveFirstEmission = false
-            for await rows in self.dataProvider.observeObjects(filter: filterForObservation) {
-                didReceiveFirstEmission = true
-                await MainActor.run {
-                    self.items = rows
-                    if !rows.isEmpty {
+        case .search(let query):
+            dayBuckets = [:]
+            let f = searchFilter(query: query)
+            observationTask = Task { [weak self] in
+                guard let self else { return }
+                for await rows in self.dataProvider.observeObjects(filter: f) {
+                    await MainActor.run {
+                        self.searchResults = rows
                         self.isLoading = false
                     }
-                    self.resolveHosts(for: rows.map(\.object))
-                }
-
-                if didReceiveFirstEmission, !rows.isEmpty {
-                    loadingGateTask?.cancel()
-                } else if didReceiveFirstEmission, rows.isEmpty {
-                    startLoadingGateIfNeeded()
                 }
             }
         }
@@ -250,57 +255,6 @@ final class EventListViewModel: ObservableObject {
         }
     }
 
-    private func restartObservation() {
-        startObserving()
-    }
-
-    // MARK: - Host Resolution
-
-    /// Resolve host camp/art data for events that reference them by UID.
-    private func resolveHosts(for events: [EventObjectOccurrence]) {
-        let needsResolution = events.filter { event in
-            let uid = event.event.uid
-            if resolvedHosts[uid] != nil { return false }
-            return event.event.isHostedByCamp || event.event.isLocatedAtArt
-        }
-        guard !needsResolution.isEmpty else { return }
-
-        Task { [weak self, dataProvider] in
-            guard let self else { return }
-            var newHosts: [String: ResolvedEventHost] = [:]
-
-            for event in needsResolution {
-                let eventUID = event.event.uid
-                if let campUID = event.event.hostedByCamp {
-                    if let camp = try? await dataProvider.playaDB.fetchCamp(uid: campUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: camp.name,
-                            address: camp.locationString,
-                            description: camp.description,
-                            thumbnailObjectID: campUID,
-                            isArt: false
-                        )
-                    }
-                } else if let artUID = event.event.locatedAtArt {
-                    if let art = try? await dataProvider.playaDB.fetchArt(uid: artUID) {
-                        newHosts[eventUID] = ResolvedEventHost(
-                            name: art.name,
-                            address: art.locationString ?? art.timeBasedAddress,
-                            description: art.description,
-                            thumbnailObjectID: artUID,
-                            isArt: true
-                        )
-                    }
-                }
-            }
-
-            guard !newHosts.isEmpty else { return }
-            await MainActor.run {
-                self.resolvedHosts.merge(newHosts) { _, new in new }
-            }
-        }
-    }
-
     // MARK: - Refresh Timer
 
     private func startRefreshTimer() {
@@ -318,10 +272,11 @@ final class EventListViewModel: ObservableObject {
     // MARK: - Filter Persistence
 
     private func saveFilter() {
-        // Don't persist startDate/endDate (those come from selectedDay)
+        // Don't persist startDate/endDate (those come from selectedDay) or searchText.
         var persistFilter = filter
         persistFilter.startDate = nil
         persistFilter.endDate = nil
+        persistFilter.searchText = nil
         guard let data = try? JSONEncoder().encode(persistFilter) else { return }
         UserDefaults.standard.set(data, forKey: filterStorageKey)
     }

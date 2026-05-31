@@ -50,3 +50,8 @@ public extension DataObject {
         description != nil && !description!.isEmpty
     }
 }
+
+/// Data object that represents a physical place with a playa address.
+public protocol PlaceDataObject: DataObject {
+    var address: String? { get }
+}

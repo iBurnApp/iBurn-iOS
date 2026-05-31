@@ -6,11 +6,12 @@ import PlayaDB
 /// Used for the "See all N events" tap from the PlayaDB event detail screen.
 @MainActor
 class PlayaHostedEventsViewController: UIHostingController<PlayaHostedEventsView> {
-    init(events: [EventObjectOccurrence], hostName: String, playaDB: PlayaDB) {
+    init(events: [EventObjectOccurrence], hostName: String, playaDB: PlayaDB, eventSummary: EventSummaryContent? = nil) {
         let view = PlayaHostedEventsView(
             events: events,
             hostName: hostName,
-            playaDB: playaDB
+            playaDB: playaDB,
+            eventSummary: eventSummary
         )
         super.init(rootView: view)
         self.title = "Events - \(hostName)"
@@ -25,26 +26,40 @@ struct PlayaHostedEventsView: View {
     let events: [EventObjectOccurrence]
     let hostName: String
     let playaDB: PlayaDB
+    let eventSummary: EventSummaryContent?
     @Environment(\.themeColors) var themeColors
     @State private var favoriteIDs: Set<String> = []
     @State private var now = Date()
 
     var body: some View {
-        List(events, id: \.uid) { event in
-            ObjectRowView(
-                object: event,
-                rightSubtitle: event.timeDescription(now: now),
-                isFavorite: favoriteIDs.contains(event.uid),
-                onFavoriteTap: {
-                    Task { await toggleFavorite(event) }
+        List {
+            // AI Summary as first scrollable row
+            if let eventSummary {
+                EventSummaryHeaderView(content: eventSummary, isLoading: false) { tip in
+                    // Navigate to the tapped event
+                    if let occ = events.first(where: { $0.event.uid == tip.eventUID }) {
+                        pushDetail(for: occ)
+                    }
                 }
-            ) { _ in
-                Text(EventTypeInfo.emoji(for: event.eventTypeCode))
-                    .font(.subheadline)
+                .listRowBackground(themeColors.backgroundColor)
             }
-            .contentShape(Rectangle())
-            .onTapGesture { pushDetail(for: event) }
-            .listRowBackground(themeColors.backgroundColor)
+
+            ForEach(events, id: \.uid) { event in
+                ObjectRowView(
+                    object: event,
+                    rightSubtitle: event.timeDescription(now: now),
+                    isFavorite: favoriteIDs.contains(event.uid),
+                    onFavoriteTap: {
+                        Task { await toggleFavorite(event) }
+                    }
+                ) { _ in
+                    Text(EventTypeInfo.emoji(for: event.eventTypeCode))
+                        .font(.subheadline)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { pushDetail(for: event) }
+                .listRowBackground(themeColors.backgroundColor)
+            }
         }
         .listStyle(.plain)
         .task { await loadFavorites() }
@@ -83,4 +98,3 @@ struct PlayaHostedEventsView: View {
         navController.pushViewController(detailVC, animated: true)
     }
 }
-

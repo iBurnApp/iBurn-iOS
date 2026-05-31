@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import GRDB
 
 /// Composite object that combines an EventObject with a specific EventOccurrence
 /// This provides backward compatibility with existing code that expects individual event objects with start/end dates
@@ -8,16 +9,26 @@ public struct EventObjectOccurrence: DataObject {
     
     /// The base event data
     public let event: EventObject
-    
+
     /// The specific occurrence/timing data
     public let occurrence: EventOccurrence
-    
+
+    /// Pre-resolved host object (camp or art), populated during JOIN query
+    public let host: (any PlaceDataObject)?
+
     // MARK: - Initialization
-    
-    public init(event: EventObject, occurrence: EventOccurrence) {
+
+    public init(event: EventObject, occurrence: EventOccurrence, host: (any PlaceDataObject)? = nil) {
         self.event = event
         self.occurrence = occurrence
+        self.host = host
     }
+
+    /// Host name for display in list cells
+    public var hostName: String? { host?.name }
+
+    /// Host address for display in list cells
+    public var hostAddress: String? { host?.address }
     
     // MARK: - DataObject Protocol Conformance
     
@@ -276,5 +287,55 @@ public extension EventObjectOccurrence {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
         return formatter.string(from: startDate)
+    }
+}
+
+// MARK: - GRDB Joined Row
+
+/// Decode struct for EventOccurrence JOIN EventObject LEFT JOIN CampObject LEFT JOIN ArtObject.
+/// Driving table columns decode from the top-level row; associations decode from named scopes
+/// matching the association `key:` values ("event", "hostedCamp", "locatedArt").
+struct EventOccurrenceJoinedRow: FetchableRecord {
+    var occurrence: EventOccurrence
+    var event: EventObject
+    var hostedCamp: CampObject?
+    var locatedArt: ArtObject?
+
+    init(
+        occurrence: EventOccurrence,
+        event: EventObject,
+        hostedCamp: CampObject? = nil,
+        locatedArt: ArtObject? = nil
+    ) {
+        self.occurrence = occurrence
+        self.event = event
+        self.hostedCamp = hostedCamp
+        self.locatedArt = locatedArt
+    }
+
+    init(row: Row) throws {
+        self.occurrence = try EventOccurrence(row: row)
+        guard let eventRow = row.scopes["event"] else {
+            throw DatabaseError(message: "Missing 'event' scope in joined row")
+        }
+        self.event = try EventObject(row: eventRow)
+
+        // Camp/art scopes are nested under the event scope because the associations
+        // chain off EventObject (event → camp/art), not off the driving EventOccurrence.
+        if let campRow = eventRow.scopes["hostedCamp"], campRow["uid"] != nil {
+            self.hostedCamp = try CampObject(row: campRow)
+        } else {
+            self.hostedCamp = nil
+        }
+        if let artRow = eventRow.scopes["locatedArt"], artRow["uid"] != nil {
+            self.locatedArt = try ArtObject(row: artRow)
+        } else {
+            self.locatedArt = nil
+        }
+    }
+
+    func toEventObjectOccurrence() -> EventObjectOccurrence {
+        let host: (any PlaceDataObject)? = hostedCamp ?? locatedArt
+        return EventObjectOccurrence(event: event, occurrence: occurrence, host: host)
     }
 }
