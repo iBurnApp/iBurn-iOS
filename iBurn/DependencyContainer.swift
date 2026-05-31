@@ -198,6 +198,17 @@ class DependencyContainer {
         )
     }
 
+    /// Create a NearbyCardViewModel for the on-map nearby card overlay
+    func makeNearbyCardViewModel() -> NearbyCardViewModel {
+        NearbyCardViewModel(
+            playaDB: playaDB,
+            artProvider: artDataProvider,
+            campProvider: campDataProvider,
+            eventProvider: eventDataProvider,
+            locationProvider: locationProvider
+        )
+    }
+
     /// Create a FavoritesViewModel with injected dependencies
     func makeFavoritesViewModel() -> FavoritesViewModel {
         FavoritesViewModel(
