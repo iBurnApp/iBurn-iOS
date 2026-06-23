@@ -268,7 +268,7 @@ final class NearbyCardViewModel: ObservableObject {
         // Region-filtered (R*Tree-backed). Fetch all in-region occurrences and apply the
         // exact happening-now / starting-soon gate client-side at `now` (the region is
         // tiny, and this also captures starting-soon events that `happeningNow` would drop).
-        let filter = EventFilter(includeExpired: true, region: region)
+        let filter = EventFilter(region: region, includeExpired: true)
         eventTask = Task { [weak self] in
             guard let self else { return }
             for await rows in self.eventProvider.observeObjects(filter: filter) {

@@ -59,7 +59,7 @@ final class NearbyCardViewModelTests: XCTestCase {
             gpsLatitude: lat,
             gpsLongitude: baseLon
         )
-        let occurrence = EventOccurrence(eventUid: uid, startTime: start, endTime: end, year: 2025)
+        let occurrence = EventOccurrence(eventId: uid, startTime: start, endTime: end)
         let combined = EventObjectOccurrence(event: event, occurrence: occurrence, host: nil)
         return ListRow(object: combined, metadata: nil, thumbnailColors: nil)
     }
