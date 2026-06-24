@@ -84,4 +84,4 @@ Zero behavior change for every existing consumer.
   `now`), left as a deliberate follow-up.
 - The camp/art-hosted-events expansion in `RightNowWorkflow` stays — it covers events whose host GPS
   isn't in the R*Tree join, which is a coverage concern orthogonal to the time-window fix.
-- Not yet committed (awaiting authorization).
+- Committed `411f7ae`; PR [#250](https://github.com/iBurnApp/iBurn-iOS/pull/250) → `master`.
