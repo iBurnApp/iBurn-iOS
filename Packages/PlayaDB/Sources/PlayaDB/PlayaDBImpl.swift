@@ -1079,6 +1079,15 @@ internal class PlayaDBImpl: PlayaDB {
             request = request.filter(EventOccurrence.Columns.startTime < endDate)
         }
 
+        // Overlap window: occurrences whose [start, end) interval intersects the window.
+        // Same predicate form as fetchEvents(from:to:); unlike startDate/endDate this keeps
+        // events already in progress when the window opened.
+        if let window = filter.activeWindow {
+            request = request
+                .filter(EventOccurrence.Columns.startTime < window.end)
+                .filter(EventOccurrence.Columns.endTime > window.start)
+        }
+
         // FTS5 search constraint (UIDs pre-resolved against event_objects_fts)
         if let uids = matchingEventUIDs {
             request = request.filter(uids.contains(EventOccurrence.Columns.eventId))

@@ -136,10 +136,14 @@ func gatherRightNowCandidates(
     //      misses when the event's host GPS isn't populated, and is what surfaces "the camp
     //      that's serving coffee right now" as its actual event.
     func regionQuery(_ typeCodes: Set<String>?) async throws -> [EventObjectOccurrence] {
+        let floor = max(windowStart, now)
+        guard floor < windowEnd else { return [] }
         var filter = EventFilter.all
         filter.region = region
-        filter.startDate = max(windowStart, now)
-        filter.endDate = windowEnd
+        // Overlap window, not start-bounded: also surfaces events already underway at `floor`.
+        // The prior startDate/endDate prefilter dropped them before the client-side overlap
+        // gate below ever saw them.
+        filter.activeWindow = DateInterval(start: floor, end: windowEnd)
         filter.eventTypeCodes = typeCodes
         return try await playaDB.fetchEvents(filter: filter)
     }
