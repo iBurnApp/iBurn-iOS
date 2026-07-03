@@ -232,7 +232,7 @@ enum MockDataObjects {
                 "label": "Music/Party",
                 "abbr": "prty"
             ],
-            "year": 2025,
+            "year": 2026,
             "print_description": "",
             "slug": "event-789-sample-event",
             "hosted_by_camp": "camp-456",
@@ -244,8 +244,8 @@ enum MockDataObjects {
             "contact": "event@example.com",
             "occurrence_set": [
                 [
-                    "start_time": "2025-08-25T20:00:00-07:00",
-                    "end_time": "2025-08-25T23:00:00-07:00"
+                    "start_time": "2026-08-31T20:00:00-07:00",
+                    "end_time": "2026-08-31T23:00:00-07:00"
                 ]
             ]
         ]

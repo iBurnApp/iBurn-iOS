@@ -3,7 +3,7 @@ import Foundation
 /// Service for loading Burning Man API data from resource bundles
 ///
 /// This service provides methods to load JSON data files from bundled resources.
-/// It can work with both embedded bundles (like iBurn2025APIData) and fallback
+/// It can work with both embedded bundles (like iBurn2026APIData) and fallback
 /// to MockAPIData when bundles are not available.
 public enum BundleDataLoader {
     
@@ -100,7 +100,7 @@ public enum BundleDataLoader {
     private static func loadDataFile(named filename: String, from bundle: Bundle?) throws -> Data {
         let targetBundle = bundle ?? Bundle.main
         
-        // For iBurn2025APIData bundle, files are at the root of the bundle
+        // For iBurn2026APIData bundle, files are at the root of the bundle
         guard let url = targetBundle.url(forResource: filename, withExtension: "json") else {
             throw LoadError.fileNotFound("\(filename).json")
         }

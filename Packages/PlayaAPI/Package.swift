@@ -36,7 +36,7 @@ let package = Package(
             dependencies: [
                 "PlayaAPI", 
                 "PlayaAPITestHelpers",
-                .product(name: "iBurn2025APIData", package: "iBurn-Data")
+                .product(name: "iBurn2026APIData", package: "iBurn-Data")
             ]
         ),
     ]

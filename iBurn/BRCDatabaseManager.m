@@ -27,8 +27,8 @@ static NSString * const RTreeMaxLat = @"RTreeMaxLat";
 static NSString * const RTreeMinLon = @"RTreeMinLon";
 static NSString * const RTreeMaxLon = @"RTreeMaxLon";
 
-NSString * const kBRCDatabaseName = @"iBurn-2025.sqlite";
-NSString * const kBRCDatabaseFolderName = @"iBurn-2025";
+NSString * const kBRCDatabaseName = @"iBurn-2026.sqlite";
+NSString * const kBRCDatabaseFolderName = @"iBurn-2026";
 
 NSString * const BRCVisitStatusGroupWantToVisit = @"Want to Visit";
 NSString * const BRCVisitStatusGroupVisited = @"Visited";

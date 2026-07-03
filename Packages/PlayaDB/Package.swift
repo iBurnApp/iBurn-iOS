@@ -34,7 +34,7 @@ let package = Package(
                 "PlayaDB",
                 "PlayaAPI",
                 .product(name: "PlayaAPITestHelpers", package: "PlayaAPI"),
-                .product(name: "iBurn2025APIData", package: "iBurn-Data")
+                .product(name: "iBurn2026APIData", package: "iBurn-Data")
             ]
         ),
     ]

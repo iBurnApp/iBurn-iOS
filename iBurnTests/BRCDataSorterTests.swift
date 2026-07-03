@@ -59,7 +59,7 @@ class BRCDataSorterTests: XCTestCase {
             
             let dateFormatter = DateFormatter.brc_playaEventsAPI
             let options = BRCDataSorterOptions()
-            let now = dateFormatter.date(from: "2025-08-27T12:30:00-07:00")!
+            let now = dateFormatter.date(from: "2026-09-02T12:30:00-07:00")!
             options.now = now
             options.showExpiredEvents = true
             options.showFutureEvents = true
@@ -74,7 +74,7 @@ class BRCDataSorterTests: XCTestCase {
                 XCTAssert(campsCount > 0, "Wrong camp count")
                 XCTAssert(artCount > 0, "Wrong art count")
                 
-                let now = dateFormatter.date(from: "2025-08-24T12:00:00-07:00")!
+                let now = dateFormatter.date(from: "2026-08-30T12:00:00-07:00")!
                 options.now = now
                 options.showExpiredEvents = false
                 options.showFutureEvents = false
@@ -83,7 +83,7 @@ class BRCDataSorterTests: XCTestCase {
                     NSLog("Found %d filtered events", filteredEventCount)
                     XCTAssert(filteredEventCount > 0 && eventCount > filteredEventCount, "Wrong filered count")
                     
-                    let now = dateFormatter.date(from: "2025-08-25T15:00:00-07:00")!
+                    let now = dateFormatter.date(from: "2026-08-31T15:00:00-07:00")!
                     options.now = now
                     options.showFutureEvents = true
                     BRCDataSorter.sortDataObjects(dataObjects, options: options, completionQueue: nil, callbackBlock: { (events, art, camps) -> (Void) in

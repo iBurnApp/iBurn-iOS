@@ -119,7 +119,7 @@
         @"name": @"Audio Tour Introduction", 
         @"artist": @"Burning Man",
         @"description": @"Welcome to the Burning Man audio tour. This introduction will guide you through the art installations.",
-        @"year": @(2025)
+        @"year": @(2026)
     };
     
     NSError *error = nil;

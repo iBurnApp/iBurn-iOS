@@ -19,9 +19,9 @@
 		D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D966561528A9970B002FA471 /* FirebaseCrashlytics */; };
 		D966562928A9B86F002FA471 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = D966562828A9B86E002FA471 /* Zip */; };
 		D9915F592A76C35E0015C87D /* Siren in Frameworks */ = {isa = PBXBuildFile; productRef = D9915F582A76C35E0015C87D /* Siren */; };
-		D99D57EA2E1CE8CF00D5A3DE /* iBurn2025APIData in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57E92E1CE8CF00D5A3DE /* iBurn2025APIData */; };
-		D99D57EC2E1CE8CF00D5A3DE /* iBurn2025Map in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57EB2E1CE8CF00D5A3DE /* iBurn2025Map */; };
-		D99D57EE2E1CE8CF00D5A3DE /* iBurn2025MediaFiles in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57ED2E1CE8CF00D5A3DE /* iBurn2025MediaFiles */; };
+		D99D57EA2E1CE8CF00D5A3DE /* iBurn2026APIData in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57E92E1CE8CF00D5A3DE /* iBurn2026APIData */; };
+		D99D57EC2E1CE8CF00D5A3DE /* iBurn2026Map in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57EB2E1CE8CF00D5A3DE /* iBurn2026Map */; };
+		D99D57EE2E1CE8CF00D5A3DE /* iBurn2026MediaFiles in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57ED2E1CE8CF00D5A3DE /* iBurn2026MediaFiles */; };
 		D99D57F12E1CE93B00D5A3DE /* PlayaAPI in Frameworks */ = {isa = PBXBuildFile; productRef = D99D57F02E1CE93B00D5A3DE /* PlayaAPI */; };
 		D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; };
 		D9CB2A69211897FB00A0F2AE /* PlayaGeocoder.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D9CB2A502117E7B500A0F2AE /* PlayaGeocoder.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -187,7 +187,7 @@
 				D9915F592A76C35E0015C87D /* Siren in Frameworks */,
 				D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */,
 				D99D57F12E1CE93B00D5A3DE /* PlayaAPI in Frameworks */,
-				D99D57EC2E1CE8CF00D5A3DE /* iBurn2025Map in Frameworks */,
+				D99D57EC2E1CE8CF00D5A3DE /* iBurn2026Map in Frameworks */,
 				D9D12F5E1B5AF4F70048229A /* SystemConfiguration.framework in Frameworks */,
 				D9D12F5C1B5AF4EE0048229A /* Accounts.framework in Frameworks */,
 				D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */,
@@ -196,8 +196,8 @@
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
 				D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */,
-				D99D57EA2E1CE8CF00D5A3DE /* iBurn2025APIData in Frameworks */,
-				D99D57EE2E1CE8CF00D5A3DE /* iBurn2025MediaFiles in Frameworks */,
+				D99D57EA2E1CE8CF00D5A3DE /* iBurn2026APIData in Frameworks */,
+				D99D57EE2E1CE8CF00D5A3DE /* iBurn2026MediaFiles in Frameworks */,
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
 			);
@@ -328,9 +328,9 @@
 				D966562828A9B86E002FA471 /* Zip */,
 				D9915F582A76C35E0015C87D /* Siren */,
 				D91879A32BC1058E0099EFAA /* MapLibre */,
-				D99D57E92E1CE8CF00D5A3DE /* iBurn2025APIData */,
-				D99D57EB2E1CE8CF00D5A3DE /* iBurn2025Map */,
-				D99D57ED2E1CE8CF00D5A3DE /* iBurn2025MediaFiles */,
+				D99D57E92E1CE8CF00D5A3DE /* iBurn2026APIData */,
+				D99D57EB2E1CE8CF00D5A3DE /* iBurn2026Map */,
+				D99D57ED2E1CE8CF00D5A3DE /* iBurn2026MediaFiles */,
 				D99D57F02E1CE93B00D5A3DE /* PlayaAPI */,
 				D90256402E1F3FE00058AEF8 /* PlayaDB */,
 				D902564A2E1F41060058AEF8 /* GRDB */,
@@ -778,7 +778,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 2025.5;
+				MARKETING_VERSION = 2026.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" -D DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -815,7 +815,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 2025.5;
+				MARKETING_VERSION = 2026.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.trailbehind.${PRODUCT_NAME:rfc1034identifier}2010";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1005,17 +1005,17 @@
 			package = D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */;
 			productName = Siren;
 		};
-		D99D57E92E1CE8CF00D5A3DE /* iBurn2025APIData */ = {
+		D99D57E92E1CE8CF00D5A3DE /* iBurn2026APIData */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = iBurn2025APIData;
+			productName = iBurn2026APIData;
 		};
-		D99D57EB2E1CE8CF00D5A3DE /* iBurn2025Map */ = {
+		D99D57EB2E1CE8CF00D5A3DE /* iBurn2026Map */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = iBurn2025Map;
+			productName = iBurn2026Map;
 		};
-		D99D57ED2E1CE8CF00D5A3DE /* iBurn2025MediaFiles */ = {
+		D99D57ED2E1CE8CF00D5A3DE /* iBurn2026MediaFiles */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = iBurn2025MediaFiles;
+			productName = iBurn2026MediaFiles;
 		};
 		D99D57F02E1CE93B00D5A3DE /* PlayaAPI */ = {
 			isa = XCSwiftPackageProductDependency;
