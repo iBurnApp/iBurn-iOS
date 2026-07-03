@@ -281,6 +281,73 @@ final class FilterObservationTests: XCTestCase {
         await fulfillment(of: [removed], timeout: 2.0)
     }
 
+    /// setLastViewed writes only last_viewed/updated_at, which the narrowed metadata
+    /// region excludes — marking objects viewed must not re-run list observations
+    /// (previously every detail-screen view re-ran the full event JOIN).
+    func testObserveEventsDoesNotRefireOnLastViewedWrite() async throws {
+        let events = try await playaDB.fetchEvents()
+        let occurrence = try XCTUnwrap(events.first)
+
+        // Pre-create the metadata row: the first setLastViewed INSERTs (which always
+        // triggers observation, by design); subsequent ones are pure column updates.
+        try await playaDB.setLastViewed(Date(), for: occurrence)
+
+        let noRefire = expectation(description: "No emission for last_viewed-only write")
+        noRefire.isInverted = true
+        var emissionCount = 0
+
+        let token = playaDB.observeEvents(
+            filter: EventFilter(includeExpired: true),
+            onChange: { _ in
+                emissionCount += 1
+                if emissionCount > 1 {
+                    noRefire.fulfill()
+                }
+            },
+            onError: { error in
+                XCTFail("Event observation error: \(error)")
+            }
+        )
+        defer { token.cancel() }
+
+        // Wait for the initial emission before writing.
+        try await Task.sleep(nanoseconds: 300_000_000)
+        try await playaDB.setLastViewed(Date(), for: occurrence)
+
+        await fulfillment(of: [noRefire], timeout: 1.0)
+        XCTAssertEqual(emissionCount, 1, "Only the initial emission should have fired")
+    }
+
+    func testObserveArtDoesNotRefireOnLastViewedWrite() async throws {
+        let allArt = try await playaDB.fetchArt()
+        let art = try XCTUnwrap(allArt.first)
+        try await playaDB.setLastViewed(Date(), for: art)
+
+        let noRefire = expectation(description: "No emission for last_viewed-only write")
+        noRefire.isInverted = true
+        var emissionCount = 0
+
+        let token = playaDB.observeArt(
+            filter: ArtFilter(),
+            onChange: { _ in
+                emissionCount += 1
+                if emissionCount > 1 {
+                    noRefire.fulfill()
+                }
+            },
+            onError: { error in
+                XCTFail("Art observation error: \(error)")
+            }
+        )
+        defer { token.cancel() }
+
+        try await Task.sleep(nanoseconds: 300_000_000)
+        try await playaDB.setLastViewed(Date(), for: art)
+
+        await fulfillment(of: [noRefire], timeout: 1.0)
+        XCTAssertEqual(emissionCount, 1, "Only the initial emission should have fired")
+    }
+
     func testObserveArtOnlyWithEventsUpdates() async throws {
         let expectation = expectation(description: "Art with events emitted")
         let year = 2031

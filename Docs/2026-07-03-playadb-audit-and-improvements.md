@@ -162,12 +162,34 @@ corrupted index state.
 - Full app `xcodebuild` (iPhone 17 Pro Max sim): **succeeded**, 0 errors, only pre-existing
   warnings (unrelated to these changes). Uncommitted on `2026-updates` pending review.
 
+### Follow-up round (same day, committed separately after ed0b174)
+
+10. **Narrowed metadata observation regions.** All list observations now track
+    `ObjectMetadata.select(object_type, object_id, is_favorite, user_notes)` instead of the
+    whole table (`listMetadataRegion` helper), and art/camp/MV observations moved from
+    auto-tracking to explicit regions (own table + narrowed metadata + colors;
+    + `event_objects` when `onlyWithEvents`; + `mv_tags` when tag-filtered). Required
+    switching all metadata writers to **column-limited updates**
+    (`metadata.update(db, columns:)`) — GRDB's full-row `update(db)` touches every column,
+    which made even a last_viewed write intersect the is_favorite region. Result: viewing a
+    detail screen (setLastViewed) no longer re-runs *any* list query, including the 8k-row
+    event JOIN; favorite toggles and notes edits still re-fire. Two inverted-expectation
+    regression tests in `FilterObservationTests`.
+11. **DatabaseMigrator adoption.** `setupDatabase` now registers the full current schema as
+    migration `v1-initial-schema` (idempotent DDL, so pre-migrator installs adopt cleanly)
+    and runs `migrator.migrate()`. FTS/R*Tree virtual tables + sync triggers, the occurrence
+    R*Tree backfill, and the occurrence-keyed metadata fold stay as open-time maintenance
+    (they carry self-repair logic and are data-dependent/idempotent; imports re-invoke the
+    trigger setup). Future schema changes are new numbered migrations — v1 must not be
+    extended. New `SchemaMigrationTests` covering fresh-install recording and pre-migrator
+    adoption with data preservation.
+
+Test count after follow-ups: **166 passed, 0 failed** (4 skipped, pre-existing).
+
 ### Remaining / follow-up candidates (not done)
-- `DatabaseMigrator` refactor of ad-hoc schema setup (finding #12) — larger refactor, defer.
 - SwiftUI-preview `try! createPlayaDB()` instances (finding #5) — harmless, low priority.
-- Consider narrowing `observeEventsByDayThenHour`'s ObjectMetadata region (still whole-table;
-  removeDuplicates now suppresses the redundant emission but the 8k-row JOIN still re-runs
-  on unrelated metadata writes).
+- PlayaDB is still bundle-seeded only; network updates flow through legacy YapDatabase.
+  Unifying update ingestion is a larger project (see 2026-01-25 roadmap doc).
 
 ## Expected Outcomes
 

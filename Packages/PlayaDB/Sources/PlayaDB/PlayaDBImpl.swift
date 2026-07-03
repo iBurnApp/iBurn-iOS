@@ -39,7 +39,14 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Database Setup
     
     private func setupDatabase() throws {
-        try dbQueue.write { db in
+        var migrator = DatabaseMigrator()
+
+        // v1: the complete schema as of 2026-07. All DDL is idempotent
+        // (IF NOT EXISTS / conditional column adds), so databases created before the
+        // migrator was adopted record this migration as applied without conflicting
+        // with the schema they already have. Register future schema changes as new
+        // numbered migrations below — do not extend v1.
+        migrator.registerMigration("v1-initial-schema") { db in
             // Create art_objects table
             try db.execute(sql: """
                 CREATE TABLE IF NOT EXISTS art_objects (
@@ -279,23 +286,31 @@ internal class PlayaDBImpl: PlayaDB {
                 try db.execute(sql: "ALTER TABLE update_info ADD COLUMN fetch_date TEXT")
                 try db.execute(sql: "ALTER TABLE update_info ADD COLUMN ingestion_date TEXT")
             }
+        }
 
+        try migrator.migrate(dbQueue)
+
+        // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
+        // their own self-repair logic (legacy trigger replacement, minT-variant drop)
+        // and are re-invoked by imports; the backfill and metadata fold are
+        // data-dependent and idempotent.
+        try dbQueue.write { db in
             // Create FTS5 virtual tables for full-text search
-            try setupFTS5Tables(db)
-            
+            try self.setupFTS5Tables(db)
+
             // Create R-Tree spatial index for geographic queries
-            try setupRTreeIndex(db)
+            try self.setupRTreeIndex(db)
 
             // Backfill the occurrence index for installs whose DB predates it (existing users
             // don't re-import; PlayaDBSeeder only imports when update_info is empty).
             let occRtreeCount = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM event_occurrence_rtree") ?? 0
             let occCount = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM event_occurrences") ?? 0
             if occRtreeCount == 0, occCount > 0 {
-                try rebuildOccurrenceRTree(db)
+                try self.rebuildOccurrenceRTree(db)
             }
 
             // Migration: fold occurrence-keyed event metadata into parent event rows.
-            try migrateOccurrenceKeyedMetadata(db)
+            try self.migrateOccurrenceKeyedMetadata(db)
         }
     }
     
@@ -1164,6 +1179,20 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - Filtered Observation Helpers
 
+    /// Metadata region for list observations, narrowed to the columns list rows
+    /// actually render (favorite state, notes). Excludes first/last_viewed and the
+    /// timestamps so detail-screen "mark viewed" writes don't re-run list queries —
+    /// with the full-table region, every setLastViewed re-ran the 8k-row event JOIN.
+    /// Row inserts/deletes still trigger regardless of column selection.
+    private var listMetadataRegion: any DatabaseRegionConvertible {
+        ObjectMetadata.select(
+            ObjectMetadata.Columns.objectType,
+            ObjectMetadata.Columns.objectId,
+            ObjectMetadata.Columns.isFavorite,
+            ObjectMetadata.Columns.userNotes
+        )
+    }
+
     /// Observe objects as fully-inflated ListRows. Fetches objects, metadata, and
     /// thumbnail colors in a single read transaction.
     /// - Parameter regions: Explicit observation regions. When provided, only changes to these
@@ -1228,9 +1257,19 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<ArtObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observeListRows(
+        // FTS/spatial subquery tables only change via art_objects triggers or the
+        // import (which rewrites art_objects too), so tracking the content table
+        // covers them. event_objects matters only for the onlyWithEvents EXISTS.
+        var regions: [any DatabaseRegionConvertible] = [
+            ArtObject.all(), listMetadataRegion, ThumbnailColors.all()
+        ]
+        if filter.onlyWithEvents {
+            regions.append(EventObject.all())
+        }
+        return observeListRows(
             type: .art,
             ids: { $0.map(\.uid) },
+            regions: regions,
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.artRequest(filter: filter).fetchAll(db)
@@ -1248,6 +1287,7 @@ internal class PlayaDBImpl: PlayaDB {
         observeListRows(
             type: .camp,
             ids: { $0.map(\.uid) },
+            regions: [CampObject.all(), listMetadataRegion, ThumbnailColors.all()],
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.campRequest(filter: filter).fetchAll(db)
@@ -1262,7 +1302,7 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        // Tracked regions: event tables drive membership/order; ObjectMetadata and
+        // Tracked regions: event tables drive membership/order; narrowed metadata and
         // ThumbnailColors feed ListRow inflation (favorite toggles must refresh hearts
         // and the favorites-only map layer; cached-color writes refresh row chrome).
         // Camp/art tables are intentionally excluded — the fetch JOINs them for host
@@ -1273,7 +1313,7 @@ internal class PlayaDBImpl: PlayaDB {
             regions: [
                 EventOccurrence.all(),
                 EventObject.all(),
-                ObjectMetadata.all(),
+                listMetadataRegion,
                 ThumbnailColors.all(),
                 Table("event_occurrence_rtree")
             ],
@@ -1291,9 +1331,16 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<MutantVehicleObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observeListRows(
+        var regions: [any DatabaseRegionConvertible] = [
+            MutantVehicleObject.all(), listMetadataRegion, ThumbnailColors.all()
+        ]
+        if filter.tag != nil {
+            regions.append(Table("mv_tags"))
+        }
+        return observeListRows(
             type: .mutantVehicle,
             ids: { $0.map(\.uid) },
+            regions: regions,
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.mutantVehicleRequest(filter: filter).fetchAll(db)
@@ -1318,17 +1365,17 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([Date: [EventHourSection]]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        // Tracked regions: event tables drive bucket membership/order; ObjectMetadata is needed
-        // so favorite toggles refresh the heart UI; ThumbnailColors so cached-color writes refresh
-        // the row chrome. Camp/art tables are intentionally excluded — host edits don't reshuffle
-        // the event list.
+        // Tracked regions: event tables drive bucket membership/order; narrowed metadata is
+        // needed so favorite toggles refresh the heart UI; ThumbnailColors so cached-color
+        // writes refresh the row chrome. Camp/art tables are intentionally excluded — host
+        // edits don't reshuffle the event list.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
             regions: [
                 EventOccurrence.all(),
                 EventObject.all(),
-                ObjectMetadata.all(),
+                listMetadataRegion,
                 ThumbnailColors.all(),
                 Table("event_occurrence_rtree")
             ],
@@ -1733,7 +1780,10 @@ internal class PlayaDBImpl: PlayaDB {
             if var metadata = existingMetadata {
                 metadata.isFavorite = !metadata.isFavorite
                 metadata.updatedAt = Date()
-                try metadata.update(db)
+                try metadata.update(db, columns: [
+                    ObjectMetadata.Columns.isFavorite,
+                    ObjectMetadata.Columns.updatedAt,
+                ])
             } else {
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
@@ -1760,7 +1810,10 @@ internal class PlayaDBImpl: PlayaDB {
                 guard metadata.isFavorite != isFavorite else { return }
                 metadata.isFavorite = isFavorite
                 metadata.updatedAt = Date()
-                try metadata.update(db)
+                try metadata.update(db, columns: [
+                    ObjectMetadata.Columns.isFavorite,
+                    ObjectMetadata.Columns.updatedAt,
+                ])
             } else {
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
@@ -1802,7 +1855,10 @@ internal class PlayaDBImpl: PlayaDB {
             let trimmed = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
             metadata.userNotes = (trimmed?.isEmpty == true) ? nil : trimmed
             metadata.updatedAt = Date()
-            try metadata.update(db)
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.userNotes,
+                ObjectMetadata.Columns.updatedAt,
+            ])
         }
     }
 
@@ -1823,7 +1879,13 @@ internal class PlayaDBImpl: PlayaDB {
             }
             metadata.lastViewed = date
             metadata.updatedAt = Date()
-            try metadata.update(db)
+            // Column-limited update: a full-row UPDATE would touch is_favorite and
+            // re-fire every list observation (their regions include that column).
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.firstViewed,
+                ObjectMetadata.Columns.lastViewed,
+                ObjectMetadata.Columns.updatedAt,
+            ])
         }
     }
     
@@ -1939,7 +2001,10 @@ internal class PlayaDBImpl: PlayaDB {
 
             metadata.lastViewed = nil
             metadata.updatedAt = Date()
-            try metadata.update(db)
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.lastViewed,
+                ObjectMetadata.Columns.updatedAt,
+            ])
         }
     }
 
