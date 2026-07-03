@@ -186,8 +186,32 @@ corrupted index state.
 
 Test count after follow-ups: **166 passed, 0 failed** (4 skipped, pre-existing).
 
+### Preview fix + simulator sanity pass (same day, commit 728e562)
+
+- **Preview providers** now use a shared in-memory PlayaDB (`createInMemoryPlayaDB()` package
+  factory + `PreviewPlayaDB.shared` in DependencyContainer.swift) instead of
+  `try! createPlayaDB()` on-disk connections. `.xcodebuildmcp/config.yaml` gained the
+  `ui-automation` workflow.
+- **Simulator sanity pass** (fresh-install, iPhone 17 Pro Max sim, XcodeBuildMCP UI driving)
+  verified the audit changes end-to-end:
+  - Seed: WAL journal mode (DatabasePool ✓), 321 art / 1201 camps / 2101 events /
+    4431 occurrences, FTS populated, **0 blank object_metadata rows** (write-free reads ✓),
+    `grdb_migrations` = v1-initial-schema ✓.
+  - Day-tab switching instant (pre-bucketed observation) ✓.
+  - Favoriting from event detail wrote exactly one metadata row keyed by the **parent event
+    uid** (identity fix ✓), the list heart lit up immediately (region fix ✓), and the
+    Favorites tab showed the event's occurrences ✓.
+  - FTS on the live DB: MATCH 'taco' → 12 stemmed/case-insensitive hits, integrity-check
+    passes, triggers confirmed canonical 'delete'-command form ✓.
+- **Two behavioral findings:** (1) the entire SwiftUI/PlayaDB stack is behind the DEBUG-only
+  `featureFlag.lists.useSwiftUI` flag (default false) — fresh installs never create
+  PlayaDB.sqlite until it's enabled; (2) seeding runs when the DependencyContainer is first
+  built (tab construction after onboarding), not at app launch.
+- **Pending:** RenderPreview validation of the Art/Camp list previews via the `xcode` MCP —
+  server tool fetch timed out while Xcode was launching; retry `/mcp` reconnect with Xcode
+  fully loaded.
+
 ### Remaining / follow-up candidates (not done)
-- SwiftUI-preview `try! createPlayaDB()` instances (finding #5) — harmless, low priority.
 - PlayaDB is still bundle-seeded only; network updates flow through legacy YapDatabase.
   Unifying update ingestion is a larger project (see 2026-01-25 roadmap doc).
 
