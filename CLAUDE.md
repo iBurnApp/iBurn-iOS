@@ -31,7 +31,10 @@ Each document should include:
 
 ## Source Control
 
-IMPORTANT: Do not perform any operations that result in git writes unless authorized by the user. Never attempt to rewrite history, pull from remote, squash, merge or rebase unless authorized. You can use read-only operations like `git show`, `git log` etc.
+* **Commit after finishing a validated chunk of work.** Once a coherent unit of work is complete and verified (tests passing, plus an app build when the change could affect the app target), commit it without waiting to be asked. Keep each commit scoped to one logical change with a descriptive message.
+* Before committing, check `git status` for unintended changes (e.g. xcodebuild flipping `DEVELOPMENT_TEAM` in the pbxproj — revert those rather than committing them).
+* Do NOT push to remotes unless the user asks. Never rewrite history, pull from remote, squash, merge or rebase unless authorized.
+* Read-only operations (`git show`, `git log`, `git diff`, etc.) are always fine.
 
 ## Project Overview
 
