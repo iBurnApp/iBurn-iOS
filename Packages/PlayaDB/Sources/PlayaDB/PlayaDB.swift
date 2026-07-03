@@ -301,6 +301,12 @@ public func createPlayaDB() throws -> PlayaDB {
     try PlayaDBImpl()
 }
 
+/// Create an in-memory PlayaDB instance. Nothing persists and no connection is
+/// opened to the on-disk database — intended for SwiftUI previews and tests.
+public func createInMemoryPlayaDB() throws -> PlayaDB {
+    try PlayaDBImpl(dbPath: ":memory:")
+}
+
 public extension PlayaDB {
     /// Create a new PlayaDB instance
     /// Note: Due to Swift limitations with protocol metatypes, prefer using the global

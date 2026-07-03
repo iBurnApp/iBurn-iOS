@@ -160,7 +160,7 @@ struct CampListView: View {
 @MainActor
 private class PreviewCampDataProvider: CampDataProvider {
     init() {
-        super.init(playaDB: try! createPlayaDB())
+        super.init(playaDB: PreviewPlayaDB.shared)
     }
 
     override func observeObjects(filter: CampFilter) -> AsyncStream<[ListRow<CampObject>]> {

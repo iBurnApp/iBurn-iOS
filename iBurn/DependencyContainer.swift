@@ -249,3 +249,19 @@ class DependencyContainer {
         )
     }
 }
+
+// MARK: - Preview Support
+
+/// Shared in-memory PlayaDB for SwiftUI previews. Preview data providers override
+/// their observe methods with mock data, so this exists only to satisfy the
+/// initializer without opening extra connections to the real on-disk database.
+@MainActor
+enum PreviewPlayaDB {
+    static let shared: PlayaDB = {
+        do {
+            return try createInMemoryPlayaDB()
+        } catch {
+            fatalError("Failed to create in-memory preview PlayaDB: \(error)")
+        }
+    }()
+}

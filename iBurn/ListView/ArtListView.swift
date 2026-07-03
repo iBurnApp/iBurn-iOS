@@ -220,8 +220,7 @@ struct ArtListView: View {
 @MainActor
 private class PreviewArtDataProvider: ArtDataProvider {
     init() {
-        // This will fail in preview but that's okay
-        super.init(playaDB: try! createPlayaDB())
+        super.init(playaDB: PreviewPlayaDB.shared)
     }
 
     override func observeObjects(filter: ArtFilter) -> AsyncStream<[ListRow<ArtObject>]> {
