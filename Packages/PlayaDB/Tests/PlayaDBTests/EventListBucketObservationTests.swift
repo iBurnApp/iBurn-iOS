@@ -10,7 +10,7 @@ import PlayaAPITestHelpers
 final class EventListBucketObservationTests: XCTestCase {
     private var playaDB: PlayaDBImpl!
 
-    private var dbQueue: DatabaseQueue { playaDB.dbQueue }
+    private var dbQueue: any DatabaseWriter { playaDB.dbQueue }
 
     // MARK: - Lifecycle
 

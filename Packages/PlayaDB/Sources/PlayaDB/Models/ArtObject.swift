@@ -3,7 +3,7 @@ import CoreLocation
 import GRDB
 
 /// Art installation object with complete API field mapping
-public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+public struct ArtObject: DataObject, Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
     
     public static let databaseTableName = "art_objects"

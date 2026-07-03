@@ -10,7 +10,7 @@ final class FilterRequestBuilderTests: XCTestCase {
     private var playaDB: PlayaDB!
     private var tempDBPath: String!
 
-    private var dbQueue: DatabaseQueue {
+    private var dbQueue: any DatabaseWriter {
         (playaDB as! PlayaDBImpl).dbQueue
     }
 
@@ -390,55 +390,45 @@ final class FilterRequestBuilderTests: XCTestCase {
             "Only art with events should be returned"
         )
 
-        let metadata = try await dbQueue.read { db in
-            try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == DataObjectType.art.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == artWithEvent.uid)
-                .fetchOne(db)
-        }
-        XCTAssertNotNil(metadata, "Fetching art with events should ensure metadata exists")
     }
 
-    func testFetchObjectsEnsuresMetadata() async throws {
+    /// Read paths must not write: fetching objects should never pre-populate blank
+    /// object_metadata rows (metadata is created lazily on actual writes only).
+    func testFetchObjectsDoesNotCreateMetadata() async throws {
         let region = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 40.79, longitude: -119.20),
             span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         )
 
+        let baseline = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
+        }
+
         let objects = try await playaDB.fetchObjects(in: region)
         XCTAssertGreaterThan(objects.count, 0, "Region should return objects")
 
-        try await dbQueue.read { db in
-            for object in objects {
-                let metadata = try ObjectMetadata
-                    .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                    .filter(ObjectMetadata.Columns.objectId == object.uid)
-                    .fetchOne(db)
-                XCTAssertNotNil(metadata, "Metadata should exist for \(object.uid)")
-            }
+        let after = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
         }
+        XCTAssertEqual(after, baseline, "fetchObjects(in:) should not create metadata rows")
     }
 
-    func testSearchObjectsEnsuresMetadata() async throws {
-        let searchTerms = ["Burning", "ASL", "Tarot"]
-        var seenObjects: [any DataObject] = []
-
-        for term in searchTerms {
-            let results = try await playaDB.searchObjects(term)
-            seenObjects.append(contentsOf: results)
-
-            try await dbQueue.read { db in
-                for object in results {
-                    let metadata = try ObjectMetadata
-                        .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                        .filter(ObjectMetadata.Columns.objectId == object.uid)
-                        .fetchOne(db)
-                    XCTAssertNotNil(metadata, "Metadata should exist for search result \(object.uid)")
-                }
-            }
+    func testSearchObjectsDoesNotCreateMetadata() async throws {
+        let baseline = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
         }
 
+        var seenObjects: [any DataObject] = []
+        for term in ["Burning", "ASL", "Tarot"] {
+            let results = try await playaDB.searchObjects(term)
+            seenObjects.append(contentsOf: results)
+        }
         XCTAssertFalse(seenObjects.isEmpty, "Search should locate at least one object")
+
+        let after = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
+        }
+        XCTAssertEqual(after, baseline, "searchObjects should not create metadata rows")
     }
 
     func testMetadataLookupCreatesRow() async throws {

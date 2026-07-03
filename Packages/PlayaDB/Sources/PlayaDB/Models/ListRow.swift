@@ -16,3 +16,5 @@ public struct ListRow<T> {
         self.thumbnailColors = thumbnailColors
     }
 }
+
+extension ListRow: Equatable where T: Equatable {}

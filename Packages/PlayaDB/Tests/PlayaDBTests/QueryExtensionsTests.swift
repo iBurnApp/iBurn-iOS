@@ -10,7 +10,7 @@ import PlayaAPITestHelpers
 /// Tests for protocol-based composable query extensions
 final class QueryExtensionsTests: XCTestCase {
     var playaDB: PlayaDB!
-    var dbQueue: DatabaseQueue {
+    var dbQueue: any DatabaseWriter {
         (playaDB as! PlayaDBImpl).dbQueue
     }
     var tempDBPath: String!

@@ -4,7 +4,7 @@ import GRDB
 
 /// Composite object that combines an EventObject with a specific EventOccurrence
 /// This provides backward compatibility with existing code that expects individual event objects with start/end dates
-public struct EventObjectOccurrence: DataObject {
+public struct EventObjectOccurrence: DataObject, Equatable {
     // MARK: - Component Objects
     
     /// The base event data
@@ -26,6 +26,25 @@ public struct EventObjectOccurrence: DataObject {
 
     /// Host name for display in list cells
     public var hostName: String? { host?.name }
+
+    // MARK: - Equatable
+    // Manual conformance: `host` is an existential (any PlaceDataObject), so
+    // synthesis is unavailable. Hosts are compared by concrete value so a host
+    // edit (e.g. camp address change) still counts as a change for observation
+    // deduplication.
+    public static func == (lhs: EventObjectOccurrence, rhs: EventObjectOccurrence) -> Bool {
+        guard lhs.event == rhs.event, lhs.occurrence == rhs.occurrence else { return false }
+        switch (lhs.host, rhs.host) {
+        case (nil, nil):
+            return true
+        case let (l as CampObject, r as CampObject):
+            return l == r
+        case let (l as ArtObject, r as ArtObject):
+            return l == r
+        default:
+            return false
+        }
+    }
 
     /// Host address for display in list cells
     public var hostAddress: String? { host?.address }

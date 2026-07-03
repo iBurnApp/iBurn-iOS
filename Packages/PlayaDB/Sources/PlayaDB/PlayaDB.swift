@@ -250,23 +250,6 @@ public protocol PlayaDB {
     /// Observe update info changes reactively
     @discardableResult
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
-    
-    // MARK: - Reactive Data Access
-    
-    /// All art objects (reactive)
-    var allArt: [ArtObject] { get }
-
-    /// All camps (reactive)
-    var allCamps: [CampObject] { get }
-
-    /// All events with their occurrences (reactive)
-    var allEvents: [EventObjectOccurrence] { get }
-
-    /// All mutant vehicles (reactive)
-    var allMutantVehicles: [MutantVehicleObject] { get }
-    
-    /// All favorited objects metadata (reactive)
-    var favorites: [ObjectMetadata] { get }
 }
 
 // MARK: - Observation Convenience

@@ -8,11 +8,15 @@ import PlayaAPI
 internal class PlayaDBImpl: PlayaDB {
     // MARK: - Database Connection
 
-    internal let dbQueue: DatabaseQueue  // Internal for testing
+    /// On-disk databases use a DatabasePool (WAL) so reads run concurrently with
+    /// writes — the first-launch seed import is one long write transaction and must
+    /// not block UI reads. In-memory databases (tests) fall back to a DatabaseQueue,
+    /// which is the only connection type that supports ":memory:" paths.
+    internal let dbQueue: any DatabaseWriter  // Internal for testing
     private let dbPath: String
-    
+
     // MARK: - Initialization
-    
+
     init(dbPath: String? = nil) throws {
         // Use custom path or default to Documents directory
         if let customPath = dbPath {
@@ -21,15 +25,15 @@ internal class PlayaDBImpl: PlayaDB {
             let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
             self.dbPath = "\(documentsPath)/PlayaDB.sqlite"
         }
-        
-        // Create database queue
-        self.dbQueue = try DatabaseQueue(path: self.dbPath)
-        
+
+        if self.dbPath == ":memory:" || self.dbPath.hasPrefix("file::memory:") {
+            self.dbQueue = try DatabaseQueue(path: self.dbPath)
+        } else {
+            self.dbQueue = try DatabasePool(path: self.dbPath)
+        }
+
         // Initialize database schema
         try setupDatabase()
-        
-        // Setup reactive observations
-        setupObservations()
     }
     
     // MARK: - Database Setup
@@ -253,6 +257,10 @@ internal class PlayaDBImpl: PlayaDB {
             // Index for last_viewed queries (fetchRecentlyViewed)
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_last_viewed ON object_metadata(last_viewed)")
 
+            // end_time index: notExpired (the default list filter), happeningNow, and
+            // activeWindow all constrain end_time; only start_time was indexed before.
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_event_occurrences_end_time ON event_occurrences(end_time)")
+
             // Migration: add first_viewed column for existing databases
             if try !db.columns(in: "object_metadata").contains(where: { $0.name == "first_viewed" }) {
                 try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN first_viewed TEXT")
@@ -285,157 +293,122 @@ internal class PlayaDBImpl: PlayaDB {
             if occRtreeCount == 0, occCount > 0 {
                 try rebuildOccurrenceRTree(db)
             }
+
+            // Migration: fold occurrence-keyed event metadata into parent event rows.
+            try migrateOccurrenceKeyedMetadata(db)
         }
     }
     
+    /// Content table + indexed columns backing each external-content FTS5 table.
+    /// The FTS table is named "\(table)_fts" and always carries a leading
+    /// `uid UNINDEXED` column so search results can be joined back by uid.
+    private struct FTSTableConfig {
+        let table: String
+        let indexedColumns: [String]
+
+        var ftsTable: String { "\(table)_fts" }
+        var allColumns: [String] { ["uid"] + indexedColumns }
+    }
+
+    private static let ftsTableConfigs: [FTSTableConfig] = [
+        FTSTableConfig(table: "art_objects", indexedColumns: ["name", "description", "artist", "hometown", "category"]),
+        FTSTableConfig(table: "camp_objects", indexedColumns: ["name", "description", "landmark", "hometown"]),
+        FTSTableConfig(table: "event_objects", indexedColumns: ["name", "description", "event_type_label", "print_description"]),
+        FTSTableConfig(table: "mv_objects", indexedColumns: ["name", "description", "artist", "hometown", "tags_text"]),
+    ]
+
     private func setupFTS5Tables(_ db: Database) throws {
-        // Create FTS5 table for art objects
+        for config in Self.ftsTableConfigs {
+            let indexed = config.indexedColumns.joined(separator: ",\n                    ")
+            try db.execute(sql: """
+                CREATE VIRTUAL TABLE IF NOT EXISTS \(config.ftsTable) USING fts5(
+                    uid UNINDEXED,
+                    \(indexed),
+                    content=\(config.table),
+                    content_rowid=rowid,
+                    tokenize='porter unicode61'
+                )
+            """)
+            try setupFTS5Triggers(db, config: config)
+        }
+    }
+
+    /// Keeps an external-content FTS5 table in sync with its content table.
+    ///
+    /// External-content tables must be updated with FTS5's special 'delete' command,
+    /// passing the OLD column values — a plain `DELETE FROM fts WHERE rowid = …` makes
+    /// FTS5 read the content table for the values to un-index, but inside an AFTER
+    /// DELETE/UPDATE trigger that row is already gone/changed, silently corrupting the
+    /// index. Earlier versions shipped plain-DELETE triggers; those are detected below,
+    /// replaced, and the index rebuilt once.
+    private func setupFTS5Triggers(_ db: Database, config: FTSTableConfig) throws {
+        let columnList = config.allColumns.joined(separator: ", ")
+        let newValues = config.allColumns.map { "new.\($0)" }.joined(separator: ", ")
+        let oldValues = config.allColumns.map { "old.\($0)" }.joined(separator: ", ")
+
+        let ftsInsert = """
+            INSERT INTO \(config.ftsTable)(rowid, \(columnList))
+                    VALUES (new.rowid, \(newValues));
+            """
+        let ftsDelete = """
+            INSERT INTO \(config.ftsTable)(\(config.ftsTable), rowid, \(columnList))
+                    VALUES ('delete', old.rowid, \(oldValues));
+            """
+
+        // Migration: drop legacy triggers that used plain DELETE (index-corrupting).
+        let legacyDeleteTriggerSQL = try String.fetchOne(db, sql: """
+            SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = ?
+            """, arguments: ["\(config.table)_ad"])
+        let hadCorruptingTriggers: Bool
+        if let sql = legacyDeleteTriggerSQL, !sql.contains("'delete'") {
+            hadCorruptingTriggers = true
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_ai")
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_ad")
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_au")
+        } else {
+            hadCorruptingTriggers = false
+        }
+
         try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS art_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                artist,
-                hometown,
-                category,
-                content=art_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
-        
-        // Create FTS5 table for camp objects
-        try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS camp_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                landmark,
-                hometown,
-                content=camp_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
-        
-        // Create FTS5 table for event objects
-        try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS event_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                event_type_label,
-                print_description,
-                content=event_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
-        
-        // Create triggers to keep FTS tables in sync
-        
-        // Art triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_objects_ai AFTER INSERT ON art_objects BEGIN
-                INSERT INTO art_objects_fts(rowid, uid, name, description, artist, hometown, category)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.category);
+            CREATE TRIGGER IF NOT EXISTS \(config.table)_ai AFTER INSERT ON \(config.table) BEGIN
+                \(ftsInsert)
             END
         """)
-        
         try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_objects_ad AFTER DELETE ON art_objects BEGIN
-                DELETE FROM art_objects_fts WHERE rowid = old.rowid;
+            CREATE TRIGGER IF NOT EXISTS \(config.table)_ad AFTER DELETE ON \(config.table) BEGIN
+                \(ftsDelete)
             END
         """)
-        
         try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_objects_au AFTER UPDATE ON art_objects BEGIN
-                DELETE FROM art_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO art_objects_fts(rowid, uid, name, description, artist, hometown, category)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.category);
-            END
-        """)
-        
-        // Camp triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_objects_ai AFTER INSERT ON camp_objects BEGIN
-                INSERT INTO camp_objects_fts(rowid, uid, name, description, landmark, hometown)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.landmark, new.hometown);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_objects_ad AFTER DELETE ON camp_objects BEGIN
-                DELETE FROM camp_objects_fts WHERE rowid = old.rowid;
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_objects_au AFTER UPDATE ON camp_objects BEGIN
-                DELETE FROM camp_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO camp_objects_fts(rowid, uid, name, description, landmark, hometown)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.landmark, new.hometown);
-            END
-        """)
-        
-        // Event triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_objects_ai AFTER INSERT ON event_objects BEGIN
-                INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_objects_ad AFTER DELETE ON event_objects BEGIN
-                DELETE FROM event_objects_fts WHERE rowid = old.rowid;
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_objects_au AFTER UPDATE ON event_objects BEGIN
-                DELETE FROM event_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
+            CREATE TRIGGER IF NOT EXISTS \(config.table)_au AFTER UPDATE ON \(config.table) BEGIN
+                \(ftsDelete)
+                \(ftsInsert)
             END
         """)
 
-        // Create FTS5 table for mutant vehicle objects
-        try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS mv_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                artist,
-                hometown,
-                tags_text,
-                content=mv_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
+        if hadCorruptingTriggers {
+            // The old triggers may have left the index inconsistent with the content table.
+            try db.execute(sql: "INSERT INTO \(config.ftsTable)(\(config.ftsTable)) VALUES('rebuild')")
+        }
+    }
 
-        // MV triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS mv_objects_ai AFTER INSERT ON mv_objects BEGIN
-                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown, tags_text)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.tags_text);
-            END
-        """)
-
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS mv_objects_ad AFTER DELETE ON mv_objects BEGIN
-                DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
-            END
-        """)
-
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS mv_objects_au AFTER UPDATE ON mv_objects BEGIN
-                DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown, tags_text)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.tags_text);
-            END
-        """)
+    /// Drops the FTS and spatial per-row sync triggers so bulk imports don't pay
+    /// per-row index maintenance. The import rebuilds every index wholesale and
+    /// recreates the triggers (setupFTS5Tables / setupRTreeIndex) before committing.
+    private static func dropIndexSyncTriggers(_ db: Database) throws {
+        for config in ftsTableConfigs {
+            for suffix in ["ai", "ad", "au"] {
+                try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_\(suffix)")
+            }
+        }
+        for trigger in [
+            "art_spatial_insert", "art_spatial_delete",
+            "camp_spatial_insert", "camp_spatial_delete",
+            "event_spatial_insert", "event_spatial_delete",
+            "event_occurrence_rtree_insert", "event_occurrence_rtree_delete",
+        ] {
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(trigger)")
+        }
     }
     
     private func setupRTreeIndex(_ db: Database) throws {
@@ -580,21 +553,13 @@ internal class PlayaDBImpl: PlayaDB {
     /// parent event has GPS, using the event's denormalized coordinate as a point.
     func rebuildOccurrenceRTree(_ db: Database) throws {
         try db.execute(sql: "DELETE FROM event_occurrence_rtree")
-        let rows = try Row.fetchAll(db, sql: """
-            SELECT o.id AS id, e.gps_latitude AS lat, e.gps_longitude AS lon
+        try db.execute(sql: """
+            INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+            SELECT o.id, e.gps_latitude, e.gps_latitude, e.gps_longitude, e.gps_longitude
             FROM event_occurrences o
             JOIN event_objects e ON e.uid = o.event_id
             WHERE e.gps_latitude IS NOT NULL AND e.gps_longitude IS NOT NULL
-        """)
-        for row in rows {
-            let id: Int64 = row["id"]
-            let lat: Double = row["lat"]
-            let lon: Double = row["lon"]
-            try db.execute(sql: """
-                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
-                VALUES (?, ?, ?, ?, ?)
-                """, arguments: [id, lat, lat, lon, lon])
-        }
+            """)
     }
 
     /// Occurrence ids whose host location falls within `region`, via the spatial R*Tree.
@@ -614,28 +579,22 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Data Access Methods
     
     func fetchArt() async throws -> [ArtObject] {
-        let art = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try ArtObject.fetchAll(db)
         }
-        try await ensureMetadata(for: .art, ids: art.map(\.uid))
-        return art
     }
-    
+
     func fetchCamps() async throws -> [CampObject] {
-        let camps = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try CampObject.fetchAll(db)
         }
-        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
-        return camps
     }
-    
+
     func fetchEvents() async throws -> [EventObjectOccurrence] {
-        let events = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             let events = try EventObject.fetchAll(db)
             return try eventObjectOccurrences(for: events, db: db)
         }
-        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
-        return events
     }
     
     func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence] {
@@ -740,12 +699,6 @@ internal class PlayaDBImpl: PlayaDB {
             return (artObjects, campObjects, eventObjects)
         }
 
-        try await ensureMetadata(for: [
-            (.art, result.0.map(\.uid)),
-            (.camp, result.1.map(\.uid)),
-            (.event, result.2.map(\.uid)),
-        ])
-
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
         objects.append(contentsOf: result.1)
@@ -804,13 +757,6 @@ internal class PlayaDBImpl: PlayaDB {
             return (artObjects, campObjects, eventObjects, mvObjects)
         }
 
-        try await ensureMetadata(for: [
-            (.art, result.0.map(\.uid)),
-            (.camp, result.1.map(\.uid)),
-            (.event, result.2.map(\.uid)),
-            (.mutantVehicle, result.3.map(\.uid)),
-        ])
-
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
         objects.append(contentsOf: result.1)
@@ -822,33 +768,21 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Single Object Fetch
 
     func fetchArt(uid: String) async throws -> ArtObject? {
-        let art = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try ArtObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let art {
-            try await ensureMetadata(for: .art, ids: [art.uid])
-        }
-        return art
     }
 
     func fetchCamp(uid: String) async throws -> CampObject? {
-        let camp = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try CampObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let camp {
-            try await ensureMetadata(for: .camp, ids: [camp.uid])
-        }
-        return camp
     }
 
     func fetchEvent(uid: String) async throws -> EventObject? {
-        let event = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try EventObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let event {
-            try await ensureMetadata(for: .event, ids: [event.uid])
-        }
-        return event
     }
 
     func fetchOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence] {
@@ -868,9 +802,7 @@ internal class PlayaDBImpl: PlayaDB {
                 .fetchAll(db)
             return try eventObjectOccurrences(for: eventObjects, db: db)
         }
-        let sorted = events.sorted { $0.startDate < $1.startDate }
-        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
-        return sorted
+        return events.sorted { $0.startDate < $1.startDate }
     }
 
     func fetchEvents(locatedAtArtUID artUID: String) async throws -> [EventObjectOccurrence] {
@@ -880,78 +812,57 @@ internal class PlayaDBImpl: PlayaDB {
                 .fetchAll(db)
             return try eventObjectOccurrences(for: eventObjects, db: db)
         }
-        let sorted = events.sorted { $0.startDate < $1.startDate }
-        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
-        return sorted
+        return events.sorted { $0.startDate < $1.startDate }
     }
 
     // MARK: - Mutant Vehicle Data Access
 
     func fetchMutantVehicles() async throws -> [MutantVehicleObject] {
-        let mvs = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try MutantVehicleObject.fetchAll(db)
         }
-        try await ensureMetadata(for: .mutantVehicle, ids: mvs.map(\.uid))
-        return mvs
     }
 
     func fetchMutantVehicles(filter: MutantVehicleFilter) async throws -> [MutantVehicleObject] {
-        let mvs = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try self.mutantVehicleRequest(filter: filter).fetchAll(db)
         }
-        try await ensureMetadata(for: .mutantVehicle, ids: mvs.map(\.uid))
-        return mvs
     }
 
     func fetchMutantVehicle(uid: String) async throws -> MutantVehicleObject? {
-        let mv = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try MutantVehicleObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let mv {
-            try await ensureMetadata(for: .mutantVehicle, ids: [mv.uid])
-        }
-        return mv
     }
 
     func fetchMutantVehicleImageURLs() async throws -> [String: URL] {
-        try await dbQueue.read { db in
-            let images = try MutantVehicleImage
-                .filter(MutantVehicleImage.Columns.thumbnailUrl != nil)
-                .fetchAll(db)
-            var result: [String: URL] = [:]
-            for image in images {
-                if let url = image.thumbnailUrl, result[image.mvId] == nil {
-                    result[image.mvId] = url
-                }
-            }
-            return result
-        }
+        try await fetchFirstThumbnailURLs(table: "mv_images", ownerColumn: "mv_id")
     }
 
     func fetchArtImageURLs() async throws -> [String: URL] {
-        try await dbQueue.read { db in
-            let images = try ArtImage
-                .filter(ArtImage.Columns.thumbnailUrl != nil)
-                .fetchAll(db)
-            var result: [String: URL] = [:]
-            for image in images {
-                if let url = image.thumbnailUrl, result[image.artId] == nil {
-                    result[image.artId] = url
-                }
-            }
-            return result
-        }
+        try await fetchFirstThumbnailURLs(table: "art_images", ownerColumn: "art_id")
     }
 
     func fetchCampImageURLs() async throws -> [String: URL] {
+        try await fetchFirstThumbnailURLs(table: "camp_images", ownerColumn: "camp_id")
+    }
+
+    /// First (lowest-id) thumbnail URL per owning object, aggregated in SQL rather
+    /// than decoding every image row. SQLite's bare-column-with-MIN semantics
+    /// guarantee thumbnail_url comes from the MIN(id) row.
+    private func fetchFirstThumbnailURLs(table: String, ownerColumn: String) async throws -> [String: URL] {
         try await dbQueue.read { db in
-            let images = try CampImage
-                .filter(CampImage.Columns.thumbnailUrl != nil)
-                .fetchAll(db)
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT \(ownerColumn) AS owner_id, thumbnail_url, MIN(id)
+                FROM \(table)
+                WHERE thumbnail_url IS NOT NULL
+                GROUP BY \(ownerColumn)
+                """)
             var result: [String: URL] = [:]
-            for image in images {
-                if let url = image.thumbnailUrl, result[image.campId] == nil {
-                    result[image.campId] = url
+            for row in rows {
+                let ownerId: String = row["owner_id"]
+                if let urlString: String = row["thumbnail_url"], let url = URL(string: urlString) {
+                    result[ownerId] = url
                 }
             }
             return result
@@ -1207,13 +1118,12 @@ internal class PlayaDBImpl: PlayaDB {
 
         return pairs.filter { pair in
             let event = pair.event
-            let occurrence = pair.occurrence
 
-            if filter.onlyFavorites {
-                let occurrenceUID = "\(event.uid)_\(occurrence.id ?? 0)"
-                if !favoriteEventIds.contains(occurrenceUID) && !favoriteEventIds.contains(event.uid) {
-                    return false
-                }
+            // Favorites are keyed by the parent event uid (metadataIdentity normalizes
+            // occurrence writes; migrateOccurrenceKeyedMetadata folded legacy rows).
+            // This matches the SQL EXISTS predicate in eventObjectOccurrencesJoined.
+            if filter.onlyFavorites, !favoriteEventIds.contains(event.uid) {
+                return false
             }
 
             if let year = filter.year, event.year != year {
@@ -1235,27 +1145,21 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Filtered Data Access (Public API)
 
     func fetchArt(filter: ArtFilter) async throws -> [ArtObject] {
-        let art = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try artRequest(filter: filter).fetchAll(db)
         }
-        try await ensureMetadata(for: .art, ids: art.map(\.uid))
-        return art
     }
 
     func fetchCamps(filter: CampFilter) async throws -> [CampObject] {
-        let camps = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try campRequest(filter: filter).fetchAll(db)
         }
-        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
-        return camps
     }
 
     func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence] {
-        let events = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try eventObjectOccurrences(filter: filter, db: db)
         }
-        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
-        return events
     }
 
     // MARK: - Filtered Observation Helpers
@@ -1265,11 +1169,10 @@ internal class PlayaDBImpl: PlayaDB {
     /// - Parameter regions: Explicit observation regions. When provided, only changes to these
     ///   regions trigger re-evaluation. The fetch closure can read from any table freely.
     ///   When nil, GRDB auto-tracks all tables accessed in the fetch closure.
-    private func observeListRows<T>(
+    private func observeListRows<T: Equatable>(
         type: DataObjectType,
         ids: @escaping ([T]) -> [String],
         regions: [any DatabaseRegionConvertible]? = nil,
-        skipEnsureMetadata: Bool = false,
         value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([ListRow<T>]) -> Void,
         onError: @escaping (Error) -> Void
@@ -1303,26 +1206,19 @@ internal class PlayaDBImpl: PlayaDB {
             }
         }
 
-        let observation: ValueObservation<ValueReducers.Fetch<[ListRow<T>]>>
+        // removeDuplicates: broad tracked regions (whole object_metadata / thumbnail_colors
+        // tables) mean unrelated writes re-run the fetch; suppress emissions whose result
+        // is value-identical so the UI doesn't re-diff thousands of rows for nothing.
+        let observation: ValueObservation<ValueReducers.RemoveDuplicates<ValueReducers.Fetch<[ListRow<T>]>>>
         if let regions {
-            observation = ValueObservation.tracking(regions: regions, fetch: fetch)
+            observation = ValueObservation.tracking(regions: regions, fetch: fetch).removeDuplicates()
         } else {
-            observation = ValueObservation.tracking(fetch)
+            observation = ValueObservation.tracking(fetch).removeDuplicates()
         }
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
-            onChange: { [weak self] rows in
-                if !skipEnsureMetadata {
-                    let identifiers = ids(rows.map(\.object))
-                    if !identifiers.isEmpty {
-                        Task {
-                            try? await self?.ensureMetadata(for: type, ids: identifiers)
-                        }
-                    }
-                }
-                onChange(rows)
-            }
+            onChange: onChange
         )
         return PlayaDBObservationToken(cancellable)
     }
@@ -1366,13 +1262,21 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        // Explicitly scope observation to event tables only.
-        // The fetch closure also JOINs camp_objects/art_objects for host data,
-        // but changes to those tables should not trigger re-evaluation.
+        // Tracked regions: event tables drive membership/order; ObjectMetadata and
+        // ThumbnailColors feed ListRow inflation (favorite toggles must refresh hearts
+        // and the favorites-only map layer; cached-color writes refresh row chrome).
+        // Camp/art tables are intentionally excluded — the fetch JOINs them for host
+        // data, but host edits don't reshuffle the event list.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
-            regions: [EventOccurrence.all(), EventObject.all(), Table("event_occurrence_rtree")],
+            regions: [
+                EventOccurrence.all(),
+                EventObject.all(),
+                ObjectMetadata.all(),
+                ThumbnailColors.all(),
+                Table("event_occurrence_rtree")
+            ],
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.eventObjectOccurrences(filter: filter, db: db)
@@ -1418,10 +1322,6 @@ internal class PlayaDBImpl: PlayaDB {
         // so favorite toggles refresh the heart UI; ThumbnailColors so cached-color writes refresh
         // the row chrome. Camp/art tables are intentionally excluded — host edits don't reshuffle
         // the event list.
-        // skipEnsureMetadata: avoids a startup feedback loop where the first emission
-        // would write 8000+ blank metadata rows, which the ObjectMetadata region would
-        // immediately observe and re-fire the JOIN. Fetch already tolerates nil metadata
-        // via `metaByID[uid]` so blank pre-population is unnecessary.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
@@ -1432,7 +1332,6 @@ internal class PlayaDBImpl: PlayaDB {
                 ThumbnailColors.all(),
                 Table("event_occurrence_rtree")
             ],
-            skipEnsureMetadata: true,
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.eventObjectOccurrencesJoined(filter: filter, db: db)
@@ -1579,7 +1478,7 @@ internal class PlayaDBImpl: PlayaDB {
     func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken {
         let observation = ValueObservation.tracking { db in
             try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
-        }
+        }.removeDuplicates()
         let cancellable = observation.start(
             in: dbQueue,
             onError: { error in
@@ -1597,7 +1496,7 @@ internal class PlayaDBImpl: PlayaDB {
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {
         let observation = ValueObservation.tracking { db in
             try UpdateInfo.fetchAll(db)
-        }
+        }.removeDuplicates()
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
@@ -1611,6 +1510,58 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     // MARK: - Metadata Helpers
+
+    /// Metadata identity for an object. Event occurrences share their parent event's
+    /// metadata row — favorites, notes, and view history apply to the event, not to a
+    /// single occurrence (EventObjectOccurrence.uid is a synthesized
+    /// "<eventUID>_<occurrenceID>" that never matches the event_objects table).
+    private func metadataIdentity(for object: any DataObject) -> (type: DataObjectType, uid: String) {
+        if let occurrence = object as? EventObjectOccurrence {
+            return (.event, occurrence.event.uid)
+        }
+        return (object.objectType, object.uid)
+    }
+
+    /// Merges legacy occurrence-keyed event metadata rows ("<eventUID>_<occID>") into
+    /// their parent event's row. Earlier versions wrote favorites through
+    /// EventObjectOccurrence.uid, producing rows invisible to the JOIN-based favorite
+    /// filter and to ListRow metadata inflation (both keyed by the event uid).
+    private func migrateOccurrenceKeyedMetadata(_ db: Database) throws {
+        let candidates = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+            .filter(sql: "instr(object_id, '_') > 0")
+            .fetchAll(db)
+        guard !candidates.isEmpty else { return }
+
+        for synthetic in candidates {
+            guard let separator = synthetic.objectId.lastIndex(of: "_") else { continue }
+            let parentUID = String(synthetic.objectId[..<separator])
+            let suffix = synthetic.objectId[synthetic.objectId.index(after: separator)...]
+            guard !parentUID.isEmpty, Int64(suffix) != nil else { continue }
+            guard try EventObject.filter(Column("uid") == parentUID).fetchCount(db) > 0 else { continue }
+
+            if var parent = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == parentUID)
+                .fetchOne(db) {
+                parent.isFavorite = parent.isFavorite || synthetic.isFavorite
+                parent.firstViewed = [parent.firstViewed, synthetic.firstViewed].compactMap { $0 }.min()
+                parent.lastViewed = [parent.lastViewed, synthetic.lastViewed].compactMap { $0 }.max()
+                parent.userNotes = parent.userNotes ?? synthetic.userNotes
+                parent.updatedAt = Date()
+                try parent.update(db)
+            } else {
+                var moved = synthetic
+                moved.objectId = parentUID
+                moved.updatedAt = Date()
+                try moved.insert(db)
+            }
+
+            try db.execute(sql: """
+                DELETE FROM object_metadata WHERE object_type = ? AND object_id = ?
+                """, arguments: [DataObjectType.event.rawValue, synthetic.objectId])
+        }
+    }
 
     private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
         try await ensureMetadata(for: [(type, ids)])
@@ -1716,12 +1667,13 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func metadata(for object: any DataObject) async throws -> ObjectMetadata {
-        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+        let identity = metadataIdentity(for: object)
+        try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         return try await dbQueue.read { db in
             guard let metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
@@ -1768,9 +1720,10 @@ internal class PlayaDBImpl: PlayaDB {
     }
     
     func toggleFavorite(_ object: any DataObject) async throws {
+        let identity = metadataIdentity(for: object)
         try await dbQueue.write { db in
-            let objectType = object.objectType.rawValue
-            let objectId = object.uid
+            let objectType = identity.type.rawValue
+            let objectId = identity.uid
 
             let existingMetadata = try ObjectMetadata
                 .filter(ObjectMetadata.Columns.objectType == objectType)
@@ -1793,9 +1746,10 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {
+        let identity = metadataIdentity(for: object)
         try await dbQueue.write { db in
-            let objectType = object.objectType.rawValue
-            let objectId = object.uid
+            let objectType = identity.type.rawValue
+            let objectId = identity.uid
 
             let existingMetadata = try ObjectMetadata
                 .filter(ObjectMetadata.Columns.objectType == objectType)
@@ -1819,9 +1773,10 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func isFavorite(_ object: any DataObject) async throws -> Bool {
-        try await dbQueue.read { db in
-            let objectType = object.objectType.rawValue
-            let objectId = object.uid
+        let identity = metadataIdentity(for: object)
+        return try await dbQueue.read { db in
+            let objectType = identity.type.rawValue
+            let objectId = identity.uid
 
             let metadata = try ObjectMetadata
                 .filter(ObjectMetadata.Columns.objectType == objectType)
@@ -1833,12 +1788,13 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func setUserNotes(_ notes: String?, for object: any DataObject) async throws {
-        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+        let identity = metadataIdentity(for: object)
+        try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
@@ -1851,24 +1807,13 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func setLastViewed(_ date: Date, for object: any DataObject) async throws {
-        // For event occurrences, track the parent event so recently viewed lookups work.
-        // EventObjectOccurrence has a synthesized UID that won't match the EventObject table.
-        let trackingUID: String
-        let trackingType: DataObjectType
-        if let occ = object as? EventObjectOccurrence {
-            trackingUID = occ.event.uid
-            trackingType = .event
-        } else {
-            trackingUID = object.uid
-            trackingType = object.objectType
-        }
-
-        try await ensureMetadata(for: trackingType, ids: [trackingUID])
+        let identity = metadataIdentity(for: object)
+        try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == trackingType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == trackingUID)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
@@ -1985,10 +1930,11 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func clearLastViewed(for object: any DataObject) async throws {
+        let identity = metadataIdentity(for: object)
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else { return }
 
             metadata.lastViewed = nil
@@ -2023,11 +1969,7 @@ internal class PlayaDBImpl: PlayaDB {
 
             return try eventObjectOccurrences(for: eventObjects, db: db)
         }
-        let sorted = events.sorted { $0.startDate < $1.startDate }
-        if !sorted.isEmpty {
-            try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
-        }
-        return sorted
+        return events.sorted { $0.startDate < $1.startDate }
     }
 
     func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject] {
@@ -2056,8 +1998,14 @@ internal class PlayaDBImpl: PlayaDB {
     
     func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws {
         let apiParser = APIParserFactory.create()
-        
+        let importStart = CFAbsoluteTimeGetCurrent()
+
         try await dbQueue.write { db in
+            // The import wholesale-rebuilds the FTS and spatial indexes below, so the
+            // per-row sync triggers are pure overhead during the bulk delete + insert.
+            // Drop them for the duration of the transaction and recreate afterwards.
+            try Self.dropIndexSyncTriggers(db)
+
             // Clear update_info first (required for re-imports — primary key conflict otherwise)
             try UpdateInfo.deleteAll(db)
 
@@ -2067,11 +2015,16 @@ internal class PlayaDBImpl: PlayaDB {
             // Clear existing art data
             try ArtImage.deleteAll(db)
             try ArtObject.deleteAll(db)
-            
+
+            // uid → denormalized GPS for event location resolution (avoids per-event lookups)
+            var artGPS: [String: (lat: Double?, lon: Double?)] = [:]
+            artGPS.reserveCapacity(apiArtObjects.count)
+
             for apiArt in apiArtObjects {
                 var artObject = try self.convertArtObject(from: apiArt)
                 try artObject.insert(db)
-                
+                artGPS[artObject.uid] = (artObject.gpsLatitude, artObject.gpsLongitude)
+
                 // Insert art images
                 for apiImage in apiArt.images {
                     var artImage = ArtImage(
@@ -2083,18 +2036,22 @@ internal class PlayaDBImpl: PlayaDB {
                     try artImage.insert(db)
                 }
             }
-            
+
             // Step 2: Import camp objects
             let apiCampObjects = try apiParser.parseCamps(from: campData)
-            
+
             // Clear existing camp data
             try CampImage.deleteAll(db)
             try CampObject.deleteAll(db)
-            
+
+            var campGPS: [String: (lat: Double?, lon: Double?)] = [:]
+            campGPS.reserveCapacity(apiCampObjects.count)
+
             for apiCamp in apiCampObjects {
                 var campObject = try self.convertCampObject(from: apiCamp)
                 try campObject.insert(db)
-                
+                campGPS[campObject.uid] = (campObject.gpsLatitude, campObject.gpsLongitude)
+
                 // Insert camp images
                 for apiImage in apiCamp.images {
                     var campImage = CampImage(
@@ -2105,22 +2062,23 @@ internal class PlayaDBImpl: PlayaDB {
                     try campImage.insert(db)
                 }
             }
-            
+
             // Step 3: Import events with relationship resolution
             let apiEventObjects = try apiParser.parseEvents(from: eventData)
-            
+
             // Clear existing event data
             try EventOccurrence.deleteAll(db)
             try EventObject.deleteAll(db)
-            
+
             // Track unique events to handle duplicates in data
             var processedEventUIDs = Set<String>()
+            var duplicateEventCount = 0
             var correctedOccurrenceCount = 0
 
             for apiEvent in apiEventObjects {
                 // Skip duplicate events (keep first occurrence)
                 if processedEventUIDs.contains(apiEvent.uid.value) {
-                    print("Warning: Skipping duplicate event UID: \(apiEvent.uid.value)")
+                    duplicateEventCount += 1
                     continue
                 }
                 processedEventUIDs.insert(apiEvent.uid.value)
@@ -2128,19 +2086,15 @@ internal class PlayaDBImpl: PlayaDB {
                 var eventObject = try self.convertEventObject(from: apiEvent)
 
                 // Resolve camp relationship and copy GPS coordinates
-                if let campId = apiEvent.hostedByCamp?.value {
-                    if let campObject = try CampObject.fetchOne(db, key: campId) {
-                        eventObject.gpsLatitude = campObject.gpsLatitude
-                        eventObject.gpsLongitude = campObject.gpsLongitude
-                    }
+                if let campId = apiEvent.hostedByCamp?.value, let gps = campGPS[campId] {
+                    eventObject.gpsLatitude = gps.lat
+                    eventObject.gpsLongitude = gps.lon
                 }
 
                 // Resolve art relationship and copy GPS coordinates
-                if let artId = apiEvent.locatedAtArt?.value {
-                    if let artObject = try ArtObject.fetchOne(db, key: artId) {
-                        eventObject.gpsLatitude = artObject.gpsLatitude
-                        eventObject.gpsLongitude = artObject.gpsLongitude
-                    }
+                if let artId = apiEvent.locatedAtArt?.value, let gps = artGPS[artId] {
+                    eventObject.gpsLatitude = gps.lat
+                    eventObject.gpsLongitude = gps.lon
                 }
 
                 try eventObject.insert(db)
@@ -2164,6 +2118,9 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
 
+            if duplicateEventCount > 0 {
+                print("PlayaDB: Skipped \(duplicateEventCount) duplicate event UIDs during import")
+            }
             if correctedOccurrenceCount > 0 {
                 print("PlayaDB: Corrected \(correctedOccurrenceCount) event occurrence times during import")
             }
@@ -2202,55 +2159,38 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
 
-            // Step 4: Rebuild FTS indexes (in case triggers weren't created yet)
+            // Step 4: Rebuild FTS indexes wholesale (sync triggers were dropped above)
             try db.execute(sql: "INSERT INTO art_objects_fts(art_objects_fts) VALUES('rebuild')")
             try db.execute(sql: "INSERT INTO camp_objects_fts(camp_objects_fts) VALUES('rebuild')")
             try db.execute(sql: "INSERT INTO event_objects_fts(event_objects_fts) VALUES('rebuild')")
             if mvData != nil {
                 try db.execute(sql: "INSERT INTO mv_objects_fts(mv_objects_fts) VALUES('rebuild')")
             }
-            
-            // Step 4b: Rebuild spatial index
-            // Clear existing spatial data
+
+            // Step 4b: Rebuild spatial index set-based (object rows already carry GPS)
             try db.execute(sql: "DELETE FROM spatial_index")
             try db.execute(sql: "DELETE FROM spatial_objects")
-            
-            // Re-insert all objects with GPS coordinates
-            let spatialArt = try ArtObject.filter(Column("gps_latitude") != nil).fetchAll(db)
-            for art in spatialArt {
-                if let lat = art.gpsLatitude, let lon = art.gpsLongitude {
-                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
-                                  arguments: ["art", art.uid])
-                    let spatialId = db.lastInsertedRowID
-                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
-                                  arguments: [spatialId, lat, lat, lon, lon])
-                }
+            for (type, table) in [("art", "art_objects"), ("camp", "camp_objects"), ("event", "event_objects")] {
+                try db.execute(sql: """
+                    INSERT INTO spatial_objects (object_type, object_uid)
+                    SELECT '\(type)', uid FROM \(table)
+                    WHERE gps_latitude IS NOT NULL AND gps_longitude IS NOT NULL
+                    """)
+                try db.execute(sql: """
+                    INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                    SELECT so.spatial_id, t.gps_latitude, t.gps_latitude, t.gps_longitude, t.gps_longitude
+                    FROM spatial_objects so
+                    JOIN \(table) t ON t.uid = so.object_uid
+                    WHERE so.object_type = '\(type)'
+                    """)
             }
-            
-            let spatialCamps = try CampObject.filter(Column("gps_latitude") != nil).fetchAll(db)
-            for camp in spatialCamps {
-                if let lat = camp.gpsLatitude, let lon = camp.gpsLongitude {
-                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
-                                  arguments: ["camp", camp.uid])
-                    let spatialId = db.lastInsertedRowID
-                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
-                                  arguments: [spatialId, lat, lat, lon, lon])
-                }
-            }
-            
-            let spatialEvents = try EventObject.filter(Column("gps_latitude") != nil).fetchAll(db)
-            for event in spatialEvents {
-                if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
-                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
-                                  arguments: ["event", event.uid])
-                    let spatialId = db.lastInsertedRowID
-                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
-                                  arguments: [spatialId, lat, lat, lon, lon])
-                }
-            }
-            
-            // Step 4d: Rebuild the occurrence spatio-temporal index.
+
+            // Step 4c: Rebuild the occurrence spatial index.
             try rebuildOccurrenceRTree(db)
+
+            // Step 4d: Recreate the per-row sync triggers dropped at the start.
+            try self.setupFTS5Tables(db)
+            try self.setupRTreeIndex(db)
 
             // Step 5: Update import info
             let now = Date()
@@ -2301,8 +2241,11 @@ internal class PlayaDBImpl: PlayaDB {
                 try mvUpdateInfo.insert(db)
             }
         }
+
+        let elapsed = CFAbsoluteTimeGetCurrent() - importStart
+        print(String(format: "PlayaDB: Import completed in %.2fs", elapsed))
     }
-    
+
     // MARK: - Data Conversion Methods
     
     private func convertArtObject(from apiArt: Art) throws -> ArtObject {
@@ -2448,143 +2391,6 @@ internal class PlayaDBImpl: PlayaDB {
         return try await dbQueue.read { db in
             try UpdateInfo.fetchAll(db)
         }
-    }
-    
-    // MARK: - Reactive Data Access
-    
-    private var _allArt: [ArtObject] = []
-    private var _allCamps: [CampObject] = []
-    private var _allEvents: [EventObjectOccurrence] = []
-    private var _allMutantVehicles: [MutantVehicleObject] = []
-    private var _favorites: [ObjectMetadata] = []
-    
-    private var observations: [DatabaseCancellable] = []
-    
-    var allArt: [ArtObject] {
-        _allArt
-    }
-    
-    var allCamps: [CampObject] {
-        _allCamps
-    }
-    
-    var allEvents: [EventObjectOccurrence] {
-        _allEvents
-    }
-
-    var allMutantVehicles: [MutantVehicleObject] {
-        _allMutantVehicles
-    }
-    
-    var favorites: [ObjectMetadata] {
-        _favorites
-    }
-    
-    private func setupObservations() {
-        // Observe art objects
-        let artObservation = ValueObservation.tracking { db in
-            try ArtObject.fetchAll(db)
-        }
-        let artCancellable = artObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing art objects: \(error)")
-            },
-            onChange: { [weak self] artObjects in
-                if !artObjects.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .art, ids: artObjects.map(\.uid))
-                    }
-                }
-                self?._allArt = artObjects
-            }
-        )
-        
-        // Observe camp objects
-        let campObservation = ValueObservation.tracking { db in
-            try CampObject.fetchAll(db)
-        }
-        let campCancellable = campObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing camp objects: \(error)")
-            },
-            onChange: { [weak self] campObjects in
-                if !campObjects.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .camp, ids: campObjects.map(\.uid))
-                    }
-                }
-                self?._allCamps = campObjects
-            }
-        )
-        
-        // Observe event objects with occurrences.
-        // Explicit regions: only re-fire on event table changes, not camp/art
-        // (the fetch closure JOINs camp/art for host data but those shouldn't trigger re-evaluation).
-        let eventObservation = ValueObservation.tracking(
-            regions: [EventObject.all(), EventOccurrence.all()],
-            fetch: { [self] db in
-                let events = try EventObject.fetchAll(db)
-                return try eventObjectOccurrences(for: events, db: db)
-            }
-        )
-        let eventCancellable = eventObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing events: \(error)")
-            },
-            onChange: { [weak self] eventObjectOccurrences in
-                if !eventObjectOccurrences.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .event, ids: eventObjectOccurrences.map { $0.event.uid })
-                    }
-                }
-                self?._allEvents = eventObjectOccurrences
-            }
-        )
-        
-        // Observe mutant vehicle objects
-        let mvObservation = ValueObservation.tracking { db in
-            try MutantVehicleObject.fetchAll(db)
-        }
-        let mvCancellable = mvObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing mutant vehicles: \(error)")
-            },
-            onChange: { [weak self] mvObjects in
-                if !mvObjects.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .mutantVehicle, ids: mvObjects.map(\.uid))
-                    }
-                }
-                self?._allMutantVehicles = mvObjects
-            }
-        )
-
-        // Observe favorites
-        let favoritesObservation = ValueObservation.tracking { db in
-            try ObjectMetadata.filter(Column("is_favorite") == true).fetchAll(db)
-        }
-        let favoritesCancellable = favoritesObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing favorites: \(error)")
-            },
-            onChange: { [weak self] favoriteMetadata in
-                self?._favorites = favoriteMetadata
-            }
-        )
-        
-        // Store cancellables
-        observations = [
-            artCancellable,
-            campCancellable,
-            eventCancellable,
-            mvCancellable,
-            favoritesCancellable
-        ]
     }
 }
 

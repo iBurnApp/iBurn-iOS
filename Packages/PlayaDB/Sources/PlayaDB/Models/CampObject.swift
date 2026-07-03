@@ -3,7 +3,7 @@ import CoreLocation
 import GRDB
 
 /// Theme camp object with complete API field mapping
-public struct CampObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+public struct CampObject: DataObject, Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
     
     public static let databaseTableName = "camp_objects"

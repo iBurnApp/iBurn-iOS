@@ -2,7 +2,7 @@ import Foundation
 import GRDB
 
 /// A user-placed map pin (home, bike, star).
-public struct UserMapPin: Codable, FetchableRecord, MutablePersistableRecord, Identifiable {
+public struct UserMapPin: Codable, Equatable, FetchableRecord, MutablePersistableRecord, Identifiable {
     public static let databaseTableName = "user_map_pins"
 
     public enum Columns: String, CodingKey, ColumnExpression {

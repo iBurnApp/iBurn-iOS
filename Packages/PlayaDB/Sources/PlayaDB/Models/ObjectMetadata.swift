@@ -2,7 +2,7 @@ import Foundation
 import GRDB
 
 /// Metadata for data objects (app-specific data like favorites, notes, etc.)
-public struct ObjectMetadata: Codable, FetchableRecord, MutablePersistableRecord {
+public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
     
     public static let databaseTableName = "object_metadata"

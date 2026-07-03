@@ -9,7 +9,7 @@ final class FilterObservationTests: XCTestCase {
     private var playaDB: PlayaDBImpl!
     private var tempDBPath: String!
 
-    private var dbQueue: DatabaseQueue {
+    private var dbQueue: any DatabaseWriter {
         playaDB.dbQueue
     }
 
@@ -214,6 +214,71 @@ final class FilterObservationTests: XCTestCase {
         try await setFavorite(.art, id: art.uid)
 
         await fulfillment(of: [favoritesExpectation], timeout: 2.0)
+    }
+
+    /// Favorite toggles must re-fire observeEvents: the fetch reads object_metadata
+    /// for ListRow inflation, so the tracked regions must include it (regression test
+    /// for regions that only covered the event tables, leaving hearts stale).
+    func testObserveEventsRefiresOnFavoriteToggle() async throws {
+        let expectation = expectation(description: "Event favorite metadata emitted")
+
+        let events = try await playaDB.fetchEvents()
+        let eventUID = try XCTUnwrap(events.first).event.uid
+
+        let filter = EventFilter(includeExpired: true)
+        let token = playaDB.observeEvents(
+            filter: filter,
+            onChange: { rows in
+                if rows.contains(where: { $0.object.event.uid == eventUID && $0.metadata?.isFavorite == true }) {
+                    expectation.fulfill()
+                }
+            },
+            onError: { error in
+                XCTFail("Event observation error: \(error)")
+            }
+        )
+
+        defer { token.cancel() }
+
+        try await setFavorite(.event, id: eventUID)
+
+        await fulfillment(of: [expectation], timeout: 2.0)
+    }
+
+    /// Favorites-only event observation (the map's favorites layer) must drop rows
+    /// when the favorite is removed.
+    func testObserveEventsOnlyFavoritesRemovesUnfavoritedRow() async throws {
+        let events = try await playaDB.fetchEvents()
+        let eventUID = try XCTUnwrap(events.first).event.uid
+        try await setFavorite(.event, id: eventUID)
+
+        let appeared = expectation(description: "Favorited event emitted")
+        let removed = expectation(description: "Unfavorited event removed")
+        var sawEvent = false
+
+        var filter = EventFilter(includeExpired: true)
+        filter.onlyFavorites = true
+        let token = playaDB.observeEvents(
+            filter: filter,
+            onChange: { rows in
+                let contains = rows.contains { $0.object.event.uid == eventUID }
+                if contains, !sawEvent {
+                    sawEvent = true
+                    appeared.fulfill()
+                } else if !contains, sawEvent {
+                    removed.fulfill()
+                }
+            },
+            onError: { error in
+                XCTFail("Event observation error: \(error)")
+            }
+        )
+
+        defer { token.cancel() }
+
+        await fulfillment(of: [appeared], timeout: 2.0)
+        try await setFavorite(.event, id: eventUID, isFavorite: false)
+        await fulfillment(of: [removed], timeout: 2.0)
     }
 
     func testObserveArtOnlyWithEventsUpdates() async throws {
