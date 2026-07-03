@@ -57,6 +57,15 @@ public struct EventFilter: Hashable, Codable {
     /// When nil, all event types are included.
     public var eventTypeCodes: Set<String>?
 
+    /// Overlap time window: include occurrences whose `[start, end)` interval intersects
+    /// this interval (`startTime < window.end && endTime > window.start`).
+    ///
+    /// Unlike `startDate`/`endDate` — which bound the occurrence's START only (calendar-day
+    /// bucketing) and therefore drop events already in progress — this keeps events that
+    /// began before the window opened but are still running. Use it for "what's active in
+    /// this window" queries (e.g. nearby / right-now), not for day-tab bucketing.
+    public var activeWindow: DateInterval?
+
     /// Create a new event filter
     public init(
         year: Int? = nil,
@@ -68,7 +77,8 @@ public struct EventFilter: Hashable, Codable {
         startingWithinHours: Int? = nil,
         startDate: Date? = nil,
         endDate: Date? = nil,
-        eventTypeCodes: Set<String>? = nil
+        eventTypeCodes: Set<String>? = nil,
+        activeWindow: DateInterval? = nil
     ) {
         self.year = year
         self.regionStorage = region.map(FilterRegion.init)
@@ -80,6 +90,7 @@ public struct EventFilter: Hashable, Codable {
         self.startDate = startDate
         self.endDate = endDate
         self.eventTypeCodes = eventTypeCodes
+        self.activeWindow = activeWindow
     }
 
     /// Filter that matches all events (no filtering)

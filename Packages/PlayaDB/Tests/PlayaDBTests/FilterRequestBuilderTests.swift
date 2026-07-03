@@ -511,6 +511,50 @@ final class FilterRequestBuilderTests: XCTestCase {
         )
     }
 
+    /// `activeWindow` must keep events already in progress when the window opens — the case
+    /// the start-bounded `startDate`/`endDate` filter drops. Documents both behaviors so the
+    /// distinction can't silently regress.
+    func testEventOccurrenceRequestActiveWindowKeepsInProgressEvents() async throws {
+        let now = Date()
+        let windowStart = now
+        let windowEnd = now.addingTimeInterval(2 * 3600) // now + 2h
+
+        // Started 2h ago, still running 1h from now — in progress at the window open.
+        try await insertEvent(uid: "ongoing", name: "Ongoing", year: 2025,
+                              start: now.addingTimeInterval(-2 * 3600),
+                              end: now.addingTimeInterval(3600))
+        // Starts inside the window.
+        try await insertEvent(uid: "in-window", name: "In Window", year: 2025,
+                              start: now.addingTimeInterval(1800),
+                              end: now.addingTimeInterval(5400))
+        // Already ended before the window.
+        try await insertEvent(uid: "ended", name: "Ended", year: 2025,
+                              start: now.addingTimeInterval(-5 * 3600),
+                              end: now.addingTimeInterval(-4 * 3600))
+        // Starts after the window closes.
+        try await insertEvent(uid: "later", name: "Later", year: 2025,
+                              start: now.addingTimeInterval(5 * 3600),
+                              end: now.addingTimeInterval(6 * 3600))
+
+        let impl = try XCTUnwrap(playaDB as? PlayaDBImpl)
+
+        // Start-bounded filter drops "ongoing" (its start precedes the window).
+        let startBounded = EventFilter(startDate: windowStart, endDate: windowEnd)
+        let startResult = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: startBounded).fetchAll(db)
+        }
+        XCTAssertEqual(startResult.map(\.eventId), ["in-window"],
+                       "Start-bounded filtering excludes events that began before the window")
+
+        // Overlap window keeps "ongoing" and "in-window", excludes "ended" and "later".
+        let overlap = EventFilter(activeWindow: DateInterval(start: windowStart, end: windowEnd))
+        let overlapResult = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: overlap).fetchAll(db)
+        }
+        XCTAssertEqual(overlapResult.map(\.eventId), ["ongoing", "in-window"],
+                       "Overlap window keeps in-progress events and excludes ended/future ones")
+    }
+
     func testFetchEventsAppliesYearRegionAndSearchFilters() async throws {
         let now = Date()
         let region = MKCoordinateRegion(
