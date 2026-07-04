@@ -194,9 +194,18 @@ the phone lists.
   Info.plist, bundle id `com.trailbehind.iBurn2010.watchkitapp`,
   `WATCHOS_DEPLOYMENT_TARGET=26.0`, `TARGETED_DEVICE_FAMILY=4`), SPM products
   PlayaDB + PlayaAPI + iBurn2026APIData, shared scheme `iBurnWatch`.
-  **Deliberately NOT embedded in the iOS app target yet** — embedding would make
-  every iOS/CI build require the watchOS platform. Revisit when WatchConnectivity
-  sync (Phase 2) needs real pairing.
+  ~~Deliberately NOT embedded in the iOS app target yet~~ **Embedded 2026-07-03**
+  (user decision): iBurnWatch is now a companion app inside iBurn.app —
+  `WKCompanionAppBundleIdentifier=com.trailbehind.iBurn2010`,
+  `WKRunsIndependentlyOfCompanionApp=YES` (still fully standalone-capable),
+  `WKWatchOnly` removed, versions aligned to the container (2026.0 / 108),
+  iBurn target got a dependency + "Embed Watch Content" copy phase. Verified:
+  installing iBurn.app on the paired iPhone 17 Pro Max sim auto-installed the
+  watch app on the paired Series 11, where it launched and rendered the map.
+  **CI consequence:** every iOS build now also builds the watch target, so CI
+  runners need the watchOS platform/SDK (GitHub macOS images bundle it, but
+  older pinned Xcode setups may need `xcodebuild -downloadPlatform watchOS`).
+  This unblocks Phase 2 WatchConnectivity (real pairing now exists).
 - Watch sources: `iBurnWatch/iBurnWatchApp.swift` (creates PlayaDB via
   `createPlayaDB()`), `iBurnWatch/ContentView.swift` (Phase 0 smoke screen:
   seeds from `iBurn2026APIData.bundle` via `BundleDataLoader` +

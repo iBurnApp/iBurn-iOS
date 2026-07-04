@@ -117,17 +117,26 @@ construction.
 
 ## 9. watchOS app (iBurnWatch)
 
-Standalone watch app (not embedded in the iOS app; separate install). Scheme
-`iBurnWatch`, bundle id `com.trailbehind.iBurn2010.watchkitapp`. Use a watchOS 26
-simulator (e.g. Apple Watch Ultra 3 49mm). Set XcodeBuildMCP session defaults to
-the watch sim UDID + `simulatorPlatform: "watchOS Simulator"` before snapshot/tap.
+Companion watch app **embedded in the iOS app** (`iBurn.app/Watch/iBurnWatch.app`)
+but independently runnable (`WKRunsIndependentlyOfCompanionApp`). Bundle id
+`com.trailbehind.iBurn2010.watchkitapp`. Two ways to get it on a watch sim:
 
-1. Build: `xcodebuild -workspace iBurn.xcworkspace -scheme iBurnWatch
-   -destination 'id=<WATCH_UDID>' build` (or `generic/platform=watchOS Simulator`).
+- **Paired install (companion path):** build scheme `iBurn`, `simctl install`
+  the iOS app on a phone sim with an active watch pair (`xcrun simctl list
+  pairs`) — the watch app auto-installs on the paired watch within ~10 s.
+  Location authorization can carry over from the phone app.
+- **Direct install (development):** build scheme `iBurnWatch` for
+  `id=<WATCH_UDID>` (or `generic/platform=watchOS Simulator`) and
+  `simctl install` the watch app directly.
+
+Set XcodeBuildMCP session defaults to the watch sim UDID +
+`simulatorPlatform: "watchOS Simulator"` before snapshot/tap.
+
+1. Build (see above for scheme choice).
 2. Set a BRC location first: `xcrun simctl location <WATCH_UDID> set 40.7864,-119.2065`.
-3. Install + launch via simctl. First launch shows the **location permission
-   alert** — swipe the alert scroll-view up twice to reveal the buttons, then tap
-   **"Allow While Using App"**.
+3. Launch via simctl. On a fresh direct install, first launch shows the
+   **location permission alert** — swipe the alert scroll-view up twice to
+   reveal the buttons, then tap **"Allow While Using App"**.
 4. Root is a **NavigationStack with the Map fullscreen** (Canvas-rendered BRC:
    dashed pentagon fence, radial street grid, plazas, user dot, The Man /
    Center Camp markers; compass + recenter buttons bottom-right). Toolbar:

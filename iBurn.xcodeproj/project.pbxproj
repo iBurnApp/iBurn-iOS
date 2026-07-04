@@ -12,6 +12,7 @@
 		0F5280F97FF05B6472BE5119 /* PlayaAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 7B4FC0E27D6177950F583A6C /* PlayaAPI */; };
 		18E8DFF4AB80AAF2B911B81D /* NearbyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DD8E1F9DA6EF71B1161992 /* NearbyScreen.swift */; };
 		2C3F1471343CC8D21B1AC0F4 /* streets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 765683D57014A2585A750818 /* streets.geojson */; };
+		5C39982F89FB9433FB0DEBD3 /* iBurnWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -51,6 +52,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AD442F95109675366724F4A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C4B2720384847AC347443FF;
+			remoteInfo = iBurnWatch;
+		};
 		D980A9101B3F5A6400BE3682 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 63CE2A4C1987140F00F65B01 /* Project object */;
@@ -96,6 +104,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		00F14D6A9BA2DC60398A7732 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				5C39982F89FB9433FB0DEBD3 /* iBurnWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D960F2601F74E65A00144290 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -418,11 +437,13 @@
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
 				53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */,
 				D907AD6821215F20004A255A /* Crashlytics */,
+				00F14D6A9BA2DC60398A7732 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */,
+				AAF3E09B3FD0401CF5726CF0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				D9029F322EA45CB500ED87D5 /* iBurn */,
@@ -760,6 +781,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AAF3E09B3FD0401CF5726CF0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = iBurnWatch;
+			target = 3C4B2720384847AC347443FF /* iBurnWatch */;
+			targetProxy = AD442F95109675366724F4A9 /* PBXContainerItemProxy */;
+		};
 		D980A9111B3F5A6400BE3682 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 63CE2A531987140F00F65B01 /* iBurn */;
@@ -779,14 +806,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 108;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = iBurn;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Shows your position on the Black Rock City map.";
 				INFOPLIST_KEY_WKApplication = YES;
-				INFOPLIST_KEY_WKWatchOnly = YES;
-				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.trailbehind.iBurn2010;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				MARKETING_VERSION = 2026.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.trailbehind.iBurn2010.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -990,14 +1018,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 108;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = iBurn;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Shows your position on the Black Rock City map.";
 				INFOPLIST_KEY_WKApplication = YES;
-				INFOPLIST_KEY_WKWatchOnly = YES;
-				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.trailbehind.iBurn2010;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				MARKETING_VERSION = 2026.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.trailbehind.iBurn2010.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
