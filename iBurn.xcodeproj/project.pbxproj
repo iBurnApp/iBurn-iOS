@@ -8,7 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		04720AD2C99286B359A608F3 /* fence.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 426F86ABDF799A13905EEFEC /* fence.geojson */; };
+		0ED9017F7EEEB8D9C6ADD889 /* DetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FEA0681C6BD080480B8F82 /* DetailScreen.swift */; };
 		0F5280F97FF05B6472BE5119 /* PlayaAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 7B4FC0E27D6177950F583A6C /* PlayaAPI */; };
+		18E8DFF4AB80AAF2B911B81D /* NearbyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DD8E1F9DA6EF71B1161992 /* NearbyScreen.swift */; };
 		2C3F1471343CC8D21B1AC0F4 /* streets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 765683D57014A2585A750818 /* streets.geojson */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
@@ -19,7 +21,9 @@
 		7B2FA7D941A961C1D7E01881 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 943BDAA9ED89068B088FA38F /* Foundation.framework */; };
 		821FB0F7538606FD8423F5B2 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C213D03E78AE5B2D2F747C /* LocationService.swift */; };
 		93CBF9AE70B2AF9D4E656366 /* polygons.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 9E10477F2E42824CFC141C92 /* polygons.geojson */; };
+		A2641E372AF6D6225A0C5FEE /* WatchSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD79A9DD502B9246B2F9149 /* WatchSeeder.swift */; };
 		A413A2CF5A99208DD2D56704 /* iBurnWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82C58B098F53472C8C10196 /* iBurnWatchApp.swift */; };
+		B150C4C619DBC7F4D894CA2A /* FavoritesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1F9E88B61EC26F67719514 /* FavoritesScreen.swift */; };
 		BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */; };
 		C03FD6DC2084AA53017BF9DA /* PlayaGeo in Frameworks */ = {isa = PBXBuildFile; productRef = 749A3060A0B43D8A742A931E /* PlayaGeo */; };
 		C518515B936EF809B70240D6 /* iBurn2026APIData in Frameworks */ = {isa = PBXBuildFile; productRef = A5CE57DA0AB0F2BBD589609D /* iBurn2026APIData */; };
@@ -43,7 +47,6 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */; };
-		DC1DA341E3EAE329D60F8E9B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A410983BC9DD337242C01C /* ContentView.swift */; };
 		F7E3E8D3B6D02857B42F3284 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = 5E05B7773440522D30BDA948 /* PlayaDB */; };
 /* End PBXBuildFile section */
 
@@ -108,6 +111,8 @@
 
 /* Begin PBXFileReference section */
 		01DEA205AEAE09E296121F4B /* Pods-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		21FEA0681C6BD080480B8F82 /* DetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DetailScreen.swift; sourceTree = "<group>"; };
+		22DD8E1F9DA6EF71B1161992 /* NearbyScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NearbyScreen.swift; sourceTree = "<group>"; };
 		2395C354ED41D5C896F74502 /* Pods_iBurn_iBurnUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurn_iBurnUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-iBurn-iBurnTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -115,6 +120,7 @@
 		3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3FBB22955D76D43845931068 /* toilets.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = toilets.geojson; path = "Submodules/iBurn-Data/data/2026/geo/toilets.geojson"; sourceTree = "<group>"; };
 		426F86ABDF799A13905EEFEC /* fence.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = fence.geojson; path = "Submodules/iBurn-Data/data/2026/geo/fence.geojson"; sourceTree = "<group>"; };
+		4AD79A9DD502B9246B2F9149 /* WatchSeeder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSeeder.swift; sourceTree = "<group>"; };
 		58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C938B49996428877731060F /* Pods-iBurnAbstract-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurn/Pods-iBurnAbstract-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
@@ -129,7 +135,6 @@
 		73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 		765683D57014A2585A750818 /* streets.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = streets.geojson; path = "Submodules/iBurn-Data/data/2026/geo/streets.geojson"; sourceTree = "<group>"; };
 		80E2C6DD5C95EC58E5AE41B8 /* Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
-		86A410983BC9DD337242C01C /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		943BDAA9ED89068B088FA38F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,6 +144,7 @@
 		B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-iBurn.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
+		BD1F9E88B61EC26F67719514 /* FavoritesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FavoritesScreen.swift; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurnWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -332,9 +338,12 @@
 			isa = PBXGroup;
 			children = (
 				A82C58B098F53472C8C10196 /* iBurnWatchApp.swift */,
-				86A410983BC9DD337242C01C /* ContentView.swift */,
 				E9C213D03E78AE5B2D2F747C /* LocationService.swift */,
 				E76D61673600C19CD253D116 /* MapScreen.swift */,
+				22DD8E1F9DA6EF71B1161992 /* NearbyScreen.swift */,
+				BD1F9E88B61EC26F67719514 /* FavoritesScreen.swift */,
+				21FEA0681C6BD080480B8F82 /* DetailScreen.swift */,
+				4AD79A9DD502B9246B2F9149 /* WatchSeeder.swift */,
 			);
 			name = iBurnWatch;
 			path = iBurnWatch;
@@ -732,9 +741,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A413A2CF5A99208DD2D56704 /* iBurnWatchApp.swift in Sources */,
-				DC1DA341E3EAE329D60F8E9B /* ContentView.swift in Sources */,
 				821FB0F7538606FD8423F5B2 /* LocationService.swift in Sources */,
 				79394A195485621D7B90C4E2 /* MapScreen.swift in Sources */,
+				18E8DFF4AB80AAF2B911B81D /* NearbyScreen.swift in Sources */,
+				B150C4C619DBC7F4D894CA2A /* FavoritesScreen.swift in Sources */,
+				0ED9017F7EEEB8D9C6ADD889 /* DetailScreen.swift in Sources */,
+				A2641E372AF6D6225A0C5FEE /* WatchSeeder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

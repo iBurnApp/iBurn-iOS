@@ -26,13 +26,45 @@ struct IBurnWatchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabView {
+            // NavigationStack root (not a paging TabView): the map owns the
+            // Digital Crown for zoom and drags for panning, which would fight
+            // vertical page switching.
+            NavigationStack {
                 if let mapData {
                     MapScreen(mapData: mapData, location: locationService)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                NavigationLink {
+                                    NearbyScreen(
+                                        playaDB: playaDB,
+                                        mapData: mapData,
+                                        location: locationService
+                                    )
+                                } label: {
+                                    Image(systemName: "location.circle")
+                                }
+                                .accessibilityLabel("Nearby")
+                            }
+                            ToolbarItem(placement: .topBarTrailing) {
+                                NavigationLink {
+                                    FavoritesScreen(
+                                        playaDB: playaDB,
+                                        mapData: mapData,
+                                        location: locationService
+                                    )
+                                } label: {
+                                    Image(systemName: "heart.circle")
+                                }
+                                .accessibilityLabel("Favorites")
+                            }
+                        }
+                } else {
+                    Text("Map data unavailable")
                 }
-                ContentView(playaDB: playaDB)
             }
-            .tabViewStyle(.verticalPage)
+            .task {
+                await WatchSeeder.seedIfNeeded(playaDB)
+            }
         }
     }
 }

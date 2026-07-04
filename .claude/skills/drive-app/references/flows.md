@@ -128,16 +128,27 @@ the watch sim UDID + `simulatorPlatform: "watchOS Simulator"` before snapshot/ta
 3. Install + launch via simctl. First launch shows the **location permission
    alert** — swipe the alert scroll-view up twice to reveal the buttons, then tap
    **"Allow While Using App"**.
-4. Root is a vertical-page TabView: page 1 = **Map** (Canvas-rendered BRC:
+4. Root is a **NavigationStack with the Map fullscreen** (Canvas-rendered BRC:
    dashed pentagon fence, radial street grid, plazas, user dot, The Man /
-   Center Camp markers; compass + recenter buttons bottom-right), page 2 =
-   DB status page showing seeded counts ("321 art / 1201 camps" for 2026).
+   Center Camp markers; compass + recenter buttons bottom-right). Toolbar:
+   top-left "Nearby", top-right "Favorites". Digital Crown zooms the map,
+   drag pans — there is intentionally no page-swiping (gesture conflict).
 5. Compass button ("Switch to compass mode") toggles heading-up; simulators have
    no compass hardware, so the map stays north-up and no calibration hint shows.
+6. Nearby → tap a row → Detail (favorite toggle, description, **Navigate** when
+   the object has GPS) → Navigate shows target marker + user dot + live
+   "<distance> · <bearing>°" readout.
 
-Verify: city geometry renders (not a blank background); DB page shows the 2026
-counts; PlayaDB.sqlite exists in the watch app container
-(`xcrun simctl get_app_container <WATCH_UDID> com.trailbehind.iBurn2010.watchkitapp data`).
+Verify: city geometry renders (not a blank background); PlayaDB.sqlite exists in
+the watch app container with 2026 counts
+(`xcrun simctl get_app_container <WATCH_UDID> com.trailbehind.iBurn2010.watchkitapp data`);
+favoriting writes `object_metadata` `camp|<uid>|1` etc.
+
+Pre-embargo note: the bundled data has **zero GPS rows**, so Nearby shows an
+explanatory empty state and Detail hides Navigate. To exercise those flows,
+inject GPS into a few `camp_objects` rows AND insert matching
+`spatial_objects`/`spatial_index` rows (UPDATEs alone don't maintain the R*Tree),
+then uninstall the app afterward so the DB reseeds clean.
 
 ## Known quirks / expected noise
 

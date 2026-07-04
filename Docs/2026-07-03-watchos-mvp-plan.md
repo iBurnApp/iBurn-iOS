@@ -2,7 +2,10 @@
 
 Date: 2026-07-03 (Pacific)
 Branch: `2026-updates`
-Status: Phases 0–1 complete (map + compass rendering on watch sim); Phase 2 (favorites sync) next
+Status: Phases 0, 1, 3, 4 + watch-local favorites complete and sim-verified.
+Remaining: Phase 2 WatchConnectivity sync (needs embedding decision), plus
+follow-ups. See "Phase 3/4 Results" for the spatial-index UPDATE-trigger gap
+found in PlayaDB.
 
 ## High-Level Plan
 
@@ -237,6 +240,34 @@ the phone lists.
   up), city renders (pentagon fence, radial grid, plazas, user dot at simulated
   BRC location, markers, controls); compass toggle flips state without crash
   (sim has no compass hardware). iOS app still builds after pbxproj changes.
+
+## Phase 3/4 Results + watch-local favorites (2026-07-03)
+
+- Root restructured from paging TabView to **NavigationStack**: `.verticalPage`
+  paging uses crown + vertical swipes, which the map already claims for zoom/pan.
+  Map is fullscreen root; toolbar buttons (topBarLeading "Nearby",
+  topBarTrailing "Favorites") navigate. Old ContentView smoke page removed;
+  seeding moved to `WatchSeeder.seedIfNeeded` run from an app-level `.task`.
+- New screens (all in `iBurnWatch/`): `NearbyScreen` (region-filtered
+  `fetchArt`/`fetchCamps` around user, client distance sort, 30-row cap,
+  embargo-aware empty state), `FavoritesScreen` (`getFavorites()`, distance
+  sort), `DetailScreen` (favorite toggle via `setFavorite`, description,
+  Navigate link gated on `hasLocation`), `NavigationScreen` (PlayaMapView fit to
+  user+target, heading-up when compass exists, live distance/bearing readout,
+  calibration hint).
+- **Sim-verified end-to-end** (test GPS injected into 3 camps via sqlite3, app
+  uninstalled afterward to purge): Nearby sorted 309 m / 590 m / 1.1 km →
+  detail → Add Favorite → `object_metadata` row `camp|<uid>|1` → Navigate view
+  showed target marker + user dot + "309 m · 55°" → Favorites listed the camp.
+- **PlayaDB finding:** `spatial_index` R*Tree is only maintained by
+  import-time rebuild + insert/delete triggers — **UPDATE of gps columns does
+  not update the R*Tree**, so region queries miss rows whose GPS changes
+  in-place. Pre-embargo bundle has zero GPS rows (0 rows in spatial_index —
+  expected). Matters once location data arrives as an *update* (embargo drop)
+  rather than a fresh import. Fix candidates: gps-column UPDATE triggers, or
+  make the future update path reimport/rebuild like importFromData does.
+- Embargo on watch today: no GPS in bundle → Nearby shows explanatory empty
+  state; Detail shows "Location hidden until gates open" instead of Navigate.
 
 ## Verification strategy
 - Preview-driven: every screen has `#Preview`s (including loading/empty/restricted
