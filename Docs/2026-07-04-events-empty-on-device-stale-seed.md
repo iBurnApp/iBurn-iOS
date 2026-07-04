@@ -84,6 +84,8 @@ Approaches ruled out along the way:
 
 - `swift test` in `Packages/PlayaDB` — all suites pass (incl. 5 new tests); `Packages/PlayaAPI` — all pass.
 - `xcodebuild -workspace iBurn.xcworkspace -scheme iBurn` (iPhone 17 Pro Max sim) — build succeeds; watch target builds as embedded companion.
+- **On-device (BigPhone 17, iPhone 17 Pro Max):** deployed via XcodeBuildMCP `build_run_device`; reseed ran on launch and the Events list populated with 2026 events. User confirmed working.
+- Note: the user had "show expired events" enabled, which initially looked like it contradicted the expired-filter theory — but it doesn't: the events UI is day-scoped to the 2026 festival window, so 2025-dated events are invisible on every selectable day regardless of the expired toggle. Stale seed data explains the symptom under both settings.
 
 ## Cross-References
 
