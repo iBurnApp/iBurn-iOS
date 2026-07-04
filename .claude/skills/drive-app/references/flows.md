@@ -146,9 +146,9 @@ favoriting writes `object_metadata` `camp|<uid>|1` etc.
 
 Pre-embargo note: the bundled data has **zero GPS rows**, so Nearby shows an
 explanatory empty state and Detail hides Navigate. To exercise those flows,
-inject GPS into a few `camp_objects` rows AND insert matching
-`spatial_objects`/`spatial_index` rows (UPDATEs alone don't maintain the R*Tree),
-then uninstall the app afterward so the DB reseeds clean.
+inject GPS into a few `camp_objects` rows via plain `UPDATE` — the
+`*_spatial_update` triggers keep `spatial_index` in sync automatically — then
+uninstall the app afterward so the DB reseeds clean.
 
 ## Known quirks / expected noise
 

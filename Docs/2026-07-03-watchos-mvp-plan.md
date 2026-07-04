@@ -259,13 +259,18 @@ the phone lists.
   uninstalled afterward to purge): Nearby sorted 309 m / 590 m / 1.1 km →
   detail → Add Favorite → `object_metadata` row `camp|<uid>|1` → Navigate view
   showed target marker + user dot + "309 m · 55°" → Favorites listed the camp.
-- **PlayaDB finding:** `spatial_index` R*Tree is only maintained by
-  import-time rebuild + insert/delete triggers — **UPDATE of gps columns does
-  not update the R*Tree**, so region queries miss rows whose GPS changes
-  in-place. Pre-embargo bundle has zero GPS rows (0 rows in spatial_index —
-  expected). Matters once location data arrives as an *update* (embargo drop)
-  rather than a fresh import. Fix candidates: gps-column UPDATE triggers, or
-  make the future update path reimport/rebuild like importFromData does.
+- **PlayaDB finding (FIXED same day):** `spatial_index` R*Tree was only
+  maintained by import-time rebuild + insert/delete triggers — UPDATE of gps
+  columns left it stale, so region queries missed rows whose GPS changed
+  in-place (would have bitten when the embargo drop arrives as an update).
+  Fixed with `*_spatial_update` triggers (art/camp/event; delete-then-
+  conditionally-reinsert keyed via the mapping table, not last_insert_rowid)
+  plus `event_occurrence_rtree_event_update` refreshing the denormalized
+  occurrence R*Tree when an event's GPS changes. Trigger generation refactored
+  into a data-driven loop; existing DBs pick the new triggers up on next open
+  (CREATE TRIGGER IF NOT EXISTS). Covered by
+  `SpatialIndexUpdateTests` (gain/move/clear GPS, no duplicate rows, occurrence
+  propagation, trigger presence); full 172-test suite green.
 - Embargo on watch today: no GPS in bundle → Nearby shows explanatory empty
   state; Detail shows "Location hidden until gates open" instead of Navigate.
 

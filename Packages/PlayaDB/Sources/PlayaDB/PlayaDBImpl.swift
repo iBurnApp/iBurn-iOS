@@ -417,10 +417,11 @@ internal class PlayaDBImpl: PlayaDB {
             }
         }
         for trigger in [
-            "art_spatial_insert", "art_spatial_delete",
-            "camp_spatial_insert", "camp_spatial_delete",
-            "event_spatial_insert", "event_spatial_delete",
+            "art_spatial_insert", "art_spatial_delete", "art_spatial_update",
+            "camp_spatial_insert", "camp_spatial_delete", "camp_spatial_update",
+            "event_spatial_insert", "event_spatial_delete", "event_spatial_update",
             "event_occurrence_rtree_insert", "event_occurrence_rtree_delete",
+            "event_occurrence_rtree_event_update",
         ] {
             try db.execute(sql: "DROP TRIGGER IF EXISTS \(trigger)")
         }
@@ -446,74 +447,62 @@ internal class PlayaDBImpl: PlayaDB {
             )
         """)
         
-        // Create triggers to maintain spatial index for art objects
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_spatial_insert AFTER INSERT ON art_objects
-            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
-            BEGIN
-                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('art', NEW.uid);
-                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
-                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_spatial_delete AFTER DELETE ON art_objects
-            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
-            BEGIN
-                DELETE FROM spatial_index WHERE id = (
-                    SELECT spatial_id FROM spatial_objects 
-                    WHERE object_type = 'art' AND object_uid = OLD.uid
-                );
-                DELETE FROM spatial_objects WHERE object_type = 'art' AND object_uid = OLD.uid;
-            END
-        """)
-        
-        // Create triggers for camp objects
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_spatial_insert AFTER INSERT ON camp_objects
-            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
-            BEGIN
-                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('camp', NEW.uid);
-                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
-                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_spatial_delete AFTER DELETE ON camp_objects
-            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
-            BEGIN
-                DELETE FROM spatial_index WHERE id = (
-                    SELECT spatial_id FROM spatial_objects 
-                    WHERE object_type = 'camp' AND object_uid = OLD.uid
-                );
-                DELETE FROM spatial_objects WHERE object_type = 'camp' AND object_uid = OLD.uid;
-            END
-        """)
-        
-        // Create triggers for event objects
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_spatial_insert AFTER INSERT ON event_objects
-            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
-            BEGIN
-                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('event', NEW.uid);
-                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
-                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_spatial_delete AFTER DELETE ON event_objects
-            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
-            BEGIN
-                DELETE FROM spatial_index WHERE id = (
-                    SELECT spatial_id FROM spatial_objects 
-                    WHERE object_type = 'event' AND object_uid = OLD.uid
-                );
-                DELETE FROM spatial_objects WHERE object_type = 'event' AND object_uid = OLD.uid;
-            END
-        """)
+        // Insert/delete/update triggers keeping the point R*Tree in sync for each
+        // GPS-bearing object table. The update triggers matter for the embargo drop:
+        // if location data ever arrives as an in-place UPDATE of gps columns rather
+        // than a full reimport, the R*Tree must follow or region queries silently
+        // miss those rows.
+        let spatialTables: [(type: String, table: String)] = [
+            ("art", "art_objects"),
+            ("camp", "camp_objects"),
+            ("event", "event_objects"),
+        ]
+        for config in spatialTables {
+            try db.execute(sql: """
+                CREATE TRIGGER IF NOT EXISTS \(config.type)_spatial_insert AFTER INSERT ON \(config.table)
+                WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
+                BEGIN
+                    INSERT INTO spatial_objects (object_type, object_uid) VALUES ('\(config.type)', NEW.uid);
+                    INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                    VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
+                END
+            """)
+
+            try db.execute(sql: """
+                CREATE TRIGGER IF NOT EXISTS \(config.type)_spatial_delete AFTER DELETE ON \(config.table)
+                WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
+                BEGIN
+                    DELETE FROM spatial_index WHERE id = (
+                        SELECT spatial_id FROM spatial_objects
+                        WHERE object_type = '\(config.type)' AND object_uid = OLD.uid
+                    );
+                    DELETE FROM spatial_objects WHERE object_type = '\(config.type)' AND object_uid = OLD.uid;
+                END
+            """)
+
+            // Drop any stale entry, then re-add when the new coordinate is usable.
+            // The second insert is keyed off the mapping table (not last_insert_rowid)
+            // so the NULL-coordinate case degrades to two no-op inserts.
+            try db.execute(sql: """
+                CREATE TRIGGER IF NOT EXISTS \(config.type)_spatial_update
+                AFTER UPDATE OF gps_latitude, gps_longitude ON \(config.table)
+                BEGIN
+                    DELETE FROM spatial_index WHERE id = (
+                        SELECT spatial_id FROM spatial_objects
+                        WHERE object_type = '\(config.type)' AND object_uid = NEW.uid
+                    );
+                    DELETE FROM spatial_objects WHERE object_type = '\(config.type)' AND object_uid = NEW.uid;
+                    INSERT INTO spatial_objects (object_type, object_uid)
+                    SELECT '\(config.type)', NEW.uid
+                    WHERE NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL;
+                    INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                    SELECT so.spatial_id, NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude
+                    FROM spatial_objects so
+                    WHERE so.object_type = '\(config.type)' AND so.object_uid = NEW.uid
+                      AND NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL;
+                END
+            """)
+        }
 
         // Spatial R*Tree over event occurrences (point index keyed by event_occurrences.id,
         // so no mapping table is needed). lat/lon come from the parent event's denormalized
@@ -560,6 +549,24 @@ internal class PlayaDBImpl: PlayaDB {
             AFTER DELETE ON event_occurrences
             BEGIN
                 DELETE FROM event_occurrence_rtree WHERE id = OLD.id;
+            END
+        """)
+
+        // Event GPS updates must also refresh the denormalized occurrence R*Tree.
+        // Created after event_occurrence_rtree exists — SQLite validates referenced
+        // tables when the trigger is created.
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_occurrence_rtree_event_update
+            AFTER UPDATE OF gps_latitude, gps_longitude ON event_objects
+            BEGIN
+                DELETE FROM event_occurrence_rtree WHERE id IN (
+                    SELECT id FROM event_occurrences WHERE event_id = NEW.uid
+                );
+                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+                SELECT o.id, NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude
+                FROM event_occurrences o
+                WHERE o.event_id = NEW.uid
+                  AND NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL;
             END
         """)
     }
