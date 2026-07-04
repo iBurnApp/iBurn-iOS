@@ -6,6 +6,7 @@
 //  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
+import PlayaGeo
 import SwiftUI
 import PlayaDB
 
@@ -19,9 +20,19 @@ struct IBurnWatchApp: App {
         }
     }()
 
+    private let mapData: PlayaMapData? = try? PlayaMapData.load(from: .main)
+
+    @StateObject private var locationService = LocationService()
+
     var body: some Scene {
         WindowGroup {
-            ContentView(playaDB: playaDB)
+            TabView {
+                if let mapData {
+                    MapScreen(mapData: mapData, location: locationService)
+                }
+                ContentView(playaDB: playaDB)
+            }
+            .tabViewStyle(.verticalPage)
         }
     }
 }

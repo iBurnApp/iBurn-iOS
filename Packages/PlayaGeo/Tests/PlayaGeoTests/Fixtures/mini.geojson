@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "The Man", "ref": "center" },
+      "geometry": { "type": "Point", "coordinates": [-119.2065, 40.7864] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Esplanade", "type": "arc", "width": 40 },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-119.21, 40.79], [-119.20, 40.79], [-119.19, 40.79]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Split", "type": "radial" },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [[-119.21, 40.78], [-119.20, 40.78]],
+          [[-119.19, 40.78], [-119.18, 40.78]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Plaza" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[-119.21, 40.78], [-119.20, 40.78], [-119.20, 40.79], [-119.21, 40.78]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": null
+    }
+  ]
+}

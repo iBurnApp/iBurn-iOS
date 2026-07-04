@@ -115,6 +115,30 @@ More tab → scroll to Feature Flags (DEBUG only) → toggles including
 "Use SwiftUI Lists". Toggling takes effect on next relaunch for tab
 construction.
 
+## 9. watchOS app (iBurnWatch)
+
+Standalone watch app (not embedded in the iOS app; separate install). Scheme
+`iBurnWatch`, bundle id `com.trailbehind.iBurn2010.watchkitapp`. Use a watchOS 26
+simulator (e.g. Apple Watch Ultra 3 49mm). Set XcodeBuildMCP session defaults to
+the watch sim UDID + `simulatorPlatform: "watchOS Simulator"` before snapshot/tap.
+
+1. Build: `xcodebuild -workspace iBurn.xcworkspace -scheme iBurnWatch
+   -destination 'id=<WATCH_UDID>' build` (or `generic/platform=watchOS Simulator`).
+2. Set a BRC location first: `xcrun simctl location <WATCH_UDID> set 40.7864,-119.2065`.
+3. Install + launch via simctl. First launch shows the **location permission
+   alert** — swipe the alert scroll-view up twice to reveal the buttons, then tap
+   **"Allow While Using App"**.
+4. Root is a vertical-page TabView: page 1 = **Map** (Canvas-rendered BRC:
+   dashed pentagon fence, radial street grid, plazas, user dot, The Man /
+   Center Camp markers; compass + recenter buttons bottom-right), page 2 =
+   DB status page showing seeded counts ("321 art / 1201 camps" for 2026).
+5. Compass button ("Switch to compass mode") toggles heading-up; simulators have
+   no compass hardware, so the map stays north-up and no calibration hint shows.
+
+Verify: city geometry renders (not a blank background); DB page shows the 2026
+counts; PlayaDB.sqlite exists in the watch app container
+(`xcrun simctl get_app_container <WATCH_UDID> com.trailbehind.iBurn2010.watchkitapp data`).
+
 ## Known quirks / expected noise
 
 - Yap legacy import logs ("Marking event ... as all-day", "Duped dates for ...")

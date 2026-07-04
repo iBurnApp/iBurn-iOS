@@ -2,7 +2,7 @@
 
 Date: 2026-07-03 (Pacific)
 Branch: `2026-updates`
-Status: Phase 0 complete (watch target builds + seeds on watch sim); Phase 1 next
+Status: Phases 0–1 complete (map + compass rendering on watch sim); Phase 2 (favorites sync) next
 
 ## High-Level Plan
 
@@ -204,6 +204,39 @@ the phone lists.
   `321 art / 1201 camps` — matching the 2026 dataset counts from the iPhone app.
 - Build command:
   `xcodebuild -workspace iBurn.xcworkspace -scheme iBurnWatch -destination 'generic/platform=watchOS Simulator' build 2>&1 | xcsift -f toon -w`
+
+## Phase 1 Results (2026-07-03)
+
+- **`Packages/PlayaGeo`** created (iOS 16 / macOS 13 / watchOS 10, zero deps):
+  - `GeoJSON.swift` — FeatureCollection decoder into `GeoFeature`/`GeoGeometry`
+    with its own `GeoCoordinate` (no CoreLocation dependency; null-geometry
+    features skipped).
+  - `PlayaProjection.swift` — equirectangular meters around The Man; +x east,
+    +y south (screen-down) so north-up needs no flip. WGS84 local scale factors;
+    sub-meter accurate at city scale.
+  - `MapCamera.swift` — center/metersPerPoint/headingDegrees + world→screen
+    `CGAffineTransform`, rotation-aware `centerAfterPan`, `fitting(points:)`.
+  - `PlayaMapView.swift` — SwiftUI Canvas renderer: plaza fills, streets with
+    true-meter widths, dashed fence, toilets (zoom-gated), `MapMarker`s, user
+    dot + heading cone; light/dark styles via colorScheme.
+  - 18 tests green (`swift test`), including decoding the real 2026 geo files and
+    camera-math directional assertions. One test expectation was initially wrong
+    (pan under rotation): facing east means the screen-bottom is west, so
+    dragging up moves the center −x; code was correct.
+- Watch target wiring (2nd xcodeproj-gem script): PlayaGeo local package +
+  product, GeoJSON resources referenced **in place** from
+  `Submodules/iBurn-Data/data/2026/geo/` (points/streets/fence/toilets/polygons —
+  no duplication; year rollover means re-pointing these refs),
+  `INFOPLIST_KEY_NSLocationWhenInUseUsageDescription`.
+- Watch UI: `LocationService` (async location + heading, `needsCalibration` when
+  headingAccuracy < 0 or > 45° — watchOS can't summon the system figure-8 UI, so
+  MapScreen shows a hint banner), `MapScreen` (crown zoom 50→0.8 m/pt, drag pan
+  honoring rotation, heading-up toggle, follow-user with recenter, The Man /
+  Center Camp markers), root vertical-page TabView (Map, DB-status page).
+- **Verified on Ultra 3 sim:** location alert (buttons require swiping the alert
+  up), city renders (pentagon fence, radial grid, plazas, user dot at simulated
+  BRC location, markers, controls); compass toggle flips state without crash
+  (sim has no compass hardware). iOS app still builds after pbxproj changes.
 
 ## Verification strategy
 - Preview-driven: every screen has `#Preview`s (including loading/empty/restricted
