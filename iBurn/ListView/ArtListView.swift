@@ -171,6 +171,7 @@ struct ArtListView: View {
                 locationProvider: MockLocationProvider(),
                 filterStorageKey: "artListFilter.preview",
                 initialFilter: .all,
+                initialItems: PreviewArtDataProvider.mockRows,
                 effectiveFilterForObservation: { $0 },
                 favoritesFilterForObservation: { filter in
                     var f = filter
@@ -197,6 +198,7 @@ struct ArtListView: View {
                 locationProvider: MockLocationProvider(),
                 filterStorageKey: "artListFilter.preview",
                 initialFilter: ArtFilter(onlyWithEvents: true),
+                initialItems: PreviewArtDataProvider.mockRows,
                 effectiveFilterForObservation: { $0 },
                 favoritesFilterForObservation: { filter in
                     var f = filter
@@ -215,28 +217,65 @@ struct ArtListView: View {
     }
 }
 
+#Preview("Art List - Loading") {
+    NavigationView {
+        ArtListView(
+            viewModel: ArtListViewModel(
+                dataProvider: PreviewArtDataProvider(rows: []),
+                locationProvider: MockLocationProvider(),
+                filterStorageKey: "artListFilter.preview",
+                initialFilter: .all,
+                effectiveFilterForObservation: { $0 },
+                matchesSearch: { _, _ in true }
+            )
+        )
+    }
+}
+
 // MARK: - Preview Helpers
 
 @MainActor
 private class PreviewArtDataProvider: ArtDataProvider {
-    init() {
+    private let rows: [ListRow<ArtObject>]
+
+    /// Pass empty `rows` for a permanent loading-state preview: the stream never
+    /// yields, so the view model keeps `isLoading` with no items.
+    init(rows: [ListRow<ArtObject>] = PreviewArtDataProvider.mockRows) {
+        self.rows = rows
         super.init(playaDB: PreviewPlayaDB.shared)
     }
 
     override func observeObjects(filter: ArtFilter) -> AsyncStream<[ListRow<ArtObject>]> {
-        AsyncStream { continuation in
-            continuation.yield([
-                Self.createMockArt(name: "Temple of Transition"),
-                Self.createMockArt(name: "The Man"),
-                Self.createMockArt(name: "Galaxy Portal")
-            ].map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) })
-            continuation.finish()
+        let rows = self.rows
+        return AsyncStream { continuation in
+            if !rows.isEmpty {
+                continuation.yield(rows)
+                continuation.finish()
+            }
         }
     }
 
-    private nonisolated static func createMockArt(name: String) -> ArtObject {
+    static let mockRows: [ListRow<ArtObject>] = [
+        ListRow(
+            object: createMockArt(uid: "preview-art-1", name: "Temple of Transition"),
+            metadata: .forArt(id: "preview-art-1", isFavorite: true),
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockArt(uid: "preview-art-2", name: "The Man"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockArt(uid: "preview-art-3", name: "Galaxy Portal"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+    ]
+
+    private nonisolated static func createMockArt(uid: String, name: String) -> ArtObject {
         ArtObject(
-            uid: UUID().uuidString,
+            uid: uid,
             name: name,
             year: 2025,
             description: "A beautiful art installation",

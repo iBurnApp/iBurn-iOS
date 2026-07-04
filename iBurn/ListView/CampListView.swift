@@ -138,6 +138,7 @@ struct CampListView: View {
                 locationProvider: MockLocationProvider(),
                 filterStorageKey: "campListFilter.preview",
                 initialFilter: .all,
+                initialItems: PreviewCampDataProvider.mockRows,
                 effectiveFilterForObservation: { $0 },
                 favoritesFilterForObservation: { filter in
                     var f = filter
@@ -157,26 +158,63 @@ struct CampListView: View {
     }
 }
 
+#Preview("Camp List - Loading") {
+    NavigationView {
+        CampListView(
+            viewModel: CampListViewModel(
+                dataProvider: PreviewCampDataProvider(rows: []),
+                locationProvider: MockLocationProvider(),
+                filterStorageKey: "campListFilter.preview",
+                initialFilter: .all,
+                effectiveFilterForObservation: { $0 },
+                matchesSearch: { _, _ in true }
+            )
+        )
+    }
+}
+
 @MainActor
 private class PreviewCampDataProvider: CampDataProvider {
-    init() {
+    private let rows: [ListRow<CampObject>]
+
+    /// Pass empty `rows` for a permanent loading-state preview: the stream never
+    /// yields, so the view model keeps `isLoading` with no items.
+    init(rows: [ListRow<CampObject>] = PreviewCampDataProvider.mockRows) {
+        self.rows = rows
         super.init(playaDB: PreviewPlayaDB.shared)
     }
 
     override func observeObjects(filter: CampFilter) -> AsyncStream<[ListRow<CampObject>]> {
-        AsyncStream { continuation in
-            continuation.yield([
-                Self.createMockCamp(name: "Solaris Camp"),
-                Self.createMockCamp(name: "Dusty Mermaid"),
-                Self.createMockCamp(name: "Roaming Oasis")
-            ].map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) })
-            continuation.finish()
+        let rows = self.rows
+        return AsyncStream { continuation in
+            if !rows.isEmpty {
+                continuation.yield(rows)
+                continuation.finish()
+            }
         }
     }
 
-    private nonisolated static func createMockCamp(name: String) -> CampObject {
+    static let mockRows: [ListRow<CampObject>] = [
+        ListRow(
+            object: createMockCamp(uid: "preview-camp-1", name: "Solaris Camp"),
+            metadata: .forCamp(id: "preview-camp-1", isFavorite: true),
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockCamp(uid: "preview-camp-2", name: "Dusty Mermaid"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockCamp(uid: "preview-camp-3", name: "Roaming Oasis"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+    ]
+
+    private nonisolated static func createMockCamp(uid: String, name: String) -> CampObject {
         CampObject(
-            uid: UUID().uuidString,
+            uid: uid,
             name: name,
             year: 2025,
             description: "A welcoming theme camp",
