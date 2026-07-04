@@ -7,11 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F5280F97FF05B6472BE5119 /* PlayaAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 7B4FC0E27D6177950F583A6C /* PlayaAPI */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
 		6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */; };
+		7B2FA7D941A961C1D7E01881 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 943BDAA9ED89068B088FA38F /* Foundation.framework */; };
+		A413A2CF5A99208DD2D56704 /* iBurnWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82C58B098F53472C8C10196 /* iBurnWatchApp.swift */; };
 		BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */; };
+		C518515B936EF809B70240D6 /* iBurn2026APIData in Frameworks */ = {isa = PBXBuildFile; productRef = A5CE57DA0AB0F2BBD589609D /* iBurn2026APIData */; };
 		D90256412E1F3FE00058AEF8 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = D90256402E1F3FE00058AEF8 /* PlayaDB */; };
 		D902564B2E1F41060058AEF8 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D902564A2E1F41060058AEF8 /* GRDB */; };
 		D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = D91879A32BC1058E0099EFAA /* MapLibre */; };
@@ -31,6 +35,8 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */; };
+		DC1DA341E3EAE329D60F8E9B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A410983BC9DD337242C01C /* ContentView.swift */; };
+		F7E3E8D3B6D02857B42F3284 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = 5E05B7773440522D30BDA948 /* PlayaDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,14 +118,18 @@
 		72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
 		73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 		80E2C6DD5C95EC58E5AE41B8 /* Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		86A410983BC9DD337242C01C /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		943BDAA9ED89068B088FA38F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A82C58B098F53472C8C10196 /* iBurnWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iBurnWatchApp.swift; sourceTree = "<group>"; };
 		AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-iBurn.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9BE813BAB98496CC3A89CB8 /* Pods-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
+		D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurnWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaGeocoder.xcodeproj; path = PlayaGeocoder/PlayaGeocoder.xcodeproj; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -203,6 +213,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B90DFC31F5E41B9E434A7242 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B2FA7D941A961C1D7E01881 /* Foundation.framework in Frameworks */,
+				F7E3E8D3B6D02857B42F3284 /* PlayaDB in Frameworks */,
+				0F5280F97FF05B6472BE5119 /* PlayaAPI in Frameworks */,
+				C518515B936EF809B70240D6 /* iBurn2026APIData in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D980A9071B3F5A6400BE3682 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -248,6 +269,7 @@
 				63CE2A561987140F00F65B01 /* Frameworks */,
 				63CE2A551987140F00F65B01 /* Products */,
 				16AFD3CDCF12A2E73AC3DB68 /* Pods */,
+				73700CCA398E66852345DABB /* iBurnWatch */,
 			);
 			sourceTree = "<group>";
 		};
@@ -256,6 +278,7 @@
 			children = (
 				63CE2A541987140F00F65B01 /* iBurn.app */,
 				D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */,
+				D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -283,8 +306,27 @@
 				E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */,
 				B8827D0B741B7D305AF35BEE /* libPods-iBurn.a */,
 				2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */,
+				AA73916E34175C0642838724 /* watchOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		73700CCA398E66852345DABB /* iBurnWatch */ = {
+			isa = PBXGroup;
+			children = (
+				A82C58B098F53472C8C10196 /* iBurnWatchApp.swift */,
+				86A410983BC9DD337242C01C /* ContentView.swift */,
+			);
+			name = iBurnWatch;
+			path = iBurnWatch;
+			sourceTree = "<group>";
+		};
+		AA73916E34175C0642838724 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				943BDAA9ED89068B088FA38F /* Foundation.framework */,
+			);
+			name = watchOS;
 			sourceTree = "<group>";
 		};
 		D9CB2A472117E7B400A0F2AE /* Products */ = {
@@ -301,6 +343,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3C4B2720384847AC347443FF /* iBurnWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D6A01F1D5670F94204A3050 /* Build configuration list for PBXNativeTarget "iBurnWatch" */;
+			buildPhases = (
+				77DE9C04E825E3C6093F4DF3 /* Sources */,
+				B90DFC31F5E41B9E434A7242 /* Frameworks */,
+				E1C541F2C03AEA309D5586FC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iBurnWatch;
+			packageProductDependencies = (
+				5E05B7773440522D30BDA948 /* PlayaDB */,
+				7B4FC0E27D6177950F583A6C /* PlayaAPI */,
+				A5CE57DA0AB0F2BBD589609D /* iBurn2026APIData */,
+			);
+			productName = iBurnWatch;
+			productReference = D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		63CE2A531987140F00F65B01 /* iBurn */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 63CE2A801987140F00F65B01 /* Build configuration list for PBXNativeTarget "iBurn" */;
@@ -409,9 +473,9 @@
 				D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */,
 				D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */,
-				D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "Submodules/iBurn-Data" */,
-				D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "Packages/PlayaAPI" */,
-				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */,
+				D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "iBurn-Data" */,
+				D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "PlayaAPI" */,
+				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "PlayaDB" */,
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -427,6 +491,7 @@
 			targets = (
 				63CE2A531987140F00F65B01 /* iBurn */,
 				D980A9091B3F5A6400BE3682 /* iBurnTests */,
+				3C4B2720384847AC347443FF /* iBurnWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -471,6 +536,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D980A9081B3F5A6400BE3682 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1C541F2C03AEA309D5586FC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -617,6 +689,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		77DE9C04E825E3C6093F4DF3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A413A2CF5A99208DD2D56704 /* iBurnWatchApp.swift in Sources */,
+				DC1DA341E3EAE329D60F8E9B /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D980A9061B3F5A6400BE3682 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -640,6 +721,30 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		0A2BA8F823268AF37036E089 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = iBurn;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.trailbehind.iBurn2010.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 		63CE2A7E1987140F00F65B01 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -826,6 +931,29 @@
 			};
 			name = Release;
 		};
+		75E64CC1DC69AF2DEA4A3F8A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = iBurn;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.trailbehind.iBurn2010.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
 		D980A9121B3F5A6400BE3682 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */;
@@ -883,6 +1011,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4D6A01F1D5670F94204A3050 /* Build configuration list for PBXNativeTarget "iBurnWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A2BA8F823268AF37036E089 /* Release */,
+				75E64CC1DC69AF2DEA4A3F8A /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		63CE2A4F1987140F00F65B01 /* Build configuration list for PBXProject "iBurn" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -913,15 +1050,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */ = {
+		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "PlayaDB" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaDB;
 		};
-		D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "Submodules/iBurn-Data" */ = {
+		D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "iBurn-Data" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "Submodules/iBurn-Data";
 		};
-		D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "Packages/PlayaAPI" */ = {
+		D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "PlayaAPI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaAPI;
 		};
@@ -971,6 +1108,18 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5E05B7773440522D30BDA948 /* PlayaDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlayaDB;
+		};
+		7B4FC0E27D6177950F583A6C /* PlayaAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlayaAPI;
+		};
+		A5CE57DA0AB0F2BBD589609D /* iBurn2026APIData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = iBurn2026APIData;
+		};
 		D90256402E1F3FE00058AEF8 /* PlayaDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlayaDB;
