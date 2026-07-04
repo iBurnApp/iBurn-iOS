@@ -29,6 +29,11 @@ Each document should include:
 * **Related Work**: Reference previous documents and build upon them
 * **Completion**: Mark final outcomes and any remaining work
 
+## Driving the App / Flow Verification
+
+* To run the app in the simulator and exercise user flows (sanity passes, screenshots, UI bug repro), use the **`drive-app` skill** (`.claude/skills/drive-app/SKILL.md`). It covers XcodeBuildMCP setup, the SwiftUI/PlayaDB feature flag, onboarding automation, and on-device database verification.
+* Critical-flow scripts live in `.claude/skills/drive-app/references/flows.md`. **Keep them current:** when a change adds or alters a user-facing flow (screens, onboarding steps, permissions, navigation), update the corresponding flow entry in the same change. When driving the app, if reality diverges from the doc, fix the doc in that session.
+
 ## Source Control
 
 * **Commit after finishing a validated chunk of work.** Once a coherent unit of work is complete and verified (tests passing, plus an app build when the change could affect the app target), commit it without waiting to be asked. Keep each commit scoped to one logical change with a descriptive message.
