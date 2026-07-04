@@ -268,12 +268,14 @@ private final class DataUpdatesViewModel: ObservableObject {
             let campData = try BundleDataLoader.loadCamps(from: dataBundle)
             let eventData = try BundleDataLoader.loadEvents(from: dataBundle)
             let mvData = try? BundleDataLoader.loadMutantVehicles(from: dataBundle)
+            let updateData = try? BundleDataLoader.loadUpdateInfo(from: dataBundle)
             playaDBStatus = "Importing into PlayaDB..."
             try await playaDB.importFromData(
                 artData: artData,
                 campData: campData,
                 eventData: eventData,
-                mvData: mvData
+                mvData: mvData,
+                updateData: updateData
             )
             playaDBStatus = "PlayaDB re-import complete"
         } catch {

@@ -241,9 +241,17 @@ public protocol PlayaDB {
     /// Import data from the PlayaAPI
     func importFromPlayaAPI() async throws
     
-    /// Import data from provided JSON data (for testing)
-    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws
-    
+    /// Import data from provided JSON data. `updateData` is the accompanying update.json;
+    /// when provided, its per-type timestamps are stored as each type's `lastUpdated` so
+    /// later imports can detect whether bundled data is newer than what's in the database.
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?, updateData: Data?) async throws
+
+    /// Whether the data described by `bundleUpdateData` (an update.json payload) is newer
+    /// than what has been imported. Returns true when the database has never been seeded,
+    /// when a data type in the bundle has no imported counterpart, or when the bundle's
+    /// timestamp for any type is newer than the stored `lastUpdated`.
+    func needsImport(bundleUpdateData: Data) async throws -> Bool
+
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
 
@@ -285,6 +293,11 @@ public extension PlayaDB {
         onChange: @escaping ([ListRow<MutantVehicleObject>]) -> Void
     ) -> PlayaDBObservationToken {
         observeMutantVehicles(filter: filter, onChange: onChange, onError: { _ in })
+    }
+
+    /// Convenience overload for importFromData without update.json metadata
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws {
+        try await importFromData(artData: artData, campData: campData, eventData: eventData, mvData: mvData, updateData: nil)
     }
 
     /// Convenience overload for importFromData without MV data

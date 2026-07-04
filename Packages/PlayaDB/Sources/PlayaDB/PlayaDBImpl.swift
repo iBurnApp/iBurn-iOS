@@ -2064,13 +2064,38 @@ internal class PlayaDBImpl: PlayaDB {
         let artData = try BundleDataLoader.loadArt()
         let campData = try BundleDataLoader.loadCamps()
         let eventData = try BundleDataLoader.loadEvents()
-        
-        try await importFromData(artData: artData, campData: campData, eventData: eventData)
+        let updateData = try? BundleDataLoader.loadUpdateInfo()
+
+        try await importFromData(artData: artData, campData: campData, eventData: eventData, mvData: nil, updateData: updateData)
     }
-    
-    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws {
+
+    func needsImport(bundleUpdateData: Data) async throws -> Bool {
+        let bundleInfo = try APIParserFactory.create().parseUpdateInfo(from: bundleUpdateData)
+        let storedInfo = try await getUpdateInfo()
+        guard !storedInfo.isEmpty else { return true }
+
+        let storedByType = Dictionary(uniqueKeysWithValues: storedInfo.map { ($0.dataType, $0) })
+        let bundleByType: [(DataObjectType, FileUpdateInfo?)] = [
+            (.art, bundleInfo.art),
+            (.camp, bundleInfo.camps),
+            (.event, bundleInfo.events),
+            (.mutantVehicle, bundleInfo.mv)
+        ]
+        for (type, fileInfo) in bundleByType {
+            guard let fileInfo else { continue }
+            guard let stored = storedByType[type.rawValue] else { return true }
+            if fileInfo.updated > stored.lastUpdated { return true }
+        }
+        return false
+    }
+
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?, updateData: Data?) async throws {
         let apiParser = APIParserFactory.create()
         let importStart = CFAbsoluteTimeGetCurrent()
+
+        // Per-type source timestamps from update.json; fall back to import time so that
+        // `needsImport` comparisons remain conservative for data imported without metadata.
+        let bundleUpdateInfo = updateData.flatMap { try? apiParser.parseUpdateInfo(from: $0) }
 
         try await dbQueue.write { db in
             // The import wholesale-rebuilds the FTS and spatial indexes below, so the
@@ -2269,7 +2294,7 @@ internal class PlayaDBImpl: PlayaDB {
 
             var artUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.art.rawValue,
-                lastUpdated: now,
+                lastUpdated: bundleUpdateInfo?.art?.updated ?? now,
                 totalCount: apiArtObjects.count,
                 createdAt: now,
                 fetchStatus: "complete",
@@ -2280,7 +2305,7 @@ internal class PlayaDBImpl: PlayaDB {
 
             var campUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.camp.rawValue,
-                lastUpdated: now,
+                lastUpdated: bundleUpdateInfo?.camps?.updated ?? now,
                 totalCount: apiCampObjects.count,
                 createdAt: now,
                 fetchStatus: "complete",
@@ -2291,7 +2316,7 @@ internal class PlayaDBImpl: PlayaDB {
 
             var eventUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.event.rawValue,
-                lastUpdated: now,
+                lastUpdated: bundleUpdateInfo?.events?.updated ?? now,
                 totalCount: apiEventObjects.count,
                 createdAt: now,
                 fetchStatus: "complete",
@@ -2303,7 +2328,7 @@ internal class PlayaDBImpl: PlayaDB {
             if mvData != nil {
                 var mvUpdateInfo = UpdateInfo(
                     dataType: DataObjectType.mutantVehicle.rawValue,
-                    lastUpdated: now,
+                    lastUpdated: bundleUpdateInfo?.mv?.updated ?? now,
                     totalCount: mvCount,
                     createdAt: now,
                     fetchStatus: "complete",

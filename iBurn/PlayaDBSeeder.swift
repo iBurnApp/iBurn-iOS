@@ -27,8 +27,14 @@ final class PlayaDBSeeder {
 
         Task { [playaDB, dataBundle] in
             do {
-                let updateInfo = try await playaDB.getUpdateInfo()
-                guard updateInfo.isEmpty else { return }
+                // Seed when the DB is empty OR when the bundled data is newer than what
+                // was previously imported (e.g. app update shipping a new year's data).
+                let updateData = try? BundleDataLoader.loadUpdateInfo(from: dataBundle)
+                if let updateData {
+                    guard try await playaDB.needsImport(bundleUpdateData: updateData) else { return }
+                } else {
+                    guard try await playaDB.getUpdateInfo().isEmpty else { return }
+                }
 
                 let seedData = try await Self.loadSeedData(from: dataBundle)
 
@@ -36,7 +42,8 @@ final class PlayaDBSeeder {
                     artData: seedData.artData,
                     campData: seedData.campData,
                     eventData: seedData.eventData,
-                    mvData: seedData.mvData
+                    mvData: seedData.mvData,
+                    updateData: updateData
                 )
             } catch {
                 print("PlayaDB seed failed: \(error)")
