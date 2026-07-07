@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3C4B2720384847AC347443FF"
-               BuildableName = "iBurnWatch.app"
+               BuildableName = "iBurn.app"
                BlueprintName = "iBurnWatch"
                ReferencedContainer = "container:iBurn.xcodeproj">
             </BuildableReference>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3C4B2720384847AC347443FF"
-            BuildableName = "iBurnWatch.app"
+            BuildableName = "iBurn.app"
             BlueprintName = "iBurnWatch"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
@@ -54,7 +54,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3C4B2720384847AC347443FF"
-            BuildableName = "iBurnWatch.app"
+            BuildableName = "iBurn.app"
             BlueprintName = "iBurnWatch"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3C4B2720384847AC347443FF"
-            BuildableName = "iBurnWatch.app"
+            BuildableName = "iBurn.app"
             BlueprintName = "iBurnWatch"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>

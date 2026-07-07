@@ -12,7 +12,8 @@
 		0F5280F97FF05B6472BE5119 /* PlayaAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 7B4FC0E27D6177950F583A6C /* PlayaAPI */; };
 		18E8DFF4AB80AAF2B911B81D /* NearbyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DD8E1F9DA6EF71B1161992 /* NearbyScreen.swift */; };
 		2C3F1471343CC8D21B1AC0F4 /* streets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 765683D57014A2585A750818 /* streets.geojson */; };
-		5C39982F89FB9433FB0DEBD3 /* iBurnWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5C39982F89FB9433FB0DEBD3 /* iBurn.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D5A03B131F60EB0BA63B6154 /* iBurn.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6D70904E53B22CB5497E68FF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F5F3C81ED7F534428B10B881 /* Assets.xcassets */; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
@@ -110,7 +111,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				5C39982F89FB9433FB0DEBD3 /* iBurnWatch.app in Embed Watch Content */,
+				5C39982F89FB9433FB0DEBD3 /* iBurn.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -166,7 +167,8 @@
 		BD1F9E88B61EC26F67719514 /* FavoritesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FavoritesScreen.swift; sourceTree = "<group>"; };
 		C8C62A2C07A29EED6BD93DDA /* Pods-iBurnAbstract-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CACE4054D51A68B108CEF491 /* Pods-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit/Pods-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
-		D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurnWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5A03B131F60EB0BA63B6154 /* iBurn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iBurn.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5F3C81ED7F534428B10B881 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iBurnTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CB2A462117E7B400A0F2AE /* PlayaGeocoder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlayaGeocoder.xcodeproj; path = PlayaGeocoder/PlayaGeocoder.xcodeproj; sourceTree = "<group>"; };
 		D9D12F591B5AF4DE0048229A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -320,7 +322,7 @@
 			children = (
 				63CE2A541987140F00F65B01 /* iBurn.app */,
 				D980A90A1B3F5A6400BE3682 /* iBurnTests.xctest */,
-				D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */,
+				D5A03B131F60EB0BA63B6154 /* iBurn.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -363,6 +365,7 @@
 				BD1F9E88B61EC26F67719514 /* FavoritesScreen.swift */,
 				21FEA0681C6BD080480B8F82 /* DetailScreen.swift */,
 				4AD79A9DD502B9246B2F9149 /* WatchSeeder.swift */,
+				F5F3C81ED7F534428B10B881 /* Assets.xcassets */,
 			);
 			path = iBurnWatch;
 			sourceTree = "<group>";
@@ -421,7 +424,7 @@
 				749A3060A0B43D8A742A931E /* PlayaGeo */,
 			);
 			productName = iBurnWatch;
-			productReference = D5A03B131F60EB0BA63B6154 /* iBurnWatch.app */;
+			productReference = D5A03B131F60EB0BA63B6154 /* iBurn.app */;
 			productType = "com.apple.product-type.application";
 		};
 		63CE2A531987140F00F65B01 /* iBurn */ = {
@@ -613,6 +616,7 @@
 				04720AD2C99286B359A608F3 /* fence.geojson in Resources */,
 				C6E7832B37C2F274DE417CD3 /* toilets.geojson in Resources */,
 				93CBF9AE70B2AF9D4E656366 /* polygons.geojson in Resources */,
+				6D70904E53B22CB5497E68FF /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -816,7 +820,7 @@
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
 				MARKETING_VERSION = 2026.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.trailbehind.iBurn2010.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = iBurn;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1029,7 +1033,7 @@
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
 				MARKETING_VERSION = 2026.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.trailbehind.iBurn2010.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = iBurn;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

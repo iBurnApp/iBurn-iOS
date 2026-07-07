@@ -9,7 +9,8 @@
 import PlayaGeo
 import SwiftUI
 
-/// Offline BRC map: Digital Crown zooms, drag pans, compass button toggles
+/// Offline BRC map: Digital Crown zooms, double tap zooms in one level,
+/// drag pans, compass button toggles
 /// north-up vs heading-up. Follows the user until they pan away; recenter
 /// button snaps back.
 struct MapScreen: View {
@@ -43,6 +44,10 @@ struct MapScreen: View {
         )
         .onChange(of: zoomLevel) { _, newValue in
             camera.metersPerPoint = 50 / pow(2, newValue / 2)
+        }
+        // +2 crown units = one map zoom level (halves metersPerPoint).
+        .onTapGesture(count: 2) {
+            zoomLevel = min(zoomLevel + 2, 12)
         }
         .gesture(dragGesture)
         .overlay(alignment: .bottomTrailing) {
