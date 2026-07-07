@@ -234,14 +234,15 @@ struct ArtListView: View {
 
 // MARK: - Preview Helpers
 
-@MainActor
 private class PreviewArtDataProvider: ArtDataProvider {
     private let rows: [ListRow<ArtObject>]
 
     /// Pass empty `rows` for a permanent loading-state preview: the stream never
-    /// yields, so the view model keeps `isLoading` with no items.
-    init(rows: [ListRow<ArtObject>] = PreviewArtDataProvider.mockRows) {
-        self.rows = rows
+    /// yields, so the view model keeps `isLoading` with no items. The default
+    /// (`nil`) uses `mockRows`.
+    @MainActor
+    init(rows: [ListRow<ArtObject>]? = nil) {
+        self.rows = rows ?? Self.mockRows
         super.init(playaDB: PreviewPlayaDB.shared)
     }
 

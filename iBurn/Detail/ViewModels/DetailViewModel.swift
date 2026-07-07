@@ -514,27 +514,23 @@ class DetailViewModel: ObservableObject {
     // MARK: - YapDB Sync (backward compat during migration)
 
     private func syncFavoriteToYapDB(uid: String, yapCollection: String, isFavorite: Bool, isEvent: Bool = false) {
-        Task.detached {
-            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-                guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
-                let metadata = object.metadata(with: transaction).metadataCopy()
-                metadata.isFavorite = isFavorite
-                object.replace(metadata, transaction: transaction)
-                if isEvent, let event = object as? BRCEventObject {
-                    event.refreshCalendarEntry(transaction)
-                }
+        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+            guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
+            let metadata = object.metadata(with: transaction).metadataCopy()
+            metadata.isFavorite = isFavorite
+            object.replace(metadata, transaction: transaction)
+            if isEvent, let event = object as? BRCEventObject {
+                event.refreshCalendarEntry(transaction)
             }
         }
     }
 
     private func syncNotesToYapDB(uid: String, yapCollection: String, notes: String) {
-        Task.detached {
-            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-                guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
-                let metadata = object.metadata(with: transaction).metadataCopy()
-                metadata.userNotes = notes
-                object.replace(metadata, transaction: transaction)
-            }
+        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
+            guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
+            let metadata = object.metadata(with: transaction).metadataCopy()
+            metadata.userNotes = notes
+            object.replace(metadata, transaction: transaction)
         }
     }
 

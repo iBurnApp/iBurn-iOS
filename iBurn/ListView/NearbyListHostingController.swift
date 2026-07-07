@@ -45,9 +45,7 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         geocodeNavigationBar()
-        geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            self?.geocodeNavigationBar()
-        }
+        geocoderTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(geocoderTimerDidFire), userInfo: nil, repeats: true)
         geocoderTimer?.tolerance = 1
     }
 
@@ -55,6 +53,10 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
         super.viewWillDisappear(animated)
         geocoderTimer?.invalidate()
         geocoderTimer = nil
+    }
+
+    @objc private func geocoderTimerDidFire() {
+        geocodeNavigationBar()
     }
 
     // MARK: - Navigation

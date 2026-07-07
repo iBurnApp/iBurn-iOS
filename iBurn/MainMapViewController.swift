@@ -221,7 +221,7 @@ private extension MainMapViewController {
             Task { @MainActor in
                 if let point = await UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, playaDB: playaDB) {
                     DDLogInfo("Found closest point: \(point)")
-                    self.mapView.selectAnnotation(point, animated: true, completionHandler: nil)
+                    await self.mapView.selectAnnotation(point, animated: true)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     self.addUserMapPoint(type: mapPointType)
                 }

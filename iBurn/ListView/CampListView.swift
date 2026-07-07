@@ -173,14 +173,15 @@ struct CampListView: View {
     }
 }
 
-@MainActor
 private class PreviewCampDataProvider: CampDataProvider {
     private let rows: [ListRow<CampObject>]
 
     /// Pass empty `rows` for a permanent loading-state preview: the stream never
-    /// yields, so the view model keeps `isLoading` with no items.
-    init(rows: [ListRow<CampObject>] = PreviewCampDataProvider.mockRows) {
-        self.rows = rows
+    /// yields, so the view model keeps `isLoading` with no items. The default
+    /// (`nil`) uses `mockRows`.
+    @MainActor
+    init(rows: [ListRow<CampObject>]? = nil) {
+        self.rows = rows ?? Self.mockRows
         super.init(playaDB: PreviewPlayaDB.shared)
     }
 

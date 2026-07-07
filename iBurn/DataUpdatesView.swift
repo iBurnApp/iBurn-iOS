@@ -229,10 +229,11 @@ private final class DataUpdatesViewModel: ObservableObject {
         UserDefaults.lastUpdateCheck = nil
         self.isLoading = true
         playaDBStatus = "Checking for updates..."
+        let dataImporter = BRCAppDelegate.shared.dataImporter
         Task {
             // Yap update
             await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                BRCAppDelegate.shared.dataImporter.loadUpdates(from: updateURL) { result in
+                dataImporter.loadUpdates(from: updateURL) { result in
                     NSLog("UPDATE COMPLETE: \(result)")
                     continuation.resume()
                 }
