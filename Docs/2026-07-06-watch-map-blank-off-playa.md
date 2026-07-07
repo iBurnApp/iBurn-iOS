@@ -40,3 +40,34 @@
 ## Cross-References
 - `Docs/2026-07-04-events-empty-on-device-stale-seed.md` — previous on-device bug in the same 2026 update cycle.
 - `Docs/2026-07-03-watchos-mvp-plan.md` — watch MVP that introduced MapScreen/NavigationScreen.
+
+---
+
+# Session 2: Fix All Swift Concurrency Build Warnings
+
+## High-Level Plan
+A clean build of the `iBurn` scheme (iPhone 17 Pro Max sim, includes iBurnWatch + PlayaDB/PlayaAPI/PlayaGeo packages) surfaced 10 unique warnings, all Swift-concurrency related. Goal: zero project warnings. Committed as `a2cc6fa`.
+
+## Warnings Found (clean build, 2026-07-06)
+1. `iBurn/DataUpdatesView.swift:235` (×2) — main-actor `BRCAppDelegate.shared` / `.dataImporter` referenced from nonisolated context (inside `withCheckedContinuation` closure in a `Task`).
+2. `iBurn/Detail/ViewModels/DetailViewModel.swift:518,532` — "consider using asynchronous alternative function" for `asyncReadWrite` called inside `Task.detached`.
+3. `iBurn/ListView/ArtListView.swift:243,249` + `CampListView.swift:182,188` — `@MainActor` preview data-provider classes: main-actor `mockRows` used as a default argument (nonisolated context) and main-actor `rows` read from the nonisolated `observeObjects` override (Swift 6 errors).
+4. `iBurn/ListView/NearbyListHostingController.swift:49` — capture of non-Sendable `self` in `@Sendable` `Timer.scheduledTimer` closure.
+5. `iBurn/MainMapViewController.swift:224` — completion-handler `selectAnnotation` called in async context.
+
+(`appintentsmetadataprocessor` "No AppIntents.framework dependency found" is toolchain noise, not fixable in code.)
+
+## Fixes
+- **DataUpdatesView** — hoist `let dataImporter = BRCAppDelegate.shared.dataImporter` into the synchronous method body before the `Task`; the continuation closure uses the capture.
+- **DetailViewModel** — removed the `Task.detached` wrappers in `syncFavoriteToYapDB` / `syncNotesToYapDB`. `asyncReadWrite` already enqueues on YapDatabase's own queue, so the wrapper was pure overhead and its async closure context was what triggered the diagnostic.
+- **MainMapViewController** — `await self.mapView.selectAnnotation(point, animated: true)` (async translation of the `completionHandler:` variant; the 2-arg sync variant is deprecated in MapLibre and is NOT what this resolves to in an async context).
+- **Art/CampListView previews** — dropped `@MainActor` from `PreviewArt/CampDataProvider` (parent `ArtDataProvider`/`CampDataProvider` are nonisolated, so the `observeObjects` override was nonisolated anyway). Instead: `@MainActor init(rows: [ListRow<T>]? = nil)` with `rows ?? Self.mockRows` resolved inside the init — `PreviewPlayaDB.shared` (main-actor) is only touched there. `rows: []` still yields the permanent-loading preview.
+- **NearbyListHostingController** — switched to target/selector `Timer.scheduledTimer(timeInterval:target:selector:...)` + `@objc geocoderTimerDidFire()`. Timer retains the VC but is invalidated in `viewWillDisappear`, matching the existing lifecycle. (Same block-timer pattern exists in `SortedViewController`/`MainMapViewController` but doesn't warn there — likely different isolation inference; left untouched.)
+
+## Verification
+- `xcodebuild clean build` of `iBurn` scheme — BUILD SUCCEEDED, zero `warning:` lines other than `appintentsmetadataprocessor` noise.
+- `xcodebuild test -scheme iBurnTests` — 97/97 passed.
+- Pre-existing uncommitted `project.pbxproj` (Xcode adding `lastKnownFileType` to 2026 geojson refs) and `iBurnWatch.xcscheme` changes left out of the commit.
+
+## Cross-References
+- Session 1 above (watch map clamp) — same branch `2026-updates`.
