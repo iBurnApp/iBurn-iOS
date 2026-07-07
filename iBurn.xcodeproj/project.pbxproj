@@ -137,8 +137,8 @@
 		30AC515B99ACAD08BBB05D7B /* Pods-iBurn-iBurnTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3BE4BF10D23F23CE159EDECB /* Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		3D5D7CA545934BE511FE4387 /* Pods_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		3FBB22955D76D43845931068 /* toilets.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = toilets.geojson; path = "Submodules/iBurn-Data/data/2026/geo/toilets.geojson"; sourceTree = "<group>"; };
-		426F86ABDF799A13905EEFEC /* fence.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = fence.geojson; path = "Submodules/iBurn-Data/data/2026/geo/fence.geojson"; sourceTree = "<group>"; };
+		3FBB22955D76D43845931068 /* toilets.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = toilets.geojson; path = "Submodules/iBurn-Data/data/2026/geo/toilets.geojson"; sourceTree = "<group>"; };
+		426F86ABDF799A13905EEFEC /* fence.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = fence.geojson; path = "Submodules/iBurn-Data/data/2026/geo/fence.geojson"; sourceTree = "<group>"; };
 		4AD79A9DD502B9246B2F9149 /* WatchSeeder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSeeder.swift; sourceTree = "<group>"; };
 		58383378304FC4CC8458E4B2 /* Pods-PlayaKitAbstract-PlayaKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.release.xcconfig"; sourceTree = "<group>"; };
 		5C8C085A67599EA761E94627 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -152,12 +152,12 @@
 		66E9BFB50AD9DF8FA46742CE /* Pods-iBurn.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn.release.xcconfig"; sourceTree = "<group>"; };
 		72C9428E44C5A2270503CAD5 /* Pods-iBurn.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn/Pods-iBurn.debug.xcconfig"; sourceTree = "<group>"; };
 		73F56B0C2D800E3EC87731BD /* Pods-iBurn-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurn-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
-		765683D57014A2585A750818 /* streets.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = streets.geojson; path = "Submodules/iBurn-Data/data/2026/geo/streets.geojson"; sourceTree = "<group>"; };
+		765683D57014A2585A750818 /* streets.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = streets.geojson; path = "Submodules/iBurn-Data/data/2026/geo/streets.geojson"; sourceTree = "<group>"; };
 		80E2C6DD5C95EC58E5AE41B8 /* Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKitTests/Pods-PlayaKitAbstract-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		943BDAA9ED89068B088FA38F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		947CA60EF87E28B21413E37F /* Pods_PlayaKitAbstract_PlayaKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C6AEBC090227855BDA638FD /* Pods_PlayaKitAbstract_PlayaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PlayaKitAbstract_PlayaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9E10477F2E42824CFC141C92 /* polygons.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = polygons.geojson; path = "Submodules/iBurn-Data/data/2026/geo/polygons.geojson"; sourceTree = "<group>"; };
+		9E10477F2E42824CFC141C92 /* polygons.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = polygons.geojson; path = "Submodules/iBurn-Data/data/2026/geo/polygons.geojson"; sourceTree = "<group>"; };
 		A82C58B098F53472C8C10196 /* iBurnWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iBurnWatchApp.swift; sourceTree = "<group>"; };
 		AD46B030994031DA5726D21C /* Pods_iBurnAbstract_iBurn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32B80036C680FE7F3185B79 /* Pods_iBurnAbstract_iBurnTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iBurnAbstract_iBurnTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -177,7 +177,7 @@
 		DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
-		E4C02C37EA6C6EC484366C05 /* points.geojson */ = {isa = PBXFileReference; includeInIndex = 1; name = points.geojson; path = "Submodules/iBurn-Data/data/2026/geo/points.geojson"; sourceTree = "<group>"; };
+		E4C02C37EA6C6EC484366C05 /* points.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = points.geojson; path = "Submodules/iBurn-Data/data/2026/geo/points.geojson"; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 		E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PlayaKitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E76D61673600C19CD253D116 /* MapScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MapScreen.swift; sourceTree = "<group>"; };
@@ -364,7 +364,6 @@
 				21FEA0681C6BD080480B8F82 /* DetailScreen.swift */,
 				4AD79A9DD502B9246B2F9149 /* WatchSeeder.swift */,
 			);
-			name = iBurnWatch;
 			path = iBurnWatch;
 			sourceTree = "<group>";
 		};
@@ -535,11 +534,11 @@
 				D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */,
 				D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */,
-				D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "iBurn-Data" */,
-				D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "PlayaAPI" */,
-				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "PlayaDB" */,
+				D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "Submodules/iBurn-Data" */,
+				D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "Packages/PlayaAPI" */,
+				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */,
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
-				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "PlayaGeo" */,
+				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -807,6 +806,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 108;
+				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = iBurn;
@@ -1019,6 +1019,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 108;
+				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = iBurn;
@@ -1133,19 +1134,19 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "PlayaGeo" */ = {
+		7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaGeo;
 		};
-		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "PlayaDB" */ = {
+		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaDB;
 		};
-		D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "iBurn-Data" */ = {
+		D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "Submodules/iBurn-Data" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "Submodules/iBurn-Data";
 		};
-		D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "PlayaAPI" */ = {
+		D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "Packages/PlayaAPI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaAPI;
 		};
