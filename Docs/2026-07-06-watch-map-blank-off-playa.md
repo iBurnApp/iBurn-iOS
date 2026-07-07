@@ -71,3 +71,26 @@ A clean build of the `iBurn` scheme (iPhone 17 Pro Max sim, includes iBurnWatch 
 
 ## Cross-References
 - Session 1 above (watch map clamp) — same branch `2026-updates`.
+
+---
+
+# Session 3: Watch Double-Tap Zoom, App Icon, Install Name
+
+## High-Level Plan
+Three watch-app polish items requested together (commit `6bd261f`):
+1. Double tap on the map zooms in one level.
+2. Watch app icon (target had no asset catalog at all).
+3. Installed app should read "iBurn", not "iBurnWatch".
+
+## Technical Details
+- **Double-tap zoom** — `iBurnWatch/MapScreen.swift`: `.onTapGesture(count: 2)` bumps `zoomLevel` by +2 clamped to 12. Scale is `metersPerPoint = 50 / 2^(level/2)`, so +2 crown units = one traditional 2× map zoom level. Placed before the drag gesture; there is no single-tap handler on the map, so no recognition delay concerns.
+- **App icon** — new `iBurnWatch/Assets.xcassets` with `AppIcon.appiconset` (single 1024×1024 watchOS icon, `platform: watchos`, converted from `iBurn/Images.xcassets/AppIcon.appiconset/appstore.jpg` via `sips`; no alpha, as required) and a default `AccentColor.colorset` (both were already referenced by `ASSETCATALOG_COMPILER_*` build settings). Wired into the pbxproj by hand (iBurnWatch is not a filesystem-synchronized group): new `PBXFileReference F5F3C81E…` + `PBXBuildFile 6D70904E…` in the watch Resources phase + group child.
+- **Install name** — `CFBundleDisplayName` was already "iBurn" since target creation, so what the user saw on-device comes from `CFBundleName`, which `GENERATE_INFOPLIST_FILE` derives from `PRODUCT_NAME` (`$(TARGET_NAME)` = iBurnWatch). Fix: `PRODUCT_NAME = iBurn` on both watch configs; product reference renamed `iBurnWatch.app` → `iBurn.app` (pbxproj `D5A03B13…` path + comments). Xcode auto-rewrote the scheme's `BuildableName`s during the verification build. Target name stays `iBurnWatch`. No collision with the iOS `iBurn.app`: different platform build dirs, and the embed phase copies into `iBurn.app/Watch/iBurn.app`.
+
+## Verification
+- `xcodebuild` iBurn scheme (sim) — BUILD SUCCEEDED, zero warnings.
+- Built products: watch product is `Debug-watchsimulator/iBurn.app`, embedded at `iBurn.app/Watch/iBurn.app`; `Info.plist` has `CFBundleName = iBurn`, `CFBundleDisplayName = iBurn`, `CFBundleIcons → CFBundleIconName = AppIcon`; `assetutil --info Assets.car` shows `AppIcon` at 1024px.
+- Not yet reinstalled on the physical watch — user should redeploy to see icon + name (double-tap testable in the watch simulator too).
+
+## Cross-References
+- Sessions 1–2 above; `Docs/2026-07-03-watchos-mvp-plan.md` (watch MVP).
