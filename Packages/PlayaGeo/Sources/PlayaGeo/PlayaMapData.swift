@@ -154,4 +154,16 @@ public extension PlayaMapData {
     var cityBounds: [CGPoint] {
         fence.flatMap { $0 }
     }
+
+    /// Projects a coordinate into world space, or nil when it is farther than
+    /// `maxDistanceMeters` from the projection origin (The Man). Following or
+    /// camera-fitting a far-off fix — e.g. a dev running the app at home —
+    /// would fling the camera hundreds of km from the city and render a blank
+    /// map, so treat such fixes as "not at the event". The default radius
+    /// covers the fence, deep playa, and the airport with margin.
+    func pointOnPlaya(for coordinate: GeoCoordinate, maxDistanceMeters: CGFloat = 10_000) -> CGPoint? {
+        let point = projection.point(for: coordinate)
+        guard hypot(point.x, point.y) < maxDistanceMeters else { return nil }
+        return point
+    }
 }

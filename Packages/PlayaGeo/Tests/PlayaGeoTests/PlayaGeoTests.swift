@@ -198,4 +198,25 @@ final class PlayaMapDataTests: XCTestCase {
             XCTAssertLessThan(abs(point.y), 6000)
         }
     }
+
+    func testPointOnPlayaClampsFarOffFixes() {
+        let man = GeoCoordinate(latitude: 40.783242, longitude: -119.207871)
+        let mapData = PlayaMapData(
+            projection: PlayaProjection(origin: man),
+            streets: [], fence: [], plazas: [], toilets: [], pois: []
+        )
+
+        // At The Man → world origin.
+        let atMan = mapData.pointOnPlaya(for: man)
+        XCTAssertNotNil(atMan)
+        XCTAssertEqual(atMan.map { hypot($0.x, $0.y) } ?? -1, 0, accuracy: 0.001)
+
+        // ~3 km out (deep playa / fence) still counts as on-playa.
+        let deepPlaya = GeoCoordinate(latitude: 40.810, longitude: -119.208)
+        XCTAssertNotNil(mapData.pointOnPlaya(for: deepPlaya))
+
+        // San Francisco → nil; a follow-camera there would render a blank map.
+        let sanFrancisco = GeoCoordinate(latitude: 37.7749, longitude: -122.4194)
+        XCTAssertNil(mapData.pointOnPlaya(for: sanFrancisco))
+    }
 }

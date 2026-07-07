@@ -137,7 +137,7 @@ struct NavigationScreen: View {
 
     private var userWorldPoint: CGPoint? {
         guard let userLocation = location.location else { return nil }
-        return mapData.projection.point(
+        return mapData.pointOnPlaya(
             for: GeoCoordinate(
                 latitude: userLocation.coordinate.latitude,
                 longitude: userLocation.coordinate.longitude

@@ -79,7 +79,7 @@ struct MapScreen: View {
 
     private var userPoint: CGPoint? {
         guard let location = location.location else { return nil }
-        return mapData.projection.point(
+        return mapData.pointOnPlaya(
             for: GeoCoordinate(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude
