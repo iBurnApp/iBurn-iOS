@@ -50,6 +50,7 @@ final class EventListViewModel: ObservableObject {
 
     private let dataProvider: EventDataProvider
     private let locationProvider: LocationProvider
+    private let regionStatus: RegionStatusService
     private let filterStorageKey: String
 
     // MARK: - Public
@@ -69,11 +70,13 @@ final class EventListViewModel: ObservableObject {
     init(
         dataProvider: EventDataProvider,
         locationProvider: LocationProvider,
+        regionStatus: RegionStatusService = RegionStatusServiceFactory.makeService(),
         filterStorageKey: String = "eventListFilter",
         festivalDays: [Date]
     ) {
         self.dataProvider = dataProvider
         self.locationProvider = locationProvider
+        self.regionStatus = regionStatus
         self.filterStorageKey = filterStorageKey
         self.festivalDays = festivalDays
 
@@ -155,7 +158,7 @@ final class EventListViewModel: ObservableObject {
         f.startDate = nil
         f.endDate = nil
         f.searchText = nil
-        return f
+        return gatedForRegion(f)
     }
 
     /// Search mode filter: user filters + searchText, all days (no date scope).
@@ -164,7 +167,17 @@ final class EventListViewModel: ObservableObject {
         f.startDate = nil
         f.endDate = nil
         f.searchText = query
-        return f
+        return gatedForRegion(f)
+    }
+
+    /// Legacy parity: hide "Mature Audiences" (`adlt`) events until the device has
+    /// physically entered the Burning Man region, mirroring the YapDatabase gate in
+    /// `BRCDatabaseManager.eventsFilteredByExpiration:eventTypes:artHostedOnly:`.
+    /// Applied to the observation filter only — never persisted, and the filter
+    /// sheet still reflects the user's own type selection.
+    private func gatedForRegion(_ f: EventFilter) -> EventFilter {
+        guard !regionStatus.hasEnteredBurningManRegion else { return f }
+        return f.excludingAdultEvents()
     }
 
     private func restartObservation() {

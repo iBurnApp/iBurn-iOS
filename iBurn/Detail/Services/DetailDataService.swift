@@ -235,10 +235,15 @@ class DetailDataService: DetailDataServiceProtocol {
             do {
                 if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
                     try await playaDB.setFavorite(isFavorite, for: art)
+                } else if object is BRCEventObject {
+                    // Yap event uniqueIDs are per-occurrence ("<apiUID>-<index>");
+                    // PlayaDB stores events under the bare API uid, so strip the suffix.
+                    let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: uid)
+                    if let event = try await playaDB.fetchEvent(uid: apiUID) {
+                        try await playaDB.setFavorite(isFavorite, for: event)
+                    }
                 } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
                     try await playaDB.setFavorite(isFavorite, for: camp)
-                } else if object is BRCEventObject, let event = try await playaDB.fetchEvent(uid: uid) {
-                    try await playaDB.setFavorite(isFavorite, for: event)
                 }
             } catch {
                 print("PlayaDB favorite sync failed for \(uid): \(error)")
@@ -254,10 +259,14 @@ class DetailDataService: DetailDataServiceProtocol {
             do {
                 if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
                     try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
+                } else if object is BRCEventObject {
+                    // Same per-occurrence uid mapping as favorite sync above.
+                    let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: uid)
+                    if let event = try await playaDB.fetchEvent(uid: apiUID) {
+                        try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
+                    }
                 } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
                     try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
-                } else if object is BRCEventObject, let event = try await playaDB.fetchEvent(uid: uid) {
-                    try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 }
             } catch {
                 print("PlayaDB notes sync failed for \(uid): \(error)")

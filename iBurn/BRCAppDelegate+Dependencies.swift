@@ -34,12 +34,10 @@ extension BRCAppDelegate {
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc
     func createFavoritesViewController() -> UIViewController {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             return FavoritesListHostingController(dependencies: dependencies)
         }
-        #endif
 
         let dbManager = BRCDatabaseManager.shared
         let showExpiredEvents = UserSettings.showExpiredEventsInFavorites
@@ -58,12 +56,10 @@ extension BRCAppDelegate {
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc
     func createNearbyViewController() -> UIViewController {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             return NearbyListHostingController(dependencies: dependencies)
         }
-        #endif
 
         let nearbyVC = NearbyViewController(
             style: .grouped,
@@ -77,12 +73,10 @@ extension BRCAppDelegate {
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc
     func createEventsViewController() -> UIViewController {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             return EventListHostingController(dependencies: dependencies)
         }
-        #endif
 
         let dbManager = BRCDatabaseManager.shared
         let legacyVC = EventListViewController(

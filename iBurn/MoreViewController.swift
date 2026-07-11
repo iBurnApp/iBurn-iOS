@@ -344,7 +344,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func pushArtView() {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             let artVC = ArtListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
@@ -352,7 +351,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             navigationController?.pushViewController(artVC, animated: true)
             return
         }
-        #endif
 
         let dbManager = BRCDatabaseManager.shared
         // Always use filtered view - it shows all art when filter is disabled
@@ -363,7 +361,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func pushCampsView() {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             let campsVC = CampListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
@@ -371,7 +368,6 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             navigationController?.pushViewController(campsVC, animated: true)
             return
         }
-        #endif
 
         let dbManager = BRCDatabaseManager.shared
         let campsVC = ObjectListViewController(viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)

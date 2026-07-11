@@ -11,9 +11,11 @@ class EventDataProvider: ObjectListDataProvider {
     typealias Filter = EventFilter
 
     let playaDB: PlayaDB
+    private let favoriteSync: FavoriteSyncService
 
-    init(playaDB: PlayaDB) {
+    init(playaDB: PlayaDB, favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared) {
         self.playaDB = playaDB
+        self.favoriteSync = favoriteSync
     }
 
     func isDatabaseSeeded() async -> Bool {
@@ -73,6 +75,15 @@ class EventDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: EventObjectOccurrence) async throws {
         try await playaDB.toggleFavorite(object)
+        let isFavorite = try await playaDB.isFavorite(object)
+        // Fire-and-forget mirror into legacy YapDatabase; PlayaDB is the source
+        // of truth and the UI must not wait on the Yap write. The API uid fans
+        // out to every per-occurrence Yap object and refreshes calendar entries.
+        let favoriteSync = self.favoriteSync
+        let apiUID = object.event.uid
+        Task {
+            await favoriteSync.mirrorFavorite(type: .event, uid: apiUID, isFavorite: isFavorite)
+        }
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: EventObjectOccurrence) -> AttributedString? {

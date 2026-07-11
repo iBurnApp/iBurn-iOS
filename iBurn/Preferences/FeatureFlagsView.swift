@@ -19,7 +19,7 @@ struct FeatureFlagsView: View {
     @State private var timer: Timer?
 
     // SwiftUI Lists feature flag
-    @State private var useSwiftUILists = UserDefaults.standard.bool(forKey: Preferences.FeatureFlags.useSwiftUILists.key)
+    @State private var useSwiftUILists = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useSwiftUILists)
     
     // Dynamically calculated Burning Man dates based on Labor Day
     private var eventYear: Int {
@@ -112,12 +112,12 @@ struct FeatureFlagsView: View {
             Section {
                 Toggle("Use SwiftUI Lists", isOn: $useSwiftUILists)
                     .onChange(of: useSwiftUILists) { newValue in
-                        UserDefaults.standard.setValue(newValue, forKey: Preferences.FeatureFlags.useSwiftUILists.key)
+                        PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useSwiftUILists)
                     }
             } header: {
                 Text("UI Features")
             } footer: {
-                Text("Use new SwiftUI-based list views for Art and Camps instead of legacy UIKit implementation.")
+                Text("Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps. Turn off to fall back to the legacy UIKit lists.")
                     .font(.footnote)
             }
 

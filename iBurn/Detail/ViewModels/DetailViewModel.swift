@@ -55,7 +55,11 @@ class DetailViewModel: ObservableObject {
     private let coordinator: DetailActionCoordinator
 
     private let rowAssets: RowAssetsLoader?
-    
+
+    /// Mirrors PlayaDB favorite changes into the legacy YapDatabase.
+    /// Lazy so BRCDatabaseManager is only touched on first use; injectable for tests.
+    lazy var favoriteSyncService: FavoriteSyncService = FavoriteSyncServiceFactory.shared
+
     // MARK: - Private Properties
     private var preloadedImages: [String: UIImage] = [:]
     private var cancellables = Set<AnyCancellable>()
@@ -427,22 +431,22 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(art)
                 isFavorite = try await playaDB.isFavorite(art)
-                syncFavoriteToYapDB(uid: art.uid, yapCollection: BRCArtObject.yapCollection, isFavorite: isFavorite)
+                syncFavoriteToYapDB(type: .art, uid: art.uid, isFavorite: isFavorite)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(camp)
                 isFavorite = try await playaDB.isFavorite(camp)
-                syncFavoriteToYapDB(uid: camp.uid, yapCollection: BRCCampObject.yapCollection, isFavorite: isFavorite)
+                syncFavoriteToYapDB(type: .camp, uid: camp.uid, isFavorite: isFavorite)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(event)
                 isFavorite = try await playaDB.isFavorite(event)
-                syncFavoriteToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
+                syncFavoriteToYapDB(type: .event, uid: event.uid, isFavorite: isFavorite)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(occ)
                 isFavorite = try await playaDB.isFavorite(occ)
-                syncFavoriteToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
+                syncFavoriteToYapDB(type: .event, uid: occ.event.uid, isFavorite: isFavorite)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(mv)
@@ -513,15 +517,13 @@ class DetailViewModel: ObservableObject {
 
     // MARK: - YapDB Sync (backward compat during migration)
 
-    private func syncFavoriteToYapDB(uid: String, yapCollection: String, isFavorite: Bool, isEvent: Bool = false) {
-        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-            guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
-            let metadata = object.metadata(with: transaction).metadataCopy()
-            metadata.isFavorite = isFavorite
-            object.replace(metadata, transaction: transaction)
-            if isEvent, let event = object as? BRCEventObject {
-                event.refreshCalendarEntry(transaction)
-            }
+    /// Fire-and-forget mirror into legacy YapDatabase via the shared FavoriteSyncService.
+    /// For events this fans out to every per-occurrence Yap object ("<apiUID>-<index>")
+    /// and refreshes each one's calendar entry (EKEvent created/removed).
+    private func syncFavoriteToYapDB(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) {
+        let service = favoriteSyncService
+        Task {
+            await service.mirrorFavorite(type: type, uid: uid, isFavorite: isFavorite)
         }
     }
 

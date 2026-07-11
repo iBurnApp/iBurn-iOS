@@ -30,15 +30,17 @@ Preconditions: simulator erased; feature flag set if you want the SwiftUI stack
 
 Verify: tab bar shows Map / Nearby / Favorites / Events / More.
 
-## 2. Enable the SwiftUI + PlayaDB stack
+## 2. SwiftUI + PlayaDB stack (default ON; legacy fallback)
 
-DEBUG builds only. The flag gates Favorites/Nearby/Events SwiftUI screens and
-PlayaDB creation/seeding.
+The flag `featureFlag.lists.useSwiftUI` (all builds, default true) gates the
+Favorites/Nearby/Events/Art/Camps SwiftUI screens and PlayaDB
+creation/seeding. It is ON by default; disable it to exercise the legacy
+UIKit/YapDatabase stack.
 
 - CLI (preferred for automation): terminate app →
-  `xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 featureFlag.lists.useSwiftUI -bool YES`
-  → relaunch.
-- In-app: More tab → Feature Flags → toggle "Use SwiftUI Lists".
+  `xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 featureFlag.lists.useSwiftUI -bool NO`
+  → relaunch. (Use `-bool YES` or delete the key to restore the default.)
+- In-app (DEBUG builds only): More tab → Feature Flags → toggle "Use SwiftUI Lists".
 
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
@@ -51,8 +53,9 @@ empty until the user favorites/views something.
 Preconditions: flow 2 done (SwiftUI stack on).
 
 1. Tap the **Events** tab.
-2. Day strip shows SUN 30 → SUN 6 (festival week). Tap another day (e.g.
-   "WED, 2").
+2. Day strip shows SUN 30 → MON 7 (festival week, end-inclusive so the final
+   day/Exodus is browsable; scroll the strip to reach MON 7). Tap another day
+   (e.g. "WED, 2").
 
 Verify: rows swap instantly to that day's events (day slicing is in-memory —
 no spinner, no reload flash). Row content: name, type emoji, host camp,
@@ -74,6 +77,13 @@ Preconditions: flow 3; pick any event row.
 Verify in DB: exactly one new `object_metadata` row, `object_type='event'`,
 `object_id` equal to the parent event uid in `event_objects` (never
 `"<uid>_<n>"`), `is_favorite=1`.
+
+Also verify the Yap mirror (`FavoriteSyncService`): in
+`<app container>/Library/Application Support/iBurn/iBurn-2026/iBurn-2026.sqlite`,
+every per-occurrence row (`database2` table, collection `BRCEventObject`, keys
+`"<apiUID>-<n>"`) gets an updated metadata blob containing `isFavorite=true` and
+(with calendar permission granted) an EKEvent `calendarEventIdentifier`. The
+favorited blobs are larger than the ~440-byte import-stamped baseline.
 
 ## 5. Search (FTS)
 

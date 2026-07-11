@@ -78,8 +78,9 @@ public final class YearSettings: NSObject {
         self.eventEnd = allSettings["EventEnd"] as! Date
         self.playaYear = allSettings["PlayaYear"] as! String
         
+        // End-inclusive so the final festival day (Exodus) is browsable, matching the legacy day picker.
         let numberOfDays = Calendar.current.dateComponents([.day], from: self.eventStart, to: self.eventEnd).day ?? 0
-        self.festivalDays = (0..<numberOfDays).compactMap {
+        self.festivalDays = (0...numberOfDays).compactMap {
             var day = DateComponents()
             day.day = $0
             let date = Calendar.current.date(byAdding: day, to: eventStart)

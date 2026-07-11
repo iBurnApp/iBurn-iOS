@@ -19,11 +19,15 @@ class ArtDataProvider: ObjectListDataProvider {
     typealias Filter = ArtFilter
 
     private let playaDB: PlayaDB
+    private let favoriteSync: FavoriteSyncService
 
     /// Initialize the data provider
-    /// - Parameter playaDB: The PlayaDB instance to use for data access
-    init(playaDB: PlayaDB) {
+    /// - Parameters:
+    ///   - playaDB: The PlayaDB instance to use for data access
+    ///   - favoriteSync: Mirrors favorite changes into the legacy YapDatabase
+    init(playaDB: PlayaDB, favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared) {
         self.playaDB = playaDB
+        self.favoriteSync = favoriteSync
     }
 
     func isDatabaseSeeded() async -> Bool {
@@ -49,6 +53,13 @@ class ArtDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: ArtObject) async throws {
         try await playaDB.toggleFavorite(object)
+        let isFavorite = try await playaDB.isFavorite(object)
+        // Fire-and-forget mirror into legacy YapDatabase; PlayaDB is the source
+        // of truth and the UI must not wait on the Yap write.
+        let favoriteSync = self.favoriteSync
+        Task {
+            await favoriteSync.mirrorFavorite(type: .art, uid: object.uid, isFavorite: isFavorite)
+        }
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: ArtObject) -> AttributedString? {

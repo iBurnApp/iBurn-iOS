@@ -34,26 +34,32 @@ class DependencyContainer {
     /// Art/camp thumbnail image downloader
     private let thumbnailImageDownloader: ThumbnailImageDownloader
 
+    /// Mirrors PlayaDB favorite changes into the legacy YapDatabase so both stores agree.
+    /// Lazy so BRCDatabaseManager is only touched once the first provider is used.
+    private(set) lazy var favoriteSyncService: FavoriteSyncService = {
+        FavoriteSyncServiceFactory.shared
+    }()
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
     private(set) lazy var artDataProvider: ArtDataProvider = {
-        ArtDataProvider(playaDB: playaDB)
+        ArtDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// Data provider for Camp objects
     private(set) lazy var campDataProvider: CampDataProvider = {
-        CampDataProvider(playaDB: playaDB)
+        CampDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// Data provider for Event objects
     private(set) lazy var eventDataProvider: EventDataProvider = {
-        EventDataProvider(playaDB: playaDB)
+        EventDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// Data provider for MutantVehicle objects
     private(set) lazy var mutantVehicleDataProvider: MutantVehicleDataProvider = {
-        MutantVehicleDataProvider(playaDB: playaDB)
+        MutantVehicleDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// AI search service (nil if device doesn't support Apple Intelligence)

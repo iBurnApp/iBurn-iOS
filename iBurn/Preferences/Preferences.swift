@@ -20,16 +20,14 @@ enum Preferences {
         )
     }
     
-    // MARK: - Feature Flags (DEBUG only)
-    #if DEBUG
+    // MARK: - Feature Flags
     enum FeatureFlags {
         static let useSwiftUILists = Preference<Bool>(
             key: "featureFlag.lists.useSwiftUI",
-            defaultValue: false,
-            description: "Use new SwiftUI list views instead of legacy UIKit for Art and Camps"
+            defaultValue: true,
+            description: "Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps; disable to fall back to legacy UIKit"
         )
     }
-    #endif
     
     // MARK: - Location & Navigation
     enum Location {

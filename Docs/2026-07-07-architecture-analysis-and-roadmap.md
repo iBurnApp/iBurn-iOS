@@ -167,6 +167,13 @@ shape as 2025 (June/July structural pass → August point releases).
 
 ### 3.2 Feature-flag decisions (decide by ~Aug 1)
 
+> **DECIDED 2026-07-11 (Chris):** `useSwiftUILists` flipped to default-ON in all builds,
+> ahead of the Aug 1 checkpoint. The OTA-staleness constraint was explicitly accepted
+> ("the network updater can wait"); PlayaDB stays bundle-seeded for 2026. A Settings.bundle
+> kill-switch was added and legacy lists remain as fallback. Yap user-data migration was
+> deemed unnecessary (fresh year, no existing installs). See
+> `2026-07-11-swiftui-lists-default-on.md`.
+
 - **`useSwiftUIDetailView` (default true):** already the shipped default — keep.
 - **`useSwiftUILists` (DEBUG-only, default false):** the SwiftUI list stack now covers all
   five tabs and PlayaDB is audited/fast, but it has never survived a public beta.

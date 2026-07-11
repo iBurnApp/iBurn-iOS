@@ -21,12 +21,13 @@ description: Build, launch, and drive the iBurn app in the iOS Simulator via Xco
 
 ## Critical setup facts (learned the hard way)
 
-- **The SwiftUI/PlayaDB stack is OFF by default.** It sits behind the DEBUG-only
-  flag `featureFlag.lists.useSwiftUI` (default false). Without it you get legacy
-  UIKit/YapDatabase screens and `PlayaDB.sqlite` is never created. Enable before
+- **The SwiftUI/PlayaDB stack is ON by default.** The flag
+  `featureFlag.lists.useSwiftUI` (all builds, default true) acts as a
+  kill-switch: set it to NO and you get legacy UIKit/YapDatabase screens and
+  `PlayaDB.sqlite` is never created. To exercise the legacy stack, set before
   (re)launching:
   ```bash
-  xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 featureFlag.lists.useSwiftUI -bool YES
+  xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 featureFlag.lists.useSwiftUI -bool NO
   ```
 - **PlayaDB seeds lazily**, when the DependencyContainer is first built (tab
   construction after onboarding) — not at app launch. Don't conclude seeding is
