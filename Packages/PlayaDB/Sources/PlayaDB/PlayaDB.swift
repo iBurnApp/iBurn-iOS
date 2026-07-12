@@ -183,6 +183,13 @@ public protocol PlayaDB {
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
 
+    /// Set the visit status of an object. Setting the same value again is a
+    /// no-op (no write), and `.unvisited` never materializes a metadata row.
+    func setVisitStatus(_ status: VisitStatus, for object: any DataObject) async throws
+
+    /// Get all objects with the given visit status
+    func fetchObjects(visitStatus: VisitStatus) async throws -> [any DataObject]
+
     /// Update user notes for an object (nil/empty clears notes).
     func setUserNotes(_ notes: String?, for object: any DataObject) async throws
 
@@ -209,14 +216,17 @@ public protocol PlayaDB {
 
     // MARK: - Favorite Sync
 
-    /// Snapshot of all favorite states that have ever been explicitly set
-    /// (rows with a non-nil favorite stamp), for last-writer-wins sync.
+    /// Snapshot of all favorite/visit states that have ever been explicitly set
+    /// (rows with a non-nil favorite or visit stamp), for last-writer-wins sync.
     /// Ordered by objectType then objectId for determinism.
     func favoriteSyncSnapshot() async throws -> [FavoriteSyncItem]
 
-    /// Merge incoming favorite states using last-writer-wins on the favorite
-    /// stamp. Same-state items are skipped so applying a peer's snapshot never
-    /// re-fires observations. Returns the items actually applied.
+    /// Merge incoming favorite/visit states using per-field last-writer-wins:
+    /// the favorite and visit-status fields merge independently, each on its
+    /// own dedicated stamp. Same-state fields are skipped and rows where no
+    /// field applies are never written, so applying a peer's snapshot never
+    /// re-fires observations. Returns the items for which at least one field
+    /// was applied.
     @discardableResult
     func applyFavoriteSync(_ items: [FavoriteSyncItem]) async throws -> [FavoriteSyncItem]
 

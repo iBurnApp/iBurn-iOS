@@ -296,6 +296,14 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "UPDATE object_metadata SET favorite_updated_at = updated_at WHERE is_favorite = 1")
         }
 
+        // v3: visit status (raw VisitStatus: 0=unvisited, 1=visited, 2=wantToVisit)
+        // with a dedicated change stamp, mirroring v2's favorite stamp, so favorite
+        // and visit status can merge independently in last-writer-wins sync.
+        migrator.registerMigration("v3-visit-status") { db in
+            try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN visit_status INTEGER NOT NULL DEFAULT 0")
+            try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN visit_status_updated_at DATETIME")
+        }
+
         try migrator.migrate(dbQueue)
 
         // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
@@ -1573,20 +1581,23 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - Favorite Sync
 
-    /// Shared query for snapshot + observation: every row whose favorite state
-    /// has ever been explicitly set (non-nil stamp), deterministically ordered.
+    /// Shared query for snapshot + observation: every row whose favorite or
+    /// visit status has ever been explicitly set (non-nil stamp on either
+    /// field), deterministically ordered.
     private static func favoriteSyncItems(_ db: Database) throws -> [FavoriteSyncItem] {
         let rows = try ObjectMetadata
-            .filter(ObjectMetadata.Columns.favoriteUpdatedAt != nil)
+            .filter(ObjectMetadata.Columns.favoriteUpdatedAt != nil
+                    || ObjectMetadata.Columns.visitStatusUpdatedAt != nil)
             .order(ObjectMetadata.Columns.objectType, ObjectMetadata.Columns.objectId)
             .fetchAll(db)
-        return rows.compactMap { metadata in
-            guard let stamp = metadata.favoriteUpdatedAt else { return nil }
-            return FavoriteSyncItem(
+        return rows.map { metadata in
+            FavoriteSyncItem(
                 objectType: metadata.objectType,
                 objectId: metadata.objectId,
                 isFavorite: metadata.isFavorite,
-                updatedAt: stamp
+                favoriteUpdatedAt: metadata.favoriteUpdatedAt,
+                visitStatus: metadata.visitStatus,
+                visitStatusUpdatedAt: metadata.visitStatusUpdatedAt
             )
         }
     }
@@ -1609,31 +1620,55 @@ internal class PlayaDBImpl: PlayaDB {
                     .filter(ObjectMetadata.Columns.objectId == item.objectId)
                     .fetchOne(db)
 
+                // A visit field is only meaningful when it carries a stamp and a
+                // raw value we recognize.
+                let incomingVisitValid = item.visitStatusUpdatedAt != nil
+                    && VisitStatus(rawValue: item.visitStatus) != nil
+
                 if var metadata = existingMetadata {
-                    // Same state: never write, so applying a peer's snapshot
-                    // doesn't re-fire observations (and cause push loops).
-                    guard metadata.isFavorite != item.isFavorite else { continue }
-                    // Last-writer-wins on the dedicated favorite stamp.
-                    if let localStamp = metadata.favoriteUpdatedAt, item.updatedAt <= localStamp {
-                        continue
+                    // Per-field last-writer-wins: favorite and visit status merge
+                    // independently, each on its own dedicated stamp.
+                    var changedColumns: [ObjectMetadata.Columns] = []
+
+                    if let incomingStamp = item.favoriteUpdatedAt,
+                       metadata.isFavorite != item.isFavorite,
+                       metadata.favoriteUpdatedAt.map({ incomingStamp > $0 }) ?? true {
+                        metadata.isFavorite = item.isFavorite
+                        metadata.favoriteUpdatedAt = incomingStamp
+                        changedColumns += [.isFavorite, .favoriteUpdatedAt]
                     }
-                    metadata.isFavorite = item.isFavorite
-                    metadata.favoriteUpdatedAt = item.updatedAt
+
+                    if incomingVisitValid,
+                       let incomingStamp = item.visitStatusUpdatedAt,
+                       metadata.visitStatus != item.visitStatus,
+                       metadata.visitStatusUpdatedAt.map({ incomingStamp > $0 }) ?? true {
+                        metadata.visitStatus = item.visitStatus
+                        metadata.visitStatusUpdatedAt = incomingStamp
+                        changedColumns += [.visitStatus, .visitStatusUpdatedAt]
+                    }
+
+                    // Nothing applied: never write, so applying a peer's snapshot
+                    // doesn't re-fire observations (and cause push loops).
+                    guard !changedColumns.isEmpty else { continue }
                     metadata.updatedAt = Date()
-                    try metadata.update(db, columns: [
-                        ObjectMetadata.Columns.isFavorite,
-                        ObjectMetadata.Columns.favoriteUpdatedAt,
-                        ObjectMetadata.Columns.updatedAt,
-                    ])
+                    changedColumns.append(.updatedAt)
+                    try metadata.update(db, columns: changedColumns)
                     applied.append(item)
                 } else {
-                    // No local row: only a favorite is worth materializing.
-                    guard item.isFavorite else { continue }
+                    // No local row: only materialize when the incoming item has
+                    // something non-default to say. Stamps are set only for the
+                    // fields the item actually carries.
+                    let hasFavoriteField = item.favoriteUpdatedAt != nil
+                    let insertWorthy = (hasFavoriteField && item.isFavorite)
+                        || (incomingVisitValid && item.visitStatus != VisitStatus.unvisited.rawValue)
+                    guard insertWorthy else { continue }
                     var newMetadata = ObjectMetadata(
                         objectType: item.objectType,
                         objectId: item.objectId,
-                        isFavorite: true,
-                        favoriteUpdatedAt: item.updatedAt
+                        isFavorite: hasFavoriteField ? item.isFavorite : false,
+                        favoriteUpdatedAt: hasFavoriteField ? item.favoriteUpdatedAt : nil,
+                        visitStatus: incomingVisitValid ? item.visitStatus : 0,
+                        visitStatusUpdatedAt: incomingVisitValid ? item.visitStatusUpdatedAt : nil
                     )
                     try newMetadata.insert(db)
                     applied.append(item)
@@ -1932,6 +1967,77 @@ internal class PlayaDBImpl: PlayaDB {
                 )
                 try newMetadata.insert(db)
             }
+        }
+    }
+
+    func setVisitStatus(_ status: VisitStatus, for object: any DataObject) async throws {
+        let identity = metadataIdentity(for: object)
+        try await dbQueue.write { db in
+            let objectType = identity.type.rawValue
+            let objectId = identity.uid
+
+            let existingMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
+                .fetchOne(db)
+
+            if var metadata = existingMetadata {
+                guard metadata.visitStatus != status.rawValue else { return }
+                metadata.visitStatus = status.rawValue
+                metadata.visitStatusUpdatedAt = Date()
+                metadata.updatedAt = Date()
+                try metadata.update(db, columns: [
+                    ObjectMetadata.Columns.visitStatus,
+                    ObjectMetadata.Columns.visitStatusUpdatedAt,
+                    ObjectMetadata.Columns.updatedAt,
+                ])
+            } else {
+                // Unvisited is the default state: don't create junk rows for it.
+                guard status != .unvisited else { return }
+                var newMetadata = ObjectMetadata(
+                    objectType: objectType,
+                    objectId: objectId,
+                    visitStatus: status.rawValue,
+                    visitStatusUpdatedAt: Date()
+                )
+                try newMetadata.insert(db)
+            }
+        }
+    }
+
+    func fetchObjects(visitStatus status: VisitStatus) async throws -> [any DataObject] {
+        return try await dbQueue.read { db in
+            let matchingMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.visitStatus == status.rawValue)
+                .fetchAll(db)
+
+            // Group by type for batch fetching
+            var artIDs: [String] = [], campIDs: [String] = []
+            var eventIDs: [String] = [], mvIDs: [String] = []
+            for meta in matchingMetadata {
+                switch meta.dataObjectType {
+                case .art: artIDs.append(meta.objectId)
+                case .camp: campIDs.append(meta.objectId)
+                case .event: eventIDs.append(meta.objectId)
+                case .mutantVehicle: mvIDs.append(meta.objectId)
+                case .none: break
+                }
+            }
+
+            var objects: [any DataObject] = []
+            if !artIDs.isEmpty {
+                objects += try ArtObject.filter(artIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !campIDs.isEmpty {
+                objects += try CampObject.filter(campIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !eventIDs.isEmpty {
+                objects += try EventObject.filter(eventIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !mvIDs.isEmpty {
+                objects += try MutantVehicleObject.filter(mvIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            return objects
         }
     }
 

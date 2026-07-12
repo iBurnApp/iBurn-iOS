@@ -19,6 +19,8 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case favoriteUpdatedAt = "favorite_updated_at"
+        case visitStatus = "visit_status"
+        case visitStatusUpdatedAt = "visit_status_updated_at"
     }
 
     // Use Columns as CodingKeys
@@ -52,6 +54,15 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
     /// favorite changes so last-writer-wins sync can rely on it.
     public var favoriteUpdatedAt: Date?
 
+    /// Raw `VisitStatus` value (0 = unvisited, 1 = visited, 2 = want to visit).
+    /// Stored as a raw Int so unknown future values survive round-trips.
+    public var visitStatus: Int
+
+    /// When `visitStatus` was last explicitly changed. Like `favoriteUpdatedAt`,
+    /// this stamp is dedicated to visit-status changes so last-writer-wins sync
+    /// can rely on it (view tracking and notes writes never touch it).
+    public var visitStatusUpdatedAt: Date?
+
     public init(
         objectType: String,
         objectId: String,
@@ -60,6 +71,8 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
         lastViewed: Date? = nil,
         userNotes: String? = nil,
         favoriteUpdatedAt: Date? = nil,
+        visitStatus: Int = 0,
+        visitStatusUpdatedAt: Date? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -70,6 +83,8 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
         self.lastViewed = lastViewed
         self.userNotes = userNotes
         self.favoriteUpdatedAt = favoriteUpdatedAt
+        self.visitStatus = visitStatus
+        self.visitStatusUpdatedAt = visitStatusUpdatedAt
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -83,6 +98,11 @@ public extension ObjectMetadata {
         DataObjectType(rawValue: objectType)
     }
     
+    /// Typed visit status; unknown raw values fall back to `.unvisited`.
+    var visitStatusValue: VisitStatus {
+        VisitStatus(rawValue: visitStatus) ?? .unvisited
+    }
+
     /// Whether this metadata has user notes
     var hasUserNotes: Bool {
         userNotes != nil && !userNotes!.isEmpty

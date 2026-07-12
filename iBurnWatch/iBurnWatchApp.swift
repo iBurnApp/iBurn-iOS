@@ -39,15 +39,15 @@ struct IBurnWatchApp: App {
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
                                 NavigationLink {
-                                    NearbyScreen(
+                                    BrowseScreen(
                                         playaDB: playaDB,
                                         mapData: mapData,
                                         location: locationService
                                     )
                                 } label: {
-                                    Image(systemName: "location.circle")
+                                    Image(systemName: "list.bullet")
                                 }
-                                .accessibilityLabel("Nearby")
+                                .accessibilityLabel("Browse")
                             }
                             ToolbarItem(placement: .topBarTrailing) {
                                 NavigationLink {

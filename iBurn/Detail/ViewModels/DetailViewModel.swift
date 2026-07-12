@@ -37,6 +37,8 @@ class DetailViewModel: ObservableObject {
     @Published var userNotes: String
     @Published var firstViewed: Date?
     @Published var lastViewed: Date?
+    /// Visit status raw value for PlayaDB subjects (legacy subjects read `legacyMetadata`).
+    @Published var playaVisitStatus: Int = 0
     @Published var extractedImageColors: BRCImageColors?
     @Published var cells: [DetailCell] = []
     @Published var isLoading = false
@@ -181,6 +183,7 @@ class DetailViewModel: ObservableObject {
             self.userNotes = md.userNotes ?? ""
             self.firstViewed = md.firstViewed
             self.lastViewed = md.lastViewed
+            self.playaVisitStatus = md.visitStatus
         } else {
             self.isFavorite = false
             self.userNotes = ""
@@ -255,6 +258,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -270,6 +274,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -282,6 +287,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -294,6 +300,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -306,6 +313,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -503,13 +511,43 @@ class DetailViewModel: ObservableObject {
 
     func updateVisitStatus(_ status: BRCVisitStatus) async {
         do {
-            guard case .legacy(let obj) = subject, let dataService else {
-                return
+            let playaStatus = VisitStatus(rawValue: status.rawValue) ?? .unvisited
+            switch subject {
+            case .legacy(let obj):
+                guard let dataService else { return }
+                // Writes Yap and dual-writes PlayaDB (see DetailDataService.syncVisitStatusToPlayaDB,
+                // which normalizes per-occurrence event uids "<apiUID>-<index>" to the bare API uid) —
+                // same routing as updateFavoriteStatus/updateUserNotes for legacy subjects, where
+                // `self.playaDB` is nil and the data service owns the PlayaDB handle.
+                try await dataService.updateVisitStatus(for: obj, visitStatus: status)
+                legacyMetadata?.visitStatus = status.rawValue
+            case .art(let art):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: art)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .art, uid: art.uid, visitStatus: status.rawValue)
+            case .camp(let camp):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: camp)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .camp, uid: camp.uid, visitStatus: status.rawValue)
+            case .event(let event):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: event)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .event, uid: event.uid, visitStatus: status.rawValue)
+            case .eventOccurrence(let occ):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: occ)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .event, uid: occ.event.uid, visitStatus: status.rawValue)
+            case .mutantVehicle(let mv):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: mv)
+                playaVisitStatus = status.rawValue
             }
-            try await dataService.updateVisitStatus(for: obj, visitStatus: status)
-            legacyMetadata?.visitStatus = status.rawValue
             self.cells = generateCells()
-            
+
         } catch {
             self.error = error
         }
@@ -524,6 +562,15 @@ class DetailViewModel: ObservableObject {
         let service = favoriteSyncService
         Task {
             await service.mirrorFavorite(type: type, uid: uid, isFavorite: isFavorite)
+        }
+    }
+
+    /// Fire-and-forget visit-status mirror into legacy YapDatabase (event uids fan out
+    /// to every per-occurrence object; no calendar side effects).
+    private func syncVisitStatusToYapDB(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) {
+        let service = favoriteSyncService
+        Task {
+            await service.mirrorVisitStatus(type: type, uid: uid, visitStatus: visitStatus)
         }
     }
 
@@ -1855,6 +1902,7 @@ class DetailViewModel: ObservableObject {
             cells.append(.travelTime(distance))
         }
         cells.append(.userNotes(userNotes))
+        cells.append(.visitStatus(BRCVisitStatus(rawValue: playaVisitStatus) ?? .unvisited))
         if firstViewed != nil || lastViewed != nil {
             cells.append(.viewHistory(firstViewed: firstViewed, lastViewed: lastViewed))
         }

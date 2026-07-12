@@ -114,21 +114,28 @@ final class FavoriteSyncServiceTests: XCTestCase {
         }
     }
 
+    // Note: each object type must be stored with its concrete metadata subclass
+    // (BRCArtMetadata/BRCCampMetadata/BRCEventMetadata), matching the import path.
+    // `metadataWithTransaction:` type-checks the stored metadata and falls back to a
+    // fresh empty instance on mismatch, which would defeat read-compare assertions.
+
     private func saveArt(uid: String, isFavorite: Bool = false) throws {
-        let metadata = try XCTUnwrap(BRCObjectMetadata())
+        let metadata = try XCTUnwrap(BRCArtMetadata())
         metadata.isFavorite = isFavorite
         save(try makeArt(uid: uid), metadata: metadata)
     }
 
-    private func saveCamp(uid: String, isFavorite: Bool = false) throws {
-        let metadata = try XCTUnwrap(BRCObjectMetadata())
+    private func saveCamp(uid: String, isFavorite: Bool = false, visitStatus: Int = 0) throws {
+        let metadata = try XCTUnwrap(BRCCampMetadata())
         metadata.isFavorite = isFavorite
+        metadata.visitStatus = visitStatus
         save(try makeCamp(uid: uid), metadata: metadata)
     }
 
-    private func saveEvent(uid: String, isFavorite: Bool = false) throws {
+    private func saveEvent(uid: String, isFavorite: Bool = false, visitStatus: Int = 0) throws {
         let metadata = try XCTUnwrap(BRCEventMetadata())
         metadata.isFavorite = isFavorite
+        metadata.visitStatus = visitStatus
         save(try makeEvent(uid: uid), metadata: metadata)
     }
 
@@ -141,6 +148,29 @@ final class FavoriteSyncServiceTests: XCTestCase {
             result = object.metadata(with: transaction).isFavorite
         }
         return try XCTUnwrap(result, "No object found for \(uid) in \(collection)")
+    }
+
+    private func metadataInYap(uid: String, collection: String) throws -> BRCObjectMetadata {
+        var result: BRCObjectMetadata?
+        connection.read { transaction in
+            guard let object = transaction.object(forKey: uid, inCollection: collection) as? BRCDataObject else {
+                return
+            }
+            result = object.metadata(with: transaction)
+        }
+        return try XCTUnwrap(result, "No object found for \(uid) in \(collection)")
+    }
+
+    private func visitStatusInYap(uid: String, collection: String) throws -> Int {
+        try metadataInYap(uid: uid, collection: collection).visitStatus
+    }
+
+    private func objectExistsInYap(uid: String, collection: String) -> Bool {
+        var exists = false
+        connection.read { transaction in
+            exists = transaction.object(forKey: uid, inCollection: collection) != nil
+        }
+        return exists
     }
 
     // MARK: - Art / Camp Mirroring
@@ -168,9 +198,7 @@ final class FavoriteSyncServiceTests: XCTestCase {
     func testMirrorMissingObjectIsSafeNoOp() async throws {
         // No object stored; mirroring must complete without crashing or inserting.
         await service.mirrorFavorite(type: .art, uid: "does-not-exist", isFavorite: true)
-        connection.read { transaction in
-            XCTAssertNil(transaction.object(forKey: "does-not-exist", inCollection: BRCArtObject.yapCollection))
-        }
+        XCTAssertFalse(objectExistsInYap(uid: "does-not-exist", collection: BRCArtObject.yapCollection))
     }
 
     // MARK: - Event Fan-Out
@@ -256,6 +284,94 @@ final class FavoriteSyncServiceTests: XCTestCase {
         XCTAssertFalse(try isFavoriteInYap(uid: "mv-999", collection: BRCArtObject.yapCollection))
         XCTAssertFalse(try isFavoriteInYap(uid: "mv-999-0", collection: BRCEventObject.yapCollection))
         XCTAssertTrue(calendarSpy.calls.isEmpty)
+    }
+
+    // MARK: - Visit Status Mirroring
+
+    func testCampVisitStatusMirrorsToYap() async throws {
+        try saveCamp(uid: "camp-456")
+        let collection = BRCCampObject.yapCollection
+
+        await service.mirrorVisitStatus(type: .camp, uid: "camp-456", visitStatus: BRCVisitStatus.wantToVisit.rawValue)
+        XCTAssertEqual(try visitStatusInYap(uid: "camp-456", collection: collection), BRCVisitStatus.wantToVisit.rawValue)
+
+        await service.mirrorVisitStatus(type: .camp, uid: "camp-456", visitStatus: BRCVisitStatus.visited.rawValue)
+        XCTAssertEqual(try visitStatusInYap(uid: "camp-456", collection: collection), BRCVisitStatus.visited.rawValue)
+
+        await service.mirrorVisitStatus(type: .camp, uid: "camp-456", visitStatus: BRCVisitStatus.unvisited.rawValue)
+        XCTAssertEqual(try visitStatusInYap(uid: "camp-456", collection: collection), BRCVisitStatus.unvisited.rawValue)
+
+        // Visit status has no calendar side effects.
+        XCTAssertTrue(calendarSpy.calls.isEmpty)
+    }
+
+    func testEventVisitStatusFansOutToAllOccurrences() async throws {
+        let apiUID = "event-abc"
+        // Matching per-occurrence objects, including a two-digit index
+        try saveEvent(uid: "event-abc-0")
+        try saveEvent(uid: "event-abc-1")
+        try saveEvent(uid: "event-abc-10")
+        // Non-matching neighbors that must NOT be touched
+        try saveEvent(uid: "event-abcd-0")   // different API uid
+        try saveEvent(uid: "event-abc-x")    // non-numeric suffix
+
+        await service.mirrorVisitStatus(type: .event, uid: apiUID, visitStatus: BRCVisitStatus.visited.rawValue)
+
+        let collection = BRCEventObject.yapCollection
+        let visited = BRCVisitStatus.visited.rawValue
+        XCTAssertEqual(try visitStatusInYap(uid: "event-abc-0", collection: collection), visited)
+        XCTAssertEqual(try visitStatusInYap(uid: "event-abc-1", collection: collection), visited)
+        XCTAssertEqual(try visitStatusInYap(uid: "event-abc-10", collection: collection), visited)
+        XCTAssertEqual(try visitStatusInYap(uid: "event-abcd-0", collection: collection), BRCVisitStatus.unvisited.rawValue)
+        XCTAssertEqual(try visitStatusInYap(uid: "event-abc-x", collection: collection), BRCVisitStatus.unvisited.rawValue)
+
+        // Unlike favorite mirroring, no calendar hook fires for visit status.
+        XCTAssertTrue(calendarSpy.calls.isEmpty)
+    }
+
+    func testVisitStatusEqualValueIsNoOpWrite() async throws {
+        try saveCamp(uid: "camp-456", visitStatus: BRCVisitStatus.wantToVisit.rawValue)
+        try saveEvent(uid: "event-abc-0", visitStatus: BRCVisitStatus.visited.rawValue)
+
+        // Yap only bumps the connection snapshot when a commit has disk changes
+        // (YapDatabaseConnection.postReadWriteTransaction), so an unchanged snapshot
+        // across the mirrors proves the equal-value path skipped the write entirely.
+        let snapshotBefore = connection.snapshot
+
+        await service.mirrorVisitStatus(type: .camp, uid: "camp-456", visitStatus: BRCVisitStatus.wantToVisit.rawValue)
+        await service.mirrorVisitStatus(type: .event, uid: "event-abc", visitStatus: BRCVisitStatus.visited.rawValue)
+
+        XCTAssertEqual(connection.snapshot, snapshotBefore, "Equal-value mirror must not write to Yap")
+        XCTAssertEqual(try visitStatusInYap(uid: "camp-456", collection: BRCCampObject.yapCollection),
+                       BRCVisitStatus.wantToVisit.rawValue)
+        XCTAssertEqual(try visitStatusInYap(uid: "event-abc-0", collection: BRCEventObject.yapCollection),
+                       BRCVisitStatus.visited.rawValue)
+
+        // Positive control: a differing value must produce a real commit,
+        // proving the snapshot mechanism actually detects writes.
+        await service.mirrorVisitStatus(type: .camp, uid: "camp-456", visitStatus: BRCVisitStatus.visited.rawValue)
+        XCTAssertGreaterThan(connection.snapshot, snapshotBefore)
+        XCTAssertEqual(try visitStatusInYap(uid: "camp-456", collection: BRCCampObject.yapCollection),
+                       BRCVisitStatus.visited.rawValue)
+    }
+
+    func testVisitStatusUnknownUIDIsSafeNoOp() async throws {
+        // No objects stored; mirroring must complete without crashing or inserting.
+        await service.mirrorVisitStatus(type: .art, uid: "does-not-exist", visitStatus: BRCVisitStatus.visited.rawValue)
+        await service.mirrorVisitStatus(type: .event, uid: "does-not-exist", visitStatus: BRCVisitStatus.visited.rawValue)
+        XCTAssertFalse(objectExistsInYap(uid: "does-not-exist", collection: BRCArtObject.yapCollection))
+        XCTAssertFalse(objectExistsInYap(uid: "does-not-exist", collection: BRCEventObject.yapCollection))
+    }
+
+    func testMutantVehicleVisitStatusMirrorIsNoOp() async throws {
+        // MVs have no legacy Yap class; same-uid objects in other collections stay untouched.
+        try saveCamp(uid: "mv-999")
+        try saveEvent(uid: "mv-999-0")
+
+        await service.mirrorVisitStatus(type: .mutantVehicle, uid: "mv-999", visitStatus: BRCVisitStatus.visited.rawValue)
+
+        XCTAssertEqual(try visitStatusInYap(uid: "mv-999", collection: BRCCampObject.yapCollection), BRCVisitStatus.unvisited.rawValue)
+        XCTAssertEqual(try visitStatusInYap(uid: "mv-999-0", collection: BRCEventObject.yapCollection), BRCVisitStatus.unvisited.rawValue)
     }
 
     // MARK: - Event UID Normalization

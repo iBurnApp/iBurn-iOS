@@ -68,7 +68,7 @@ class DetailDataService: DetailDataServiceProtocol {
         let newMetadata = metadata.metadataCopy()
         newMetadata.visitStatus = visitStatus.rawValue
         
-        return await withCheckedContinuation { continuation in
+        await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
             } completionBlock: {
@@ -78,6 +78,8 @@ class DetailDataService: DetailDataServiceProtocol {
                 }
             }
         }
+
+        syncVisitStatusToPlayaDB(for: object, visitStatus: visitStatus)
     }
     
     func getMetadata(for object: BRCDataObject) -> BRCObjectMetadata? {
@@ -247,6 +249,31 @@ class DetailDataService: DetailDataServiceProtocol {
                 }
             } catch {
                 print("PlayaDB favorite sync failed for \(uid): \(error)")
+            }
+        }
+    }
+
+    private func syncVisitStatusToPlayaDB(for object: BRCDataObject, visitStatus: BRCVisitStatus) {
+        guard let playaDB else { return }
+        let uid = object.uniqueID
+        let status = VisitStatus(rawValue: visitStatus.rawValue) ?? .unvisited
+
+        Task {
+            do {
+                if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
+                    try await playaDB.setVisitStatus(status, for: art)
+                } else if object is BRCEventObject {
+                    // Same per-occurrence uid mapping as favorite sync above:
+                    // Yap event uniqueIDs are "<apiUID>-<index>", PlayaDB keys by bare API uid.
+                    let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: uid)
+                    if let event = try await playaDB.fetchEvent(uid: apiUID) {
+                        try await playaDB.setVisitStatus(status, for: event)
+                    }
+                } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
+                    try await playaDB.setVisitStatus(status, for: camp)
+                }
+            } catch {
+                print("PlayaDB visit status sync failed for \(uid): \(error)")
             }
         }
     }

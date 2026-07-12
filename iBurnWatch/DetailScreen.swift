@@ -19,6 +19,8 @@ struct DetailScreen: View {
     var onFavoriteChange: () -> Void = {}
 
     @State private var isFavorite = false
+    @State private var visitStatus: VisitStatus = .unvisited
+    @State private var showingVisitStatusPicker = false
     @State private var occurrences: [EventObjectOccurrence] = []
 
     var body: some View {
@@ -47,6 +49,32 @@ struct DetailScreen: View {
                     )
                 }
                 .tint(isFavorite ? .red : nil)
+
+                // Menu is unavailable on watchOS, so the visit-status control
+                // is a button that presents a selection sheet.
+                Button {
+                    showingVisitStatusPicker = true
+                } label: {
+                    Label(visitStatus.displayString, systemImage: visitStatus.iconName)
+                }
+                .tint(visitStatus.tint)
+                .sheet(isPresented: $showingVisitStatusPicker) {
+                    List(VisitStatus.allCases, id: \.rawValue) { status in
+                        Button {
+                            setVisitStatus(status)
+                            showingVisitStatusPicker = false
+                        } label: {
+                            HStack {
+                                Label(status.displayString, systemImage: status.iconName)
+                                Spacer()
+                                if status == visitStatus {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Visit Status")
+                }
 
                 if object.hasLocation {
                     NavigationLink {
@@ -85,12 +113,27 @@ struct DetailScreen: View {
         .navigationTitle(object.objectType.displayName)
         .task {
             isFavorite = (try? await playaDB.isFavorite(object)) ?? false
+            if let metadata = try? await playaDB.metadata(for: object) {
+                visitStatus = metadata.visitStatusValue
+            }
             if object.objectType == .event {
                 let all = ((try? await playaDB.fetchOccurrences(forEventUID: object.uid)) ?? [])
                     .sorted { $0.startDate < $1.startDate }
                 let now = Date()
                 let upcoming = all.filter { $0.endDate >= now }
                 occurrences = Array((upcoming.isEmpty ? all : upcoming).prefix(5))
+            }
+        }
+    }
+
+    private func setVisitStatus(_ status: VisitStatus) {
+        Task {
+            do {
+                try await playaDB.setVisitStatus(status, for: object)
+                visitStatus = status
+                onFavoriteChange()
+            } catch {
+                print("Visit status update failed: \(error)")
             }
         }
     }
@@ -105,6 +148,33 @@ struct DetailScreen: View {
         let weekday = weekdayFormatter.string(from: occurrence.startDate)
         let times = intervalFormatter.string(from: occurrence.startDate, to: occurrence.endDate)
         return "\(weekday) \(times)"
+    }
+}
+
+/// Display strings, icons, and tints matching the iPhone app's `BRCVisitStatus`.
+private extension VisitStatus {
+    var displayString: String {
+        switch self {
+        case .unvisited: return "Not Visited"
+        case .visited: return "Visited"
+        case .wantToVisit: return "Want to Visit"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .unvisited: return "circle"
+        case .visited: return "checkmark.circle.fill"
+        case .wantToVisit: return "star.fill"
+        }
+    }
+
+    var tint: Color? {
+        switch self {
+        case .unvisited: return nil
+        case .visited: return .green
+        case .wantToVisit: return .yellow
+        }
     }
 }
 

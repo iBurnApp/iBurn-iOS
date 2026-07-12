@@ -113,10 +113,18 @@ class DependencyContainer {
                 guard let self else { return }
                 for item in applied {
                     guard let type = FavoriteSyncObjectType(objectTypeRawValue: item.objectType) else { continue }
+                    // Applied items don't say which field changed, so mirror both.
+                    // Each mirror is a no-op when the Yap value already matches,
+                    // so this is cheap and idempotent.
                     await self.favoriteSyncService.mirrorFavorite(
                         type: type,
                         uid: item.objectId,
                         isFavorite: item.isFavorite
+                    )
+                    await self.favoriteSyncService.mirrorVisitStatus(
+                        type: type,
+                        uid: item.objectId,
+                        visitStatus: item.visitStatus
                     )
                 }
             }

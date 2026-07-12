@@ -33,6 +33,19 @@ protocol FavoriteSyncService {
     ///     for each occurrence is refreshed to match (EKEvent created/removed).
     ///   - isFavorite: The new favorite state from PlayaDB.
     func mirrorFavorite(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) async
+
+    /// Mirror a visit status change into YapDatabase.
+    ///
+    /// - Parameters:
+    ///   - type: The kind of object. `.mutantVehicle` is a no-op (there is no legacy Yap class).
+    ///   - uid: The PlayaDB uid (i.e. the raw API uid). For events, pass the *unsuffixed*
+    ///     API uid; every Yap per-occurrence object (`"<apiUID>-<index>"`) is updated.
+    ///   - visitStatus: The new raw visit status from PlayaDB (`BRCVisitStatus` rawValue,
+    ///     0 = unvisited, 1 = visited, 2 = wantToVisit).
+    ///
+    /// Unlike `mirrorFavorite` there is no calendar involvement. Writes are skipped when
+    /// the stored value already matches, so repeated mirroring causes no Yap churn.
+    func mirrorVisitStatus(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) async
 }
 
 /// Hook invoked with each Yap event object's uniqueID after its favorite metadata has been
@@ -71,6 +84,20 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
             await mirror(uid: uid, collection: BRCCampObject.yapCollection, isFavorite: isFavorite)
         case .event:
             await mirrorEvent(apiUID: uid, isFavorite: isFavorite)
+        case .mutantVehicle:
+            // Mutant vehicles have no legacy YapDatabase representation; nothing to mirror.
+            return
+        }
+    }
+
+    func mirrorVisitStatus(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) async {
+        switch type {
+        case .art:
+            await mirrorVisitStatus(uid: uid, collection: BRCArtObject.yapCollection, visitStatus: visitStatus)
+        case .camp:
+            await mirrorVisitStatus(uid: uid, collection: BRCCampObject.yapCollection, visitStatus: visitStatus)
+        case .event:
+            await mirrorEventVisitStatus(apiUID: uid, visitStatus: visitStatus)
         case .mutantVehicle:
             // Mutant vehicles have no legacy YapDatabase representation; nothing to mirror.
             return
@@ -144,6 +171,56 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
         // metadata write has committed so the hook's own transaction sees the new state.
         for key in updatedKeys {
             calendarRefreshHook(key, isFavorite)
+        }
+    }
+
+    /// Writes `visitStatus` into a single Yap object's metadata. Skips the write (and the
+    /// resulting Yap change notification churn) when the stored value already matches.
+    private func mirrorVisitStatus(uid: String, collection: String, visitStatus: Int) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            connection.asyncReadWrite({ transaction in
+                guard let object = transaction.object(forKey: uid, inCollection: collection) as? BRCDataObject else {
+                    return
+                }
+                let existing = object.metadata(with: transaction)
+                guard existing.visitStatus != visitStatus else { return }
+                let metadata = existing.metadataCopy()
+                metadata.visitStatus = visitStatus
+                object.replace(metadata, transaction: transaction)
+            }, completionBlock: {
+                continuation.resume()
+            })
+        }
+    }
+
+    /// Fans an event visit status out to *all* Yap occurrence objects derived from the API
+    /// uid, using the same `"<apiUID>-<digits>"` key matching as `mirrorEvent`. No calendar
+    /// hook is involved (visit status has no EKEvent side effects). Per-key writes are
+    /// skipped when the stored value already matches.
+    private func mirrorEventVisitStatus(apiUID: String, visitStatus: Int) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            connection.asyncReadWrite({ transaction in
+                let collection = BRCEventObject.yapCollection
+                let occurrencePrefix = apiUID + "-"
+                let matchingKeys = transaction.allKeys(inCollection: collection).filter { key in
+                    if key == apiUID { return true }
+                    guard key.hasPrefix(occurrencePrefix) else { return false }
+                    let suffix = key.dropFirst(occurrencePrefix.count)
+                    return !suffix.isEmpty && suffix.allSatisfy { $0.isASCII && $0.isNumber }
+                }
+                for key in matchingKeys {
+                    guard let event = transaction.object(forKey: key, inCollection: collection) as? BRCEventObject else {
+                        continue
+                    }
+                    let existing = event.metadata(with: transaction)
+                    guard existing.visitStatus != visitStatus else { continue }
+                    let metadata = existing.metadataCopy()
+                    metadata.visitStatus = visitStatus
+                    event.replace(metadata, transaction: transaction)
+                }
+            }, completionBlock: {
+                continuation.resume()
+            })
         }
     }
 }
