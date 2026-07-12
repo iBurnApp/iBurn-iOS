@@ -2,10 +2,12 @@
 
 Date: 2026-07-03 (Pacific)
 Branch: `2026-updates`
-Status: Phases 0, 1, 3, 4 + watch-local favorites complete and sim-verified.
-Remaining: Phase 2 WatchConnectivity sync (needs embedding decision), plus
-follow-ups. See "Phase 3/4 Results" for the spatial-index UPDATE-trigger gap
-found in PlayaDB.
+Status: ALL phases complete and sim-verified. Phase 2 (WatchConnectivity
+favorites sync) landed 2026-07-11 — see
+`2026-07-11-swiftui-lists-default-on.md` Session 2 for design + E2E results.
+Remaining: follow-ups only (complication, events UI, embargo passcode).
+See "Phase 3/4 Results" for the spatial-index UPDATE-trigger gap found in
+PlayaDB (fixed same day).
 
 ## High-Level Plan
 
