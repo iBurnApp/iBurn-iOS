@@ -26,7 +26,7 @@ final class SchemaMigrationTests: XCTestCase {
         let applied = try await playaDB.dbQueue.read { db in
             try String.fetchAll(db, sql: "SELECT identifier FROM grdb_migrations")
         }
-        XCTAssertEqual(applied, ["v1-initial-schema"])
+        XCTAssertEqual(applied, ["v1-initial-schema", "v2-favorite-sync"])
     }
 
     func testPreMigratorDatabaseAdoptsCleanlyAndKeepsData() async throws {
@@ -58,7 +58,7 @@ final class SchemaMigrationTests: XCTestCase {
         // Opening through PlayaDBImpl must apply v1 (idempotent DDL) without error.
         let playaDB = try PlayaDBImpl(dbPath: tempDBPath)
 
-        let (applied, favoriteCount, tableCount) = try await playaDB.dbQueue.read { db -> ([String], Int, Int) in
+        let (applied, favoriteCount, tableCount, backfilledStamp) = try await playaDB.dbQueue.read { db -> ([String], Int, Int, String?) in
             let applied = try String.fetchAll(db, sql: "SELECT identifier FROM grdb_migrations")
             let favorites = try Int.fetchOne(db, sql: """
                 SELECT COUNT(*) FROM object_metadata WHERE object_id = 'legacy-camp' AND is_favorite = 1
@@ -67,11 +67,16 @@ final class SchemaMigrationTests: XCTestCase {
                 SELECT COUNT(*) FROM sqlite_master WHERE type = 'table'
                   AND name IN ('art_objects', 'camp_objects', 'event_objects', 'event_occurrences', 'mv_objects')
                 """) ?? 0
-            return (applied, favorites, tables)
+            let stamp = try String.fetchOne(db, sql: """
+                SELECT favorite_updated_at FROM object_metadata WHERE object_id = 'legacy-camp'
+                """)
+            return (applied, favorites, tables, stamp)
         }
 
-        XCTAssertEqual(applied, ["v1-initial-schema"])
+        XCTAssertEqual(applied, ["v1-initial-schema", "v2-favorite-sync"])
         XCTAssertEqual(favoriteCount, 1, "Pre-existing user data must survive migrator adoption")
         XCTAssertEqual(tableCount, 5, "v1 should create the tables the legacy DB was missing")
+        XCTAssertEqual(backfilledStamp, "2025-08-01",
+                       "v2 must backfill favorite_updated_at from updated_at for existing favorites")
     }
 }

@@ -34,6 +34,9 @@ class DependencyContainer {
     /// Art/camp thumbnail image downloader
     private let thumbnailImageDownloader: ThumbnailImageDownloader
 
+    /// Syncs favorites with the paired Apple Watch over WatchConnectivity.
+    private var watchSyncManager: FavoritesSyncManager?
+
     /// Mirrors PlayaDB favorite changes into the legacy YapDatabase so both stores agree.
     /// Lazy so BRCDatabaseManager is only touched once the first provider is used.
     private(set) lazy var favoriteSyncService: FavoriteSyncService = {
@@ -100,6 +103,26 @@ class DependencyContainer {
             _ = await thumbTask.value
             await ColorPrefetcher.prefetchMissingColors(playaDB: playaDB)
         }
+
+        // Sync favorites with the paired Apple Watch. Items applied from the
+        // watch are mirrored into the legacy YapDatabase so legacy surfaces
+        // (and event calendar entries) stay in agreement. onApplied arrives on
+        // a background queue; hop to the main actor before touching self.
+        let watchSyncManager = FavoritesSyncManager(playaDB: self.playaDB) { [weak self] applied in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                for item in applied {
+                    guard let type = FavoriteSyncObjectType(objectTypeRawValue: item.objectType) else { continue }
+                    await self.favoriteSyncService.mirrorFavorite(
+                        type: type,
+                        uid: item.objectId,
+                        isFavorite: item.isFavorite
+                    )
+                }
+            }
+        }
+        watchSyncManager.start()
+        self.watchSyncManager = watchSyncManager
     }
 
     // MARK: - Factory Methods
@@ -253,6 +276,22 @@ class DependencyContainer {
                 await campDataProvider.isDatabaseSeeded()
             }
         )
+    }
+}
+
+// MARK: - Watch Sync Mapping
+
+private extension FavoriteSyncObjectType {
+    /// Maps a `FavoriteSyncItem.objectType` (a `DataObjectType` rawValue) to the
+    /// legacy mirror's object kind. Returns nil for unknown types.
+    init?(objectTypeRawValue: String) {
+        guard let type = DataObjectType(rawValue: objectTypeRawValue) else { return nil }
+        switch type {
+        case .art: self = .art
+        case .camp: self = .camp
+        case .event: self = .event
+        case .mutantVehicle: self = .mutantVehicle
+        }
     }
 }
 

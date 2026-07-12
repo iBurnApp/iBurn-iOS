@@ -6,6 +6,7 @@
 //  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
+import Combine
 import CoreLocation
 import PlayaDB
 import PlayaGeo
@@ -18,11 +19,24 @@ struct FavoritesScreen: View {
 
     @State private var rows: [ObjectRow] = []
     @State private var loaded = false
+    @State private var loadError: Error?
     @State private var refreshToken = 0
 
     var body: some View {
         Group {
-            if loaded && rows.isEmpty {
+            if loaded, let loadError {
+                VStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                    Text("Couldn't load favorites")
+                        .font(.footnote)
+                    Text(loadError.localizedDescription)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            } else if loaded && rows.isEmpty {
                 VStack(spacing: 6) {
                     Image(systemName: "heart")
                         .font(.title3)
@@ -62,6 +76,14 @@ struct FavoritesScreen: View {
         .task(id: refreshToken) {
             await refresh()
         }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .favoritesSyncDidApply)
+                .receive(on: DispatchQueue.main)
+        ) { _ in
+            // Favorites synced from the phone were applied; re-query so they
+            // appear while this screen is open.
+            refreshToken += 1
+        }
     }
 
     private func refresh() async {
@@ -76,8 +98,10 @@ struct FavoritesScreen: View {
                     )
                 }
                 .sorted { ($0.distance ?? .infinity) < ($1.distance ?? .infinity) }
+            loadError = nil
             loaded = true
         } catch {
+            loadError = error
             loaded = true
             rows = []
         }

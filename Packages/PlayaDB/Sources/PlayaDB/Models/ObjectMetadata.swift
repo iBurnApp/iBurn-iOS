@@ -18,6 +18,7 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
         case userNotes = "user_notes"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case favoriteUpdatedAt = "favorite_updated_at"
     }
 
     // Use Columns as CodingKeys
@@ -39,13 +40,18 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
     
     /// User notes about this object
     public var userNotes: String?
-    
+
     /// When this metadata was created
     public var createdAt: Date
-    
+
     /// When this metadata was last updated
     public var updatedAt: Date
-    
+
+    /// When `isFavorite` was last explicitly changed. Unlike `updatedAt` (which is
+    /// bumped by view tracking and notes writes), this stamp is dedicated to
+    /// favorite changes so last-writer-wins sync can rely on it.
+    public var favoriteUpdatedAt: Date?
+
     public init(
         objectType: String,
         objectId: String,
@@ -53,6 +59,7 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
         firstViewed: Date? = nil,
         lastViewed: Date? = nil,
         userNotes: String? = nil,
+        favoriteUpdatedAt: Date? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -62,6 +69,7 @@ public struct ObjectMetadata: Codable, Equatable, FetchableRecord, MutablePersis
         self.firstViewed = firstViewed
         self.lastViewed = lastViewed
         self.userNotes = userNotes
+        self.favoriteUpdatedAt = favoriteUpdatedAt
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

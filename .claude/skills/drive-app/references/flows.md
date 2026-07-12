@@ -163,6 +163,32 @@ the watch app container with 2026 counts
 (`xcrun simctl get_app_container <WATCH_UDID> com.trailbehind.iBurn2010.watchkitapp data`);
 favoriting writes `object_metadata` `camp|<uid>|1` etc.
 
+### Phone↔watch favorites sync (`FavoritesSyncManager`)
+
+Favorites sync bidirectionally over WatchConnectivity `applicationContext`
+(best-effort, latest-state; LWW merge on the `favorite_updated_at` column via
+`PlayaDB.applyFavoriteSync`). Both sims must be a booted **pair**
+(`xcrun simctl list pairs` → "(active, connected)"); the phone app and watch app
+each start their manager at launch (phone: `DependencyContainer` init; watch:
+root `.task` after seeding).
+
+1. Favorite an event on the phone (flow 4) → within seconds the watch's
+   `object_metadata` gains `event|<parent uid>|1` with `favorite_updated_at`
+   set, and the watch Favorites screen lists it (event details show occurrence
+   times, e.g. "Sun 5:00 – 7:00 PM").
+2. Favorite a camp on the watch (Nearby → detail → Add Favorite) → the phone's
+   PlayaDB gains `camp|<uid>|1` AND the phone's Yap mirror updates the
+   `BRCCampObject` metadata blob (`isFavorite=true`; for events, all
+   `"<uid>-<n>"` occurrence rows + EKEvent, same as flow 4).
+3. Delivery requires the peer app to be installed at push time; the managers
+   re-push on `sessionWatchStateDidChange`/`sessionCompanionAppInstalledDidChange`,
+   on activation, and on every favorite change, so a fresh watch install
+   converges on first launch.
+
+Sync checks: `SELECT object_type, object_id, is_favorite FROM object_metadata
+WHERE favorite_updated_at IS NOT NULL;` on either DB. Un-favoriting syncs too
+(rows persist with `is_favorite=0`).
+
 Pre-embargo note: the bundled data has **zero GPS rows**, so Nearby shows an
 explanatory empty state and Detail hides Navigate. To exercise those flows,
 inject GPS into a few `camp_objects` rows via plain `UPDATE` — the

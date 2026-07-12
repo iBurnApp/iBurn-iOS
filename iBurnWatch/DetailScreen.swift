@@ -19,6 +19,7 @@ struct DetailScreen: View {
     var onFavoriteChange: () -> Void = {}
 
     @State private var isFavorite = false
+    @State private var occurrences: [EventObjectOccurrence] = []
 
     var body: some View {
         ScrollView {
@@ -64,6 +65,16 @@ struct DetailScreen: View {
                         .foregroundStyle(.secondary)
                 }
 
+                if !occurrences.isEmpty {
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(occurrences, id: \.uid) { occurrence in
+                            Text(occurrenceText(occurrence))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
                 if let description = object.description, !description.isEmpty {
                     Text(description)
                         .font(.caption2)
@@ -74,7 +85,26 @@ struct DetailScreen: View {
         .navigationTitle(object.objectType.displayName)
         .task {
             isFavorite = (try? await playaDB.isFavorite(object)) ?? false
+            if object.objectType == .event {
+                let all = ((try? await playaDB.fetchOccurrences(forEventUID: object.uid)) ?? [])
+                    .sorted { $0.startDate < $1.startDate }
+                let now = Date()
+                let upcoming = all.filter { $0.endDate >= now }
+                occurrences = Array((upcoming.isEmpty ? all : upcoming).prefix(5))
+            }
         }
+    }
+
+    /// Formats an occurrence as e.g. "Wed 12:00–2:00 PM".
+    private func occurrenceText(_ occurrence: EventObjectOccurrence) -> String {
+        let weekdayFormatter = DateFormatter()
+        weekdayFormatter.setLocalizedDateFormatFromTemplate("EEE")
+        let intervalFormatter = DateIntervalFormatter()
+        intervalFormatter.dateStyle = .none
+        intervalFormatter.timeStyle = .short
+        let weekday = weekdayFormatter.string(from: occurrence.startDate)
+        let times = intervalFormatter.string(from: occurrence.startDate, to: occurrence.endDate)
+        return "\(weekday) \(times)"
     }
 }
 

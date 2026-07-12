@@ -288,6 +288,14 @@ internal class PlayaDBImpl: PlayaDB {
             }
         }
 
+        // v2: dedicated favorite change stamp for last-writer-wins favorites sync.
+        // `updated_at` can't be used for LWW because view tracking and notes writes
+        // also bump it. Backfill existing favorites so they participate in sync.
+        migrator.registerMigration("v2-favorite-sync") { db in
+            try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN favorite_updated_at DATETIME")
+            try db.execute(sql: "UPDATE object_metadata SET favorite_updated_at = updated_at WHERE is_favorite = 1")
+        }
+
         try migrator.migrate(dbQueue)
 
         // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
@@ -1563,6 +1571,95 @@ internal class PlayaDBImpl: PlayaDB {
         return PlayaDBObservationToken(cancellable)
     }
 
+    // MARK: - Favorite Sync
+
+    /// Shared query for snapshot + observation: every row whose favorite state
+    /// has ever been explicitly set (non-nil stamp), deterministically ordered.
+    private static func favoriteSyncItems(_ db: Database) throws -> [FavoriteSyncItem] {
+        let rows = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.favoriteUpdatedAt != nil)
+            .order(ObjectMetadata.Columns.objectType, ObjectMetadata.Columns.objectId)
+            .fetchAll(db)
+        return rows.compactMap { metadata in
+            guard let stamp = metadata.favoriteUpdatedAt else { return nil }
+            return FavoriteSyncItem(
+                objectType: metadata.objectType,
+                objectId: metadata.objectId,
+                isFavorite: metadata.isFavorite,
+                updatedAt: stamp
+            )
+        }
+    }
+
+    func favoriteSyncSnapshot() async throws -> [FavoriteSyncItem] {
+        try await dbQueue.read { db in
+            try Self.favoriteSyncItems(db)
+        }
+    }
+
+    @discardableResult
+    func applyFavoriteSync(_ items: [FavoriteSyncItem]) async throws -> [FavoriteSyncItem] {
+        try await dbQueue.write { db in
+            var applied: [FavoriteSyncItem] = []
+            for item in items {
+                guard DataObjectType(rawValue: item.objectType) != nil else { continue }
+
+                let existingMetadata = try ObjectMetadata
+                    .filter(ObjectMetadata.Columns.objectType == item.objectType)
+                    .filter(ObjectMetadata.Columns.objectId == item.objectId)
+                    .fetchOne(db)
+
+                if var metadata = existingMetadata {
+                    // Same state: never write, so applying a peer's snapshot
+                    // doesn't re-fire observations (and cause push loops).
+                    guard metadata.isFavorite != item.isFavorite else { continue }
+                    // Last-writer-wins on the dedicated favorite stamp.
+                    if let localStamp = metadata.favoriteUpdatedAt, item.updatedAt <= localStamp {
+                        continue
+                    }
+                    metadata.isFavorite = item.isFavorite
+                    metadata.favoriteUpdatedAt = item.updatedAt
+                    metadata.updatedAt = Date()
+                    try metadata.update(db, columns: [
+                        ObjectMetadata.Columns.isFavorite,
+                        ObjectMetadata.Columns.favoriteUpdatedAt,
+                        ObjectMetadata.Columns.updatedAt,
+                    ])
+                    applied.append(item)
+                } else {
+                    // No local row: only a favorite is worth materializing.
+                    guard item.isFavorite else { continue }
+                    var newMetadata = ObjectMetadata(
+                        objectType: item.objectType,
+                        objectId: item.objectId,
+                        isFavorite: true,
+                        favoriteUpdatedAt: item.updatedAt
+                    )
+                    try newMetadata.insert(db)
+                    applied.append(item)
+                }
+            }
+            return applied
+        }
+    }
+
+    @discardableResult
+    func observeFavoriteSyncState(onChange: @escaping ([FavoriteSyncItem]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try Self.favoriteSyncItems(db)
+        }.removeDuplicates()
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: { items in
+                DispatchQueue.main.async {
+                    onChange(items)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
     // MARK: - Metadata Helpers
 
     /// Metadata identity for an object. Event occurrences share their parent event's
@@ -1786,16 +1883,19 @@ internal class PlayaDBImpl: PlayaDB {
 
             if var metadata = existingMetadata {
                 metadata.isFavorite = !metadata.isFavorite
+                metadata.favoriteUpdatedAt = Date()
                 metadata.updatedAt = Date()
                 try metadata.update(db, columns: [
                     ObjectMetadata.Columns.isFavorite,
+                    ObjectMetadata.Columns.favoriteUpdatedAt,
                     ObjectMetadata.Columns.updatedAt,
                 ])
             } else {
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
                     objectId: objectId,
-                    isFavorite: true
+                    isFavorite: true,
+                    favoriteUpdatedAt: Date()
                 )
                 try newMetadata.insert(db)
             }
@@ -1816,16 +1916,19 @@ internal class PlayaDBImpl: PlayaDB {
             if var metadata = existingMetadata {
                 guard metadata.isFavorite != isFavorite else { return }
                 metadata.isFavorite = isFavorite
+                metadata.favoriteUpdatedAt = Date()
                 metadata.updatedAt = Date()
                 try metadata.update(db, columns: [
                     ObjectMetadata.Columns.isFavorite,
+                    ObjectMetadata.Columns.favoriteUpdatedAt,
                     ObjectMetadata.Columns.updatedAt,
                 ])
             } else {
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
                     objectId: objectId,
-                    isFavorite: isFavorite
+                    isFavorite: isFavorite,
+                    favoriteUpdatedAt: Date()
                 )
                 try newMetadata.insert(db)
             }

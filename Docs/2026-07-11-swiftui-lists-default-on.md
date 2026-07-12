@@ -128,3 +128,109 @@ symptom were chased first; the transaction type in the signature was the real po
 Network update pipeline (`BRCDataImporter`), user map pins/breadcrumbs on the map, Visit List,
 Audio Tour, legacy list VCs (kept one season as kill-switch), embargo internals. The five list
 tabs + detail + map annotations + search + AI are now all PlayaDB-first in shipping defaults.
+
+---
+
+# Session 2: watchOS Phase 2 — WatchConnectivity favorites sync + watch polish
+
+Chris: *"The watchOS app needs some work. Let's fix it up. Use lower effort fable subagents
+for implementation."* The one remaining documented MVP item
+(`2026-07-03-watchos-mvp-plan.md`) is **Phase 2: phone↔watch favorites sync**; plus polish
+gaps found in survey.
+
+## Plan
+
+1. **PlayaDB sync core** (`Packages/PlayaDB`):
+   - Migration `v2-favorite-sync`: `ALTER TABLE object_metadata ADD COLUMN favorite_updated_at
+     DATETIME` + backfill `= updated_at WHERE is_favorite = 1`.
+     **Why a new column:** `updated_at` is bumped by view-tracking and notes writes, so
+     LWW on it would let "viewed after favoriting elsewhere" propagate a stale unfavorite.
+   - `FavoriteSyncItem` (Codable: objectType/objectId/isFavorite/updatedAt).
+   - Protocol: `favoriteSyncSnapshot()` (rows with non-NULL `favorite_updated_at`),
+     `applyFavoriteSync(_:) -> [FavoriteSyncItem]` (per-item LWW; skip when local state
+     already matches — prevents observation/push loops; skip missing-row unfavorites;
+     returns applied items), `observeFavoriteSyncState(...)`.
+   - `toggleFavorite`/`setFavorite` stamp `favorite_updated_at`.
+   - Tests: LWW newer-wins/older-ignored/same-state-no-write, insert-favorite,
+     skip-missing-unfavorite, snapshot excludes viewed-only rows, stamping, backfill.
+2. **`FavoritesSyncManager`** in the PlayaDB package (`#if canImport(WatchConnectivity)`),
+   symmetric on both platforms: WCSession activate → apply `receivedApplicationContext` →
+   push snapshot; observation on snapshot → `updateApplicationContext(["favoritesV1": json])`;
+   `didReceiveApplicationContext` → `applyFavoriteSync` → `onApplied` hook.
+   Lives in the package so **no pbxproj surgery** (iBurnWatch is not a synchronized group;
+   both targets already link PlayaDB).
+3. **Phone integration**: `DependencyContainer` owns the manager; `onApplied` mirrors
+   incoming favorites into Yap via the existing `FavoriteSyncService` (Session 1).
+4. **Watch integration**: instantiate + start in `iBurnWatchApp` (existing file edit only).
+5. **Watch polish**: FavoritesScreen surfaces load errors; DetailScreen shows event
+   occurrence times (favorited events synced from the phone were time-less);
+   FavoritesScreen refreshes when synced favorites land.
+6. Explicitly out of scope: embargo-flag sync (moot — bundled data has no GPS this season),
+   events browsing on watch, complications.
+
+## Results
+
+All shipped; executed with 3 Fable subagents (PlayaDB core / watch polish / WCSession
+wiring) + integration and E2E verification in the main session.
+
+### What shipped
+
+1. **PlayaDB migration `v2-favorite-sync`** — `object_metadata.favorite_updated_at`
+   (backfilled from `updated_at` for existing favorites); stamped only by
+   `toggleFavorite`/`setFavorite`. Verified applying cleanly to an existing v1 phone DB.
+2. **Merge API** — `FavoriteSyncItem`, `favoriteSyncSnapshot()`,
+   `applyFavoriteSync(_:) -> [applied]`, `observeFavoriteSyncState(...)`. LWW rules:
+   unknown type skipped; missing row + unfavorite skipped; same-state skipped with NO
+   write (loop prevention); otherwise applied iff incoming stamp newer (or local nil).
+   12 new tests in `FavoriteSyncMergeTests`; package suite 189/189.
+3. **`FavoritesSyncManager`** (in the PlayaDB package — both targets already link it, so
+   no pbxproj surgery; iBurnWatch is not a synchronized group): symmetric WCSession
+   wrapper, `applicationContext` key `favoritesV1` (JSON, `.secondsSince1970`), NSLock
+   around tiny state, push on observation change + on activation +
+   `sessionWatchStateDidChange`/`sessionCompanionAppInstalledDidChange` (see bug below),
+   incoming context → `applyFavoriteSync` → `onApplied` (only when non-empty; empty
+   payloads ignored so a fresh peer can't clobber).
+4. **Phone wiring** — `DependencyContainer` owns/starts the manager; `onApplied` maps
+   `DataObjectType` → `FavoriteSyncObjectType` and mirrors into Yap via Session 1's
+   `FavoriteSyncService` (event occurrence fan-out + EKEvent refresh come free).
+5. **Watch wiring** — manager started in `iBurnWatchApp.task` after seeding; `onApplied`
+   posts `.favoritesSyncDidApply`; FavoritesScreen bumps its `refreshToken` on receipt so
+   phone favorites appear live.
+6. **Watch polish** — FavoritesScreen real error state (was silently showing "No
+   favorites yet" on DB errors); DetailScreen shows up to 5 upcoming occurrence times
+   for events ("Sun 5:00 – 7:00 PM"), which synced phone favorites made reachable.
+
+### Bug found during E2E (fixed)
+
+First E2E run: phone pushed while the watch app wasn't installed yet →
+`WCErrorDomain 7006` → favorite never delivered (context is only re-pushed on change).
+Fix: implement `sessionWatchStateDidChange` (iOS) / `sessionCompanionAppInstalledDidChange`
+(watchOS) → `pushLatestSnapshot()`, so installs/pairing changes re-publish state.
+
+### Verification
+
+- PlayaDB package: 189/189. iBurnTests: full suite, 0 failures. Both app builds
+  0 errors / 0 warnings; no pbxproj churn.
+- Paired-sim E2E (iPhone 17 Pro Max + Watch Series 11 46mm, pair "active, connected"):
+  - Phone → watch: favorited "Booty Hour" event on phone → watch `object_metadata`
+    `event|pZKm9hfsiDbnz8QXueVW|1`; watch Favorites lists it; detail shows occurrence
+    times. Existing phone DB migrated v1→v2 in place; fresh watch install converged on
+    first launch (post-fix).
+  - Watch → phone: injected GPS into 2 camps on watch (flows.md trick), favorited
+    "Snuggles" via watch Nearby → phone PlayaDB `camp|a1XVI00000FBBVz2AP|1` AND phone
+    Yap `BRCCampObject` blob decoded `isFavorite=True` (non-favorited peer decodes
+    False). Phone Favorites tab showed the camp via live observation.
+  - Watch app uninstalled afterward to purge the GPS-tampered test DB.
+- flows.md §9 updated with the sync flow + verification recipe.
+
+### Notes / accepted limitations
+
+- `applicationContext` is best-effort latest-state: intermediate toggles coalesce
+  (fine — final state is what matters) and delivery needs an eventual connection.
+- LWW trusts device clocks (normal for this pattern; worst case a stale toggle wins
+  within clock skew).
+- Embargo-flag sync deliberately skipped: bundled watch data has no GPS this season and
+  there's no watch network updater; revisit with roadmap Phase 1.
+- Legacy-only phone surfaces that write favorites straight to Yap (Visit List, Audio
+  Tour) don't reach PlayaDB and therefore don't reach the watch — same pre-existing gap
+  as Session 1, tracked for post-season Yap retirement.

@@ -207,6 +207,24 @@ public protocol PlayaDB {
     /// Batch fetch objects of any type by their UIDs (4 queries total, one per type)
     func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject]
 
+    // MARK: - Favorite Sync
+
+    /// Snapshot of all favorite states that have ever been explicitly set
+    /// (rows with a non-nil favorite stamp), for last-writer-wins sync.
+    /// Ordered by objectType then objectId for determinism.
+    func favoriteSyncSnapshot() async throws -> [FavoriteSyncItem]
+
+    /// Merge incoming favorite states using last-writer-wins on the favorite
+    /// stamp. Same-state items are skipped so applying a peer's snapshot never
+    /// re-fires observations. Returns the items actually applied.
+    @discardableResult
+    func applyFavoriteSync(_ items: [FavoriteSyncItem]) async throws -> [FavoriteSyncItem]
+
+    /// Observe the favorite sync snapshot reactively (same query as
+    /// `favoriteSyncSnapshot()`).
+    @discardableResult
+    func observeFavoriteSyncState(onChange: @escaping ([FavoriteSyncItem]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
+
     // MARK: - Thumbnail Colors
 
     /// Save (insert or replace) a single thumbnail color entry.
