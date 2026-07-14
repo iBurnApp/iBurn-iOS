@@ -79,6 +79,15 @@ extension Bundle {
             return brc_mbtilesURL
         }
         
+        // Refresh the cache when the bundled tiles change (e.g. app update shipping
+        // new tiles). Remote tile updates are currently disabled in BRCDataImporter,
+        // so the bundle is the only source of this file.
+        if FileManager.default.fileExists(atPath: cachedMbtilesURL.path),
+           let bundleMbtilesURL = brc_mbtilesURL,
+           !FileManager.default.contentsEqual(atPath: bundleMbtilesURL.path, andPath: cachedMbtilesURL.path) {
+            try? FileManager.default.removeItem(at: cachedMbtilesURL)
+        }
+
         // Check if cached file exists
         if !FileManager.default.fileExists(atPath: cachedMbtilesURL.path) {
             // Copy from bundle
