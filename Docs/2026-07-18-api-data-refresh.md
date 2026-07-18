@@ -309,6 +309,42 @@ them, but `touch {down:true, up:true}` on the digit's elementRef drives the scru
 (the "8 PM" scrubber bubble may stick afterwards because the synthetic touch skips the
 DragGesture `.onEnded` reset — harmless artifact, not app state).
 
+## Part G — "Didn't work" report resolved (stale binary) + filter sheet tap-to-set & Reset
+
+**User re-report after Part F:** first row still stale (5h45m "Drama Dump & Gift" under a
+1h cap, dead tap). **Root cause of the re-report: the user was running the pre-fix
+binary.** The Part F fix (3c2065b) exists only on the worktree branch
+`event-duration-filter`; the main checkout (`2026-updates`, what Xcode builds) is at
+dc37275. Confirmed forensically: the installed app's `iBurn.debug.dylib` (built 14:06 from
+the main checkout's DerivedData `iBurn-hgliinvssaqjsefpgmponufvwfxe`) contains the old
+`HourAnchorID` symbol and lacks the new `isScrollAnchor` — the user's Xcode ⌘R overwrote
+the fixed build I had installed at 15:29. The reported symptom (5h45m Sun-6pm
+first-in-section row surviving a 1h cap with a dead tap) is exactly the old positional-
+anchor collision. **Lesson: after fixing something in a worktree, the fix must land on the
+branch the user builds from (or they must run the worktree build) before they retest.**
+
+**New filter-sheet features (same session, per user request):**
+- **Tap-to-set slider:** native SwiftUI Slider ignores track taps. Added a
+  `DragGesture(minimumDistance: 0)` via `simultaneousGesture` on the Slider (now wrapped
+  in a `GeometryReader`, min/max labels moved outside into an HStack) mapping tap x →
+  nearest discrete position via `sliderValue(forTapX:trackWidth:)` (13.5pt thumb inset,
+  linear across remaining width, `.rounded()` snap, endpoint clamps). Internal-for-testing;
+  7 new unit tests in `EventFilterSheetSliderTests` (edges, clamps, center, all 13
+  positions, degenerate width).
+- **Reset button:** appears in the sheet toolbar (cancellation slot) only when any exposed
+  control differs from defaults (hide expired / all favorites / all types / 6h cap);
+  resets field-by-field so unexposed fields (dates, searchText, activeWindow) are
+  untouched.
+- **Filter icon consistency:** toolbar icon now fills iff the same "differs from default"
+  predicate holds (previously `!includeExpired` made it permanently filled at defaults;
+  duration was ignored entirely).
+
+**Verified in sim (26.5, binary symbol-checked before driving):** Reset appears on
+type-toggle, restores defaults, disappears; icon outline↔fill tracks default/non-default;
+list live-updates behind the sheet. Track-tap can't be driven by the AX tooling (the
+slider exposes no AX element via XcodeBuildMCP snapshots) — covered by the unit tests;
+needs one manual tap check. Full iBurnTests suite green (140).
+
 ### Worktree build note (for future sessions)
 
 Building an app-repo worktree without re-cloning everything: symlinking `Pods/` to the main
