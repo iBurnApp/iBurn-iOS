@@ -76,6 +76,14 @@ class DependencyContainer {
     /// - Parameter preferenceService: The preference service to use (defaults to shared instance)
     /// - Throws: PlayaDB creation errors
     init(preferenceService: PreferenceService = PreferenceServiceFactory.shared, playaDB: PlayaDB? = nil) throws {
+        // Restore a pre-populated PlayaDB from the bundled seed before the database
+        // is opened. No-op for existing installs or when the seed is absent, in which
+        // case the JSON import path (playaDBSeeder.seedIfNeeded, below) takes over.
+        // Skipped when a PlayaDB is injected (tests/previews provide their own store).
+        if playaDB == nil {
+            PlayaDBSeeder.restoreBundledSeedIfNeeded()
+        }
+
         // Create PlayaDB once using factory method, or use injected instance
         self.playaDB = try playaDB ?? createPlayaDB()
 

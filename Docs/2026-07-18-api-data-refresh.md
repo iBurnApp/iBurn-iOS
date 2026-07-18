@@ -170,6 +170,59 @@ SwiftUI lists) intentionally has no seed — its bundle-JSON import is ~0.3 s
 `Submodules/iBurn-Data/data/2026/iBurn-2026.zip` (archival convention from prior years;
 the live one is the `iBurn/` copy).
 
+## Part D — CRITICAL: July 18 data refresh silently broke PlayaDB import (fixed) + PlayaDB seed
+
+**Regression discovered while generating the PlayaDB seed:** the July 18 API refresh
+(`79d9748`) reintroduced user-entered junk `url` values that the July 3 session had
+sanitized by hand (camp.json 5, art.json 4, mv.json 1 — e.g. Hel's Diner
+`"http://www.campporta.org, www.helsdiner.com"`). PlayaAPI decoded `url` strictly as
+`URL`, so decoding threw, and since `PlayaDB.importFromData` runs art+camp+event+mv in ONE
+GRDB transaction, the whole import rolled back: **fresh installs of `2026-updates` had a
+completely empty PlayaDB** (Events tab "No events found"), while existing installs
+silently kept stale July-3 data (reimport failed on every launch). The failure was
+invisible because `PlayaDBSeeder` logged via `print()`, which the sim console drops. The
+July 3 notes predicted exactly this ("Consider adding sanitization to fetch_and_geocode.js
+for the August re-fetches").
+
+**Fix (code hardening, not data patching):** new
+`Packages/PlayaAPI/Sources/PlayaAPI/Models/Shared/LenientURL.swift` — user-entered URL
+fields (`Camp.url`, `Art.url`/`donationLink`, `Event.url`, `MutantVehicle.url`/
+`donationLink`) now decode leniently via explicit `init(from:)`: clean single-token web
+URL accepted as-is; dirty values salvage the first comma/whitespace-separated token that
+parses with scheme+host (bare `www.*` gets `http://`); otherwise nil. Never throws, so one
+bad upstream record can never blank the database again. Org-generated `thumbnailUrl`
+fields stay strict. Encoding unchanged. `PlayaDBSeeder`'s `print`s upgraded to
+`DDLogError`/`DDLogInfo`. Tests: PlayaAPI 67 passed (incl. 12 new LenientURL cases),
+PlayaDB 206 passed, and the previously-failing real-bundle acceptance test
+`testImportRealDataFromiBurnBundle` now passes. Data files untouched; optional follow-up:
+sanitize at the source in `fetch_and_geocode.js` for hygiene.
+
+**PlayaDB seed (per Chris: "we need a pre seeded PlayaDB as well"):** unlike Yap, PlayaDB
+had no copy-from-bundle path, so one was added:
+`PlayaDBSeeder.restoreBundledSeedIfNeeded(documentsURL:seedZipURL:bundle:)` — synchronous,
+called from `DependencyContainer.init` before `PlayaDB.create()`. No-op when
+`Documents/PlayaDB.sqlite` exists or the seed resource is absent; otherwise unzips the
+bundled `PlayaDB-<YearSettings.playaYear>.zip` to a temp dir, clears stray `-wal`/`-shm`
+sidecars, and moves `PlayaDB.sqlite` into place; any failure removes partial files and
+falls back to JSON import. 5 unit tests (`iBurnTests/PlayaDBSeedRestoreTests.swift`) with
+runtime-built fixture zips. Existing installs are untouched (their data updates still flow
+through `needsImport` timestamp checks).
+
+**Seed artifact:** `iBurn/PlayaDB-2026.zip` (gitignored, auto-bundled by the synced
+group like the Yap zip; also add to the seasonal regeneration checklist). Generation:
+same fresh-install procedure as the Yap seed (Part C) but harvest
+`<container>/Documents/PlayaDB.sqlite` after `PRAGMA wal_checkpoint(TRUNCATE)`, then
+`zip -X -j PlayaDB-2026.zip PlayaDB.sqlite` (single top-level file entry, no folder).
+July data: 321 art / 1201 camps / 2208 events / 4697 occurrences, 4.7 MB sqlite →
+1.7 MB zip. Verified end-to-end: fresh install restores a byte-identical
+(md5-matched) PlayaDB.sqlite instead of importing JSON, and both seeds coexist.
+(Note: 2208 events in PlayaDB vs 2217 fetched — PlayaDB dedupes the 9 byte-identical
+duplicate-uid events noted in the refresh section.)
+
+**Watch follow-up:** the watch app's own GRDB store still JSON-imports on first launch
+(`WatchSeeder`); no seed there yet — its dataset import is small, revisit only if watch
+first-launch feels slow.
+
 ### Worktree build note (for future sessions)
 
 Building an app-repo worktree without re-cloning everything: symlinking `Pods/` to the main
