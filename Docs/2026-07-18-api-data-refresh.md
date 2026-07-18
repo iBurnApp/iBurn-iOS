@@ -223,6 +223,50 @@ duplicate-uid events noted in the refresh section.)
 (`WatchSeeder`); no seed there yet — its dataset import is small, revisit only if watch
 first-launch feels slow.
 
+## Part E — Max-duration event filter (hide amenity-listing pseudo-events)
+
+Per Chris: camps list amenities as day-long "events" (e.g. a mailbox open midnight–noon
+daily, 12h) that aren't real events to attend. New filter hides them by duration.
+
+- **PlayaDB:** `EventFilter.maxDuration: TimeInterval?` (package default nil — watch/
+  Nearby/Right Now/detail consumers unchanged). Predicate in `eventOccurrenceRequest`
+  (so browse + search + fetch paths all get it):
+  `(julianday(end_time) - julianday(start_time)) * 86400.0 <= ? + 0.5` — inclusive, so
+  exactly-6h events stay visible; +0.5 s absorbs julianday float rounding at the boundary.
+- **Events tab:** default **6h**, defined in `EventListViewModel`
+  (`defaultMaxDuration`). Persisted under a separate UserDefaults key
+  (`<filterKey>.maxDuration`, `StoredMaxDuration` `.limited/.unlimited`) rather than in
+  the EventFilter JSON blob, because synthesized Codable omits nil optionals — a nil in
+  the blob would be indistinguishable from a pre-field legacy blob, and an explicit "Any"
+  would get re-coerced to 6h. Key absent → 6h; `.unlimited` → no limit.
+- **UI:** "Max Duration" section in `EventFilterSheet` — discrete slider, positions
+  1–12 = hour caps, rightmost = "Any" (nil), value readout ("6h"/"Any"), footer copy
+  explains the amenity-listing rationale. Filter-icon active indicator deliberately does
+  NOT include maxDuration (the default is non-nil; it would always read active).
+- **Tests:** PlayaDB `testEventOccurrenceRequestMaxDurationFilter` (5h59m/6h in,
+  6h1m/12h out, nil = all; suite 207 green); iBurnTests `EventListDurationFilterTests`
+  ×6 (default, browse/search flow-through, legacy-blob default, 3h round-trip, explicit
+  Any persistence; suite 133 green).
+- **Sim-verified:** SAT 5 default hides "Drama Dump & Gift" 12h and keeps the exactly-6h
+  "Sunset to Sunrise" (inclusive boundary) and SUN 30's 5h45m twin; default persists
+  across relaunch; search results exclude 12h rows. The "Any" path was verified by
+  injecting the persisted `.unlimited` pref into the app-container plist and relaunching
+  (12h rows reappear, matching the original bug screenshot lineup) — the XcodeBuildMCP
+  HID layer cannot drag SwiftUI sliders, so the slider gesture itself is covered by unit
+  tests + code review. **Gotcha for future automation:** the app reads prefs from the
+  app-container plist; `simctl spawn defaults write <bundle-id>` writes the user-level
+  domain the app never reads (procedure now in drive-app flows.md).
+- **Pre-existing bug found during verification (follow-up):** event SEARCH results
+  drop one of two same-timestamp events — searching "Drama" shows "Drama Prevention
+  Darkwad Station" (5h45m, Sun 6pm) but not "Drama Dump & Gift" (5h45m, same exact
+  start/end), though browse mode shows both and both are in the FTS index. Likely a
+  dedup/collision keyed on occurrence timestamps rather than event uid somewhere in the
+  search result assembly. Unrelated to the duration filter (reproduces with it set to
+  Any). Not fixed in this session.
+- **Test hygiene note:** `EventListDurationFilterTests` leaves its UUID-keyed
+  `EventListDurationFilterTests.<UUID>.maxDuration` entries in the simulator app's
+  UserDefaults plist (keys are unique per run, so no cross-test pollution — just litter).
+
 ### Worktree build note (for future sessions)
 
 Building an app-repo worktree without re-cloning everything: symlinking `Pods/` to the main

@@ -57,6 +57,16 @@ public struct EventFilter: Hashable, Codable {
     /// When nil, all event types are included.
     public var eventTypeCodes: Set<String>?
 
+    /// Maximum occurrence duration, in seconds. When set, hides occurrences whose
+    /// `endTime - startTime` EXCEEDS this value; occurrences exactly at the limit remain
+    /// visible (inclusive `<=`). Used by the Events tab to hide all-day / half-day
+    /// "amenity listing" pseudo-events (e.g. a camp mailbox open midnight–noon daily).
+    ///
+    /// `nil` = no limit (the package default). Consumers that don't set it — watch,
+    /// Nearby / Right Now, detail screens — are unaffected. The Events-tab 6h default
+    /// lives in `EventListViewModel`, not here.
+    public var maxDuration: TimeInterval?
+
     /// Overlap time window: include occurrences whose `[start, end)` interval intersects
     /// this interval (`startTime < window.end && endTime > window.start`).
     ///
@@ -78,7 +88,8 @@ public struct EventFilter: Hashable, Codable {
         startDate: Date? = nil,
         endDate: Date? = nil,
         eventTypeCodes: Set<String>? = nil,
-        activeWindow: DateInterval? = nil
+        activeWindow: DateInterval? = nil,
+        maxDuration: TimeInterval? = nil
     ) {
         self.year = year
         self.regionStorage = region.map(FilterRegion.init)
@@ -91,6 +102,7 @@ public struct EventFilter: Hashable, Codable {
         self.endDate = endDate
         self.eventTypeCodes = eventTypeCodes
         self.activeWindow = activeWindow
+        self.maxDuration = maxDuration
     }
 
     /// Filter that matches all events (no filtering)

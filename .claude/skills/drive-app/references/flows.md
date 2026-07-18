@@ -44,9 +44,9 @@ UIKit/YapDatabase stack.
 
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
-and `grdb_migrations` contains `v1-initial-schema`. Seeded counts (2026 data):
-321 art / 1201 camps / 2101 events / 4431 occurrences; `object_metadata` stays
-empty until the user favorites/views something.
+and `grdb_migrations` contains `v1-initial-schema`. Seeded counts (2026 data,
+July 18 refresh): 321 art / 1201 camps / 2208 events / 4697 occurrences;
+`object_metadata` stays empty until the user favorites/views something.
 
 ## 3. Events browsing + day tabs
 
@@ -59,7 +59,23 @@ Preconditions: flow 2 done (SwiftUI stack on).
 
 Verify: rows swap instantly to that day's events (day slicing is in-memory —
 no spinner, no reload flash). Row content: name, type emoji, host camp,
-description, "Wed 12:00am (12h)"-style time label.
+description, "Wed 2:00pm (2h)"-style time label.
+
+**Max Duration filter (default 6h):** occurrences longer than 6h (all-day
+"amenity listing" pseudo-events) are hidden by default. The toolbar Filter
+sheet has a "Max Duration" slider (1h–12h, rightmost = "Any"; exactly-6h events
+stay visible — inclusive). The HID tooling cannot drag SwiftUI sliders; for
+automation, inject the preference directly (app terminated first) into the
+**app container** plist — the user-level `defaults write <bundle-id>` domain is
+NOT what the app reads:
+```
+C=$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)
+# "Any": {"unlimited":{}} ; N seconds: {"limited":{"_0":N}}
+xcrun simctl spawn <UDID> defaults write \
+  "$C/Library/Preferences/com.trailbehind.iBurn2010" \
+  "eventListFilter.maxDuration" -data 7b22756e6c696d69746564223a7b7d7d
+```
+then relaunch; delete the key to restore the 6h default.
 
 ## 4. Favorite an event (end-to-end)
 

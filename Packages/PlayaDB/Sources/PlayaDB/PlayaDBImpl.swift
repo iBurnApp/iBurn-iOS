@@ -1037,6 +1037,24 @@ internal class PlayaDBImpl: PlayaDB {
                 .filter(EventOccurrence.Columns.endTime > window.start)
         }
 
+        // Max-duration cap: hide occurrences whose [start, end) span EXCEEDS maxDuration
+        // seconds. Applied here so every filtered path (joined browse + non-joined search/
+        // fetch) inherits it uniformly.
+        //
+        // start_time/end_time are stored as TEXT (GRDB's default Date encoding,
+        // "YYYY-MM-DD HH:MM:SS.SSS", UTC), so the span is computed in SQL via julianday()
+        // (fractional days) scaled to seconds — matching the notExpired()/happeningNow()
+        // date-comparison idioms elsewhere, which also rely on GRDB's TEXT date encoding.
+        // Inclusive (<=): an occurrence exactly at the limit stays visible. The 0.5s
+        // tolerance absorbs julianday()'s double-precision rounding (worst case ~1e-4 s at
+        // these magnitudes) so an exactly-at-limit occurrence is never dropped by float
+        // error; it stays far below the 60s granularity of real event durations.
+        if let maxDuration = filter.maxDuration {
+            request = request.filter(sql: """
+                (julianday(event_occurrences.end_time) - julianday(event_occurrences.start_time)) * 86400.0 <= ? + 0.5
+                """, arguments: [maxDuration])
+        }
+
         // FTS5 search constraint (UIDs pre-resolved against event_objects_fts)
         if let uids = matchingEventUIDs {
             request = request.filter(uids.contains(EventOccurrence.Columns.eventId))

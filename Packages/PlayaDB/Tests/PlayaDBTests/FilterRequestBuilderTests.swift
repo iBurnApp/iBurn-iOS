@@ -545,6 +545,49 @@ final class FilterRequestBuilderTests: XCTestCase {
                        "Overlap window keeps in-progress events and excludes ended/future ones")
     }
 
+    /// `maxDuration` must hide occurrences whose span EXCEEDS the limit while keeping those
+    /// exactly at the limit (inclusive `<=`), and `nil` must apply no limit at all. Guards
+    /// the julianday()-based SQL span comparison against the stored TEXT date format.
+    func testEventOccurrenceRequestMaxDurationFilter() async throws {
+        // Non-hour-aligned base so the exactly-6h case exercises julianday()'s float path
+        // rather than a value that happens to be exactly representable.
+        let base = Date(timeIntervalSince1970: 1_756_012_345)
+
+        try await insertEvent(uid: "dur-5h59m", name: "Just Under", year: 2025,
+                              start: base, end: base.addingTimeInterval(5 * 3600 + 59 * 60))
+        try await insertEvent(uid: "dur-6h", name: "Exactly Six", year: 2025,
+                              start: base, end: base.addingTimeInterval(6 * 3600))
+        try await insertEvent(uid: "dur-6h1m", name: "Just Over", year: 2025,
+                              start: base, end: base.addingTimeInterval(6 * 3600 + 60))
+        try await insertEvent(uid: "dur-12h", name: "All Morning", year: 2025,
+                              start: base, end: base.addingTimeInterval(12 * 3600))
+
+        let impl = try XCTUnwrap(playaDB as? PlayaDBImpl)
+
+        // 6h cap: exactly-6h stays (inclusive), longer occurrences are hidden. Scope to the
+        // fixture uids since setUp seeds unrelated mock events (no time filter applies here).
+        let capped = EventFilter(includeExpired: true, maxDuration: 6 * 3600)
+        let cappedResult = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: capped).fetchAll(db)
+        }
+        XCTAssertEqual(
+            Set(cappedResult.map(\.eventId).filter { $0.hasPrefix("dur-") }),
+            Set(["dur-5h59m", "dur-6h"]),
+            "maxDuration=6h keeps occurrences <= 6h (inclusive) and hides 6h1m / 12h"
+        )
+
+        // No cap: every fixture occurrence is returned.
+        let uncapped = EventFilter(includeExpired: true, maxDuration: nil)
+        let uncappedResult = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: uncapped).fetchAll(db)
+        }
+        XCTAssertEqual(
+            Set(uncappedResult.map(\.eventId).filter { $0.hasPrefix("dur-") }),
+            Set(["dur-5h59m", "dur-6h", "dur-6h1m", "dur-12h"]),
+            "nil maxDuration applies no duration limit"
+        )
+    }
+
     func testFetchEventsAppliesYearRegionAndSearchFilters() async throws {
         let now = Date()
         let region = MKCoordinateRegion(

@@ -14,6 +14,29 @@ struct EventFilterSheet: View {
                     Toggle("Only Favorites", isOn: $filter.onlyFavorites)
                 }
 
+                Section(
+                    header: Text("Max Duration"),
+                    footer: Text("Hide events longer than this. Filters out all-day amenity listings (open camps, mailboxes). Set to Any to show everything.")
+                ) {
+                    HStack {
+                        Text("Duration")
+                        Spacer()
+                        Text(durationValueLabel)
+                            .foregroundColor(.secondary)
+                    }
+                    Slider(
+                        value: durationBinding,
+                        in: Self.durationSliderRange,
+                        step: 1
+                    ) {
+                        Text("Max Duration")
+                    } minimumValueLabel: {
+                        Text("1h")
+                    } maximumValueLabel: {
+                        Text("Any")
+                    }
+                }
+
                 Section(header: Text("Event Types")) {
                     ForEach(EventTypeInfo.visibleTypes) { typeInfo in
                         Toggle(
@@ -31,6 +54,41 @@ struct EventFilterSheet: View {
                 }
             }
         }
+    }
+
+    // MARK: - Max Duration
+
+    /// Slider positions: 1...12 map to whole-hour caps; the rightmost position (13) is
+    /// "Any" (no limit, `filter.maxDuration == nil`).
+    private static let anyPosition = 13
+    private static let durationSliderRange: ClosedRange<Double> = 1...Double(anyPosition)
+
+    /// Current-value readout shown beside the slider ("6h" / "Any").
+    private var durationValueLabel: String {
+        guard let maxDuration = filter.maxDuration else { return "Any" }
+        let hours = Int((maxDuration / 3600).rounded())
+        return "\(hours)h"
+    }
+
+    /// Maps `filter.maxDuration` (seconds, nil = no limit) to/from the discrete slider index.
+    private var durationBinding: Binding<Double> {
+        Binding(
+            get: {
+                guard let maxDuration = filter.maxDuration else {
+                    return Double(Self.anyPosition)
+                }
+                let hours = Int((maxDuration / 3600).rounded())
+                return Double(min(max(hours, 1), 12))
+            },
+            set: { newValue in
+                let position = Int(newValue.rounded())
+                if position >= Self.anyPosition {
+                    filter.maxDuration = nil
+                } else {
+                    filter.maxDuration = TimeInterval(position) * 3600
+                }
+            }
+        )
     }
 
     /// Creates a binding for whether a specific event type code is enabled.
