@@ -33,9 +33,9 @@ Note: `api.burningman.org` is not in the Claude Code sandbox network allowlist �
 - Duplicate event uids: 9 byte-identical dupes (upstream API quirk; was 39 at HEAD, so improved).
 - 2 events reference a camp uid absent from the roster (`a1XVI00000FJ1B32AL`) — pre-existing upstream inconsistency.
 
-### Script bug discovered: update.json drops `mv`
+### Script bug discovered and fixed: mv support
 
-`fetch_and_geocode.js` fully rewrites `update.json` with only art/camps/events keys, silently dropping the manually-maintained `mv` (mutant vehicles) entry even though `mv.json` is untouched on disk. Manually restored the `mv` entry before committing. **Follow-up:** teach the script to preserve unknown keys in an existing `update.json` (or add an mv fetch), otherwise every future refresh regresses the manifest.
+`fetch_and_geocode.js` fully rewrote `update.json` with only art/camps/events keys, silently dropping the `mv` (mutant vehicles) entry; `mv.json` itself had been fetched manually (499 records, July 3). Fixed by making mv a first-class data source: the script now fetches `https://api.burningman.org/api/mv?year=N` (same shape as art, saved as-is) and writes an `mv` entry to `update.json` each run. Verified end-to-end: 496 vehicles fetched (3 dropped upstream since the manual pull), all uids unique. The script lives in the nested BlackRockCityPlanner submodule, so the fix is a three-level commit chain: BRCP `ec84cd3` → iBurn-Data `be53e0b` → app repo `17addfc`.
 
 ## Context Preservation
 
