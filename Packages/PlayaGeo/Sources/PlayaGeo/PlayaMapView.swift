@@ -81,6 +81,11 @@ public struct PlayaMapView: View {
                 }
             }
 
+            // Street names — majors first, minors (quarter-hour radials) once zoomed in further.
+            if camera.metersPerPoint < 8 {
+                drawStreetLabels(context: context, transform: transform, size: size, style: style)
+            }
+
             // Trash fence
             for line in data.fence {
                 context.stroke(
@@ -108,6 +113,33 @@ public struct PlayaMapView: View {
 
             if let user {
                 draw(user: user, context: &context, transform: transform, style: style)
+            }
+        }
+    }
+
+    private func drawStreetLabels(context: GraphicsContext, transform: CGAffineTransform, size: CGSize, style: MapStyle) {
+        let bounds = CGRect(origin: .zero, size: size).insetBy(dx: -20, dy: -20)
+        for street in data.streets {
+            guard let name = street.name else { continue }
+            // Major streets label at metersPerPoint < 8; minor ones need < 4.
+            let isMajor = street.widthMeters >= 8
+            guard isMajor || camera.metersPerPoint < 4 else { continue }
+
+            let resolved = context.resolve(
+                Text(name).font(.system(size: 9, weight: .semibold)).foregroundColor(style.streetLabel)
+            )
+            let textSize = resolved.measure(in: CGSize(width: 200, height: 40))
+            let interval = max(140, textSize.width + 60)
+
+            for line in street.paths {
+                let screenPoints = line.map { $0.applying(transform) }
+                for placement in StreetLabelLayout.placements(along: screenPoints, interval: interval, bounds: bounds) {
+                    var ctx = context
+                    ctx.translateBy(x: placement.point.x, y: placement.point.y)
+                    ctx.rotate(by: .radians(placement.angle))
+                    ctx.addFilter(.shadow(color: style.background.opacity(0.9), radius: 2))
+                    ctx.draw(resolved, at: .zero, anchor: .center)
+                }
             }
         }
     }
@@ -188,6 +220,7 @@ private struct MapStyle {
     let toilet: Color
     let userDot: Color
     let label: Color
+    let streetLabel: Color
 
     init(colorScheme: ColorScheme) {
         if colorScheme == .dark {
@@ -198,6 +231,7 @@ private struct MapStyle {
             toilet = Color(red: 0.30, green: 0.55, blue: 0.85)
             userDot = Color(red: 0.25, green: 0.55, blue: 1.0)
             label = .white
+            streetLabel = Color(red: 0.78, green: 0.74, blue: 0.68)
         } else {
             background = Color(red: 0.96, green: 0.93, blue: 0.86)
             street = Color(red: 0.75, green: 0.70, blue: 0.60)
@@ -206,6 +240,7 @@ private struct MapStyle {
             toilet = Color(red: 0.20, green: 0.45, blue: 0.80)
             userDot = Color(red: 0.10, green: 0.45, blue: 0.95)
             label = .black
+            streetLabel = Color(red: 0.35, green: 0.32, blue: 0.28)
         }
     }
 }

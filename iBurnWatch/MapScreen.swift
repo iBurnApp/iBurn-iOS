@@ -9,10 +9,17 @@
 import PlayaGeo
 import SwiftUI
 
+/// How the camera tracks the user, MapKit-style.
+private enum TrackingMode {
+    case free          // user panned away; camera stays put
+    case follow        // center follows user, north-up
+    case followHeading // center follows user, map rotates to compass heading
+}
+
 /// Offline BRC map: Digital Crown zooms, double tap zooms in one level,
-/// drag pans, compass button toggles
-/// north-up vs heading-up. Follows the user until they pan away; recenter
-/// button snaps back.
+/// drag pans. A single MapKit-style tracking button cycles free → follow
+/// (north-up, centered on the user) → follow-heading (map rotates to the
+/// compass); panning drops back to free without moving the camera.
 struct MapScreen: View {
     let mapData: PlayaMapData
     @ObservedObject var location: LocationService
@@ -20,8 +27,7 @@ struct MapScreen: View {
     @State private var camera = MapCamera(center: .zero, metersPerPoint: 25)
     /// Crown zoom level; metersPerPoint = 50 / 2^(level/2).
     @State private var zoomLevel: Double = 1
-    @State private var headingUp = false
-    @State private var followUser = true
+    @State private var trackingMode: TrackingMode = .follow
     @State private var dragStartCenter: CGPoint?
 
     var body: some View {
@@ -54,7 +60,7 @@ struct MapScreen: View {
             controls
         }
         .overlay(alignment: .top) {
-            if headingUp && location.needsCalibration {
+            if trackingMode == .followHeading && location.needsCalibration {
                 Text("Wave your wrist in a figure-8 to calibrate the compass")
                     .font(.caption2)
                     .multilineTextAlignment(.center)
@@ -73,10 +79,10 @@ struct MapScreen: View {
 
     private var displayCamera: MapCamera {
         var cam = camera
-        if headingUp, let heading = location.headingDegrees {
+        if trackingMode == .followHeading, let heading = location.headingDegrees {
             cam.headingDegrees = heading
         }
-        if followUser, let point = userPoint {
+        if trackingMode != .free, let point = userPoint {
             cam.center = point
         }
         return cam
@@ -117,7 +123,11 @@ struct MapScreen: View {
             .onChanged { value in
                 if dragStartCenter == nil {
                     dragStartCenter = displayCamera.center
-                    followUser = false
+                    // Bake the compass rotation so the map doesn't snap under the finger.
+                    if trackingMode == .followHeading {
+                        camera.headingDegrees = location.headingDegrees ?? camera.headingDegrees
+                    }
+                    trackingMode = .free
                 }
                 var cam = displayCamera
                 cam.center = dragStartCenter ?? cam.center
@@ -129,40 +139,65 @@ struct MapScreen: View {
     }
 
     private var controls: some View {
-        VStack(spacing: 6) {
-            Button {
-                headingUp.toggle()
-            } label: {
-                Image(systemName: headingUp ? "location.north.line.fill" : "safari")
-                    .font(.system(size: 16))
-            }
-            .buttonStyle(.plain)
-            .padding(7)
-            .background(.black.opacity(0.55), in: Circle())
-            .foregroundStyle(headingUp ? .orange : .white)
-            .accessibilityLabel(headingUp ? "Switch to north up" : "Switch to compass mode")
-
-            Button {
-                followUser = true
+        Button {
+            switch trackingMode {
+            case .free, .followHeading:
+                trackingMode = .follow
+                camera.headingDegrees = 0
                 if userPoint == nil {
                     camera.center = .zero
                 }
-            } label: {
-                Image(systemName: followUser ? "location.fill" : "location")
-                    .font(.system(size: 16))
+            case .follow:
+                trackingMode = .followHeading
             }
-            .buttonStyle(.plain)
-            .padding(7)
-            .background(.black.opacity(0.55), in: Circle())
-            .foregroundStyle(followUser ? .blue : .white)
-            .accessibilityLabel("Recenter on my location")
+        } label: {
+            Image(systemName: trackingIcon)
+                .font(.system(size: 16))
         }
+        .buttonStyle(.plain)
+        .padding(7)
+        .background(.black.opacity(0.55), in: Circle())
+        .foregroundStyle(trackingTint)
+        .accessibilityLabel(trackingAccessibilityLabel)
         .padding(.trailing, 2)
+    }
+
+    private var trackingIcon: String {
+        switch trackingMode {
+        case .free: return "location"
+        case .follow: return "location.fill"
+        case .followHeading: return "location.north.line.fill"
+        }
+    }
+
+    private var trackingTint: Color {
+        switch trackingMode {
+        case .free: return .white
+        case .follow: return .blue
+        case .followHeading: return .orange
+        }
+    }
+
+    private var trackingAccessibilityLabel: String {
+        switch trackingMode {
+        case .free: return "Follow my location"
+        case .follow: return "Switch to compass mode"
+        case .followHeading: return "Switch to north up"
+        }
     }
 }
 
 #Preview("City overview") {
     MapScreen(mapData: PreviewMapData.data, location: LocationService())
+}
+
+/// Zoomed to the 6:00 blocks — exercises the street-name label pass.
+#Preview("Street detail") {
+    PlayaMapView(
+        data: PreviewMapData.data,
+        camera: MapCamera(center: CGPoint(x: 0, y: 900), metersPerPoint: 3)
+    )
+    .ignoresSafeArea()
 }
 
 enum PreviewMapData {
