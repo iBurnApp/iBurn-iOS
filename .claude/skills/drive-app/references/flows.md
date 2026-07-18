@@ -77,6 +77,14 @@ xcrun simctl spawn <UDID> defaults write \
 ```
 then relaunch; delete the key to restore the 6h default.
 
+**Hour scrub strip automation:** the trailing-edge hour digits are text-only AX
+elements (`tap` refuses them). Use `touch {elementRef: <digit>, down: true, up: true}`
+to scrub to that hour. Quirks: the "8 PM"-style scrubber bubble can stick on screen
+afterwards (synthetic touches skip the DragGesture `.onEnded` reset — cosmetic only),
+and a far jump (e.g. 12am → 8pm) may land on a blank viewport until the next
+swipe/touch materializes rows (LazyVStack far-target estimation; short jumps land
+exactly).
+
 ## 4. Favorite an event (end-to-end)
 
 Preconditions: flow 3; pick any event row.

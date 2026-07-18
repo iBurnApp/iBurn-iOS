@@ -267,6 +267,48 @@ daily, 12h) that aren't real events to attend. New filter hides them by duration
   `EventListDurationFilterTests.<UUID>.maxDuration` entries in the simulator app's
   UserDefaults plist (keys are unique per run, so no cross-test pollution — just litter).
 
+## Part F — Stale first row again: anchor-id collision on same-day filter changes (FIXED)
+
+**Symptom (user screenshot, 26.5 sim, 3:21 PM):** Events tab, THU 3 selected; first row
+shows "Drama Dump & Gift — Thu 12:00am (12h)" even though the max-duration filter is 6h.
+Rows 2+ correct (Midnight Tacos 30m, Midnight Ramen 2h, Jazz Jam Session 2).
+
+**Diagnosis — stale rendered row, not a query bug.** The sim's app-container plist held
+`eventListFilter.maxDuration = {"limited":{"_0":21600}}` (6h), so the SQL query provably
+excluded 12h occurrences at screenshot time; the rendered 12h row could not be in the
+result set. Confirmed by the fixed build: THU hour-0's true first row is
+"Sunset to Sunrise at the LandHo! Port (6h)" — in the user's screenshot the stale Drama
+Dump row sat exactly where LandHo should be, with rows 2+ matching the query.
+
+**Root cause** (`iBurn/ListView/EventListView.swift`): the b211090 fix namespaced the
+hour-scrub anchor id by day (`HourAnchorID{day, hour}`), which fixes day-switch collisions
+but is still a *positional* identity. Any same-day data change that swaps which row is
+first in an hour section — moving the Max Duration slider (Any ↔ 6h), toggling an event
+type, etc. — re-emits the buckets while day+hour stay constant, so the NEW first row gets
+the SAME anchor id as the OLD one and the persistent LazyVStack resurrects the cached old
+row view (stale label + stale tap closure; same mechanism as Part B, different trigger).
+
+**Fix:** eliminate synthesized positional identity. First-in-section rows now use their own
+occurrence uid as the anchor id (`button.id(row.object.uid)` — identity ≡ content, so
+collisions are impossible for any data change), and the hour-index overlay resolves
+hour → first-row uid from `viewModel.browseSections` at `scrollTo` time (with a guard for
+vanished sections). `HourAnchorID` and `anchorDay` deleted; `rowButton` takes
+`isScrollAnchor: Bool` instead of `scrollAnchorHour: Int?`.
+
+**Verification (26.5 sim, fixed build):** THU first row = LandHo 6h (inclusive boundary
+still honored, no 12h rows); filter sheet type toggle 🎉 off → first row updates live to
+Midnight Tacos 30m (this exact step went stale pre-fix), toggle back on → LandHo returns;
+first-row tap pushes the correct occurrence detail (Thursday 9/3 12:00 AM–6:00 AM);
+hour scrub still scrolls (short jumps land exactly; a cross-day-length jump, e.g.
+12am → 8pm, can land on a blank viewport until the next touch materializes rows — a
+pre-existing LazyVStack far-target estimation artifact, identical under the old id scheme
+since scrollTo resolves the same destination row). iBurnTests suite green.
+
+**Automation notes:** the strip's digit labels are text-only AX elements — `tap` refuses
+them, but `touch {down:true, up:true}` on the digit's elementRef drives the scrub
+(the "8 PM" scrubber bubble may stick afterwards because the synthetic touch skips the
+DragGesture `.onEnded` reset — harmless artifact, not app state).
+
 ### Worktree build note (for future sessions)
 
 Building an app-repo worktree without re-cloning everything: symlinking `Pods/` to the main

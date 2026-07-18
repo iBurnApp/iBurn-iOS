@@ -67,7 +67,7 @@ struct EventListView: View {
                                 ForEach(viewModel.browseSections, id: \.hour) { section in
                                     ForEach(section.rows, id: \.object.uid) { row in
                                         let isFirstInSection = row.object.uid == section.rows.first?.object.uid
-                                        rowButton(for: row, scrollAnchorHour: isFirstInSection ? section.hour : nil)
+                                        rowButton(for: row, isScrollAnchor: isFirstInSection)
                                             .padding(Self.browseRowInsets)
                                         Divider()
                                     }
@@ -94,8 +94,11 @@ struct EventListView: View {
                     .overlay(alignment: .trailing) {
                         if case .browse = viewModel.mode, !viewModel.browseSections.isEmpty {
                             EventHourIndexView(sections: viewModel.browseSections) { hour in
+                                guard let anchorUID = viewModel.browseSections
+                                    .first(where: { $0.hour == hour })?
+                                    .rows.first?.object.uid else { return }
                                 withAnimation(.easeOut(duration: 0.15)) {
-                                    proxy.scrollTo(HourAnchorID(day: anchorDay, hour: hour), anchor: .top)
+                                    proxy.scrollTo(anchorUID, anchor: .top)
                                 }
                             }
                         }
@@ -173,27 +176,21 @@ struct EventListView: View {
 
     // MARK: - Row Builder
 
-    /// Identity for the first row of each hour section, used as a
-    /// `ScrollViewReader` anchor. Namespaced by day: a bare hour (0-23) repeats
-    /// every day, and the LazyVStack persists across day switches, so an
-    /// hour-only id lets the new day's anchor row inherit the previous day's
-    /// cached row view (stale occurrence label + stale tap closure).
-    private struct HourAnchorID: Hashable {
-        let day: Date
-        let hour: Int
-    }
-
-    /// Day key for anchor ids; same derivation as the viewmodel's day buckets.
-    private var anchorDay: Date {
-        Calendar.current.startOfDay(for: viewModel.selectedDay)
-    }
-
-    /// Wraps the tappable row with a conditional day-scoped anchor id so
-    /// `ScrollViewReader` can target the first row of each section.
+    /// Wraps the tappable row with a conditional anchor id so `ScrollViewReader`
+    /// can target the first row of each hour section (via the hour scrub strip).
+    ///
+    /// The anchor id is the row's own occurrence uid — never a synthesized
+    /// positional id. The LazyVStack persists across day switches AND filter
+    /// changes, so any anchor identity that can outlive its row content (a bare
+    /// hour, or even day+hour once a filter change swaps which row is first in a
+    /// section) lets a new first row inherit the previous holder's cached view:
+    /// stale occurrence label + stale tap closure. Content-bound identity makes
+    /// that collision impossible; the scrub strip resolves hour → first-row uid
+    /// from `browseSections` at scroll time.
     @ViewBuilder
     private func rowButton(
         for row: ListRow<EventObjectOccurrence>,
-        scrollAnchorHour: Int?
+        isScrollAnchor: Bool
     ) -> some View {
         let button = Button {
             onSelect(row.object)
@@ -203,8 +200,8 @@ struct EventListView: View {
         }
         .buttonStyle(.plain)
 
-        if let hour = scrollAnchorHour {
-            button.id(HourAnchorID(day: anchorDay, hour: hour))
+        if isScrollAnchor {
+            button.id(row.object.uid)
         } else {
             button
         }
