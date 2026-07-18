@@ -54,6 +54,29 @@ public struct Art: Codable, Hashable, Sendable {
         self.guidedTours = guidedTours
         self.selfGuidedTourMap = selfGuidedTourMap
     }
+
+    // Custom decoding: `url` and `donationLink` are user-entered free text and are
+    // salvaged leniently rather than decoded strictly (see `LenientURL`). Encoding
+    // stays synthesized/unchanged.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uid = try container.decode(ArtID.self, forKey: .uid)
+        name = try container.decode(String.self, forKey: .name)
+        year = try container.decode(Int.self, forKey: .year)
+        url = try container.decodeLenientURLIfPresent(forKey: .url)
+        contactEmail = try container.decodeIfPresent(String.self, forKey: .contactEmail)
+        hometown = try container.decodeIfPresent(String.self, forKey: .hometown)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        artist = try container.decodeIfPresent(String.self, forKey: .artist)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        program = try container.decodeIfPresent(String.self, forKey: .program)
+        donationLink = try container.decodeLenientURLIfPresent(forKey: .donationLink)
+        location = try container.decodeIfPresent(ArtLocation.self, forKey: .location)
+        locationString = try container.decodeIfPresent(String.self, forKey: .locationString)
+        images = try container.decode([ArtImage].self, forKey: .images)
+        guidedTours = try container.decode(Bool.self, forKey: .guidedTours)
+        selfGuidedTourMap = try container.decode(Bool.self, forKey: .selfGuidedTourMap)
+    }
 }
 
 // MARK: - Computed Properties

@@ -39,6 +39,23 @@ public struct Camp: Codable, Hashable, Sendable {
         self.locationString = locationString
         self.images = images
     }
+
+    // Custom decoding: `url` is user-entered free text and is salvaged leniently rather
+    // than decoded strictly (see `LenientURL`). Encoding stays synthesized/unchanged.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uid = try container.decode(CampID.self, forKey: .uid)
+        name = try container.decode(String.self, forKey: .name)
+        year = try container.decode(Int.self, forKey: .year)
+        url = try container.decodeLenientURLIfPresent(forKey: .url)
+        contactEmail = try container.decodeIfPresent(String.self, forKey: .contactEmail)
+        hometown = try container.decodeIfPresent(String.self, forKey: .hometown)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        landmark = try container.decodeIfPresent(String.self, forKey: .landmark)
+        location = try container.decodeIfPresent(CampLocation.self, forKey: .location)
+        locationString = try container.decodeIfPresent(String.self, forKey: .locationString)
+        images = try container.decode([CampImage].self, forKey: .images)
+    }
 }
 
 // MARK: - Computed Properties

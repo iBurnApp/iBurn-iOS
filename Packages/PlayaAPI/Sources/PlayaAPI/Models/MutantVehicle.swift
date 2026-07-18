@@ -39,6 +39,24 @@ public struct MutantVehicle: Codable, Hashable, Sendable {
         self.images = images
         self.tags = tags
     }
+
+    // Custom decoding: `url` and `donationLink` are user-entered free text and are
+    // salvaged leniently rather than decoded strictly (see `LenientURL`). Encoding
+    // stays synthesized/unchanged.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uid = try container.decode(MutantVehicleID.self, forKey: .uid)
+        name = try container.decode(String.self, forKey: .name)
+        year = try container.decode(Int.self, forKey: .year)
+        url = try container.decodeLenientURLIfPresent(forKey: .url)
+        donationLink = try container.decodeLenientURLIfPresent(forKey: .donationLink)
+        contactEmail = try container.decodeIfPresent(String.self, forKey: .contactEmail)
+        hometown = try container.decodeIfPresent(String.self, forKey: .hometown)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        artist = try container.decodeIfPresent(String.self, forKey: .artist)
+        images = try container.decode([MutantVehicleImage].self, forKey: .images)
+        tags = try container.decode([String].self, forKey: .tags)
+    }
 }
 
 // MARK: - Computed Properties
