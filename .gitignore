@@ -97,6 +97,8 @@ iOSInjectionProject/
 iBurn/BRCSecrets.m
 iBurn/InfoPlistSecrets.h
 iBurn/GoogleService-Info.plist
+# Pre-populated YapDatabase seed (regenerated each season; see Docs)
+iBurn/iBurn-*.zip
 .env
 iBurn/crashlytics.sh
 
