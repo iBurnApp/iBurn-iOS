@@ -24,37 +24,16 @@ struct EventFilterSheet: View {
                         Text(durationValueLabel)
                             .foregroundColor(.secondary)
                     }
-                    HStack(spacing: 12) {
+                    Slider(
+                        value: durationBinding,
+                        in: Self.durationSliderRange,
+                        step: 1
+                    ) {
+                        Text("Max Duration")
+                    } minimumValueLabel: {
                         Text("1h")
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                        GeometryReader { geo in
-                            Slider(
-                                value: durationBinding,
-                                in: Self.durationSliderRange,
-                                step: 1
-                            ) {
-                                Text("Max Duration")
-                            }
-                            // Tap-to-set: the built-in Slider only responds to thumb
-                            // drags. A zero-distance drag fires on any touch-up over the
-                            // track, mapping tap x -> nearest step. Simultaneous so real
-                            // thumb drags still work (their onEnded lands on the same
-                            // stepped value the Slider itself chose).
-                            .simultaneousGesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onEnded { gesture in
-                                        durationBinding.wrappedValue = Self.sliderValue(
-                                            forTapX: gesture.location.x,
-                                            trackWidth: geo.size.width
-                                        )
-                                    }
-                            )
-                        }
-                        .frame(height: 32)
+                    } maximumValueLabel: {
                         Text("Any")
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
                     }
                 }
 
@@ -108,22 +87,6 @@ struct EventFilterSheet: View {
     /// "Any" (no limit, `filter.maxDuration == nil`).
     private static let anyPosition = 13
     private static let durationSliderRange: ClosedRange<Double> = 1...Double(anyPosition)
-
-    /// Horizontal inset from the slider view's edge to the track's usable span — half the
-    /// standard 27pt thumb. Tap x is mapped linearly across the remaining width and
-    /// snapped to the nearest step; endpoint taps clamp, so precision only matters to
-    /// within half a step. Internal (not private) for unit testing.
-    static let sliderThumbInset: CGFloat = 13.5
-
-    /// Maps a tap location on the slider to the nearest discrete position.
-    /// Internal (not private) for unit testing.
-    static func sliderValue(forTapX x: CGFloat, trackWidth: CGFloat) -> Double {
-        let usable = trackWidth - 2 * sliderThumbInset
-        guard usable > 0 else { return durationSliderRange.lowerBound }
-        let fraction = min(max((x - sliderThumbInset) / usable, 0), 1)
-        let span = durationSliderRange.upperBound - durationSliderRange.lowerBound
-        return (durationSliderRange.lowerBound + Double(fraction) * span).rounded()
-    }
 
     /// Current-value readout shown beside the slider ("6h" / "Any").
     private var durationValueLabel: String {

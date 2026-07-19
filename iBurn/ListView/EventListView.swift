@@ -66,8 +66,7 @@ struct EventListView: View {
                             case .browse:
                                 ForEach(viewModel.browseSections, id: \.hour) { section in
                                     ForEach(section.rows, id: \.object.uid) { row in
-                                        let isFirstInSection = row.object.uid == section.rows.first?.object.uid
-                                        rowButton(for: row, isScrollAnchor: isFirstInSection)
+                                        rowButton(for: row)
                                             .padding(Self.browseRowInsets)
                                         Divider()
                                     }
@@ -176,35 +175,26 @@ struct EventListView: View {
 
     // MARK: - Row Builder
 
-    /// Wraps the tappable row with a conditional anchor id so `ScrollViewReader`
-    /// can target the first row of each hour section (via the hour scrub strip).
+    /// The tappable row. Deliberately NO explicit `.id()` modifier: rows are
+    /// identified solely by their ForEach identity (`\.object.uid`), which
+    /// `ScrollViewReader.scrollTo` can target directly for the hour scrub strip
+    /// (hour → first-row uid resolved from `browseSections` at scroll time).
     ///
-    /// The anchor id is the row's own occurrence uid — never a synthesized
-    /// positional id. The LazyVStack persists across day switches AND filter
-    /// changes, so any anchor identity that can outlive its row content (a bare
-    /// hour, or even day+hour once a filter change swaps which row is first in a
-    /// section) lets a new first row inherit the previous holder's cached view:
-    /// stale occurrence label + stale tap closure. Content-bound identity makes
-    /// that collision impossible; the scrub strip resolves hour → first-row uid
-    /// from `browseSections` at scroll time.
-    @ViewBuilder
-    private func rowButton(
-        for row: ListRow<EventObjectOccurrence>,
-        isScrollAnchor: Bool
-    ) -> some View {
-        let button = Button {
+    /// History: the strip's anchor was previously a synthesized explicit id on
+    /// first-in-section rows — first `.id(hour)`, then `.id(day+hour)`, then
+    /// `.id(uid)`. The LazyVStack persists across day switches AND filter
+    /// changes, and any identity layered on top of the row's own let a data
+    /// change resurrect or orphan a cached row view (stale occurrence label +
+    /// stale tap closure that fails showDetail's visibleRows guard = dead tap).
+    /// Content identity only, applied exactly once, leaves nothing to collide.
+    private func rowButton(for row: ListRow<EventObjectOccurrence>) -> some View {
+        Button {
             onSelect(row.object)
         } label: {
             eventRow(for: row)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-
-        if isScrollAnchor {
-            button.id(row.object.uid)
-        } else {
-            button
-        }
     }
 
     private func eventRow(for row: ListRow<EventObjectOccurrence>) -> some View {

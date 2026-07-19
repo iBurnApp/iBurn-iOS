@@ -324,13 +324,13 @@ anchor collision. **Lesson: after fixing something in a worktree, the fix must l
 branch the user builds from (or they must run the worktree build) before they retest.**
 
 **New filter-sheet features (same session, per user request):**
-- **Tap-to-set slider:** native SwiftUI Slider ignores track taps. Added a
-  `DragGesture(minimumDistance: 0)` via `simultaneousGesture` on the Slider (now wrapped
-  in a `GeometryReader`, min/max labels moved outside into an HStack) mapping tap x →
-  nearest discrete position via `sliderValue(forTapX:trackWidth:)` (13.5pt thumb inset,
-  linear across remaining width, `.rounded()` snap, endpoint clamps). Internal-for-testing;
-  7 new unit tests in `EventFilterSheetSliderTests` (edges, clamps, center, all 13
-  positions, degenerate width).
+- **Tap-to-set slider — ADDED THEN REVERTED.** First attempt: stock Slider +
+  `simultaneousGesture(DragGesture(minimumDistance: 0))` in a GeometryReader mapping
+  tap x → nearest step (+ 7 unit tests). User direction: "go back to basics" — the
+  gesture/GeometryReader layering was deemed too fancy, so the sheet is back to the
+  bare stock `Slider` with inline min/max labels (48dcf9c's slider changes undone in
+  a follow-up commit; tests deleted). Consequence: track taps don't set the value
+  (stock Slider behavior); only thumb drags do.
 - **Reset button:** appears in the sheet toolbar (cancellation slot) only when any exposed
   control differs from defaults (hide expired / all favorites / all types / 6h cap);
   resets field-by-field so unexposed fields (dates, searchText, activeWindow) are
@@ -344,6 +344,35 @@ type-toggle, restores defaults, disappears; icon outline↔fill tracks default/n
 list live-updates behind the sheet. Track-tap can't be driven by the AX tooling (the
 slider exposes no AX element via XcodeBuildMCP snapshots) — covered by the unit tests;
 needs one manual tap check. Full iBurnTests suite green (140).
+
+## Part H — Root-cause hardening after third "still broken" report (stale binary again)
+
+**8:23 PM user screenshot** (SUN 30, 1h cap, stale 5h45m "Drama Dump & Gift" first cell):
+installed dylib was STILL the 14:06 pre-fix build (`HourAnchorID` present,
+`isScrollAnchor` absent), main checkout still dc37275 — the ff-merge from Part G was
+permission-blocked for the session and never run manually. No fixed binary has ever been
+user-tested up to this point.
+
+Per user direction the slider went back to fully stock (tap-to-set gesture + its 7 tests
+removed — track taps don't set the value again; only thumb drags). Reset button and the
+differs-from-default filter icon remain.
+
+**Hardening (belt & suspenders, closes every remaining path to a stale row):**
+1. **No explicit `.id()` on rows at all.** The scrub strip's `scrollTo` targets the
+   ForEach identity (`\.object.uid`) directly — the conditional IDView wrapper (a
+   branch-switch remount source and the historical collision surface) is gone entirely.
+2. **Observation generation guard** (`EventListViewModel.observationGeneration`): rapid
+   filter changes (slider drag ticks) cancel-and-restart the GRDB observation many times
+   in a burst; a superseded observation's in-flight emission could land after the newest
+   one and overwrite `dayBuckets` with rows the current filter excludes (renders stale
+   rows whose taps fail the visibleRows guard). Emissions now no-op unless their
+   generation is current, on both browse and search paths.
+
+**Verified on the fixed binary (symbol-checked), user's exact persisted state (1h cap):**
+SUN 30 6pm = The Surge (15m) / Inflatable Wildlife (1h) / Radical Humanity (15m) /
+Queeratorio (1h) — no Drama Dump, matching the query; first-cell tap pushes the right
+detail; 12 rapid type-toggle filter changes (batch) leave zero stale/duplicate rows;
+hour scrub lands on 8 PM via ForEach-identity scrollTo. iBurnTests 133 green.
 
 ### Worktree build note (for future sessions)
 

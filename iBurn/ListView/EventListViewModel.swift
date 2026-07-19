@@ -65,6 +65,15 @@ final class EventListViewModel: ObservableObject {
     private var loadingGateTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
 
+    /// Monotonic token identifying the current observation. Rapid filter changes (e.g.
+    /// each tick of the duration slider) cancel-and-restart the observation many times in
+    /// quick succession, but cancellation doesn't stop an emission already past its
+    /// suspension point — a superseded observation can deliver AFTER the newest one,
+    /// silently replacing fresh buckets with stale ones (rows the current filter
+    /// excludes; their taps then fail showDetail's visibleRows guard). Emissions are
+    /// dropped unless their generation is still current.
+    private var observationGeneration = 0
+
     // MARK: - Init
 
     init(
@@ -190,6 +199,8 @@ final class EventListViewModel: ObservableObject {
         observationTask?.cancel()
         loadingGateTask?.cancel()
         isLoading = true
+        observationGeneration += 1
+        let generation = observationGeneration
 
         switch mode {
         case .browse:
@@ -197,19 +208,20 @@ final class EventListViewModel: ObservableObject {
             let f = browseFilter()
             observationTask = Task { [weak self] in
                 guard let self else { return }
-                var didReceiveFirstEmission = false
                 for await bucket in self.dataProvider.observeObjectsByDayThenHour(filter: f) {
-                    didReceiveFirstEmission = true
                     await MainActor.run {
+                        guard self.observationGeneration == generation else { return }
                         self.dayBuckets = bucket
                         if !bucket.isEmpty {
                             self.isLoading = false
+                            self.loadingGateTask?.cancel()
                         }
                     }
-                    if didReceiveFirstEmission, !bucket.isEmpty {
-                        await MainActor.run { self.loadingGateTask?.cancel() }
-                    } else if didReceiveFirstEmission, bucket.isEmpty {
-                        startLoadingGateIfNeeded()
+                    if bucket.isEmpty {
+                        await MainActor.run {
+                            guard self.observationGeneration == generation else { return }
+                            self.startLoadingGateIfNeeded()
+                        }
                     }
                 }
             }
@@ -221,6 +233,7 @@ final class EventListViewModel: ObservableObject {
                 guard let self else { return }
                 for await rows in self.dataProvider.observeObjects(filter: f) {
                     await MainActor.run {
+                        guard self.observationGeneration == generation else { return }
                         self.searchResults = rows
                         self.isLoading = false
                     }
