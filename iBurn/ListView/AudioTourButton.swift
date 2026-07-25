@@ -10,6 +10,8 @@ import SwiftUI
 protocol AudioPlayerProtocol: AnyObject {
     func playAudioTour(_ tracks: [BRCAudioTourTrack])
     func isPlaying(id: String) -> Bool
+    /// True when the track is loaded in the player, playing or paused.
+    func hasItem(id: String) -> Bool
 }
 
 extension BRCAudioPlayer: AudioPlayerProtocol {}

@@ -401,6 +401,14 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func pushVisitListView() {
+        let preferenceService = PreferenceServiceFactory.shared
+        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
+            let visitVC = VisitListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
+            visitVC.title = "Visit List"
+            navigationController?.pushViewController(visitVC, animated: true)
+            return
+        }
+
         let visitVC = VisitListViewController()
         visitVC.title = "Visit List"
         navigationController?.pushViewController(visitVC, animated: true)
@@ -456,6 +464,14 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     func showAudioTour() {
+        let preferenceService = PreferenceServiceFactory.shared
+        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
+            let audioVC = AudioTourHostingController(dependencies: BRCAppDelegate.shared.dependencies)
+            audioVC.title = "Audio Tour"
+            navigationController?.pushViewController(audioVC, animated: true)
+            return
+        }
+
         let audioTour = AudioTourViewController(style: UITableView.Style.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
         audioTour.title = "Audio Tour"
         navigationController?.pushViewController(audioTour, animated: true)
