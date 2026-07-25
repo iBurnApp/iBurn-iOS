@@ -231,7 +231,15 @@ watch shows up in the phone's PlayaDB `visit_status` AND its Yap metadata blob;
 setting a status in the phone detail's VISIT STATUS cell (below USER NOTES —
 present on both the legacy and PlayaDB detail paths) appears on the watch.
 The rating prompt ("Enjoying iBurn?") can block phone UI automation — it's not
-in the AX tree; terminate + relaunch the app to dismiss it.
+in the AX tree, so there's no elementRef to tap. Appirater is configured with
+`setTimeBeforeReminding:2` (`BRCAppDelegate.m`), so a plain terminate + relaunch
+can bring it straight back. Suppress it at the defaults layer instead, then
+relaunch:
+
+```bash
+xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 kAppiraterDeclinedToRate -bool YES
+xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 kAppiraterRatedCurrentVersion -bool YES
+```
 
 Pre-embargo note: the bundled data has **zero GPS rows**, so Nearby shows an
 explanatory empty state and Detail hides Navigate. To exercise those flows,
