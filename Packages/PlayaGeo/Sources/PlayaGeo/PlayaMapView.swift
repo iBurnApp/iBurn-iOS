@@ -7,18 +7,27 @@
 
 import SwiftUI
 
-/// Marker rendered on top of the base map (target POI, favorites, etc.).
+/// Marker rendered on top of the base map (target POI, favorites, user pins).
 public struct MapMarker: Identifiable, Sendable {
     public let id: String
     public let point: CGPoint
     public let label: String?
     public let color: Color
+    /// Optional SF Symbol drawn inside the marker (e.g. a bicycle for a bike pin).
+    public let symbolName: String?
 
-    public init(id: String, point: CGPoint, label: String? = nil, color: Color = .red) {
+    public init(
+        id: String,
+        point: CGPoint,
+        label: String? = nil,
+        color: Color = .red,
+        symbolName: String? = nil
+    ) {
         self.id = id
         self.point = point
         self.label = label
         self.color = color
+        self.symbolName = symbolName
     }
 }
 
@@ -156,7 +165,8 @@ public struct PlayaMapView: View {
 
     private func draw(marker: MapMarker, context: inout GraphicsContext, transform: CGAffineTransform, style: MapStyle) {
         let p = marker.point.applying(transform)
-        let r: CGFloat = 5
+        // Symbol markers need room for the glyph; plain dots stay small.
+        let r: CGFloat = marker.symbolName == nil ? 5 : 8
         context.fill(
             Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: 2 * r, height: 2 * r)),
             with: .color(marker.color)
@@ -166,6 +176,17 @@ public struct PlayaMapView: View {
             with: .color(.white),
             lineWidth: 1.5
         )
+        if let symbolName = marker.symbolName {
+            // Drawn as Text-embedded image: context.draw(Image:) ignores
+            // foreground style, Text carries its own.
+            context.draw(
+                Text(Image(systemName: symbolName))
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(.white),
+                at: p,
+                anchor: .center
+            )
+        }
         if let label = marker.label {
             context.draw(
                 Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(style.label),

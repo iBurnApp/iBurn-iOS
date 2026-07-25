@@ -6,6 +6,7 @@
 //  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
+import PlayaDB
 import PlayaGeo
 import SwiftUI
 
@@ -17,18 +18,21 @@ private enum TrackingMode {
 }
 
 /// Offline BRC map: Digital Crown zooms, double tap zooms in one level,
-/// drag pans. A single MapKit-style tracking button cycles free → follow
-/// (north-up, centered on the user) → follow-heading (map rotates to the
-/// compass); panning drops back to free without moving the camera.
+/// drag pans. The bottom toolbar carries a MapKit-style tracking button that
+/// cycles free → follow (north-up, centered on the user) → follow-heading (map
+/// rotates to the compass) → free, plus a drop-pin button; panning drops back to
+/// free without moving the camera.
 struct MapScreen: View {
     let mapData: PlayaMapData
     @ObservedObject var location: LocationService
+    @ObservedObject var pinStore: PinStore
 
     @State private var camera = MapCamera(center: .zero, metersPerPoint: 25)
     /// Crown zoom level; metersPerPoint = 50 / 2^(level/2).
     @State private var zoomLevel: Double = 1
     @State private var trackingMode: TrackingMode = .follow
     @State private var dragStartCenter: CGPoint?
+    @State private var showingDropPin = false
 
     var body: some View {
         PlayaMapView(
@@ -56,8 +60,19 @@ struct MapScreen: View {
             zoomLevel = min(zoomLevel + 2, 12)
         }
         .gesture(dragGesture)
-        .overlay(alignment: .bottomTrailing) {
-            controls
+        .toolbar {
+            ToolbarItemGroup(placement: .bottomBar) {
+                trackingButton
+                dropPinButton
+            }
+        }
+        .sheet(isPresented: $showingDropPin) {
+            DropPinSheet(
+                coordinate: location.location?.coordinate,
+                pinStore: pinStore
+            ) { _ in
+                showingDropPin = false
+            }
         }
         .overlay(alignment: .top) {
             if trackingMode == .followHeading && location.needsCalibration {
@@ -104,7 +119,7 @@ struct MapScreen: View {
     }
 
     private var markers: [MapMarker] {
-        mapData.pois
+        let landmarks = mapData.pois
             .filter { $0.ref == "center" || $0.ref == "centerCamp" }
             .map { poi in
                 MapMarker(
@@ -114,6 +129,19 @@ struct MapScreen: View {
                     color: .orange
                 )
             }
+        let pins = pinStore.pins.map { pin in
+            MapMarker(
+                id: pin.id,
+                point: mapData.projection.point(
+                    for: GeoCoordinate(latitude: pin.latitude, longitude: pin.longitude)
+                ),
+                label: camera.metersPerPoint < 20 ? pin.displayTitle : nil,
+                color: pin.type.tint,
+                symbolName: pin.type.symbolName
+            )
+        }
+        // Pins last so they draw over the landmarks.
+        return landmarks + pins
     }
 
     // MARK: - Gestures & controls
@@ -138,10 +166,11 @@ struct MapScreen: View {
             }
     }
 
-    private var controls: some View {
+    /// MapKit's cycle: free → follow → follow-heading → free.
+    private var trackingButton: some View {
         Button {
             switch trackingMode {
-            case .free, .followHeading:
+            case .free:
                 trackingMode = .follow
                 camera.headingDegrees = 0
                 if userPoint == nil {
@@ -149,17 +178,26 @@ struct MapScreen: View {
                 }
             case .follow:
                 trackingMode = .followHeading
+            case .followHeading:
+                trackingMode = .free
+                // Keep the map where the user is looking; only stop tracking.
+                camera.center = displayCamera.center
+                camera.headingDegrees = displayCamera.headingDegrees
             }
         } label: {
             Image(systemName: trackingIcon)
-                .font(.system(size: 16))
+                .foregroundStyle(trackingTint)
         }
-        .buttonStyle(.plain)
-        .padding(7)
-        .background(.black.opacity(0.55), in: Circle())
-        .foregroundStyle(trackingTint)
         .accessibilityLabel(trackingAccessibilityLabel)
-        .padding(.trailing, 2)
+    }
+
+    private var dropPinButton: some View {
+        Button {
+            showingDropPin = true
+        } label: {
+            Image(systemName: "mappin.and.ellipse")
+        }
+        .accessibilityLabel("Drop a pin here")
     }
 
     private var trackingIcon: String {
@@ -172,7 +210,7 @@ struct MapScreen: View {
 
     private var trackingTint: Color {
         switch trackingMode {
-        case .free: return .white
+        case .free: return .primary
         case .follow: return .blue
         case .followHeading: return .orange
         }
@@ -182,13 +220,17 @@ struct MapScreen: View {
         switch trackingMode {
         case .free: return "Follow my location"
         case .follow: return "Switch to compass mode"
-        case .followHeading: return "Switch to north up"
+        case .followHeading: return "Stop following my location"
         }
     }
 }
 
 #Preview("City overview") {
-    MapScreen(mapData: PreviewMapData.data, location: LocationService())
+    MapScreen(
+        mapData: PreviewMapData.data,
+        location: LocationService(),
+        pinStore: PinStore(previewPins: PreviewPins.pins)
+    )
 }
 
 /// Zoomed to the 6:00 blocks — exercises the street-name label pass.

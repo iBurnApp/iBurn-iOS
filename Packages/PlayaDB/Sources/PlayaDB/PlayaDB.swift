@@ -254,13 +254,14 @@ public protocol PlayaDB {
     /// Save (insert or update) a user map pin.
     func saveUserMapPin(_ pin: UserMapPin) async throws
 
-    /// Delete a user map pin by id.
+    /// Delete a user map pin by id. This is a soft delete: the row is kept as a
+    /// tombstone (`isDeleted`) so the deletion can propagate through sync.
     func deleteUserMapPin(id: String) async throws
 
-    /// Fetch all user map pins.
+    /// Fetch all user map pins, tombstones excluded.
     func fetchUserMapPins() async throws -> [UserMapPin]
 
-    /// Observe all user map pins reactively.
+    /// Observe all user map pins reactively, tombstones excluded.
     @discardableResult
     func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken
 
@@ -278,6 +279,28 @@ public protocol PlayaDB {
 
     /// Fetch every calendar entry, ordered by event id then occurrence key.
     func fetchAllCalendarEntries() async throws -> [EventCalendarEntry]
+
+    // MARK: - User Map Pin Sync
+
+    /// Snapshot of every pin row **including tombstones**, for last-writer-wins
+    /// sync. Ordered by id for determinism.
+    func userMapPinSyncSnapshot() async throws -> [UserMapPin]
+
+    /// Merge incoming pins using last-writer-wins on `modifiedDate`. Older or
+    /// equally-stamped incoming rows lose, tombstones for unknown pins are
+    /// ignored, and rows that would be unchanged are never written — so
+    /// applying a peer's snapshot cannot re-fire local observations. Returns the
+    /// rows that were actually written.
+    @discardableResult
+    func applyUserMapPinSync(_ pins: [UserMapPin]) async throws -> [UserMapPin]
+
+    /// Observe the pin sync snapshot reactively (same query as
+    /// `userMapPinSyncSnapshot()`).
+    @discardableResult
+    func observeUserMapPinSyncState(
+        onChange: @escaping ([UserMapPin]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
 
     // MARK: - Data Import
     

@@ -35,7 +35,7 @@ class DependencyContainer {
     private let thumbnailImageDownloader: ThumbnailImageDownloader
 
     /// Syncs favorites with the paired Apple Watch over WatchConnectivity.
-    private var watchSyncManager: FavoritesSyncManager?
+    private var watchSyncManager: PeerSyncManager?
 
     /// Mirrors PlayaDB favorite changes into the legacy YapDatabase so both stores agree.
     /// Lazy so BRCDatabaseManager is only touched once the first provider is used.
@@ -121,11 +121,14 @@ class DependencyContainer {
             await ColorPrefetcher.prefetchMissingColors(playaDB: playaDB)
         }
 
-        // Sync favorites with the paired Apple Watch. Items applied from the
-        // watch are mirrored into the legacy YapDatabase so legacy surfaces
-        // (and event calendar entries) stay in agreement. onApplied arrives on
-        // a background queue; hop to the main actor before touching self.
-        let watchSyncManager = FavoritesSyncManager(playaDB: self.playaDB) { [weak self] applied in
+        // Sync favorites and user map pins with the paired Apple Watch.
+        // Favorites applied from the watch are mirrored into the legacy
+        // YapDatabase so legacy surfaces (and event calendar entries) stay in
+        // agreement; pins need no mirror — PlayaDB is already their source of
+        // truth and FilteredMapDataSource observes them straight onto the map.
+        // The callback arrives on a background queue; hop to the main actor
+        // before touching self.
+        let watchSyncManager = PeerSyncManager(playaDB: self.playaDB, onFavoritesApplied: { [weak self] applied in
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 for item in applied {
@@ -145,7 +148,7 @@ class DependencyContainer {
                     )
                 }
             }
-        }
+        })
         watchSyncManager.start()
         self.watchSyncManager = watchSyncManager
     }
