@@ -75,6 +75,14 @@ delete the legacy stack."
 | User map pins / breadcrumbs | YapDatabase (`BRCUserMapPoint`) | always on |
 | Network data updates | YapDatabase (`BRCDataImporter`) | always on |
 
+> **Correction 2026-07-25:** the "User map pins / breadcrumbs" row above was already wrong when
+> written. User map pins have been 100% PlayaDB (`user_map_pins` table) since commit `99587a3`
+> (2026-04-05) — all six CRUD paths verified in the 07-25 audit; `BRCUserMapPoint` survives only
+> as an in-memory MapLibre annotation adapter (`BRCUserMapPoint+PlayaDB.swift`). Breadcrumbs
+> have never been Yap in the shipping path: they live in a standalone GRDB database,
+> `LocationHistory.sqlite` (`iBurn/Tracks/LocationStorage.swift`). See
+> `2026-07-25-playadb-default-yap-audit-and-migration.md`.
+
 **Bridging/dual-writes:** `DetailSubject` enum bridges `.legacy(BRCDataObject)` and PlayaDB
 cases; favorites are dual-written Yap ↔ PlayaDB by uid (`DetailDataService.syncFavoriteToPlayaDB`,
 `BRCDataObjectTableViewCell`) so hearts agree across stacks. ~11 files import both databases.
@@ -85,6 +93,9 @@ cases; favorites are dual-written Yap ↔ PlayaDB by uid (`DetailDataService.syn
   `iBurn-Data` (2026 tiles generated 2026-07-03). Annotation content is PlayaDB; residual Yap
   connections in `MainMapViewController` exist only for user pins/breadcrumbs. Reverse geocoding
   via the `PlayaGeocoder` framework (JS bundle, year-hardcoded paths — annual checklist item).
+  **Correction 2026-07-25:** user pins are PlayaDB (`user_map_pins`, commit `99587a3`) and
+  breadcrumbs are standalone GRDB (`LocationHistory.sqlite`); the residual Yap connections in
+  `MainMapViewController` are dead code, not pin storage.
 - **watchOS:** standalone watchOS 26 app; SwiftUI `Canvas` vector map from bundled GeoJSON via
   `PlayaGeo` (MapLibre is wontfix on watchOS), own PlayaDB seeded from `iBurn2026APIData`,
   watch-local favorites. **No WatchConnectivity sync yet** (Phase 2 of the watch plan, pending
@@ -256,6 +267,11 @@ The keystone: everything else is blocked on PlayaDB being update-capable.
   already dual-written), **user map pins & breadcrumbs** (new GRDB tables; port
   `BRCUserMapPoint` map layer to `UserMapPin`), visit lists. Migration runs once at launch,
   idempotent, covered by tests with a fixture Yap DB.
+  **Correction 2026-07-25:** user map pins and breadcrumbs are already off Yap and need no
+  migration — pins ship in PlayaDB `user_map_pins` (commit `99587a3`, 2026-04-05) and
+  breadcrumbs in standalone GRDB `LocationHistory.sqlite`. Visit status is likewise already
+  dual-written (`object_metadata.visit_status` + `FavoriteSyncService.mirrorVisitStatus`), so
+  the remaining Phase 2 migration surface is legacy-only leftovers, not these.
 - Remove the favorites dual-write once migration ships.
 
 ### Phase 3 — Delete the legacy core (Apr–May 2027)
@@ -307,6 +323,10 @@ The keystone: everything else is blocked on PlayaDB being update-capable.
    `makeAIGuideViewModel()` nil) must stay tested as the OS evolves through betas.
 5. **Yap user-data migration fidelity** (Phase 2): breadcrumbs/visit lists have no dual-write
    today; the one-time migration is the only shot — needs fixture-DB tests before shipping.
+   **Correction 2026-07-25:** breadcrumbs were never in Yap (standalone GRDB
+   `LocationHistory.sqlite`) and visit status *is* dual-written both ways
+   (`FavoriteSyncService.mirrorVisitStatus` ⇄ `DetailDataService.syncVisitStatusToPlayaDB`).
+   The real fidelity risk is narrower: Yap-only rows that predate the dual-writes.
 6. **Open:** 2026 embargo policy (art-only vs full), 2026 passcode timing, whether BMorg
    publishes 2026 GIS/placement in time, `.gitmodules` private/public flip decision.
 

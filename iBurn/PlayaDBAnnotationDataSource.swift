@@ -35,11 +35,29 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// Active observation tokens
     private var observationTokens: [PlayaDBObservationToken] = []
 
+    /// True between `startObserving()` and `stopObserving()`. Gates the embargo-driven
+    /// restart so a torn-down data source never resurrects its observations.
+    private var isObserving = false
+
     // MARK: - Init
 
     init(playaDB: PlayaDB) {
         self.playaDB = playaDB
         super.init()
+        // `startObserving()` snapshots `BRCEmbargo.allowEmbargoedData()` into each observation
+        // block, so an unlock while the map is live would otherwise keep filtering annotations
+        // out until the next launch.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        guard isObserving else { return }
+        startObserving()
     }
 
     // MARK: - AnnotationDataSource
@@ -53,6 +71,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// Start GRDB observations based on current UserSettings.
     func startObserving() {
         stopObserving()
+        isObserving = true
 
         let embargoAllowed = BRCEmbargo.allowEmbargoedData()
 
@@ -158,6 +177,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
     /// Cancel all observations and clear caches.
     func stopObserving() {
+        isObserving = false
         for token in observationTokens {
             token.cancel()
         }

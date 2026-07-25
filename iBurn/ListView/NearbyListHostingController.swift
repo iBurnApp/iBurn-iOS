@@ -15,8 +15,18 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
         let vm = dependencies.makeNearbyViewModel()
         self.viewModel = vm
         super.init(rootView: NearbyView(viewModel: vm))
-        self.rootView = NearbyView(
-            viewModel: vm,
+        self.rootView = makeRootView()
+        self.title = "Nearby"
+        observeEmbargoDidClear()
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeRootView() -> NearbyView {
+        NearbyView(
+            viewModel: viewModel,
             onSelectArt: { [weak self] art in
                 self?.showDetail(.art(art))
             },
@@ -33,11 +43,23 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
                 self?.showTimeShift(vm)
             }
         )
-        self.title = "Nearby"
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // MARK: - Embargo
+
+    /// Rows read `BRCEmbargo.allowEmbargoedData()` while building their body, so an unlock
+    /// while this screen is alive needs an explicit re-render to reveal host addresses.
+    private func observeEmbargoDidClear() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        rootView = makeRootView()
     }
 
     // MARK: - View Lifecycle

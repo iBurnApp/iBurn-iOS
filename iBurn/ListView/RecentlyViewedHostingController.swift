@@ -15,7 +15,17 @@ class RecentlyViewedHostingController: UIHostingController<RecentlyViewedView> {
             locationProvider: dependencies.locationProvider
         )
         super.init(rootView: RecentlyViewedView(viewModel: viewModel))
-        self.rootView = RecentlyViewedView(
+        self.rootView = makeRootView()
+        self.title = "Recently Viewed"
+        observeEmbargoDidClear()
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeRootView() -> RecentlyViewedView {
+        RecentlyViewedView(
             viewModel: viewModel,
             onSelectArt: { [weak self] art in
                 self?.showDetail(for: .art(art, ViewDates(firstViewed: nil, lastViewed: Date())))
@@ -33,11 +43,23 @@ class RecentlyViewedHostingController: UIHostingController<RecentlyViewedView> {
                 self?.showMap(annotations: annotations)
             }
         )
-        self.title = "Recently Viewed"
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // MARK: - Embargo
+
+    /// Rows read `BRCEmbargo.allowEmbargoedData()` while building their body, so an unlock
+    /// while this screen is alive needs an explicit re-render to reveal host addresses.
+    private func observeEmbargoDidClear() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        rootView = makeRootView()
     }
 
     // MARK: - Navigation

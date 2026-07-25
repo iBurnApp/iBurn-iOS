@@ -480,22 +480,22 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
                 userNotes = notes
-                syncNotesToYapDB(uid: art.uid, yapCollection: BRCArtObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .art, uid: art.uid, notes: notes)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
                 userNotes = notes
-                syncNotesToYapDB(uid: camp.uid, yapCollection: BRCCampObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .camp, uid: camp.uid, notes: notes)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 userNotes = notes
-                syncNotesToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .event, uid: event.uid, notes: notes)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: occ.event)
                 userNotes = notes
-                syncNotesToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .event, uid: occ.event.uid, notes: notes)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: mv)
@@ -574,12 +574,14 @@ class DetailViewModel: ObservableObject {
         }
     }
 
-    private func syncNotesToYapDB(uid: String, yapCollection: String, notes: String) {
-        BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-            guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
-            let metadata = object.metadata(with: transaction).metadataCopy()
-            metadata.userNotes = notes
-            object.replace(metadata, transaction: transaction)
+    /// Fire-and-forget notes mirror into legacy YapDatabase. Routed through
+    /// `FavoriteSyncService` so event uids fan out to every per-occurrence Yap object
+    /// ("<apiUID>-<index>"); writing the bare PlayaDB uid straight into
+    /// `BRCEventObject.yapCollection` matched no key at all. No calendar side effects.
+    private func syncNotesToYapDB(type: FavoriteSyncObjectType, uid: String, notes: String) {
+        let service = favoriteSyncService
+        Task {
+            await service.mirrorNotes(type: type, uid: uid, notes: notes)
         }
     }
 

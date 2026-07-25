@@ -94,11 +94,14 @@ private extension TracksViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    /// Reuses the app-wide `LocationStorage`. Building a second instance here opened a
+    /// duplicate `DatabaseQueue` on the same sqlite file *and* a second `CLLocationManager`
+    /// feeding it, so every breadcrumb was written twice while this screen was alive.
     func setupStorage() throws {
-        let databaseURL = try FileManager.default
-            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            .appendingPathComponent("LocationHistory.sqlite")
-        self.storage = try LocationStorage(path: databaseURL.path)
+        if LocationStorage.shared == nil {
+            try LocationStorage.setup()
+        }
+        self.storage = LocationStorage.shared
     }
     
     func startMonitoring() {

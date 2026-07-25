@@ -92,9 +92,15 @@ class EmbargoPasscodeViewModel: ObservableObject {
     
     func unlockButtonPressed() {
         if BRCEmbargo.isEmbargoPasscodeString(passcode) {
+            let wasUnlocked = UserDefaults.enteredEmbargoPasscode
             UserDefaults.enteredEmbargoPasscode = true
             isDataUnlocked = true
             countdownTimer?.invalidate()
+            // Live-refresh everything that captured the embargo flag (map observations,
+            // SwiftUI list rows) instead of waiting for the next app launch.
+            if !wasUnlocked {
+                BRCEmbargoNotifier.postDidClear()
+            }
         } else {
             shouldShowUnlockError = true
         }

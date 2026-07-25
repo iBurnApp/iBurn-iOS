@@ -103,7 +103,13 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
             NSLog(@"Fetched data from internet with result: %d", (int)result);
         }];
-        [ColorCache.shared prefetchAllColors];
+        // ColorCache extracts colors from Yap-backed objects for the legacy UIKit cells only.
+        // The default (SwiftUI/PlayaDB) stack is served by ColorPrefetcher, which writes the
+        // persistent `thumbnail_colors` table (see DependencyContainer). Running both every
+        // launch duplicates the same image decoding work.
+        if (!BRCPreferenceService.useSwiftUILists) {
+            [ColorCache.shared prefetchAllColors];
+        }
     });
     
     // Handle launch from notification
@@ -304,7 +310,13 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (void) enteredBurningManRegion {
     BRCLocations.hasEnteredBurningManRegion = true;
+    // +allowEmbargoedData can itself flip the stored flag once the festival has started,
+    // so snapshot the previous state to detect an unlock that happens right here.
+    BOOL wasUnlocked = [[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode];
     if ([BRCEmbargo allowEmbargoedData]) {
+        if (!wasUnlocked) {
+            [BRCEmbargoNotifier postDidClear];
+        }
         return;
     }
     NSDate *now = [NSDate present];
@@ -316,6 +328,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         [alert addAction:cancel];
         [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
         [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
+        [BRCEmbargoNotifier postDidClear];
     }
 }
 

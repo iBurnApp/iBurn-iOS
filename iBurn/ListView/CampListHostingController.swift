@@ -20,7 +20,17 @@ class CampListHostingController: UIHostingController<CampListView> {
         self.playaDB = dependencies.playaDB
         self.viewModel = dependencies.makeCampListViewModel()
         super.init(rootView: CampListView(viewModel: viewModel))
-        self.rootView = CampListView(
+        self.rootView = makeRootView()
+        self.title = "Camps"
+        observeEmbargoDidClear()
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeRootView() -> CampListView {
+        CampListView(
             viewModel: viewModel,
             onSelect: { [weak self] camp in
                 self?.showDetail(for: camp)
@@ -29,11 +39,23 @@ class CampListHostingController: UIHostingController<CampListView> {
                 self?.showMap(for: camps)
             }
         )
-        self.title = "Camps"
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // MARK: - Embargo
+
+    /// Rows read `BRCEmbargo.allowEmbargoedData()` while building their body, so an unlock
+    /// while this screen is alive needs an explicit re-render to reveal playa addresses.
+    private func observeEmbargoDidClear() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        rootView = makeRootView()
     }
 
     private func showDetail(for camp: CampObject) {
