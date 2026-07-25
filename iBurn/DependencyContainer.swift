@@ -43,6 +43,15 @@ class DependencyContainer {
         FavoriteSyncServiceFactory.shared
     }()
 
+    /// Owns the device-calendar (EventKit) entries for favorited events, bookkeeping
+    /// their identifiers in PlayaDB. Used when
+    /// `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on (the default); the legacy
+    /// Yap path takes over when it is off. Lazy so EventKit and BRCDatabaseManager are
+    /// only touched once a favorite actually changes.
+    private(set) lazy var eventCalendarService: EventCalendarService = {
+        EventCalendarServiceFactory.makeService(playaDB: playaDB)
+    }()
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects

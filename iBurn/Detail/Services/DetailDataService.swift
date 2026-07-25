@@ -14,8 +14,26 @@ import YapDatabase
 class DetailDataService: DetailDataServiceProtocol {
     private let playaDB: PlayaDB?
 
-    init(playaDB: PlayaDB? = nil) {
+    /// PlayaDB-native calendar sync. When present *and*
+    /// `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on, it owns the EKEvents for
+    /// favorited events and the legacy in-transaction `refreshCalendarEntry` is skipped,
+    /// so exactly one stack writes calendar entries. Nil (tests/previews) keeps the
+    /// legacy path.
+    private let calendarService: EventCalendarService?
+
+    init(playaDB: PlayaDB? = nil, calendarService: EventCalendarService? = nil) {
         self.playaDB = playaDB
+        self.calendarService = calendarService
+    }
+
+    /// The calendar service to use for this write, or nil when the legacy Yap calendar
+    /// path owns the entry.
+    private var playaDBCalendarService: EventCalendarService? {
+        guard let calendarService,
+              PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.usePlayaDBCalendarSync) else {
+            return nil
+        }
+        return calendarService
     }
 
     func updateFavoriteStatus(for object: BRCDataObject, isFavorite: Bool) async throws {
@@ -26,16 +44,26 @@ class DetailDataService: DetailDataServiceProtocol {
         let newMetadata = metadata.metadataCopy()
         newMetadata.isFavorite = isFavorite
 
+        let calendarService = playaDBCalendarService
+
         await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
 
-                if let event = object as? BRCEventObject {
+                if calendarService == nil, let event = object as? BRCEventObject {
                     event.refreshCalendarEntry(transaction)
                 }
             } completionBlock: {
                 continuation.resume()
             }
+        }
+
+        // Post-commit, matching the FavoriteSyncService hook: the new service reads
+        // PlayaDB, not the transaction. Yap event uids are per-occurrence
+        // ("<apiUID>-<index>"); the service keys off the bare API uid.
+        if let calendarService, object is BRCEventObject {
+            let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: object.uniqueID)
+            await calendarService.reconcile(eventUID: apiUID, isFavorite: isFavorite)
         }
 
         syncFavoriteToPlayaDB(for: object, isFavorite: isFavorite)

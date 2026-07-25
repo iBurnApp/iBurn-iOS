@@ -27,6 +27,12 @@ enum Preferences {
             defaultValue: true,
             description: "Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps; disable to fall back to legacy UIKit"
         )
+
+        static let usePlayaDBCalendarSync = Preference<Bool>(
+            key: "featureFlag.calendar.usePlayaDB",
+            defaultValue: true,
+            description: "Sync favorited events to the device calendar from PlayaDB; disable to fall back to legacy YapDatabase calendar entries"
+        )
     }
     
     // MARK: - Location & Navigation

@@ -38,7 +38,11 @@ class DetailViewControllerFactory {
     ) -> DetailHostingController {
 
         // Create concrete service instances with PlayaDB for dual-write sync
-        let dataService = DetailDataService(playaDB: BRCAppDelegate.shared.dependencies.playaDB)
+        let dependencies = BRCAppDelegate.shared.dependencies
+        let dataService = DetailDataService(
+            playaDB: dependencies.playaDB,
+            calendarService: dependencies.eventCalendarService
+        )
         let audioService = AudioService()
         let locationService = LocationService()
         
