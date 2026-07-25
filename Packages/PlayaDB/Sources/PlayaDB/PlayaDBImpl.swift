@@ -304,6 +304,14 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN visit_status_updated_at DATETIME")
         }
 
+        // v4: soft deletes for user map pins. Pin sync exchanges whole snapshots
+        // with last-writer-wins on modified_date; without a tombstone, a row
+        // missing from a peer's snapshot is ambiguous ("never created there" vs
+        // "deleted there") and deleted pins resurrect on the next push.
+        migrator.registerMigration("v4-pin-sync") { db in
+            try db.execute(sql: "ALTER TABLE user_map_pins ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0")
+        }
+
         try migrator.migrate(dbQueue)
 
         // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
@@ -1551,21 +1559,27 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    /// Soft delete: the row becomes a tombstone so the deletion can win a
+    /// last-writer-wins merge on the peer device. Every read path below filters
+    /// tombstones out, so callers see a normal delete.
     func deleteUserMapPin(id: String) async throws {
         _ = try await dbQueue.write { db in
-            try UserMapPin.deleteOne(db, key: id)
+            try db.execute(
+                sql: "UPDATE user_map_pins SET is_deleted = 1, modified_date = ? WHERE id = ?",
+                arguments: [Date(), id]
+            )
         }
     }
 
     func fetchUserMapPins() async throws -> [UserMapPin] {
         try await dbQueue.read { db in
-            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+            try Self.liveUserMapPins(db)
         }
     }
 
     func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken {
         let observation = ValueObservation.tracking { db in
-            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+            try Self.liveUserMapPins(db)
         }.removeDuplicates()
         let cancellable = observation.start(
             in: dbQueue,
@@ -1579,6 +1593,90 @@ internal class PlayaDBImpl: PlayaDB {
             }
         )
         return PlayaDBObservationToken(cancellable)
+    }
+
+    // MARK: - User Map Pin Sync
+
+    func userMapPinSyncSnapshot() async throws -> [UserMapPin] {
+        try await dbQueue.read { db in
+            try Self.userMapPinSyncItems(db)
+        }
+    }
+
+    @discardableResult
+    func applyUserMapPinSync(_ pins: [UserMapPin]) async throws -> [UserMapPin] {
+        try await dbQueue.write { db in
+            var applied: [UserMapPin] = []
+            for incoming in pins {
+                guard !incoming.id.isEmpty else { continue }
+                let existing = try UserMapPin.fetchOne(db, key: incoming.id)
+
+                guard var merged = existing else {
+                    // A tombstone for a pin this device never had says nothing
+                    // worth storing — skip it so the table only ever holds pins
+                    // we actually saw.
+                    guard !incoming.isDeleted else { continue }
+                    var newPin = incoming
+                    try newPin.insert(db)
+                    applied.append(newPin)
+                    continue
+                }
+
+                // Last-writer-wins on the whole row: title, coordinate, type and
+                // the tombstone flag all move together, so a strictly newer
+                // stamp is the only thing that can overwrite local state.
+                guard incoming.modifiedDate > merged.modifiedDate else { continue }
+                merged.title = incoming.title
+                merged.latitude = incoming.latitude
+                merged.longitude = incoming.longitude
+                merged.pinType = incoming.pinType
+                merged.isDeleted = incoming.isDeleted
+                merged.modifiedDate = incoming.modifiedDate
+                // Creation is a fact about the pin, not a field to race over.
+                merged.createdDate = min(merged.createdDate, incoming.createdDate)
+
+                // Never write when nothing changed: applying a peer's snapshot
+                // must not re-fire the local observation, or the two devices
+                // ping-pong pushes forever.
+                guard merged != existing else { continue }
+                try merged.update(db)
+                applied.append(merged)
+            }
+            return applied
+        }
+    }
+
+    @discardableResult
+    func observeUserMapPinSyncState(
+        onChange: @escaping ([UserMapPin]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try Self.userMapPinSyncItems(db)
+        }.removeDuplicates()
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: { pins in
+                DispatchQueue.main.async {
+                    onChange(pins)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
+    /// Pins visible to the app: tombstones excluded.
+    private static func liveUserMapPins(_ db: Database) throws -> [UserMapPin] {
+        try UserMapPin
+            .filter(UserMapPin.Columns.isDeleted == false)
+            .order(UserMapPin.Columns.createdDate)
+            .fetchAll(db)
+    }
+
+    /// Everything a peer needs to converge, tombstones included.
+    private static func userMapPinSyncItems(_ db: Database) throws -> [UserMapPin] {
+        try UserMapPin.order(UserMapPin.Columns.id).fetchAll(db)
     }
 
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {

@@ -12,21 +12,29 @@ import PlayaDB
 
 @main
 struct IBurnWatchApp: App {
-    private let playaDB: PlayaDB = {
-        do {
-            return try createPlayaDB()
-        } catch {
-            fatalError("PlayaDB init failed: \(error)")
-        }
-    }()
-
-    private let mapData: PlayaMapData? = try? PlayaMapData.load(from: .main)
+    private let playaDB: PlayaDB
+    private let mapData: PlayaMapData?
 
     @StateObject private var locationService = LocationService()
 
+    /// One pin observation shared by the map and the pins list.
+    @StateObject private var pinStore: PinStore
+
     /// Kept in @State so the manager (and its WCSession delegate + database
-    /// observation) survives re-runs of the root `.task`.
-    @State private var syncManager: FavoritesSyncManager?
+    /// observations) survives re-runs of the root `.task`.
+    @State private var syncManager: PeerSyncManager?
+
+    init() {
+        let db: PlayaDB
+        do {
+            db = try createPlayaDB()
+        } catch {
+            fatalError("PlayaDB init failed: \(error)")
+        }
+        playaDB = db
+        mapData = try? PlayaMapData.load(from: .main)
+        _pinStore = StateObject(wrappedValue: PinStore(playaDB: db))
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -35,33 +43,38 @@ struct IBurnWatchApp: App {
             // vertical page switching.
             NavigationStack {
                 if let mapData {
-                    MapScreen(mapData: mapData, location: locationService)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                NavigationLink {
-                                    BrowseScreen(
-                                        playaDB: playaDB,
-                                        mapData: mapData,
-                                        location: locationService
-                                    )
-                                } label: {
-                                    Image(systemName: "list.bullet")
-                                }
-                                .accessibilityLabel("Browse")
+                    MapScreen(
+                        mapData: mapData,
+                        location: locationService,
+                        pinStore: pinStore
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            NavigationLink {
+                                BrowseScreen(
+                                    playaDB: playaDB,
+                                    mapData: mapData,
+                                    location: locationService,
+                                    pinStore: pinStore
+                                )
+                            } label: {
+                                Image(systemName: "list.bullet")
                             }
-                            ToolbarItem(placement: .topBarTrailing) {
-                                NavigationLink {
-                                    FavoritesScreen(
-                                        playaDB: playaDB,
-                                        mapData: mapData,
-                                        location: locationService
-                                    )
-                                } label: {
-                                    Image(systemName: "heart.circle")
-                                }
-                                .accessibilityLabel("Favorites")
-                            }
+                            .accessibilityLabel("Browse")
                         }
+                        ToolbarItem(placement: .topBarTrailing) {
+                            NavigationLink {
+                                FavoritesScreen(
+                                    playaDB: playaDB,
+                                    mapData: mapData,
+                                    location: locationService
+                                )
+                            } label: {
+                                Image(systemName: "heart.circle")
+                            }
+                            .accessibilityLabel("Favorites")
+                        }
+                    }
                 } else {
                     Text("Map data unavailable")
                 }
@@ -69,11 +82,16 @@ struct IBurnWatchApp: App {
             .task {
                 await WatchSeeder.seedIfNeeded(playaDB)
                 if syncManager == nil {
-                    let manager = FavoritesSyncManager(playaDB: playaDB) { _ in
-                        // Applied favorites came from the phone; let visible
-                        // screens (e.g. FavoritesScreen) refresh themselves.
-                        NotificationCenter.default.post(name: .favoritesSyncDidApply, object: nil)
-                    }
+                    // Applied favorites came from the phone; let visible screens
+                    // (e.g. FavoritesScreen) refresh themselves. Pins need no
+                    // equivalent — PinStore is driven by a database observation
+                    // that fires on its own.
+                    let manager = PeerSyncManager(
+                        playaDB: playaDB,
+                        onFavoritesApplied: { _ in
+                            NotificationCenter.default.post(name: .favoritesSyncDidApply, object: nil)
+                        }
+                    )
                     manager.start()
                     syncManager = manager
                 }

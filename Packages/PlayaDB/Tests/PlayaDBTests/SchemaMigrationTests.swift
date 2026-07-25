@@ -26,7 +26,7 @@ final class SchemaMigrationTests: XCTestCase {
         let applied = try await playaDB.dbQueue.read { db in
             try String.fetchAll(db, sql: "SELECT identifier FROM grdb_migrations")
         }
-        XCTAssertEqual(applied, ["v1-initial-schema", "v2-favorite-sync", "v3-visit-status"])
+        XCTAssertEqual(applied, ["v1-initial-schema", "v2-favorite-sync", "v3-visit-status", "v4-pin-sync"])
     }
 
     func testPreMigratorDatabaseAdoptsCleanlyAndKeepsData() async throws {
@@ -73,7 +73,7 @@ final class SchemaMigrationTests: XCTestCase {
             return (applied, favorites, tables, stamp)
         }
 
-        XCTAssertEqual(applied, ["v1-initial-schema", "v2-favorite-sync", "v3-visit-status"])
+        XCTAssertEqual(applied, ["v1-initial-schema", "v2-favorite-sync", "v3-visit-status", "v4-pin-sync"])
         XCTAssertEqual(favoriteCount, 1, "Pre-existing user data must survive migrator adoption")
         XCTAssertEqual(tableCount, 5, "v1 should create the tables the legacy DB was missing")
         XCTAssertEqual(backfilledStamp, "2025-08-01",

@@ -178,12 +178,36 @@ private extension VisitStatus {
     }
 }
 
-/// Compass navigation to a single POI: map fit to you + the target, heading-up
+/// Compass navigation to a single point: map fit to you + the target, heading-up
 /// when the compass is available, with live distance/bearing readout.
+/// Takes a bare name + coordinate so it serves both database objects and
+/// user-placed pins.
 struct NavigationScreen: View {
-    let target: any DataObject
+    let targetName: String
+    let targetCoordinate: CLLocationCoordinate2D?
     let mapData: PlayaMapData
     @ObservedObject var location: LocationService
+
+    init(
+        targetName: String,
+        targetCoordinate: CLLocationCoordinate2D?,
+        mapData: PlayaMapData,
+        location: LocationService
+    ) {
+        self.targetName = targetName
+        self.targetCoordinate = targetCoordinate
+        self.mapData = mapData
+        self.location = location
+    }
+
+    init(target: any DataObject, mapData: PlayaMapData, location: LocationService) {
+        self.init(
+            targetName: target.name,
+            targetCoordinate: target.location?.coordinate,
+            mapData: mapData,
+            location: location
+        )
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -198,7 +222,7 @@ struct NavigationScreen: View {
                         PlayaMapView.UserState(point: $0, headingDegrees: location.headingDegrees)
                     },
                     markers: targetPoint.map {
-                        [MapMarker(id: target.uid, point: $0, label: target.name, color: .red)]
+                        [MapMarker(id: "target", point: $0, label: targetName, color: .red)]
                     } ?? []
                 )
                 .ignoresSafeArea()
@@ -226,11 +250,11 @@ struct NavigationScreen: View {
     }
 
     private var targetWorldPoint: CGPoint? {
-        guard let targetLocation = target.location else { return nil }
+        guard let targetCoordinate else { return nil }
         return mapData.projection.point(
             for: GeoCoordinate(
-                latitude: targetLocation.coordinate.latitude,
-                longitude: targetLocation.coordinate.longitude
+                latitude: targetCoordinate.latitude,
+                longitude: targetCoordinate.longitude
             )
         )
     }

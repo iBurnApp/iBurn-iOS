@@ -173,12 +173,19 @@ Set XcodeBuildMCP session defaults to the watch sim UDID +
    reveal the buttons, then tap **"Allow While Using App"** (or "Allow Once").
 4. Root is a **NavigationStack with the Map fullscreen** (Canvas-rendered BRC:
    dashed pentagon fence, radial street grid, plazas, user dot, The Man /
-   Center Camp markers; compass + recenter buttons bottom-right). Toolbar:
-   top-left "Browse" (list.bullet), top-right "Favorites". Digital Crown zooms
-   the map, drag pans — there is intentionally no page-swiping (gesture conflict).
-5. Compass button ("Switch to compass mode") toggles heading-up; simulators have
-   no compass hardware, so the map stays north-up and no calibration hint shows.
-6. **Browse** → rows: 📍 Nearby / 🏕️ Camps / 🎨 Art / 🚌 Vehicles / 🎪 Events.
+   Center Camp markers, user pins). Digital Crown zooms the map, drag pans —
+   there is intentionally no page-swiping (gesture conflict). All four controls
+   are **system toolbar buttons**, one per screen corner:
+   top-left "Browse" (list.bullet), top-right "Favorites" (heart.circle),
+   bottom-left the tracking button, bottom-right "Drop a pin here"
+   (mappin.and.ellipse). The two bottom ones are `.bottomBar` toolbar items
+   (watchOS 10+) — watchOS renders them as corner circles, not a bar.
+5. The tracking button cycles MapKit-style, **free → follow → follow-heading →
+   free**; its AX label states the *next* mode ("Follow my location" /
+   "Switch to compass mode" / "Stop following my location"), which is the
+   reliable way to assert the current mode from a snapshot. Simulators have no
+   compass hardware, so heading mode stays north-up and no calibration hint shows.
+6. **Browse** → rows: 📍 Nearby / 📌 Pins / 🏕️ Camps / 🎨 Art / 🚌 Vehicles / 🎪 Events.
    - Camps/Art/Vehicles: alphabetical searchable list (search field automation
      is unreliable — the watch keyboard's AX field doesn't accept `type_text`;
      verify search logic in code/DB instead), distances shown with a GPS fix.
@@ -192,17 +199,34 @@ Set XcodeBuildMCP session defaults to the watch sim UDID +
 8. Favorites toolbar has a **Filter** button (sheet with "Show":
    Favorites / Want to Visit / Visited and "Type": All/Camps/Art/Events/Vehicles;
    icon fills when non-default).
+9. **User map pins** (bike / home / star), synced with the phone:
+   - Drop: bottom-right toolbar button → sheet with tinted Bike (green) /
+     Home (orange) / Pin (yellow) rows → tap saves at the **current GPS fix**
+     and dismisses. With no fix the sheet shows "Waiting for GPS…" instead —
+     after a sim reboot the location resets, so re-run `simctl location set`
+     or you'll only see that state.
+   - List: Browse → 📌 Pins (distance-sorted; empty state "No pins yet").
+   - Detail: Navigate (same compass view as objects) / Rename / Delete.
+     Delete asks for confirmation, then pops back to the list.
+   - Pins also render on the map as tinted circles with their SF Symbol inside.
+     A pin at your exact location is hidden under the user dot (the dot draws
+     last) — move the sim location to see it.
 
 Verify: city geometry renders (not a blank background); PlayaDB.sqlite exists in
 the watch app container with 2026 counts
 (`xcrun simctl get_app_container <WATCH_UDID> com.trailbehind.iBurn2010.watchkitapp data`);
-favoriting writes `object_metadata` `camp|<uid>|1` etc.
+favoriting writes `object_metadata` `camp|<uid>|1` etc.;
+dropping a pin writes `user_map_pins`
+(`SELECT id,title,pin_type,is_deleted FROM user_map_pins;`).
 
-### Phone↔watch favorites sync (`FavoritesSyncManager`)
+### Phone↔watch sync (`PeerSyncManager`)
 
-Favorites sync bidirectionally over WatchConnectivity `applicationContext`
-(best-effort, latest-state; LWW merge on the `favorite_updated_at` column via
-`PlayaDB.applyFavoriteSync`). Both sims must be a booted **pair**
+Favorites, visit status, **and user map pins** sync bidirectionally over
+WatchConnectivity `applicationContext` (best-effort, latest-state; LWW merge via
+`PlayaDB.applyFavoriteSync` / `applyUserMapPinSync`). All payloads ride in **one**
+manager and one context dictionary — `updateApplicationContext` replaces the
+dictionary wholesale, so a second publisher would clobber the first.
+Both sims must be a booted **pair**
 (`xcrun simctl list pairs` → "(active, connected)"); the phone app and watch app
 each start their manager at launch (phone: `DependencyContainer` init; watch:
 root `.task` after seeding).
@@ -224,6 +248,21 @@ Sync checks: `SELECT object_type, object_id, is_favorite, visit_status FROM
 object_metadata WHERE favorite_updated_at IS NOT NULL OR visit_status_updated_at
 IS NOT NULL;` on either DB. Un-favoriting syncs too (rows persist with
 `is_favorite=0`).
+
+**Pins sync the same way** (LWW on `modified_date`):
+
+1. Drop a pin on the watch → the phone's `user_map_pins` gains the row and the
+   annotation appears on the phone map immediately (`FilteredMapDataSource`
+   observes PlayaDB; no Yap mirror is involved).
+2. Drop one on the phone (map sidebar bike/home/star → name → Save) → it appears
+   in the watch's Browse → Pins.
+3. Delete on either device → the row becomes a **tombstone**
+   (`is_deleted=1`, `modified_date` bumped) rather than disappearing, which is
+   what lets the deletion win the peer's merge. Expect the tombstone row to
+   persist in both DBs; only `fetchUserMapPins`/`observeUserMapPins` filter it.
+   A tombstone for a pin the peer never had is **not** inserted, so the two DBs
+   legitimately differ in tombstone rows — compare `is_deleted=0` rows when
+   checking convergence.
 
 **Visit status syncs the same way** (per-field LWW on `visit_status_updated_at`,
 values 0=unvisited/1=visited/2=wantToVisit): setting "Want to Visit" on the

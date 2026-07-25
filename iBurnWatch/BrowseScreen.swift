@@ -15,6 +15,7 @@ struct BrowseScreen: View {
     let playaDB: PlayaDB
     let mapData: PlayaMapData
     @ObservedObject var location: LocationService
+    @ObservedObject var pinStore: PinStore
 
     var body: some View {
         List {
@@ -26,6 +27,15 @@ struct BrowseScreen: View {
                 )
             } label: {
                 row(emoji: "📍", title: "Nearby")
+            }
+            NavigationLink {
+                PinsScreen(
+                    mapData: mapData,
+                    pinStore: pinStore,
+                    location: location
+                )
+            } label: {
+                row(emoji: "📌", title: "Pins")
             }
             NavigationLink {
                 ObjectListScreen(
