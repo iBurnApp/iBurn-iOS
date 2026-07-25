@@ -1,18 +1,21 @@
-# 2026-07-25 — Reverse geocoder: 2026 verification + org-GeoJSON feasibility
+# 2026-07-25 — Geocoder on BMorg's official GeoJSON (both directions)
 
 ## High-Level Plan
 
-**Goal** (branch `reverse-geocoder`): a reverse geocoder whose source of truth is
-the org's official map GeoJSON (`bmorg/innovate-GIS-data`), built so the same
-approach works on Android like today's shared JS geocoder.
+**Goal** (branch `reverse-geocoder`): make the org's official map GeoJSON
+(`bmorg/innovate-GIS-data`) the source of truth for all geo operations, in both
+directions — the API data pipeline geocodes camp GPS from playa addresses, so
+forward matters as much as reverse — keeping the shared-JS-bundle shape that
+lets iOS and Android run the same implementation.
 
-**Phase 1 (this session)**: audit + verify the handcrafted layout / legacy
-geocoder against the 2026 street layout, fix what's broken, and land 2026 test
-coverage. **Done.**
+**Phase 1 — audit + verify the legacy geocoder against 2026. Done.** Found and
+fixed an `undefined` street bug; corrected two wrong street facts (below); added
+2026 regression coverage where the suite had been pinned to 2025 fixtures.
 
-**Phase 2 (next)**: org-GeoJSON-driven reverse geocoder — feasibility assessed
-below, recommended architecture: twin native ports (Swift in `PlayaGeo`,
-Kotlin on Android) sharing an org-data-derived conformance test-vector file.
+**Phase 2 — org-GeoJSON geocoder, forward and reverse. Done and shipped.**
+`src/orggeocoder/` now backs the data pipeline and the apps' `bundle.js`.
+Native Swift/Kotlin ports remain the endgame; the conformance sweep built here
+is their shared test vector.
 
 ## Audit findings (how geocoding works today)
 
@@ -42,9 +45,9 @@ Kotlin on Android) sharing an org-data-derived conformance test-vector file.
 
 ## 2026 layout verification (vs BMorg innovate-GIS-data @ e9e33e0)
 
-- `data/2026/layouts/layout.json` is **current**: all 12 themed names
-  (Esplanade, Ararat, Bodhi, Chomolungma, Delphi, Eternal, Fulcrum, Great Oak,
-  Heiau, Iroko, Jiba, Kundalini), center `[-119.207871, 40.783242]` matches
+- `data/2026/layouts/layout.json` is **current** apart from the C-street name
+  corrected below: 12 themed names (Esplanade, Ararat, Bodhi, **Ceiba**, Delphi,
+  Eternal, Fulcrum, Great Oak, Heiau, Iroko, Jiba, Kundalini), center `[-119.207871, 40.783242]` matches
   `YearSettings.plist` and org's "The Man" CPN within 4'. Ring radii match org
   annular centerlines within ~3' on all 12 rings. New 2:15/9:45 F–I segments and
   the two new B plazas (2:00/10:00) are modeled.
@@ -70,94 +73,150 @@ Kotlin on Android) sharing an org-data-derived conformance test-vector file.
 the Center Camp boundary street — and it reached the reverse candidate set with
 `name: undefined`. Any GPS point nearest that arc produced `"<time> & undefined"`.
 
-Org data proves the frontage arc **is Rod's Road in 2026**: org `Rods Road` is
-6 segments at ~777' from Center Camp center covering true bearings ~327°→123°;
-the layout `frontage_arc` is the 783' centerline over 329°→121° (45°+284°→45°+76°).
-(Org `Route 66` is a separate inner service road at ~490'; not modeled, fine.)
+**Correction (same session):** an initial pass named that arc "Rod's Road",
+reasoning from `Rods Road` features in the 2026 GIS drop. That was wrong —
+**BMorg removed Rod's Road for 2026**; those features are carryover the org
+left in the data. The fix that stands is the general one: `reverse.js` drops
+unnamed streets from the candidate set, so the arc degrades to the nearest
+real named street instead of emitting `undefined`, and `Rods Road`/`Route 66`
+are listed as `retired_streets` in the new geocoder config.
 
-**Changes** (BlackRockCityPlanner `7a8ae48`, iBurn-Data `f8911da`):
-- `data/2026/layouts/layout.json`: `frontage_arc.name = "Rod's Road"`.
-- `src/centercampstreetplanner.js` `getFrontageRoad()`: emit optional
-  `frontage_arc.name`.
-- `src/geocoder/reverse.js`: candidate filter now requires `properties.name`
-  (no layout can ever emit `undefined` again); `frontage_arc` added to the
-  center-camp-relative clock list → `"1:30 & Rod's Road"` (12:00 toward the Man).
-- Regenerated `data/2026/geo/streets.geojson` (only the arc's name changed) and
-  `data/2026/geocoder/bundle.js` (browserify 17.0.1, verified via a fresh VM
-  context through the exact `window.prepare()`/`reverseGeocode()` interface both
-  apps use).
-- Docs year-bump: iBurn-Data + planner `README.md`/`CLAUDE.md` examples
-  2025 → 2026 (the browserify example previously clobbered the 2025 bundle).
+**Also corrected: the C street is `Ceiba`, not `Chomolungma`.** Both official
+sources (the April 2026 street-name announcement in the Burning Man Journal and
+the current [2026 BRC Plan page](https://burningman.org/black-rock-city/black-rock-city-2026/2026-black-rock-city-plan/))
+name it Ceiba. The wrong name had been baked into `layout.json`, the geocoder
+bundle, **and the shipped map tile labels** — all three regenerated.
 
 ## New tests (`BlackRockCityPlanner/tests/Geocoder2026Test.js` + `layout2026.json`)
 
-39 assertions, all passing; full suite 16/16 green (coverage gates intact):
+43 assertions, all passing; full suite 17/17 green (coverage gates intact):
 - 12 org-derived intersection literals (one per ring; Esplanade/Kundalini nudged
   20' off the epsilon band, commented as such).
-- Landmarks: Man → `0' Inner Playa`, Center Camp center → `Café`, 6:00 keyhole
+- Landmarks: Man → `0' Inner Playa`, Center Camp center → `Café`, 6:00
   promenade → Inner Playa, far away → `Outside Black Rock City`.
-- Rod's Road east/north arc points → `1:30 / 10:30 & Rod's Road`.
+- Center Camp frontage arc: points near it resolve to real named streets,
+  never `undefined` and never a retired name.
 - **No-undefined sweep**: 0.002° grid over the whole city + margin.
 - Forward: all 12 themed streets at 6:30 land at their layout ring distance
   (±10'); new 2:00/10:00 B Plazas resolve near the B ring; 4 forward↔reverse
   round trips.
 
-## Phase 2 feasibility: org GeoJSON as source of truth
+## Phase 2 (built this session): org GeoJSON as source of truth
 
-**What org data provides**: named street centerlines with widths
-(`street_lines.geojson`: rings as letters A–K/ESP, radials as clock strings,
-`Rods Road`, `Route 66`), 12 named plazas, 59 named CPNs (incl. The Man, Temple,
-portals, plazas, Artery, Playa Info), trash fence, city blocks, DMZ, toilets,
-gate road. Radii/geometry are authoritative — our layout was already derived
-from them.
+`BlackRockCityPlanner/src/orggeocoder/` — a geocoder whose inputs are BMorg's
+official GeoJSON, replacing the synthesize-the-city-from-layout.json approach in
+**both** directions (the API pipeline geocodes camp GPS from playa addresses, so
+forward mattered as much as reverse).
 
-**What it lacks** (still needs a small per-year config): themed street names
-(letter → name map, 12 entries — announced by BMorg, never in the GIS drop),
-city bearing / clock convention (derivable but simpler declared), event dates.
-That config is ~20 lines of JSON vs today's ~200-line handcrafted layout, and
-**generate-time street synthesis disappears entirely**.
+### What the org data provides vs. what still needs config
 
-**Reverse algorithm on org data** (mirrors the legacy cascade, ~200-300 lines
-of geometry): point → polar (time, distance) from The Man; containment checks
-against plaza polygons/fence; otherwise nearest named centerline within
-width/2 + ε → `time & name` (center-camp roads use Center Camp center for the
-clock); open playa → `time & distance'` split into Inner/Outer at the
-Esplanade/K radii sampled from the actual centerlines at that bearing. Needed
-primitives: bearing, haversine distance, nearest-point-on-polyline,
-point-in-polygon — no turf/JSTS required.
+Official: street centerlines with widths, plaza polygons, 59 named CPNs, trash
+fence, city blocks, DMZ, toilets. **Not** in the GIS drop, so it lives in
+`data/<year>/geocoder/config.json` (~20 lines): the letter → themed street-name
+map, the city bearing, retired streets, and which CPN names the Center Camp
+keyhole.
 
-**Recommended architecture** (over keeping a JS bundle or Kotlin Multiplatform):
-twin native ports — Swift in `PlayaGeo` (works on watchOS, kills the JSContext
-startup cost that makes today's blocking call sites risky, removes both
-year-hardcoded paths), Kotlin on Android — kept in lockstep by a shared
-**conformance test-vector file** generated from org data per year (the 512
-intersections + plazas + CPNs + playa/fence cases, JSON in
-`iBurn-Data/data/<YEAR>/geocoder/`). The vector generator is this session's
-validation sweep, productized.
+### Year-to-year schema drift (the reason `schema.js` exists)
 
-**Scope split**: port **reverse only** natively (it runs constantly in UI).
-Forward geocoding (fuzzy grammar, plaza-perimeter formats) stays in the JS data
-pipeline where it runs rarely (import-time backfill), or gets ported later.
+BMorg changes the shape of the drop between years, so every property read goes
+through an adapter:
 
-**Note on `~/Downloads/placement_geojson`** (`camp_labels/camp_outlines`): CAD
-stroke LineStrings with only `fid`/`Layer` props — useful as future map layers
-(the 2026 Map.bundle camp overlays are currently empty stubs), not needed for
-reverse geocoding.
+| | 2024 / 2025 | 2026 |
+|---|---|---|
+| street class | `type: arc\|radial` | `source: annular\|radial\|center_camp` |
+| width | `width` | `width_ft` |
+| ring names | themed (`Kilgore`) | letters (`K`) |
+| plaza name key | `Name` | `name` |
+
+They also disagree with themselves: the 2025 GIS says `Jemison`, the street
+announcement says `Jemisin`. `prepare.js` binds rings to config letters through
+a near-spelling match and prefers the announced spelling.
+
+### Algorithm
+
+- **Reverse**: outside trash fence → `Outside Black Rock City`; inside a plaza
+  polygon → that plaza's official name; within the street band (innermost to
+  outermost ring covering this bearing, ± half a road width) → nearest ring, as
+  `<time> & <street>`; else open playa → `<time> & <feet>' Inner|Outer Playa`.
+  Each ring's radius is **sampled from its real centerline at the point's
+  bearing**, which is what kills the legacy epsilon band.
+- **Interior gaps**: Esplanade has a real 5:45–6:15 gap (the Center Camp
+  keyhole). Points there are neither street nor open playa, so they resolve to
+  the configured landmark (`Center Camp`). The rule is scoped to bearings where
+  other rings exist, so deep playa is unaffected.
+- **Forward**: street intersections (letters and themed names interchangeable),
+  time+distance, plaza perimeters, portals, named landmarks. A named ring always
+  wins over a portal, so `"3:00 Portal & A"` is the A-street intersection while
+  `"9:00 Portal"` is the CPN.
+
+### Validation
+
+- **Reverse conformance**: all **512** intersections of official radial × ring
+  centerlines → 489 exact, 23 correctly naming the plaza sitting on the
+  intersection, **0 wrong**. Legacy: 44 wrong-street + 4 misclassified.
+- **Forward vs published GPS**: all **1369** published 2025 camp addresses
+  resolve (legacy fails 30), **median 7'**, 98% within 150'. Note the published
+  coordinates were themselves produced by the legacy geocoder, so this measures
+  agreement, not independent truth; the tail is portals, where the org CPN is
+  surveyed truth and legacy's position was computed.
+- **Parity sweep**, 2773-point city grid: 95.6% identical or within 5'. The 123
+  remaining differences all favor org data — 20 streets legacy put in open playa,
+  6 points outside the real fence, 5 plaza/Center Camp namings, and ~92 one-minute
+  clock/1-foot distance shifts from the 4' difference between the layout center
+  and the official `The Man` CPN.
+- **Engines**: verified through real JavaScriptCore (47ms setup) and through
+  Android's exact call pattern (`window.prepare()` / `coder.reverse` /
+  `coder.forward` / `forwardAsString`).
+- Bundle is **868KB preparing in 13ms**, vs 1.2MB / 36ms for the legacy bundle.
+
+### Wiring
+
+`factory.js` gives the CLI tools an org-backed geocoder when the year has GIS
+data and the legacy one otherwise, inferring year and checkout root from the
+existing `--layout` path — so `fetch_and_geocode.js`, `api.js`,
+`mock_locations.js` and `generate_all.js` are all on org data with **no change to
+documented commands**. `generate_all`'s POIs moved ≤4' and The Man now lands
+exactly on its official CPN.
+
+Bundle build is now two steps (browserify can't require `.geojson`):
+
+```bash
+node src/cli/build_geocoder_data.js --data-root ../../ --year 2026 \
+  --output ../../data/2026/geocoder/geocoder-data.json
+browserify src/orggeocoder/index.js -o ../../data/2026/geocoder/bundle.js
+```
+
+The year is hardcoded in exactly one place now (`src/orggeocoder/index.js`),
+down from two.
+
+### Native ports (still the endgame)
+
+The org geocoder needs only bearing, haversine distance, point-in-polygon and a
+sorted-sample lookup — no turf/JSTS. That makes the Swift port into `PlayaGeo`
+(watchOS support, no JSContext startup cost behind the three blocking iOS call
+sites) and a matching Kotlin port straightforward, with
+`tests/OrgGeocoderTest.js`'s 512-intersection sweep as the shared conformance
+vector.
 
 ## Remaining work / follow-ups
 
-- [ ] **Android**: copy rebuilt `data/2026/geocoder/bundle.js` →
-      `iBurn-Android/iBurn/src/main/assets/js/bundle.js` (was still 2025).
-- [ ] Mirror the three commits to the main `iBurn-iOS` checkout (user builds
-      there; worktree-only changes get lost — see memory).
-- [ ] Phase 2: test-vector generator CLI in BlackRockCityPlanner; Swift reverse
-      port in `PlayaGeo` behind the existing `PlayaGeocoder` API; Kotlin port.
-- [ ] Optional polish: pad the streets-area outer boundary by half a road width
-      to absorb the K-centerline epsilon band.
-- [ ] iOS app build/test not run this session — **disk was down to <1 GB free**
-      (found 13.6 GB of stale Claude-session DerivedData under
-      `/private/tmp/claude-501/…iBurn-iOS{,-2}/…`; bulk delete was blocked by
-      the permission classifier — user to clean).
+- [x] Org-GeoJSON geocoder, both directions, wired into the pipeline and shipped
+      as the apps' `bundle.js`.
+- [x] Android bundle refreshed (it had still been the **2025** build).
+- [x] Commits mirrored to the main `iBurn-iOS` checkout.
+- [ ] **Android commit not made** — `iBurn-Android` has the new
+      `assets/js/bundle.js` in its working tree, left for review.
+- [ ] Full `iBurn` app build not run **in this worktree**: it has no `Pods/`
+      installed (pre-existing). The `PlayaGeocoder (iOS)` framework builds clean
+      and embeds the new bundle; verify the app target from the main checkout.
+- [ ] POI sourcing: `poi.json` still places Greeters/Airport by time+distance,
+      landing 263'/700' from their official CPNs. Sourcing those from
+      `cpns.geojson` would finish the job.
+- [ ] `data/<year>/geo/*.geojson` (watch map renderer) is still generated from
+      `layout.json`. Pointing `PlayaGeo` at org GeoJSON would retire the
+      handcrafted layout entirely; `layout.json` is then only needed for years
+      before the GIS drops.
+- [ ] Swift + Kotlin native ports of the org reverse geocoder.
 
 ## Cross-References
 
