@@ -2,9 +2,13 @@
 
 Date: 2026-07-25 (Pacific)
 Branch: `watchos-updates`
-Status: **complete** — 222 PlayaDB tests green, both apps build clean, and the
-full phone↔watch round trip (create both directions + delete propagation) was
-verified on paired Ultra 3 / iPhone 17 sims. See "Results".
+Status: **complete, unmerged** — 222 PlayaDB tests green, both apps build clean,
+and the full phone↔watch round trip (create both directions + delete
+propagation) was verified on paired Ultra 3 / iPhone 17 sims. See "Results".
+
+**Merging this? Read "Handoff — merging this branch" at the bottom first.** The
+branch collides with `2026-updates` on the PlayaDB migration list, and the fix
+has a launch-crash trap for any sim that already ran this branch.
 
 ## High-Level Plan
 
@@ -188,6 +192,146 @@ change; the cosmetic pbxproj churn CocoaPods emitted was reverted.
   pins are reached through Browse → Pins.
 - **`userHome`'s orange matches the landmark marker color** (The Man / Center
   Camp). The SF Symbol distinguishes them, but a distinct palette would be better.
+
+## Handoff — merging this branch
+
+Written for whoever merges this. Everything below was checked against the actual
+repo state on 2026-07-25, not assumed.
+
+### What to merge
+
+One commit: **`ce4e7fc`** — "watchOS: user map pins synced with the phone +
+system map controls", on branch **`watchos-updates`** in the worktree
+`/Users/chrisbal/Documents/Code/iBurn-iOS-2`.
+
+The branch has **no upstream** (never pushed) and is not behind `master`.
+17 files: +4 new (`PinStore.swift`, `PinsScreen.swift`, `UserMapPinSyncTests.swift`,
+this doc), 1 renamed (`FavoritesSyncManager.swift` → `PeerSyncManager.swift`),
+12 modified.
+
+### The merge target is `2026-updates`, not `master`
+
+`master` is 60+ commits behind. The live integration branch is **`2026-updates`**,
+checked out in the *main* clone at `/Users/chrisbal/Documents/Code/iBurn-iOS`
+(HEAD `9e01739` as of this writing). Both branches forked from `f29d84f`;
+`2026-updates` has since gained 8 commits, including a large Yap→PlayaDB
+migration push (audio tour, visit list, visible pins, calendar entries).
+
+Note the two worktrees are on *different* branches — see
+[[project-user-builds-main-checkout]]: the user builds from the main checkout, so
+this work has to land on `2026-updates` before it can be re-tested there.
+
+### Conflicts: exactly 3 files, all additive, all in PlayaDB
+
+Verified with a read-only `git merge-tree --write-tree 2026-updates watchos-updates`.
+`.claude/skills/drive-app/references/flows.md` and `iBurn/DependencyContainer.swift`
+both auto-merge cleanly despite both branches touching them.
+
+| File | Conflict | Resolution |
+| --- | --- | --- |
+| `PlayaDBImpl.swift` | Both branches append `registerMigration` calls after `v3-visit-status` | Keep both. Register **theirs first** (`v4-audio-tour`, `v5-calendar-entries`), then ours renamed to **`v6-pin-sync`**. |
+| `PlayaDB.swift` | Both append protocol methods after the User Map Pins section (theirs: Calendar Entries; ours: User Map Pin Sync) | Keep both blocks; no overlap. |
+| `SchemaMigrationTests.swift` | Theirs refactored the assertion to `Self.allMigrations`; ours still inlines the array | Take **theirs**, then append `"v6-pin-sync"` to the `allMigrations` constant. |
+
+### ⚠️ Rename `v4-pin-sync` → `v6-pin-sync`, and wipe the test sims
+
+`2026-updates` already claimed `v4` and `v5` (`v4-audio-tour`,
+`v5-calendar-entries`). Our migration must be renamed and registered last.
+
+GRDB matches migrations **by identifier string** and runs unapplied ones in
+registration order (confirmed in `DatabaseMigrator.swift`; there is no validation
+that applied identifiers are a known prefix). So after the rename:
+
+> A database that already recorded `v4-pin-sync` sees `v6-pin-sync` as unapplied,
+> re-runs `ALTER TABLE user_map_pins ADD COLUMN is_deleted`, and fails with
+> **"duplicate column name: is_deleted"**. `migrate()` throws → `PlayaDBImpl`
+> init fails → the watch app hits its `fatalError` and **crashes at launch**.
+
+This never shipped, so real users are unaffected. But it *will* hit the sims and
+devices used for today's verification. Before re-testing, delete the app from:
+
+- Apple Watch Ultra 3 (49mm) `73FEA1F2-69EB-4A7E-AAD1-3613B88D8F30`
+- iPhone 17 `BEA0050D-5389-4580-A4F5-E81D9960DF39`
+
+`xcrun simctl uninstall <UDID> com.trailbehind.iBurn2010[.watchkitapp]`, or erase
+the sims. Do **not** "fix" this by making the migration body idempotent — the
+identifier rename is the correct fix and a clean install is the correct test.
+
+### Post-merge verification
+
+```bash
+# 1. PlayaDB unit tests (222 + whatever 2026-updates added)
+cd Packages/PlayaDB && swift test 2>&1 | xcsift -f toon -w
+
+# 2. Both app targets
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurnWatch \
+  -destination 'generic/platform=watchOS Simulator' build 2>&1 | xcsift -f toon -w
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' \
+  build 2>&1 | xcsift -f toon -w
+```
+
+Note the **OS=26.5** — `2026-updates` commit `9e01739` repointed CLAUDE.md's build
+commands at the 26.5 simulator. The 26.2 destination used in this session no
+longer resolves after merging.
+
+Then the sim pass: `.claude/skills/drive-app/references/flows.md` §9 covers the
+watch app and the phone↔watch sync, updated in this commit with the pin flows and
+the tombstone-comparison caveat.
+
+Must-pass assertions after merge:
+
+1. `SELECT identifier FROM grdb_migrations` on a **fresh** install lists v1…v6 in
+   order, ending `v6-pin-sync`.
+2. Drop a pin on the watch → row appears in the phone's `user_map_pins` and the
+   annotation shows on the phone map.
+3. Delete it on the phone → the watch's row becomes `is_deleted=1` and leaves the
+   watch map/list.
+4. Favorites still sync (the regression risk of the `PeerSyncManager` rename —
+   see the trailing-closure bug in "Results").
+
+### Environment gotchas that will otherwise burn time
+
+- **Stale Pods.** If `iBurn` fails with *"Use of private header from outside its
+  module: 'netinet6/in6.h'"* in `Pods/YapDatabase/.../YapReachability.m`, the
+  worktree's `Pods/` is a stale CDN install. Run `bundle exec pod install` — the
+  Podfile already points at `Submodules/YapDatabase`, whose copy lacks that
+  import. Then **revert the cosmetic `project.pbxproj` churn** CocoaPods emits
+  (empty `inputPaths`/`outputPaths`, `XCLocalSwiftPackageReference` comment
+  renames). Not a code problem; nothing to commit.
+- **`xcodebuild` flips `DEVELOPMENT_TEAM`** in the pbxproj — check `git status`
+  before committing ([[project-xcodebuild-dirties-dev-team]]).
+- **Don't build with `-derivedDataPath` under `/private/tmp/claude-501`.** Two
+  builds there filled the disk in this session, after which *every* Bash call
+  fails at ENOSPC writing its own output file — you can't even clean up.
+
+### Design invariants a reviewer shouldn't "simplify" away
+
+Three things look like they could be tidied but are load-bearing:
+
+1. **`applyUserMapPinSync` must not write when nothing changed.** That no-op skip
+   is what stops the two devices from ping-ponging pushes forever: any write
+   re-fires the local observation, which pushes, which the peer applies… The same
+   invariant already governs `applyFavoriteSync`.
+2. **Favorites and pins must stay in one `PeerSyncManager` and one push.**
+   `updateApplicationContext` replaces the dictionary wholesale, so splitting
+   them into two publishers makes each silently clobber the other.
+3. **Tombstones for unknown pins are deliberately not inserted**, so the two DBs
+   legitimately differ in tombstone rows. Compare `is_deleted = 0` rows when
+   checking convergence, not raw row counts.
+
+### Not done (deliberately, and safe to defer)
+
+Nothing in this commit is partial — no TODOs, no stubs, no skipped tests. The
+open items are the un-started follow-ups in "Follow-ups not taken" above and the
+watch gap list in the table near the top (complication, background location, data
+refresh, nearest-amenity, embargo flag sync, cross-type search, Always-On).
+
+One verification caveat, stated plainly: the disk filled near the end of the
+session and reset the watch sim, so the **final** screenshot confirming the
+tinted drop-sheet icons came from a rebuilt/relaunched app rather than the same
+continuous run as the sync test. The cross-device sync round trip was fully
+verified before that, and both were on the same commit.
 
 ## Cross-References
 
