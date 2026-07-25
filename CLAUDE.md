@@ -51,7 +51,7 @@ iBurn is an offline map and guide for the Burning Man art festival. It's a nativ
 - **Workspace Path**: `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace`
 - **Main Scheme**: `iBurn` (for building the app)
 - **Test Schemes**: `iBurnTests`, `PlayaKitTests` 
-- **Default Destination**: iPhone 16 Pro (arm64 simulator)
+- **Default Destination**: iPhone 17 Pro Max, iOS 26.5 (arm64 simulator)
 - **Active Branch**: Check with `git status` as development happens on feature branches
 
 ### Project Discovery
@@ -94,25 +94,25 @@ swift test 2>&1 | xcsift -f toon -w
 **Preferred Build Command (arm64 simulator, parsed via xcsift)**:
 ```bash
 # Build for iOS Simulator (quiet xcodebuild + xcsift parsing)
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
 #
 # Note: if xcsift prints "Error: No input provided", xcodebuild likely produced no output (e.g. a fully
 # incremental build with `-quiet`). Re-run without `-quiet`.
 
 # Build and show full xcodebuild output (debugging)
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' 2>&1 | xcsift -f toon -w
 ```
 
 **Testing Commands**:
 ```bash
 # Run tests on simulator with quiet output
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
 
 # Run tests with full output (for debugging)
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' 2>&1 | xcsift -f toon -w
 
 # Run PlayaKit tests
-xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
+xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
 
 # Run SwiftPM tests (note: may require elevated permissions in sandboxed environments)
 swift test 2>&1 | xcsift -f toon -w
