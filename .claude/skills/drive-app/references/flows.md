@@ -33,7 +33,7 @@ Verify: tab bar shows Map / Nearby / Favorites / Events / More.
 ## 2. SwiftUI + PlayaDB stack (default ON; legacy fallback)
 
 The flag `featureFlag.lists.useSwiftUI` (all builds, default true) gates the
-Favorites/Nearby/Events/Art/Camps SwiftUI screens and PlayaDB
+Favorites/Nearby/Events/Art/Camps SwiftUI screens, More → Visit List, and PlayaDB
 creation/seeding. It is ON by default; disable it to exercise the legacy
 UIKit/YapDatabase stack.
 
@@ -130,8 +130,20 @@ unpredictably. Two options:
 - Camp/art locations are hidden until the embargo lifts (the "Locations Are
   Hidden" alert on first run explains this). Location-dependent pins won't
   appear in pre-event builds — this is expected, not a bug.
-- "List" button (top-left) opens the map list view; search field "Search" is in
-  the map header.
+- Unlocking (More → "Unlock Location Data" passcode, or entering the BRC region)
+  posts `BRCEmbargoDidClear`: the map's PlayaDB observations restart and the six
+  SwiftUI list hosting controllers rebuild their root view, so pins/playa
+  addresses appear immediately — **no relaunch needed**. If you have to restart
+  the app to see locations after unlocking, that's a regression.
+- "List" button (top-left) opens "Visible Pins" — a SwiftUI/PlayaDB list of what
+  is currently drawn inside the map's visible bounds, sectioned Art / Camps /
+  Events / Map Pins, nearest-first when a location is available. Tapping a data
+  row pushes the PlayaDB detail screen; tapping a Map Pins row pops back to the
+  map, recenters on that pin and opens its callout. Legacy Yap-fed maps (the
+  `useSwiftUILists` kill-switch list screens) still get the old
+  `MapPinListViewController` — the split is in `ListButtonHelper`, keyed on
+  whether any visible annotation is a `DataObjectAnnotation`.
+- Search field "Search" is in the map header.
 
 ## 7. Detail screen
 
@@ -142,6 +154,22 @@ From any list row (event/camp/art):
 - Viewing a detail writes `last_viewed`/`first_viewed` metadata (this must NOT
   cause list observations to re-emit — the metadata region excludes those
   columns; regression-tested in FilterObservationTests).
+
+### More → Visit List (PlayaDB, default)
+
+More tab → **Visit List** pushes the SwiftUI `VisitListHostingController`
+(`useSwiftUILists` ON; OFF falls back to the Yap-fed `VisitListViewController`).
+
+- Segmented picker **All / Want to Visit / Visited** over sections
+  "⭐ Want to Visit" and "✅ Visited" (there is never an "unvisited" section);
+  rows are mixed art/camp/event with hearts + distance, `map` toolbar button.
+- Populate it from a detail screen's VISIT STATUS cell, then back out to More →
+  Visit List. There is **no observation API for visit status**: the list re-fetches
+  on every appearance and on `didBecomeActive` (so a watch-applied status shows up
+  after backgrounding/foregrounding, not live while on screen).
+- Verify in DB: `SELECT object_type, object_id, visit_status FROM object_metadata
+  WHERE visit_status != 0;` — art/camp rows keyed by uid, events by the **parent**
+  event uid.
 
 ## 8. Feature Flags screen
 
