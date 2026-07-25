@@ -264,6 +264,21 @@ public protocol PlayaDB {
     @discardableResult
     func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken
 
+    // MARK: - Calendar Entries
+
+    /// Save (insert or replace) the EventKit identifier for one event occurrence.
+    /// Upsert on (`eventId`, `occurrenceKey`).
+    func saveCalendarEntry(_ entry: EventCalendarEntry) async throws
+
+    /// Fetch all calendar entries for an event, ordered by occurrence key.
+    func fetchCalendarEntries(eventId: String) async throws -> [EventCalendarEntry]
+
+    /// Delete every calendar entry belonging to an event (used when a favorite is removed).
+    func deleteCalendarEntries(eventId: String) async throws
+
+    /// Fetch every calendar entry, ordered by event id then occurrence key.
+    func fetchAllCalendarEntries() async throws -> [EventCalendarEntry]
+
     // MARK: - Data Import
     
     /// Import data from the PlayaAPI

@@ -90,6 +90,21 @@ extension QueryInterfaceRequest where RowDecoder == ArtObject {
             """
         )
     }
+
+    /// Filters on the presence of an audio-tour recording.
+    ///
+    /// Empty strings count as absent. The importer itself can never write one
+    /// (`LenientURL` yields either a valid URL or nil), so this is defence in depth
+    /// against hand-written or externally seeded rows.
+    public func hasAudioTour(_ hasAudio: Bool) -> Self {
+        // Parenthesized explicitly: predicates are combined with AND, and the
+        // `false` branch is a disjunction that must not bind loosely.
+        if hasAudio {
+            return filter(sql: "(art_objects.audio_tour_url IS NOT NULL AND art_objects.audio_tour_url != '')")
+        } else {
+            return filter(sql: "(art_objects.audio_tour_url IS NULL OR art_objects.audio_tour_url = '')")
+        }
+    }
 }
 
 // MARK: - Event Occurrence Queries

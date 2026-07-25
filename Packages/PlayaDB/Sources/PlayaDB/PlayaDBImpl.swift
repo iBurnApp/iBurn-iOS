@@ -304,6 +304,42 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN visit_status_updated_at DATETIME")
         }
 
+        // v4: audio tour URL from the API's `audio_tour_url` field. Additive only —
+        // the column is repopulated by every import, so no backfill is needed (the
+        // next import writes it, and years without an audio tour leave it NULL).
+        migrator.registerMigration("v4-audio-tour") { db in
+            try db.execute(sql: "ALTER TABLE art_objects ADD COLUMN audio_tour_url TEXT")
+        }
+
+        // v5: per-occurrence EKEvent identifiers for calendar sync.
+        //
+        // Legacy (YapDatabase) stored one EKEvent identifier per event *occurrence*
+        // because Yap split each API event into per-occurrence records. PlayaDB keeps
+        // one row per API event plus an `event_occurrences` child table, so calendar
+        // bookkeeping needs its own per-occurrence key.
+        //
+        // Key choice: (event_id, occurrence_key) where `occurrence_key` is the
+        // occurrence's start time formatted as a fixed ISO-8601 UTC string
+        // (see `EventCalendarEntry.occurrenceKey(for:)`). `event_occurrences.id` is an
+        // AUTOINCREMENT rowid that `importFromData` wipes and reissues on every import,
+        // so rowids can never survive a data refresh; the (event uid, start instant)
+        // pair is the natural key that does. Start times also survive import unchanged
+        // — only end times are ever rewritten (see `correctedOccurrenceTimes`).
+        //
+        // This table is intentionally NOT touched by `importFromData` (like
+        // `object_metadata`, `thumbnail_colors` and `user_map_pins`), so calendar
+        // identifiers survive data refreshes.
+        migrator.registerMigration("v5-calendar-entries") { db in
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS event_calendar_entries (
+                    event_id TEXT NOT NULL,
+                    occurrence_key TEXT NOT NULL,
+                    ek_event_identifier TEXT NOT NULL,
+                    PRIMARY KEY (event_id, occurrence_key)
+                )
+            """)
+        }
+
         try migrator.migrate(dbQueue)
 
         // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
@@ -935,6 +971,11 @@ internal class PlayaDBImpl: PlayaDB {
 
         if filter.onlyWithEvents {
             request = request.withEvents()
+        }
+
+        // Apply audio-tour filter (nil = no filter)
+        if let hasAudioTour = filter.hasAudioTour {
+            request = request.hasAudioTour(hasAudioTour)
         }
 
         // Default ordering
@@ -1579,6 +1620,40 @@ internal class PlayaDBImpl: PlayaDB {
             }
         )
         return PlayaDBObservationToken(cancellable)
+    }
+
+    // MARK: - Calendar Entries
+
+    func saveCalendarEntry(_ entry: EventCalendarEntry) async throws {
+        try await dbQueue.write { db in
+            var entry = entry
+            try entry.save(db, onConflict: .replace)
+        }
+    }
+
+    func fetchCalendarEntries(eventId: String) async throws -> [EventCalendarEntry] {
+        try await dbQueue.read { db in
+            try EventCalendarEntry
+                .filter(EventCalendarEntry.Columns.eventId == eventId)
+                .order(EventCalendarEntry.Columns.occurrenceKey)
+                .fetchAll(db)
+        }
+    }
+
+    func deleteCalendarEntries(eventId: String) async throws {
+        _ = try await dbQueue.write { db in
+            try EventCalendarEntry
+                .filter(EventCalendarEntry.Columns.eventId == eventId)
+                .deleteAll(db)
+        }
+    }
+
+    func fetchAllCalendarEntries() async throws -> [EventCalendarEntry] {
+        try await dbQueue.read { db in
+            try EventCalendarEntry
+                .order(EventCalendarEntry.Columns.eventId, EventCalendarEntry.Columns.occurrenceKey)
+                .fetchAll(db)
+        }
     }
 
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {
@@ -2593,7 +2668,8 @@ internal class PlayaDBImpl: PlayaDB {
             gpsLatitude: apiArt.location?.gpsLatitude,
             gpsLongitude: apiArt.location?.gpsLongitude,
             guidedTours: apiArt.guidedTours,
-            selfGuidedTourMap: apiArt.selfGuidedTourMap
+            selfGuidedTourMap: apiArt.selfGuidedTourMap,
+            audioTourUrl: apiArt.audioTourUrl
         )
     }
     
