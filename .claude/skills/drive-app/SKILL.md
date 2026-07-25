@@ -94,6 +94,12 @@ Step-by-step scripts for the critical flows (onboarding, events browsing,
 favoriting, search, map/embargo, detail, feature flags) live in
 [references/flows.md](references/flows.md). Read it before driving a flow.
 
+## Physical devices
+
+Running on real hardware (enabling the `device` workflow, discovery, code
+signing) is covered in
+[references/device-deploy.md](references/device-deploy.md).
+
 ## Keeping the flow docs current
 
 These docs are maintained by whoever notices drift, in the session where they
