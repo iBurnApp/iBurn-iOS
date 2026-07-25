@@ -8,7 +8,6 @@
 
 import UIKit
 import CoreLocation
-import YapDatabase
 import CocoaLumberjack
 import PlayaDB
 

@@ -8,14 +8,12 @@
 
 import UIKit
 import MapLibre
-import YapDatabase
 import BButton
 import CocoaLumberjack
 import SafariServices
 import EventKitUI
 import PlayaDB
 import SwiftUI
-import PlayaDB
 
 public class MapViewAdapter: NSObject {
     
@@ -66,6 +64,10 @@ public class MapViewAdapter: NSObject {
             return AnyHashable("\(className):\(data.object.uniqueID)")
         } else if let playa = annotation as? PlayaObjectAnnotation {
             return AnyHashable(playa.id)
+        } else if let userPin = annotation as? BRCUserMapPoint {
+            // `yapKey` is a fresh random UUID every time the pin is rebuilt from PlayaDB,
+            // so it can never de-duplicate. `pinId` is the stable PlayaDB row id.
+            return AnyHashable("BRCUserMapPoint:\(userPin.pinId)")
         } else if let mapPoint = annotation as? BRCMapPoint {
             let className = String(describing: type(of: mapPoint))
             return AnyHashable("\(className):\(mapPoint.yapKey)")

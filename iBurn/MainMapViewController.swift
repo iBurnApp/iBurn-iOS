@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import YapDatabase
 import CoreLocation
 import BButton
 import CocoaLumberjack
@@ -18,8 +17,6 @@ import SwiftUI
 import PlayaDB
 
 public class MainMapViewController: BaseMapViewController, ListButtonHelper {
-    let uiConnection: YapDatabaseConnection
-    let writeConnection: YapDatabaseConnection
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
     let geocoder = PlayaGeocoder.shared
@@ -46,8 +43,6 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     public init() {
         let dependencies = BRCAppDelegate.shared.dependencies
         self.dependencies = dependencies
-        uiConnection = BRCDatabaseManager.shared.uiConnection
-        writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
 
         // Set up PlayaDB-backed global search
