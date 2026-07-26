@@ -204,6 +204,17 @@ but independently runnable (`WKRunsIndependentlyOfCompanionApp`). Bundle id
 Set XcodeBuildMCP session defaults to the watch sim UDID +
 `simulatorPlatform: "watchOS Simulator"` before snapshot/tap.
 
+**The watch seeds from the same pre-baked database as the phone.** It ships its own
+copy at `iBurnWatch/PlayaDB-<year>.zip` (also gitignored, written by the same
+`playa-seed` run) and restores it in `iBurnWatchApp.init()` — *before* `createPlayaDB()`,
+since the restore is a no-op once a database file exists. `WatchSeeder.seedIfNeeded`
+then runs in the root `.task` and re-imports only when the bundled JSON is newer
+than the seed. Verify with the same query as §2 against
+`com.trailbehind.iBurn2010.watchkitapp`'s container; `thumbnail_colors` = 1573 there
+too (unused on watch — no thumbnails are rendered — but it rides along in the shared
+seed). `update_info.created_at` staying at the *bake* time rather than launch time is
+the tell that the restore was used and no JSON import ran.
+
 1. Build (see above for scheme choice).
 2. Set a BRC location first: `xcrun simctl location <WATCH_UDID> set 40.7864,-119.2065`.
 3. Launch via simctl. On a fresh direct install, first launch shows the

@@ -19,6 +19,7 @@ struct SeedBuilder {
         var mediaDownloaded = 0
         var mediaFailed: [(uid: String, error: String)] = []
         var archiveBytes = 0
+        var archives: [URL] = []
     }
 
     func build() async throws -> Summary {
@@ -59,10 +60,13 @@ struct SeedBuilder {
         // WAL) before the file is archived.
         try await populate(databaseAt: databaseURL, from: dataFiles, catalog: catalog, into: &summary)
 
-        // 4. Archive.
-        log.step("Writing \(options.output.lastPathComponent)…")
-        try Archiver.archive(databaseAt: databaseURL, to: options.output)
-        summary.archiveBytes = (try? FileManager.default.attributesOfItem(atPath: options.output.path)[.size] as? Int) ?? 0
+        // 4. Archive — one copy per app target, since each restores from its own bundle.
+        for output in options.outputs {
+            log.step("Writing \(output.path.replacingOccurrences(of: options.repositoryRoot.path + "/", with: ""))…")
+            try Archiver.archive(databaseAt: databaseURL, to: output)
+            summary.archives.append(output)
+            summary.archiveBytes = (try? FileManager.default.attributesOfItem(atPath: output.path)[.size] as? Int) ?? 0
+        }
 
         return summary
     }

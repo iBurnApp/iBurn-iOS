@@ -25,6 +25,12 @@ struct IBurnWatchApp: App {
     @State private var syncManager: PeerSyncManager?
 
     init() {
+        // Restore the pre-populated database before it's opened, so a fresh install
+        // opens the seeded file instead of an empty one. No-op for existing installs
+        // or when the build ships without a seed, in which case the JSON import path
+        // (WatchSeeder.seedIfNeeded, in the root .task) takes over.
+        WatchSeeder.restoreBundledSeedIfNeeded()
+
         let db: PlayaDB
         do {
             db = try createPlayaDB()

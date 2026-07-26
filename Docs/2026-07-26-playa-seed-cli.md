@@ -228,11 +228,88 @@ The 10 new `.jpg` files are committed **in the iBurn-Data submodule**.
   the seed restored rather than being rebuilt on device. More → Art rendered every row
   themed from its thumbnail immediately, with no colour pop-in.
 
+---
+
+## Follow-up: wiring the seed into watchOS
+
+The first pass shipped the seed to the **iOS target only**. The watch was still importing
+3.4 MB of JSON on first launch via `WatchSeeder.seedIfNeeded`, which is slow on watch
+hardware. Three things kept it out:
+
+1. The zip lived in `iBurn/`, the iOS target's synchronized folder group.
+2. `iBurnWatchApp` called `createPlayaDB()` directly and never ran a restore.
+3. `Zip` wasn't linked into the watch target.
+
+### Shared restore logic
+
+`PlayaDBSeeder.restoreBundledSeedIfNeeded` was app-target code, so the watch couldn't call
+it. Rather than duplicate ~40 lines of careful failure handling, the rules moved into
+PlayaDB as `PlayaDBSeedRestore` (`Packages/PlayaDB/Sources/PlayaDB/SeedRestore.swift`).
+
+PlayaDB does **not** gain a compression dependency — the unzip step is injected:
+
+```swift
+public static func restoreIfNeeded(
+    documentsURL: URL = PlayaDBSeedRestore.defaultDocumentsURL,
+    seedZipURL: URL?,
+    unzip: (_ archive: URL, _ destination: URL) throws -> Void
+) -> Outcome
+```
+
+`Outcome` is `.restored` / `.skippedDatabaseExists` / `.skippedNoSeed` / `.failed(String)`,
+so each app logs through its own facility (CocoaLumberjack on iOS, `print` on watch) while
+the decisions stay in one place. Both `PlayaDBSeeder` and `WatchSeeder` are now thin
+wrappers that resolve the bundle resource and pass `Zip.unzipFile`.
+
+Nine tests in `Packages/PlayaDB/Tests/PlayaDBTests/SeedRestoreTests.swift` cover every
+outcome plus "the restored file actually opens as a working database".
+
+### Ordering matters
+
+The restore must run **before** the database is opened — once `PlayaDB.sqlite` exists the
+restore is a deliberate no-op. On the watch that meant putting it at the top of
+`iBurnWatchApp.init()`, ahead of `createPlayaDB()`; `WatchSeeder.seedIfNeeded` continues
+to run later in the root `.task`.
+
+### Why the JSON stays bundled
+
+Per the user: the seed can go stale relative to a build's data. The seed carries
+`update_info` rows baked from `update.json`, and `needsImport(bundleUpdateData:)` compares
+the bundled JSON against them — so shipping refreshed JSON on top of an older baked
+database still triggers a re-import. Dropping the JSON would have saved 3.4 MB and broken
+that. Watch install size is not a concern here.
+
+### Seed placement
+
+The zip goes in `iBurnWatch/PlayaDB-<year>.zip`, picked up by that target's synchronized
+folder group. Deliberately *not* an explicit `PBXFileReference` pointing at the iOS copy:
+an explicit reference to a gitignored file breaks the build on a clone that hasn't run
+`playa-seed`, whereas a synchronized group just omits it — preserving "missing seed = slow
+launch, not build failure" on both targets.
+
+`playa-seed` now writes both copies in one run; `--output` became repeatable, defaulting to
+one zip per app target.
+
+### watchOS verification
+
+Erased Apple Watch Ultra 3 sim, direct install of the `iBurnWatch` scheme:
+
+```
+art 321 · camps 1201 · events 2208 · occurrences 4697 · mv 496
+thumbnail_colors 1573 · object_metadata 0
+```
+
+`update_info.created_at` reads `2026-07-26 17:26:09` — the *bake* timestamp — and still
+does after a second launch, confirming the restore was used and the JSON import never ran.
+(`thumbnail_colors` is unused on watch, which renders SF Symbols rather than thumbnails,
+but rides along in the shared seed.)
+
 ## Expected Outcomes
 
-- First launch on a fresh install is near-instant: no JSON import, no colour extraction.
-- Regenerating the seed is one command instead of a manual simulator round-trip.
-- One colour algorithm in the codebase, shared by the app and the seed tool.
+- First launch on a fresh install is near-instant on **both** phone and watch: no JSON
+  import, no colour extraction.
+- Regenerating both seeds is one command instead of a manual simulator round-trip.
+- One colour algorithm and one seed-restore implementation in the codebase.
 
 ## Remaining Work
 
@@ -240,7 +317,7 @@ The 10 new `.jpg` files are committed **in the iBurn-Data submodule**.
   the org finishes converting it.
 - `iBurn/iBurn-2026.zip` (the **YapDatabase** seed) is still produced by hand. Yap is being
   retired — only bridges and the boot import remain — so it was deliberately left alone.
-- CI does not build the seed (the zips are gitignored), so TestFlight/App Store builds need
+- CI does not build the seeds (the zips are gitignored), so TestFlight/App Store builds need
   the tool run locally beforehand. A `fastlane seed` lane was offered and deferred.
 
 ## Cross-References

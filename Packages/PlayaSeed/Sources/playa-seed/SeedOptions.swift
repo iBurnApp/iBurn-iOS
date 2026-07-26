@@ -7,8 +7,9 @@ struct SeedOptions {
     var repositoryRoot: URL
     /// Directory holding `APIData/` and `MediaFiles/` for `year`.
     var dataRoot: URL
-    /// Destination `.zip`. Contains a single `PlayaDB.sqlite` entry.
-    var output: URL
+    /// Destination `.zip`s, each containing a single `PlayaDB.sqlite` entry. Defaults to
+    /// one per app target — the phone and the watch each restore from their own bundle.
+    var outputs: [URL]
     /// Download thumbnails the API references but the media bundle is missing.
     var fetchMedia: Bool
     /// Skip colour extraction (much faster; used when only the data matters).
@@ -26,7 +27,9 @@ struct SeedOptions {
       --repo-root <path>   iBurn-iOS checkout (default: inferred from the executable,
                            falling back to the current directory)
       --data-root <path>   Overrides Submodules/iBurn-Data/data/<year>
-      --output <path>      Output zip (default: <repo-root>/iBurn/PlayaDB-<year>.zip)
+      --output <path>      Output zip; repeatable. Defaults to both app targets:
+                           <repo-root>/iBurn/PlayaDB-<year>.zip
+                           <repo-root>/iBurnWatch/PlayaDB-<year>.zip
       --fetch-media        Download thumbnails missing from the media bundle first
       --skip-colors        Import data only; leave thumbnail_colors empty
       --help               Show this message
@@ -42,7 +45,7 @@ struct SeedOptions {
         var year = 2026
         var repositoryRoot: URL?
         var dataRoot: URL?
-        var output: URL?
+        var outputs: [URL] = []
         var fetchMedia = false
         var skipColors = false
 
@@ -71,7 +74,7 @@ struct SeedOptions {
             case "--data-root":
                 dataRoot = URL(fileURLWithPath: try nextValue(for: argument)).standardizedFileURL
             case "--output":
-                output = URL(fileURLWithPath: try nextValue(for: argument)).standardizedFileURL
+                outputs.append(URL(fileURLWithPath: try nextValue(for: argument)).standardizedFileURL)
             case "--fetch-media":
                 fetchMedia = true
             case "--skip-colors":
@@ -89,9 +92,11 @@ struct SeedOptions {
             dataRoot: dataRoot ?? root
                 .appendingPathComponent("Submodules/iBurn-Data/data")
                 .appendingPathComponent("\(year)"),
-            output: output ?? root
-                .appendingPathComponent("iBurn")
-                .appendingPathComponent("PlayaDB-\(year).zip"),
+            outputs: outputs.isEmpty
+                ? ["iBurn", "iBurnWatch"].map {
+                    root.appendingPathComponent($0).appendingPathComponent("PlayaDB-\(year).zip")
+                }
+                : outputs,
             fetchMedia: fetchMedia,
             skipColors: skipColors
         )

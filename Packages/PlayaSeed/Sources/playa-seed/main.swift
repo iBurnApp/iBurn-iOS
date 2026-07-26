@@ -11,7 +11,9 @@ do {
     logger.step("Building the \(options.year) PlayaDB seed")
     logger.info("data:   \(options.dataRoot.path)")
     logger.info("media:  \(options.mediaDirectory.path)")
-    logger.info("output: \(options.output.path)")
+    for output in options.outputs {
+        logger.info("output: \(output.path)")
+    }
 
     let summary = try await SeedBuilder(options: options, log: logger).build()
 
@@ -22,7 +24,10 @@ do {
     if summary.mediaDownloaded > 0 {
         logger.info("thumbnails downloaded: \(summary.mediaDownloaded)")
     }
-    logger.info("archive: \(summary.archiveBytes / 1024) KB at \(summary.archiveBytes > 0 ? options.output.path : "—")")
+    logger.info("archives: \(summary.archives.count) × \(summary.archiveBytes / 1024) KB")
+    for archive in summary.archives {
+        logger.info("  \(archive.path)")
+    }
 
     // Surface data gaps rather than silently shipping an incomplete seed.
     if !summary.thumbnailsMissing.isEmpty {

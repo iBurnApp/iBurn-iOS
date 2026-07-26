@@ -16,7 +16,12 @@ final class SeedOptionsTests: XCTestCase {
         XCTAssertEqual(options.dataRoot.path, "\(root)/Submodules/iBurn-Data/data/2026")
         XCTAssertEqual(options.apiDataDirectory.path, "\(root)/Submodules/iBurn-Data/data/2026/APIData/APIData.bundle")
         XCTAssertEqual(options.mediaDirectory.path, "\(root)/Submodules/iBurn-Data/data/2026/MediaFiles/MediaFiles.bundle")
-        XCTAssertEqual(options.output.path, "\(root)/iBurn/PlayaDB-2026.zip")
+        // One seed per app target — the phone and the watch each restore from their
+        // own bundle.
+        XCTAssertEqual(options.outputs.map(\.path), [
+            "\(root)/iBurn/PlayaDB-2026.zip",
+            "\(root)/iBurnWatch/PlayaDB-2026.zip",
+        ])
         XCTAssertFalse(options.fetchMedia)
         XCTAssertFalse(options.skipColors)
     }
@@ -26,7 +31,10 @@ final class SeedOptionsTests: XCTestCase {
 
         XCTAssertEqual(options.year, 2027)
         XCTAssertEqual(options.dataRoot.path, "\(root)/Submodules/iBurn-Data/data/2027")
-        XCTAssertEqual(options.output.path, "\(root)/iBurn/PlayaDB-2027.zip")
+        XCTAssertEqual(options.outputs.map(\.path), [
+            "\(root)/iBurn/PlayaDB-2027.zip",
+            "\(root)/iBurnWatch/PlayaDB-2027.zip",
+        ])
     }
 
     func testExplicitPathsOverrideTheYearDerivedDefaults() throws {
@@ -38,7 +46,13 @@ final class SeedOptionsTests: XCTestCase {
 
         XCTAssertEqual(options.dataRoot.path, "/data/elsewhere")
         XCTAssertEqual(options.mediaDirectory.path, "/data/elsewhere/MediaFiles/MediaFiles.bundle")
-        XCTAssertEqual(options.output.path, "/out/seed.zip")
+        XCTAssertEqual(options.outputs.map(\.path), ["/out/seed.zip"])
+    }
+
+    func testOutputIsRepeatable() throws {
+        let options = try parse(["--output", "/out/a.zip", "--output", "/out/b.zip"])
+
+        XCTAssertEqual(options.outputs.map(\.path), ["/out/a.zip", "/out/b.zip"])
     }
 
     func testBooleanFlags() throws {

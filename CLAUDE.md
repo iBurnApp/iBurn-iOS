@@ -67,19 +67,22 @@ If xcsift prints "Error: No input provided", xcodebuild likely produced no outpu
 
 ### Pre-baked database seed (`playa-seed`)
 
-`iBurn/PlayaDB-<year>.zip` ships a pre-populated PlayaDB so first launch doesn't import
-JSON or compute thumbnail colors on device. It is gitignored — regenerate it whenever the
-API data or media files change:
+`iBurn/PlayaDB-<year>.zip` and `iBurnWatch/PlayaDB-<year>.zip` ship a pre-populated PlayaDB
+so first launch doesn't import JSON or compute thumbnail colors on device. Both are
+gitignored — regenerate them whenever the API data or media files change:
 
 ```bash
 swift run --package-path Packages/PlayaSeed playa-seed --fetch-media
 ```
 
+One run writes both copies (the phone and watch each restore from their own bundle).
 `--fetch-media` also downloads any thumbnails the API references but
 `Submodules/iBurn-Data/data/<year>/MediaFiles/MediaFiles.bundle` is missing; commit those
 in the submodule. `--help` lists the rest (`--year`, `--data-root`, `--output`,
-`--skip-colors`). Without a seed the app still works — it falls back to the on-device JSON
-import — so a missing zip shows up as a slow first launch, not a build failure.
+`--skip-colors`). Without a seed both apps still work — they fall back to the on-device
+JSON import — so a missing zip shows up as a slow first launch, not a build failure. The
+JSON stays bundled either way: `needsImport` compares it against the seed's `update_info`
+and re-imports when a build ships data newer than the baked database.
 
 Colors come from `Packages/PlayaColors`, which the app also uses at runtime, so a baked
 color is identical to one the device would compute.
