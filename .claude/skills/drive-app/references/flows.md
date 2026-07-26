@@ -44,9 +44,19 @@ UIKit/YapDatabase stack.
 
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
-and `grdb_migrations` contains `v1-initial-schema`. Seeded counts (2026 data,
-July 18 refresh): 321 art / 1201 camps / 2208 events / 4697 occurrences;
+and `grdb_migrations` contains every migration through `v6-pin-sync`. Seeded
+counts (2026 data, July 26 refresh): 321 art / 1201 camps / 2208 events /
+4697 occurrences / 496 mutant vehicles / **1573 `thumbnail_colors`**;
 `object_metadata` stays empty until the user favorites/views something.
+
+`thumbnail_colors` being populated on a *fresh* install is the signal that the
+pre-baked seed restored. `iBurn/PlayaDB-<year>.zip` is gitignored and built by
+`Packages/PlayaSeed` (`swift run playa-seed --fetch-media`), so a clone that has
+never run the tool has no seed: the app silently falls back to importing JSON on
+device, first launch takes noticeably longer, and `thumbnail_colors` fills in
+gradually via `ColorPrefetcher` instead of arriving complete. Both paths are
+valid — just know which one you're looking at before calling a slow first launch
+a regression.
 
 ## 3. Events browsing + day tabs
 

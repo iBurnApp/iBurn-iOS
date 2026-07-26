@@ -324,6 +324,15 @@ public protocol PlayaDB {
     /// Observe update info changes reactively
     @discardableResult
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
+
+    // MARK: - Distribution
+
+    /// Compacts the database and folds the write-ahead log back into the main file,
+    /// so the `.sqlite` can be shipped on its own without its `-wal`/`-shm` sidecars.
+    ///
+    /// Only meaningful for on-disk databases; harmless on in-memory ones. Intended for
+    /// the seed tool — the app never needs to call this.
+    func compactForDistribution() async throws
 }
 
 // MARK: - Observation Convenience
@@ -384,6 +393,13 @@ public func createPlayaDB() throws -> PlayaDB {
 /// opened to the on-disk database — intended for SwiftUI previews and tests.
 public func createInMemoryPlayaDB() throws -> PlayaDB {
     try PlayaDBImpl(dbPath: ":memory:")
+}
+
+/// Create a PlayaDB backed by a database file at an explicit path, rather than the
+/// app's Documents directory. Used by the seed tool, which builds a database outside
+/// any app container, and by tests that need a real file on disk.
+public func createPlayaDB(atPath path: String) throws -> PlayaDB {
+    try PlayaDBImpl(dbPath: path)
 }
 
 public extension PlayaDB {

@@ -24,7 +24,6 @@ PODS:
   - PureLayout (3.1.9)
   - TTTAttributedLabel (2.0.0)
   - TUSafariActivity (1.0.4)
-  - UIImageColors (2.2.0)
   - YapDatabase (4.0):
     - YapDatabase/Standard (= 4.0)
   - YapDatabase/Standard (4.0):
@@ -151,7 +150,6 @@ DEPENDENCIES:
   - PureLayout (~> 3.0)
   - TTTAttributedLabel (~> 2.0)
   - TUSafariActivity (~> 1.0)
-  - UIImageColors (from `https://github.com/jathu/UIImageColors.git`, tag `2.2.0`)
   - YapDatabase (from `Submodules/YapDatabase/YapDatabase.podspec`)
 
 SPEC REPOS:
@@ -178,16 +176,8 @@ EXTERNAL SOURCES:
     :path: Submodules/DOFavoriteButton/DOFavoriteButton.podspec
   PermissionScope:
     :path: Submodules/PermissionScope/PermissionScope.podspec
-  UIImageColors:
-    :git: https://github.com/jathu/UIImageColors.git
-    :tag: 2.2.0
   YapDatabase:
     :path: Submodules/YapDatabase/YapDatabase.podspec
-
-CHECKOUT OPTIONS:
-  UIImageColors:
-    :git: https://github.com/jathu/UIImageColors.git
-    :tag: 2.2.0
 
 SPEC CHECKSUMS:
   Anchorage: 1961bc81c84aeed54ad7ffc697c50cd9de748ba6
@@ -207,9 +197,8 @@ SPEC CHECKSUMS:
   PureLayout: 5fb5e5429519627d60d079ccb1eaa7265ce7cf88
   TTTAttributedLabel: 8cffe8e127e4e82ff3af1e5386d4cd0ad000b656
   TUSafariActivity: afc55a00965377939107ce4fdc7f951f62454546
-  UIImageColors: 5308752f939fbc3daa1ba4749d268959fbad92cd
   YapDatabase: 7ddf620d530052380f0b4bc866fcfb39f005e9e8
 
-PODFILE CHECKSUM: 6a174005dea37b25e3548d16b55a08ff71d3ad55
+PODFILE CHECKSUM: e2741882d23777f9a5e5e8bd7b0a83c13fde34ec
 
 COCOAPODS: 1.16.2

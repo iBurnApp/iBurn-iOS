@@ -28,8 +28,8 @@ target 'iBurn' do
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', :path => 'Submodules/PermissionScope/PermissionScope.podspec'
 	pod 'JTSImageViewController'
-	# pod 'UIImageColors', '~> 2.1'
-	pod 'UIImageColors', :git => 'https://github.com/jathu/UIImageColors.git', :tag => '2.2.0'
+	# UIImageColors was replaced by Packages/PlayaColors, a CoreGraphics port shared
+	# with the playa-seed tool so baked and runtime colours match.
 end
 
 # https://github.com/CocoaPods/CocoaPods/issues/8069#issuecomment-420044112

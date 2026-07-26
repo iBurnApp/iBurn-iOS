@@ -1590,6 +1590,17 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    // MARK: - Distribution
+
+    func compactForDistribution() async throws {
+        try await dbQueue.writeWithoutTransaction { db in
+            // VACUUM rebuilds the file (reclaiming import churn), then the truncating
+            // checkpoint empties the WAL so PlayaDB.sqlite stands alone.
+            try db.execute(sql: "VACUUM")
+            try db.execute(sql: "PRAGMA wal_checkpoint(TRUNCATE)")
+        }
+    }
+
     func fetchCachedColorObjectIDs() async throws -> Set<String> {
         try await dbQueue.read { db in
             let ids = try String.fetchAll(db, sql: "SELECT object_id FROM thumbnail_colors")

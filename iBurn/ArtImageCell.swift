@@ -78,7 +78,7 @@ public class ArtImageCell: BRCArtObjectTableViewCell {
                 })
             } else {
                 // Use simple color extraction for non-art objects
-                let colors = image.getColors()?.brc_ImageColors ?? Appearance.currentColors
+                let colors = image.brc_extractColors() ?? Appearance.currentColors
                 
                 // Update metadata with colors
                 if let campMetadata = metadata as? BRCCampMetadata {

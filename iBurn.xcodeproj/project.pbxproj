@@ -24,6 +24,7 @@
 		C6E7832B37C2F274DE417CD3 /* toilets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3FBB22955D76D43845931068 /* toilets.geojson */; };
 		D90256412E1F3FE00058AEF8 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = D90256402E1F3FE00058AEF8 /* PlayaDB */; };
 		D902564B2E1F41060058AEF8 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D902564A2E1F41060058AEF8 /* GRDB */; };
+		D902566B2E1F3FE00058AEF9 /* PlayaColors in Frameworks */ = {isa = PBXBuildFile; productRef = D902566A2E1F3FE00058AEF9 /* PlayaColors */; };
 		D91879A42BC1058E0099EFAA /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = D91879A32BC1058E0099EFAA /* MapLibre */; };
 		D93440332E3E756F00199902 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D93440322E3E756F00199902 /* FirebaseCore */; };
 		D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D966561528A9970B002FA471 /* FirebaseCrashlytics */; };
@@ -193,6 +194,8 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		73700CCA398E66852345DABB /* iBurnWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = iBurnWatch;
 			sourceTree = "<group>";
 		};
@@ -234,6 +237,7 @@
 				D9D12F5A1B5AF4DE0048229A /* libsqlite3.dylib in Frameworks */,
 				63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */,
 				D902564B2E1F41060058AEF8 /* GRDB in Frameworks */,
+				D902566B2E1F3FE00058AEF9 /* PlayaColors in Frameworks */,
 				63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */,
 				63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */,
 				D966561628A9970B002FA471 /* FirebaseCrashlytics in Frameworks */,
@@ -438,6 +442,7 @@
 				D99D57ED2E1CE8CF00D5A3DE /* iBurn2026MediaFiles */,
 				D99D57F02E1CE93B00D5A3DE /* PlayaAPI */,
 				D90256402E1F3FE00058AEF8 /* PlayaDB */,
+				D902566A2E1F3FE00058AEF9 /* PlayaColors */,
 				D902564A2E1F41060058AEF8 /* GRDB */,
 				D93440322E3E756F00199902 /* FirebaseCore */,
 				D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */,
@@ -514,11 +519,12 @@
 				D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D966562728A9B86E002FA471 /* XCRemoteSwiftPackageReference "Zip" */,
 				D9915F572A76C35E0015C87D /* XCRemoteSwiftPackageReference "Siren" */,
-				D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "Submodules/iBurn-Data" */,
-				D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "Packages/PlayaAPI" */,
-				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */,
+				D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "iBurn-Data" */,
+				D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "PlayaAPI" */,
+				D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "PlayaDB" */,
+				D90256692E1F3FE00058AEF9 /* XCLocalSwiftPackageReference "PlayaColors" */,
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
-				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */,
+				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "PlayaGeo" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -629,13 +635,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -713,13 +715,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iBurn-iBurnTests/Pods-iBurn-iBurnTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1107,19 +1105,23 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */ = {
+		7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "PlayaGeo" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaGeo;
 		};
-		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */ = {
+		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "PlayaDB" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaDB;
 		};
-		D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "Submodules/iBurn-Data" */ = {
+		D90256692E1F3FE00058AEF9 /* XCLocalSwiftPackageReference "PlayaColors" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/PlayaColors;
+		};
+		D99D57E82E1CE8CF00D5A3DE /* XCLocalSwiftPackageReference "iBurn-Data" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "Submodules/iBurn-Data";
 		};
-		D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "Packages/PlayaAPI" */ = {
+		D99D57EF2E1CE93B00D5A3DE /* XCLocalSwiftPackageReference "PlayaAPI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaAPI;
 		};
@@ -1193,6 +1195,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
+		};
+		D902566A2E1F3FE00058AEF9 /* PlayaColors */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlayaColors;
 		};
 		D91879A32BC1058E0099EFAA /* MapLibre */ = {
 			isa = XCSwiftPackageProductDependency;

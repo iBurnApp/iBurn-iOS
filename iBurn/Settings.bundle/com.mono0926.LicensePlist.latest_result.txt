@@ -142,18 +142,6 @@ name: TUSafariActivity, nameSpecified:
 body: Copyright (c) 2012 T…
 version: 1.0.4
 
-name: UIImageColors, nameSpecified: 
-body: MIT License
-
-Copyrig…
-version: 2.2.0
-
-name: UIImageColors, nameSpecified: 
-body: MIT License
-
-Copyrig…
-version: 2.2.0
-
 name: YapDatabase, nameSpecified: 
 body: Software License Agr…
 version: 4.0

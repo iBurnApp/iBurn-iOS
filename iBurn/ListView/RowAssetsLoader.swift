@@ -7,7 +7,6 @@
 
 import Foundation
 import UIKit
-import UIImageColors
 
 @MainActor
 final class RowAssetsLoader: ObservableObject {
@@ -81,7 +80,7 @@ final class RowAssetsLoader: ObservableObject {
         loadTask?.cancel()
         loadTask = Task.detached(priority: .utility) {
             if Task.isCancelled { return }
-            let extracted = image.getColors(quality: .high)?.brc_ImageColors
+            let extracted = image.brc_extractColors()
             if Task.isCancelled { return }
             guard let extracted else { return }
 
