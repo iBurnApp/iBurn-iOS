@@ -415,8 +415,8 @@
 				63CE2A521987140F00F65B01 /* Resources */,
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
 				53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */,
-				D907AD6821215F20004A255A /* Crashlytics */,
 				00F14D6A9BA2DC60398A7732 /* Embed Watch Content */,
+				D907AD6821215F20004A255A /* Crashlytics */,
 			);
 			buildRules = (
 			);
