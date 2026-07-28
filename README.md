@@ -4,7 +4,7 @@
 
 iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. Following the 2014 rewrite, the 2015 release has been updated for iOS 8 and we're starting to write new code in Swift. We decided to use [YapDatabase](https://github.com/yaptv/YapDatabase)+[Mantle](https://github.com/Mantle/Mantle) instead of Core Data, and [Mapbox](https://github.com/mapbox/mapbox-ios-sdk) instead of MapKit for our [offline map tiles](https://github.com/iBurnApp/iBurn-Maps). For a more complete list check out our `Podfile`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/iBurnApp/iBurn-Android).
 
-[![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8) [![iBurn Google Play Store Link](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.gaiagps.iburn&hl=en)
+[![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8) [![iBurn Google Play Store Link](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.iburnapp.iburn3)
 
 ## Screenshots
 
