@@ -35,6 +35,23 @@ jobs:
         submodules: recursive
         token: ${{ secrets.GITHUB_TOKEN }}
     
+    - name: Refuse mock placement data
+      run: |
+        # scripts/mock_locations.js (iBurn-Data) fabricates camp/art locations
+        # for pre-drop testing and marks the bundle with these signals.
+        # A release must never ship them.
+        DATA_DIR=$(ls -d Submodules/iBurn-Data/data/20?? | sort | tail -1)
+        if [ -f "$DATA_DIR/APIData/APIData.bundle/MOCK_LOCATIONS" ]; then
+          echo "::error::$DATA_DIR contains MOCK placement data (MOCK_LOCATIONS sentinel). Revert mock_locations.js before tagging."
+          exit 1
+        fi
+        for f in camp_outlines camp_labels; do
+          if grep -q "${f}_2025" "$DATA_DIR/Map/Map.bundle/${f}.geojson" 2>/dev/null; then
+            echo "::error::${f}.geojson is last year's fixture. Revert mock_locations.js before tagging."
+            exit 1
+          fi
+        done
+
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:

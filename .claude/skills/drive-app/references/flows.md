@@ -148,6 +148,12 @@ unpredictably. Two options:
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
   "Show Camp Boundaries (Always)" map filter is on, and they appear live on
   unlock with the rest.
+- To exercise location flows before placement drops, apply mock fixtures:
+  `node scripts/mock_locations.js apply --map-fixtures` in
+  `Submodules/iBurn-Data` (revert with `... revert`). Rebuild + relaunch: the
+  bumped update.json triggers a JSON re-import with last year's placements.
+  While applied, `MockDataShipGuardTests` fails and `playa-seed` refuses — by
+  design; revert before committing or building seeds.
 - Unlocking (More → "Unlock Location Data" passcode, or entering the BRC region)
   posts `BRCEmbargoDidClear`: the map's PlayaDB observations restart and the six
   SwiftUI list hosting controllers rebuild their root view, so pins/playa

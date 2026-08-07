@@ -33,13 +33,40 @@ we only handled the embargo gate + drop-in path).
   More → the new passcode made the outlines appear live (no relaunch). Seed restore
   verified on-device: 330/1196/2361/4894/1580 rows. Fixture reverted afterward.
 
+## Location Fixtures + Ship Guards (added later on 2026-08-06)
+
+To validate location features before placement drops, `Submodules/iBurn-Data/
+scripts/mock_locations.js` fabricates plausible locations from 2025 data
+(camps name-matched with GPS translated by the Man-coordinate delta — 805/1196
+matched; art name-matched or sampled from the 2025 GPS cloud; `--map-fixtures`
+copies the 2025 camp outlines/labels geojson). See the iBurn-Data `CLAUDE.md`
+"Location Fixtures" section for usage.
+
+Guards so mock data can't ship (all verified by deliberately tripping them):
+`MOCK_LOCATIONS` sentinel in APIData.bundle → `playa-seed` exits 1,
+`iBurnTests/MockDataShipGuardTests` fails, deploy.yml "Refuse mock placement
+data" step fails (also greps the geojson for previous-year fixture names).
+
+Gotcha discovered: the legacy Yap importer (`BRCDataImporter
+loadUpdatesFromData:`) crashes the app at launch if `update.json` contains any
+non-`{file, updated}` top-level key, so the sentinel is a separate file, not an
+update.json flag. Also, PlayaAPI decodes dates with strict `.iso8601` — no
+fractional seconds in `updated` timestamps.
+
+Verified in sim: mock apply → rebuild → JSON re-import → camp pins/callouts and
+(fixture) outlines render after unlock; revert → guards green, submodule clean.
+
+The real 2026 placement geojson will be generated from the placement PDF via
+[jspolsky/brcMapTools](https://github.com/jspolsky/brcMapTools) (Phase 3).
+
 ## Remaining Work (blocked on BMorg / release timing)
 
 1. **When placement drops in the API** (before Aug 23): re-run `fetch_and_geocode.js -y 2026`
    → expect real geocode counts → `playa-seed --fetch-media` → commit chain.
-2. **When the placement PDF arrives** (~Aug 23 last year): external program generates
-   `camp_outlines.geojson` / `camp_labels.geojson` → replace placeholders in
-   `data/2026/Map/Map.bundle/` → commit. Embargo gate already in place.
+2. **When the placement PDF arrives** (~Aug 23 last year): generate
+   `camp_outlines.geojson` / `camp_labels.geojson` with
+   [jspolsky/brcMapTools](https://github.com/jspolsky/brcMapTools) → replace
+   placeholders in `data/2026/Map/Map.bundle/` → commit. Embargo gate already in place.
 3. Push submodule + app branches; publish `data/2026/` to public `iBurnApp/iBurn-Data`
    so `UPDATES_URL` OTA works; TestFlight build.
 4. Distribute the new passcode to authorized early users (Placement etc.).

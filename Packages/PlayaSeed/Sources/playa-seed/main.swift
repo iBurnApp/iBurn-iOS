@@ -8,6 +8,19 @@ do {
         exit(0)
     }
 
+    // scripts/mock_locations.js writes this sentinel when it fabricates placement
+    // data from a previous year. Refusing here (with no override) guarantees a
+    // production seed can never be baked from mock locations.
+    let mockSentinel = options.apiDataDirectory.appendingPathComponent("MOCK_LOCATIONS")
+    if FileManager.default.fileExists(atPath: mockSentinel.path) {
+        FileHandle.standardError.write("""
+        error: \(mockSentinel.path) exists — the API bundle contains MOCK location data.
+        Revert it first: node scripts/mock_locations.js revert (in Submodules/iBurn-Data)
+        \n
+        """.data(using: .utf8)!)
+        exit(1)
+    }
+
     logger.step("Building the \(options.year) PlayaDB seed")
     logger.info("data:   \(options.dataRoot.path)")
     logger.info("media:  \(options.mediaDirectory.path)")
