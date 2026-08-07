@@ -45,8 +45,8 @@ UIKit/YapDatabase stack.
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
 and `grdb_migrations` contains every migration through `v6-pin-sync`. Seeded
-counts (2026 data, July 26 refresh): 321 art / 1201 camps / 2208 events /
-4697 occurrences / 496 mutant vehicles / **1573 `thumbnail_colors`**;
+counts (2026 data, Aug 6 refresh): 330 art / 1196 camps / 2361 events /
+4894 occurrences / 495 mutant vehicles / **1580 `thumbnail_colors`**;
 `object_metadata` stays empty until the user favorites/views something.
 
 `thumbnail_colors` being populated on a *fresh* install is the signal that the
@@ -137,9 +137,17 @@ unpredictably. Two options:
 ## 6. Map + embargo
 
 - Map tab renders the MapLibre offline map immediately after onboarding.
-- Camp/art locations are hidden until the embargo lifts (the "Locations Are
-  Hidden" alert on first run explains this). Location-dependent pins won't
-  appear in pre-event builds — this is expected, not a bug.
+- Locations are hidden until the embargo lifts (the "Locations Are Hidden"
+  alert on first run explains this). The embargo is **two-tier** per the BMorg
+  API ToS: camps (and camp-hosted events) unlock at 12:01 am the Sunday before
+  gates (`YearSettings.campLocationUnlock`), art (and art-located events) at
+  gates-open (`eventStart`). Location-dependent pins won't appear in pre-event
+  builds — this is expected, not a bug.
+- The camp boundary/label style layers (`camp-boundaries`, `camp-labels-big`,
+  geojson shipped inside `Map.bundle`) are gated on the camp tier via
+  `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
+  "Show Camp Boundaries (Always)" map filter is on, and they appear live on
+  unlock with the rest.
 - Unlocking (More → "Unlock Location Data" passcode, or entering the BRC region)
   posts `BRCEmbargoDidClear`: the map's PlayaDB observations restart and the six
   SwiftUI list hosting controllers rebuild their root view, so pins/playa
