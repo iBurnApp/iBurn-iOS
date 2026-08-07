@@ -285,8 +285,8 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     
     self.tabBarController = [[TabController alloc] init];
     
-    self.tabBarController.viewControllers = @[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreNavController];
-    
+    [self.tabBarController configureWithRootViewControllers:@[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreNavController]];
+
     self.tabBarController.moreNavigationController.delegate = self;
     self.tabBarController.delegate = self;
 }

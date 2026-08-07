@@ -133,7 +133,7 @@ private extension BaseMapViewController {
     }
     
     func setupTrackingButton(mapView: MLNMapView) {
-        let button = BRCUserTrackingBarButtonItem(mapView: mapView)
+        let button = MapUserTrackingBarButtonItem(mapView: mapView)
         button.tintColor = view.tintColor
         navigationItem.rightBarButtonItem = button
     }

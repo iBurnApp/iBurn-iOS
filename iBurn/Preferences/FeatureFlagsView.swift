@@ -20,7 +20,10 @@ struct FeatureFlagsView: View {
 
     // SwiftUI Lists feature flag
     @State private var useSwiftUILists = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useSwiftUILists)
-    
+
+    // Prototype: where the global search entry point lives
+    @State private var searchLayout = MapSearchLayout.current
+
     // Dynamically calculated Burning Man dates based on Labor Day
     private var eventYear: Int {
         Calendar.current.component(.year, from: Date())
@@ -121,6 +124,25 @@ struct FeatureFlagsView: View {
                     .font(.footnote)
             }
 
+            // Map Search Layout prototype
+            Section {
+                Picker("Search Bar", selection: $searchLayout) {
+                    ForEach(MapSearchLayout.allCases, id: \.self) { layout in
+                        Text(layout.displayName).tag(layout)
+                    }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .onChange(of: searchLayout) { newValue in
+                    MapSearchLayout.current = newValue
+                }
+            } header: {
+                Text("Map Search Layout")
+            } footer: {
+                Text(searchLayoutFooter)
+                    .font(.footnote)
+            }
+
             // Quick Presets Section
             if mockDateEnabled {
                 Section {
@@ -164,6 +186,13 @@ struct FeatureFlagsView: View {
         }
     }
     
+    private var searchLayoutFooter: String {
+        if #available(iOS 26.0, *) {
+            return searchLayout.summary
+        }
+        return "The bottom layouts need iOS 26; this device falls back to the navigation bar."
+    }
+
     private func setupView() {
         // Load saved date if available
         if let savedDate = UserDefaults.standard.object(forKey: "BRCMockDateValue") as? Date {

@@ -197,9 +197,31 @@ More tab → **Visit List** pushes the SwiftUI `VisitListHostingController`
 
 ## 8. Feature Flags screen
 
-More tab → scroll to Feature Flags (DEBUG only) → toggles including
-"Use SwiftUI Lists". Toggling takes effect on next relaunch for tab
-construction.
+More tab → scroll to the bottom → **"Debug"** (DEBUG only). Contains the date
+override, "Use SwiftUI Lists", and the **Map Search Layout** picker.
+
+Navigating here is awkward: `MoreViewController`'s table cells are **not exposed
+as tap targets** in the AX snapshot — "Debug" shows up only as a `text` row. Use
+`touch` (which accepts a text elementRef) rather than `tap`:
+
+```
+touch({ elementRef: "<ref of the 'Debug' text row>", down: true, up: true })
+```
+
+"Use SwiftUI Lists" takes effect on next relaunch for tab construction. The Map
+Search Layout picker (`navigationBar` / `bottomAccessory` / `searchTab`) applies
+**live** via `.mapSearchLayoutDidChange` — no relaunch.
+
+Setting the layout from outside the app is unreliable:
+`simctl spawn <UDID> defaults write com.trailbehind.iBurn2010
+userInterface.map.searchLayout -string searchTab` frequently does not survive to
+the next launch (the running app flushes its own cached defaults over it, and
+even writing while terminated didn't take). Drive the in-app picker instead.
+
+**Software keyboard:** the simulator flips into hardware-keyboard mode after the
+first `type_text` call and stays there, so keyboard-up states can't be captured
+without quitting and reopening Simulator.app first (and `⌘K` via AppleScript is
+blocked by Accessibility permissions).
 
 ## 9. watchOS app (iBurnWatch)
 

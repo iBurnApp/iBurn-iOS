@@ -9,9 +9,70 @@
 import UIKit
 
 @objc public final class TabController: UITabBarController {
+
+    /// The five roots the app always builds, in tab-bar order. Kept so the prototype
+    /// layouts can rearrange them without the app delegate rebuilding anything.
+    private var roots: [UIViewController] = []
+
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         refreshTheme()
+    }
+
+    /// Installs the app's root view controllers and arranges them for the active
+    /// prototype layout. Replaces assigning `viewControllers` directly.
+    @objc public func configure(withRootViewControllers viewControllers: [UIViewController]) {
+        roots = viewControllers
+        applySearchLayout()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applySearchLayout),
+            name: .mapSearchLayoutDidChange,
+            object: nil
+        )
+    }
+
+    /// `.searchTab` trades the More tab for a `UISearchTab`; every other layout keeps
+    /// the plain five-tab arrangement. The More entry point reappears in the map's
+    /// navigation bar (see `MainMapViewController.applySearchLayout`).
+    @objc public func applySearchLayout() {
+        guard !roots.isEmpty else { return }
+        let selectedRoot = selectedViewController
+
+        if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
+            let carried = roots.dropLast()  // More moves to the map nav bar
+            var newTabs: [UITab] = carried.enumerated().map { index, viewController in
+                UITab(
+                    title: viewController.tabBarItem.title ?? "",
+                    image: viewController.tabBarItem.image,
+                    identifier: "iBurn.tab.\(index)"
+                ) { _ in viewController }
+            }
+
+            let searchTab = UISearchTab { _ in
+                GlobalSearchTabFactory.makeSearchTabRoot(dependencies: BRCAppDelegate.shared.dependencies)
+            }
+            searchTab.automaticallyActivatesSearch = true
+            newTabs.append(searchTab)
+
+            tabs = newTabs
+        } else {
+            // Clear any tabs left over from a previous `.searchTab` run before falling
+            // back to the plain view-controller arrangement.
+            if #available(iOS 18.0, *) {
+                tabs = []
+            }
+            self.viewControllers = roots
+        }
+
+        // Keep the user on whichever tab they were looking at. Switching to `.searchTab`
+        // drops the More tab, so anyone standing on it falls back to the map rather than
+        // being dumped into the search field.
+        if let selectedRoot, let index = self.viewControllers?.firstIndex(of: selectedRoot) {
+            selectedIndex = index
+        } else {
+            selectedIndex = 0
+        }
     }
 }
 
@@ -20,7 +81,7 @@ extension TabController {
         viewControllers?.forEach {
             $0.refreshNavigationBarColors(false)
             $0.setColorTheme(Appearance.currentColors, animated: false)
-            
+
         }
         tabBar.setColorTheme(Appearance.currentColors, animated: false)
         refreshGlobalTheme()
