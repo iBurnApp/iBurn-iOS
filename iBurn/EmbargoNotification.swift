@@ -7,6 +7,28 @@
 //
 
 import Foundation
+import PlayaDB
+
+extension BRCEmbargo {
+    /// Tiered embargo check for PlayaDB events. Events at art installations stay on
+    /// the art tier (their address would leak the art location before gates open);
+    /// everything else unlocks with camps a week early per the API ToS.
+    static func canShowLocation(for event: EventObject) -> Bool {
+        canShowLocation(locatedAtArt: event.locatedAtArt)
+    }
+
+    /// Tiered embargo check for PlayaDB event occurrences. See `canShowLocation(for event:)`.
+    static func canShowLocation(for occurrence: EventObjectOccurrence) -> Bool {
+        canShowLocation(locatedAtArt: occurrence.locatedAtArt)
+    }
+
+    private static func canShowLocation(locatedAtArt: String?) -> Bool {
+        if let locatedAtArt, !locatedAtArt.isEmpty {
+            return canShowArtLocations()
+        }
+        return canShowCampLocations()
+    }
+}
 
 extension Notification.Name {
     /// Posted on the main thread when embargoed location data becomes visible.

@@ -203,7 +203,7 @@ struct EventListView: View {
             subtitle: viewModel.distanceAttributedString(for: row.object),
             rightSubtitle: row.object.timeDescription(now: viewModel.now),
             hostName: row.object.hostName,
-            hostAddress: BRCEmbargo.allowEmbargoedData() ? row.object.hostAddress : nil,
+            hostAddress: BRCEmbargo.canShowLocation(for: row.object) ? row.object.hostAddress : nil,
             isFavorite: row.isFavorite,
             thumbnailColors: row.thumbnailColors,
             onFavoriteTap: {

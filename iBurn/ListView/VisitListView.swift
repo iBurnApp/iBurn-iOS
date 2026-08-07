@@ -169,7 +169,7 @@ struct VisitListView: View {
                 subtitle: distance,
                 rightSubtitle: event.timeDescription(now: viewModel.now),
                 hostName: event.hostName,
-                hostAddress: BRCEmbargo.allowEmbargoedData() ? event.hostAddress : nil,
+                hostAddress: BRCEmbargo.canShowLocation(for: event) ? event.hostAddress : nil,
                 isFavorite: isFav,
                 onFavoriteTap: favAction
             ) { _ in

@@ -123,7 +123,7 @@ struct CampListView: View {
     }
 
     private func rightSubtitle(for camp: CampObject) -> String? {
-        if BRCEmbargo.allowEmbargoedData() {
+        if BRCEmbargo.canShowCampLocations() {
             return camp.locationString ?? camp.intersection ?? "Location Unknown"
         }
         return "Location Restricted"

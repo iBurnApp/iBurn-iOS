@@ -73,14 +73,16 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         stopObserving()
         isObserving = true
 
-        let embargoAllowed = BRCEmbargo.allowEmbargoedData()
+        // Snapshotted per observation start; embargoDidClear() restarts observations.
+        let artAllowed = BRCEmbargo.canShowArtLocations()
+        let campAllowed = BRCEmbargo.canShowCampLocations()
 
         // Art
         if UserSettings.showArtOnMap {
             let token = playaDB.observeArt(filter: ArtFilter()) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.artAnnotations = embargoAllowed
+                    self.artAnnotations = artAllowed
                         ? rows.compactMap { PlayaObjectAnnotation(art: $0.object) }
                         : []
                     self.rebuildCache()
@@ -94,7 +96,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeCamps(filter: CampFilter()) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.campAnnotations = embargoAllowed
+                    self.campAnnotations = campAllowed
                         ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object) }
                         : []
                     self.rebuildCache()
@@ -113,9 +115,10 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeEvents(filter: filter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.eventAnnotations = embargoAllowed
-                        ? rows.compactMap { PlayaObjectAnnotation(event: $0.object) }
-                        : []
+                    self.eventAnnotations = rows.compactMap { row in
+                        let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
+                        return allowed ? PlayaObjectAnnotation(event: row.object) : nil
+                    }
                     self.rebuildCache()
                 }
             }
@@ -127,7 +130,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeArt(filter: ArtFilter(onlyFavorites: true)) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.favoriteArtAnnotations = embargoAllowed
+                    self.favoriteArtAnnotations = artAllowed
                         ? rows.compactMap { PlayaObjectAnnotation(art: $0.object) }
                         : []
                     self.rebuildCache()
@@ -141,7 +144,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeCamps(filter: CampFilter(onlyFavorites: true)) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.favoriteCampAnnotations = embargoAllowed
+                    self.favoriteCampAnnotations = campAllowed
                         ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object) }
                         : []
                     self.rebuildCache()
@@ -165,9 +168,10 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeEvents(filter: eventFilter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.favoriteEventAnnotations = embargoAllowed
-                        ? rows.compactMap { PlayaObjectAnnotation(event: $0.object) }
-                        : []
+                    self.favoriteEventAnnotations = rows.compactMap { row in
+                        let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
+                        return allowed ? PlayaObjectAnnotation(event: row.object) : nil
+                    }
                     self.rebuildCache()
                 }
             }

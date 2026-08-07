@@ -51,7 +51,7 @@ actor EventCalendarServiceImpl: EventCalendarService {
     private let playaDB: PlayaDB
     private let eventStore: EventStoreProviding
     private let legacyIdentifierStore: LegacyCalendarIdentifierStore?
-    private let embargoAllowsLocation: () -> Bool
+    private let embargoAllowsLocation: (EventObjectOccurrence) -> Bool
 
     private struct PendingReconcile {
         let id: Int
@@ -67,12 +67,13 @@ actor EventCalendarServiceImpl: EventCalendarService {
     ///   - eventStore: EventKit wrapper (injectable for tests).
     ///   - legacyIdentifierStore: Yap-side identifiers to take over, if the legacy
     ///     database is available. Pass nil to disable the takeover.
-    ///   - embargoAllowsLocation: Whether playa addresses may be written into the
-    ///     calendar. Defaults to the app's embargo state.
+    ///   - embargoAllowsLocation: Whether the occurrence's playa address may be written
+    ///     into the calendar. Defaults to the app's tiered embargo state (camps unlock a
+    ///     week before gates; art-located events wait for gate opening).
     init(playaDB: PlayaDB,
          eventStore: EventStoreProviding,
          legacyIdentifierStore: LegacyCalendarIdentifierStore?,
-         embargoAllowsLocation: @escaping () -> Bool = { BRCEmbargo.allowEmbargoedData() }) {
+         embargoAllowsLocation: @escaping (EventObjectOccurrence) -> Bool = { BRCEmbargo.canShowLocation(for: $0) }) {
         self.playaDB = playaDB
         self.eventStore = eventStore
         self.legacyIdentifierStore = legacyIdentifierStore
@@ -142,8 +143,8 @@ actor EventCalendarServiceImpl: EventCalendarService {
             await takeOverLegacyEntries(eventUID: eventUID)
         }
 
-        let includeLocation = embargoAllowsLocation()
         for occurrence in occurrences {
+            let includeLocation = embargoAllowsLocation(occurrence)
             let key = occurrence.calendarOccurrenceKey
             if let identifier = existing[key], eventStore.lookupEvent(identifier: identifier) != .notFound {
                 // Still in the calendar (or unverifiable under write-only access):
@@ -322,7 +323,7 @@ enum EventCalendarServiceFactory {
         playaDB: PlayaDB,
         eventStore: EventStoreProviding,
         legacyIdentifierStore: LegacyCalendarIdentifierStore?,
-        embargoAllowsLocation: @escaping () -> Bool = { true }
+        embargoAllowsLocation: @escaping (EventObjectOccurrence) -> Bool = { _ in true }
     ) -> EventCalendarService {
         EventCalendarServiceImpl(
             playaDB: playaDB,

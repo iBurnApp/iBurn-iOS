@@ -165,7 +165,7 @@ final class EventCalendarServiceTests: XCTestCase {
     private func makeService(
         playaDB: PlayaDB,
         legacyIdentifierStore: LegacyCalendarIdentifierStore? = nil,
-        embargoAllowsLocation: @escaping () -> Bool = { true }
+        embargoAllowsLocation: @escaping (EventObjectOccurrence) -> Bool = { _ in true }
     ) -> EventCalendarService {
         EventCalendarServiceFactory.makeService(
             playaDB: playaDB,
@@ -251,7 +251,7 @@ final class EventCalendarServiceTests: XCTestCase {
 
     func testEmbargoHidesPlayaAddressButKeepsHostName() async throws {
         let db = try await makePlayaDB()
-        let service = makeService(playaDB: db, embargoAllowsLocation: { false })
+        let service = makeService(playaDB: db, embargoAllowsLocation: { _ in false })
 
         await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
 

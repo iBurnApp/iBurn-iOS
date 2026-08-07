@@ -68,6 +68,8 @@ public class BaseMapViewController: UIViewController {
         
         mapViewAdapter.reloadAnnotations()
         NotificationCenter.default.addObserver(self, selector: #selector(powerStateDidChange(notification:)), name: .NSProcessInfoPowerStateDidChange, object: nil)
+        // The camp boundary layers are embargo-gated, so re-resolve them when the user unlocks.
+        NotificationCenter.default.addObserver(self, selector: #selector(embargoDidClear(notification:)), name: .BRCEmbargoDidClear, object: nil)
     }
     
     override public func viewWillAppear(_ animated: Bool) {
@@ -106,6 +108,10 @@ private extension BaseMapViewController {
         DispatchQueue.main.async {
             self.updateIdleTimer()
         }
+    }
+
+    @objc func embargoDidClear(notification: Notification) {
+        mapLayerManager.updateAllLayers()
     }
     
     /// keeps the screen on for folks navigating in vehicles

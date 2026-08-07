@@ -96,7 +96,7 @@ struct VisiblePinsView: View {
                 subtitle: subtitle,
                 rightSubtitle: occurrence.timeDescription(now: Date()),
                 hostName: occurrence.hostName,
-                hostAddress: BRCEmbargo.allowEmbargoedData() ? occurrence.hostAddress : nil,
+                hostAddress: BRCEmbargo.canShowLocation(for: occurrence) ? occurrence.hostAddress : nil,
                 isFavorite: isFavorite,
                 onFavoriteTap: favoriteAction
             ) { _ in

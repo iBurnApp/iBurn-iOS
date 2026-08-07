@@ -120,7 +120,7 @@
         case BRCDetailCellInfoTypeRelationship: {
             BRCRelationshipDetailInfoCell *relationshipCellInfo = (BRCRelationshipDetailInfoCell *)cellInfo;
             NSMutableString *textString = [relationshipCellInfo.dataObject.title mutableCopy];
-            if ([relationshipCellInfo.dataObject.playaLocation length] && [BRCEmbargo allowEmbargoedData]) {
+            if ([relationshipCellInfo.dataObject.playaLocation length] && [BRCEmbargo canShowLocationForObject:relationshipCellInfo.dataObject]) {
                 [textString appendFormat:@"\n%@",relationshipCellInfo.dataObject.playaLocation];
             }
             self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;

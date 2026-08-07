@@ -53,16 +53,36 @@
     return NO;
 }
 
++ (BOOL)canShowCampLocations
+{
+    if ([BRCEmbargo allowEmbargoedData]) {
+        return YES;
+    }
+    NSDate *now = [NSDate present];
+    return [now timeIntervalSinceDate:YearSettings.campLocationUnlock] >= 0;
+}
+
++ (BOOL)canShowArtLocations
+{
+    return [BRCEmbargo allowEmbargoedData];
+}
+
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject
 {
-    if (![BRCEmbargo allowEmbargoedData]) {
-        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
-            [dataObject isKindOfClass:[BRCArtObject class]]) {
-            return NO;
+    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
+        return [BRCEmbargo canShowArtLocations];
+    }
+    if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+        // An event at an art installation would leak the art location, so it
+        // stays on the art tier; everything else unlocks with camps.
+        BRCEventObject *event = (BRCEventObject *)dataObject;
+        if (event.hostedByArtUniqueID.length > 0) {
+            return [BRCEmbargo canShowArtLocations];
         }
-        if ([dataObject isKindOfClass:[BRCArtObject class]]) {
-            return NO;
-        }
+        return [BRCEmbargo canShowCampLocations];
+    }
+    if ([dataObject isKindOfClass:[BRCCampObject class]]) {
+        return [BRCEmbargo canShowCampLocations];
     }
     return YES;
 }

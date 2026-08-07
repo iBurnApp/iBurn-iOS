@@ -6,6 +6,8 @@
 	<string>2026</string>
 	<key>EventStart</key>
 	<date>2026-08-30T07:00:00Z</date>
+	<key>CampLocationUnlock</key>
+	<date>2026-08-23T07:01:00Z</date>
 	<key>EventEnd</key>
 	<date>2026-09-07T07:00:00Z</date>
 	<key>ManCenterLatitude</key>

@@ -22,6 +22,13 @@ public final class YearSettings: NSObject {
     @objc public static var eventStart: Date {
         return YearSettings.shared.eventStart
     }
+
+    /// When theme camp location data may be shown publicly, per the BMorg API ToS:
+    /// 12:01 am on the Sunday of the week before the first day of the event.
+    /// Art locations stay embargoed until `eventStart` (gate opening).
+    @objc public static var campLocationUnlock: Date {
+        return YearSettings.shared.campLocationUnlock
+    }
     
     @objc public static var eventEnd: Date {
         return YearSettings.shared.eventEnd
@@ -55,6 +62,7 @@ public final class YearSettings: NSObject {
         static let playaYear = "PlayaYear"
         static let eventStart = "EventStart"
         static let eventEnd = "EventEnd"
+        static let campLocationUnlock = "CampLocationUnlock"
         static let manCenterLatitude = "ManCenterLatitude"
         static let manCenterLongitude = "ManCenterLongitude"
     }
@@ -68,6 +76,7 @@ public final class YearSettings: NSObject {
     private let playaYear: String
     private let eventStart: Date
     private let eventEnd: Date
+    private let campLocationUnlock: Date
     private let festivalDays: [Date]
     private let manCenterCoordinate: CLLocationCoordinate2D
     
@@ -77,6 +86,8 @@ public final class YearSettings: NSObject {
         self.eventStart = eventStart
         self.eventEnd = allSettings["EventEnd"] as! Date
         self.playaYear = allSettings["PlayaYear"] as! String
+        // Missing key falls back to eventStart: the pre-tiered (fully embargoed) behavior.
+        self.campLocationUnlock = allSettings[Keys.campLocationUnlock] as? Date ?? eventStart
         
         // End-inclusive so the final festival day (Exodus) is browsable, matching the legacy day picker.
         let numberOfDays = Calendar.current.dateComponents([.day], from: self.eventStart, to: self.eventEnd).day ?? 0

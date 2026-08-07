@@ -892,7 +892,7 @@ class DetailViewModel: ObservableObject {
             hasImage = true
         }
 
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowArtLocations()
         if canShowLocation, let annotation = PlayaObjectAnnotation(art: art), !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(art.name)"))
         }
@@ -957,7 +957,7 @@ class DetailViewModel: ObservableObject {
             hasImage = true
         }
 
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowCampLocations()
         if canShowLocation, let annotation = PlayaObjectAnnotation(camp: camp), !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(camp.name)"))
         }
@@ -1067,7 +1067,7 @@ class DetailViewModel: ObservableObject {
         }
 
         // Map before title if no host image
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowLocation(for: event)
         let annotation = eventAnnotation(for: event)
         if canShowLocation, let annotation, !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(event.name)"))
@@ -1206,7 +1206,7 @@ class DetailViewModel: ObservableObject {
         }
 
         // Map before title if no host image
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowLocation(for: occ)
         let annotation = eventAnnotation(for: occ)
         if canShowLocation, let annotation, !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(occ.name)"))

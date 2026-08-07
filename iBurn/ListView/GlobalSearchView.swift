@@ -125,7 +125,7 @@ struct GlobalSearchView: View {
                 object: event,
                 rightSubtitle: event.timeDescription(now: Date()),
                 hostName: event.hostName,
-                hostAddress: BRCEmbargo.allowEmbargoedData() ? event.hostAddress : nil,
+                hostAddress: BRCEmbargo.canShowLocation(for: event) ? event.hostAddress : nil,
                 isFavorite: false,
                 onFavoriteTap: { }
             ) { _ in
