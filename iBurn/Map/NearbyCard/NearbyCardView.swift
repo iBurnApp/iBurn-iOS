@@ -7,9 +7,9 @@
 //
 //  The on-map "nearby card": a compact, swipeable card pinned near the top of the
 //  main map showing what's within ~100m of the user. Events come first, then art +
-//  camps by distance. Tapping a card opens its detail view; the close button turns
-//  the card off until it is re-enabled from the map filter screen. Liquid Glass on
-//  iOS 26, `.ultraThinMaterial` on earlier OSes.
+//  camps by distance. Tapping a card opens its detail view; the footer's "Hide"
+//  button turns the card off until it is re-enabled from the map filter screen.
+//  Liquid Glass on iOS 26, `.ultraThinMaterial` on earlier OSes.
 //
 
 import SwiftUI
@@ -60,6 +60,13 @@ struct NearbyCardView: View {
         RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
     }
 
+    /// The item the pager is currently showing. The favorite button lives outside the
+    /// `TabView` (so it can't eat a swipe), so it has to look up the paged item itself.
+    private var selectedItem: NearbyItem? {
+        guard let selectedID = viewModel.selectedID else { return viewModel.items.first }
+        return viewModel.items.first { $0.id == selectedID } ?? viewModel.items.first
+    }
+
     var body: some View {
         // The card is removed from the hierarchy rather than collapsed to a zero frame:
         // a `.glassEffect` surface that is merely sized to zero and faded to `opacity(0)`
@@ -99,14 +106,12 @@ struct NearbyCardView: View {
                     NearbyCardContentView(
                         item: item,
                         now: viewModel.now,
-                        isFavorite: item.isFavorite,
                         audioPlayer: audioPlayer,
-                        onFavoriteTap: { Task { await viewModel.toggleFavorite(item) } },
                         onTap: { onSelect(item.detailSubject) }
                     )
                     .padding(.leading, 14)
-                    // Wider on the trailing edge so the favorite/audio column clears the
-                    // close button sitting in the corner above it.
+                    // Wider on the trailing edge so the row's text and audio button clear
+                    // the favorite button sitting in the corner above them.
                     .padding(.trailing, 34)
                     .padding(.top, 12)
                     .tag(item.id as String?)
@@ -117,18 +122,20 @@ struct NearbyCardView: View {
 
             footer
         }
-        // Outside the `TabView` so it stays put while pages swipe under it.
-        .overlay(alignment: .topTrailing) { closeButton }
+        // Outside the `TabView` so it stays put while pages swipe under it — a control
+        // inside the pager competes with the page gesture and can't be dragged past.
+        .overlay(alignment: .topTrailing) { favoriteButton }
     }
 
-    /// Page dots centered, "See all" trailing. The dots used to sit alone in a row of
-    /// their own, which left the whole bottom of the card empty.
+    /// "Hide" leading, page dots centered, "See all" trailing. The dots used to sit alone
+    /// in a row of their own, which left the whole bottom of the card empty.
     private var footer: some View {
         ZStack {
             if viewModel.count > 1 {
                 pageDots
             }
             HStack {
+                hideButton
                 Spacer(minLength: 0)
                 seeAllButton
             }
@@ -154,20 +161,43 @@ struct NearbyCardView: View {
         .accessibilityLabel("See all nearby")
     }
 
-    private var closeButton: some View {
+    /// Turns the card off. Replaces the corner "✕": a labelled control in the footer reads
+    /// as an action with a consequence, where a close glyph reads as "dismiss for now".
+    private var hideButton: some View {
         Button(action: onHide) {
-            Image(systemName: "xmark")
-                .font(.system(size: 10, weight: .bold))
+            Text("Hide")
+                .font(.caption2.weight(.semibold))
                 .foregroundStyle(themeColors.secondaryColor)
-                .frame(width: 24, height: 24)
-                .background(Circle().fill(themeColors.detailColor.opacity(0.15)))
-                .contentShape(Circle())
+                .padding(.horizontal, 6)
+                .frame(height: 28)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .padding(.top, 6)
-        .padding(.trailing, 6)
         .accessibilityLabel("Hide nearby card")
         .accessibilityHint("Turn it back on in Map Filter")
+    }
+
+    /// Favoriting the item the pager is showing. Sits in the card's corner rather than in
+    /// the row so it keeps a fixed position while pages swipe underneath it.
+    @ViewBuilder
+    private var favoriteButton: some View {
+        if let item = selectedItem {
+            let isFavorite = item.isFavorite
+            Button {
+                Task { await viewModel.toggleFavorite(item) }
+            } label: {
+                Image(systemName: isFavorite ? "heart.fill" : "heart")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(isFavorite ? Color.pink : themeColors.secondaryColor)
+                    .frame(width: 24, height: 24)
+                    .background(Circle().fill(themeColors.detailColor.opacity(0.15)))
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 6)
+            .padding(.trailing, 6)
+            .accessibilityLabel(isFavorite ? "Unfavorite \(item.name)" : "Favorite \(item.name)")
+        }
     }
 
     private var pageDots: some View {
@@ -233,9 +263,7 @@ private struct GlassSurface: ViewModifier {
 private struct NearbyCardContentView: View {
     let item: NearbyItem
     let now: Date
-    let isFavorite: Bool
     let audioPlayer: any AudioPlayerProtocol
-    let onFavoriteTap: () -> Void
     let onTap: () -> Void
 
     @StateObject private var assets: RowAssetsLoader
@@ -244,16 +272,12 @@ private struct NearbyCardContentView: View {
     init(
         item: NearbyItem,
         now: Date,
-        isFavorite: Bool,
         audioPlayer: any AudioPlayerProtocol,
-        onFavoriteTap: @escaping () -> Void,
         onTap: @escaping () -> Void
     ) {
         self.item = item
         self.now = now
-        self.isFavorite = isFavorite
         self.audioPlayer = audioPlayer
-        self.onFavoriteTap = onFavoriteTap
         self.onTap = onTap
         _assets = StateObject(wrappedValue: RowAssetsLoader(objectID: item.thumbnailObjectID))
     }
@@ -278,8 +302,11 @@ private struct NearbyCardContentView: View {
                         .lineLimit(1)
                 }
 
+                // `NearbyItem.address` is nil while the object's embargo tier still hides
+                // its location (art until gates open, camps until the ToS window, events
+                // per their host), so this line simply doesn't render then.
                 if let address = item.address {
-                    Label(address, systemImage: "mappin.and.ellipse")
+                    Text(address)
                         .font(.caption)
                         .foregroundStyle(themeColors.detailColor)
                         .lineLimit(1)
@@ -293,11 +320,14 @@ private struct NearbyCardContentView: View {
 
             Spacer(minLength: 4)
 
-            VStack(spacing: 10) {
-                favoriteIcon
-                if let track = audioTrack {
+            // Art-only, and only when the audio file is on disk. Pinned to the bottom of
+            // the row so it clears the favorite button in the card's corner above it.
+            if let track = audioTrack {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
                     AudioTourButton(track: track, audioPlayer: audioPlayer)
                 }
+                .frame(height: 60)
             }
         }
         .contentShape(Rectangle())
@@ -321,16 +351,6 @@ private struct NearbyCardContentView: View {
         .frame(width: 60, height: 60)
         .clipShape(shape)
         .overlay(shape.strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-    }
-
-    /// Uses `Image + onTapGesture` (not `Button`) so it doesn't swallow the card tap.
-    private var favoriteIcon: some View {
-        Image(systemName: isFavorite ? "heart.fill" : "heart")
-            .foregroundStyle(isFavorite ? Color.pink : themeColors.detailColor)
-            .imageScale(.medium)
-            .frame(width: 28, height: 28)
-            .contentShape(Rectangle())
-            .onTapGesture { onFavoriteTap() }
     }
 
     /// Audio tours exist for art only, and only when the file is present on disk.

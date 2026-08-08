@@ -147,4 +147,102 @@ final class EmbargoTierTests: XCTestCase {
         XCTAssertNil(disabled.boundariesMinimumZoom)
         XCTAssertFalse(disabled.labelsVisible)
     }
+
+    // MARK: - Nearby location line
+
+    // `NearbyItem.address` is the one string the map's nearby card and the Nearby screen
+    // put under an object's name, so it carries the tier check for both. Exercised here
+    // rather than in a nearby-specific test case because the tiers are global state and
+    // this case already owns the mock-date + passcode harness that moves them.
+
+    private func artItem(locationString: String?) -> NearbyItem {
+        .art(ListRow(
+            object: ArtObject(uid: "art-1", name: "The Hitchin' Post", year: 2026, locationString: locationString),
+            metadata: nil,
+            thumbnailColors: nil
+        ))
+    }
+
+    private func campItem(locationString: String?) -> NearbyItem {
+        .camp(ListRow(
+            object: CampObject(uid: "camp-1", name: "Camp Test", year: 2026, locationString: locationString),
+            metadata: nil,
+            thumbnailColors: nil
+        ))
+    }
+
+    private func eventItem(host: (any PlaceDataObject)?, otherLocation: String = "") -> NearbyItem {
+        let event = EventObject(
+            uid: "event-1",
+            name: "Test Event",
+            year: 2026,
+            eventTypeLabel: "Party",
+            eventTypeCode: "prty",
+            hostedByCamp: host is CampObject ? "camp-1" : nil,
+            locatedAtArt: host is ArtObject ? "art-1" : nil,
+            otherLocation: otherLocation
+        )
+        let occurrence = EventOccurrence(
+            eventId: event.uid,
+            startTime: Date(timeIntervalSince1970: 1_700_000_000),
+            endTime: Date(timeIntervalSince1970: 1_700_003_600)
+        )
+        return .event(ListRow(
+            object: EventObjectOccurrence(event: event, occurrence: occurrence, host: host),
+            metadata: nil,
+            thumbnailColors: nil
+        ))
+    }
+
+    func testNearbyAddressHidesArtAndCampsBeforeAnyTierOpens() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertNil(artItem(locationString: "Open Playa").address)
+        XCTAssertNil(campItem(locationString: "7:30 & Esplanade").address)
+    }
+
+    func testNearbyAddressShowsCampsButNotArtInsideTheCampWindow() throws {
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertNil(artItem(locationString: "Open Playa").address)
+        XCTAssertEqual(campItem(locationString: "7:30 & Esplanade").address, "7:30 & Esplanade")
+    }
+
+    func testNearbyAddressShowsEverythingOnceGatesOpen() throws {
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertEqual(artItem(locationString: "Open Playa").address, "Open Playa")
+        XCTAssertEqual(campItem(locationString: "7:30 & Esplanade").address, "7:30 & Esplanade")
+    }
+
+    func testNearbyAddressShowsEverythingOncePasscodeEntered() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        UserDefaults.enteredEmbargoPasscode = true
+        XCTAssertEqual(artItem(locationString: "Open Playa").address, "Open Playa")
+    }
+
+    func testNearbyAddressTreatsBlankLocationStringsAsAbsent() throws {
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertNil(artItem(locationString: "   ").address)
+        XCTAssertNil(campItem(locationString: nil).address)
+    }
+
+    func testNearbyEventAddressFollowsItsHostTier() throws {
+        let camp = CampObject(uid: "camp-1", name: "Camp Test", year: 2026, locationString: "7:30 & Esplanade")
+        let art = ArtObject(uid: "art-1", name: "The Hitchin' Post", year: 2026, locationString: "Open Playa")
+
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertEqual(eventItem(host: camp).address, "7:30 & Esplanade")
+        XCTAssertNil(eventItem(host: art).address)
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertEqual(eventItem(host: art).address, "Open Playa")
+    }
+
+    /// An unhosted event's free-text location is the user's own words, not placement data,
+    /// so it survives the embargo and stands in when the host address is withheld.
+    func testNearbyEventFallsBackToFreeTextLocationWhileEmbargoed() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertEqual(eventItem(host: nil, otherLocation: "Center Camp").address, "Center Camp")
+
+        let art = ArtObject(uid: "art-1", name: "The Hitchin' Post", year: 2026, locationString: "Open Playa")
+        XCTAssertEqual(eventItem(host: art, otherLocation: "Center Camp").address, "Center Camp")
+    }
 }
