@@ -18,7 +18,7 @@ struct CustomizeTabsView: View {
     var body: some View {
         List {
             Section {
-                ForEach(configuration.visible, id: \.self) { identifier in
+                ForEach(configuration.visible, id: \.barRowID) { identifier in
                     row(identifier, isHidden: false)
                 }
                 .onMove(perform: move)
@@ -34,7 +34,7 @@ struct CustomizeTabsView: View {
                     Text("Nothing hidden.")
                         .foregroundColor(.secondary)
                 } else {
-                    ForEach(configuration.hidden, id: \.self) { identifier in
+                    ForEach(configuration.hidden, id: \.moreRowID) { identifier in
                         row(identifier, isHidden: true)
                     }
                 }
@@ -45,6 +45,12 @@ struct CustomizeTabsView: View {
                     .font(.footnote)
             }
         }
+        // The list is permanently in edit mode, and a cell recycled across the section
+        // boundary keeps the wrong edit chrome: a just-unhidden row arrived with no
+        // reorder handle and the next drag crashed. Re-identifying the list whenever the
+        // visible/hidden partition changes configures every cell fresh; reorders leave
+        // `hidden` untouched, so a drag never rebuilds mid-gesture.
+        .id(configuration.hidden)
         .environment(\.editMode, .constant(.active))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -58,25 +64,45 @@ struct CustomizeTabsView: View {
         }
     }
 
+    /// No slot left for another tab. Un-hiding past capacity would push the bar to six
+    /// items and summon UIKit's native More overflow, so the plus buttons shut off.
+    private var isAtCapacity: Bool {
+        configuration.visible.count >= TabConfiguration.visibleCapacity
+    }
+
     /// Says why Events starts down here when the search tab owns a bar slot — otherwise
-    /// it looks like the app hid a tab for no reason.
+    /// it looks like the app hid a tab for no reason — and why plus is greyed out when
+    /// the bar is full.
     private var hiddenFooter: String {
-        let base = "Hidden tabs stay reachable as rows at the top of the More screen."
-        guard TabConfiguration.layoutHiddenByDefault.contains(.events) else { return base }
-        return base + " Events starts here because the search tab takes a slot on the bar — move it back up any time."
+        var text = "Hidden tabs stay reachable as rows at the top of the More screen."
+        let eventsDisplacedBySearch = TabConfiguration.layoutHiddenByDefault.contains(.events)
+            && configuration.isHidden(.events)
+        if eventsDisplacedBySearch {
+            text += " Events starts here because the search tab takes a slot on the bar."
+        }
+        if isAtCapacity && !configuration.hidden.isEmpty {
+            // Mention the search tab only when it's the reason and the Events sentence
+            // hasn't already said so.
+            text += eventsDisplacedBySearch || !TabConfiguration.searchTabOccupiesBarSlot
+                ? " The tab bar is full — hide another tab to add one back."
+                : " The tab bar is full — the search tab holds one slot, so hide another tab to add one back."
+        }
+        return text
     }
 
     private func row(_ identifier: TabIdentifier, isHidden: Bool) -> some View {
-        HStack(spacing: 12) {
+        let addBlocked = isHidden && isAtCapacity
+        return HStack(spacing: 12) {
             if identifier.isHideable {
                 Button {
                     isHidden ? show(identifier) : hide(identifier)
                 } label: {
                     Image(systemName: isHidden ? "plus.circle.fill" : "minus.circle.fill")
-                        .foregroundColor(isHidden ? .green : .red)
+                        .foregroundColor(addBlocked ? .secondary : isHidden ? .green : .red)
                         .imageScale(.large)
                 }
                 .buttonStyle(.borderless)
+                .disabled(addBlocked)
                 .accessibilityLabel(isHidden ? "Add \(identifier.title) to tab bar" : "Remove \(identifier.title) from tab bar")
             } else {
                 // Keeps titles aligned with the hideable rows above and below.
@@ -114,6 +140,7 @@ struct CustomizeTabsView: View {
     }
 
     private func show(_ identifier: TabIdentifier) {
+        guard !isAtCapacity else { return }
         apply(TabConfiguration(
             visible: configuration.visible + [identifier],
             hidden: configuration.hidden.filter { $0 != identifier }
@@ -127,6 +154,15 @@ struct CustomizeTabsView: View {
             configuration = TabConfiguration.current
         }
     }
+}
+
+/// Row identity carries its section. Both ForEach containers hold `TabIdentifier`
+/// values, and one identity migrating between them mid-edit made the List recycle the
+/// cell — stale edit chrome (no reorder handle) and corrupted move bookkeeping.
+/// Distinct namespaces turn a show/hide into a plain delete + insert.
+private extension TabIdentifier {
+    var barRowID: String { "bar." + rawValue }
+    var moreRowID: String { "more." + rawValue }
 }
 
 struct CustomizeTabsView_Previews: PreviewProvider {

@@ -220,17 +220,18 @@ final class TabConfigurationTests: XCTestCase {
     }
 
     @MainActor
-    func testUserCanPutEventsBackOnTheSearchTabBar() throws {
+    func testUserCanPutEventsBackAfterFreeingABarSlot() throws {
         try useSearchTabLayout()
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .favorites, .more, .events],
-            hidden: []
+            visible: [.map, .nearby, .more, .events],
+            hidden: [.favorites]
         )
 
         let configuration = TabConfiguration.current
-        XCTAssertEqual(configuration.visible, [.map, .nearby, .favorites, .more, .events])
-        XCTAssertTrue(configuration.hidden.isEmpty)
+        XCTAssertEqual(configuration.visible, [.map, .nearby, .more, .events])
+        XCTAssertEqual(configuration.hidden, [.favorites])
         XCTAssertFalse(TabController.isDisplacedFromTabBar(.events))
+        XCTAssertTrue(TabController.isDisplacedFromTabBar(.favorites))
     }
 
     func testUntouchedEventsFollowsWhicheverLayoutIsActive() throws {
@@ -259,9 +260,10 @@ final class TabConfigurationTests: XCTestCase {
 
     func testExplicitEventsChoiceSurvivesLayoutSwitches() throws {
         try useSearchTabLayout()
+        // Capacity is four here, so choosing Events means giving up another slot first.
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .favorites, .more, .events],
-            hidden: []
+            visible: [.map, .nearby, .more, .events],
+            hidden: [.favorites]
         )
 
         MapSearchLayout.current = .navigationBar
@@ -288,14 +290,15 @@ final class TabConfigurationTests: XCTestCase {
     func testResetRestoresTheActiveLayoutsDefault() throws {
         try useSearchTabLayout()
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .favorites, .more, .events],
-            hidden: []
+            visible: [.map, .nearby, .more, .events],
+            hidden: [.favorites]
         )
         XCTAssertNotEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
 
         TabConfiguration.resetToDefault()
         XCTAssertEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
         XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+        XCTAssertFalse(TabConfiguration.current.isHidden(.favorites))
     }
 
     func testLayoutDefaultIsPlainDefaultWithoutTheSearchTab() {
@@ -313,8 +316,8 @@ final class TabConfigurationTests: XCTestCase {
         XCTAssertTrue(TabConfiguration.isUntouched)
 
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .favorites, .more, .events],
-            hidden: []
+            visible: [.map, .nearby, .more, .events],
+            hidden: [.favorites]
         )
         TabConfiguration.current = TabConfiguration(
             visible: [.map, .nearby, .favorites, .more],
@@ -331,5 +334,126 @@ final class TabConfigurationTests: XCTestCase {
     func testMovingToHiddenIgnoresTabsThatCannotBeHidden() {
         let configuration = TabConfiguration.default.movingToHidden([.map, .more])
         XCTAssertEqual(configuration, .default)
+    }
+
+    // MARK: - Capacity
+    //
+    // iPhone shows at most five tab bar items; a sixth makes UIKit add its own native
+    // More overflow tab next to the app's More. The bar must never get there, so app
+    // tabs have five slots — four while the `.searchTab` layout spends one on search.
+
+    func testCapacityIsFiveWithoutTheSearchTab() {
+        MapSearchLayout.current = .navigationBar
+        XCTAssertEqual(TabConfiguration.visibleCapacity, 5)
+        XCTAssertFalse(TabConfiguration.searchTabOccupiesBarSlot)
+    }
+
+    func testCapacityIsFourWhileTheSearchTabHoldsASlot() throws {
+        try useSearchTabLayout()
+        XCTAssertEqual(TabConfiguration.visibleCapacity, 4)
+        XCTAssertTrue(TabConfiguration.searchTabOccupiesBarSlot)
+    }
+
+    func testLimitingPushesTabsOffTheEndOfTheBar() {
+        let limited = TabConfiguration.default.limited(toCapacity: 4)
+        XCTAssertEqual(limited.visible, [.map, .nearby, .favorites, .more])
+        XCTAssertEqual(limited.hidden, [.events])
+    }
+
+    func testLimitingSkipsTabsThatCannotBeHidden() {
+        let configuration = TabConfiguration.sanitized(
+            order: ["nearby", "favorites", "events", "map", "more"],
+            hidden: []
+        )
+        let limited = configuration.limited(toCapacity: 3)
+        XCTAssertEqual(limited.visible, [.nearby, .map, .more])
+        XCTAssertEqual(limited.hidden, [.favorites, .events])
+    }
+
+    func testLimitingIsANoOpAtOrUnderCapacity() {
+        XCTAssertEqual(TabConfiguration.default.limited(toCapacity: 5), .default)
+        XCTAssertEqual(TabConfiguration.default.limited(toCapacity: 6), .default)
+    }
+
+    func testEffectiveConfigurationNeverExceedsCapacityUnderTheSearchTab() throws {
+        try useSearchTabLayout()
+        TabConfiguration.current = TabConfiguration(visible: TabIdentifier.allCases, hidden: [])
+        XCTAssertEqual(TabConfiguration.current.visible.count, TabConfiguration.visibleCapacity)
+    }
+
+    /// A bar that was legitimately full on a five-slot layout loses its last hideable
+    /// tab when the search tab arrives — as layout pressure, not a recorded choice, so
+    /// the tab comes straight back when capacity does.
+    func testCapacityClampOnLayoutSwitchIsNotAUserChoice() throws {
+        MapSearchLayout.current = .navigationBar
+        // Hide and re-show Events so it carries an explicit "on the bar" override and
+        // the search layout's Events default can't be what empties the slot.
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
+        )
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more, .events],
+            hidden: []
+        )
+        XCTAssertEqual(TabConfiguration.current.visible.count, 5)
+
+        try useSearchTabLayout()
+        let clamped = TabConfiguration.current
+        XCTAssertEqual(clamped.visible, [.map, .nearby, .favorites, .more])
+        XCTAssertEqual(clamped.hidden, [.events])
+
+        MapSearchLayout.current = .navigationBar
+        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+    }
+
+    // MARK: - Partition integrity
+    //
+    // The customization screen renders `visible` and `hidden` as two ForEach sections of
+    // one List; an identifier in both (or missing from both) corrupts edit-mode chrome.
+    // No sequence of writes may ever break the partition.
+
+    func testEditSequenceKeepsVisibleAndHiddenAStrictPartition() throws {
+        func assertPartitioned(file: StaticString = #filePath, line: UInt = #line) {
+            let configuration = TabConfiguration.current
+            XCTAssertTrue(
+                Set(configuration.visible).isDisjoint(with: configuration.hidden),
+                "identifier in both partitions", file: file, line: line
+            )
+            XCTAssertEqual(Set(configuration.ordered), Set(TabIdentifier.allCases), file: file, line: line)
+            XCTAssertEqual(configuration.ordered.count, TabIdentifier.allCases.count, file: file, line: line)
+            XCTAssertLessThanOrEqual(configuration.visible.count, TabConfiguration.visibleCapacity, file: file, line: line)
+        }
+
+        assertPartitioned()
+        try useSearchTabLayout()
+        assertPartitioned()
+
+        // The reported crash sequence: free a slot, un-hide Events, then reorder.
+        var configuration = TabConfiguration.current
+        TabConfiguration.current = TabConfiguration(
+            visible: configuration.visible.filter { $0 != .favorites },
+            hidden: configuration.hidden + [.favorites]
+        )
+        assertPartitioned()
+
+        configuration = TabConfiguration.current
+        TabConfiguration.current = TabConfiguration(
+            visible: configuration.visible + [.events],
+            hidden: configuration.hidden.filter { $0 != .events }
+        )
+        assertPartitioned()
+        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+
+        configuration = TabConfiguration.current
+        var moved = configuration.visible
+        moved.move(fromOffsets: [moved.count - 1], toOffset: 0)
+        TabConfiguration.current = TabConfiguration(visible: moved, hidden: configuration.hidden)
+        assertPartitioned()
+
+        MapSearchLayout.current = .navigationBar
+        assertPartitioned()
+        try useSearchTabLayout()
+        assertPartitioned()
     }
 }

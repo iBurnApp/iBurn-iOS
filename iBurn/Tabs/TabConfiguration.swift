@@ -39,6 +39,18 @@ struct TabConfiguration: Equatable {
         )
     }
 
+    /// The same arrangement with the bar clamped to `capacity` slots. Excess comes off
+    /// the right end of the bar — never-hideable tabs keep their slots — so the rule is
+    /// deterministic: the last hideable tabs on the bar give way first.
+    ///
+    /// Applied on read, never persisted: when a layout switch shrinks capacity, the tab
+    /// pushed off isn't recorded as a user choice and returns the moment capacity allows.
+    func limited(toCapacity capacity: Int) -> TabConfiguration {
+        let overflow = visible.count - capacity
+        guard overflow > 0 else { return self }
+        return movingToHidden(Array(visible.filter(\.isHideable).suffix(overflow)))
+    }
+
     // MARK: - Sanitizing
 
     /// Rebuilds a configuration from stored raw values, tolerating anything a downgrade,
@@ -93,6 +105,21 @@ struct TabConfiguration: Equatable {
         description: "Tabs whose tab-bar visibility the user chose explicitly"
     )
 
+    /// Whether the active layout spends a bar slot on a `UISearchTab`.
+    static var searchTabOccupiesBarSlot: Bool {
+        guard MapSearchLayout.current == .searchTab else { return false }
+        if #available(iOS 26.0, *) { return true }
+        return false
+    }
+
+    /// Bar slots available to app tabs. iPhone shows at most five tab bar items before
+    /// UIKit spills the rest into its own native More tab — a second "More" sitting next
+    /// to the app's — so the bar must never reach six items: app tabs get five slots,
+    /// or four while the search tab holds one.
+    static var visibleCapacity: Int {
+        searchTabOccupiesBarSlot ? 4 : 5
+    }
+
     /// Tabs the active search layout keeps off the bar unless the user says otherwise.
     ///
     /// The iOS 26 `.searchTab` layout spends a bar slot on search, and Events is the tab
@@ -100,15 +127,15 @@ struct TabConfiguration: Equatable {
     /// both reach it), where Map, Nearby and Favorites are "what's around me right now"
     /// surfaces you want one tap away.
     static var layoutHiddenByDefault: [TabIdentifier] {
-        guard MapSearchLayout.current == .searchTab else { return [] }
-        if #available(iOS 26.0, *) { return [.events] }
-        return []
+        searchTabOccupiesBarSlot ? [.events] : []
     }
 
     /// What a user who has never customized sees on the active layout. `Reset` compares
     /// against this rather than `.default`, which describes storage, not the bar.
     static var layoutDefault: TabConfiguration {
-        TabConfiguration.default.movingToHidden(layoutHiddenByDefault)
+        TabConfiguration.default
+            .movingToHidden(layoutHiddenByDefault)
+            .limited(toCapacity: visibleCapacity)
     }
 
     /// Whether the user has customized anything at all — arrangement or an explicit
@@ -144,7 +171,9 @@ struct TabConfiguration: Equatable {
                 hidden: service.getValue(hiddenPreference)
             )
             let chosen = visibilityOverrides
-            return stored.movingToHidden(layoutHiddenByDefault.filter { !chosen.contains($0) })
+            return stored
+                .movingToHidden(layoutHiddenByDefault.filter { !chosen.contains($0) })
+                .limited(toCapacity: visibleCapacity)
         }
         set {
             let sanitized = TabConfiguration.sanitized(

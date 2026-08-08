@@ -62,7 +62,10 @@ import UIKit
         let previousIdentifier = selectedRoot.flatMap(TabIdentifier.identifier(forRoot:))
 
         let configuration = TabConfiguration.current
-        let arranged = arrangedRoots(for: configuration)
+        // `current` already clamps to capacity; the prefix is a last-resort guard so a
+        // future bug can cost an unrecognized trailing root, but never put UIKit's
+        // native More overflow (`•••`) on the bar next to the app's own More tab.
+        let arranged = Array(arrangedRoots(for: configuration).prefix(TabConfiguration.visibleCapacity))
         var usesSearchTab = false
 
         if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
