@@ -34,7 +34,7 @@ without a relaunch:
 | --- | --- |
 | `navigationBar` | Ships today — `navigationItem.searchController`. The default. |
 | `bottomAccessory` | Search field in a `UITabAccessory` above the tab bar. |
-| `searchTab` | A `UISearchTab` beside the tab bar; More moves to the map nav bar. |
+| `searchTab` | A `UISearchTab` beside the tab bar; Nearby moves onto the map's card. |
 
 Alongside, rebuild the locate button on SF Symbols and the sidebar controls on glass
 circles — both are layout-independent improvements that the bottom layouts need anyway.
@@ -72,7 +72,9 @@ SDK unconditionally — so the new files use plain `#available` checks.
 | `iBurn/Map/BottomSearch/MapSearchAccessoryView.swift` | Resting pill inside the tab accessory. |
 | `iBurn/Map/BottomSearch/MapSearchInputBar.swift` | Active editable field + Cancel. |
 | `iBurn/Map/BottomSearch/MapBottomSearchController.swift` | Orchestrates resting ↔ active. |
-| `iBurn/Map/BottomSearch/GlobalSearchTabFactory.swift` | Root VC for the `UISearchTab`. |
+| `iBurn/Map/BottomSearch/GlobalSearchTabFactory.swift` | Assembles the `UISearchTab` root. |
+| `iBurn/Map/BottomSearch/SearchTabRootViewController.swift` | The VC in the search tab; owns the search controller and the map backdrop. |
+| `iBurn/Map/BottomSearch/MapBackdropStore.swift` | Last frame the map drew, for the search overlay. |
 
 `iBurn/` is a `PBXFileSystemSynchronizedRootGroup`, so new files need no pbxproj edits.
 
@@ -194,6 +196,122 @@ freshly-restarted simulator and confirm the field rides the keyboard.
 | --- | --- |
 | ![](images/2026-08-06-bottom-search/03-searchtab-resting.png) | ![](images/2026-08-06-bottom-search/04-searchtab-active.png) |
 
+## Round 2 (2026-08-07) — `searchTab` picked, three follow-on changes
+
+Chris picked `searchTab` and asked for three things, all now built. The other two layouts
+still work; `bottomAccessory` inherits the overlay treatment for free.
+
+### 1. Nearby card moved to the top
+
+`setupNearbyCard` pins to `view.safeAreaLayoutGuide.topAnchor` instead of the bottom.
+Search now owns the bottom of the screen and the two were competing for the same corner —
+the card is something you read, not something you reach for.
+
+Knock-on: the sidebar column no longer has to clear the card, so it dropped from `-84` to
+`-40` off the safe-area bottom. Not to `-12`, which is what it looked like it wanted —
+that put the "drop a pin" button on top of MapLibre's attribution, which has to stay
+legible. Caught in the first screenshot pass.
+
+### 2. Nearby gives up its tab, not More
+
+Previously the search tab displaced More, which then lived as an `ellipsis.circle` on the
+map — reachable only from the Map tab, and called out at the time as the weakest part of
+the design. Inverted: **Nearby** gives up the slot instead, because the map already shows
+what's around you and the card can carry a link to the rest. More has no equivalent second
+entry point, so it keeps its tab.
+
+`TabController.nearbyRootIndex` finds the Nearby root by type
+(`NearbyListHostingController` / `NearbyViewController`) rather than by index, so
+reordering the tabs in `BRCAppDelegate` can't silently drop the wrong one.
+
+The card gained two affordances, both only when the Nearby tab is absent
+(`NearbyCardHostingController.showsNearbyListLink`, set from
+`MainMapViewController.applySearchLayout`):
+
+- **"See all ›"** in the card footer, overlaid on the page dots via a `ZStack` so the dots
+  stay optically centered whether or not the link is there.
+- **A `list.bullet` FAB when nothing is nearby.** The card used to collapse to zero size
+  when the item list was empty, which with no Nearby tab would leave no way in at all. The
+  glyph is deliberately different from the minimized-card FAB (a badged `mappin.and.ellipse`)
+  because they do different things: this opens the list, that restores the card you collapsed.
+
+Both push through `BRCAppDelegate.createNearbyViewController()`, so the pushed screen still
+honors the SwiftUI-lists feature flag rather than hardcoding one of the two implementations.
+
+### 3. Search overlays the map instead of covering it
+
+`GlobalSearchView` gained an `isOverlay` flag. The prompt, loading, and no-results states
+stay fully transparent; only an actual list of results paints a `.regularMaterial` backdrop
+behind itself. Rows get `listRowBackground(.clear)` and the list gets
+`scrollContentBackground(.hidden)` so there's one material, not one per row. Default is
+`false`, so the existing search screen is byte-for-byte unchanged.
+
+Placeholder text sitting directly on the map is hard to read, so in overlay mode those
+states get a small rounded `.regularMaterial` panel. That keeps them legible without a
+full-screen background undoing the point.
+
+`MapBottomSearchController` lost its full-screen `UIVisualEffectView` backdrop entirely —
+that blur was the thing making the accessory layout opaque, and the same rule now covers it.
+
+#### The part that needed real work: `UITabBarController` unloads the map
+
+Making the search tab transparent revealed **white, not the map** — the tab bar controller
+removes the outgoing tab's view, so there is genuinely nothing behind the search tab. No
+amount of clearing backgrounds fixes that; the map isn't in the hierarchy.
+
+Rather than stand up a second `MLNMapView` purely as wallpaper, the map hands over a still
+of itself on the way out (`MapBackdropStore`, captured in `MainMapViewController.viewWillDisappear`
+while the view is still in the window) and `SearchTabRootViewController` paints it
+underneath. **`drawHierarchy(in:afterScreenUpdates:false)` does capture MapLibre's rendered
+content** — verified on screen, not assumed, since Metal-backed layers often snapshot blank.
+
+Two details worth keeping:
+
+- It captures `mapView`, not `view`. Capturing the whole view controller froze the nearby
+  card and sidebar into the picture, putting dead, tappable-looking controls under the
+  search field.
+- The backdrop refreshes in both `viewWillAppear` and `viewDidAppear`, because the ordering
+  of the outgoing tab's `viewWillDisappear` against the incoming tab's `viewWillAppear`
+  isn't guaranteed. Whichever lands second gets the fresh frame; the other shows the
+  previous one rather than flashing empty.
+
+A frozen frame is honest here — the map isn't live while you're typing either way. It is
+still a still image, and that's the one thing to look at critically when judging this.
+
+The search controller moved from the hosting controller to `SearchTabRootViewController`'s
+navigation item, since that's now the view controller UIKit reads from.
+
+### Verified this round
+
+Driven in the simulator (iPhone 17 Pro Max, iOS 26.5):
+
+- Map resting: card at top with "See all", tab bar = Map / Favorites / Events / More +
+  detached Search. Nearby tab absent.
+- Search: empty (map behind, glass prompt panel), no-results, and a live `robot` query
+  showing results on material.
+- "See all" pushes the full Nearby screen onto the map's stack — back button, distance
+  stepper, All/Art/Camps/Events filters all intact.
+- Switched to `bottomAccessory`: Nearby tab returns, Search tab disappears, card drops its
+  "See all", and the accessory search overlays the live map. Switched back, no relaunch.
+- `xcodebuild -scheme iBurn` clean; `iBurnTests` 213 passed, 0 failed.
+
+Known rough edge: switching layout while standing on the More tab lands you on Map.
+`UITab`'s view controller provider is lazy, so the outgoing selection isn't found in the new
+`viewControllers` yet and the Map fallback takes over. Harmless for a debug preference.
+
+Still unverified from round 1: the keyboard-up state has never been captured visually — the
+simulator reverts to hardware-keyboard mode after the first synthetic keystroke.
+
+### Round 2 screenshots
+
+| Map (card at top) | Search, empty | No results |
+| --- | --- | --- |
+| ![](images/2026-08-07-searchtab-refinements/01-map-card-top.png) | ![](images/2026-08-07-searchtab-refinements/02-search-empty-over-map.png) | ![](images/2026-08-07-searchtab-refinements/03-search-no-results.png) |
+
+| Results | Nearby, from the card |
+| --- | --- |
+| ![](images/2026-08-07-searchtab-refinements/04-search-results.png) | ![](images/2026-08-07-searchtab-refinements/05-nearby-from-card.png) |
+
 ## Recommendation
 
 **`searchTab` is the stronger option.** UIKit does the whole job: the tab bar collapses
@@ -201,10 +319,10 @@ into a bottom-anchored search field flanked by a back-to-Map button and a Close 
 keyboard tracking included, with zero custom layout code. `bottomAccessory` needed two
 non-obvious constraint fixes to get right and still owns a custom activation path.
 
-The cost is the tab slot. The prototype parks More in the map's nav bar, which is the
-weakest part of the design — it's reachable only from the Map tab. Worth considering
-before committing: fold More's contents into an existing tab, or accept the nav bar
-placement given Map is the launch tab.
+The cost is the tab slot. **Resolved in round 2:** Nearby gives it up rather than More, and
+moves onto the map's nearby card. That reads better than the original More-in-the-nav-bar
+plan — the card was already showing nearby content, so the link has somewhere natural to
+live, and every screen keeps a tab-bar entry point.
 
 ## Follow-ups if this lands
 

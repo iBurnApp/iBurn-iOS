@@ -32,15 +32,20 @@ import UIKit
         )
     }
 
-    /// `.searchTab` trades the More tab for a `UISearchTab`; every other layout keeps
-    /// the plain five-tab arrangement. The More entry point reappears in the map's
-    /// navigation bar (see `MainMapViewController.applySearchLayout`).
+    /// `.searchTab` trades the Nearby tab for a `UISearchTab`; every other layout keeps
+    /// the plain five-tab arrangement. Nearby is the tab that gives way because the map
+    /// already surfaces what's around you in the nearby card, which grows a link into the
+    /// full Nearby list (see `MainMapViewController.applySearchLayout`). More keeps its
+    /// slot — it has no equivalent second entry point.
     @objc public func applySearchLayout() {
         guard !roots.isEmpty else { return }
         let selectedRoot = selectedViewController
 
         if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
-            let carried = roots.dropLast()  // More moves to the map nav bar
+            var carried = roots
+            if let nearbyIndex = nearbyRootIndex {
+                carried.remove(at: nearbyIndex)
+            }
             var newTabs: [UITab] = carried.enumerated().map { index, viewController in
                 UITab(
                     title: viewController.tabBarItem.title ?? "",
@@ -66,12 +71,22 @@ import UIKit
         }
 
         // Keep the user on whichever tab they were looking at. Switching to `.searchTab`
-        // drops the More tab, so anyone standing on it falls back to the map rather than
-        // being dumped into the search field.
+        // drops the Nearby tab, so anyone standing on it falls back to the map rather
+        // than being dumped into the search field.
         if let selectedRoot, let index = self.viewControllers?.firstIndex(of: selectedRoot) {
             selectedIndex = index
         } else {
             selectedIndex = 0
+        }
+    }
+
+    /// Position of the Nearby root inside `roots`. Matched by type rather than index so
+    /// reordering the tabs in `BRCAppDelegate.setupDefaultTabBarController` can't silently
+    /// drop the wrong one; both the SwiftUI and legacy Nearby screens are recognized.
+    private var nearbyRootIndex: Int? {
+        roots.firstIndex { root in
+            let leaf = (root as? UINavigationController)?.viewControllers.first ?? root
+            return leaf is NearbyListHostingController || leaf is NearbyViewController
         }
     }
 }

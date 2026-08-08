@@ -10,8 +10,8 @@
 //  - Resting: a `MapSearchAccessoryView` pill installed as the tab bar's
 //    `UITabAccessory`, so it sits on the system glass above the tab bar.
 //  - Active: the accessory is pulled, the existing SwiftUI results controller is
-//    added as a child covering the map, and a real editable field docks to the
-//    keyboard.
+//    added as a child layered over the map, and a real editable field docks to the
+//    keyboard. The results view stays transparent until there's something to show.
 //
 //  The results controller is added as a child of the *map* view controller on
 //  purpose: `GlobalSearchHostingController` resolves its push target through
@@ -39,7 +39,6 @@ final class MapBottomSearchController {
         return bar
     }()
 
-    private var backdrop: UIVisualEffectView?
     private(set) var isActive = false
 
     init(host: UIViewController, resultsController: GlobalSearchHostingController) {
@@ -72,13 +71,10 @@ final class MapBottomSearchController {
         // Pull the pill so the editable field is the only search affordance on screen.
         removeAccessory()
 
-        let backdrop = UIVisualEffectView(effect: UIBlurEffect(style: .systemChromeMaterial))
-        backdrop.translatesAutoresizingMaskIntoConstraints = false
-        backdrop.alpha = 0
-        host.view.addSubview(backdrop)
-        self.backdrop = backdrop
-
         host.addChild(resultsController)
+        // Search rides over the map instead of covering it: the results view paints its
+        // own material once there's a list, and stays clear while it's empty.
+        resultsController.isOverlay = true
         // The input bar is already pinned to `keyboardLayoutGuide`, so the results view
         // sits entirely above the keyboard. Leaving SwiftUI's own keyboard avoidance on
         // would inset the list by the keyboard height a second time, collapsing it to a
@@ -93,11 +89,6 @@ final class MapBottomSearchController {
         inputBar.applyTheme()
 
         NSLayoutConstraint.activate([
-            backdrop.topAnchor.constraint(equalTo: host.view.topAnchor),
-            backdrop.leadingAnchor.constraint(equalTo: host.view.leadingAnchor),
-            backdrop.trailingAnchor.constraint(equalTo: host.view.trailingAnchor),
-            backdrop.bottomAnchor.constraint(equalTo: host.view.bottomAnchor),
-
             inputBar.leadingAnchor.constraint(equalTo: host.view.leadingAnchor),
             inputBar.trailingAnchor.constraint(equalTo: host.view.trailingAnchor),
             // Rides the keyboard; rests on the safe-area bottom when it's down.
@@ -115,7 +106,6 @@ final class MapBottomSearchController {
         inputBar.alpha = 0
         host.view.layoutIfNeeded()
         UIView.animate(withDuration: 0.25) {
-            backdrop.alpha = 1
             results.alpha = 1
             self.inputBar.alpha = 1
         }
@@ -131,17 +121,13 @@ final class MapBottomSearchController {
         resultsController.viewModel.searchText = ""
 
         let results = resultsController.view
-        let backdrop = self.backdrop
-        self.backdrop = nil
 
         resultsController.willMove(toParent: nil)
 
         UIView.animate(withDuration: 0.2) {
-            backdrop?.alpha = 0
             results?.alpha = 0
             self.inputBar.alpha = 0
         } completion: { _ in
-            backdrop?.removeFromSuperview()
             results?.removeFromSuperview()
             self.resultsController.removeFromParent()
             self.inputBar.removeFromSuperview()

@@ -17,7 +17,11 @@ import PlayaDB
 
 struct NearbyCardView: View {
     @ObservedObject var viewModel: NearbyCardViewModel
+    /// When the search tab has taken Nearby's slot in the tab bar, the card carries the
+    /// only link into the full list — see `MainMapViewController.applySearchLayout`.
+    let showsNearbyListLink: Bool
     let onSelect: (DetailSubject) -> Void
+    let onShowNearbyList: () -> Void
 
     private let audioPlayer: any AudioPlayerProtocol
     @Namespace private var glassNS
@@ -36,11 +40,15 @@ struct NearbyCardView: View {
 
     init(
         viewModel: NearbyCardViewModel,
+        showsNearbyListLink: Bool = false,
         onSelect: @escaping (DetailSubject) -> Void = { _ in },
+        onShowNearbyList: @escaping () -> Void = { },
         audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance
     ) {
         self.viewModel = viewModel
+        self.showsNearbyListLink = showsNearbyListLink
         self.onSelect = onSelect
+        self.onShowNearbyList = onShowNearbyList
         self.audioPlayer = audioPlayer
     }
 
@@ -48,8 +56,14 @@ struct NearbyCardView: View {
         glassContainer {
             Group {
                 if viewModel.items.isEmpty {
-                    // Collapses to zero intrinsic size so the host view doesn't block the map.
-                    Color.clear.frame(width: 0, height: 0)
+                    if showsNearbyListLink {
+                        // Nothing within range, but the card is the only door to Nearby
+                        // now, so leave one open.
+                        nearbyListFab
+                    } else {
+                        // Collapses to zero intrinsic size so the host view doesn't block the map.
+                        Color.clear.frame(width: 0, height: 0)
+                    }
                 } else if viewModel.isMinimized {
                     fab
                 } else {
@@ -83,14 +97,48 @@ struct NearbyCardView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: 84)
 
-            if viewModel.count > 1 {
-                pageDots
+            if viewModel.count > 1 || showsNearbyListLink {
+                footer
                     .padding(.bottom, 8)
             }
         }
         .frame(width: cardWidth)
         .overlay(alignment: .topTrailing) { minimizeButton }
         .modifier(GlassSurface(namespace: glassNS, glassID: glassID, shape: .roundedRect(cardCornerRadius)))
+    }
+
+    /// Page dots stay optically centered under the card while "See all" sits at the
+    /// trailing edge; overlaying rather than stacking them keeps the dots from shifting
+    /// when the link appears.
+    private var footer: some View {
+        ZStack {
+            if viewModel.count > 1 {
+                pageDots
+            }
+            if showsNearbyListLink {
+                HStack {
+                    Spacer()
+                    seeAllButton
+                }
+                .padding(.trailing, 14)
+            }
+        }
+        .frame(height: 20)
+    }
+
+    private var seeAllButton: some View {
+        Button(action: onShowNearbyList) {
+            HStack(spacing: 2) {
+                Text("See all")
+                    .font(.caption2.weight(.semibold))
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9, weight: .bold))
+            }
+            .foregroundStyle(themeColors.secondaryColor)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("See all nearby")
     }
 
     private var minimizeButton: some View {
@@ -136,6 +184,22 @@ struct NearbyCardView: View {
         .overlay(alignment: .topTrailing) { countBadge }
         .modifier(GlassSurface(namespace: glassNS, glassID: glassID, shape: .circle))
         .accessibilityLabel("Show \(viewModel.count) nearby")
+    }
+
+    /// Shown in place of the card when nothing is within range. Deliberately a different
+    /// glyph from the minimized FAB (and unbadged) because it does a different thing:
+    /// this opens the Nearby list, the badged pin restores the card you collapsed.
+    private var nearbyListFab: some View {
+        Button(action: onShowNearbyList) {
+            Image(systemName: "list.bullet")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(themeColors.primaryColor)
+                .frame(width: 56, height: 56)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .modifier(GlassSurface(namespace: glassNS, glassID: glassID, shape: .circle))
+        .accessibilityLabel("See all nearby")
     }
 
     private var countBadge: some View {

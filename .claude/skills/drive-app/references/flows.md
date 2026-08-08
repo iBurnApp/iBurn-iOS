@@ -212,6 +212,13 @@ touch({ elementRef: "<ref of the 'Debug' text row>", down: true, up: true })
 Search Layout picker (`navigationBar` / `bottomAccessory` / `searchTab`) applies
 **live** via `.mapSearchLayoutDidChange` — no relaunch.
 
+`searchTab` rearranges the tab bar: **Nearby is replaced by a Search tab**, so the
+tabs become Map / Favorites / Events / More plus a detached search button. Nearby
+is reached from the map's nearby card ("See all", or a `list.bullet` FAB when
+nothing is in range) and pushes onto the map's navigation stack. Switching layouts
+while standing on More lands you on Map — `UITab`'s view controller provider is
+lazy, so the old selection isn't findable in the new arrangement.
+
 Setting the layout from outside the app is unreliable:
 `simctl spawn <UDID> defaults write com.trailbehind.iBurn2010
 userInterface.map.searchLayout -string searchTab` frequently does not survive to

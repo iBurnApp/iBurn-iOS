@@ -144,8 +144,8 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         }
     }
 
-    /// Attaches the search affordance for the active layout and moves the More entry
-    /// point onto the map when the search tab has displaced it from the tab bar.
+    /// Attaches the search affordance for the active layout and, when the search tab has
+    /// displaced Nearby from the tab bar, turns the nearby card into its entry point.
     private func applySearchLayout() {
         searchLayout = .current
 
@@ -153,29 +153,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         // layouts own their own field and would otherwise show two search bars.
         navigationItem.searchController = searchLayout == .navigationBar ? globalSearchController : nil
 
-        var rightItems: [UIBarButtonItem] = [navigationItem.rightBarButtonItem].compactMap { $0 }
-        if searchLayout == .searchTab {
-            rightItems.append(moreBarButtonItem)
-        }
-        navigationItem.rightBarButtonItems = rightItems
-    }
-
-    private lazy var moreBarButtonItem: UIBarButtonItem = {
-        UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"), style: .plain) { [weak self] _ in
-            self?.presentMore()
-        }
-    }()
-
-    private func presentMore() {
-        let moreVC = MoreViewController()
-        moreVC.title = NSLocalizedString("More", comment: "title for the more screen")
-        // Presented as a sheet, so it needs an explicit way out — swipe-to-dismiss
-        // alone is too easy to miss for a screen that used to be a tab.
-        moreVC.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done) { [weak self] _ in
-            self?.dismiss(animated: true)
-        }
-        let nav = NavigationController(rootViewController: moreVC)
-        present(nav, animated: true)
+        // Without the Nearby tab the card is the only way into the full list, so it
+        // grows a "See all" link and stops collapsing to nothing when the playa is quiet.
+        nearbyCardController.showsNearbyListLink = searchLayout == .searchTab
     }
 
     private func installBottomAccessoryIfNeeded() {
@@ -183,18 +163,20 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         bottomSearchController.installAccessory()
     }
 
-    /// Embeds the nearby card as a proper child view controller, bottom-centered. The
+    /// Embeds the nearby card as a proper child view controller, top-centered. The
     /// hosting controller uses intrinsic content sizing, so the card/FAB defines its own
     /// frame and the rest of the map stays interactive around it.
+    ///
+    /// The card lives at the top now that search owns the bottom of the screen — the two
+    /// were fighting for the same corner, and the card is the thing you read rather than
+    /// reach for.
     private func setupNearbyCard() {
         addChild(nearbyCardController)
         let card = nearbyCardController.view!
         view.addSubview(card)
         card.translatesAutoresizingMaskIntoConstraints = false
         card.autoAlignAxis(toSuperviewAxis: .vertical)
-        // Pinned to the safe area rather than layout margins so the tab accessory,
-        // which grows the safe area when installed, lifts the card automatically.
-        card.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12).isActive = true
+        card.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12).isActive = true
         nearbyCardController.didMove(toParent: self)
     }
 
@@ -203,8 +185,11 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         sidebarButtons.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             sidebarButtons.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 12),
-            // Clears the nearby card / minimized FAB that sits centered below it.
-            sidebarButtons.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -84),
+            // Pinned to the safe area rather than layout margins so the tab accessory,
+            // which grows the safe area when installed, lifts the column automatically.
+            // The nearby card has vacated the bottom, but MapLibre's attribution still
+            // sits down there and has to stay legible.
+            sidebarButtons.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
             sidebarButtons.widthAnchor.constraint(equalToConstant: SidebarButtonsView.buttonDiameter),
             sidebarButtons.heightAnchor.constraint(equalToConstant: SidebarButtonsView.columnHeight),
         ])
@@ -257,6 +242,11 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Hand the search tab a still of the map to sit behind its results. Has to happen
+        // here, while the view is still in the window — see `MapBackdropStore`. Captures
+        // the map layer alone, not `view`: a frozen picture of the nearby card and
+        // sidebar would put dead controls under the search field.
+        MapBackdropStore.shared.capture(mapView)
         // The accessory belongs to the shared tab bar controller, so it has to come
         // down when the map goes away or it would follow the user onto other tabs.
         bottomSearchController.deactivate()

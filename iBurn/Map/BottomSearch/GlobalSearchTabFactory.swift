@@ -8,8 +8,11 @@
 //  Builds the root view controller for the `UISearchTab` prototype. A `UISearchTab`
 //  expects its view controller to own a `UISearchController` on its navigation item —
 //  that's what UIKit morphs the tab bar into when the search tab is selected. Results
-//  render inline in the hosting controller rather than in a separate results
+//  render inline (`searchResultsController: nil`) rather than in a separate results
 //  controller, so the list is visible the whole time the field is focused.
+//
+//  The pieces are assembled here; `SearchTabRootViewController` is the view controller
+//  that actually shows up in the tab.
 //
 
 import UIKit
@@ -35,7 +38,8 @@ enum GlobalSearchTabFactory {
 
     static func makeSearchTabRoot(dependencies: DependencyContainer) -> UIViewController {
         let host = dependencies.makeGlobalSearchHostingController()
-        host.title = NSLocalizedString("Search", comment: "title for the search tab")
+        host.isOverlay = true
+        let root = SearchTabRootViewController(content: host)
 
         let updater = Updater(host: host)
         let searchController = UISearchController(searchResultsController: nil)
@@ -49,9 +53,15 @@ enum GlobalSearchTabFactory {
         // searchResultsUpdater is weak, so pin the updater's lifetime to the host.
         objc_setAssociatedObject(host, &updaterKey, updater, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
 
-        host.navigationItem.searchController = searchController
-        host.navigationItem.hidesSearchBarWhenScrolling = false
+        // The search controller hangs off the root, not the hosting controller, because
+        // that's the view controller UIKit reads the navigation item from.
+        root.navigationItem.searchController = searchController
+        root.navigationItem.hidesSearchBarWhenScrolling = false
 
-        return NavigationController(rootViewController: host)
+        let nav = NavigationController(rootViewController: root)
+        // The overlay only reads as an overlay if every layer above the backdrop is
+        // clear — the nav controller paints its own fill otherwise.
+        nav.view.backgroundColor = .clear
+        return nav
     }
 }

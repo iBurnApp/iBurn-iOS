@@ -12,12 +12,28 @@ class GlobalSearchHostingController: UIHostingController<GlobalSearchView> {
     private let playaDB: PlayaDB
     private var pagingDataSource: DetailPagingDataSource?
 
+    /// Presents search as a transparent layer over whatever opened it rather than as an
+    /// opaque screen. Clears this controller's own background too — a clear SwiftUI view
+    /// still sits on the hosting view's fill otherwise.
+    var isOverlay: Bool = false {
+        didSet {
+            guard oldValue != isOverlay else { return }
+            updateRootView()
+            applyBackground()
+        }
+    }
+
     init(viewModel: GlobalSearchViewModel, playaDB: PlayaDB) {
         self.viewModel = viewModel
         self.playaDB = playaDB
         super.init(rootView: GlobalSearchView(viewModel: viewModel))
-        self.rootView = GlobalSearchView(
+        updateRootView()
+    }
+
+    private func updateRootView() {
+        rootView = GlobalSearchView(
             viewModel: viewModel,
+            isOverlay: isOverlay,
             onSelectArt: { [weak self] art in
                 self?.showDetail(for: .art(art))
             },
@@ -32,6 +48,16 @@ class GlobalSearchHostingController: UIHostingController<GlobalSearchView> {
                 self?.showDetail(for: .mutantVehicle(mv))
             }
         )
+    }
+
+    private func applyBackground() {
+        guard isViewLoaded else { return }
+        view.backgroundColor = isOverlay ? .clear : nil
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        applyBackground()
     }
 
     @MainActor required dynamic init?(coder aDecoder: NSCoder) {
