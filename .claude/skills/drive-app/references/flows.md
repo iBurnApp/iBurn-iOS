@@ -7,7 +7,7 @@ label text, not on elementRef numbers (refs change every snapshot).
 
 > **Maintenance:** if a step here doesn't match the running app, fix this file in
 > the same session (see "Keeping the flow docs current" in SKILL.md).
-> Last verified: 2026-07-03 against the 2026 dataset, iPhone 17 Pro Max sim.
+> Last verified: 2026-08-08 against the 2026 dataset, iPhone 17 Pro Max sim.
 
 ## 1. First-launch onboarding (fresh install)
 
@@ -28,7 +28,10 @@ Preconditions: simulator erased; feature flag set if you want the SwiftUI stack
 7. Main UI appears (Map tab) with the **embargo alert** "Locations Are Hidden" →
    tap **"Ok cool whatever"**.
 
-Verify: tab bar shows Map / Nearby / Favorites / Events / More.
+Verify: tab bar shows Map / Nearby / Favorites / Events / More — that is the *default*
+arrangement. Both the Map Search Layout (§8) and the user's own tab customization (§10)
+change which tabs are on the bar, so match on tab labels rather than assuming a fixed
+order or count.
 
 ## 2. SwiftUI + PlayaDB stack (default ON; legacy fallback)
 
@@ -134,6 +137,34 @@ unpredictably. Two options:
   ```
   2026 data: 'taco' → 12 event matches; 'oasis' → 72 camp matches.
 
+### Global search screen (search tab / map search)
+
+The global search screen (`GlobalSearchView`, reached from the Search tab in the
+`.searchTab` layout, or the map's search field otherwise) has its own scope + filter
+chrome above the results:
+
+- **Scope bar**: a segmented control `All / Art / Camps / Events / Vehicles`. Scoping
+  changes which tables are queried at all, so a scoped search returns only that section
+  (e.g. Camps + "yoga" → a single "Camps" section, alphabetical). Changing scope re-runs
+  the query without retyping. Five segments plus the filter button fill the width — it
+  fits on iPhone 17 Pro Max, check for truncation on narrower devices.
+- **Filter button** (trailing, `line.3.horizontal.decrease.circle`): opens the "Filter
+  Search" sheet. The icon switches to the **`.fill` variant whenever a filter is on**, and
+  that is the *only* on-screen cue — the filter persists in `UserDefaults`
+  (`globalSearchFilter`) across relaunches while the scope resets to All.
+- Sheet contents: **Only Favorites** (all scopes; also disables AI suggestions) and, under
+  an "Events" section, **Happening Now** — which is shown **only for the All and Events
+  scopes**. A **Reset** button appears in the sheet when the filter is non-default.
+- Empty states name the scope: "No camps for "Yoga"" / "Nothing matches that with these
+  filters on." / "Try clearing the filters"; with no filter on it is "Nothing in this
+  year's data matches that."
+- Matching is **AND-of-tokens** FTS, so "questions burning" matches a name containing both
+  words in either order.
+
+Automation note: `type_text` into the field works here (the field is a stable AX target,
+unlike the `searchable` fields in §5's list screens). The simulator autocapitalizes the
+first letter ("Yoga") — harmless, FTS is case-insensitive.
+
 ## 6. Map + embargo
 
 - Map tab renders the MapLibre offline map immediately after onboarding.
@@ -168,6 +199,32 @@ unpredictably. Two options:
   `MapPinListViewController` — the split is in `ListButtonHelper`, keyed on
   whether any visible annotation is a `DataObjectAnnotation`.
 - Search field "Search" is in the map header.
+
+### Nearby card (on-map)
+
+A compact swipeable card pinned near the **top** of the map lists what is within ~100 m of
+the user (events first, then art + camps by distance; `simctl location set` required or it
+stays empty). Page dots + a "See all" link into the Nearby screen sit in its footer.
+
+- **Close button** (X, top-right of the card, AX label "Hide nearby card") writes
+  `userInterface.nearbyCard.enabled = false`. The card fades out and a glass tooltip —
+  "Nearby card hidden — turn it back on in Map Filter." — fades in **in the card's place**
+  for ~4 s, then auto-dismisses (tapping it dismisses early). There is no collapsed
+  FAB/pin state any more; the card is either on screen or gone.
+- The tooltip's 4 s life is **shorter than a screenshot round-trip**: `tap` → `screenshot`
+  usually lands after it is gone. Record video instead
+  (`xcrun simctl io <UDID> recordVideo --codec h264 --force out.mov`, `kill -INT`, then
+  `ffmpeg -ss <t> -i out.mov -frames:v 1`) or assert on the AX snapshot returned by the tap
+  itself, which does contain the tooltip's text.
+- **Map Filter** (funnel button, map header) has a **"Nearby Card"** section: "Show Nearby
+  Card" plus Art / Camps / Events sub-toggles (dimmed and non-actionable while the card is
+  off). Preferences are `userInterface.nearbyCard.{enabled,showArt,showCamps,showEvents}`,
+  written on **Done**; the card observes them and updates **live** without leaving the map.
+  Turning off every type that has something nearby empties the card exactly like disabling
+  it does.
+- 2026 data at 40.7864,-119.2065: three **art** pieces within 100 m (The Hitchin' Post 18 m,
+  Thoughts by the Edge 89 m, Unhinged Lingering 100 m) and **no** camps — so "Camps only"
+  is the quickest way to prove the type filter empties the card.
 
 ## 7. Detail screen
 
@@ -219,12 +276,18 @@ also carries a "See all" link into Nearby. Switching layouts while standing on t
 displaced tab lands you on Map — `UITab`'s view controller provider is lazy, so the
 old selection isn't findable in the new arrangement.
 
+Layout displacement and the user's own tab customization (§10) compose: hiding Events in
+Customize Tabs while `searchTab` has already displaced it still yields **exactly one**
+Events row in More (`TabController.isDisplacedFromTabBar` is the single source of truth).
+
 **Capturing animations:** `record_sim_video` has failed to return a file path here;
 `xcrun simctl io <UDID> recordVideo --codec h264 --force out.mov` in the background
 (then `kill -INT`) works. Step through with ffmpeg — a `fps=2` tile locates the
 transition, then `-ss <t> -t 1 -vf fps=60,tile=...` shows whether it actually
-animated. Worth doing before trusting "the animation is broken/fixed" by eye: the
-nearby card collapse looked slow-and-broken but was a zero-intermediate-frame cut.
+animated. Worth doing before trusting "the animation is broken/fixed" by eye, and the
+only practical way to catch short-lived overlays such as the nearby card's hide tooltip.
+Note `-frames:v 1` with `tile=` only covers the first tile's worth of frames — pass `-ss`
+to reach later parts of a long recording.
 
 Setting the layout from outside the app is unreliable:
 `simctl spawn <UDID> defaults write com.trailbehind.iBurn2010
@@ -384,6 +447,40 @@ explanatory empty state and Detail hides Navigate. To exercise those flows,
 inject GPS into a few `camp_objects` rows via plain `UPDATE` — the
 `*_spatial_update` triggers keep `spatial_index` in sync automatically — then
 uninstall the app afterward so the DB reseeds clean.
+
+## 10. Customize Tabs (tab bar configuration)
+
+More tab → **Customize Tabs** (in the same group as Appearance). `MoreViewController` cells
+are not tap targets in the AX snapshot, so reach it with
+`touch({ elementRef: <ref of the "Customize Tabs" text row>, down: true, up: true })`.
+
+The screen is a SwiftUI list held in **permanent edit mode** (`.environment(\.editMode,
+.constant(.active))`), with two sections:
+
+- **Tab Bar** — every visible tab, each row `minus.circle.fill` (or a `lock.fill` for Map
+  and More, which can't be hidden) + icon + title + a drag handle. Footer: "Drag to
+  reorder. Map and More always stay on the tab bar."
+- **In More** — hidden tabs with a green `plus.circle.fill`; "Nothing hidden." when empty.
+- **Reset** (nav bar trailing) is disabled while the configuration is the default.
+
+Every edit writes `TabConfiguration.current` (`userInterface.tabBar.order` +
+`userInterface.tabBar.hidden`) and posts `.tabConfigurationDidChange`, so the tab bar
+**rebuilds live behind the screen** — there is nothing to save or cancel.
+
+Automation: the minus/plus buttons *do* receive taps in active edit mode (tap their
+`Remove <tab> from tab bar` / `Add <tab> to tab bar` AX refs). Reordering works with
+`drag` on a row's `drag` handle image — `distance ≈ 0.06` per row of travel, e.g.
+`drag({ elementRef: <handle>, direction: "down", distance: 0.12, duration: 1.6, steps: 30 })`.
+
+Verify: hiding a tab removes it from the bar and adds a row at the **top of More**;
+un-hiding puts it back (appended to the end of the bar — re-adding does *not* restore the
+original position); Reset restores Map / Nearby / Favorites / Events / More.
+
+> `TabController` keeps **one `UITab` per root view controller** (`tabCache`). A `UITab`
+> owns the view controller its provider returns, so building a second tab around the same
+> root raises "UIViewController cannot be shared between multiple UITab" — which crashed
+> the app on the first rebuild after launch. If you touch `rebuildTabs()`, exercise a
+> *second* rebuild (hide a tab from this screen), not just app launch.
 
 ## Known quirks / expected noise
 
