@@ -187,7 +187,7 @@ enum DeepLinkObjectType: String {
             let alert = UIAlertController(title: "Pin Added", message: message, preferredStyle: .alert)
 
             alert.addAction(UIAlertAction(title: "View on Map", style: .default) { _ in
-                tabController.selectedIndex = 0
+                tabController.selectMapTab()
             })
 
             alert.addAction(UIAlertAction(title: "OK", style: .cancel))
