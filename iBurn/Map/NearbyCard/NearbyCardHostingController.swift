@@ -19,13 +19,17 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
     private let playaDB: PlayaDB
     let viewModel: NearbyCardViewModel
 
+    /// Called after the user hides the card with its close button, so the map can say
+    /// where it went. Nothing else on screen points back to the setting.
+    var onCardHidden: (() -> Void)?
+
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
         let vm = dependencies.makeNearbyCardViewModel()
         self.viewModel = vm
         super.init(rootView: NearbyCardView(viewModel: vm))
         updateRootView()
-        // The hosting view should only occupy (and intercept touches over) the card/FAB,
+        // The hosting view should only occupy (and intercept touches over) the card,
         // leaving the rest of the map interactive. Clear background + intrinsic sizing.
         view.backgroundColor = .clear
         if #available(iOS 16.0, *) {
@@ -41,6 +45,9 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
             },
             onShowNearbyList: { [weak self] in
                 self?.showNearbyList()
+            },
+            onHide: { [weak self] in
+                self?.hideCard()
             }
         )
     }
@@ -54,20 +61,17 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
         view.backgroundColor = .clear
     }
 
-    /// Where the card is actually drawing inside `bounds` — the whole box when expanded,
-    /// just the centered pin when collapsed, nothing when there's nothing nearby. Drives
-    /// `NearbyCardTouchContainer`; see that file for why UIKit has to decide this.
+    /// Where the card is actually drawing inside `bounds`: the whole box when it has
+    /// something to show, nothing otherwise. Drives `NearbyCardTouchContainer`; see that
+    /// file for why UIKit has to decide this.
     func interactiveRect(in bounds: CGRect) -> CGRect {
-        guard !viewModel.items.isEmpty else { return .zero }
-        guard viewModel.isMinimized else { return bounds }
+        viewModel.items.isEmpty ? .zero : bounds
+    }
 
-        let diameter = NearbyCardView.fabDiameter
-        return CGRect(
-            x: bounds.midX - diameter / 2,
-            y: bounds.midY - diameter / 2,
-            width: diameter,
-            height: diameter
-        )
+    /// Switches the card off and lets the map explain where it went.
+    private func hideCard() {
+        viewModel.setCardEnabled(false)
+        onCardHidden?()
     }
 
     private func showDetail(_ subject: DetailSubject) {

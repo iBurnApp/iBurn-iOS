@@ -29,6 +29,10 @@ class MapFilterViewModel: ObservableObject {
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
+    @Published var showNearbyCard: Bool
+    @Published var nearbyCardShowArt: Bool
+    @Published var nearbyCardShowCamps: Bool
+    @Published var nearbyCardShowEvents: Bool
     @Published var showCampBoundaries: Bool {
         didSet {
             if !showCampBoundaries {
@@ -72,7 +76,15 @@ class MapFilterViewModel: ObservableObject {
         self.showCampBoundaries = UserSettings.showCampBoundaries
         self.showCampBoundariesAlways = UserSettings.showCampBoundariesAlways
         self.showBigCampNames = UserSettings.showBigCampNames
-        
+
+        // The nearby card is the one thing here that isn't a map layer; it lives in the
+        // preference service rather than UserSettings.
+        let preferences = PreferenceServiceFactory.shared
+        self.showNearbyCard = preferences.getValue(Preferences.NearbyCard.enabled)
+        self.nearbyCardShowArt = preferences.getValue(Preferences.NearbyCard.showArt)
+        self.nearbyCardShowCamps = preferences.getValue(Preferences.NearbyCard.showCamps)
+        self.nearbyCardShowEvents = preferences.getValue(Preferences.NearbyCard.showEvents)
+
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
         self.eventTypes = BRCEventObject.allVisibleEventTypes.compactMap { number -> MapEventTypeContainer? in
@@ -108,7 +120,15 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showCampBoundaries = showCampBoundaries
         UserSettings.showCampBoundariesAlways = showCampBoundariesAlways
         UserSettings.showBigCampNames = showBigCampNames
-        
+
+        // Nearby card: the view model observes these, so the card updates behind this
+        // screen as soon as they're written.
+        let preferences = PreferenceServiceFactory.shared
+        preferences.setValue(showNearbyCard, for: Preferences.NearbyCard.enabled)
+        preferences.setValue(nearbyCardShowArt, for: Preferences.NearbyCard.showArt)
+        preferences.setValue(nearbyCardShowCamps, for: Preferences.NearbyCard.showCamps)
+        preferences.setValue(nearbyCardShowEvents, for: Preferences.NearbyCard.showEvents)
+
         // Save selected event types
         let selectedTypes = eventTypes
             .filter { $0.isSelected }
@@ -147,6 +167,21 @@ struct MapFilterView: View {
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
             }
             
+            // Nearby Card Section
+            Section(header: Text("Nearby Card"), footer:
+                Text("The card at the top of the map lists what's within about 100 m of you.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            ) {
+                Toggle("Show Nearby Card", isOn: $viewModel.showNearbyCard)
+                Toggle("Art", isOn: $viewModel.nearbyCardShowArt)
+                    .disabled(!viewModel.showNearbyCard)
+                Toggle("Camps", isOn: $viewModel.nearbyCardShowCamps)
+                    .disabled(!viewModel.showNearbyCard)
+                Toggle("Events", isOn: $viewModel.nearbyCardShowEvents)
+                    .disabled(!viewModel.showNearbyCard)
+            }
+
             // Camp Display Section
             Section(header: Text("Camp Display")) {
                 Toggle("Show Camp Boundaries (Zoomed)", isOn: $viewModel.showCampBoundaries)

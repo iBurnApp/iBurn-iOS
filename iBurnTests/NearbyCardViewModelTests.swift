@@ -7,7 +7,7 @@
 //
 //  Unit tests for the on-map nearby card ordering: events first (happening now /
 //  starting soon, by start time), then art + camps by distance, gated to the
-//  radius, de-duped by id, capped to maxItems.
+//  radius and to the user's enabled types, de-duped by id, capped to maxItems.
 //
 
 import XCTest
@@ -68,6 +68,7 @@ final class NearbyCardViewModelTests: XCTestCase {
         art: [ListRow<ArtObject>] = [],
         camps: [ListRow<CampObject>] = [],
         events: [ListRow<EventObjectOccurrence>] = [],
+        types: NearbyCardTypes = .all,
         radius: CLLocationDistance = 100,
         maxItems: Int = 12
     ) -> [NearbyItem] {
@@ -75,6 +76,7 @@ final class NearbyCardViewModelTests: XCTestCase {
             art: art,
             camps: camps,
             events: events,
+            types: types,
             from: userLocation,
             now: now,
             radius: radius,
@@ -200,5 +202,55 @@ final class NearbyCardViewModelTests: XCTestCase {
         let items = order(art: [noGPS, artRow("withGPS", lat: lat33m)])
 
         XCTAssertEqual(items.map(\.id), ["art-withGPS"])
+    }
+
+    // MARK: - Type filtering
+
+    private func mixedFixtures() -> (
+        art: [ListRow<ArtObject>],
+        camps: [ListRow<CampObject>],
+        events: [ListRow<EventObjectOccurrence>]
+    ) {
+        let event = eventRow("E", lat: lat89m,
+                             start: now.addingTimeInterval(-600),
+                             end: now.addingTimeInterval(3000))
+        return ([artRow("A", lat: lat33m)], [campRow("C", lat: lat67m)], [event])
+    }
+
+    func testOnlyArtEnabledExcludesCampsAndEvents() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events, types: .art)
+
+        XCTAssertEqual(items.map(\.id), ["art-A"])
+    }
+
+    func testDisablingEventsKeepsArtAndCamps() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events,
+                          types: [.art, .camps])
+
+        XCTAssertEqual(items.map(\.id), ["art-A", "camp-C"], "Ordering by distance is unchanged")
+    }
+
+    func testOnlyEventsEnabledExcludesArtAndCamps() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events, types: .events)
+
+        XCTAssertEqual(items.count, 1)
+        let first = try XCTUnwrap(items.first)
+        XCTAssertTrue(first.id.hasPrefix("event-"))
+    }
+
+    func testNoTypesEnabledYieldsNothing() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events, types: [])
+
+        XCTAssertTrue(items.isEmpty)
+    }
+
+    func testTypesFromBoolsMatchesTheOptionSet() throws {
+        XCTAssertEqual(NearbyCardTypes(showArt: true, showCamps: true, showEvents: true), .all)
+        XCTAssertEqual(NearbyCardTypes(showArt: true, showCamps: false, showEvents: false), .art)
+        XCTAssertEqual(NearbyCardTypes(showArt: false, showCamps: false, showEvents: false), [])
     }
 }

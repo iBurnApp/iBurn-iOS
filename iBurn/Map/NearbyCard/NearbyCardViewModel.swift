@@ -13,6 +13,7 @@
 //  for the map card.
 //
 
+import Combine
 import CoreLocation
 import Foundation
 import MapKit
@@ -28,9 +29,6 @@ final class NearbyCardViewModel: ObservableObject {
     /// Currently paged item, tracked by `NearbyItem.id` (not index) so that location
     /// updates re-ordering the feed don't yank the user mid-swipe.
     @Published var selectedID: String?
-
-    /// Whether the card is collapsed into its FAB.
-    @Published var isMinimized: Bool = false
 
     /// Live "now" for event timing display; refreshed on a timer.
     @Published var now: Date = .present
@@ -53,6 +51,7 @@ final class NearbyCardViewModel: ObservableObject {
     private let campProvider: CampDataProvider
     private let eventProvider: EventDataProvider
     private let locationProvider: LocationProvider
+    private let preferences: PreferenceService
 
     // MARK: - State
 
@@ -61,6 +60,12 @@ final class NearbyCardViewModel: ObservableObject {
     private var artItems: [ListRow<ArtObject>] = []
     private var campItems: [ListRow<CampObject>] = []
     private var eventItems: [ListRow<EventObjectOccurrence>] = []
+
+    /// Card configuration, kept in sync with the preference service so the map filter
+    /// screen takes effect without leaving the map.
+    private var isCardEnabled: Bool
+    private var enabledTypes: NearbyCardTypes
+    private var preferenceSubscriptions = Set<AnyCancellable>()
 
     // MARK: - Tasks
 
@@ -95,17 +100,23 @@ final class NearbyCardViewModel: ObservableObject {
         artProvider: ArtDataProvider,
         campProvider: CampDataProvider,
         eventProvider: EventDataProvider,
-        locationProvider: LocationProvider
+        locationProvider: LocationProvider,
+        preferences: PreferenceService = PreferenceServiceFactory.shared
     ) {
         self.playaDB = playaDB
         self.artProvider = artProvider
         self.campProvider = campProvider
         self.eventProvider = eventProvider
         self.locationProvider = locationProvider
+        self.preferences = preferences
+
+        self.isCardEnabled = preferences.getValue(Preferences.NearbyCard.enabled)
+        self.enabledTypes = NearbyCardTypes.current(preferences)
 
         self.rawLocation = locationProvider.currentLocation
         self.lastRegionLocation = rawLocation
 
+        observePreferences()
         startLocationUpdates()
         startRefreshTimer()
         restartObservations()
@@ -133,6 +144,46 @@ final class NearbyCardViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Configuration
+
+    /// Turns the card off (or back on). Writes the preference only — the new value comes
+    /// back through `observePreferences()`, so every path that changes the card, including
+    /// the map filter screen, updates `items` the same way.
+    func setCardEnabled(_ enabled: Bool) {
+        preferences.setValue(enabled, for: Preferences.NearbyCard.enabled)
+    }
+
+    /// The preference service publishes off its own queue, so every value is hopped back
+    /// to the main actor before it touches published state.
+    private func observePreferences() {
+        preferences.publisher(for: Preferences.NearbyCard.enabled)
+            .sink { [weak self] enabled in
+                Task { @MainActor in
+                    guard let self, self.isCardEnabled != enabled else { return }
+                    self.isCardEnabled = enabled
+                    self.rebuildItems()
+                }
+            }
+            .store(in: &preferenceSubscriptions)
+
+        Publishers.CombineLatest3(
+            preferences.publisher(for: Preferences.NearbyCard.showArt),
+            preferences.publisher(for: Preferences.NearbyCard.showCamps),
+            preferences.publisher(for: Preferences.NearbyCard.showEvents)
+        )
+        .map { art, camps, events in
+            NearbyCardTypes(showArt: art, showCamps: camps, showEvents: events)
+        }
+        .sink { [weak self] types in
+            Task { @MainActor in
+                guard let self, self.enabledTypes != types else { return }
+                self.enabledTypes = types
+                self.rebuildItems()
+            }
+        }
+        .store(in: &preferenceSubscriptions)
+    }
+
     // MARK: - Item assembly
 
     /// Recompute `items` from the latest observations + location. Events that are
@@ -140,7 +191,7 @@ final class NearbyCardViewModel: ObservableObject {
     /// merged by distance. Everything is gated to `nearbyRadius`, de-duped by id,
     /// and capped to `maxItems`.
     private func rebuildItems() {
-        guard let location = currentLocation else {
+        guard isCardEnabled, let location = currentLocation else {
             items = []
             reconcileSelection()
             return
@@ -149,6 +200,7 @@ final class NearbyCardViewModel: ObservableObject {
             art: artItems,
             camps: campItems,
             events: eventItems,
+            types: enabledTypes,
             from: location,
             now: now,
             radius: nearbyRadius,
@@ -160,18 +212,19 @@ final class NearbyCardViewModel: ObservableObject {
     /// Pure ordering used by `rebuildItems()`, exposed for unit testing.
     ///
     /// Events that are happening now or starting soon come first (by start time);
-    /// then art + camps merged by distance. All gated to `radius`, de-duped by id,
-    /// capped to `maxItems`. Objects without a location are dropped.
+    /// then art + camps merged by distance. All gated to `radius` and to `types`,
+    /// de-duped by id, capped to `maxItems`. Objects without a location are dropped.
     static func orderedItems(
         art: [ListRow<ArtObject>],
         camps: [ListRow<CampObject>],
         events: [ListRow<EventObjectOccurrence>],
+        types: NearbyCardTypes,
         from location: CLLocation,
         now: Date,
         radius: CLLocationDistance,
         maxItems: Int
     ) -> [NearbyItem] {
-        let orderedEvents = events
+        let orderedEvents = (types.contains(.events) ? events : [])
             .filter { row in
                 guard let loc = row.object.location,
                       location.distance(from: loc) <= radius else { return false }
@@ -184,15 +237,19 @@ final class NearbyCardViewModel: ObservableObject {
             .map { NearbyItem.event($0) }
 
         var others: [(item: NearbyItem, distance: CLLocationDistance)] = []
-        for row in art {
-            guard let loc = row.object.location else { continue }
-            let distance = location.distance(from: loc)
-            if distance <= radius { others.append((.art(row), distance)) }
+        if types.contains(.art) {
+            for row in art {
+                guard let loc = row.object.location else { continue }
+                let distance = location.distance(from: loc)
+                if distance <= radius { others.append((.art(row), distance)) }
+            }
         }
-        for row in camps {
-            guard let loc = row.object.location else { continue }
-            let distance = location.distance(from: loc)
-            if distance <= radius { others.append((.camp(row), distance)) }
+        if types.contains(.camps) {
+            for row in camps {
+                guard let loc = row.object.location else { continue }
+                let distance = location.distance(from: loc)
+                if distance <= radius { others.append((.camp(row), distance)) }
+            }
         }
         let sortedOthers = others.sorted { $0.distance < $1.distance }.map(\.item)
 

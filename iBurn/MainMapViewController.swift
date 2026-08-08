@@ -26,6 +26,8 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     private let dependencies: DependencyContainer
     /// Compact on-map card showing art/camps/events within ~100m of the user.
     private lazy var nearbyCardController = NearbyCardHostingController(dependencies: dependencies)
+    /// Live only while the "card hidden" hint is on screen.
+    private weak var nearbyCardTooltip: UIVisualEffectView?
     /// Prototype: drives the tab-accessory search when the bottom layout is selected.
     private lazy var bottomSearchController = MapBottomSearchController(
         host: self,
@@ -159,7 +161,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     }
 
     /// Embeds the nearby card as a proper child view controller, top-centered. The
-    /// hosting controller uses intrinsic content sizing, so the card/FAB defines its own
+    /// hosting controller uses intrinsic content sizing, so the card defines its own
     /// frame and the rest of the map stays interactive around it.
     ///
     /// The card lives at the top now that search owns the bottom of the screen — the two
@@ -167,10 +169,12 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     /// reach for.
     private func setupNearbyCard() {
         addChild(nearbyCardController)
+        nearbyCardController.onCardHidden = { [weak self] in
+            self?.showNearbyCardHiddenTooltip()
+        }
 
         // The hosting view goes inside a container that hands touches outside the card
-        // back to the map — the card's box stays card-sized even when collapsed so its
-        // animation has room. See `NearbyCardTouchContainer`.
+        // back to the map. See `NearbyCardTouchContainer`.
         let container = NearbyCardTouchContainer()
         container.backgroundColor = .clear
         container.interactiveRect = { [weak self] in
@@ -189,6 +193,82 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12).isActive = true
 
         nearbyCardController.didMove(toParent: self)
+    }
+
+    // MARK: - Nearby card tooltip
+
+    /// Transient hint shown after the nearby card's close button hides it. The card is the
+    /// only entry point to its own setting, so dismissing it without saying where it went
+    /// leaves no way back.
+    ///
+    /// Added straight to `view` rather than inside a full-screen container so it can only
+    /// take touches within its own bounds; the map stays live around it.
+    private func showNearbyCardHiddenTooltip() {
+        dismissNearbyCardTooltip(animated: false)
+
+        let tooltip = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        tooltip.layer.cornerRadius = 18
+        tooltip.layer.cornerCurve = .continuous
+        tooltip.clipsToBounds = true
+        tooltip.alpha = 0
+
+        let label = UILabel()
+        label.text = NSLocalizedString("Nearby card hidden — turn it back on in Map Filter.",
+                                       comment: "shown after the user closes the on-map nearby card")
+        label.font = .preferredFont(forTextStyle: .footnote)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = Appearance.currentColors.primaryColor
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        tooltip.contentView.addSubview(label)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(tooltip)
+        tooltip.translatesAutoresizingMaskIntoConstraints = false
+        tooltip.autoAlignAxis(toSuperviewAxis: .vertical)
+        // The label is constrained to the effect view itself, not to `contentView`:
+        // `contentView` is laid out by `UIVisualEffectView` rather than by Auto Layout, so
+        // pinning to it leaves the effect view with no intrinsic size and the tooltip
+        // renders as an invisible zero-height box.
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: tooltip.topAnchor, constant: 10),
+            label.bottomAnchor.constraint(equalTo: tooltip.bottomAnchor, constant: -10),
+            label.leadingAnchor.constraint(equalTo: tooltip.leadingAnchor, constant: 14),
+            label.trailingAnchor.constraint(equalTo: tooltip.trailingAnchor, constant: -14),
+            tooltip.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            tooltip.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -32),
+        ])
+        // The map's own chrome (Liquid Glass buttons, the playa-address bar) sits at the
+        // same place; keep the hint above it for the few seconds it is on screen.
+        view.bringSubviewToFront(tooltip)
+        tooltip.layer.zPosition = 100
+
+        tooltip.addGestureRecognizer(
+            UITapGestureRecognizer(target: self, action: #selector(nearbyCardTooltipTapped))
+        )
+        nearbyCardTooltip = tooltip
+
+        UIView.animate(withDuration: 0.2) { tooltip.alpha = 1 }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self, weak tooltip] in
+            guard let self, let tooltip, self.nearbyCardTooltip === tooltip else { return }
+            self.dismissNearbyCardTooltip(animated: true)
+        }
+    }
+
+    @objc private func nearbyCardTooltipTapped() {
+        dismissNearbyCardTooltip(animated: true)
+    }
+
+    private func dismissNearbyCardTooltip(animated: Bool) {
+        guard let tooltip = nearbyCardTooltip else { return }
+        nearbyCardTooltip = nil
+        guard animated else {
+            tooltip.removeFromSuperview()
+            return
+        }
+        UIView.animate(withDuration: 0.2, animations: { tooltip.alpha = 0 }) { _ in
+            tooltip.removeFromSuperview()
+        }
     }
 
     private func setupSidebarButtons() {
