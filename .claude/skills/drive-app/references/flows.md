@@ -497,7 +497,10 @@ The screen is a SwiftUI list held in **permanent edit mode** (`.environment(\.ed
   bar**, so in the `searchTab` layout it lists four rows (Map / Nearby / Favorites / More),
   not five.
 - **In More** — hidden tabs with a green `plus.circle.fill`; "Nothing hidden." when empty.
-  In the `searchTab` layout Events starts here by default, and the footer says why.
+  In the `searchTab` layout Events starts here by default, and the footer says why. When the
+  bar is at capacity the plus buttons are **disabled and grey** (they drop out of the AX
+  targets entirely — a hidden row with no `Add <tab> to tab bar` ref is the disabled state),
+  and the footer gains "The tab bar is full — …".
 - **Reset** (nav bar trailing) is disabled only while nothing has been customized —
   including the invisible case where the user *explicitly* hid Events under `searchTab`,
   which looks identical to the default until you change layouts (`TabConfiguration.isUntouched`).
@@ -517,11 +520,24 @@ un-hiding puts it back (appended to the end of the bar — re-adding does *not* 
 original position); Reset restores the active layout's default (Map / Nearby / Favorites /
 Events / More, minus Events under `searchTab`).
 
-> Adding Events back to the bar under `searchTab` gives **six** tab items (5 roots +
-> search), which is one more than a compact-width bar shows: iOS spills the last two into
-> its **own** "More" (`•••`) overflow tab, so you end up with two "More" tabs, and Search
-> lands inside the overflow. That's UIKit, not a bug in the configuration — and it's the
-> reason Events is off the bar by default in this layout.
+> Regression to re-check after any edit here: a **just-unhidden row must show a drag handle
+> and survive being dragged**. Both sections hold `TabIdentifier` values, so when they shared
+> `id: \.self` the permanently-editing List recycled the cell across the section boundary —
+> the new Tab Bar row came back with no reorder handle and the next drag crashed. The fix is
+> section-scoped row IDs (`bar.<id>` / `more.<id>`) plus `.id(configuration.hidden)` on the
+> List. Exercise: hide a tab → un-hide it → drag it twice.
+
+> **Capacity rule.** A compact-width bar shows five items; a sixth makes UIKit spill the
+> tail into its *own* `•••` More tab — a second "More" beside the app's, with Search inside
+> the overflow. So app tabs get **`TabConfiguration.visibleCapacity` slots: 5, or 4 while
+> the search tab holds one** (`.searchTab` layout on iOS 26). The clamp
+> (`TabConfiguration.limited(toCapacity:)`) runs in the `current` getter and drops the
+> **last hideable** visible tabs; `TabController.rebuildTabs()` re-applies `prefix` as a
+> guard. Because it is applied on read and **never persisted**, a layout switch that shrinks
+> capacity doesn't record a user choice: put all five on the bar under `navigationBar`,
+> switch to `searchTab` → Events drops into More with `visibilityOverrides` untouched, and
+> switching back restores it at its custom position. In the UI the rule shows up as greyed-out
+> plus buttons, so you can no longer produce the duplicate-More state by hand.
 
 > `TabController` keeps **one `UITab` per root view controller** (`tabCache`). A `UITab`
 > owns the view controller its provider returns, so building a second tab around the same

@@ -234,9 +234,11 @@ nothing. That removal is gone; visibility is `TabConfiguration.current` alone (t
   `!TabConfiguration.isUntouched` — an explicit "Events hidden" under `.searchTab`
   looks identical to the default but still needs undoing. "In More" footer explains
   why Events starts there.
-- Consequence worth knowing: putting Events back gives 6 tab items, and iOS spills
+- ~~Consequence worth knowing: putting Events back gives 6 tab items, and iOS spills
   the last two (Events + Search) into its own `•••` overflow tab. Honest UIKit
-  behavior, and exactly why the default exists — screenshot 31.
+  behavior, and exactly why the default exists — screenshot 31.~~ **Superseded in
+  round 7:** the native overflow is now designed away by a hard capacity rule; the
+  bar can never reach six items. See "Round 7" below.
 
 ### Round-6 verification
 
@@ -252,6 +254,101 @@ nothing. That removal is gone; visibility is `TabConfiguration.current` alone (t
   filter icon (33), nav-bar layout keeping its inline filter icon (34).
 - Tooltip after "Hide" confirmed via the AX snapshot returned by the tap (its 4 s life
   is shorter than a screenshot round-trip, as flows.md warns).
+
+## Round 7 — Customize Tabs: missing drag handle / reorder crash + duplicate More tab
+
+Two user-reported bugs against the round-6 build, both in More → Customize Tabs under
+the `.searchTab` layout. Fixed on this branch (build clean, **275 tests / 0 failures**,
+267 baseline + 8); runtime validation pending (separate agent).
+
+### Bug 1 — un-hidden Events row has no reorder handle; dragging then crashes
+
+Root cause (view layer, not data): `TabConfiguration` provably keeps `visible`/`hidden`
+a strict partition (`movingToHidden` + `sanitized` both partition; the setter re-reads
+through them), but `CustomizeTabsView` rendered both sections' ForEach with
+`id: \.self` over the same `TabIdentifier` values. Un-hiding moved the *same List
+identity* from the hidden ForEach into the visible ForEach inside one `withAnimation`
+update; the permanently-editing List recycled the cell across the section boundary with
+its hidden-section edit chrome (no reorder handle — visible in round-6 screenshot 31,
+where Events is the only Tab Bar row without a handle) and left the `.onMove`
+bookkeeping inconsistent, so the next drag committed bad indices and trapped. The
+reverse move (hide, screenshot 12) looked fine only because hidden rows have no handle
+to miss.
+
+Fix (`CustomizeTabsView.swift`):
+- Section-scoped row identities (`bar.<id>` / `more.<id>` via a private
+  `TabIdentifier` extension), so a show/hide is a plain delete + insert, never a
+  cross-section identity move.
+- `.id(configuration.hidden)` on the List: any partition change rebuilds the list so
+  every cell is configured fresh in edit mode (initial render provably gets handles
+  right). Reorders don't change `hidden`, so a drag never rebuilds mid-gesture.
+- Regression test `testEditSequenceKeepsVisibleAndHiddenAStrictPartition` walks the
+  reported crash sequence (hide Favorites → show Events → reorder → layout switches)
+  asserting the partition invariant and capacity after every write.
+
+### Bug 2 — duplicate More tab (app More + native `•••`) designed away by capacity
+
+Product rule change: **the bar never exceeds 5 items including the search tab**, so
+UIKit's native More overflow can never trigger.
+
+- `TabConfiguration.searchTabOccupiesBarSlot` (`.searchTab` + iOS 26) and
+  `visibleCapacity` (5, or 4 while search holds a slot).
+- `TabConfiguration.limited(toCapacity:)`: excess comes off the *right end* of the bar,
+  never-hideable tabs keep their slots (deterministic: last hideable tabs give way
+  first). Applied in the `current` **getter** (after layout-default folding) and in
+  `layoutDefault` — never persisted, and never recorded in `visibilityOverrides`. So a
+  5-visible config met by a capacity-4 layout switch loses its last hideable tab as
+  layout pressure only, and gets it back the moment capacity returns
+  (`testCapacityClampOnLayoutSwitchIsNotAUserChoice`).
+- Customize Tabs: plus buttons grey out and no-op at capacity (`show()` also guards);
+  the "In More" footer explains ("The tab bar is full — hide another tab to add one
+  back", mentioning the search tab when it's the reason and the Events sentence hasn't
+  already said so). The Events-default footer sentence now only appears while Events is
+  actually hidden.
+- `TabController.rebuildTabs()`: defensive
+  `arrangedRoots(...).prefix(TabConfiguration.visibleCapacity)` on both paths — a
+  future bug can cost an unrecognized trailing root, never a native overflow tab.
+- Rewritten tests that assumed 5-app-tabs + search was legal: putting Events back now
+  requires freeing a slot first (`testUserCanPutEventsBackAfterFreeingABarSlot`,
+  `testExplicitEventsChoiceSurvivesLayoutSwitches`,
+  `testResetRestoresTheActiveLayoutsDefault`).
+
+Files: `iBurn/Tabs/TabConfiguration.swift`, `iBurn/Tabs/CustomizeTabsView.swift`,
+`iBurn/TabController.swift`, `iBurnTests/TabConfigurationTests.swift`.
+
+Runtime validation to exercise: searchTab layout → Customize Tabs: plus on Events is
+greyed at the 4-tab default; hide Favorites → plus enables → show Events → row appears
+*with* a working drag handle; reorder several times (no crash); bar shows
+Map/Nearby/More/Events + search, exactly one More; hide Events again → returns under
+"In More" and More screen row reappears; Reset restores the layout default; switch
+layouts in Advanced and confirm capacity 4↔5 behavior and that a clamped-off tab
+returns on the 5-slot layouts.
+
+### Round 7 runtime validation (simulator, iPhone 17 Pro Max / iOS 26.5) — all pass
+
+Driven end-to-end after a clean `build_run_sim` and a prefs reset (deleted
+`userInterface.tabBar.{order,hidden,visibilityOverrides}` from the container plist).
+Screenshots in `Docs/images/2026-08-08-config-features/`:
+
+| # | Check | Result | Shot |
+|---|---|---|---|
+| 1 | `searchTab` default: Tab Bar = Map/Nearby/Favorites/More, Events "In More", Events plus greyed + footer explains | pass (plus is disabled — it drops out of the AX targets) | `36-customize-default-capacity.jpg` |
+| 2 | Hide Favorites → Events plus enables | pass | `37-favorites-hidden-plus-enabled.jpg` |
+| 3 | Show Events → row lands in Tab Bar **with** a drag handle (bug 1) | pass — handle matches every other row's trailing edge | `38-events-unhidden-drag-handle.jpg` |
+| 4 | 4 consecutive drags (Events twice, Nearby, then Events again) | pass — no crash, order sticks, live bar matches each time | `39-after-four-reorders.jpg` |
+| 5 | Exactly one "More", no native `•••`, ≤5 bar items throughout | pass in every state captured | all |
+| 6 | Hide Events again → back "In More", one Events row on More screen, Favorites plus re-enables | pass | `40-…`, `41-…` |
+| 7 | Reset → layout default | pass — screen hash identical to the item-1 state, Reset re-disables | `42-after-reset.jpg` |
+| 8 | Layout switch `searchTab`→`navigationBar` (capacity 5) and back | pass — all five tabs return; back to `searchTab` drops Events again with `visibilityOverrides` still empty | `43-…`, `44-…`, `45-…`, `46-…` |
+| 8b | Bug-2 core case: record an explicit "Events visible" override under `navigationBar` (hide then show), switch to `searchTab` | pass — clamp yields Map/Nearby/Favorites/More + Search (5 items, one More); plist keeps `order` = 5 entries and `visibilityOverrides` = [events], i.e. the clamp is not persisted | `47-override-visible-clamped-under-searchtab.jpg` |
+| 9 | ~10 `rebuildTabs()` passes in one process (pid stable, runtime log clean); cold relaunch preserves both the customized order and the un-persisted clamp | pass | `48-relaunch-clamp-persists.jpg` |
+
+No code changes were needed. Cosmetic notes only:
+
+- The disabled plus uses `.secondary`, which in light mode reads nearly as dark as the
+  `lock.fill` glyphs — legible as "not green", but not obviously disabled.
+- After a live layout switch no tab item is highlighted until you tap one (the pushed
+  screen stays put). Pre-existing `UITab` selection behavior, unrelated to these fixes.
 
 ## Known warts / follow-ups (not blocking)
 
