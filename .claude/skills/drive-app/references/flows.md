@@ -143,15 +143,28 @@ The global search screen (`GlobalSearchView`, reached from the Search tab in the
 `.searchTab` layout, or the map's search field otherwise) has its own scope + filter
 chrome above the results:
 
-- **Scope bar**: a segmented control `All / Art / Camps / Events / Vehicles`. Scoping
-  changes which tables are queried at all, so a scoped search returns only that section
-  (e.g. Camps + "yoga" → a single "Camps" section, alphabetical). Changing scope re-runs
-  the query without retyping. Five segments plus the filter button fill the width — it
-  fits on iPhone 17 Pro Max, check for truncation on narrower devices.
-- **Filter button** (trailing, `line.3.horizontal.decrease.circle`): opens the "Filter
-  Search" sheet. The icon switches to the **`.fill` variant whenever a filter is on**, and
-  that is the *only* on-screen cue — the filter persists in `UserDefaults`
-  (`globalSearchFilter`) across relaunches while the scope resets to All.
+- **Scope bar**: a segmented control `All / Art / Camps / Events / Vehicles`, **pinned to
+  the top of the content area in every state** (prompt, loading, no-results, results) as a
+  `safeAreaInset`; the result list scrolls *underneath* it. Scoping changes which tables
+  are queried at all, so a scoped search returns only that section (e.g. Camps + "yoga" →
+  a single "Camps" section, alphabetical). Changing scope re-runs the query without
+  retyping. In the map-overlay layout the bar sits at the *bottom*, next to the docked
+  field, instead.
+- **Filter button**, `line.3.horizontal.decrease.circle`, filled (`.fill`) whenever a
+  filter is on — that fill is the *only* on-screen cue, and the filter persists in
+  `UserDefaults` (`globalSearchFilter`) across relaunches while the scope resets to All.
+  **Where it lives depends on the layout — there is exactly one per layout:**
+
+  | Map search layout | Host | Filter affordance |
+  | --- | --- | --- |
+  | `.searchTab` | `NavigationController` + `UISearchTab` | **Navigation bar**, right item, next to the "Search" title |
+  | `.navigationBar` | `UISearchController.searchResultsController` | Inline, trailing end of the scope bar |
+  | `.bottomAccessory` | Map overlay child | Inline, trailing end of the scope bar |
+
+- The search tab shows a real **navigation bar** ("Search" + filter item). It only does so
+  because `hidesNavigationBarDuringPresentation` is off: `UISearchTab.automaticallyActivatesSearch`
+  arrives with search already active, and an active search controller otherwise hides the
+  nav bar (which is what left an empty band at the top of the screen).
 - Sheet contents: **Only Favorites** (all scopes; also disables AI suggestions) and, under
   an "Events" section, **Happening Now** — which is shown **only for the All and Events
   scopes**. A **Reset** button appears in the sheet when the filter is non-default.
@@ -204,9 +217,23 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
 
 A compact swipeable card pinned near the **top** of the map lists what is within ~100 m of
 the user (events first, then art + camps by distance; `simctl location set` required or it
-stays empty). Page dots + a "See all" link into the Nearby screen sit in its footer.
+stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all" (trailing)**,
+"See all" linking into the Nearby screen.
 
-- **Close button** (X, top-right of the card, AX label "Hide nearby card") writes
+- Each page shows name, event timing (events only), and then **either** the playa address
+  **or** — when the embargo still hides that object's location — the description. The
+  address line is plain text with no pin glyph, and comes from `NearbyItem.address`, which
+  applies the two-tier check per item (art tier / camp tier / host's tier for events). Pre-
+  embargo you should see the description line, never an address; if an art piece shows
+  "Open Playa" while locked, that's a regression. **Check `kBRCEntered2026EmbargoPasscodeKey`
+  in the app's prefs plist before calling it one** — a passcode entered in an earlier
+  session persists and legitimately unlocks everything.
+- **Favorite button** (heart, **top-right corner of the card**, AX label
+  "Favorite <name>" / "Unfavorite <name>"). It overlays the card *outside* the pager, so it
+  keeps a fixed position and doesn't eat the swipe; it retargets to whichever page is
+  showing as you swipe. The audio-tour button (art with a local file) stays in the row,
+  bottom-aligned so it clears the heart.
+- **"Hide"** (footer leading, AX label "Hide nearby card") writes
   `userInterface.nearbyCard.enabled = false`. The card fades out and a glass tooltip —
   "Nearby card hidden — turn it back on in Map Filter." — fades in **in the card's place**
   for ~4 s, then auto-dismisses (tapping it dismisses early). There is no collapsed
@@ -269,16 +296,29 @@ touch({ elementRef: "<ref of the 'Debug' text row>", down: true, up: true })
 Search Layout picker (`navigationBar` / `bottomAccessory` / `searchTab`) applies
 **live** via `.mapSearchLayoutDidChange` — no relaunch.
 
-`searchTab` rearranges the tab bar: **Events is replaced by a Search tab**, so the
-tabs become Map / Nearby / Favorites / More plus a detached search button. Events
-is reached from a More row that only appears in this layout. The map's nearby card
-also carries a "See all" link into Nearby. Switching layouts while standing on the
-displaced tab lands you on Map — `UITab`'s view controller provider is lazy, so the
-old selection isn't findable in the new arrangement.
+`searchTab` adds a Search tab and **defaults Events off the bar**, so the tabs
+become Map / Nearby / Favorites / More plus a detached search button, with Events
+reachable from a More row. The map's nearby card also carries a "See all" link into
+Nearby. Switching layouts while standing on a tab that's no longer on the bar lands
+you on Map — `UITab`'s view controller provider is lazy, so the old selection isn't
+findable in the new arrangement.
 
-Layout displacement and the user's own tab customization (§10) compose: hiding Events in
-Customize Tabs while `searchTab` has already displaced it still yields **exactly one**
-Events row in More (`TabController.isDisplacedFromTabBar` is the single source of truth).
+That default is **part of `TabConfiguration`, not something `TabController` applies on the
+way out** (`TabConfiguration.layoutHiddenByDefault`), so the Customize Tabs screen (§10),
+the More rows, and the real bar always agree. `TabController.isDisplacedFromTabBar` is just
+"not in `TabConfiguration.current.visible`", so hiding Events by hand while `searchTab`
+already hides it still yields **exactly one** Events row in More.
+
+Layout switching vs. the user's choice: a tab the user has never moved by hand follows
+whichever layout is active (switch to `searchTab` → Events hides; switch away → it comes
+back). Once the user moves Events in Customize Tabs, that choice is recorded in
+`userInterface.tabBar.visibilityOverrides` and sticks across layout switches until Reset.
+
+Setting the layout from outside the app: `simctl spawn <UDID> defaults write` does **not**
+reach the app's container. Terminate the app and edit the container plist instead —
+`/usr/libexec/PlistBuddy -c "Set :userInterface.map.searchLayout searchTab"
+"$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)/Library/Preferences/com.trailbehind.iBurn2010.plist"`
+(`plutil -replace` won't work: it reads the `.` in these keys as a key path).
 
 **Capturing animations:** `record_sim_video` has failed to return a file path here;
 `xcrun simctl io <UDID> recordVideo --codec h264 --force out.mov` in the background
@@ -288,12 +328,6 @@ animated. Worth doing before trusting "the animation is broken/fixed" by eye, an
 only practical way to catch short-lived overlays such as the nearby card's hide tooltip.
 Note `-frames:v 1` with `tile=` only covers the first tile's worth of frames — pass `-ss`
 to reach later parts of a long recording.
-
-Setting the layout from outside the app is unreliable:
-`simctl spawn <UDID> defaults write com.trailbehind.iBurn2010
-userInterface.map.searchLayout -string searchTab` frequently does not survive to
-the next launch (the running app flushes its own cached defaults over it, and
-even writing while terminated didn't take). Drive the in-app picker instead.
 
 **Software keyboard:** the simulator flips into hardware-keyboard mode after the
 first `type_text` call and stays there, so keyboard-up states can't be captured
@@ -459,13 +493,19 @@ The screen is a SwiftUI list held in **permanent edit mode** (`.environment(\.ed
 
 - **Tab Bar** — every visible tab, each row `minus.circle.fill` (or a `lock.fill` for Map
   and More, which can't be hidden) + icon + title + a drag handle. Footer: "Drag to
-  reorder. Map and More always stay on the tab bar."
+  reorder. Map and More always stay on the tab bar." **This section always matches the real
+  bar**, so in the `searchTab` layout it lists four rows (Map / Nearby / Favorites / More),
+  not five.
 - **In More** — hidden tabs with a green `plus.circle.fill`; "Nothing hidden." when empty.
-- **Reset** (nav bar trailing) is disabled while the configuration is the default.
+  In the `searchTab` layout Events starts here by default, and the footer says why.
+- **Reset** (nav bar trailing) is disabled only while nothing has been customized —
+  including the invisible case where the user *explicitly* hid Events under `searchTab`,
+  which looks identical to the default until you change layouts (`TabConfiguration.isUntouched`).
 
 Every edit writes `TabConfiguration.current` (`userInterface.tabBar.order` +
-`userInterface.tabBar.hidden`) and posts `.tabConfigurationDidChange`, so the tab bar
-**rebuilds live behind the screen** — there is nothing to save or cancel.
+`userInterface.tabBar.hidden` + `userInterface.tabBar.visibilityOverrides`) and posts
+`.tabConfigurationDidChange`, so the tab bar **rebuilds live behind the screen** — there is
+nothing to save or cancel.
 
 Automation: the minus/plus buttons *do* receive taps in active edit mode (tap their
 `Remove <tab> from tab bar` / `Add <tab> to tab bar` AX refs). Reordering works with
@@ -474,7 +514,14 @@ Automation: the minus/plus buttons *do* receive taps in active edit mode (tap th
 
 Verify: hiding a tab removes it from the bar and adds a row at the **top of More**;
 un-hiding puts it back (appended to the end of the bar — re-adding does *not* restore the
-original position); Reset restores Map / Nearby / Favorites / Events / More.
+original position); Reset restores the active layout's default (Map / Nearby / Favorites /
+Events / More, minus Events under `searchTab`).
+
+> Adding Events back to the bar under `searchTab` gives **six** tab items (5 roots +
+> search), which is one more than a compact-width bar shows: iOS spills the last two into
+> its **own** "More" (`•••`) overflow tab, so you end up with two "More" tabs, and Search
+> lands inside the overflow. That's UIKit, not a bug in the configuration — and it's the
+> reason Events is off the bar by default in this layout.
 
 > `TabController` keeps **one `UITab` per root view controller** (`tabCache`). A `UITab`
 > owns the view controller its provider returns, so building a second tab around the same

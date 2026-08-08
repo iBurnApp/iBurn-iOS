@@ -148,23 +148,132 @@ orchestrated from the main session:
   the filtered request builders already combine FTS + knobs at SQL level, and
   scoped search gets cheaper instead of dearer.
 
+## Round 6 — user feedback on the round-5 screenshots
+
+Four fixes, all on the same branch, no commit yet.
+
+### 1. Nearby card location line — embargo (`NearbyCardView.swift`, `EmbargoTierTests.swift`)
+
+- `Label(address, systemImage: "mappin.and.ellipse")` → plain `Text(address)`.
+- **Investigation result: no leak.** "The Hitchin' Post — Open Playa" in screenshot
+  08 is `ArtObject.locationString` (`address` = `locationString ?? timeBasedAddress`)
+  surfaced through `NearbyItem.address`, which *does* gate on
+  `BRCEmbargo.canShowArtLocations()`. It rendered because the simulator's prefs had
+  `kBRCEntered2026EmbargoPasscodeKey = true` left over from an earlier passcode unlock,
+  so `allowEmbargoedData` was legitimately YES. Deleting that key from the container
+  plist and relaunching hides the line (the card falls back to the description) —
+  screenshot 21.
+- Tiers as of 2026-08-08: `campLocationUnlock` 2026-08-23 00:01 PDT, `eventStart`
+  (art tier) 2026-08-30 00:01 PDT — so today both are locked without the passcode.
+- Nearby *screen* agrees by construction: `NearbyView`'s art/camp rows use
+  `ObjectRowView`, which renders no address at all for art/camps, and its event rows
+  already gate `hostAddress` on `BRCEmbargo.canShowLocation(for:)`.
+- Testable after all — `EmbargoTierTests` already owns the mock-date
+  (`BRCMockDateEnabled`/`BRCMockDateValue`) + passcode harness, so 7 new cases there
+  drive `NearbyItem.address` across all three tiers, blank strings, and the
+  event-follows-its-host / free-text-fallback rules.
+
+### 2. Nearby card layout (`NearbyCardView.swift`)
+
+- X overlay deleted; footer is now `Hide | dots | See all` (Hide has the same weight
+  as See all and does exactly what X did).
+- Heart moved to the card's top-trailing overlay, *outside* the `TabView` — same
+  trick the X used, so it can't eat a page swipe — and it retargets to
+  `selectedItem` as pages change. `NearbyCardContentView` lost `isFavorite` /
+  `onFavoriteTap` entirely.
+- Audio-tour button **stayed in the row**, now bottom-aligned in a 60 pt column so it
+  clears the heart. The content's `.padding(.trailing, 34)` also stayed: it's still
+  clearance for a corner control, just a different one (without it a long name runs
+  under the heart).
+
+### 3. Search: pinned scope bar + real nav bar (`GlobalSearchView/ViewModel/HostingController`, `GlobalSearchTabFactory`)
+
+Two independent causes:
+
+1. **Bar floating mid-screen**: `results` is a `ZStack` whose only child in the empty
+   states is a fixed-size glyph + label, so it sized to its content and the hosting
+   controller centered the whole view. Diagnostic `NSLog` proved the safe area was
+   already right (`{116,0,83,0}` = nav bar bottom). Fixed with an explicit
+   `.frame(maxWidth: .infinity, maxHeight: .infinity)` plus
+   `safeAreaInset(edge: .top)` for the bar (overlay mode keeps its bottom `VStack`).
+2. **No nav bar**: `UISearchTab.automaticallyActivatesSearch` arrives with search
+   active, and `UISearchController.hidesNavigationBarDuringPresentation` defaults to
+   `true` → the bar (and its title/items) was hidden the whole time. Set to `false`.
+
+Filter affordance is now one per layout: `.searchTab` gets a
+`UIBarButtonItem` (via `GlobalSearchHostingController.installFilterBarButtonItem()`,
+which also clears `showsInlineFilterButton` and subscribes to `viewModel.$filter` to
+swap the `.fill` variant); `.navigationBar` and `.bottomAccessory` keep the inline
+icon. Sheet presentation moved from `@State` to `viewModel.isShowingFilters` so UIKit
+can open it.
+
+### 4. Events default + placeability (`TabConfiguration.swift`, `TabController.swift`, `CustomizeTabsView.swift`)
+
+Root cause: `rebuildTabs()` removed the Events root unconditionally on the
+`.searchTab` path, independent of `TabConfiguration` — so the customization screen
+and the More rows described a bar that wasn't on screen, and un-hiding Events did
+nothing. That removal is gone; visibility is `TabConfiguration.current` alone (the
+`tabCache` stays — rebuilds still crash without it).
+
+- `TabConfiguration.layoutHiddenByDefault` = `[.events]` while `.searchTab` is active
+  on iOS 26+, folded into `current`'s getter → a user who never customized sees
+  Events under "In More" and gets the same 4-tab bar as before.
+- **Events-default mechanism chosen**: a third preference,
+  `userInterface.tabBar.visibilityOverrides`, holding ids whose visibility the user
+  set by hand. The `current` *setter* derives it — it diffs the incoming config's
+  hidden set against the effective one and marks whatever flipped — so
+  `CustomizeTabsView` needed no changes, and reordering or hiding *another* tab never
+  marks Events. The setter also strips layout-default hiding out of what it persists,
+  so an unrelated edit can't freeze the default into the user's prefs.
+- Layout switches therefore behave as specified: untouched Events follows the active
+  layout; an explicit choice sticks until `resetToDefault()` (which bypasses the
+  setter and clears the overrides).
+- `isDisplacedFromTabBar(_:)` collapses to
+  `!TabConfiguration.current.visible.contains(identifier)`.
+- `Reset` compares against `TabConfiguration.layoutDefault`, and is enabled whenever
+  `!TabConfiguration.isUntouched` — an explicit "Events hidden" under `.searchTab`
+  looks identical to the default but still needs undoing. "In More" footer explains
+  why Events starts there.
+- Consequence worth knowing: putting Events back gives 6 tab items, and iOS spills
+  the last two (Events + Search) into its own `•••` overflow tab. Honest UIKit
+  behavior, and exactly why the default exists — screenshot 31.
+
+### Round-6 verification
+
+- Build clean, **267 tests / 0 failures** (249 → +7 embargo/nearby-address,
+  +11 tab-config).
+- Screenshots `21`–`34` in `Docs/images/2026-08-08-config-features/`: card without pin
+  glyph and with the location line withheld under embargo (21), heart filled (22),
+  heart following a page swipe (23), card hidden via "Hide" (24), search tab with nav
+  bar + pinned scope bar (25), filled nav filter icon (26), results (27) and results
+  scrolled under the bar (28), More with a single Events row (29), Customize Tabs at
+  the `.searchTab` default (30), Events dragged onto the bar with the iOS overflow tab
+  (31), Events hidden again with Reset live (32), overlay layout keeping its inline
+  filter icon (33), nav-bar layout keeping its inline filter icon (34).
+- Tooltip after "Hide" confirmed via the AX snapshot returned by the tap (its 4 s life
+  is shorter than a screenshot round-trip, as flows.md warns).
+
 ## Known warts / follow-ups (not blocking)
 
 - Un-hiding a tab appends it to the end of the bar rather than restoring its
   original slot (consistent with the list UI; draggable; maybe not expected).
-- Customize Tabs lists Events under "Tab Bar" even when the `.searchTab`
-  layout has displaced it into More — presentation is out of step with
-  `MapSearchLayout` (the More-row logic itself is correct).
-- Scope bar is tight on iPhone 17 Pro Max (~x358/400 + filter button at 375);
-  expect compression on 6.1"/SE-class widths.
+- ~~Customize Tabs lists Events under "Tab Bar" even when the `.searchTab`
+  layout has displaced it into More~~ — fixed in round 6.
+- Scope bar was tight in round 5 because the inline filter button shared its row.
+  Under `.searchTab` that button moved to the navigation bar, so the segmented
+  control has the full width; the other two layouts still carry the inline icon —
+  check for compression there on 6.1"/SE-class widths.
 - Two search VM instances (map layout vs search tab) each load the persisted
   filter at init and don't observe each other's changes.
 - Camp rows show "🚶🏽 ? min" — pre-existing (2026 camps lack GPS), not a
   regression.
 - Round-1 leftovers still parked: delete `BRCUserTrackingBarButtonItem.{h,m}`
-  + bridging-header import + `UserTracking.xcassets`; `MapSearchLayout`
-  `.searchTab` summary string still says "Nearby moves onto the map card"
-  (stale since round 3).
+  + bridging-header import + `UserTracking.xcassets`. (The stale `.searchTab`
+  summary string, "Nearby moves onto the map card", was corrected in round 6 to
+  "Events moves into More by default".)
+- The embargo alert only appears in the launch that finishes onboarding
+  (`setupNormalRootViewController`), not on subsequent locked launches —
+  pre-existing, noticed while validating round 6.
 
 ## Cross-References
 
