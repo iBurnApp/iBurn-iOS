@@ -20,7 +20,6 @@ private struct TransparentListBackground: ViewModifier {
 struct GlobalSearchView: View {
     @ObservedObject var viewModel: GlobalSearchViewModel
     @Environment(\.themeColors) var themeColors
-    @State private var isShowingFilters = false
 
     let onSelectArt: (ArtObject) -> Void
     let onSelectCamp: (CampObject) -> Void
@@ -32,9 +31,14 @@ struct GlobalSearchView: View {
     /// an actual list of results paints a backdrop behind itself.
     let isOverlay: Bool
 
+    /// Whether the scope bar carries its own filter button. Off when the host has a
+    /// navigation bar to put one on, so there is exactly one filter affordance per layout.
+    let showsInlineFilterButton: Bool
+
     init(
         viewModel: GlobalSearchViewModel,
         isOverlay: Bool = false,
+        showsInlineFilterButton: Bool = true,
         onSelectArt: @escaping (ArtObject) -> Void = { _ in },
         onSelectCamp: @escaping (CampObject) -> Void = { _ in },
         onSelectEvent: @escaping (EventObjectOccurrence) -> Void = { _ in },
@@ -42,6 +46,7 @@ struct GlobalSearchView: View {
     ) {
         self.viewModel = viewModel
         self.isOverlay = isOverlay
+        self.showsInlineFilterButton = showsInlineFilterButton
         self.onSelectArt = onSelectArt
         self.onSelectCamp = onSelectCamp
         self.onSelectEvent = onSelectEvent
@@ -55,29 +60,45 @@ struct GlobalSearchView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        Group {
             // Overlay mode docks the text field to the keyboard at the bottom of the
             // screen, so the scope controls belong down there with it; hosted normally,
             // the field is at the top and so is the bar.
             if isOverlay {
-                results
-                scopeBar
+                VStack(spacing: 0) {
+                    results
+                    scopeBar
+                }
             } else {
-                scopeBar
+                // A safe-area inset rather than the top half of a `VStack`: the bar stays
+                // pinned to the top of the screen in every state — prompt, loading,
+                // no-results and results alike — and the result list scrolls underneath
+                // it instead of starting below a bar that moved with the content.
+                //
+                // The explicit greedy frame is what makes "the top of the screen" mean
+                // that: the empty states are a fixed-size glyph and label, so without it
+                // `results` sizes to them and the hosting controller centers the whole
+                // view — which is how the bar ended up floating in the middle of an
+                // otherwise blank screen.
                 results
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .safeAreaInset(edge: .top, spacing: 0) { scopeBar }
             }
         }
         .background(overlayBackground)
-        .sheet(isPresented: $isShowingFilters) {
+        .sheet(isPresented: $viewModel.isShowingFilters) {
             GlobalSearchFilterSheet(filter: $viewModel.filter, scope: viewModel.scope)
         }
     }
 
     // MARK: - Scope + Filter
 
-    /// Lives inside the SwiftUI view rather than on a navigation item or the search bar's
+    /// The scope control lives inside the SwiftUI view rather than on the search bar's
     /// scope buttons: this view is hosted three different ways (search-results controller,
-    /// map overlay, inline search tab) and only one of those has a navigation item of its own.
+    /// map overlay, search tab) and the bar has to look the same in all of them.
+    ///
+    /// The deeper filter knobs are different — they only ride along here when the host has
+    /// no navigation bar to put them on. See `showsInlineFilterButton`.
     private var scopeBar: some View {
         HStack(spacing: 12) {
             Picker("Scope", selection: $viewModel.scope) {
@@ -88,13 +109,15 @@ struct GlobalSearchView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
 
-            Button {
-                isShowingFilters = true
-            } label: {
-                Image(systemName: filterIconName)
-                    .font(.title3)
+            if showsInlineFilterButton {
+                Button {
+                    viewModel.isShowingFilters = true
+                } label: {
+                    Image(systemName: filterIconName)
+                        .font(.title3)
+                }
+                .accessibilityLabel(Text("Search Filters"))
             }
-            .accessibilityLabel(Text("Search Filters"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -104,12 +127,17 @@ struct GlobalSearchView: View {
     }
 
     /// The results list paints a full-screen material behind everything in overlay mode, so
-    /// the bar only needs its own backing while that material is absent.
+    /// the bar only needs its own backing while that material is absent. Hosted normally
+    /// the bar is a safe-area inset with the list running under it, so it always needs one.
     @ViewBuilder
     private var scopeBarBackground: some View {
-        if isOverlay && !showsResultList {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.regularMaterial)
+        if isOverlay {
+            if !showsResultList {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.regularMaterial)
+            }
+        } else {
+            Rectangle().fill(.bar)
         }
     }
 

@@ -26,6 +26,11 @@ final class GlobalSearchViewModel: ObservableObject {
         }
     }
 
+    /// Whether the filter sheet is up. Lives on the view model because the control that
+    /// opens it isn't always in the SwiftUI view — the search tab puts it on its
+    /// navigation bar, where the app's other list screens keep their filter buttons.
+    @Published var isShowingFilters: Bool = false
+
     @Published var sections: [SearchResultSection] = []
     @Published var isSearching: Bool = false
 

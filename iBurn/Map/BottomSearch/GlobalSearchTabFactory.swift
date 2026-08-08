@@ -50,12 +50,23 @@ enum GlobalSearchTabFactory {
             "Search art, camps, and events",
             comment: "placeholder for the global search field"
         )
+        // `UISearchTab.automaticallyActivatesSearch` makes this screen arrive with search
+        // already active, and an active search controller hides the navigation bar by
+        // default — which took the title and the filter button with it and left a tall
+        // empty band where the bar had been. The field is docked at the bottom in this
+        // layout, so there's nothing for the navigation bar to collide with.
+        searchController.hidesNavigationBarDuringPresentation = false
 
         // searchResultsUpdater is weak, so pin the updater's lifetime to the host.
         objc_setAssociatedObject(host, &updaterKey, updater, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
 
         host.navigationItem.searchController = searchController
         host.navigationItem.hidesSearchBarWhenScrolling = false
+        host.navigationItem.largeTitleDisplayMode = .never
+        // This is the one layout with a navigation bar of its own, so the filter control
+        // goes there — same place Art, Camps and Events keep theirs — and out of the
+        // scope bar, which keeps the segmented control full width.
+        host.installFilterBarButtonItem()
 
         return NavigationController(rootViewController: host)
     }
