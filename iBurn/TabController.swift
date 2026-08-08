@@ -32,19 +32,19 @@ import UIKit
         )
     }
 
-    /// `.searchTab` trades the Nearby tab for a `UISearchTab`; every other layout keeps
-    /// the plain five-tab arrangement. Nearby is the tab that gives way because the map
-    /// already surfaces what's around you in the nearby card, which grows a link into the
-    /// full Nearby list (see `MainMapViewController.applySearchLayout`). More keeps its
-    /// slot — it has no equivalent second entry point.
+    /// `.searchTab` trades the Events tab for a `UISearchTab`; every other layout keeps
+    /// the plain five-tab arrangement. Events is the tab that gives way because it's the
+    /// one you go looking for by name — search and the More list both reach it — whereas
+    /// Map, Nearby and Favorites are all "what's around me right now" surfaces you want
+    /// one tap away. `MoreViewController` grows an Events row to match.
     @objc public func applySearchLayout() {
         guard !roots.isEmpty else { return }
         let selectedRoot = selectedViewController
 
         if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
             var carried = roots
-            if let nearbyIndex = nearbyRootIndex {
-                carried.remove(at: nearbyIndex)
+            if let displacedIndex = displacedRootIndex {
+                carried.remove(at: displacedIndex)
             }
             var newTabs: [UITab] = carried.enumerated().map { index, viewController in
                 UITab(
@@ -71,7 +71,7 @@ import UIKit
         }
 
         // Keep the user on whichever tab they were looking at. Switching to `.searchTab`
-        // drops the Nearby tab, so anyone standing on it falls back to the map rather
+        // drops the Events tab, so anyone standing on it falls back to the map rather
         // than being dumped into the search field.
         if let selectedRoot, let index = self.viewControllers?.firstIndex(of: selectedRoot) {
             selectedIndex = index
@@ -80,14 +80,22 @@ import UIKit
         }
     }
 
-    /// Position of the Nearby root inside `roots`. Matched by type rather than index so
+    /// Position of the root the search tab displaces. Matched by type rather than index so
     /// reordering the tabs in `BRCAppDelegate.setupDefaultTabBarController` can't silently
-    /// drop the wrong one; both the SwiftUI and legacy Nearby screens are recognized.
-    private var nearbyRootIndex: Int? {
+    /// drop the wrong one; both the SwiftUI and legacy Events screens are recognized.
+    private var displacedRootIndex: Int? {
         roots.firstIndex { root in
             let leaf = (root as? UINavigationController)?.viewControllers.first ?? root
-            return leaf is NearbyListHostingController || leaf is NearbyViewController
+            return leaf is EventListHostingController || leaf is EventListViewController
         }
+    }
+
+    /// Whether the search tab has taken the Events slot, so `MoreViewController` knows to
+    /// offer Events itself. Static because More is rebuilt independently of this instance.
+    static var eventsIsDisplacedFromTabBar: Bool {
+        guard MapSearchLayout.current == .searchTab else { return false }
+        if #available(iOS 26.0, *) { return true }
+        return false
     }
 }
 

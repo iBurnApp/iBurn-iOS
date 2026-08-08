@@ -56,18 +56,13 @@ struct GlobalSearchView: View {
     var body: some View {
         ZStack {
             if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
-                // Prompt state
                 legible {
-                    VStack(spacing: 12) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 48))
-                            .foregroundColor(themeColors.detailColor)
-                        Text("Search art, camps, events, and vehicles")
-                            .font(.subheadline)
-                            .foregroundColor(themeColors.secondaryColor)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding()
+                    placeholder(
+                        symbol: "magnifyingglass",
+                        title: "Search Black Rock City",
+                        message: "Art, camps, events, and mutant vehicles — by name, by camp, or by what's happening.",
+                        hint: "Try \u{201C}temple\u{201D}, \u{201C}pancakes\u{201D}, or \u{201C}yoga\u{201D}"
+                    )
                 }
             } else if viewModel.isSearching && viewModel.sections.isEmpty {
                 // Loading state
@@ -82,20 +77,13 @@ struct GlobalSearchView: View {
                     .padding()
                 }
             } else if !viewModel.isSearching && viewModel.sections.isEmpty {
-                // No results
                 legible {
-                    VStack(spacing: 12) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 48))
-                            .foregroundColor(themeColors.detailColor)
-                        Text("No results for \"\(viewModel.searchText)\"")
-                            .font(.headline)
-                            .foregroundColor(themeColors.primaryColor)
-                        Text("Try a different search term")
-                            .font(.subheadline)
-                            .foregroundColor(themeColors.secondaryColor)
-                    }
-                    .padding()
+                    placeholder(
+                        symbol: "questionmark.magnifyingglass",
+                        title: "No results for \u{201C}\(viewModel.searchText)\u{201D}",
+                        message: "Nothing in this year's data matches that.",
+                        hint: "Try a shorter word, or check the spelling"
+                    )
                 }
             } else {
                 // Results list
@@ -196,6 +184,37 @@ struct GlobalSearchView: View {
             .contentShape(Rectangle())
             .onTapGesture { onSelectMV(mv) }
         }
+    }
+
+    /// The prompt and no-results states are the whole screen when there's nothing to list,
+    /// so they get a proper illustration-weight treatment rather than a lone glyph and a
+    /// line of grey text.
+    private func placeholder(symbol: String, title: String, message: String, hint: String) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(themeColors.detailColor)
+                .frame(width: 84, height: 84)
+                .background(Circle().fill(themeColors.detailColor.opacity(0.12)))
+
+            VStack(spacing: 6) {
+                Text(title)
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(themeColors.primaryColor)
+                    .multilineTextAlignment(.center)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(themeColors.secondaryColor)
+                    .multilineTextAlignment(.center)
+            }
+
+            Text(hint)
+                .font(.footnote)
+                .foregroundColor(themeColors.detailColor)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 24)
     }
 
     /// In overlay mode the placeholder states sit directly on the map, where plain text

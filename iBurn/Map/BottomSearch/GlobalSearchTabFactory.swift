@@ -11,8 +11,10 @@
 //  render inline (`searchResultsController: nil`) rather than in a separate results
 //  controller, so the list is visible the whole time the field is focused.
 //
-//  The pieces are assembled here; `SearchTabRootViewController` is the view controller
-//  that actually shows up in the tab.
+//  This is an ordinary opaque screen, not an overlay. It once painted a still of the map
+//  behind a transparent results view, which looked right arriving from the Map tab and
+//  plainly wrong arriving from anywhere else — you'd tap Search from Events and get a
+//  frozen map. `GlobalSearchView`'s empty states carry the screen instead.
 //
 
 import UIKit
@@ -38,8 +40,7 @@ enum GlobalSearchTabFactory {
 
     static func makeSearchTabRoot(dependencies: DependencyContainer) -> UIViewController {
         let host = dependencies.makeGlobalSearchHostingController()
-        host.isOverlay = true
-        let root = SearchTabRootViewController(content: host)
+        host.title = NSLocalizedString("Search", comment: "title for the search tab")
 
         let updater = Updater(host: host)
         let searchController = UISearchController(searchResultsController: nil)
@@ -53,15 +54,9 @@ enum GlobalSearchTabFactory {
         // searchResultsUpdater is weak, so pin the updater's lifetime to the host.
         objc_setAssociatedObject(host, &updaterKey, updater, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
 
-        // The search controller hangs off the root, not the hosting controller, because
-        // that's the view controller UIKit reads the navigation item from.
-        root.navigationItem.searchController = searchController
-        root.navigationItem.hidesSearchBarWhenScrolling = false
+        host.navigationItem.searchController = searchController
+        host.navigationItem.hidesSearchBarWhenScrolling = false
 
-        let nav = NavigationController(rootViewController: root)
-        // The overlay only reads as an overlay if every layer above the backdrop is
-        // clear — the nav controller paints its own fill otherwise.
-        nav.view.backgroundColor = .clear
-        return nav
+        return NavigationController(rootViewController: host)
     }
 }

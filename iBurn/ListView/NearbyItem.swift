@@ -1,6 +1,13 @@
 import CoreLocation
 import PlayaDB
 
+extension String {
+    /// Self unless it is empty or only whitespace.
+    var trimmedNonEmpty: String? {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
+    }
+}
+
 /// Section identifiers for the nearby list
 enum NearbySectionID: String {
     case events
@@ -42,6 +49,24 @@ enum NearbyItem: Identifiable {
         case .art(let r): r.object.location
         case .camp(let r): r.object.location
         case .event(let r): r.object.location
+        }
+    }
+
+    /// Playa address for display, or nil while the embargo hides it. Art and camps are
+    /// gated by their own embargo tiers; an event follows its host, and falls back to its
+    /// free-text location, which is what unhosted events carry instead of an address.
+    var address: String? {
+        switch self {
+        case .art(let r):
+            guard BRCEmbargo.canShowArtLocations() else { return nil }
+            return r.object.address?.trimmedNonEmpty
+        case .camp(let r):
+            guard BRCEmbargo.canShowCampLocations() else { return nil }
+            return r.object.address?.trimmedNonEmpty
+        case .event(let r):
+            let other = r.object.otherLocation.trimmedNonEmpty
+            guard BRCEmbargo.canShowLocation(for: r.object) else { return other }
+            return r.object.hostAddress?.trimmedNonEmpty ?? other
         }
     }
 

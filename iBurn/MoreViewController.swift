@@ -50,14 +50,15 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     enum DetailViewsRow: Int, CaseIterable {
-        case art = 0
-        case camps = 1
-        case mutantVehicles = 2
-        case recentlyViewed = 3
-        case aiGuide = 4
-        case visitList = 5
-        case audioTour = 6
-        case locationHistory = 7
+        case events = 0
+        case art = 1
+        case camps = 2
+        case mutantVehicles = 3
+        case recentlyViewed = 4
+        case aiGuide = 5
+        case visitList = 6
+        case audioTour = 7
+        case locationHistory = 8
     }
     
     enum CustomizationRow: Int, CaseIterable {
@@ -154,10 +155,17 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     private var visibleDetailViewRows: [DetailViewsRow] {
         DetailViewsRow.allCases.filter { row in
-            if row == .aiGuide {
+            switch row {
+            case .aiGuide:
                 return BRCAppDelegate.shared.dependencies.makeAIGuideViewModel() != nil
+            case .events:
+                // More is the overflow for browse surfaces that aren't tabs. Events only
+                // needs a row here when the search tab has taken its slot; showing it
+                // alongside a live Events tab would just be a second path to one screen.
+                return TabController.eventsIsDisplacedFromTabBar
+            default:
+                return true
             }
-            return true
         }
     }
 
@@ -189,6 +197,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         case .detailViews(let row):
             let moreCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
             switch row {
+            case .events:
+                moreCell.configure(title: "Events", imageName: "BRCEventIcon", tag: row.rawValue)
             case .art:
                 moreCell.configure(title: "Art", imageName: "BRCArtIcon", tag: row.rawValue)
             case .camps:
@@ -284,6 +294,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         switch cellType {
         case .detailViews(let row):
             switch row {
+            case .events: pushEventsView()
             case .art: pushArtView()
             case .camps: pushCampsView()
             case .mutantVehicles: pushMutantVehiclesView()
@@ -341,6 +352,14 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func pushTracksView() {
         let tracksVC = TracksViewController()
         self.navigationController?.pushViewController(tracksVC, animated: true)
+    }
+
+    /// Reuses the app delegate's factory rather than rebuilding the screen, so the row
+    /// and the tab (when it has one) push the exact same Events list.
+    func pushEventsView() {
+        let eventsVC = BRCAppDelegate.shared.createEventsViewController()
+        eventsVC.title = "Events"
+        navigationController?.pushViewController(eventsVC, animated: true)
     }
 
     func pushArtView() {

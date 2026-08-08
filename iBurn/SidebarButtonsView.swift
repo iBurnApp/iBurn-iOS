@@ -49,8 +49,10 @@ class SidebarButtonsView: UIView {
         }
     }
 
-    static let buttonDiameter: CGFloat = 44
-    private static let spacing: CGFloat = 12
+    /// 40pt rather than the 44pt HIG minimum: at 44 the three glass circles read as a
+    /// heavy slab against the map. The extra spacing below buys back the miss-tolerance.
+    static let buttonDiameter: CGFloat = 40
+    private static let spacing: CGFloat = 18
 
     /// Intrinsic height for the whole column, so callers don't hardcode a magic number.
     static var columnHeight: CGFloat {
@@ -113,7 +115,7 @@ class SidebarButtonsView: UIView {
         container.layer.cornerRadius = buttonDiameter / 2
 
         let button = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
         button.setImage(UIImage(systemName: type.symbolName, withConfiguration: config), for: .normal)
         button.accessibilityLabel = type.accessibilityLabel
         button.translatesAutoresizingMaskIntoConstraints = false

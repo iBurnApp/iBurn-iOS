@@ -212,12 +212,19 @@ touch({ elementRef: "<ref of the 'Debug' text row>", down: true, up: true })
 Search Layout picker (`navigationBar` / `bottomAccessory` / `searchTab`) applies
 **live** via `.mapSearchLayoutDidChange` — no relaunch.
 
-`searchTab` rearranges the tab bar: **Nearby is replaced by a Search tab**, so the
-tabs become Map / Favorites / Events / More plus a detached search button. Nearby
-is reached from the map's nearby card ("See all", or a `list.bullet` FAB when
-nothing is in range) and pushes onto the map's navigation stack. Switching layouts
-while standing on More lands you on Map — `UITab`'s view controller provider is
-lazy, so the old selection isn't findable in the new arrangement.
+`searchTab` rearranges the tab bar: **Events is replaced by a Search tab**, so the
+tabs become Map / Nearby / Favorites / More plus a detached search button. Events
+is reached from a More row that only appears in this layout. The map's nearby card
+also carries a "See all" link into Nearby. Switching layouts while standing on the
+displaced tab lands you on Map — `UITab`'s view controller provider is lazy, so the
+old selection isn't findable in the new arrangement.
+
+**Capturing animations:** `record_sim_video` has failed to return a file path here;
+`xcrun simctl io <UDID> recordVideo --codec h264 --force out.mov` in the background
+(then `kill -INT`) works. Step through with ffmpeg — a `fps=2` tile locates the
+transition, then `-ss <t> -t 1 -vf fps=60,tile=...` shows whether it actually
+animated. Worth doing before trusting "the animation is broken/fixed" by eye: the
+nearby card collapse looked slow-and-broken but was a zero-intermediate-frame cut.
 
 Setting the layout from outside the app is unreliable:
 `simctl spawn <UDID> defaults write com.trailbehind.iBurn2010

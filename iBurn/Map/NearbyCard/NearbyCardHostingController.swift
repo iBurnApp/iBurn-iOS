@@ -19,15 +19,6 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
     private let playaDB: PlayaDB
     let viewModel: NearbyCardViewModel
 
-    /// Shows the card's link into the full Nearby list. Set when the search tab has taken
-    /// Nearby's slot in the tab bar, which makes the card its only entry point.
-    var showsNearbyListLink: Bool = false {
-        didSet {
-            guard oldValue != showsNearbyListLink else { return }
-            updateRootView()
-        }
-    }
-
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
         let vm = dependencies.makeNearbyCardViewModel()
@@ -45,7 +36,6 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
     private func updateRootView() {
         rootView = NearbyCardView(
             viewModel: viewModel,
-            showsNearbyListLink: showsNearbyListLink,
             onSelect: { [weak self] subject in
                 self?.showDetail(subject)
             },
@@ -62,6 +52,22 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
+    }
+
+    /// Where the card is actually drawing inside `bounds` — the whole box when expanded,
+    /// just the centered pin when collapsed, nothing when there's nothing nearby. Drives
+    /// `NearbyCardTouchContainer`; see that file for why UIKit has to decide this.
+    func interactiveRect(in bounds: CGRect) -> CGRect {
+        guard !viewModel.items.isEmpty else { return .zero }
+        guard viewModel.isMinimized else { return bounds }
+
+        let diameter = NearbyCardView.fabDiameter
+        return CGRect(
+            x: bounds.midX - diameter / 2,
+            y: bounds.midY - diameter / 2,
+            width: diameter,
+            height: diameter
+        )
     }
 
     private func showDetail(_ subject: DetailSubject) {

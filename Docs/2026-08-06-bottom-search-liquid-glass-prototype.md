@@ -312,6 +312,124 @@ simulator reverts to hardware-keyboard mode after the first synthetic keystroke.
 | --- | --- |
 | ![](images/2026-08-07-searchtab-refinements/04-search-results.png) | ![](images/2026-08-07-searchtab-refinements/05-nearby-from-card.png) |
 
+## Round 3 (2026-08-07) — seven fixes from the first hands-on pass
+
+### 1. Events gives up the tab, not Nearby
+
+Chris changed his mind after using it: Nearby stays in the tab bar, Events moves to More.
+That's the better call — Map / Nearby / Favorites are all "what's around me right now"
+surfaces, while Events is the one you go looking for by name, and search plus a More row
+both reach it. `TabController.displacedRootIndex` matches the Events root by type.
+
+### 2. More gains an Events row
+
+`MoreViewController.visibleDetailViewRows` shows it only when
+`TabController.eventsIsDisplacedFromTabBar` — More is the overflow for browse surfaces
+that aren't tabs, so listing Events beside a live Events tab would just be a second path
+to one screen. It pushes through `BRCAppDelegate.createEventsViewController()`, the same
+factory the tab uses.
+
+Nearby did not get a row: round 2's request for one was about reaching Nearby after it
+lost its tab, and it hasn't lost its tab any more.
+
+### 3. The map-snapshot backdrop is gone
+
+It looked right arriving from the Map tab and plainly wrong arriving from anywhere else —
+tap Search from Events and you got a frozen map behind the results. Deleted
+`MapBackdropStore` and `SearchTabRootViewController`; the search tab is an ordinary opaque
+screen again.
+
+The empty states carry it instead: a circled glyph, a title, a sentence on what's
+searchable, and an example line ("Try "temple", "pancakes", or "yoga""). The no-results
+state got the same treatment. `isOverlay` stays for the `bottomAccessory` layout, which
+genuinely does float over a live map.
+
+### 4. Sidebar buttons
+
+44pt → 40pt diameter, 12pt → 18pt spacing, symbols 18pt semibold → 16pt medium. Below the
+44pt HIG minimum, deliberately; the extra spacing buys back the miss-tolerance and three
+44pt glass circles read as a slab against the map.
+
+### 5. Nearby card content and density
+
+Was name + blurb. Now name, then **time** for events, then **location** with a pin glyph,
+falling back to the blurb only when the embargo hides the address. Addresses come from a
+new `NearbyItem.address`, gated per type — `canShowArtLocations()` / `canShowCampLocations()`
+for art and camps, `canShowLocation(for:)` for events, which fall back to their free-text
+location when they aren't hosted anywhere.
+
+The page dots used to sit alone in an otherwise empty row. The collapse chevron and "See
+all" moved onto that line, which reclaims the space and gets the chevron out from where it
+floated over the item title.
+
+### 6. The collapse chevron
+
+Was a bare glyph over the card content. Now a 24pt circle with a tinted backing, sitting in
+the footer control row where it reads as a deliberate control.
+
+### 7. The card ⇄ pin morph now actually animates
+
+**This one was mis-diagnosed twice before it was measured.** Recording the simulator at
+60fps and stepping through frames showed the truth: the old collapse went card → circle
+with **zero intermediate frames**. It was never a slow animation, it was a hard cut.
+
+Two things were cutting it, and either alone was enough:
+
+1. **The hosting controller resizes to its content.** `sizingOptions = [.intrinsicContentSize]`
+   meant collapsing shrank the host to 56pt in a single Auto Layout pass, clipping the
+   animation away.
+2. **A paged `TabView` is a UIKit page view controller.** Removing it in an `if`/`else`
+   branch swap doesn't animate.
+
+`withAnimation` at the mutation site didn't fix it (verified — still a hard cut). Neither
+did `glassEffectID` in a `GlassEffectContainer`; that API pairs two *different* views, and
+the removal was the problem.
+
+The fix is to stop swapping views. One surface stays in the hierarchy and interpolates its
+frame and corner radius — at 56pt a 28pt radius *is* a circle, so the card's rounded rect
+and the pin are the same shape at different values. The card and the pin glyph cross-fade
+inside it. Nothing is inserted or removed, so there's nothing to skip. Re-measured at
+60fps: a clean ~15-frame morph.
+
+`GlassSurface` lost its namespace/`glassEffectID` and takes a corner radius instead.
+
+#### The touch-handling consequence
+
+Holding the box at card size while the pin is showing leaves a card-sized rectangle of
+empty space over the map. `NearbyCardTouchContainer` overrides `point(inside:)` to claim
+only the rect the card is actually drawing in — the full box when expanded, a centered
+56pt square when collapsed, nothing when there's nothing nearby.
+
+Worth recording honestly: two intermediate measurements said the map had stopped panning
+beside the pin, and **both were false negatives** — the probe drags were starting on the
+navigation bar, not inside the box. The container is kept anyway, because whether a hosting
+view declines touches its content doesn't want is undocumented and version-dependent, and
+an undraggable patch of map is an easy regression to ship unnoticed. It states the hit
+region rather than inferring it.
+
+### Verified this round
+
+- Tabs are Map / Nearby / Favorites / More + Search; Events absent.
+- More → Events pushes the full Events list (day picker, filter, Show Map).
+- Card shows name / time / location; footer is chevron · dots · "See all".
+- "See all" still pushes Nearby *through* the new touch container.
+- Collapse morph re-measured at 60fps — ~15 intermediate frames.
+- A drag beside the collapsed pin pans the map.
+- Search empty state renders with no map behind it.
+- `xcodebuild -scheme iBurn` clean; `iBurnTests` **213 passed**, 0 failed.
+
+| Map | Search, empty | Collapse morph (60fps) |
+| --- | --- | --- |
+| ![](images/2026-08-07-searchtab-refinements/07-map-final.png) | ![](images/2026-08-07-searchtab-refinements/06-search-empty-state.png) | ![](images/2026-08-07-searchtab-refinements/08-collapse-morph-frames.png) |
+
+### Still open
+
+`.accessibilityHidden(isMinimized)` on the collapsed card doesn't appear to take the card's
+buttons out of the accessibility tree — the snapshot still lists "Minimize nearby card" and
+"See all nearby" while the pin is showing. Hit-testing *is* correctly disabled (tapping
+where they were does nothing), so this is a VoiceOver-only wart, not a functional one.
+Worth a look with the Accessibility Inspector before this ships.
+
 ## Recommendation
 
 **`searchTab` is the stronger option.** UIKit does the whole job: the tab bar collapses

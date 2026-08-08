@@ -17,68 +17,125 @@ import PlayaDB
 
 struct NearbyCardView: View {
     @ObservedObject var viewModel: NearbyCardViewModel
-    /// When the search tab has taken Nearby's slot in the tab bar, the card carries the
-    /// only link into the full list — see `MainMapViewController.applySearchLayout`.
-    let showsNearbyListLink: Bool
     let onSelect: (DetailSubject) -> Void
     let onShowNearbyList: () -> Void
 
     private let audioPlayer: any AudioPlayerProtocol
-    @Namespace private var glassNS
     @Environment(\.themeColors) private var themeColors
 
-    private let glassID = "nearbyCard"
     private let cardCornerRadius: CGFloat = 22
 
     /// A stable, device-appropriate card width. Fixed (not content-driven) so the card
     /// doesn't jitter as you swipe between items with different text lengths, and capped
-    /// to the screen so it never overflows on small devices. Combined with the hosting
-    /// controller's intrinsic-content sizing, this keeps the touch area to just the card.
+    /// to the screen so it never overflows on small devices.
     private var cardWidth: CGFloat {
         min(380, UIScreen.main.bounds.width - 32)
     }
 
+    private static let pageHeight: CGFloat = 86
+    private static let footerHeight: CGFloat = 30
+    /// Page plus footer. Fixed for the same reason the width is.
+    private static let cardHeight: CGFloat = pageHeight + footerHeight
+    /// Not private: `NearbyCardTouchContainer` needs it to size the collapsed touch area.
+    static let fabDiameter: CGFloat = 56
+
     init(
         viewModel: NearbyCardViewModel,
-        showsNearbyListLink: Bool = false,
         onSelect: @escaping (DetailSubject) -> Void = { _ in },
         onShowNearbyList: @escaping () -> Void = { },
         audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance
     ) {
         self.viewModel = viewModel
-        self.showsNearbyListLink = showsNearbyListLink
         self.onSelect = onSelect
         self.onShowNearbyList = onShowNearbyList
         self.audioPlayer = audioPlayer
     }
 
+    private var isMinimized: Bool { viewModel.isMinimized }
+
+    /// Radius that turns the card's rounded rect into the FAB's circle at 56pt.
+    private var surfaceCornerRadius: CGFloat {
+        isMinimized ? Self.fabDiameter / 2 : cardCornerRadius
+    }
+
+    private var surfaceShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: surfaceCornerRadius, style: .continuous)
+    }
+
     var body: some View {
+        // Collapsing is one surface changing size, not two views swapping places.
+        //
+        // The swap is what broke the morph. Two things fought it: the hosting controller
+        // resizes itself to the SwiftUI content, so collapsing snapped the host to 56pt in
+        // a single Auto Layout pass; and a paged `TabView` is a UIKit page controller that
+        // doesn't animate on its way out. Either alone is enough to cut the transition —
+        // measured at 60fps, the old version went card to circle with no frames between.
+        //
+        // Now the card and the pin both stay in the hierarchy and cross-fade while the
+        // shared surface interpolates its frame and corner radius. Nothing is inserted or
+        // removed, so there's nothing for SwiftUI to skip.
+        // The box stays card-sized whatever state the surface is in, so the collapse always
+        // has room to animate. That leaves empty space around the collapsed pin, which the
+        // map still needs to be draggable through — `NearbyCardTouchContainer` handles that
+        // in UIKit rather than leaving it to hosting-view hit-testing behaviour.
         glassContainer {
-            Group {
-                if viewModel.items.isEmpty {
-                    if showsNearbyListLink {
-                        // Nothing within range, but the card is the only door to Nearby
-                        // now, so leave one open.
-                        nearbyListFab
-                    } else {
-                        // Collapses to zero intrinsic size so the host view doesn't block the map.
-                        Color.clear.frame(width: 0, height: 0)
-                    }
-                } else if viewModel.isMinimized {
-                    fab
-                } else {
-                    card
-                }
-            }
+            surface
+                .frame(
+                    width: viewModel.items.isEmpty ? 0 : cardWidth,
+                    height: viewModel.items.isEmpty ? 0 : Self.cardHeight
+                )
+                .opacity(viewModel.items.isEmpty ? 0 : 1)
         }
-        .animation(.spring(response: 0.42, dampingFraction: 0.82), value: viewModel.isMinimized)
-        .animation(.easeInOut(duration: 0.25), value: viewModel.items.isEmpty)
+    }
+
+    private func setMinimized(_ minimized: Bool) {
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
+            viewModel.isMinimized = minimized
+        }
+    }
+
+    // MARK: - Morphing surface
+
+    private var surface: some View {
+        ZStack {
+            card
+                .frame(width: cardWidth, height: Self.cardHeight)
+                .opacity(isMinimized ? 0 : 1)
+                // The card is still in the hierarchy when collapsed; without these its
+                // buttons keep catching taps inside the pin and VoiceOver keeps offering
+                // "Minimize nearby card" on a card that isn't on screen.
+                .allowsHitTesting(!isMinimized)
+                .accessibilityHidden(isMinimized)
+
+            Image(systemName: "mappin.and.ellipse")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(themeColors.primaryColor)
+                .opacity(isMinimized ? 1 : 0)
+        }
+        .frame(
+            width: isMinimized ? Self.fabDiameter : cardWidth,
+            height: isMinimized ? Self.fabDiameter : Self.cardHeight
+        )
+        .clipShape(surfaceShape)
+        .modifier(GlassSurface(cornerRadius: surfaceCornerRadius))
+        .overlay(alignment: .topTrailing) {
+            // Faded rather than removed so it animates with the surface; hidden from
+            // VoiceOver too, or the expanded card announces a stray count.
+            countBadge
+                .opacity(isMinimized ? 1 : 0)
+                .accessibilityHidden(!isMinimized)
+        }
+        .contentShape(surfaceShape)
+        .onTapGesture {
+            if isMinimized { setMinimized(false) }
+        }
+        .modifier(CollapsedAccessibility(isMinimized: isMinimized, count: viewModel.count))
     }
 
     // MARK: - Expanded card
 
     private var card: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 0) {
             TabView(selection: $viewModel.selectedID) {
                 ForEach(viewModel.items) { item in
                     NearbyCardContentView(
@@ -90,40 +147,34 @@ struct NearbyCardView: View {
                         onTap: { onSelect(item.detailSubject) }
                     )
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
+                    .padding(.top, 12)
                     .tag(item.id as String?)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 84)
+            .frame(height: Self.pageHeight)
 
-            if viewModel.count > 1 || showsNearbyListLink {
-                footer
-                    .padding(.bottom, 8)
-            }
+            footer
         }
-        .frame(width: cardWidth)
-        .overlay(alignment: .topTrailing) { minimizeButton }
-        .modifier(GlassSurface(namespace: glassNS, glassID: glassID, shape: .roundedRect(cardCornerRadius)))
     }
 
-    /// Page dots stay optically centered under the card while "See all" sits at the
-    /// trailing edge; overlaying rather than stacking them keeps the dots from shifting
-    /// when the link appears.
+    /// Collapse on the left, "See all" on the right, page dots centered between them.
+    /// The dots used to sit alone in a row of their own, which left the whole bottom of
+    /// the card empty; putting the two controls on that line reclaims it and gets the
+    /// collapse chevron out from where it floated over the item's title.
     private var footer: some View {
         ZStack {
             if viewModel.count > 1 {
                 pageDots
             }
-            if showsNearbyListLink {
-                HStack {
-                    Spacer()
-                    seeAllButton
-                }
-                .padding(.trailing, 14)
+            HStack {
+                minimizeButton
+                Spacer(minLength: 0)
+                seeAllButton
             }
         }
-        .frame(height: 20)
+        .padding(.horizontal, 10)
+        .frame(height: Self.footerHeight)
     }
 
     private var seeAllButton: some View {
@@ -135,6 +186,8 @@ struct NearbyCardView: View {
                     .font(.system(size: 9, weight: .bold))
             }
             .foregroundStyle(themeColors.secondaryColor)
+            .padding(.horizontal, 6)
+            .frame(height: 28)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -143,16 +196,16 @@ struct NearbyCardView: View {
 
     private var minimizeButton: some View {
         Button {
-            viewModel.isMinimized = true
+            setMinimized(true)
         } label: {
             Image(systemName: "chevron.down")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(themeColors.secondaryColor)
-                .frame(width: 30, height: 30)
-                .contentShape(Rectangle())
+                .frame(width: 24, height: 24)
+                .background(Circle().fill(themeColors.detailColor.opacity(0.15)))
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .padding(6)
         .accessibilityLabel("Minimize nearby card")
     }
 
@@ -166,40 +219,6 @@ struct NearbyCardView: View {
                     .frame(width: 6, height: 6)
             }
         }
-    }
-
-    // MARK: - Minimized FAB
-
-    private var fab: some View {
-        Button {
-            viewModel.isMinimized = false
-        } label: {
-            Image(systemName: "mappin.and.ellipse")
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(themeColors.primaryColor)
-                .frame(width: 56, height: 56)
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .overlay(alignment: .topTrailing) { countBadge }
-        .modifier(GlassSurface(namespace: glassNS, glassID: glassID, shape: .circle))
-        .accessibilityLabel("Show \(viewModel.count) nearby")
-    }
-
-    /// Shown in place of the card when nothing is within range. Deliberately a different
-    /// glyph from the minimized FAB (and unbadged) because it does a different thing:
-    /// this opens the Nearby list, the badged pin restores the card you collapsed.
-    private var nearbyListFab: some View {
-        Button(action: onShowNearbyList) {
-            Image(systemName: "list.bullet")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(themeColors.primaryColor)
-                .frame(width: 56, height: 56)
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .modifier(GlassSurface(namespace: glassNS, glassID: glassID, shape: .circle))
-        .accessibilityLabel("See all nearby")
     }
 
     private var countBadge: some View {
@@ -231,58 +250,54 @@ struct NearbyCardView: View {
 
 // MARK: - Glass surface modifier
 
-/// Applies the Liquid Glass surface on iOS 26 (with a shared `glassEffectID` so the
-/// card<->FAB transition morphs), and a `.ultraThinMaterial` + `matchedGeometryEffect`
-/// fallback on earlier OSes / SDKs.
+/// Applies the Liquid Glass surface on iOS 26, with a `.ultraThinMaterial` fallback on
+/// earlier OSes / SDKs.
+///
+/// The radius is a parameter rather than a fixed shape because it animates: at 56pt a
+/// 28pt radius is a circle, so card and pin are the same shape at different values and
+/// SwiftUI can interpolate between them. There's no `glassEffectID` any more — that pairs
+/// two *different* views, and this is one view changing size.
 private struct GlassSurface: ViewModifier {
-    enum SurfaceShape {
-        case roundedRect(CGFloat)
-        case circle
-    }
-
-    let namespace: Namespace.ID
-    let glassID: String
-    let shape: SurfaceShape
+    let cornerRadius: CGFloat
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            switch shape {
-            case .roundedRect(let radius):
-                content
-                    .glassEffect(.regular.interactive(),
-                                 in: RoundedRectangle(cornerRadius: radius, style: .continuous))
-                    .glassEffectID(glassID, in: namespace)
-            case .circle:
-                content
-                    .glassEffect(.regular.interactive(), in: Circle())
-                    .glassEffectID(glassID, in: namespace)
-            }
+            content.glassEffect(.regular.interactive(), in: shape)
         } else {
-            fallback(content)
+            fallback(content, shape: shape)
         }
         #else
-        fallback(content)
+        fallback(content, shape: shape)
         #endif
     }
 
+    private func fallback(_ content: Content, shape: RoundedRectangle) -> some View {
+        content
+            .background(.ultraThinMaterial, in: shape)
+            .overlay(shape.strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+    }
+}
+
+/// Gives the collapsed pin a single button-shaped accessibility element. The expanded card
+/// is left alone so its rows, favorite toggle and footer controls stay individually
+/// reachable.
+private struct CollapsedAccessibility: ViewModifier {
+    let isMinimized: Bool
+    let count: Int
+
     @ViewBuilder
-    private func fallback(_ content: Content) -> some View {
-        switch shape {
-        case .roundedRect(let radius):
-            let s = RoundedRectangle(cornerRadius: radius, style: .continuous)
+    func body(content: Content) -> some View {
+        if isMinimized {
             content
-                .background(.ultraThinMaterial, in: s)
-                .overlay(s.strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-                .matchedGeometryEffect(id: glassID, in: namespace)
-                .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
-        case .circle:
+                .accessibilityElement(children: .ignore)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Show \(count) nearby")
+        } else {
             content
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-                .matchedGeometryEffect(id: glassID, in: namespace)
-                .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
         }
     }
 }
@@ -321,22 +336,30 @@ private struct NearbyCardContentView: View {
         HStack(spacing: 12) {
             thumbnail
 
-            VStack(alignment: .leading, spacing: 2) {
+            // Name, then when (events only), then where. The blurb used to take the
+            // second line, which is the least useful thing to know about something 100m
+            // away — it only appears now if there's nothing concrete to show.
+            VStack(alignment: .leading, spacing: 3) {
                 Text(item.name)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(themeColors.primaryColor)
                     .lineLimit(1)
 
-                if let description = item.detailDescription, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
+                if let timeText = item.eventTimeText(now: now) {
+                    Text(timeText)
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(themeColors.secondaryColor)
                         .lineLimit(1)
                 }
 
-                if let timeText = item.eventTimeText(now: now) {
-                    Text(timeText)
-                        .font(.caption2.weight(.medium))
+                if let address = item.address {
+                    Label(address, systemImage: "mappin.and.ellipse")
+                        .font(.caption)
+                        .foregroundStyle(themeColors.detailColor)
+                        .lineLimit(1)
+                } else if let description = item.detailDescription, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
                         .foregroundStyle(themeColors.detailColor)
                         .lineLimit(1)
                 }
