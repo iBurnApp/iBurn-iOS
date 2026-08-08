@@ -190,4 +190,146 @@ final class TabConfigurationTests: XCTestCase {
         XCTAssertFalse(TabController.isDisplacedFromTabBar(.map))
         XCTAssertFalse(TabController.isDisplacedFromTabBar(.more))
     }
+
+    // MARK: - Search-layout defaults
+    //
+    // The `.searchTab` layout spends a bar slot on search, so Events comes off the bar by
+    // default. That default is folded into the effective configuration rather than applied
+    // by `TabController` on the way out — otherwise the customization screen and the More
+    // list describe a bar that isn't the one on screen, and dragging Events back does
+    // nothing. A tab the user has decided about explicitly stops following the default.
+
+    private func useSearchTabLayout() throws {
+        MapSearchLayout.current = .searchTab
+        try XCTSkipUnless(MapSearchLayout.current == .searchTab, "search tab layout needs iOS 26")
+    }
+
+    func testSearchTabLayoutHidesEventsByDefault() throws {
+        try useSearchTabLayout()
+        let configuration = TabConfiguration.current
+        XCTAssertEqual(configuration.visible, [.map, .nearby, .favorites, .more])
+        XCTAssertEqual(configuration.hidden, [.events])
+        XCTAssertEqual(configuration, TabConfiguration.layoutDefault)
+    }
+
+    @MainActor
+    func testSearchTabDefaultPutsEventsInMore() throws {
+        try useSearchTabLayout()
+        XCTAssertTrue(TabController.isDisplacedFromTabBar(.events))
+        XCTAssertFalse(TabController.isDisplacedFromTabBar(.nearby))
+    }
+
+    @MainActor
+    func testUserCanPutEventsBackOnTheSearchTabBar() throws {
+        try useSearchTabLayout()
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more, .events],
+            hidden: []
+        )
+
+        let configuration = TabConfiguration.current
+        XCTAssertEqual(configuration.visible, [.map, .nearby, .favorites, .more, .events])
+        XCTAssertTrue(configuration.hidden.isEmpty)
+        XCTAssertFalse(TabController.isDisplacedFromTabBar(.events))
+    }
+
+    func testUntouchedEventsFollowsWhicheverLayoutIsActive() throws {
+        try useSearchTabLayout()
+        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+
+        MapSearchLayout.current = .navigationBar
+        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+
+        try useSearchTabLayout()
+        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+    }
+
+    func testHidingAnotherTabLeavesTheEventsDefaultAlone() throws {
+        try useSearchTabLayout()
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .more],
+            hidden: [.favorites, .events]
+        )
+
+        MapSearchLayout.current = .navigationBar
+        let configuration = TabConfiguration.current
+        XCTAssertTrue(configuration.isHidden(.favorites))
+        XCTAssertFalse(configuration.isHidden(.events), "Events was never chosen by hand, so it comes back with the layout")
+    }
+
+    func testExplicitEventsChoiceSurvivesLayoutSwitches() throws {
+        try useSearchTabLayout()
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more, .events],
+            hidden: []
+        )
+
+        MapSearchLayout.current = .navigationBar
+        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+
+        try useSearchTabLayout()
+        XCTAssertFalse(TabConfiguration.current.isHidden(.events), "The user asked for Events on the bar; the layout doesn't get to take it back")
+    }
+
+    func testExplicitlyHiddenEventsStaysHiddenOnLayoutsThatWouldShowIt() throws {
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
+        )
+        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+
+        try useSearchTabLayout()
+        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+
+        MapSearchLayout.current = .navigationBar
+        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+    }
+
+    func testResetRestoresTheActiveLayoutsDefault() throws {
+        try useSearchTabLayout()
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more, .events],
+            hidden: []
+        )
+        XCTAssertNotEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
+
+        TabConfiguration.resetToDefault()
+        XCTAssertEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
+        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+    }
+
+    func testLayoutDefaultIsPlainDefaultWithoutTheSearchTab() {
+        MapSearchLayout.current = .navigationBar
+        XCTAssertEqual(TabConfiguration.layoutDefault, .default)
+        XCTAssertTrue(TabConfiguration.layoutHiddenByDefault.isEmpty)
+    }
+
+    /// Hiding Events under `.searchTab` leaves the bar looking exactly like the default,
+    /// but the choice behind it is not the default — `Reset` has to stay live.
+    func testExplicitChoiceCountsAsTouchedEvenWhenTheBarLooksDefault() throws {
+        XCTAssertTrue(TabConfiguration.isUntouched)
+
+        try useSearchTabLayout()
+        XCTAssertTrue(TabConfiguration.isUntouched)
+
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more, .events],
+            hidden: []
+        )
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
+        )
+
+        XCTAssertEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
+        XCTAssertFalse(TabConfiguration.isUntouched)
+
+        TabConfiguration.resetToDefault()
+        XCTAssertTrue(TabConfiguration.isUntouched)
+    }
+
+    func testMovingToHiddenIgnoresTabsThatCannotBeHidden() {
+        let configuration = TabConfiguration.default.movingToHidden([.map, .more])
+        XCTAssertEqual(configuration, .default)
+    }
 }

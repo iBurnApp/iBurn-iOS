@@ -51,27 +51,22 @@ import UIKit
 
     /// Arranges the roots for the user's tab configuration and the active search layout.
     ///
-    /// `.searchTab` trades the Events tab for a `UISearchTab`; every other layout keeps
-    /// whichever tabs the user left on the bar. Events is the tab that gives way because
-    /// it's the one you go looking for by name — search and the More list both reach it —
-    /// whereas Map, Nearby and Favorites are all "what's around me right now" surfaces you
-    /// want one tap away. Anything dropped here shows up as a `MoreViewController` row.
+    /// Which tabs are on the bar is `TabConfiguration.current`'s decision alone —
+    /// including the Events tab the `.searchTab` layout takes away by default, which is
+    /// folded into that configuration (see `TabConfiguration.layoutHiddenByDefault`) so a
+    /// user who drags Events back onto the bar actually gets it. All this adds on top is
+    /// the `UISearchTab` itself. Anything off the bar shows up as a `MoreViewController` row.
     @objc public func rebuildTabs() {
         guard !roots.isEmpty else { return }
         let selectedRoot = selectedViewController
         let previousIdentifier = selectedRoot.flatMap(TabIdentifier.identifier(forRoot:))
 
         let configuration = TabConfiguration.current
-        var arranged = arrangedRoots(for: configuration)
+        let arranged = arrangedRoots(for: configuration)
         var usesSearchTab = false
 
         if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
             usesSearchTab = true
-            // A user-hidden Events tab is already gone from `arranged`; displacing it
-            // again is a no-op rather than a second removal.
-            if let displacedIndex = arranged.firstIndex(where: { TabIdentifier.identifier(forRoot: $0) == .events }) {
-                arranged.remove(at: displacedIndex)
-            }
             var newTabs: [UITab] = arranged.enumerated().map { index, viewController in
                 tab(for: viewController, fallbackIndex: index)
             }
@@ -139,8 +134,8 @@ import UIKit
     }
 
     /// Keeps the user on whichever tab they were looking at. Hiding the selected tab (or
-    /// switching to `.searchTab`, which drops Events) falls back to the map rather than
-    /// leaving the selection on a screen that's no longer on the bar.
+    /// switching to `.searchTab`, which drops Events by default) falls back to the map
+    /// rather than leaving the selection on a screen that's no longer on the bar.
     private func restoreSelection(
         previousRoot: UIViewController?,
         previousIdentifier: TabIdentifier?,
@@ -189,15 +184,14 @@ import UIKit
         }
     }
 
-    /// Whether a tab is off the bar and therefore needs a `MoreViewController` row: either
-    /// the user hid it, or the search tab took its slot. Static because More is rebuilt
-    /// independently of this instance.
+    /// Whether a tab is off the bar and therefore needs a `MoreViewController` row.
+    ///
+    /// One question, one answer: the effective configuration already accounts for both
+    /// reasons a tab can be missing (the user hid it, or the active search layout hides it
+    /// by default), so More can't disagree with the bar in any combination. Static because
+    /// More is rebuilt independently of this instance.
     static func isDisplacedFromTabBar(_ identifier: TabIdentifier) -> Bool {
-        if TabConfiguration.current.isHidden(identifier) { return true }
-        guard identifier == .events else { return false }
-        guard MapSearchLayout.current == .searchTab else { return false }
-        if #available(iOS 26.0, *) { return true }
-        return false
+        !TabConfiguration.current.visible.contains(identifier)
     }
 
     static var eventsIsDisplacedFromTabBar: Bool {

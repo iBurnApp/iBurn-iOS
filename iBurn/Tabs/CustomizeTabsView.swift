@@ -41,7 +41,7 @@ struct CustomizeTabsView: View {
             } header: {
                 Text("In More")
             } footer: {
-                Text("Hidden tabs stay reachable as rows at the top of the More screen.")
+                Text(hiddenFooter)
                     .font(.footnote)
             }
         }
@@ -50,11 +50,20 @@ struct CustomizeTabsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Reset") {
-                    apply(.default)
+                    TabConfiguration.resetToDefault()
+                    withAnimation { configuration = TabConfiguration.current }
                 }
-                .disabled(configuration == .default)
+                .disabled(TabConfiguration.isUntouched)
             }
         }
+    }
+
+    /// Says why Events starts down here when the search tab owns a bar slot — otherwise
+    /// it looks like the app hid a tab for no reason.
+    private var hiddenFooter: String {
+        let base = "Hidden tabs stay reachable as rows at the top of the More screen."
+        guard TabConfiguration.layoutHiddenByDefault.contains(.events) else { return base }
+        return base + " Events starts here because the search tab takes a slot on the bar — move it back up any time."
     }
 
     private func row(_ identifier: TabIdentifier, isHidden: Bool) -> some View {

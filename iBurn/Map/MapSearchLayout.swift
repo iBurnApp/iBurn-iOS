@@ -21,8 +21,8 @@ enum MapSearchLayout: String, CaseIterable {
     case bottomAccessory
 
     /// A `UISearchTab` sits beside the tab bar; tapping it collapses the tab bar
-    /// into a search field. Native, but costs a tab slot, so Nearby gives up its tab
-    /// and moves onto the map's nearby card.
+    /// into a search field. Native, but costs a tab slot, so Events comes off the bar
+    /// by default and lives in More (Customize Tabs can put it back).
     case searchTab
 
     var displayName: String {
@@ -40,7 +40,7 @@ enum MapSearchLayout: String, CaseIterable {
         case .bottomAccessory:
             return "Search field in a Liquid Glass accessory above the tab bar."
         case .searchTab:
-            return "Search button beside the tab bar; Nearby moves onto the map card."
+            return "Search button beside the tab bar; Events moves into More by default."
         }
     }
 
