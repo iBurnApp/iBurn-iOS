@@ -20,6 +20,7 @@ private struct TransparentListBackground: ViewModifier {
 struct GlobalSearchView: View {
     @ObservedObject var viewModel: GlobalSearchViewModel
     @Environment(\.themeColors) var themeColors
+    @State private var isShowingFilters = false
 
     let onSelectArt: (ArtObject) -> Void
     let onSelectCamp: (CampObject) -> Void
@@ -54,6 +55,74 @@ struct GlobalSearchView: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            // Overlay mode docks the text field to the keyboard at the bottom of the
+            // screen, so the scope controls belong down there with it; hosted normally,
+            // the field is at the top and so is the bar.
+            if isOverlay {
+                results
+                scopeBar
+            } else {
+                scopeBar
+                results
+            }
+        }
+        .background(overlayBackground)
+        .sheet(isPresented: $isShowingFilters) {
+            GlobalSearchFilterSheet(filter: $viewModel.filter, scope: viewModel.scope)
+        }
+    }
+
+    // MARK: - Scope + Filter
+
+    /// Lives inside the SwiftUI view rather than on a navigation item or the search bar's
+    /// scope buttons: this view is hosted three different ways (search-results controller,
+    /// map overlay, inline search tab) and only one of those has a navigation item of its own.
+    private var scopeBar: some View {
+        HStack(spacing: 12) {
+            Picker("Scope", selection: $viewModel.scope) {
+                ForEach(GlobalSearchScope.allCases) { scope in
+                    Text(scope.title).tag(scope)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            Button {
+                isShowingFilters = true
+            } label: {
+                Image(systemName: filterIconName)
+                    .font(.title3)
+            }
+            .accessibilityLabel(Text("Search Filters"))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(scopeBarBackground)
+        .padding(.horizontal, isOverlay && !showsResultList ? 12 : 0)
+        .padding(.vertical, isOverlay ? 6 : 0)
+    }
+
+    /// The results list paints a full-screen material behind everything in overlay mode, so
+    /// the bar only needs its own backing while that material is absent.
+    @ViewBuilder
+    private var scopeBarBackground: some View {
+        if isOverlay && !showsResultList {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.regularMaterial)
+        }
+    }
+
+    private var filterIconName: String {
+        viewModel.filter.isDefault
+            ? "line.3.horizontal.decrease.circle"
+            : "line.3.horizontal.decrease.circle.fill"
+    }
+
+    // MARK: - Results
+
+    @ViewBuilder
+    private var results: some View {
         ZStack {
             if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                 legible {
@@ -79,10 +148,12 @@ struct GlobalSearchView: View {
             } else if !viewModel.isSearching && viewModel.sections.isEmpty {
                 legible {
                     placeholder(
-                        symbol: "questionmark.magnifyingglass",
-                        title: "No results for \u{201C}\(viewModel.searchText)\u{201D}",
-                        message: "Nothing in this year's data matches that.",
-                        hint: "Try a shorter word, or check the spelling"
+                        // `questionmark.magnifyingglass` is not a real SF Symbol — it drew
+                        // an empty circle. This one exists.
+                        symbol: "exclamationmark.magnifyingglass",
+                        title: "No \(viewModel.scope.resultNoun) for \u{201C}\(viewModel.searchText)\u{201D}",
+                        message: noResultsMessage,
+                        hint: noResultsHint
                     )
                 }
             } else {
@@ -112,7 +183,24 @@ struct GlobalSearchView: View {
                 .modifier(TransparentListBackground(isEnabled: isOverlay))
             }
         }
-        .background(overlayBackground)
+    }
+
+    private var noResultsMessage: String {
+        if !viewModel.filter.isDefault {
+            return "Nothing matches that with these filters on."
+        }
+        return viewModel.scope == .all
+            ? "Nothing in this year's data matches that."
+            : "Nothing under \(viewModel.scope.title) matches that."
+    }
+
+    private var noResultsHint: String {
+        if !viewModel.filter.isDefault {
+            return "Try clearing the filters"
+        }
+        return viewModel.scope == .all
+            ? "Try a shorter word, or check the spelling"
+            : "Try All, a shorter word, or check the spelling"
     }
 
     /// Nothing at all in the non-overlay case, so the hosting controller's own background
@@ -130,7 +218,7 @@ struct GlobalSearchView: View {
 
     @ViewBuilder
     private func resultRow(for item: SearchResultItem) -> some View {
-        let isAISuggested = viewModel.aiSuggestedUIDs.contains(item.uid)
+        let isAISuggested = viewModel.isAISuggested(item)
         switch item {
         case .art(let art):
             ObjectRowView(

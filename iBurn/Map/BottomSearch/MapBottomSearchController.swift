@@ -118,7 +118,10 @@ final class MapBottomSearchController {
         isActive = false
 
         inputBar.textField.resignFirstResponder()
+        // The results controller is shared across activations, so a scope chosen for the
+        // last search would otherwise silently narrow the next one.
         resultsController.viewModel.searchText = ""
+        resultsController.viewModel.scope = .all
 
         let results = resultsController.view
 
