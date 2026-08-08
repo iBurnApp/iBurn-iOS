@@ -175,7 +175,10 @@ final class NearbyCardViewModel: ObservableObject {
             .filter { row in
                 guard let loc = row.object.location,
                       location.distance(from: loc) <= radius else { return false }
-                return row.object.isCurrentlyHappening(now) || row.object.isStartingSoon(now)
+                // Same window as the Nearby screen — see `isInNearbyWindow`. This used to
+                // be `isCurrentlyHappening || isStartingSoon`, which kept an occurrence
+                // through its final seconds and rendered it as "(0m left)".
+                return row.object.isInNearbyWindow(now: now)
             }
             .sorted { $0.object.startDate < $1.object.startDate }
             .map { NearbyItem.event($0) }

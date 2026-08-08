@@ -128,6 +128,54 @@ final class NearbyCardViewModelTests: XCTestCase {
         XCTAssertTrue(items.isEmpty, "Events that have ended should not appear")
     }
 
+    /// The card used to gate on `isCurrentlyHappening`, which counts an occurrence as
+    /// happening right up to its end time. The last minute has no minutes left to render,
+    /// so it displayed as "(0m left)" on something already over.
+    func testEventInItsFinalSecondsIsExcluded() throws {
+        let almostOver = eventRow("almostOver", lat: lat33m,
+                                  start: now.addingTimeInterval(-3600),
+                                  end: now.addingTimeInterval(30))
+        let items = order(events: [almostOver])
+
+        XCTAssertTrue(items.isEmpty, "An event with under a minute left should not be offered")
+    }
+
+    func testEventEndingExactlyNowIsExcluded() throws {
+        let endingNow = eventRow("endingNow", lat: lat33m,
+                                 start: now.addingTimeInterval(-3600),
+                                 end: now)
+        let items = order(events: [endingNow])
+
+        XCTAssertTrue(items.isEmpty)
+    }
+
+    func testEventWithRealTimeLeftIsIncluded() throws {
+        let running = eventRow("running", lat: lat33m,
+                               start: now.addingTimeInterval(-3600),
+                               end: now.addingTimeInterval(600))
+        let items = order(events: [running])
+
+        XCTAssertEqual(items.map(\.id), ["event-running_0"])
+    }
+
+    /// The card and the Nearby screen share one window so they can't list different
+    /// events. This pins the shared predicate rather than either call site.
+    func testNearbyWindowBoundaries() throws {
+        let startsInTenMinutes = eventRow("soon", lat: lat33m,
+                                          start: now.addingTimeInterval(600),
+                                          end: now.addingTimeInterval(3600)).object
+        let startsInTwoHours = eventRow("later", lat: lat33m,
+                                        start: now.addingTimeInterval(7200),
+                                        end: now.addingTimeInterval(10800)).object
+        let ended = eventRow("over", lat: lat33m,
+                             start: now.addingTimeInterval(-7200),
+                             end: now.addingTimeInterval(-60)).object
+
+        XCTAssertTrue(startsInTenMinutes.isInNearbyWindow(now: now))
+        XCTAssertFalse(startsInTwoHours.isInNearbyWindow(now: now), "Beyond the 30 minute lookahead")
+        XCTAssertFalse(ended.isInNearbyWindow(now: now))
+    }
+
     func testDuplicateIdsAreDeduped() throws {
         let items = order(art: [artRow("dup", lat: lat33m), artRow("dup", lat: lat67m)])
 

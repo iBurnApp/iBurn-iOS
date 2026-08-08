@@ -430,6 +430,66 @@ buttons out of the accessibility tree — the snapshot still lists "Minimize nea
 where they were does nothing), so this is a VoiceOver-only wart, not a functional one.
 Worth a look with the Accessibility Inspector before this ships.
 
+## Round 4 (2026-08-07) — nearby card and Nearby screen disagreed
+
+Reported: the card's data didn't match the Nearby screen, and it listed events with
+"0m remaining".
+
+Both surfaces query the same providers with the same `EventFilter(region:includeExpired:)`,
+so the DB side was never the problem. They had each grown their **own client-side window**:
+
+| | Predicate |
+| --- | --- |
+| Nearby screen | `startDate <= now + 30m && endDate > now` |
+| Nearby card | `isCurrentlyHappening(now) \|\| isStartingSoon(now)` |
+
+Those agree in the middle and disagree at the edges. `EventOccurrence.isCurrentlyHappening`
+is `now >= startTime && now <= endTime` — **inclusive of the end** — so the card kept an
+occurrence through its final moment while the screen had already dropped it.
+
+That inclusive end is also where "0m remaining" came from.
+`DateFormatter.stringForTimeInterval` uses a `DateComponentsFormatter` allowing only hours
+and minutes, so anything under a minute renders as `0m` (and a negative interval returns
+nil, which falls back to the same literal). An occurrence in its last seconds was therefore
+advertised as happening, with nothing left of it.
+
+### Fix
+
+One shared predicate, `EventObjectOccurrence.isInNearbyWindow(now:)`, used by both call
+sites:
+
+```swift
+func isInNearbyWindow(now: Date) -> Bool {
+    startDate <= now.addingTimeInterval(Self.nearbyStartingSoonWindow)   // 30 min
+        && endDate > now.addingTimeInterval(Self.nearbyEndingGrace)      // 60 s
+}
+```
+
+The 60-second grace does double duty: it trims the tail that can only render as "0m", and
+it absorbs the refresh cadence of both surfaces. The card only re-evaluates `now` every 30
+seconds, so without the grace a finished occurrence could linger for that long — with it,
+the worst case is an occurrence disappearing ~30 seconds early, which is the right side to
+err on for "what can I go do right now".
+
+### Still different, deliberately
+
+The card searches a **100 m** radius; the Nearby screen defaults to **500 m** and is
+user-adjustable. That's the card's whole purpose (what's immediately around you, in a pager
+capped at 12), so it isn't a bug — but it does mean the card is a subset, not a mirror. Say
+the word if it should track the screen's distance instead.
+
+The screen also honours its "Warp Time and Space" time shift via `effectiveDate`, while the
+card always uses `.present`. They agree whenever the warp is off.
+
+### Verification
+
+- Four new tests in `NearbyCardViewModelTests`: an occurrence with 30 seconds left, one
+  ending exactly now, one with real time left, and the shared window's boundaries.
+  `testEventInItsFinalSecondsIsExcluded` fails against the old predicate.
+- `iBurnTests` **217 passed**, 0 failed (was 213).
+- In the simulator the card dropped from 7 items to 3, and the Nearby screen's Events
+  filter shows "Nothing Here" — both surfaces now agree there are no live events in range.
+
 ## Recommendation
 
 **`searchTab` is the stronger option.** UIKit does the whole job: the tab bar collapses

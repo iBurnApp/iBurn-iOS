@@ -156,12 +156,12 @@ final class NearbyViewModel: ObservableObject {
     }
 
     /// Events happening at the effective date or starting within the next 30 minutes,
-    /// sorted by start time (matches the legacy Nearby "starting soon" window).
+    /// sorted by start time. The window itself lives on `EventObjectOccurrence` so the map's
+    /// nearby card shows exactly the same set.
     private var happeningEvents: [ListRow<EventObjectOccurrence>] {
         let date = effectiveDate
-        let startingSoonCutoff = date.addingTimeInterval(30 * 60)
         return eventItems
-            .filter { $0.object.startDate <= startingSoonCutoff && $0.object.endDate > date }
+            .filter { $0.object.isInNearbyWindow(now: date) }
             .sorted { $0.object.startDate < $1.object.startDate }
     }
 

@@ -8,6 +8,32 @@ extension String {
     }
 }
 
+extension EventObjectOccurrence {
+    /// How far ahead a not-yet-started occurrence still counts as nearby.
+    static let nearbyStartingSoonWindow: TimeInterval = 30 * 60
+
+    /// How much of an occurrence's tail to trim.
+    ///
+    /// `isCurrentlyHappening` counts an occurrence as happening right up to and including
+    /// its end time, and the relative-time formatter can't render less than a minute — so
+    /// the final seconds rendered as "(0m left)", advertising something that is over. This
+    /// also absorbs the refresh cadence of both surfaces: neither re-evaluates `now` often
+    /// enough to drop an occurrence the instant it ends.
+    static let nearbyEndingGrace: TimeInterval = 60
+
+    /// The one window both Nearby surfaces show: already running with real time left, or
+    /// starting within the next half hour.
+    ///
+    /// Shared deliberately. The map card and the Nearby screen had grown separate
+    /// predicates — `isCurrentlyHappening || isStartingSoon` against
+    /// `startDate <= now + 30m && endDate > now` — which agreed most of the time and
+    /// disagreed at the edges, so the two screens listed different events.
+    func isInNearbyWindow(now: Date) -> Bool {
+        startDate <= now.addingTimeInterval(Self.nearbyStartingSoonWindow)
+            && endDate > now.addingTimeInterval(Self.nearbyEndingGrace)
+    }
+}
+
 /// Section identifiers for the nearby list
 enum NearbySectionID: String {
     case events
