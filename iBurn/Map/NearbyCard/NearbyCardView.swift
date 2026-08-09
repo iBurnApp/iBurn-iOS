@@ -33,7 +33,10 @@ struct NearbyCardView: View {
         min(380, UIScreen.main.bounds.width - 32)
     }
 
-    private static let pageHeight: CGFloat = 86
+    /// Sized for the tallest row we can produce: an event with a name, a time line and a
+    /// two-line address — 20 + 3 + 16 + 3 + 32 = 74pt of text under the row's 12pt top
+    /// inset. 100 leaves that its bottom breathing room instead of clipping into the footer.
+    private static let pageHeight: CGFloat = 100
     private static let footerHeight: CGFloat = 30
     /// Page plus footer. Fixed for the same reason the width is.
     private static let cardHeight: CGFloat = pageHeight + footerHeight
@@ -114,6 +117,8 @@ struct NearbyCardView: View {
                     // the favorite button sitting in the corner above them.
                     .padding(.trailing, 34)
                     .padding(.top, 12)
+                    // The row now fills the page, so it needs its own gap above the footer.
+                    .padding(.bottom, 6)
                     .tag(item.id as String?)
                 }
             }
@@ -283,7 +288,9 @@ private struct NearbyCardContentView: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        // Top-aligned: the name reads as the row's heading, level with the thumbnail's top
+        // edge, and the row grows downwards as the address wraps instead of drifting.
+        HStack(alignment: .top, spacing: 12) {
             thumbnail
 
             // Name, then when (events only), then where. The blurb used to take the
@@ -309,27 +316,29 @@ private struct NearbyCardContentView: View {
                     Text(address)
                         .font(.caption)
                         .foregroundStyle(themeColors.detailColor)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 } else if let description = item.detailDescription, !description.isEmpty {
                     Text(description)
                         .font(.caption)
                         .foregroundStyle(themeColors.detailColor)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
             }
 
             Spacer(minLength: 4)
 
-            // Art-only, and only when the audio file is on disk. Pinned to the bottom of
-            // the row so it clears the favorite button in the card's corner above it.
+            // Art-only, and only when the audio file is on disk. Held at the bottom of the
+            // page against the stack's `.top` alignment, so it clears the favorite button
+            // in the card's corner above it.
             if let track = audioTrack {
-                VStack(spacing: 0) {
-                    Spacer(minLength: 0)
-                    AudioTourButton(track: track, audioPlayer: audioPlayer)
-                }
-                .frame(height: 60)
+                AudioTourButton(track: track, audioPlayer: audioPlayer)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
             }
         }
+        // Fills the page and anchors to its top so every row's name starts at the same
+        // height — without this, rows shorter than the page would center themselves and
+        // the title would jump as you swipe.
+        .frame(maxHeight: .infinity, alignment: .top)
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
     }
