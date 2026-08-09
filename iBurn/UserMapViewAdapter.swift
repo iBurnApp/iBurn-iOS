@@ -88,13 +88,24 @@ public class UserMapViewAdapter: MapViewAdapter {
     @objc public override init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
         super.init(mapView: mapView, dataSource: dataSource)
-        observeEmbargo()
+        commonInit()
     }
 
     init(mapView: MLNMapView, dataSource: AnnotationDataSource? = nil, playaDB: PlayaDB) {
         self._playaDB = playaDB
         super.init(mapView: mapView, dataSource: dataSource)
+        commonInit()
+    }
+
+    private func commonInit() {
         observeEmbargo()
+        // Which camps the style layer names decides which camps get a pin at all, and until
+        // the geojson has been read the answer is "keep every pin". Rebuild once it lands so
+        // the extra pins come off. Run after `super.init` so the override below is safe to
+        // dispatch: `load(then:)` calls back synchronously when the index is already loaded.
+        CampStyleLabelIndex.shared.load { [weak self] in
+            self?.reloadAnnotations()
+        }
     }
 
     /// The region path snapshots the embargo tiers each time it runs, and it only runs on a
@@ -110,10 +121,41 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
 
     @objc private func embargoDidClear() {
-        // Unlocking turns the camp style labels on, which is what decides whether a camp
-        // pin draws its own name, so the surviving pins need re-evaluating too.
+        // Unlocking turns the camp style labels on, which decides both whether a camp pin
+        // draws its own name and — now — whether it is drawn at all, so the whole pin set
+        // has to be rebuilt, not just relabelled.
         updatePinLabelVisibility()
+        reloadAnnotations()
         refreshRegionAnnotations()
+    }
+
+    // MARK: - Camp pins the style layer has already labelled
+
+    /// The `campNamesDrawnByStyleLayer` verdict the current pin set was built against.
+    ///
+    /// The observation path behind `dataSource` is zoom-blind — it pushes every camp
+    /// whenever the database changes — so crossing `camp-labels-big`'s minzoom silently
+    /// invalidates the pin set without producing a data-source update. This is what notices.
+    private var campPinsBuiltForStyleDrawing: Bool?
+
+    private var styleDrawsCampNames: Bool {
+        CampLayerVisibility.current(zoomLevel: mapView.zoomLevel).campNamesDrawnByStyleLayer
+    }
+
+    override func shouldDisplay(_ annotation: MLNAnnotation) -> Bool {
+        !CampPinVisibility.pinIsHidden(
+            campUID: campUID(for: annotation),
+            isFavorite: (annotation as? PlayaObjectAnnotation)?.isFavorite ?? false,
+            styleDrawsCampNames: styleDrawsCampNames,
+            styleLabeledCampUIDs: CampStyleLabelIndex.shared.labeledCampUIDs
+        )
+    }
+
+    /// Rebuilds the pin set when — and only when — the style layer starts or stops naming
+    /// camps. Called from every region change, so the guard is what keeps a pan cheap.
+    private func reloadAnnotationsIfStyleDrawingChanged() {
+        guard campPinsBuiltForStyleDrawing != styleDrawsCampNames else { return }
+        reloadAnnotations()
     }
 
     private let mapRegionAnnotations = MapRegionDataSource()
@@ -136,6 +178,7 @@ public class UserMapViewAdapter: MapViewAdapter {
     override public func reloadAnnotations() {
         // Clear editing annotation - removes from map and nils reference
         clearEditingAnnotation()
+        campPinsBuiltForStyleDrawing = styleDrawsCampNames
         super.reloadAnnotations()
     }
     
@@ -262,6 +305,7 @@ public class UserMapViewAdapter: MapViewAdapter {
 
     override public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
         updatePinLabelVisibility()
+        reloadAnnotationsIfStyleDrawingChanged()
         refreshRegionAnnotations()
     }
 
@@ -308,6 +352,10 @@ public class UserMapViewAdapter: MapViewAdapter {
                 return nil
             })
 
+            // `shouldDisplay` is applied to the result rather than left to `addAnnotations`
+            // so `mapRegionAnnotations` holds only pins that really went on the map — the
+            // next run removes that list by key, and a suppressed camp left in it would
+            // deregister the key its favourite twin is holding.
             let annotations = MapRegionAnnotationFilter.annotations(
                 from: objects,
                 zoomLevel: zoomLevel,
@@ -316,7 +364,7 @@ public class UserMapViewAdapter: MapViewAdapter {
                 showCampsOnlyZoomedIn: UserSettings.showCampsOnlyZoomedIn,
                 artAllowed: BRCEmbargo.canShowArtLocations(),
                 campAllowed: BRCEmbargo.canShowCampLocations()
-            )
+            ).filter { self.shouldDisplay($0) }
             self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
             self.mapRegionAnnotations.annotations = annotations
             self.addAnnotations(annotations)

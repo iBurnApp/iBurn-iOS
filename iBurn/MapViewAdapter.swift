@@ -57,6 +57,7 @@ public class MapViewAdapter: NSObject {
         self.dataSource = dataSource
         super.init()
         self.mapView.delegate = self
+        installStyleLabelTapRecognizer()
         // Which camps the style layer already names decides which pins draw their own name,
         // so start reading the geojson now and re-apply the verdict when it lands. Until
         // then pins assume the layer has them, which is true of all but a handful of camps.
@@ -64,7 +65,18 @@ public class MapViewAdapter: NSObject {
             self?.updatePinLabelVisibility()
         }
     }
-    
+
+    // MARK: - Annotation eligibility
+
+    /// Whether this adapter is willing to put `annotation` on its map.
+    ///
+    /// Base adapters show everything they are handed: a detail map, or a list's "show on
+    /// map", is an *explicit* selection, and the one pin the user asked for must never be
+    /// filtered out from under them. `UserMapViewAdapter` — the only adapter fed by a
+    /// browse-everything query — overrides this to drop camp pins the style layer already
+    /// labels. Declared here rather than in an extension so it can be overridden at all.
+    func shouldDisplay(_ annotation: MLNAnnotation) -> Bool { true }
+
     // MARK: - Helper Methods
     
     /// Generate unique key for an annotation
@@ -91,7 +103,11 @@ public class MapViewAdapter: NSObject {
         // Only remove annotations that came from the data source
         removeAnnotations(self.annotations)
         // Don't clear the entire dictionary - removeAnnotations already handles cleanup
-        self.annotations = dataSource?.allAnnotations() ?? []
+        // `shouldDisplay` is applied here rather than inside `addAnnotations` so that
+        // `self.annotations` tracks exactly what went on the map — the next reload removes
+        // this list, and a rejected annotation left in it would deregister the key of a
+        // *different* annotation that legitimately holds it (a favourite camp, say).
+        self.annotations = (dataSource?.allAnnotations() ?? []).filter { shouldDisplay($0) }
         addAnnotations(self.annotations)
     }
     
@@ -360,6 +376,87 @@ extension MapViewAdapter {
             return (data.object as? BRCCampObject)?.uniqueID
         }
         return nil
+    }
+}
+
+// MARK: - Tapping a style label
+
+extension MapViewAdapter {
+
+    /// Half-width of the square queried around a tap, in points. 22 makes a 44×44 target —
+    /// the HIG minimum — around text that is only 9–14pt tall at the zooms it is drawn at.
+    private static let styleLabelTapRadius: CGFloat = 22
+
+    /// Identifies our recognizer on a map view. `DetailMapViewRepresentable` builds a fresh
+    /// adapter around the *same* `MLNMapView` on every SwiftUI update, so without this the
+    /// recognizers would stack up one per update.
+    private static let styleLabelTapRecognizerName = "iBurn.campStyleLabelTap"
+
+    /// Makes the camp names drawn by `camp-labels-big` behave like the pins they replaced:
+    /// tap one, get that camp's detail screen.
+    ///
+    /// The recognizer is deliberately last in line. `MLNMapView` refuses its own single tap
+    /// when the tap hits no annotation *and* nothing is selected
+    /// (`-gestureRecognizerShouldBegin:`), which is exactly the case this handler wants, so
+    /// requiring every built-in tap recognizer to fail first — the pattern `MLNMapView.h`
+    /// documents — leaves annotation selection, callout dismissal and double-tap zoom
+    /// untouched and only fires on taps the map itself declined.
+    func installStyleLabelTapRecognizer() {
+        let existing = mapView.gestureRecognizers ?? []
+        guard !existing.contains(where: { $0.name == Self.styleLabelTapRecognizerName }) else { return }
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleStyleLabelTap(_:)))
+        tap.name = Self.styleLabelTapRecognizerName
+        for recognizer in existing where recognizer is UITapGestureRecognizer {
+            tap.require(toFail: recognizer)
+        }
+        mapView.addGestureRecognizer(tap)
+    }
+
+    @objc private func handleStyleLabelTap(_ sender: UITapGestureRecognizer) {
+        guard sender.state == .ended,
+              let uid = campUID(forStyleLabelAt: sender.location(in: mapView)) else { return }
+        showCampDetail(uid: uid)
+    }
+
+    /// The uid of the camp whose style label sits under `point`, or nil for empty map.
+    ///
+    /// The zoom/settings/embargo verdict is re-checked rather than trusted from the render:
+    /// `visibleFeatures` reads the tiles MapLibre has already built, and a tile built while
+    /// the layer was visible outlives the layer being hidden. Without this check a tap on
+    /// stale text could open a camp whose location is still embargoed.
+    func campUID(forStyleLabelAt point: CGPoint) -> String? {
+        guard CampLayerVisibility.current(zoomLevel: mapView.zoomLevel).campNamesDrawnByStyleLayer,
+              mapView.style?.layer(withIdentifier: CampLayerVisibility.labelsLayerIdentifier) != nil else {
+            return nil
+        }
+        let radius = Self.styleLabelTapRadius
+        let rect = CGRect(x: point.x - radius,
+                          y: point.y - radius,
+                          width: radius * 2,
+                          height: radius * 2)
+        let features = mapView.visibleFeatures(
+            in: rect,
+            styleLayerIdentifiers: [CampLayerVisibility.labelsLayerIdentifier]
+        )
+        return features.lazy.compactMap { $0.attribute(forKey: "uid") as? String }.first
+    }
+
+    /// Routes through the host's `onPlayaInfoTapped` so navigation stays owned by the screen,
+    /// exactly as the callout's info button does; the direct push is the fallback for hosts
+    /// (detail maps) that never wired one.
+    private func showCampDetail(uid: String) {
+        let id = AnyDataObjectID(objectType: .camp, uid: uid)
+        if let onPlayaInfoTapped {
+            onPlayaInfoTapped(id)
+            return
+        }
+        guard let parentVC = parent else { return }
+        Task { @MainActor in
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            guard let camp = try? await playaDB.fetchCamp(uid: uid) else { return }
+            let vc = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
+            parentVC.navigationController?.pushViewController(vc, animated: true)
+        }
     }
 }
 

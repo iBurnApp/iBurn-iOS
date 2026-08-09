@@ -35,6 +35,14 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
     private let titleText: String
     private let subtitleText: String?
 
+    /// True when this pin came from a favourites query rather than the browse-everything one.
+    ///
+    /// Set by whoever built it, because "is a favourite" is a property of the *stream*, not of
+    /// the object: `PlayaDBAnnotationDataSource` runs a separate `onlyFavorites` observation
+    /// and both can emit the same camp. `CampPinVisibility` reads it to keep a starred camp's
+    /// pin on the map when the style layer's label would otherwise replace it.
+    var isFavorite: Bool = false
+
     init(id: AnyDataObjectID,
          coordinate: CLLocationCoordinate2D,
          title: String,
@@ -96,6 +104,13 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
     convenience init?(mutantVehicle: MutantVehicleObject) {
         // Mutant vehicles are mobile and have no fixed location
         return nil
+    }
+
+    /// Flags this annotation as coming from a favourites query and returns it, so the
+    /// `onlyFavorites` observations can stay one-liners.
+    func markedFavorite() -> PlayaObjectAnnotation {
+        isFavorite = true
+        return self
     }
 
     var title: String? { titleText }

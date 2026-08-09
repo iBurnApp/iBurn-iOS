@@ -271,6 +271,99 @@ final class EmbargoTierTests: XCTestCase {
                                         styleLabeledCampUIDs: nil))
     }
 
+    // MARK: - Which camps get a pin at all
+
+    // Once the style label became a tap target in its own right, the purple glyph over it
+    // was pure occlusion, so the browse map drops it. `CampPinVisibility` is the pure seam;
+    // `UserMapViewAdapter.shouldDisplay` is its only caller, and the static data sources
+    // behind "show on map" never go through it.
+
+    private func pinIsHidden(campUID: String?,
+                             isFavorite: Bool = false,
+                             styleDrawsCampNames: Bool = true,
+                             styleLabeledCampUIDs: Set<String>?) -> Bool {
+        CampPinVisibility.pinIsHidden(
+            campUID: campUID,
+            isFavorite: isFavorite,
+            styleDrawsCampNames: styleDrawsCampNames,
+            styleLabeledCampUIDs: styleLabeledCampUIDs
+        )
+    }
+
+    /// The point of the change: the layer's text replaces the pin outright.
+    func testCampWithAStyleLabelGetsNoPin() {
+        XCTAssertTrue(pinIsHidden(campUID: labeledCamp, styleLabeledCampUIDs: styleLabels))
+    }
+
+    /// The camps the geojson has no feature for are the ones with nothing else to name them.
+    func testCampWithoutAStyleLabelKeepsItsPin() {
+        XCTAssertFalse(pinIsHidden(campUID: unlabeledCamp, styleLabeledCampUIDs: styleLabels))
+    }
+
+    /// A layer that isn't painting — off, embargoed, or below z15 — leaves the pin as the
+    /// only way to see or open the camp, so it stays whatever the geojson says.
+    func testEveryCampKeepsItsPinWhenTheStyleLayerIsNotPainting() {
+        XCTAssertFalse(pinIsHidden(campUID: labeledCamp,
+                                   styleDrawsCampNames: false,
+                                   styleLabeledCampUIDs: styleLabels))
+        XCTAssertFalse(pinIsHidden(campUID: unlabeledCamp,
+                                   styleDrawsCampNames: false,
+                                   styleLabeledCampUIDs: styleLabels))
+    }
+
+    /// A pre-placement year names nobody, and must not therefore hide everybody.
+    func testEveryCampKeepsItsPinWhenTheGeojsonNamesNobody() {
+        XCTAssertFalse(pinIsHidden(campUID: labeledCamp, styleLabeledCampUIDs: []))
+        XCTAssertFalse(pinIsHidden(campUID: unlabeledCamp, styleLabeledCampUIDs: []))
+    }
+
+    /// Opposite reading to `PinLabelVisibility`: a still-loading index must not empty the
+    /// map. Pins that appear and then withdraw are a blink; camps that never arrive are a
+    /// broken map. `UserMapViewAdapter` reloads when the parse lands.
+    func testEveryCampKeepsItsPinWhileTheIndexIsStillLoading() {
+        XCTAssertFalse(pinIsHidden(campUID: labeledCamp, styleLabeledCampUIDs: nil))
+        XCTAssertFalse(pinIsHidden(campUID: unlabeledCamp, styleLabeledCampUIDs: nil))
+    }
+
+    /// Art, events, mutant vehicles and user map points have no style layer drawing them.
+    func testNonCampPinsAreNeverSuppressed() {
+        XCTAssertFalse(pinIsHidden(campUID: nil, styleLabeledCampUIDs: styleLabels))
+        XCTAssertFalse(pinIsHidden(campUID: nil, styleLabeledCampUIDs: nil))
+    }
+
+    /// Every style label looks alike, so a starred camp keeps the one mark on the map that
+    /// says it is starred — the more so because `showFavoritesOnMap` can be on while
+    /// `showCampsOnMap` is off, which would otherwise leave favourites with no pin at all.
+    func testFavoriteCampKeepsItsPinEvenWhenStyleLabeled() {
+        XCTAssertFalse(pinIsHidden(campUID: labeledCamp,
+                                   isFavorite: true,
+                                   styleLabeledCampUIDs: styleLabels))
+    }
+
+    /// Suppression and self-labelling are the two halves of one rule: once the index has
+    /// loaded, a camp pin is either gone (the layer names it) or drawing its own name (the
+    /// layer doesn't) — never the bare glyph the old behaviour left sitting on the text.
+    ///
+    /// Only a loaded index is covered, because the two read `nil` deliberately differently
+    /// and the overlap is the transient this leaves on purpose: for the length of one
+    /// background read a labelled camp does show a bare glyph, rather than a missing camp.
+    func testALoadedIndexLeavesEveryPinEitherSuppressedOrLabelled() {
+        for campUID in [labeledCamp, unlabeledCamp] {
+            for styleDrawsCampNames in [true, false] {
+                for index in [styleLabels, []] {
+                    let hidden = pinIsHidden(campUID: campUID,
+                                             styleDrawsCampNames: styleDrawsCampNames,
+                                             styleLabeledCampUIDs: index)
+                    guard !hidden else { continue }
+                    XCTAssertFalse(pinLabelIsHidden(campUID: campUID,
+                                                    styleDrawsCampNames: styleDrawsCampNames,
+                                                    styleLabeledCampUIDs: index),
+                                   "\(campUID), drawing \(styleDrawsCampNames), index \(index)")
+                }
+            }
+        }
+    }
+
     // MARK: - Reading the label index out of the bundle
 
     func testLabelIndexCollectsEveryFeaturesUID() throws {

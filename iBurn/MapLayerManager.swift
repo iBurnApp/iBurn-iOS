@@ -27,6 +27,11 @@ import MapLibre
 /// when it is painting so they can stay bare glyphs. Which *camps* it paints is a per-camp
 /// question the geojson answers — see `CampStyleLabelIndex` and `PinLabelVisibility`.
 struct CampLayerVisibility: Equatable {
+    /// The symbol layer that draws camp names, in both `iburn-light.json` and
+    /// `iburn-dark.json`. Its features carry the camp's `uid`, which is what makes the drawn
+    /// text a tap target — see `MapViewAdapter.campUID(forStyleLabelAt:)`.
+    static let labelsLayerIdentifier = "camp-labels-big"
+
     /// `camp-labels-big`'s `minzoom` in the shipped style JSON. The layer draws nothing
     /// below this, so camp pins below it must label themselves.
     static let labelsMinimumZoom: Float = 15
@@ -81,7 +86,7 @@ class MapLayerManager {
 
     private let campLayerIdentifiers = [
         "camp-boundaries",
-        "camp-labels-big"
+        CampLayerVisibility.labelsLayerIdentifier
     ]
 
     init(mapView: MLNMapView) {
@@ -106,7 +111,7 @@ class MapLayerManager {
         // above z17, and it needed a `reloadStyle` to undo — MapLibre will not re-parse
         // tiles it built while a layer was out of range. Camp pins now yield to this layer
         // instead of the other way round, so the cap and that workaround are both gone.
-        if let labelsLayer = style.layer(withIdentifier: "camp-labels-big") {
+        if let labelsLayer = style.layer(withIdentifier: CampLayerVisibility.labelsLayerIdentifier) {
             labelsLayer.isVisible = visibility.labelsVisible
         }
     }

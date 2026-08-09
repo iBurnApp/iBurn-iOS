@@ -196,35 +196,54 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
   "Show Camp Boundaries (Always)" map filter is on, and they appear live on
   unlock with the rest.
-- **A camp's name is drawn once, and the style layer is the one that draws it.** A camp's
-  GPS is the centroid of its own footprint — the same point `camp_labels.geojson` puts its
-  label at — so the pin and the style label would otherwise stack identical text on the same
-  pixel. The split is per camp, not per zoom: `camp-labels-big` runs its full, **uncapped**
-  zoom range (z15 up), and any camp that file has a feature for shows a **bare pin glyph
-  with no text at any zoom**. `CampStyleLabelIndex` reads the uids out of the bundled
-  geojson (lazily, off-main, once per launch) and `PinLabelVisibility.labelIsHidden` makes
-  the call; `MapViewAdapter.updatePinLabelVisibility()` applies it, keyed on
-  `LabelAnnotationView.campUID`.
-- **The pin-labels-itself path still exists** for camps the geojson has no feature for
-  (8 of 1191 in 2026 — all of which also lack GPS, so none of them can produce a pin today),
-  for a pre-placement year whose `camp_labels.geojson` is empty or absent, below the layer's
-  z15 minzoom, and whenever the layer isn't painting. **The quickest way to exercise it in
-  the sim** is Map Filter → **"Show Camp Names (Zoomed)" off** → Done: the style text
-  disappears and every camp pin grows its own truncated `UILabel`. Turn it back on and the
-  pins go bare again.
+- **A camp's name is drawn once, the style layer draws it, and where it draws there is no
+  pin at all.** A camp's GPS is the centroid of its own footprint — the same point
+  `camp_labels.geojson` puts its label at — so a pin and a style label would otherwise stack
+  on the same pixel. The split is per camp, not per zoom: `camp-labels-big` runs its full,
+  **uncapped** zoom range (z15 up), and any camp that file has a feature for is drawn as
+  **text only, with no pin**. `CampStyleLabelIndex` reads the uids out of the bundled geojson
+  (lazily, off-main, once per launch); `CampPinVisibility.pinIsHidden` decides whether the
+  pin is drawn and `PinLabelVisibility.labelIsHidden` whether a surviving pin writes its own
+  name. Both are pure and unit-tested in `EmbargoTierTests`.
+- **The style labels are the tap target.** Tapping one pushes that camp's detail screen
+  directly — no callout. `MapViewAdapter` installs a `UITapGestureRecognizer` that
+  `require(toFail:)`s every built-in map tap recognizer, so it only fires on taps MapLibre
+  itself declined (`-gestureRecognizerShouldBegin:` refuses the map's single tap when nothing
+  was hit and nothing is selected). It queries a 44×44pt box against `camp-labels-big`, takes
+  the feature's `uid`, and routes through the host's `onPlayaInfoTapped`. It re-checks
+  `campNamesDrawnByStyleLayer` first, so a tap on a stale tile can never open an embargoed
+  camp.
+- **Which camps still get a pin**, and how to exercise each in the sim:
+  - **camps the geojson doesn't name** — exactly **1 of 1191 in 2026** (`Westlandia`, the
+    only camp with GPS and no feature; the other 7 unlabelled camps have no GPS, so they
+    produce no pin either way). It keeps a pin *and* its own `UILabel`;
+  - **favourites** — a starred camp keeps its pin over its style label, because the text
+    can't say "you starred this" and `showFavoritesOnMap` toggles independently of
+    `showCampsOnMap`. Favourite any placed camp and watch its pin appear on the browse map;
+  - **the layer not painting** — Map Filter → **"Show Camp Names (Zoomed)" off** → Done, or
+    any zoom below z15, or the camp tier still embargoed. Every camp pin comes back, each
+    labelling itself. Turning the filter back on removes them again on Done.
+- **Static/explicit maps are never filtered.** "Show on Map" from a detail screen, and every
+  list's map button, build a `StaticAnnotationDataSource` behind a plain `MapViewAdapter` —
+  the pin the user asked for is always there. Suppression lives in `UserMapViewAdapter`
+  (`shouldDisplay`), which only the main Map tab uses.
 - **What to check:** at any zoom/filter combination each camp name appears exactly once, and
-  no name is drawn on top of itself. Expect the pin glyph to sit **over** the style text at
-  z≥17 (the label is centred on the same coordinate the pin is) — that overlap is known and
-  accepted; a `text-offset` in the style JSON would be the clean fix but that file lives in
-  the data submodule.
+  no name is drawn on top of itself. A purple pin over style text now means one of the two
+  escapes above (favourite, or unlabelled camp) — a pin on an ordinary camp at z≥15 with
+  names on is a regression. The a11y snapshot is the cheapest assertion: at z17 over placed
+  camps it should list only the escapes as buttons, not every camp in view.
 - With "Camps (Zoomed)" **off** no camp pins appear and the style labels are untouched — they
   are never capped, so no `reloadStyle` is needed and turning the filter off at a standing
   camera shows clean labels immediately. (Before Aug 9 the layer *was* capped at the camp-pin
   zoom, which needed a `mapView.reloadStyle` to undo because MapLibre will not re-parse tiles
   it built while a layer was out of range. Both are gone.)
-- The Map Filter's Done callback re-runs all three: `updateAllLayers()`,
-  `refreshRegionAnnotations()`, `updatePinLabelVisibility()`. Camp pins appear/disappear
-  immediately on Done — no pan required.
+- The Map Filter's Done callback re-runs all four: `updateAllLayers()`,
+  `refreshRegionAnnotations()`, `reloadAnnotations()`, `updatePinLabelVisibility()`. Camp pins
+  appear/disappear immediately on Done — no pan required.
+- Crossing the layer's **z15 minzoom** also changes which camps need a pin, and the
+  observation path is zoom-blind, so `UserMapViewAdapter` rebuilds the pin set from
+  `regionDidChangeAnimated` — but only when the `campNamesDrawnByStyleLayer` verdict actually
+  flips, so an ordinary pan stays cheap.
 - **There are two independent annotation sources on the map, and both are gated.**
   `PlayaDBAnnotationDataSource` runs GRDB observations for the "always show" settings;
   `UserMapViewAdapter.refreshRegionAnnotations()` separately queries
@@ -235,6 +254,16 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
   the city** — a wide-zoom snapshot proves nothing. Its tier filtering lives in the pure
   `MapRegionAnnotationFilter` (unit-tested in `EmbargoTierTests`), and it re-runs on
   `BRCEmbargoDidClear` so an unlock repopulates the viewport without panning.
+- **Automation note: XcodeBuildMCP cannot zoom or pan-to-coordinate the main map.** There is
+  no pinch preset and no coordinate tap (`tap`/`touch` need an elementRef), the map view
+  exposes no adjustable action, and nothing in the app moves the *main* map camera past its
+  z13 launch position. Drive the camera from lldb instead — attach to the running app,
+  select the main thread, walk the window hierarchy for an `MLNMapView`, and
+  `objc_msgSend` `setCenterCoordinate:zoomLevel:animated:` with a plain 2-double struct
+  (`CLLocationCoordinate2D` and `CGRect` are not in lldb's type context). The same trick
+  runs `visibleFeaturesInRect:inStyleLayersWithIdentifiers:` to assert what a tap at a given
+  point would resolve to. `snapshot_ui` is then the assertion: map annotations appear as
+  buttons labelled with the object's name.
 - **Map Filter camp toggles map to two different defaults**, which is why the region path
   matters: "Camps (Always)" is `kBRCShowCampsOnMapKey`, **default false** (so the
   observation path adds no camps at all out of the box), while "Camps (Zoomed)" is

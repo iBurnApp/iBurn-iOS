@@ -131,7 +131,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.favoriteArtAnnotations = artAllowed
-                        ? rows.compactMap { PlayaObjectAnnotation(art: $0.object) }
+                        ? rows.compactMap { PlayaObjectAnnotation(art: $0.object)?.markedFavorite() }
                         : []
                     self.rebuildCache()
                 }
@@ -145,7 +145,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.favoriteCampAnnotations = campAllowed
-                        ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object) }
+                        ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object)?.markedFavorite() }
                         : []
                     self.rebuildCache()
                 }
@@ -170,7 +170,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                     guard let self else { return }
                     self.favoriteEventAnnotations = rows.compactMap { row in
                         let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
-                        return allowed ? PlayaObjectAnnotation(event: row.object) : nil
+                        return allowed ? PlayaObjectAnnotation(event: row.object)?.markedFavorite() : nil
                     }
                     self.rebuildCache()
                 }

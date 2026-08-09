@@ -137,3 +137,47 @@ enum PinLabelVisibility {
         return styleLabeledCampUIDs.contains(campUID)
     }
 }
+
+/// Whether a camp gets a pin on the browse map at all.
+///
+/// Once `PinLabelVisibility` muted the pin's own text, what was left over a style-labeled
+/// camp was a bare purple glyph sitting on top of the layer's letters — no information, and
+/// it obscured the name it was standing next to. The glyph only survived because it was the
+/// sole way to open the camp: taps went through MapLibre's annotation selection. Now the
+/// style label is tappable in its own right (`MapViewAdapter`'s label tap recognizer pushes
+/// the camp's detail screen), so the pin has nothing left to do and comes off the map.
+///
+/// Three escapes, each a case where the label cannot stand in for the pin:
+///
+///  1. **the layer isn't painting** — off, embargoed, or below its minzoom. Nothing else
+///     names the camp, so the pin is all there is;
+///  2. **the geojson has no feature for this camp** — 8 of 1191 in 2026, and every camp in a
+///     year whose placement hasn't dropped. Same story: no label, so keep the pin;
+///  3. **the camp is a favourite.** Every style label looks alike; the pin is the only thing
+///     on the map that says "you starred this", and `showFavoritesOnMap` toggles
+///     independently of `showCampsOnMap`, so suppressing it would lose the state outright.
+///
+/// A `nil` index — the file hasn't been read yet — means *keep the pin*, the opposite of
+/// what `PinLabelVisibility` reads into it. Both choices pick the same loser: a brief
+/// duplicate over a brief absence. There, guessing wrong flashes doubled text; here, guessing
+/// wrong empties the map of camps until the parse lands. `UserMapViewAdapter` re-runs this
+/// from `CampStyleLabelIndex.load`'s completion, so the guess is only ever on screen for the
+/// length of one background read.
+enum CampPinVisibility {
+
+    /// - Parameters:
+    ///   - campUID: the camp's uid, or `nil` when the pin isn't a camp. Non-camp pins are
+    ///     never suppressed — nothing else draws art, events or map points.
+    ///   - isFavorite: whether this pin came from a favourites source. See rule 3.
+    ///   - styleDrawsCampNames: `CampLayerVisibility.campNamesDrawnByStyleLayer`.
+    ///   - styleLabeledCampUIDs: `CampStyleLabelIndex.labeledCampUIDs`; `nil` while loading,
+    ///     read as "suppress nothing yet".
+    static func pinIsHidden(campUID: String?,
+                            isFavorite: Bool,
+                            styleDrawsCampNames: Bool,
+                            styleLabeledCampUIDs: Set<String>?) -> Bool {
+        guard let campUID, styleDrawsCampNames, !isFavorite else { return false }
+        guard let styleLabeledCampUIDs else { return false }
+        return styleLabeledCampUIDs.contains(campUID)
+    }
+}

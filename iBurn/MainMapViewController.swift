@@ -309,10 +309,12 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
             self.filteredDataSource.updateFilters()
             // Update map layers based on new filter settings
             self.mapLayerManager.updateAllLayers()
-            // The camp toggles add and remove pins, and "Show Camp Names" decides whether a
-            // camp pin has to label itself, so both have to be re-resolved on Done —
-            // otherwise the change doesn't land until the user happens to pan the map.
+            // The camp toggles add and remove pins, and "Show Camp Names" decides both
+            // whether a camp pin has to label itself and whether it is drawn at all, so all
+            // three have to be re-resolved on Done — otherwise the change doesn't land until
+            // the user happens to pan the map.
             self.userMapViewAdapter?.refreshRegionAnnotations()
+            self.mapViewAdapter.reloadAnnotations()
             self.mapViewAdapter.updatePinLabelVisibility()
         }
         let nav = UINavigationController(rootViewController: filterVC)
