@@ -96,6 +96,26 @@ enum NearbyItem: Identifiable {
         }
     }
 
+    /// The map nearby card's accessory line: when and where, in one secondary line between
+    /// the name and the description.
+    ///
+    /// Events lead with their live timing; everything that has a showable address adds it.
+    /// The address comes from `address`, so the two-tier embargo check is the same one the
+    /// rest of the app makes — a locked camp or art piece contributes nothing and the whole
+    /// line disappears, handing its space back to the description.
+    ///
+    /// Composed here rather than in the view so the locked/unlocked shape is testable.
+    func accessoryLine(now: Date) -> String? {
+        var parts: [String] = []
+        if case .event(let r) = self {
+            parts.append(r.object.timeDescription(now: now))
+        }
+        if let address {
+            parts.append(address)
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
     /// Whether this item's placement may be shown at all, per its embargo tier.
     ///
     /// Gates more than the address line: walk/bike estimates are derived from the same

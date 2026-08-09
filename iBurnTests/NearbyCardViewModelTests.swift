@@ -253,4 +253,99 @@ final class NearbyCardViewModelTests: XCTestCase {
         XCTAssertEqual(NearbyCardTypes(showArt: true, showCamps: false, showEvents: false), .art)
         XCTAssertEqual(NearbyCardTypes(showArt: false, showCamps: false, showEvents: false), [])
     }
+
+    // MARK: - Accessory line
+
+    // The card row is name → accessory (when/where) → description. The accessory is what
+    // stopped the address from evicting the description once the embargo lifts, so these
+    // cases pin both the composition and the locked shape. The address half rides
+    // `NearbyItem.address`, whose own tier checks live in `EmbargoTierTests`; here the
+    // embargo is moved wholesale with the passcode so the two shapes can be compared.
+
+    private var originalUnlocked = false
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        originalUnlocked = UserDefaults.enteredEmbargoPasscode
+        UserDefaults.enteredEmbargoPasscode = false
+        // Pinned before the camp tier opens, so "locked" stays locked as the calendar moves.
+        UserDefaults.standard.set(true, forKey: "BRCMockDateEnabled")
+        let locked = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-10T12:00:00Z"))
+        UserDefaults.standard.set(locked, forKey: "BRCMockDateValue")
+    }
+
+    override func tearDownWithError() throws {
+        UserDefaults.enteredEmbargoPasscode = originalUnlocked
+        UserDefaults.standard.removeObject(forKey: "BRCMockDateEnabled")
+        UserDefaults.standard.removeObject(forKey: "BRCMockDateValue")
+        try super.tearDownWithError()
+    }
+
+    private func campItem(address: String?) -> NearbyItem {
+        .camp(ListRow(
+            object: CampObject(uid: "camp-1", name: "Camp Test", year: 2026, locationString: address),
+            metadata: nil,
+            thumbnailColors: nil
+        ))
+    }
+
+    private func hostedEventItem(hostAddress: String?) -> NearbyItem {
+        let camp = CampObject(uid: "camp-1", name: "Camp Test", year: 2026, locationString: hostAddress)
+        let event = EventObject(
+            uid: "event-1",
+            name: "Test Event",
+            year: 2026,
+            eventTypeLabel: "Party",
+            eventTypeCode: "prty",
+            hostedByCamp: camp.uid
+        )
+        let occurrence = EventOccurrence(
+            eventId: event.uid,
+            startTime: now.addingTimeInterval(-600),
+            endTime: now.addingTimeInterval(3000)
+        )
+        return .event(ListRow(
+            object: EventObjectOccurrence(event: event, occurrence: occurrence, host: camp),
+            metadata: nil,
+            thumbnailColors: nil
+        ))
+    }
+
+    func testLockedCampHasNoAccessoryLineSoTheDescriptionGetsTheSpace() throws {
+        XCTAssertNil(campItem(address: "7:30 & Esplanade").accessoryLine(now: now))
+    }
+
+    func testUnlockedCampAccessoryLineIsItsAddress() throws {
+        UserDefaults.enteredEmbargoPasscode = true
+        XCTAssertEqual(campItem(address: "7:30 & Esplanade").accessoryLine(now: now),
+                       "7:30 & Esplanade")
+    }
+
+    func testCampWithNoAddressHasNoAccessoryLineEvenUnlocked() throws {
+        UserDefaults.enteredEmbargoPasscode = true
+        XCTAssertNil(campItem(address: nil).accessoryLine(now: now))
+    }
+
+    /// An event's timing is not placement data, so it is the whole line while locked and
+    /// gains the address — one line, one separator — once the host's tier opens.
+    func testEventAccessoryLineIsTimeAloneUntilItsHostUnlocks() throws {
+        let item = hostedEventItem(hostAddress: "7:30 & Esplanade")
+        let timeOnly = try XCTUnwrap(item.accessoryLine(now: now))
+        XCTAssertFalse(timeOnly.contains("7:30 & Esplanade"))
+        XCTAssertFalse(timeOnly.contains("·"))
+
+        UserDefaults.enteredEmbargoPasscode = true
+        let withAddress = try XCTUnwrap(item.accessoryLine(now: now))
+        XCTAssertEqual(withAddress, "\(timeOnly) · 7:30 & Esplanade")
+    }
+
+    /// A hostless event with no free-text location has timing and nothing else — the line
+    /// must not degrade to a dangling separator.
+    func testEventWithoutAnAddressIsJustItsTime() throws {
+        UserDefaults.enteredEmbargoPasscode = true
+        let item = hostedEventItem(hostAddress: nil)
+        let line = try XCTUnwrap(item.accessoryLine(now: now))
+        XCTAssertFalse(line.hasSuffix("·"))
+        XCTAssertFalse(line.contains("·"))
+    }
 }

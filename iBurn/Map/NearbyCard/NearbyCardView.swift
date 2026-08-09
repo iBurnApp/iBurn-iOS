@@ -46,15 +46,45 @@ struct NearbyCardView: View {
     /// descender on the last line never touches the footer's controls.
     private static let rowFooterGap: CGFloat = 2
 
-    /// Sized to the tallest row we can produce: an event with a name, a time line and a
-    /// two-line address — 20 + 2 + 16 + 2 + 32 = 72pt of text, under the row's
-    /// `contentInset` top inset and above `rowFooterGap`. 10 + 72 + 2 = 84.
-    private static let pageHeight: CGFloat = contentInset + 72 + rowFooterGap
+    /// The thumbnail's edge, and the floor under every row: no text stack the card allows is
+    /// taller than this at default Dynamic Type, so this is what actually sets the height.
+    private static let thumbnailSize: CGFloat = 60
+
+    /// The tallest text stack a row can produce at default Dynamic Type: name (20) +
+    /// accessory (16) + description (16), plus the `VStack`'s two 2pt gaps — 56. The
+    /// accessory-less shape is shorter (20 + 2 + 32 = 54), which is why the description gets
+    /// its second line back exactly when the accessory line isn't there.
+    private static let baseTextStackHeight: CGFloat = 56
+
+    /// The height the text stack is allowed to grow to before the card stops following
+    /// Dynamic Type: its size at `extraExtraExtraLarge`, the largest non-accessibility
+    /// setting. Accessibility sizes then overlap the footer instead of turning the card into
+    /// a panel that covers the map — the same tradeoff the previously fixed height made,
+    /// just moved four steps further up the scale.
+    private static let maximumTextStackHeight: CGFloat = UIFontMetrics(forTextStyle: .subheadline)
+        .scaledValue(for: baseTextStackHeight,
+                     compatibleWith: UITraitCollection(preferredContentSizeCategory: .extraExtraExtraLarge))
+
+    /// `baseTextStackHeight` at the reader's type size. Declared as a `@ScaledMetric` rather
+    /// than measured so the page height is still a constant per size class — a
+    /// content-measured page would resize as you swipe between rows.
+    @ScaledMetric(relativeTo: .subheadline) private var textStackHeight = baseTextStackHeight
+
+    /// The thumbnail governs the row until the text outgrows it, which at default Dynamic
+    /// Type it never does — that's the dead space this height used to carry.
+    private var rowHeight: CGFloat {
+        max(Self.thumbnailSize, min(textStackHeight, Self.maximumTextStackHeight))
+    }
+
+    /// The row, under the card's `contentInset` top inset and above `rowFooterGap`.
+    /// 10 + 60 + 2 = 72 at default Dynamic Type.
+    private var pageHeight: CGFloat { Self.contentInset + rowHeight + Self.rowFooterGap }
     /// Exactly the height of the footer's 28pt controls — the dots and labels are small
     /// enough that any more than that is empty card.
     private static let footerHeight: CGFloat = 28
-    /// Page plus footer. Fixed for the same reason the width is.
-    private static let cardHeight: CGFloat = pageHeight + footerHeight
+    /// Page plus footer: 100 at default Dynamic Type. Fixed per type size for the same
+    /// reason the width is fixed.
+    private var cardHeight: CGFloat { pageHeight + Self.footerHeight }
 
     init(
         viewModel: NearbyCardViewModel,
@@ -110,7 +140,7 @@ struct NearbyCardView: View {
 
     private var surface: some View {
         card
-            .frame(width: cardWidth, height: Self.cardHeight)
+            .frame(width: cardWidth, height: cardHeight)
             .clipShape(surfaceShape)
             .modifier(GlassSurface(cornerRadius: cardCornerRadius))
     }
@@ -138,7 +168,7 @@ struct NearbyCardView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: Self.pageHeight)
+            .frame(height: pageHeight)
 
             footer
         }
@@ -312,37 +342,7 @@ private struct NearbyCardContentView: View {
         HStack(alignment: .top, spacing: 12) {
             thumbnail
 
-            // Name, then when (events only), then where. The blurb used to take the
-            // second line, which is the least useful thing to know about something 100m
-            // away — it only appears now if there's nothing concrete to show.
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(themeColors.primaryColor)
-                    .lineLimit(1)
-
-                if let timeText = item.eventTimeText(now: now) {
-                    Text(timeText)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(themeColors.secondaryColor)
-                        .lineLimit(1)
-                }
-
-                // `NearbyItem.address` is nil while the object's embargo tier still hides
-                // its location (art until gates open, camps until the ToS window, events
-                // per their host), so this line simply doesn't render then.
-                if let address = item.address {
-                    Text(address)
-                        .font(.caption)
-                        .foregroundStyle(themeColors.detailColor)
-                        .lineLimit(2)
-                } else if let description = item.detailDescription, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundStyle(themeColors.detailColor)
-                        .lineLimit(2)
-                }
-            }
+            textStack
 
             Spacer(minLength: 4)
 
@@ -360,6 +360,42 @@ private struct NearbyCardContentView: View {
         .frame(maxHeight: .infinity, alignment: .top)
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
+    }
+
+    /// Name, then when/where, then what it is.
+    ///
+    /// The accessory line collapses the two pieces of hard metadata — an event's timing and
+    /// the playa address — into one secondary line, so the description no longer has to be
+    /// traded away for the address the moment the embargo lifts.
+    @ViewBuilder
+    private var textStack: some View {
+        // Nil for a locked camp or art piece: `NearbyItem.address` withholds the address
+        // until that object's tier opens, and only an unhosted event's free-text location
+        // survives. When the line is absent the description takes its space.
+        let accessory = item.accessoryLine(now: now)
+        VStack(alignment: .leading, spacing: 2) {
+            Text(item.name)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(themeColors.primaryColor)
+                .lineLimit(1)
+
+            if let accessory {
+                Text(accessory)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(themeColors.secondaryColor)
+                    .lineLimit(1)
+            }
+
+            if let description = item.detailDescription, !description.isEmpty {
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(themeColors.detailColor)
+                    // Two lines only when there's no accessory line above to pay for: the
+                    // page is sized to a single 3-line stack, and a compact card showing
+                    // both facts beats a taller one showing more blurb.
+                    .lineLimit(accessory == nil ? 2 : 1)
+            }
+        }
     }
 
     private var thumbnail: some View {
@@ -412,12 +448,6 @@ private extension NearbyItem {
         case .camp(let r): r.object.description
         case .event(let r): r.object.description
         }
-    }
-
-    /// Live event timing line (events only).
-    func eventTimeText(now: Date) -> String? {
-        if case .event(let r) = self { return r.object.timeDescription(now: now) }
-        return nil
     }
 
     /// Underlying art object, for building an audio-tour track (art only).
