@@ -53,14 +53,15 @@ Each document should include:
 This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
 Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
 
-Default destination: **iPhone 17 Pro Max, iOS 26.5, arm64 simulator**. Schemes: `iBurn` (app), `iBurnTests`, `PlayaKitTests`.
+Default destination: **iPhone 17 Pro Max, iOS 26.5, arm64 simulator**. Schemes: `iBurn` (app), `iBurn (Mock Date)`, `iBurnTests`, `iBurnWatch`.
 
 ```bash
 DEST='platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64'
 
 xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
 xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
-swift test 2>&1 | xcsift -f toon -w   # SwiftPM targets (PlayaDB, PlayaAPI); may need elevated permissions when sandboxed
+swift test --package-path Packages/PlayaDB 2>&1 | xcsift -f toon -w   # SwiftPM packages run per-directory (PlayaDB, PlayaAPI, ...);
+                                                                      # there is no root Package.swift. May need sandbox disabled.
 ```
 
 If xcsift prints "Error: No input provided", xcodebuild likely produced no output (e.g. a fully incremental build with `-quiet`). Re-run without `-quiet`.
