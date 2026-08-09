@@ -350,6 +350,73 @@ No code changes were needed. Cosmetic notes only:
 - After a live layout switch no tab item is highlighted until you tap one (the pushed
   screen stays put). Pre-existing `UITab` selection behavior, unrelated to these fixes.
 
+## Round 9 — nearby card: vertical compaction + uniform edge padding
+
+**Feedback:** "theres a ton of empty space in this nearby card, and the padding around the
+edges is not uniform. at least for the favorite button. lets make it more vertically
+compact." Screenshot showed a 2-line art row with ~40 pt of dead space between the text and
+the footer, and a heart that hugged the corner tighter (6 pt) than the row's 12/14 pt inset.
+
+**Single file touched:** `iBurn/Map/NearbyCard/NearbyCardView.swift`.
+
+### Geometry, before → after
+
+| | before | after |
+|---|---|---|
+| edge inset (thumbnail leading) | 14 | **10** (`contentInset`) |
+| edge inset (row top) | 12 | **10** (`contentInset`) |
+| edge inset (heart top/trailing) | 6 | **10** (`contentInset`) |
+| row trailing clearance | 34 | **38** (`contentInset + 24 + 4`) |
+| gap above footer | 6 | **2** (`rowFooterGap`) |
+| text VStack spacing | 3 | **2** |
+| worst-case text block | 74 | **72** (20 + 2 + 16 + 2 + 32) |
+| `pageHeight` | 100 | **84** (10 + 72 + 2) |
+| `footerHeight` | 30 | **28** (== the footer buttons' own height) |
+| `cardHeight` | 130 | **112** |
+
+Card is 18 pt shorter (−14%). Dead space under a 60 pt thumbnail-governed row (every art /
+camp / 3-line event row in the 2026 data) went from 28 pt to 14 pt.
+
+The four corners now share one constant. The footer gets `contentInset − 6` horizontal
+padding so that, added to each button's own 6 pt label inset, "Hide" and "See all" land on
+the same 10 pt line as the thumbnail and the heart.
+
+`pageHeight` is still sized to the *unwrapped-address* worst case (72 pt of text) rather
+than to the 60 pt thumbnail, so a wrapped two-line address can't clip even though the 2026
+dataset never produces one. That costs 12 pt of slack on the common row; sizing to the
+thumbnail instead would have got the card to ~102 pt but made a data change able to clip it.
+
+### Validation (iPhone 17 Pro Max, iOS 26.5 sim)
+
+Build clean; `iBurnTests` 275/275 (baseline). Screenshots in
+`Docs/images/2026-08-08-config-features/`:
+
+- `59-card-compact-art-2line.jpg` / `60-card-uniform-insets-crop.jpg` — 2-line art row.
+  Measured off the @3x capture: card 335 px ≈ 112 pt; thumbnail leading/top and heart
+  top/trailing all 30 px = 10 pt; "Hide"/"See all" on the same line.
+- `61-card-heart-favorited-new-inset.jpg` — heart toggles at the new inset (tap landed at
+  x=388 on a 410 pt card trailing edge = 10 + 12, exactly as designed).
+- `62-card-heart-follows-page.jpg` — heart retargets on swipe; title y unchanged across pages.
+- `63-card-audio-button-clears-footer.jpg` — audio button (fixture `.m4a`) sits above the
+  footer with the 2 pt gap; no overlap.
+- `64-card-event-3line-no-clip.jpg` — mock date 2026-09-04T11:00 at 40.77546,-119.20512,
+  "Morning Yoga Flow" name + time + address, well clear of the footer.
+- `65-card-long-title-truncates-before-heart.jpg` — "Erotic Photo Session with Razorba…"
+  truncates inside the 38 pt trailing inset.
+- `66-card-xxxl-dynamic-type.jpg` — 3-row event still clears the footer at XXXL.
+- `67-card-accessibility-medium.jpg` — at `accessibility-medium` the third line now
+  *overlaps* the footer band (previously it merely touched). Known limit of the fixed
+  height; recorded in flows.md rather than fixed.
+- `68-card-hidden-tooltip.jpg` — Hide → glass tooltip in the card's place (extracted from
+  `simctl recordVideo`; `-ss` seeking on that file lands on stale frames, dumping with
+  `-vf fps=3` works).
+- `69-card-reenabled-via-map-filter.jpg` — re-enabled from Map Filter, clean at 112 pt.
+
+Sim state restored afterwards: mock-date keys deleted, `kBRCEntered2026Embargo…Key` back to
+NO, audio fixture removed, the art item favorited during the pass un-favorited, content size
+back to `large`. The MapLibre AX crash on Map Filter → Done fired again even via
+`touch down/up`; relaunching recovers and the preference had already been written.
+
 ## Known warts / follow-ups (not blocking)
 
 - Un-hiding a tab appends it to the end of the bar rather than restoring its

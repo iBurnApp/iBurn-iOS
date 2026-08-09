@@ -220,11 +220,24 @@ the user (events first, then art + camps by distance; `simctl location set` requ
 stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all" (trailing)**,
 "See all" linking into the Nearby screen.
 
-- Card geometry is fixed: **100 pt page + 30 pt footer = 130 pt** tall, width
-  `min(380, screen − 32)`. Rows are **top-aligned** — the name's top edge sits level with the
-  60×60 thumbnail's top on every page, so swiping between a 2-line and a 3-line row must not
-  move the title vertically. Short rows therefore leave visible empty space above the footer;
-  that is the fixed height, not a layout bug.
+- Card geometry is fixed: **84 pt page + 28 pt footer = 112 pt** tall, width
+  `min(380, screen − 32)`. The page is `contentInset (10) + 72 pt of worst-case text +
+  rowFooterGap (2)`, where 72 is an event's name + time + two-line address at default
+  Dynamic Type (20 + 2 + 16 + 2 + 32). Rows are **top-aligned** — the name's top edge sits
+  level with the 60×60 thumbnail's top on every page, so swiping between a 2-line and a
+  3-line row must not move the title vertically. Short rows therefore leave some empty space
+  above the footer (a 60 pt thumbnail-governed row leaves 14 pt); that is the fixed height,
+  not a layout bug.
+- **All four card edges use the same 10 pt inset**: the thumbnail's leading/top, the
+  favorite button's top/trailing, and — via the footer's `contentInset − 6` horizontal
+  padding plus each button's own 6 pt label inset — the "Hide" and "See all" labels. If the
+  heart looks like it hugs the corner tighter than the row does, that's a regression. The
+  row's text stops at `10 + 24 + 4 = 38` pt from the trailing edge so a long name truncates
+  before the heart rather than sliding under it.
+- Dynamic Type headroom at that height: the 3-row event still clears the footer at
+  `extra-extra-extra-large`; at `accessibility-medium` the third line overlaps the footer
+  band (nothing is clipped, but it reads as a collision). Accessibility sizes are the known
+  limit of the fixed height, not a new bug.
 - Each page shows name (1 line), event timing (events only, 1 line), and then **either** the
   playa address **or** — when the embargo still hides that object's location — the
   description, either one wrapping to at most **2 lines**. The
@@ -274,10 +287,12 @@ address is longer than 25 characters and every gps-bearing event resolves a host
 a **two-line address is unreachable at default Dynamic Type** — the two-line detail only
 shows up via the embargo description fallback (e.g. Unhinged Lingering at
 40.786459,-119.205319). To see a wrapped 3-row event, raise Dynamic Type
-(`xcrun simctl ui <UDID> content_size …`); the full 3-row event still clears the footer at
-`extra-extra-extra-large` and just touches it at `accessibility-medium`. The 2026 build also
+(`xcrun simctl ui <UDID> content_size …`) — see the Dynamic Type headroom note above for
+where it starts to collide. The 2026 build also
 ships **no audio-tour `.m4a` files at all**, so the row's play button never appears from real
-data; drop a file at `<container>/Documents/MediaFiles/<art uid>.m4a` to exercise it.
+data; drop a file at `<container>/Documents/MediaFiles/<art uid>.m4a` to exercise it
+(`afconvert -f m4af -d aac /System/Library/Sounds/Ping.aiff tour.m4a` makes a fixture; the
+art uids at 40.7864,-119.2065 are in `art_objects`). Delete it again when you're done.
 
 **Automation hazard: MapLibre + accessibility.** `snapshot_ui` (and the AX refresh every
 `tap`/`batch` does) walks MapLibre's annotation container, which can throw
