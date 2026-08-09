@@ -126,7 +126,40 @@ Known follow-up found on 18.6: the classic-layout search results overlay is see-
 
 ---
 
-# Workstream 4: Nearby "happening now-ish" — duration cap, filter sheet, ordering
+# Workstream 4: Tappable style labels + camp pin suppression (`1508725`)
+
+**Problem (user report + screenshot).** At z≥15 the style layer draws camp names, but the purple
+pin glyph still sits on top of the text, and the pin existed only as the tap entry point
+(callout → detail). User preference: make the labels themselves tappable and drop the pins.
+
+**Change.** Tapping a `camp-labels-big` label now pushes camp detail directly — a new
+`UITapGestureRecognizer` on the map (installed in `MapViewAdapter.init`, `require(toFail:)`-ed
+against every built-in map tap recognizer per MapLibre's documented pattern) queries a 44×44pt
+box via `visibleFeatures(in:styleLayerIdentifiers:)`, reads the feature's `uid`, and routes
+through the existing per-screen `onPlayaInfoTapped` closure (fallback: direct
+`fetchCamp` + push). Embargo is re-checked at tap time so a stale tile can't open a locked camp.
+
+Pin suppression: new pure `CampPinVisibility.pinIsHidden(campUID:isFavorite:styleDrawsCampNames:styleLabeledCampUIDs:)`
+in `CampStyleLabelIndex.swift`; applied via an overridable `MapViewAdapter.shouldDisplay(_:)`
+that only `UserMapViewAdapter` (main map) overrides — so `StaticAnnotationDataSource` screens
+(favorites/camp-list "show on map") structurally keep every pin. Favorited camps keep their pins
+(`PlayaObjectAnnotation.isFavorite`, set by the `onlyFavorites` observations). `nil` (still-loading)
+index = keep the pin (opposite reading from `PinLabelVisibility`, documented in place). Pin set
+rebuilds when the `campNamesDrawnByStyleLayer` verdict flips (region change, embargo clear, index
+load); Map Filter "Done" also reloads.
+
+**Validated** (sim, unlocked, z17): style labels with zero purple pins (a11y snapshot: 1 camp
+button — `Westlandia`, the one placed camp with GPS but no geojson label — among ~18 in view);
+camp-names toggle round-trips; favorite + unlabeled camps keep pins; relocked = no labels, no
+pins. Tap path verified at both ends via lldb (recognizer wired with must-fail on the map's
+single/double/two-finger taps; feature query returns `{name, uid}` unlocked, empty locked).
+310 tests (8 new). Known edges: a favorite's bare pin still overlaps its style text
+(`text-offset` in the style JSON remains the clean fix, data submodule); crossing z15 while
+dragging a user pin cancels the edit (verdict-flip reload calls `clearEditingAnnotation`).
+
+---
+
+# Workstream 5: Nearby "happening now-ish" — duration cap, filter sheet, ordering
 
 ## High-Level Plan
 
