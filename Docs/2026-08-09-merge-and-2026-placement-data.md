@@ -97,6 +97,14 @@ User feedback: keep the styled map labels at all zooms and strip the text off ca
 - **Card accessory** (`4653ab5`): row is title / accessory (event timing · address, embargo-gated through `NearbyItem.address`) / description (2 lines when accessory absent, 1 when present). New arithmetic: text stack 56 ≤ thumbnail 60 → pageHeight 72, footer 28, **cardHeight 100** (was 112); the ~14 pt residual is gone. Text block scales via `@ScaledMetric` capped at XXXL — XXXL now grows the card clear of the footer; accessibility sizes truncate instead of overlapping.
 - Tests 290 → **302**; sim-validated: one name per camp with callouts intact, filter/fallback toggles live-update without `reloadStyle`, locked state still renders nothing, card verified locked/unlocked for camps and events (mock-date pinned), Dynamic Type checked. flows.md updated (`1a6d039`).
 
+### Round 4: pre-iOS-26 bar transparency (`e3670f5`)
+
+User screenshot (iPhone 16 Pro Max, iOS 18.6): the map screen's nav bar and tab bar rendered fully transparent — tabs and search field floating on bare map. Root cause: `MainMapViewController.viewWillAppear` applies `Appearance.applyTransparentNavigationBarAppearance`/`applyTransparentTabBarAppearance` (clear background, `backgroundEffect = nil` on all appearance slots) unconditionally; on iOS 26 the system paints Liquid Glass behind the bar, below 26 there's nothing. Fix in `Appearance.swift`: both transparent builders now `guard #available(iOS 26, *)` and fall through to the standard `systemChromeMaterial` pair below. iOS 26 path byte-identical.
+
+Validated on a fresh iOS 18.6 sim (bars show proper material on all five tabs, nav-bar search works end-to-end, locked-state embargo intact on that runtime) and on iOS 26.5 (glass chrome unchanged). 302 tests passing, both destinations build clean. flows.md §8 notes the version split.
+
+Known follow-up found on 18.6: the classic-layout search results overlay is see-through (`GlobalSearchHostingController.applyBackground` only gets `isOverlay` from the iOS 26 bottom-search path, so pre-26 lands on a transparent background over the map). Needs a background/material decision on `GlobalSearchView`. Also: CLAUDE.md still references a `PlayaKitTests` scheme that no longer exists.
+
 ## Context Preservation
 
 - The 2026 API serving placement means future refreshes (`fetch_and_geocode.js`) keep camps placed without the drop; `apply_placement.js` re-applies geometry on top and is safe to re-run after any refresh (fill-only + idempotent).
