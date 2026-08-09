@@ -220,8 +220,14 @@ the user (events first, then art + camps by distance; `simctl location set` requ
 stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all" (trailing)**,
 "See all" linking into the Nearby screen.
 
-- Each page shows name, event timing (events only), and then **either** the playa address
-  **or** — when the embargo still hides that object's location — the description. The
+- Card geometry is fixed: **100 pt page + 30 pt footer = 130 pt** tall, width
+  `min(380, screen − 32)`. Rows are **top-aligned** — the name's top edge sits level with the
+  60×60 thumbnail's top on every page, so swiping between a 2-line and a 3-line row must not
+  move the title vertically. Short rows therefore leave visible empty space above the footer;
+  that is the fixed height, not a layout bug.
+- Each page shows name (1 line), event timing (events only, 1 line), and then **either** the
+  playa address **or** — when the embargo still hides that object's location — the
+  description, either one wrapping to at most **2 lines**. The
   address line is plain text with no pin glyph, and comes from `NearbyItem.address`, which
   applies the two-tier check per item (art tier / camp tier / host's tier for events). Pre-
   embargo you should see the description line, never an address; if an art piece shows
@@ -232,7 +238,7 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
   "Favorite <name>" / "Unfavorite <name>"). It overlays the card *outside* the pager, so it
   keeps a fixed position and doesn't eat the swipe; it retargets to whichever page is
   showing as you swipe. The audio-tour button (art with a local file) stays in the row,
-  bottom-aligned so it clears the heart.
+  pinned to the **bottom** of the page (just above the footer) so it clears the heart.
 - **"Hide"** (footer leading, AX label "Hide nearby card") writes
   `userInterface.nearbyCard.enabled = false`. The card fades out and a glass tooltip —
   "Nearby card hidden — turn it back on in Map Filter." — fades in **in the card's place**
@@ -252,6 +258,35 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
 - 2026 data at 40.7864,-119.2065: three **art** pieces within 100 m (The Hitchin' Post 18 m,
   Thoughts by the Edge 89 m, Unhinged Lingering 100 m) and **no** camps — so "Camps only"
   is the quickest way to prove the type filter empties the card.
+
+**Exercising the card outside the festival window.** Events only enter the card when an
+occurrence `isInNearbyWindow` (starts within 30 min / hasn't ended), so pre-event there is
+nothing but art + camps. Set `BRCMockDateEnabled`/`BRCMockDateValue` (app-container plist,
+app terminated; default mock is 2026-09-04T11:00-0700) to get live events — but note the
+mock date also lifts the embargo by date, and running with a BRC location under a festival
+date makes `enteredBurningManRegion` write `kBRCEntered2026EmbargoPasscodeKey = YES`
+permanently. Reset that key to `NO` (app terminated) when you next want the locked state.
+Event-dense mock-time spots: **40.77546,-119.20512** (9 live events + 4 camps at 11:00) and
+**40.77245,-119.19365** (1 long-named event + 4 camps).
+
+**Data limits worth knowing before you go hunting for a worst case.** In the 2026 dataset no
+address is longer than 25 characters and every gps-bearing event resolves a host address, so
+a **two-line address is unreachable at default Dynamic Type** — the two-line detail only
+shows up via the embargo description fallback (e.g. Unhinged Lingering at
+40.786459,-119.205319). To see a wrapped 3-row event, raise Dynamic Type
+(`xcrun simctl ui <UDID> content_size …`); the full 3-row event still clears the footer at
+`extra-extra-extra-large` and just touches it at `accessibility-medium`. The 2026 build also
+ships **no audio-tour `.m4a` files at all**, so the row's play button never appears from real
+data; drop a file at `<container>/Documents/MediaFiles/<art uid>.m4a` to exercise it.
+
+**Automation hazard: MapLibre + accessibility.** `snapshot_ui` (and the AX refresh every
+`tap`/`batch` does) walks MapLibre's annotation container, which can throw
+`std::out_of_range` and abort the app — the stack is
+`automationElements → MapLibre → __cxa_throw`, and it fires most often right after
+dismissing the Map Filter sheet. It is an automation-only crash, not a user-visible one. Use
+`touch {down,up}` instead of `tap` for the sheet's **Done** button, and expect the pager's
+scroll ref (the one `drag` needs to page the card) to drop out of the AX tree periodically —
+relaunching the app brings it back.
 
 ## 7. Detail screen
 
