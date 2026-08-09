@@ -109,14 +109,12 @@ final class EmbargoTierTests: XCTestCase {
     private func makeCampLayers(showCampBoundaries: Bool = true,
                                 showCampBoundariesAlways: Bool = false,
                                 showBigCampNames: Bool = true,
-                                showCampsOnlyZoomedIn: Bool = true,
                                 embargoAllowsCamps: Bool = true,
                                 zoomLevel: Double) -> CampLayerVisibility {
         CampLayerVisibility.resolve(
             showCampBoundaries: showCampBoundaries,
             showCampBoundariesAlways: showCampBoundariesAlways,
             showBigCampNames: showBigCampNames,
-            showCampsOnlyZoomedIn: showCampsOnlyZoomedIn,
             embargoAllowsCamps: embargoAllowsCamps,
             zoomLevel: zoomLevel
         )
@@ -165,23 +163,13 @@ final class EmbargoTierTests: XCTestCase {
         XCTAssertTrue(makeCampLayers(zoomLevel: 15).campNamesDrawnByStyleLayer)
     }
 
-    /// The handover: the style layer stops exactly where the region path starts dropping
-    /// camp pins, so the two ranges abut with no gap and no overlap.
-    func testStyleLabelsStopWhereCampPinsBegin() {
-        let campPinZoom = MapRegionAnnotationFilter.campMinimumZoom
-        XCTAssertEqual(makeCampLayers(zoomLevel: 16).labelsMaximumZoom, Float(campPinZoom))
-        XCTAssertTrue(makeCampLayers(zoomLevel: campPinZoom - 0.01).campNamesDrawnByStyleLayer)
-        XCTAssertFalse(makeCampLayers(zoomLevel: campPinZoom).campNamesDrawnByStyleLayer)
-        XCTAssertFalse(makeCampLayers(zoomLevel: 20).campNamesDrawnByStyleLayer)
-    }
-
-    /// With camp pins turned off in the Map Filter nothing ever takes over, so the style
-    /// layer keeps the names all the way in.
-    func testStyleLabelsRunToFullZoomWhenCampPinsAreDisabled() {
-        let visibility = makeCampLayers(showCampsOnlyZoomedIn: false, zoomLevel: 20)
-        XCTAssertEqual(visibility.labelsMaximumZoom, CampLayerVisibility.styleMaximumZoom)
-        XCTAssertTrue(visibility.labelsVisible)
-        XCTAssertTrue(visibility.campNamesDrawnByStyleLayer)
+    /// The layer is never capped: camp pins now yield to it rather than taking over above
+    /// their own zoom threshold, so it keeps drawing all the way in.
+    func testStyleLabelsRunToFullZoomOnceTheyStart() {
+        for zoomLevel in [15.0, 17.0, 18.0, 22.0] {
+            XCTAssertTrue(makeCampLayers(zoomLevel: zoomLevel).campNamesDrawnByStyleLayer,
+                          "zoom \(zoomLevel)")
+        }
     }
 
     /// Turning "Show Camp Names" off hands the job back to the pins at every zoom rather
@@ -193,27 +181,123 @@ final class EmbargoTierTests: XCTestCase {
         }
     }
 
-    /// Whatever the settings, the two mechanisms never both draw: `campNamesDrawnByStyleLayer`
-    /// is true exactly when the layer is visible and the zoom is inside its range.
+    /// Whatever the settings, `campNamesDrawnByStyleLayer` is true exactly when the layer is
+    /// visible and the zoom is inside its (uncapped) range — the one fact the pins act on.
     func testStyleLabelVerdictAlwaysMatchesTheLayersOwnZoomRange() {
         for showBigCampNames in [true, false] {
-            for showCampsOnlyZoomedIn in [true, false] {
-                for embargoAllowsCamps in [true, false] {
-                    for zoomLevel in [12.0, 14.9, 15.0, 16.9, 17.0, 22.0] {
-                        let v = makeCampLayers(showBigCampNames: showBigCampNames,
-                                               showCampsOnlyZoomedIn: showCampsOnlyZoomedIn,
-                                               embargoAllowsCamps: embargoAllowsCamps,
-                                               zoomLevel: zoomLevel)
-                        let layerIsPainting = v.labelsVisible
-                            && zoomLevel >= Double(CampLayerVisibility.labelsMinimumZoom)
-                            && zoomLevel < Double(v.labelsMaximumZoom)
-                        XCTAssertEqual(v.campNamesDrawnByStyleLayer, layerIsPainting,
-                                       "zoom \(zoomLevel), names \(showBigCampNames), "
-                                       + "zoomedIn \(showCampsOnlyZoomedIn), embargo \(embargoAllowsCamps)")
-                    }
+            for embargoAllowsCamps in [true, false] {
+                for zoomLevel in [12.0, 14.9, 15.0, 16.9, 17.0, 22.0] {
+                    let v = makeCampLayers(showBigCampNames: showBigCampNames,
+                                           embargoAllowsCamps: embargoAllowsCamps,
+                                           zoomLevel: zoomLevel)
+                    let layerIsPainting = v.labelsVisible
+                        && zoomLevel >= Double(CampLayerVisibility.labelsMinimumZoom)
+                    XCTAssertEqual(v.campNamesDrawnByStyleLayer, layerIsPainting,
+                                   "zoom \(zoomLevel), names \(showBigCampNames), "
+                                   + "embargo \(embargoAllowsCamps)")
                 }
             }
         }
+    }
+
+    // MARK: - Which pin draws its own name
+
+    private let labeledCamp = "camp-with-a-footprint"
+    private let unlabeledCamp = "camp-without-a-footprint"
+    private lazy var styleLabels: Set<String> = [labeledCamp]
+
+    private func pinLabelIsHidden(campUID: String?,
+                                  zoomLevel: Double = 18,
+                                  styleDrawsCampNames: Bool = true,
+                                  styleLabeledCampUIDs: Set<String>?) -> Bool {
+        PinLabelVisibility.labelIsHidden(
+            zoomLevel: zoomLevel,
+            hiddenAtOrBelowZoom: 13,
+            campUID: campUID,
+            styleDrawsCampNames: styleDrawsCampNames,
+            styleLabeledCampUIDs: styleLabeledCampUIDs
+        )
+    }
+
+    /// The whole point: a camp the geojson names is a bare pin glyph at every zoom the style
+    /// layer is painting at, however far in the user goes.
+    func testPinOfAStyleLabeledCampNeverDrawsItsOwnName() {
+        for zoomLevel in [15.0, 17.0, 18.0, 22.0] {
+            XCTAssertTrue(pinLabelIsHidden(campUID: labeledCamp,
+                                           zoomLevel: zoomLevel,
+                                           styleLabeledCampUIDs: styleLabels),
+                          "zoom \(zoomLevel)")
+        }
+    }
+
+    /// The 8 camps with no footprint in the 2026 placement have no style label, so their pins
+    /// keep the old zoom-gated behaviour or they'd be anonymous purple dots.
+    func testPinOfACampTheStyleLayerDoesNotNameLabelsItself() {
+        XCTAssertFalse(pinLabelIsHidden(campUID: unlabeledCamp, styleLabeledCampUIDs: styleLabels))
+        XCTAssertTrue(pinLabelIsHidden(campUID: unlabeledCamp,
+                                       zoomLevel: 13,
+                                       styleLabeledCampUIDs: styleLabels))
+    }
+
+    /// A year whose placement hasn't dropped ships an empty (or absent) `camp_labels.geojson`;
+    /// every camp then labels itself, exactly as before this split existed.
+    func testEveryCampLabelsItselfWhenTheGeojsonNamesNobody() {
+        XCTAssertFalse(pinLabelIsHidden(campUID: labeledCamp, styleLabeledCampUIDs: []))
+        XCTAssertFalse(pinLabelIsHidden(campUID: unlabeledCamp, styleLabeledCampUIDs: []))
+    }
+
+    /// Whatever the geojson says, a layer that isn't painting can't be relied on: "Show Camp
+    /// Names" off, or below the layer's minzoom, hands every camp back to its pin.
+    func testEveryCampLabelsItselfWhenTheStyleLayerIsNotPainting() {
+        XCTAssertFalse(pinLabelIsHidden(campUID: labeledCamp,
+                                        styleDrawsCampNames: false,
+                                        styleLabeledCampUIDs: styleLabels))
+    }
+
+    /// Art, events and map points are untouched by any of this — only the zoom cut applies.
+    func testNonCampPinsKeepTheirLabels() {
+        XCTAssertFalse(pinLabelIsHidden(campUID: nil, styleLabeledCampUIDs: styleLabels))
+        XCTAssertTrue(pinLabelIsHidden(campUID: nil, zoomLevel: 13, styleLabeledCampUIDs: styleLabels))
+        // …and a nil index (still loading) must not silently mute them either.
+        XCTAssertFalse(pinLabelIsHidden(campUID: nil, styleLabeledCampUIDs: nil))
+    }
+
+    /// While the index is still loading, camps assume the layer has them: true for all but a
+    /// handful, and the wrong guess in the other direction is a visible flash of doubled text.
+    func testCampPinsYieldWhileTheIndexIsStillLoading() {
+        XCTAssertTrue(pinLabelIsHidden(campUID: unlabeledCamp, styleLabeledCampUIDs: nil))
+        XCTAssertFalse(pinLabelIsHidden(campUID: unlabeledCamp,
+                                        styleDrawsCampNames: false,
+                                        styleLabeledCampUIDs: nil))
+    }
+
+    // MARK: - Reading the label index out of the bundle
+
+    func testLabelIndexCollectsEveryFeaturesUID() throws {
+        let geojson = """
+        {"type":"FeatureCollection","features":[
+          {"type":"Feature","properties":{"uid":"a1","name":"One"},
+           "geometry":{"type":"Point","coordinates":[-119.2,40.7]}},
+          {"type":"Feature","properties":{"uid":"a2","name":"Two"},
+           "geometry":{"type":"Point","coordinates":[-119.3,40.8]}},
+          {"type":"Feature","properties":{"name":"Anonymous"},
+           "geometry":{"type":"Point","coordinates":[-119.4,40.9]}}
+        ]}
+        """
+        let data = try XCTUnwrap(geojson.data(using: .utf8))
+        XCTAssertEqual(CampStyleLabelIndex.parse(data), ["a1", "a2"])
+    }
+
+    /// A pre-placement year, and anything unreadable, degrade to "no camp is style-labeled" —
+    /// which puts every name back under its pin rather than losing it.
+    func testLabelIndexIsEmptyForMissingOrEmptyData() throws {
+        let empty = try XCTUnwrap(#"{"type":"FeatureCollection","features":[]}"#.data(using: .utf8))
+        XCTAssertEqual(CampStyleLabelIndex.parse(empty), [])
+        XCTAssertEqual(CampStyleLabelIndex.parse(contentsOf: nil), [])
+        let missing = URL(fileURLWithPath: "/nonexistent/camp_labels.geojson")
+        XCTAssertEqual(CampStyleLabelIndex.parse(contentsOf: missing), [])
+        let garbage = try XCTUnwrap("not json".data(using: .utf8))
+        XCTAssertEqual(CampStyleLabelIndex.parse(garbage), [])
     }
 
     // MARK: - Nearby location line

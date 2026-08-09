@@ -57,6 +57,12 @@ public class MapViewAdapter: NSObject {
         self.dataSource = dataSource
         super.init()
         self.mapView.delegate = self
+        // Which camps the style layer already names decides which pins draw their own name,
+        // so start reading the geojson now and re-apply the verdict when it lands. Until
+        // then pins assume the layer has them, which is true of all but a handful of camps.
+        CampStyleLabelIndex.shared.load { [weak self] in
+            self?.updatePinLabelVisibility()
+        }
     }
     
     // MARK: - Helper Methods
@@ -220,7 +226,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
             }
             labelAnnotationView.imageView.image = image
             labelAnnotationView.label.text = data.title
-            labelAnnotationView.drawsCampName = annotationIsCamp(annotation)
+            labelAnnotationView.campUID = campUID(for: annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
         } else if let data = annotation as? PlayaObjectAnnotation {
@@ -232,7 +238,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
             }
             labelAnnotationView.imageView.image = image
             labelAnnotationView.label.text = data.title
-            labelAnnotationView.drawsCampName = annotationIsCamp(annotation)
+            labelAnnotationView.campUID = campUID(for: annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
         }
@@ -321,29 +327,39 @@ extension MapViewAdapter {
     /// Applies the current zoom's rules to every live `LabelAnnotationView`.
     ///
     /// Beyond the plain "too far out to read" cut, camp pins have a second rule: the
-    /// `camp-labels-big` style layer draws the same camp names, and since a camp's GPS is
-    /// now its polygon centroid the two land on the identical coordinate. Whichever side
-    /// `CampLayerVisibility` says is drawing at this zoom is the one that shows the name.
+    /// `camp-labels-big` style layer draws camp names at each camp's polygon centroid, which
+    /// is the exact coordinate the camp's pin sits on. The layer wins wherever it has a
+    /// label — the pin is then a bare glyph at any zoom — and camps it has no feature for
+    /// keep labelling themselves. See `PinLabelVisibility`.
     ///
-    /// Call after anything that can change that verdict — zoom, embargo, the Map Filter.
+    /// Call after anything that can change that verdict — zoom, embargo, the Map Filter — and
+    /// once the label index finishes loading.
     func updatePinLabelVisibility() {
         let zoomLevel = mapView.zoomLevel
-        let tooFarOut = zoomLevel <= pinLabelHiddenAtOrBelowZoom
+        let hiddenAtOrBelowZoom = pinLabelHiddenAtOrBelowZoom
         let styleDrawsCampNames = CampLayerVisibility.current(zoomLevel: zoomLevel).campNamesDrawnByStyleLayer
+        let styleLabeledCampUIDs = CampStyleLabelIndex.shared.labeledCampUIDs
         for view in labelViews {
-            view.label.isHidden = tooFarOut || (view.drawsCampName && styleDrawsCampNames)
+            view.label.isHidden = PinLabelVisibility.labelIsHidden(
+                zoomLevel: zoomLevel,
+                hiddenAtOrBelowZoom: hiddenAtOrBelowZoom,
+                campUID: view.campUID,
+                styleDrawsCampNames: styleDrawsCampNames,
+                styleLabeledCampUIDs: styleLabeledCampUIDs
+            )
         }
     }
 
-    /// Whether this annotation's name is also drawn by the `camp-labels-big` style layer.
-    func annotationIsCamp(_ annotation: MLNAnnotation) -> Bool {
+    /// The camp uid behind this annotation, or nil when it isn't a camp. Both object graphs
+    /// key camps by the API's `uid`, which is what `camp_labels.geojson` carries.
+    func campUID(for annotation: MLNAnnotation) -> String? {
         if let playa = annotation as? PlayaObjectAnnotation {
-            return playa.id.objectType == .camp
+            return playa.id.objectType == .camp ? playa.id.uid : nil
         }
         if let data = annotation as? DataObjectAnnotation {
-            return data.object is BRCCampObject
+            return (data.object as? BRCCampObject)?.uniqueID
         }
-        return false
+        return nil
     }
 }
 

@@ -309,10 +309,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
             self.filteredDataSource.updateFilters()
             // Update map layers based on new filter settings
             self.mapLayerManager.updateAllLayers()
-            // The camp pin toggles decide which of the style layer and the pins draws camp
-            // names, so all three have to be re-resolved together — otherwise the pins the
-            // user just turned off linger with their labels already yielded to a style
-            // layer that is not drawing yet, and no camp is named until the map is panned.
+            // The camp toggles add and remove pins, and "Show Camp Names" decides whether a
+            // camp pin has to label itself, so both have to be re-resolved on Done —
+            // otherwise the change doesn't land until the user happens to pan the map.
             self.userMapViewAdapter?.refreshRegionAnnotations()
             self.mapViewAdapter.updatePinLabelVisibility()
         }
