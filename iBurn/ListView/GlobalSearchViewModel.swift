@@ -6,8 +6,30 @@ final class GlobalSearchViewModel: ObservableObject {
     // MARK: - Published
 
     @Published var searchText: String = "" {
-        didSet { scheduleSearch() }
+        didSet { runSearch(debounced: true) }
     }
+
+    /// Data-type scope. Session-only: a scope narrow enough to hide most of the city
+    /// shouldn't outlive the search it was chosen for.
+    @Published var scope: GlobalSearchScope = .all {
+        didSet {
+            guard oldValue != scope else { return }
+            runSearch(debounced: false)
+        }
+    }
+
+    @Published var filter: GlobalSearchFilter {
+        didSet {
+            guard oldValue != filter else { return }
+            saveFilter()
+            runSearch(debounced: false)
+        }
+    }
+
+    /// Whether the filter sheet is up. Lives on the view model because the control that
+    /// opens it isn't always in the SwiftUI view — the search tab puts it on its
+    /// navigation bar, where the app's other list screens keep their filter buttons.
+    @Published var isShowingFilters: Bool = false
 
     @Published var sections: [SearchResultSection] = []
     @Published var isSearching: Bool = false
@@ -22,22 +44,28 @@ final class GlobalSearchViewModel: ObservableObject {
 
     private let playaDB: PlayaDB
     private let aiSearchService: AISearchService?
+    /// `nil` opts out of persistence entirely (previews, tests).
+    private let filterStorageKey: String?
 
     // MARK: - Tasks
 
     private var searchTask: Task<Void, Never>?
-    private var aiSearchTask: Task<Void, Never>?
 
     // MARK: - Init
 
-    init(playaDB: PlayaDB, aiSearchService: AISearchService? = nil) {
+    init(
+        playaDB: PlayaDB,
+        aiSearchService: AISearchService? = nil,
+        filterStorageKey: String? = "globalSearchFilter"
+    ) {
         self.playaDB = playaDB
         self.aiSearchService = aiSearchService
+        self.filterStorageKey = filterStorageKey
+        self.filter = filterStorageKey.flatMap(Self.loadFilter(key:)) ?? GlobalSearchFilter()
     }
 
     deinit {
         searchTask?.cancel()
-        aiSearchTask?.cancel()
     }
 
     /// Whether AI-enhanced search is available on this device
@@ -45,11 +73,28 @@ final class GlobalSearchViewModel: ObservableObject {
         aiSearchService?.isAvailable == true
     }
 
+    /// AI results are ranked by the model, which has no view of local favorite state,
+    /// so a favorites-only search can only be answered from the database.
+    var isAISearchEnabled: Bool {
+        isAISearchAvailable && !filter.onlyFavorites
+    }
+
+    /// Event rows carry an occurrence-scoped uid (`event.uid_occurrenceId`) while AI
+    /// results are keyed by the parent event uid, so the badge has to check both.
+    func isAISuggested(_ item: SearchResultItem) -> Bool {
+        switch item {
+        case .event(let occurrence):
+            aiSuggestedUIDs.contains(occurrence.event.uid) || aiSuggestedUIDs.contains(occurrence.uid)
+        default:
+            aiSuggestedUIDs.contains(item.uid)
+        }
+    }
+
     // MARK: - Search
 
-    private func scheduleSearch() {
+    /// - Parameter debounced: typing debounces; flipping scope or a filter re-runs at once.
+    private func runSearch(debounced: Bool) {
         searchTask?.cancel()
-        aiSearchTask?.cancel()
 
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -64,47 +109,126 @@ final class GlobalSearchViewModel: ObservableObject {
         isSearching = true
         aiSuggestedUIDs = []
 
+        let scope = self.scope
+        let filter = self.filter
+        let runAI = isAISearchEnabled
+
         searchTask = Task { [weak self] in
-            // Debounce 0.3 seconds
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            guard !Task.isCancelled else { return }
+            if debounced {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                guard !Task.isCancelled else { return }
+            }
 
             guard let self else { return }
 
             do {
-                let results = try await self.playaDB.searchObjects(query)
+                let results = try await self.fetchResults(query: query, scope: scope, filter: filter)
                 guard !Task.isCancelled else { return }
 
-                let ftsUIDs = Set(results.map { $0.uid })
+                self.sections = results.sections
+                self.isSearching = false
 
-                let grouped = await self.groupResults(results)
-                guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    self.sections = grouped
-                    self.isSearching = false
-                }
-
-                // Launch AI search in parallel if available
-                if let aiService = self.aiSearchService, aiService.isAvailable {
-                    await self.runAISearch(query: query, ftsUIDs: ftsUIDs)
+                if runAI {
+                    await self.runAISearch(
+                        query: query,
+                        ftsUIDs: results.matchedUIDs,
+                        scope: scope,
+                        filter: filter
+                    )
                 }
             } catch {
                 guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    self.sections = []
-                    self.isSearching = false
-                }
+                self.sections = []
+                self.isSearching = false
                 print("Search error: \(error)")
             }
         }
     }
 
+    /// Per-type filtered fetches, skipping any table the scope excludes.
+    ///
+    /// `matchedUIDs` is keyed by *object* uid (the parent event uid for events) because
+    /// that's the identifier the AI service returns.
+    private func fetchResults(
+        query: String,
+        scope: GlobalSearchScope,
+        filter: GlobalSearchFilter
+    ) async throws -> (sections: [SearchResultSection], matchedUIDs: Set<String>) {
+        var sections: [SearchResultSection] = []
+        var matchedUIDs: Set<String> = []
+
+        if scope.allows(.art) {
+            let art = try await playaDB.fetchArt(
+                filter: ArtFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
+            )
+            matchedUIDs.formUnion(art.map(\.uid))
+            if !art.isEmpty {
+                sections.append(SearchResultSection(id: .art, title: "Art", items: art.map(SearchResultItem.art)))
+            }
+        }
+
+        if scope.allows(.camp) {
+            let camps = try await playaDB.fetchCamps(
+                filter: CampFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
+            )
+            matchedUIDs.formUnion(camps.map(\.uid))
+            if !camps.isEmpty {
+                sections.append(SearchResultSection(id: .camp, title: "Camps", items: camps.map(SearchResultItem.camp)))
+            }
+        }
+
+        if scope.allows(.event) {
+            let occurrences = try await playaDB.fetchEvents(
+                filter: EventFilter(
+                    searchText: query,
+                    onlyFavorites: filter.onlyFavorites,
+                    includeExpired: true,
+                    happeningNow: filter.happeningNow
+                )
+            )
+            // One row per event, matching the previous EventObject → first-occurrence
+            // display. The fetch is ordered by start time, so "first seen" is the
+            // earliest matching occurrence.
+            var seenEventUIDs: Set<String> = []
+            let deduped = occurrences.filter { seenEventUIDs.insert($0.event.uid).inserted }
+            matchedUIDs.formUnion(deduped.map(\.event.uid))
+            if !deduped.isEmpty {
+                sections.append(
+                    SearchResultSection(id: .event, title: "Events", items: deduped.map(SearchResultItem.event))
+                )
+            }
+        }
+
+        if scope.allows(.mutantVehicle) {
+            let vehicles = try await playaDB.fetchMutantVehicles(
+                filter: MutantVehicleFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
+            )
+            matchedUIDs.formUnion(vehicles.map(\.uid))
+            if !vehicles.isEmpty {
+                sections.append(
+                    SearchResultSection(
+                        id: .mutantVehicle,
+                        title: "Vehicles",
+                        items: vehicles.map(SearchResultItem.mutantVehicle)
+                    )
+                )
+            }
+        }
+
+        return (sections, matchedUIDs)
+    }
+
     /// Run AI search and merge any new results not found by FTS5
-    private func runAISearch(query: String, ftsUIDs: Set<String>) async {
+    private func runAISearch(
+        query: String,
+        ftsUIDs: Set<String>,
+        scope: GlobalSearchScope,
+        filter: GlobalSearchFilter
+    ) async {
         guard let aiService = aiSearchService else { return }
         guard !Task.isCancelled else { return }
 
-        await MainActor.run { self.isAISearching = true }
+        isAISearching = true
 
         do {
             let aiResults = try await aiService.search(query)
@@ -113,34 +237,51 @@ final class GlobalSearchViewModel: ObservableObject {
             // Find UIDs that AI found but FTS5 missed
             let newUIDs = aiResults.map(\.uid).filter { !ftsUIDs.contains($0) }
 
-            if !newUIDs.isEmpty {
-                // Fetch the actual objects for these UIDs and build SearchResultItems
-                var newItems: [SearchResultItem] = []
-                for uid in newUIDs {
-                    if let art = try? await playaDB.fetchArt(uid: uid) {
-                        newItems.append(.art(art))
-                    } else if let camp = try? await playaDB.fetchCamp(uid: uid) {
-                        newItems.append(.camp(camp))
-                    } else if let occurrences = try? await playaDB.fetchOccurrences(forEventUID: uid),
-                              let occurrence = occurrences.first {
-                        newItems.append(.event(occurrence))
-                    } else if let mv = try? await playaDB.fetchMutantVehicle(uid: uid) {
-                        newItems.append(.mutantVehicle(mv))
-                    }
-                }
-
-                await MainActor.run {
-                    self.aiSuggestedUIDs = Set(newUIDs)
-                    self.mergeAIResults(newItems)
-                    self.isAISearching = false
-                }
-            } else {
-                await MainActor.run { self.isAISearching = false }
+            guard !newUIDs.isEmpty else {
+                isAISearching = false
+                return
             }
+
+            // Fetch the actual objects for these UIDs and build SearchResultItems
+            var newItems: [SearchResultItem] = []
+            var resolvedUIDs: Set<String> = []
+            for uid in newUIDs {
+                if scope.allows(.art), let art = try? await playaDB.fetchArt(uid: uid) {
+                    newItems.append(.art(art))
+                    resolvedUIDs.insert(uid)
+                } else if scope.allows(.camp), let camp = try? await playaDB.fetchCamp(uid: uid) {
+                    newItems.append(.camp(camp))
+                    resolvedUIDs.insert(uid)
+                } else if scope.allows(.event),
+                          let occurrences = try? await playaDB.fetchOccurrences(forEventUID: uid),
+                          let occurrence = pickOccurrence(from: occurrences, filter: filter) {
+                    newItems.append(.event(occurrence))
+                    resolvedUIDs.insert(uid)
+                } else if scope.allows(.mutantVehicle), let mv = try? await playaDB.fetchMutantVehicle(uid: uid) {
+                    newItems.append(.mutantVehicle(mv))
+                    resolvedUIDs.insert(uid)
+                }
+            }
+            guard !Task.isCancelled else { return }
+
+            aiSuggestedUIDs = resolvedUIDs
+            mergeAIResults(newItems)
+            isAISearching = false
         } catch {
             print("AI search error: \(error)")
-            await MainActor.run { self.isAISearching = false }
+            isAISearching = false
         }
+    }
+
+    /// AI results bypass the SQL filters, so the happening-now knob is applied here:
+    /// an event only survives if one of its occurrences is running right now.
+    private func pickOccurrence(
+        from occurrences: [EventObjectOccurrence],
+        filter: GlobalSearchFilter
+    ) -> EventObjectOccurrence? {
+        guard filter.happeningNow else { return occurrences.first }
+        let now = Date()
+        return occurrences.first { $0.isCurrentlyHappening(now) }
     }
 
     /// Merge AI-discovered items into existing sections
@@ -175,45 +316,16 @@ final class GlobalSearchViewModel: ObservableObject {
         self.sections = newSections
     }
 
-    // MARK: - Grouping
+    // MARK: - Filter Persistence
 
-    /// Group search results into sections, resolving EventObject → EventObjectOccurrence
-    private func groupResults(_ objects: [Any]) async -> [SearchResultSection] {
-        var artItems: [SearchResultItem] = []
-        var campItems: [SearchResultItem] = []
-        var eventItems: [SearchResultItem] = []
-        var mvItems: [SearchResultItem] = []
-
-        for object in objects {
-            if let art = object as? ArtObject {
-                artItems.append(.art(art))
-            } else if let camp = object as? CampObject {
-                campItems.append(.camp(camp))
-            } else if let event = object as? EventObject {
-                // Resolve to first occurrence for display
-                if let occurrences = try? await playaDB.fetchOccurrences(forEventUID: event.uid),
-                   let occurrence = occurrences.first {
-                    eventItems.append(.event(occurrence))
-                }
-            } else if let mv = object as? MutantVehicleObject {
-                mvItems.append(.mutantVehicle(mv))
-            }
-        }
-
-        var sections: [SearchResultSection] = []
-        if !artItems.isEmpty {
-            sections.append(SearchResultSection(id: .art, title: "Art", items: artItems))
-        }
-        if !campItems.isEmpty {
-            sections.append(SearchResultSection(id: .camp, title: "Camps", items: campItems))
-        }
-        if !eventItems.isEmpty {
-            sections.append(SearchResultSection(id: .event, title: "Events", items: eventItems))
-        }
-        if !mvItems.isEmpty {
-            sections.append(SearchResultSection(id: .mutantVehicle, title: "Vehicles", items: mvItems))
-        }
-        return sections
+    private func saveFilter() {
+        guard let filterStorageKey,
+              let data = try? JSONEncoder().encode(filter) else { return }
+        UserDefaults.standard.set(data, forKey: filterStorageKey)
     }
 
+    private static func loadFilter(key: String) -> GlobalSearchFilter? {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(GlobalSearchFilter.self, from: data)
+    }
 }

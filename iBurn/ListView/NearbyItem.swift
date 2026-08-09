@@ -1,6 +1,39 @@
 import CoreLocation
 import PlayaDB
 
+extension String {
+    /// Self unless it is empty or only whitespace.
+    var trimmedNonEmpty: String? {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
+    }
+}
+
+extension EventObjectOccurrence {
+    /// How far ahead a not-yet-started occurrence still counts as nearby.
+    static let nearbyStartingSoonWindow: TimeInterval = 30 * 60
+
+    /// How much of an occurrence's tail to trim.
+    ///
+    /// `isCurrentlyHappening` counts an occurrence as happening right up to and including
+    /// its end time, and the relative-time formatter can't render less than a minute — so
+    /// the final seconds rendered as "(0m left)", advertising something that is over. This
+    /// also absorbs the refresh cadence of both surfaces: neither re-evaluates `now` often
+    /// enough to drop an occurrence the instant it ends.
+    static let nearbyEndingGrace: TimeInterval = 60
+
+    /// The one window both Nearby surfaces show: already running with real time left, or
+    /// starting within the next half hour.
+    ///
+    /// Shared deliberately. The map card and the Nearby screen had grown separate
+    /// predicates — `isCurrentlyHappening || isStartingSoon` against
+    /// `startDate <= now + 30m && endDate > now` — which agreed most of the time and
+    /// disagreed at the edges, so the two screens listed different events.
+    func isInNearbyWindow(now: Date) -> Bool {
+        startDate <= now.addingTimeInterval(Self.nearbyStartingSoonWindow)
+            && endDate > now.addingTimeInterval(Self.nearbyEndingGrace)
+    }
+}
+
 /// Section identifiers for the nearby list
 enum NearbySectionID: String {
     case events
@@ -42,6 +75,24 @@ enum NearbyItem: Identifiable {
         case .art(let r): r.object.location
         case .camp(let r): r.object.location
         case .event(let r): r.object.location
+        }
+    }
+
+    /// Playa address for display, or nil while the embargo hides it. Art and camps are
+    /// gated by their own embargo tiers; an event follows its host, and falls back to its
+    /// free-text location, which is what unhosted events carry instead of an address.
+    var address: String? {
+        switch self {
+        case .art(let r):
+            guard BRCEmbargo.canShowArtLocations() else { return nil }
+            return r.object.address?.trimmedNonEmpty
+        case .camp(let r):
+            guard BRCEmbargo.canShowCampLocations() else { return nil }
+            return r.object.address?.trimmedNonEmpty
+        case .event(let r):
+            let other = r.object.otherLocation.trimmedNonEmpty
+            guard BRCEmbargo.canShowLocation(for: r.object) else { return other }
+            return r.object.hostAddress?.trimmedNonEmpty ?? other
         }
     }
 

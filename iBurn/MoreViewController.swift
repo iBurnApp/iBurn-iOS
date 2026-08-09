@@ -50,18 +50,32 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     enum DetailViewsRow: Int, CaseIterable {
-        case art = 0
-        case camps = 1
-        case mutantVehicles = 2
-        case recentlyViewed = 3
-        case aiGuide = 4
-        case visitList = 5
-        case audioTour = 6
-        case locationHistory = 7
+        case nearby = 0
+        case favorites = 1
+        case events = 2
+        case art = 3
+        case camps = 4
+        case mutantVehicles = 5
+        case recentlyViewed = 6
+        case aiGuide = 7
+        case visitList = 8
+        case audioTour = 9
+        case locationHistory = 10
+
+        /// The tab this row stands in for while that tab is off the tab bar, if any.
+        var displacedTabIdentifier: TabIdentifier? {
+            switch self {
+            case .nearby: return .nearby
+            case .favorites: return .favorites
+            case .events: return .events
+            default: return nil
+            }
+        }
     }
-    
+
     enum CustomizationRow: Int, CaseIterable {
         case appearance = 0
+        case tabs = 1
     }
     
     enum ContactRow: Int, CaseIterable {
@@ -154,10 +168,17 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     
     private var visibleDetailViewRows: [DetailViewsRow] {
         DetailViewsRow.allCases.filter { row in
-            if row == .aiGuide {
+            switch row {
+            case .aiGuide:
                 return BRCAppDelegate.shared.dependencies.makeAIGuideViewModel() != nil
+            default:
+                // More is the overflow for browse surfaces that aren't tabs: a row that
+                // stands in for a tab appears only once that tab is gone (user-hidden, or
+                // displaced by the search tab). Showing one alongside a live tab would
+                // just be a second path to one screen.
+                guard let identifier = row.displacedTabIdentifier else { return true }
+                return TabController.isDisplacedFromTabBar(identifier)
             }
-            return true
         }
     }
 
@@ -189,6 +210,12 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         case .detailViews(let row):
             let moreCell = tableView.dequeueReusableCell(MoreTableViewCell.self, for: indexPath)
             switch row {
+            case .nearby:
+                moreCell.configure(title: "Nearby", imageName: "BRCCompassIcon", tag: row.rawValue)
+            case .favorites:
+                moreCell.configure(title: "Favorites", imageName: "BRCHeartIcon", tag: row.rawValue)
+            case .events:
+                moreCell.configure(title: "Events", imageName: "BRCEventIcon", tag: row.rawValue)
             case .art:
                 moreCell.configure(title: "Art", imageName: "BRCArtIcon", tag: row.rawValue)
             case .camps:
@@ -213,6 +240,8 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
             switch row {
             case .appearance:
                 moreCell.configure(title: "Appearance", imageName: "BRCThemeIcon", tag: row.rawValue)
+            case .tabs:
+                moreCell.configure(title: "Customize Tabs", systemImageName: "square.grid.2x2", tag: row.rawValue)
             }
             cell = moreCell
             
@@ -284,6 +313,9 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         switch cellType {
         case .detailViews(let row):
             switch row {
+            case .nearby: pushNearbyView()
+            case .favorites: pushFavoritesView()
+            case .events: pushEventsView()
             case .art: pushArtView()
             case .camps: pushCampsView()
             case .mutantVehicles: pushMutantVehiclesView()
@@ -296,6 +328,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         case .customization(let row):
             switch row {
             case .appearance: pushAppearanceView()
+            case .tabs: pushTabCustomizationView()
             }
         case .contact(let row):
             switch row {
@@ -341,6 +374,30 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     func pushTracksView() {
         let tracksVC = TracksViewController()
         self.navigationController?.pushViewController(tracksVC, animated: true)
+    }
+
+    /// Reuses the app delegate's factory rather than rebuilding the screen, so the row
+    /// and the tab (when it has one) push the exact same Nearby list.
+    func pushNearbyView() {
+        let nearbyVC = BRCAppDelegate.shared.createNearbyViewController()
+        nearbyVC.title = "Nearby"
+        navigationController?.pushViewController(nearbyVC, animated: true)
+    }
+
+    /// Reuses the app delegate's factory rather than rebuilding the screen, so the row
+    /// and the tab (when it has one) push the exact same Favorites list.
+    func pushFavoritesView() {
+        let favoritesVC = BRCAppDelegate.shared.createFavoritesViewController()
+        favoritesVC.title = "Favorites"
+        navigationController?.pushViewController(favoritesVC, animated: true)
+    }
+
+    /// Reuses the app delegate's factory rather than rebuilding the screen, so the row
+    /// and the tab (when it has one) push the exact same Events list.
+    func pushEventsView() {
+        let eventsVC = BRCAppDelegate.shared.createEventsViewController()
+        eventsVC.title = "Events"
+        navigationController?.pushViewController(eventsVC, animated: true)
     }
 
     func pushArtView() {
@@ -483,6 +540,11 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
         navigationController?.pushViewController(vc, animated: true)
     }
     
+    func pushTabCustomizationView() {
+        let vc = CustomizeTabsHostingController()
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
     func pushDataUpdatesView() {
         let vc = DataUpdatesFactory.makeViewController()
         navigationController?.pushViewController(vc, animated: true)

@@ -16,7 +16,9 @@ final class GlobalSearchViewModelTests: XCTestCase {
             campData: Self.campJSON,
             eventData: Self.eventJSON
         )
-        viewModel = GlobalSearchViewModel(playaDB: playaDB)
+        // nil storage key keeps the filter out of UserDefaults, so tests don't leak
+        // filter state into each other or into the simulator's defaults.
+        viewModel = GlobalSearchViewModel(playaDB: playaDB, filterStorageKey: nil)
     }
 
     override func tearDown() async throws {
@@ -119,6 +121,119 @@ final class GlobalSearchViewModelTests: XCTestCase {
         }
     }
 
+    // MARK: - Scope
+
+    func testInitialScopeIsAll() {
+        XCTAssertEqual(viewModel.scope, .all)
+        XCTAssertTrue(viewModel.filter.isDefault)
+    }
+
+    func testScopedSearchReturnsOnlyThatType() async {
+        viewModel.scope = .art
+        viewModel.searchText = "Burning"
+
+        let hasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(hasResults)
+        XCTAssertEqual(viewModel.sections.map(\.id), [.art])
+    }
+
+    func testScopeExcludesOtherTypes() async {
+        // "Services" is camp-only test data.
+        viewModel.searchText = "Services"
+        let foundCamp = await eventually { self.viewModel.sections.contains { $0.id == .camp } }
+        XCTAssertTrue(foundCamp, "Unscoped search should find the camp")
+
+        viewModel.scope = .art
+        let scopedOut = await eventually {
+            !self.viewModel.isSearching && self.viewModel.sections.isEmpty
+        }
+        XCTAssertTrue(scopedOut, "Art scope should skip camps entirely")
+    }
+
+    func testChangingScopeReRunsSearchWithoutRetyping() async {
+        viewModel.scope = .camps
+        viewModel.searchText = "Burning"
+        let campScopeEmpty = await eventually {
+            !self.viewModel.isSearching && self.viewModel.sections.isEmpty
+        }
+        XCTAssertTrue(campScopeEmpty)
+
+        viewModel.scope = .art
+        let artScopeHasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(artScopeHasResults, "Scope change alone should re-run the query")
+    }
+
+    // MARK: - Search Semantics
+
+    func testMultiWordOutOfOrderQueryMatches() async {
+        // AND-of-tokens, not phrase matching: the old quoted-phrase search missed this.
+        viewModel.searchText = "questions burning"
+
+        let hasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(hasResults, "All tokens present in any order should match")
+        XCTAssertTrue(viewModel.sections.contains { $0.id == .art })
+    }
+
+    func testEventResultsHaveOneRowPerEvent() async throws {
+        viewModel.scope = .events
+        viewModel.searchText = "Tarot"
+
+        let hasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(hasResults)
+
+        let eventSection = try XCTUnwrap(viewModel.sections.first { $0.id == .event })
+        let uids = eventSection.items.map(\.uid)
+        XCTAssertEqual(uids.count, Set(uids).count, "Each event should appear once")
+    }
+
+    // MARK: - Filter
+
+    func testOnlyFavoritesFiltersResults() async throws {
+        viewModel.filter.onlyFavorites = true
+        viewModel.searchText = "Services"
+
+        let noFavorites = await eventually {
+            !self.viewModel.isSearching && self.viewModel.sections.isEmpty
+        }
+        XCTAssertTrue(noFavorites, "Nothing is favorited yet")
+
+        let camps = try await playaDB.fetchCamps()
+        let camp = try XCTUnwrap(camps.first)
+        try await playaDB.setFavorite(true, for: camp)
+
+        // Re-assigning the same text re-runs the query against the new favorite state.
+        viewModel.searchText = "Services"
+        let foundFavorite = await eventually {
+            self.viewModel.sections.contains { $0.id == .camp }
+        }
+        XCTAssertTrue(foundFavorite, "Favorited camp should pass the filter")
+    }
+
+    func testHappeningNowFiltersEventsByOccurrenceTime() async {
+        viewModel.scope = .events
+        viewModel.searchText = "Tarot"
+
+        let hasEvent = await eventually { self.viewModel.sections.contains { $0.id == .event } }
+        XCTAssertTrue(hasEvent)
+
+        // The only fixture occurrence is in 2025, so nothing can be running now.
+        viewModel.filter.happeningNow = true
+        let filteredOut = await eventually {
+            !self.viewModel.isSearching && self.viewModel.sections.isEmpty
+        }
+        XCTAssertTrue(filteredOut, "Happening Now should drop the past occurrence")
+    }
+
+    func testHappeningNowDoesNotAffectNonEventScopes() async {
+        viewModel.scope = .art
+        viewModel.filter.happeningNow = true
+        viewModel.searchText = "Burning"
+
+        let hasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(hasResults, "Event-only knob should be inert for art")
+        XCTAssertEqual(viewModel.sections.map(\.id), [.art])
+    }
+
     // MARK: - AI Search Integration Tests
 
     func testInitialStateHasNoAISuggestions() {
@@ -135,7 +250,7 @@ final class GlobalSearchViewModelTests: XCTestCase {
         let mockAI = MockAISearchService(results: [
             AISearchResult(uid: "ai-uid-1", reason: "semantically relevant")
         ])
-        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI)
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil)
 
         XCTAssertTrue(vm.isAISearchAvailable)
 
@@ -156,7 +271,7 @@ final class GlobalSearchViewModelTests: XCTestCase {
         let mockAI = MockAISearchService(results: [
             AISearchResult(uid: "ai-uid-1", reason: "test")
         ])
-        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI)
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil)
 
         vm.searchText = "Burning"
         let hasResults = await eventually { !vm.sections.isEmpty }
@@ -165,6 +280,17 @@ final class GlobalSearchViewModelTests: XCTestCase {
         vm.searchText = ""
         let cleared = await eventually { vm.aiSuggestedUIDs.isEmpty }
         XCTAssertTrue(cleared, "Clearing search should clear AI suggestions")
+    }
+
+    func testOnlyFavoritesDisablesAISearch() {
+        let mockAI = MockAISearchService(results: [])
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil)
+
+        XCTAssertTrue(vm.isAISearchEnabled)
+
+        // The model can't see local favorite state, so it can't answer this query.
+        vm.filter.onlyFavorites = true
+        XCTAssertFalse(vm.isAISearchEnabled)
     }
 }
 

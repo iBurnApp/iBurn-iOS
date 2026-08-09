@@ -7,7 +7,7 @@
 //
 //  Unit tests for the on-map nearby card ordering: events first (happening now /
 //  starting soon, by start time), then art + camps by distance, gated to the
-//  radius, de-duped by id, capped to maxItems.
+//  radius and to the user's enabled types, de-duped by id, capped to maxItems.
 //
 
 import XCTest
@@ -68,6 +68,7 @@ final class NearbyCardViewModelTests: XCTestCase {
         art: [ListRow<ArtObject>] = [],
         camps: [ListRow<CampObject>] = [],
         events: [ListRow<EventObjectOccurrence>] = [],
+        types: NearbyCardTypes = .all,
         radius: CLLocationDistance = 100,
         maxItems: Int = 12
     ) -> [NearbyItem] {
@@ -75,6 +76,7 @@ final class NearbyCardViewModelTests: XCTestCase {
             art: art,
             camps: camps,
             events: events,
+            types: types,
             from: userLocation,
             now: now,
             radius: radius,
@@ -128,6 +130,54 @@ final class NearbyCardViewModelTests: XCTestCase {
         XCTAssertTrue(items.isEmpty, "Events that have ended should not appear")
     }
 
+    /// The card used to gate on `isCurrentlyHappening`, which counts an occurrence as
+    /// happening right up to its end time. The last minute has no minutes left to render,
+    /// so it displayed as "(0m left)" on something already over.
+    func testEventInItsFinalSecondsIsExcluded() throws {
+        let almostOver = eventRow("almostOver", lat: lat33m,
+                                  start: now.addingTimeInterval(-3600),
+                                  end: now.addingTimeInterval(30))
+        let items = order(events: [almostOver])
+
+        XCTAssertTrue(items.isEmpty, "An event with under a minute left should not be offered")
+    }
+
+    func testEventEndingExactlyNowIsExcluded() throws {
+        let endingNow = eventRow("endingNow", lat: lat33m,
+                                 start: now.addingTimeInterval(-3600),
+                                 end: now)
+        let items = order(events: [endingNow])
+
+        XCTAssertTrue(items.isEmpty)
+    }
+
+    func testEventWithRealTimeLeftIsIncluded() throws {
+        let running = eventRow("running", lat: lat33m,
+                               start: now.addingTimeInterval(-3600),
+                               end: now.addingTimeInterval(600))
+        let items = order(events: [running])
+
+        XCTAssertEqual(items.map(\.id), ["event-running_0"])
+    }
+
+    /// The card and the Nearby screen share one window so they can't list different
+    /// events. This pins the shared predicate rather than either call site.
+    func testNearbyWindowBoundaries() throws {
+        let startsInTenMinutes = eventRow("soon", lat: lat33m,
+                                          start: now.addingTimeInterval(600),
+                                          end: now.addingTimeInterval(3600)).object
+        let startsInTwoHours = eventRow("later", lat: lat33m,
+                                        start: now.addingTimeInterval(7200),
+                                        end: now.addingTimeInterval(10800)).object
+        let ended = eventRow("over", lat: lat33m,
+                             start: now.addingTimeInterval(-7200),
+                             end: now.addingTimeInterval(-60)).object
+
+        XCTAssertTrue(startsInTenMinutes.isInNearbyWindow(now: now))
+        XCTAssertFalse(startsInTwoHours.isInNearbyWindow(now: now), "Beyond the 30 minute lookahead")
+        XCTAssertFalse(ended.isInNearbyWindow(now: now))
+    }
+
     func testDuplicateIdsAreDeduped() throws {
         let items = order(art: [artRow("dup", lat: lat33m), artRow("dup", lat: lat67m)])
 
@@ -152,5 +202,55 @@ final class NearbyCardViewModelTests: XCTestCase {
         let items = order(art: [noGPS, artRow("withGPS", lat: lat33m)])
 
         XCTAssertEqual(items.map(\.id), ["art-withGPS"])
+    }
+
+    // MARK: - Type filtering
+
+    private func mixedFixtures() -> (
+        art: [ListRow<ArtObject>],
+        camps: [ListRow<CampObject>],
+        events: [ListRow<EventObjectOccurrence>]
+    ) {
+        let event = eventRow("E", lat: lat89m,
+                             start: now.addingTimeInterval(-600),
+                             end: now.addingTimeInterval(3000))
+        return ([artRow("A", lat: lat33m)], [campRow("C", lat: lat67m)], [event])
+    }
+
+    func testOnlyArtEnabledExcludesCampsAndEvents() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events, types: .art)
+
+        XCTAssertEqual(items.map(\.id), ["art-A"])
+    }
+
+    func testDisablingEventsKeepsArtAndCamps() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events,
+                          types: [.art, .camps])
+
+        XCTAssertEqual(items.map(\.id), ["art-A", "camp-C"], "Ordering by distance is unchanged")
+    }
+
+    func testOnlyEventsEnabledExcludesArtAndCamps() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events, types: .events)
+
+        XCTAssertEqual(items.count, 1)
+        let first = try XCTUnwrap(items.first)
+        XCTAssertTrue(first.id.hasPrefix("event-"))
+    }
+
+    func testNoTypesEnabledYieldsNothing() throws {
+        let fixtures = mixedFixtures()
+        let items = order(art: fixtures.art, camps: fixtures.camps, events: fixtures.events, types: [])
+
+        XCTAssertTrue(items.isEmpty)
+    }
+
+    func testTypesFromBoolsMatchesTheOptionSet() throws {
+        XCTAssertEqual(NearbyCardTypes(showArt: true, showCamps: true, showEvents: true), .all)
+        XCTAssertEqual(NearbyCardTypes(showArt: true, showCamps: false, showEvents: false), .art)
+        XCTAssertEqual(NearbyCardTypes(showArt: false, showCamps: false, showEvents: false), [])
     }
 }
