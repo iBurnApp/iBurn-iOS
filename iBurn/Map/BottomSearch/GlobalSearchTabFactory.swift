@@ -24,27 +24,48 @@ enum GlobalSearchTabFactory {
 
     /// Retains the search-results updater for the lifetime of the returned controller;
     /// `UISearchController.searchResultsUpdater` is a weak reference.
-    private final class Updater: NSObject, UISearchResultsUpdating {
+    ///
+    /// It doubles as the search controller's delegate, because activation is the only
+    /// event that says "the tab bar has become a search field": selecting the search tab
+    /// re-lays out nothing on the tab bar controller, so its own layout callbacks never
+    /// see the change.
+    private final class Updater: NSObject, UISearchResultsUpdating, UISearchControllerDelegate {
         private weak var host: GlobalSearchHostingController?
+        private let activationDidChange: (Bool) -> Void
 
-        init(host: GlobalSearchHostingController) {
+        init(host: GlobalSearchHostingController, activationDidChange: @escaping (Bool) -> Void) {
             self.host = host
+            self.activationDidChange = activationDidChange
         }
 
         func updateSearchResults(for searchController: UISearchController) {
             host?.viewModel.searchText = searchController.searchBar.text ?? ""
         }
+
+        func willPresentSearchController(_ searchController: UISearchController) {
+            activationDidChange(true)
+        }
+
+        func willDismissSearchController(_ searchController: UISearchController) {
+            activationDidChange(false)
+        }
     }
 
     private static var updaterKey: UInt8 = 0
 
-    static func makeSearchTabRoot(dependencies: DependencyContainer) -> UIViewController {
+    /// - Parameter searchActivationDidChange: Called as the search field takes over the
+    ///   tab bar and hands it back, so chrome anchored to the bar can get out of the way.
+    static func makeSearchTabRoot(
+        dependencies: DependencyContainer,
+        searchActivationDidChange: @escaping (Bool) -> Void = { _ in }
+    ) -> UIViewController {
         let host = dependencies.makeGlobalSearchHostingController()
         host.title = NSLocalizedString("Search", comment: "title for the search tab")
 
-        let updater = Updater(host: host)
+        let updater = Updater(host: host, activationDidChange: searchActivationDidChange)
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = updater
+        searchController.delegate = updater
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = NSLocalizedString(
             "Search art, camps, and events",

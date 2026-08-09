@@ -25,9 +25,46 @@ import UIKit
     private var tabCache: [ObjectIdentifier: AnyObject] = [:]
     private var searchTabCache: AnyObject?
 
+    /// The floating heart that stands in for the Favorites tab under the `.searchTab`
+    /// layout. Lives on the tab bar controller's own view rather than any child, so it is
+    /// there on every tab, and is created lazily — layouts that keep Favorites on the bar
+    /// never build it.
+    private lazy var favoritesButton: FavoritesFloatingButton = {
+        let button = FavoritesFloatingButton { [weak self] in
+            self?.presentFavorites()
+        }
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
+        return button
+    }()
+
+    private var favoritesButtonInstalled = false
+
+    /// Whether the search field has taken the tab bar's place. Set from the search tab
+    /// root's search controller, which is the only thing that reports the transition.
+    private var searchIsActive = false {
+        didSet {
+            guard searchIsActive != oldValue else { return }
+            updateFavoritesButtonVisibility()
+        }
+    }
+
+    /// The button only if it has actually been built, so theme refreshes don't bring one
+    /// into existence on a layout that doesn't want it.
+    private var favoritesButtonIfInstalled: FavoritesFloatingButton? {
+        favoritesButtonInstalled ? favoritesButton : nil
+    }
+
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         refreshTheme()
+    }
+
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Catches the bar moving off screen, which nothing announces. Search activation
+        // does *not* re-lay out this view — that arrives via `searchIsActive` instead.
+        updateFavoritesButtonVisibility()
     }
 
     /// Installs the app's root view controllers and arranges them for the active
@@ -52,10 +89,11 @@ import UIKit
     /// Arranges the roots for the user's tab configuration and the active search layout.
     ///
     /// Which tabs are on the bar is `TabConfiguration.current`'s decision alone —
-    /// including the Events tab the `.searchTab` layout takes away by default, which is
+    /// including the Favorites tab the `.searchTab` layout takes away by default, which is
     /// folded into that configuration (see `TabConfiguration.layoutHiddenByDefault`) so a
-    /// user who drags Events back onto the bar actually gets it. All this adds on top is
-    /// the `UISearchTab` itself. Anything off the bar shows up as a `MoreViewController` row.
+    /// user who drags Favorites back onto the bar actually gets it. All this adds on top is
+    /// the `UISearchTab` itself and the floating Favorites button that replaces the tab.
+    /// Anything off the bar also shows up as a `MoreViewController` row.
     @objc public func rebuildTabs() {
         guard !roots.isEmpty else { return }
         let selectedRoot = selectedViewController
@@ -94,6 +132,68 @@ import UIKit
             previousIdentifier: previousIdentifier,
             usesSearchTab: usesSearchTab
         )
+        updateFavoritesButton()
+    }
+
+    // MARK: - Floating Favorites button
+
+    /// Adds the button on first need and re-applies the visibility rule. Called from every
+    /// rebuild, which covers both notifications that can change the answer: the layout
+    /// switch and the user's tab customization.
+    private func updateFavoritesButton() {
+        guard FavoritesFABVisibility.isVisible else {
+            if favoritesButtonInstalled { favoritesButton.isHidden = true }
+            return
+        }
+        installFavoritesButtonIfNeeded()
+        updateFavoritesButtonVisibility()
+    }
+
+    private func installFavoritesButtonIfNeeded() {
+        guard !favoritesButtonInstalled else { return }
+        favoritesButtonInstalled = true
+        view.addSubview(favoritesButton)
+        NSLayoutConstraint.activate([
+            favoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            // Anchored to the bar itself rather than the safe area: the iOS 26 tab bar
+            // floats, and pinning to its top keeps the same gap whether or not an
+            // accessory is installed, and follows the bar when it slides away.
+            //
+            // The gap is 36 rather than a snug 12 because the map — the tab this button
+            // spends most of its life over — parks MapLibre's attribution ⓘ in exactly
+            // this corner, and that button has to stay tappable.
+            favoritesButton.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: -36),
+        ])
+    }
+
+    /// The button rides above the tab bar, so it is only ever on screen when the bar is:
+    /// activating search replaces the bar with a search field that then follows the
+    /// keyboard up the screen, and anything that hides the bar moves it off the bottom
+    /// edge.
+    private func updateFavoritesButtonVisibility() {
+        guard favoritesButtonInstalled else { return }
+        guard FavoritesFABVisibility.isVisible, !searchIsActive else {
+            favoritesButton.isHidden = true
+            return
+        }
+        favoritesButton.isHidden = tabBar.isHidden
+            || tabBar.alpha == 0
+            || tabBar.frame.minY >= view.bounds.height
+    }
+
+    /// Favorites as a sheet, built from the same factory the tab and the More row use so
+    /// all three paths land on one screen. `.large` only — it's a full list with search,
+    /// and detail pushes happen inside the sheet's own navigation controller.
+    @objc public func presentFavorites() {
+        guard presentedViewController == nil else { return }
+        let favoritesVC = BRCAppDelegate.shared.createFavoritesViewController()
+        favoritesVC.title = "Favorites"
+        let navigationController = NavigationController(rootViewController: favoritesVC)
+        if let sheet = navigationController.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(navigationController, animated: true)
     }
 
     /// The one `UITab` wrapping this root, created on first use. See `tabCache`.
@@ -114,8 +214,13 @@ import UIKit
     @available(iOS 26.0, *)
     private func searchTab() -> UISearchTab {
         if let existing = searchTabCache as? UISearchTab { return existing }
-        let searchTab = UISearchTab { _ in
-            GlobalSearchTabFactory.makeSearchTabRoot(dependencies: BRCAppDelegate.shared.dependencies)
+        let searchTab = UISearchTab { [weak self] _ in
+            GlobalSearchTabFactory.makeSearchTabRoot(
+                dependencies: BRCAppDelegate.shared.dependencies,
+                searchActivationDidChange: { [weak self] isActive in
+                    self?.searchIsActive = isActive
+                }
+            )
         }
         searchTab.automaticallyActivatesSearch = true
         searchTabCache = searchTab
@@ -137,7 +242,7 @@ import UIKit
     }
 
     /// Keeps the user on whichever tab they were looking at. Hiding the selected tab (or
-    /// switching to `.searchTab`, which drops Events by default) falls back to the map
+    /// switching to `.searchTab`, which drops Favorites by default) falls back to the map
     /// rather than leaving the selection on a screen that's no longer on the bar.
     private func restoreSelection(
         previousRoot: UIViewController?,
@@ -210,6 +315,7 @@ extension TabController {
 
         }
         tabBar.setColorTheme(Appearance.currentColors, animated: false)
+        favoritesButtonIfInstalled?.applyTheme()
         refreshGlobalTheme()
         Appearance.setGlobalAppearance()
     }

@@ -70,20 +70,23 @@ struct CustomizeTabsView: View {
         configuration.visible.count >= TabConfiguration.visibleCapacity
     }
 
-    /// Says why Events starts down here when the search tab owns a bar slot — otherwise
+    /// Says why a tab starts down here when the search tab owns a bar slot — otherwise
     /// it looks like the app hid a tab for no reason — and why plus is greyed out when
     /// the bar is full.
     private var hiddenFooter: String {
         var text = "Hidden tabs stay reachable as rows at the top of the More screen."
-        let eventsDisplacedBySearch = TabConfiguration.layoutHiddenByDefault.contains(.events)
-            && configuration.isHidden(.events)
-        if eventsDisplacedBySearch {
-            text += " Events starts here because the search tab takes a slot on the bar."
+        let displacedBySearch = TabConfiguration.layoutHiddenByDefault
+            .first { configuration.isHidden($0) }
+        if let displacedBySearch {
+            text += " \(displacedBySearch.title) starts here because the search tab takes a slot on the bar."
+            if displacedBySearch == .favorites {
+                text += " The heart button above the tab bar opens it from any screen."
+            }
         }
         if isAtCapacity && !configuration.hidden.isEmpty {
-            // Mention the search tab only when it's the reason and the Events sentence
+            // Mention the search tab only when it's the reason and the sentence above
             // hasn't already said so.
-            text += eventsDisplacedBySearch || !TabConfiguration.searchTabOccupiesBarSlot
+            text += displacedBySearch != nil || !TabConfiguration.searchTabOccupiesBarSlot
                 ? " The tab bar is full — hide another tab to add one back."
                 : " The tab bar is full — the search tab holds one slot, so hide another tab to add one back."
         }

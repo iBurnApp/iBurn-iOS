@@ -316,3 +316,130 @@ for data-typed keys like `nearbyEventFilter.maxDuration`).
   with 10–12 h amenity listings hidden by default and reachable by setting Max Duration to Any.
 - Timing labels always agree with the date the list was filtered at, warped or not.
 - One filter choice governs both Nearby surfaces and survives relaunch.
+
+---
+
+# Favorites moves off the tab bar into a floating button (searchTab layout)
+
+## High-Level Plan
+
+**Problem.** On iOS 26 the default `MapSearchLayout.searchTab` spends a tab bar slot on
+`UISearchTab`, leaving four slots for app tabs. Events was the tab that gave way, which put
+a browse surface with nowhere else to live behind a More row.
+
+**Solution (prototype).** Trade the *Favorites* slot instead, because Favorites can keep a
+better entry point than a tab: a Slack-style floating circular button above the bar's
+trailing corner that presents Favorites as a sheet from any tab. Events returns to the bar.
+Pre-iOS-26 layouts and the non-`searchTab` layouts on 26 are untouched — classic five tabs
+including Favorites, no floating button.
+
+**Key changes**
+1. `TabConfiguration.layoutHiddenByDefault` returns `[.favorites]` (was `[.events]`) when
+   `searchTabOccupiesBarSlot`. Everything downstream — Customize Tabs, the More rows,
+   capacity clamping, visibility overrides — already keys off this one property.
+2. New `FavoritesFloatingButton` + `FavoritesFABVisibility` rule.
+3. `TabController` installs the button on its own view, updates it on every `rebuildTabs()`,
+   and presents Favorites as a `.large` sheet.
+
+## Technical Details
+
+### `iBurn/Tabs/TabConfiguration.swift`
+`layoutHiddenByDefault` → `[.favorites]` under the search tab; doc comments rewritten. No
+other logic changed: displaced-to-More, user overrides, capacity clamp and Reset all keep
+working because they were never Events-specific.
+
+### `iBurn/Tabs/FavoritesFloatingButton.swift` (new)
+```swift
+enum FavoritesFABVisibility {
+    static func isVisible(searchTabActive: Bool, favoritesDisplaced: Bool) -> Bool {
+        searchTabActive && favoritesDisplaced
+    }
+}
+```
+Pure rule so it can be tested without a window; a `@MainActor` convenience reads the live
+configuration. The view is a 56pt `UIGlassEffect(style: .regular)` circle (blur fallback
+below 26) with `heart.fill`, AX label "Favorites", identifier `favoritesFloatingButton` —
+the `SidebarButtonsView` treatment at primary-entry-point size rather than the map column's
+40pt.
+
+### `iBurn/TabController.swift`
+- Lazy `favoritesButton` on the tab bar controller's own view, so it is present over every
+  tab. Installed on first need; layouts that keep Favorites on the bar never build it.
+- Constraints: trailing `view.safeAreaLayoutGuide` −16, bottom `tabBar.topAnchor` **−36**.
+  Anchoring to the bar (not the safe area) keeps the gap constant whether or not a tab
+  accessory is installed. **36 rather than a snug 12 because MapLibre's attribution ⓘ sits
+  in that same corner on the Map tab and must stay tappable** — verified by screenshot; at
+  −12 the heart covered it.
+- `presentFavorites()` builds the screen from `BRCAppDelegate.createFavoritesViewController()`
+  (same factory as the tab and the More row, so the SwiftUI feature flag is respected),
+  wraps it in `NavigationController`, `.large` detent, grabber visible.
+- **Search-mode hiding.** Selecting the search tab collapses the bar into a search field but
+  triggers *no layout pass* on the tab bar controller — confirmed with a temporary `NSLog` in
+  `viewDidLayoutSubviews`, which fired only twice at launch and never on tab change. So
+  `selectedTab is UISearchTab` at layout time never ran. Fixed by routing the search
+  controller's activation through the factory:
+  `GlobalSearchTabFactory.makeSearchTabRoot(dependencies:searchActivationDidChange:)` — its
+  `Updater` now also conforms to `UISearchControllerDelegate` and reports
+  `willPresent`/`willDismiss` into `TabController.searchIsActive`. `viewDidLayoutSubviews`
+  still handles the bar sliding off screen.
+
+### `iBurn/Tabs/CustomizeTabsView.swift`
+`hiddenFooter` was hardcoded to Events; now it names whichever tab
+`layoutHiddenByDefault` displaced, and adds "The heart button above the tab bar opens it
+from any screen." for Favorites.
+
+### `iBurn/Map/MapSearchLayout.swift`
+`.searchTab` summary now reads "Search button beside the tab bar; Favorites moves to a
+floating button."
+
+### Tests — `iBurnTests/TabConfigurationTests.swift`
+Search-layout block swapped Events↔Favorites (`testSearchTabLayoutHidesFavoritesByDefault`,
+`…PutsFavoritesInMore`, `…UserCanPutFavoritesBack…`, `…ExplicitFavoritesChoiceSurvives…`,
+etc.). Structural invariants preserved:
+- `testCapacityClampOnLayoutSwitchIsNotAUserChoice` now gives *Favorites* the explicit
+  "on the bar" override, so the clamp (not the layout default) is what empties the slot —
+  otherwise the test no longer exercised clamping at all.
+- The partition-integrity edit sequence now hides Events and un-hides Favorites, mirroring
+  the new default.
+- `testExplicitlyHiddenEventsStaysHiddenOnLayoutsThatWouldShowIt` kept as-is — it is now the
+  stronger direction (a hand-hidden Events stays hidden on the layout that would show it).
+Two new tests pin the FAB rule: the pure truth table, and tracking of the live configuration
+(re-adding Favorites to the bar hides the button; Reset brings it back).
+
+**330 tests passing** (328 before, +2), 0 failures, iPhone 17 Pro Max iOS 26.5.
+
+## Simulator Verification (iPhone 17 Pro Max, iOS 26.5)
+
+- Tab bar: Map / Nearby / Events / More + search; heart floats above the trailing corner
+  clear of the attribution ⓘ.
+- Tap → Favorites sheet (`.large`, grabber); tapping "Snuggles" pushes the detail *inside*
+  the sheet; drag-down dismisses back to the map.
+- Search tab → heart gone; Close → heart back.
+- More still lists Favorites as its first row.
+- Customize Tabs → remove Events, add Favorites → bar shows Map/Nearby/More/Favorites +
+  search and the heart disappears. Reset restores the default and the heart.
+- iOS 18.6 (iPhone 16 Pro Max): classic five tabs including Favorites, search under the nav
+  bar title, no floating button.
+
+Screenshots (temp): `/tmp/claude/iburn-favorites-fab/01-map-fab-ios26.png`,
+`02-favorites-sheet.png`, `03-search-mode-no-fab.png`,
+`04-customize-favorites-on-bar-no-fab.jpg`, `05-detail-inside-sheet.jpg`,
+`06-ios186-launch.png`, `07-customize-tabs-default.png`.
+
+## Caveats / Follow-ups
+
+- Pushing the **map** from inside the Favorites sheet stays in the sheet (as does detail
+  paging). Acceptable for the experiment; a real version would dismiss and push on the
+  active tab's navigation stack.
+- The sheet has **no Done button** — dismissal is grabber/swipe only. `FavoritesView`
+  already owns both trailing toolbar slots, and adding a UIKit bar button item to a
+  SwiftUI-toolbar hosting controller fights SwiftUI for the navigation item.
+- The −36 offset is tuned against the Map tab's attribution button; if map chrome moves,
+  re-check the corner.
+- `TabController.eventsIsDisplacedFromTabBar` is still dead code (was already unused).
+
+## Expected Outcomes
+
+On iOS 26 with the default search-tab layout: four primary tabs (Map, Nearby, Events, More)
+plus native search, with Favorites one tap away from every screen via the floating heart and
+still listed in More. Pre-26 and the other layouts are visually and behaviorally unchanged.

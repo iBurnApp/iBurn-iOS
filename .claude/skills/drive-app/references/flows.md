@@ -492,23 +492,45 @@ directly on the map with no bar background at all is the pre-26 regression this 
 against; on 26 the same screens keep transparent bars with glass button capsules, which is
 correct there.
 
-`searchTab` adds a Search tab and **defaults Events off the bar**, so the tabs
-become Map / Nearby / Favorites / More plus a detached search button, with Events
-reachable from a More row. The map's nearby card also carries a "See all" link into
-Nearby. Switching layouts while standing on a tab that's no longer on the bar lands
-you on Map — `UITab`'s view controller provider is lazy, so the old selection isn't
+`searchTab` adds a Search tab and **defaults Favorites off the bar**, so the tabs
+become Map / Nearby / Events / More plus a detached search button. Favorites keeps two
+entry points instead of a tab: a **floating heart button** above the bar's trailing
+corner (§8a) and a row at the top of More. The map's nearby card also carries a "See all"
+link into Nearby. Switching layouts while standing on a tab that's no longer on the bar
+lands you on Map — `UITab`'s view controller provider is lazy, so the old selection isn't
 findable in the new arrangement.
 
 That default is **part of `TabConfiguration`, not something `TabController` applies on the
 way out** (`TabConfiguration.layoutHiddenByDefault`), so the Customize Tabs screen (§10),
 the More rows, and the real bar always agree. `TabController.isDisplacedFromTabBar` is just
-"not in `TabConfiguration.current.visible`", so hiding Events by hand while `searchTab`
-already hides it still yields **exactly one** Events row in More.
+"not in `TabConfiguration.current.visible`", so hiding Favorites by hand while `searchTab`
+already hides it still yields **exactly one** Favorites row in More.
 
 Layout switching vs. the user's choice: a tab the user has never moved by hand follows
-whichever layout is active (switch to `searchTab` → Events hides; switch away → it comes
-back). Once the user moves Events in Customize Tabs, that choice is recorded in
+whichever layout is active (switch to `searchTab` → Favorites hides; switch away → it comes
+back). Once the user moves Favorites in Customize Tabs, that choice is recorded in
 `userInterface.tabBar.visibilityOverrides` and sticks across layout switches until Reset.
+
+### 8a. Floating Favorites button (`searchTab` layout only)
+
+A 56pt Liquid Glass circle with a filled heart, AX label **"Favorites"**, identifier
+`favoritesFloatingButton`. It lives on `TabController`'s own view (so it is on screen over
+every tab), pinned to `view.safeAreaLayoutGuide` trailing −16 and **`tabBar.topAnchor` −36**
+— the extra gap keeps MapLibre's attribution ⓘ ("About this map") tappable in that same
+corner on the Map tab.
+
+- **Visible only when** the `searchTab` layout is active *and* Favorites is off the bar
+  (`FavoritesFABVisibility.isVisible`). Re-add Favorites in Customize Tabs and the button
+  disappears — never two doors to one screen. Nothing on iOS 18.x, ever.
+- **Tap → Favorites as a `.large` sheet** with a grabber (`TabController.presentFavorites()`),
+  built from `BRCAppDelegate.createFavoritesViewController()` — the same screen the tab and
+  the More row use — wrapped in a `NavigationController`. Detail and "Show Map" pushes stay
+  *inside* the sheet. Dismiss by dragging the list down (the sheet has no Done button).
+- **Hidden while search is active.** Selecting the search tab collapses the bar into a
+  search field but triggers **no layout pass** on the tab bar controller, so this is driven
+  by the search controller's delegate (`GlobalSearchTabFactory.makeSearchTabRoot(
+  dependencies:searchActivationDidChange:)` → `TabController.searchIsActive`). If you touch
+  either, re-check: tap Search → heart gone; tap Close → heart back.
 
 ### Writing app preferences from outside the app
 
@@ -717,15 +739,15 @@ The screen is a SwiftUI list held in **permanent edit mode** (`.environment(\.ed
 - **Tab Bar** — every visible tab, each row `minus.circle.fill` (or a `lock.fill` for Map
   and More, which can't be hidden) + icon + title + a drag handle. Footer: "Drag to
   reorder. Map and More always stay on the tab bar." **This section always matches the real
-  bar**, so in the `searchTab` layout it lists four rows (Map / Nearby / Favorites / More),
+  bar**, so in the `searchTab` layout it lists four rows (Map / Nearby / Events / More),
   not five.
 - **In More** — hidden tabs with a green `plus.circle.fill`; "Nothing hidden." when empty.
-  In the `searchTab` layout Events starts here by default, and the footer says why. When the
+  In the `searchTab` layout Favorites starts here by default, and the footer says why. When the
   bar is at capacity the plus buttons are **disabled and grey** (they drop out of the AX
   targets entirely — a hidden row with no `Add <tab> to tab bar` ref is the disabled state),
   and the footer gains "The tab bar is full — …".
 - **Reset** (nav bar trailing) is disabled only while nothing has been customized —
-  including the invisible case where the user *explicitly* hid Events under `searchTab`,
+  including the invisible case where the user *explicitly* hid Favorites under `searchTab`,
   which looks identical to the default until you change layouts (`TabConfiguration.isUntouched`).
 
 Every edit writes `TabConfiguration.current` (`userInterface.tabBar.order` +
@@ -741,7 +763,7 @@ Automation: the minus/plus buttons *do* receive taps in active edit mode (tap th
 Verify: hiding a tab removes it from the bar and adds a row at the **top of More**;
 un-hiding puts it back (appended to the end of the bar — re-adding does *not* restore the
 original position); Reset restores the active layout's default (Map / Nearby / Favorites /
-Events / More, minus Events under `searchTab`).
+Events / More, minus Favorites under `searchTab`, where the floating heart replaces it).
 
 > Regression to re-check after any edit here: a **just-unhidden row must show a drag handle
 > and survive being dragged**. Both sections hold `TabIdentifier` values, so when they shared
@@ -758,7 +780,8 @@ Events / More, minus Events under `searchTab`).
 > **last hideable** visible tabs; `TabController.rebuildTabs()` re-applies `prefix` as a
 > guard. Because it is applied on read and **never persisted**, a layout switch that shrinks
 > capacity doesn't record a user choice: put all five on the bar under `navigationBar`,
-> switch to `searchTab` → Events drops into More with `visibilityOverrides` untouched, and
+> switch to `searchTab` → the last hideable tab drops into More with `visibilityOverrides`
+> untouched, and
 > switching back restores it at its custom position. In the UI the rule shows up as greyed-out
 > plus buttons, so you can no longer produce the duplicate-More state by hand.
 

@@ -41,7 +41,7 @@ final class TabConfigurationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         PreferenceServiceFactory.setService(InMemoryPreferenceService())
-        // The app defaults to the search-tab layout on iOS 26, which hides Events by
+        // The app defaults to the search-tab layout on iOS 26, which hides Favorites by
         // default and shrinks bar capacity. These tests exercise layout-independent
         // behavior under the classic layout; search-tab tests opt in explicitly.
         MapSearchLayout.current = .navigationBar
@@ -197,59 +197,61 @@ final class TabConfigurationTests: XCTestCase {
 
     // MARK: - Search-layout defaults
     //
-    // The `.searchTab` layout spends a bar slot on search, so Events comes off the bar by
-    // default. That default is folded into the effective configuration rather than applied
-    // by `TabController` on the way out — otherwise the customization screen and the More
-    // list describe a bar that isn't the one on screen, and dragging Events back does
-    // nothing. A tab the user has decided about explicitly stops following the default.
+    // The `.searchTab` layout spends a bar slot on search, so Favorites comes off the bar
+    // by default — it keeps the floating button instead. That default is folded into the
+    // effective configuration rather than applied by `TabController` on the way out —
+    // otherwise the customization screen and the More list describe a bar that isn't the
+    // one on screen, and dragging Favorites back does nothing. A tab the user has decided
+    // about explicitly stops following the default.
 
     private func useSearchTabLayout() throws {
         MapSearchLayout.current = .searchTab
         try XCTSkipUnless(MapSearchLayout.current == .searchTab, "search tab layout needs iOS 26")
     }
 
-    func testSearchTabLayoutHidesEventsByDefault() throws {
+    func testSearchTabLayoutHidesFavoritesByDefault() throws {
         try useSearchTabLayout()
         let configuration = TabConfiguration.current
-        XCTAssertEqual(configuration.visible, [.map, .nearby, .favorites, .more])
-        XCTAssertEqual(configuration.hidden, [.events])
+        XCTAssertEqual(configuration.visible, [.map, .nearby, .events, .more])
+        XCTAssertEqual(configuration.hidden, [.favorites])
         XCTAssertEqual(configuration, TabConfiguration.layoutDefault)
     }
 
     @MainActor
-    func testSearchTabDefaultPutsEventsInMore() throws {
+    func testSearchTabDefaultPutsFavoritesInMore() throws {
         try useSearchTabLayout()
-        XCTAssertTrue(TabController.isDisplacedFromTabBar(.events))
+        XCTAssertTrue(TabController.isDisplacedFromTabBar(.favorites))
+        XCTAssertFalse(TabController.isDisplacedFromTabBar(.events))
         XCTAssertFalse(TabController.isDisplacedFromTabBar(.nearby))
     }
 
     @MainActor
-    func testUserCanPutEventsBackAfterFreeingABarSlot() throws {
+    func testUserCanPutFavoritesBackAfterFreeingABarSlot() throws {
         try useSearchTabLayout()
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .more, .events],
-            hidden: [.favorites]
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
         )
 
         let configuration = TabConfiguration.current
-        XCTAssertEqual(configuration.visible, [.map, .nearby, .more, .events])
-        XCTAssertEqual(configuration.hidden, [.favorites])
-        XCTAssertFalse(TabController.isDisplacedFromTabBar(.events))
-        XCTAssertTrue(TabController.isDisplacedFromTabBar(.favorites))
+        XCTAssertEqual(configuration.visible, [.map, .nearby, .favorites, .more])
+        XCTAssertEqual(configuration.hidden, [.events])
+        XCTAssertFalse(TabController.isDisplacedFromTabBar(.favorites))
+        XCTAssertTrue(TabController.isDisplacedFromTabBar(.events))
     }
 
-    func testUntouchedEventsFollowsWhicheverLayoutIsActive() throws {
+    func testUntouchedFavoritesFollowsWhicheverLayoutIsActive() throws {
         try useSearchTabLayout()
-        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+        XCTAssertTrue(TabConfiguration.current.isHidden(.favorites))
 
         MapSearchLayout.current = .navigationBar
-        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+        XCTAssertFalse(TabConfiguration.current.isHidden(.favorites))
 
         try useSearchTabLayout()
-        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
+        XCTAssertTrue(TabConfiguration.current.isHidden(.favorites))
     }
 
-    func testHidingAnotherTabLeavesTheEventsDefaultAlone() throws {
+    func testHidingAnotherTabLeavesTheFavoritesDefaultAlone() throws {
         try useSearchTabLayout()
         TabConfiguration.current = TabConfiguration(
             visible: [.map, .nearby, .more],
@@ -258,23 +260,23 @@ final class TabConfigurationTests: XCTestCase {
 
         MapSearchLayout.current = .navigationBar
         let configuration = TabConfiguration.current
-        XCTAssertTrue(configuration.isHidden(.favorites))
-        XCTAssertFalse(configuration.isHidden(.events), "Events was never chosen by hand, so it comes back with the layout")
+        XCTAssertTrue(configuration.isHidden(.events))
+        XCTAssertFalse(configuration.isHidden(.favorites), "Favorites was never chosen by hand, so it comes back with the layout")
     }
 
-    func testExplicitEventsChoiceSurvivesLayoutSwitches() throws {
+    func testExplicitFavoritesChoiceSurvivesLayoutSwitches() throws {
         try useSearchTabLayout()
-        // Capacity is four here, so choosing Events means giving up another slot first.
+        // Capacity is four here, so choosing Favorites means giving up another slot first.
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .more, .events],
-            hidden: [.favorites]
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
         )
 
         MapSearchLayout.current = .navigationBar
-        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+        XCTAssertFalse(TabConfiguration.current.isHidden(.favorites))
 
         try useSearchTabLayout()
-        XCTAssertFalse(TabConfiguration.current.isHidden(.events), "The user asked for Events on the bar; the layout doesn't get to take it back")
+        XCTAssertFalse(TabConfiguration.current.isHidden(.favorites), "The user asked for Favorites on the bar; the layout doesn't get to take it back")
     }
 
     func testExplicitlyHiddenEventsStaysHiddenOnLayoutsThatWouldShowIt() throws {
@@ -294,15 +296,15 @@ final class TabConfigurationTests: XCTestCase {
     func testResetRestoresTheActiveLayoutsDefault() throws {
         try useSearchTabLayout()
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .more, .events],
-            hidden: [.favorites]
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
         )
         XCTAssertNotEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
 
         TabConfiguration.resetToDefault()
         XCTAssertEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
-        XCTAssertTrue(TabConfiguration.current.isHidden(.events))
-        XCTAssertFalse(TabConfiguration.current.isHidden(.favorites))
+        XCTAssertTrue(TabConfiguration.current.isHidden(.favorites))
+        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
     }
 
     func testLayoutDefaultIsPlainDefaultWithoutTheSearchTab() {
@@ -311,7 +313,7 @@ final class TabConfigurationTests: XCTestCase {
         XCTAssertTrue(TabConfiguration.layoutHiddenByDefault.isEmpty)
     }
 
-    /// Hiding Events under `.searchTab` leaves the bar looking exactly like the default,
+    /// Hiding Favorites under `.searchTab` leaves the bar looking exactly like the default,
     /// but the choice behind it is not the default — `Reset` has to stay live.
     func testExplicitChoiceCountsAsTouchedEvenWhenTheBarLooksDefault() throws {
         XCTAssertTrue(TabConfiguration.isUntouched)
@@ -320,12 +322,12 @@ final class TabConfigurationTests: XCTestCase {
         XCTAssertTrue(TabConfiguration.isUntouched)
 
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .more, .events],
-            hidden: [.favorites]
-        )
-        TabConfiguration.current = TabConfiguration(
             visible: [.map, .nearby, .favorites, .more],
             hidden: [.events]
+        )
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .events, .more],
+            hidden: [.favorites]
         )
 
         XCTAssertEqual(TabConfiguration.current, TabConfiguration.layoutDefault)
@@ -333,6 +335,38 @@ final class TabConfigurationTests: XCTestCase {
 
         TabConfiguration.resetToDefault()
         XCTAssertTrue(TabConfiguration.isUntouched)
+    }
+
+    // MARK: - Floating Favorites button
+    //
+    // The button exists to replace the Favorites tab the search layout takes away, so it
+    // has to appear exactly when that trade is in effect — never alongside a live
+    // Favorites tab, and never on a layout that never took the tab.
+
+    func testFloatingFavoritesButtonNeedsBothConditions() {
+        XCTAssertTrue(FavoritesFABVisibility.isVisible(searchTabActive: true, favoritesDisplaced: true))
+        XCTAssertFalse(FavoritesFABVisibility.isVisible(searchTabActive: true, favoritesDisplaced: false))
+        XCTAssertFalse(FavoritesFABVisibility.isVisible(searchTabActive: false, favoritesDisplaced: true))
+        XCTAssertFalse(FavoritesFABVisibility.isVisible(searchTabActive: false, favoritesDisplaced: false))
+    }
+
+    @MainActor
+    func testFloatingFavoritesButtonTracksTheLiveConfiguration() throws {
+        XCTAssertFalse(FavoritesFABVisibility.isVisible, "classic layout keeps the Favorites tab")
+
+        try useSearchTabLayout()
+        XCTAssertTrue(FavoritesFABVisibility.isVisible)
+
+        // Dragging Favorites back onto the bar gives up another slot — and the button,
+        // which would otherwise be a second door to the same screen.
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
+        )
+        XCTAssertFalse(FavoritesFABVisibility.isVisible)
+
+        TabConfiguration.resetToDefault()
+        XCTAssertTrue(FavoritesFABVisibility.isVisible)
     }
 
     func testMovingToHiddenIgnoresTabsThatCannotBeHidden() {
@@ -390,11 +424,11 @@ final class TabConfigurationTests: XCTestCase {
     /// the tab comes straight back when capacity does.
     func testCapacityClampOnLayoutSwitchIsNotAUserChoice() throws {
         MapSearchLayout.current = .navigationBar
-        // Hide and re-show Events so it carries an explicit "on the bar" override and
-        // the search layout's Events default can't be what empties the slot.
+        // Hide and re-show Favorites so it carries an explicit "on the bar" override and
+        // the search layout's Favorites default can't be what empties the slot.
         TabConfiguration.current = TabConfiguration(
-            visible: [.map, .nearby, .favorites, .more],
-            hidden: [.events]
+            visible: [.map, .nearby, .events, .more],
+            hidden: [.favorites]
         )
         TabConfiguration.current = TabConfiguration(
             visible: [.map, .nearby, .favorites, .more, .events],
@@ -433,21 +467,22 @@ final class TabConfigurationTests: XCTestCase {
         try useSearchTabLayout()
         assertPartitioned()
 
-        // The reported crash sequence: free a slot, un-hide Events, then reorder.
+        // The reported crash sequence: free a slot, un-hide the layout-hidden tab, then
+        // reorder.
         var configuration = TabConfiguration.current
         TabConfiguration.current = TabConfiguration(
-            visible: configuration.visible.filter { $0 != .favorites },
-            hidden: configuration.hidden + [.favorites]
+            visible: configuration.visible.filter { $0 != .events },
+            hidden: configuration.hidden + [.events]
         )
         assertPartitioned()
 
         configuration = TabConfiguration.current
         TabConfiguration.current = TabConfiguration(
-            visible: configuration.visible + [.events],
-            hidden: configuration.hidden.filter { $0 != .events }
+            visible: configuration.visible + [.favorites],
+            hidden: configuration.hidden.filter { $0 != .favorites }
         )
         assertPartitioned()
-        XCTAssertFalse(TabConfiguration.current.isHidden(.events))
+        XCTAssertFalse(TabConfiguration.current.isHidden(.favorites))
 
         configuration = TabConfiguration.current
         var moved = configuration.visible

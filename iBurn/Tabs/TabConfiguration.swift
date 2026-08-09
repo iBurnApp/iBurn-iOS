@@ -122,12 +122,13 @@ struct TabConfiguration: Equatable {
 
     /// Tabs the active search layout keeps off the bar unless the user says otherwise.
     ///
-    /// The iOS 26 `.searchTab` layout spends a bar slot on search, and Events is the tab
-    /// that gives way: it's the one you go looking for by name (search and the More list
-    /// both reach it), where Map, Nearby and Favorites are "what's around me right now"
-    /// surfaces you want one tap away.
+    /// The iOS 26 `.searchTab` layout spends a bar slot on search, and Favorites is the tab
+    /// that gives way — but only because it keeps a *better* entry point than a bar slot:
+    /// the floating heart button above the bar (see `FavoritesFABVisibility`) reaches it
+    /// from every tab, sheet-style, so the slot goes back to Events, which is a browse
+    /// surface with nowhere else to live.
     static var layoutHiddenByDefault: [TabIdentifier] {
-        searchTabOccupiesBarSlot ? [.events] : []
+        searchTabOccupiesBarSlot ? [.favorites] : []
     }
 
     /// What a user who has never customized sees on the active layout. `Reset` compares
@@ -140,8 +141,8 @@ struct TabConfiguration: Equatable {
 
     /// Whether the user has customized anything at all — arrangement or an explicit
     /// visibility choice. `Reset` still has work to do while this is false, even when the
-    /// bar happens to look like the layout default: an explicit "Events off the bar" and
-    /// the layout's own default look identical until the layout changes.
+    /// bar happens to look like the layout default: an explicit "Favorites off the bar"
+    /// and the layout's own default look identical until the layout changes.
     static var isUntouched: Bool {
         current == layoutDefault && visibilityOverrides.isEmpty
     }
