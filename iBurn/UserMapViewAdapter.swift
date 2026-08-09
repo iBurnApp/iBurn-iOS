@@ -110,6 +110,9 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
 
     @objc private func embargoDidClear() {
+        // Unlocking turns the camp style labels on, which is what decides whether a camp
+        // pin draws its own name, so the surviving pins need re-evaluating too.
+        updatePinLabelVisibility()
         refreshRegionAnnotations()
     }
 
@@ -254,12 +257,11 @@ public class UserMapViewAdapter: MapViewAdapter {
         }
     }
     
+    /// The user-facing map keeps pin names one zoom level further out than the detail maps.
+    override var pinLabelHiddenAtOrBelowZoom: Double { 13.0 }
+
     override public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
-        let zoomLevel = mapView.zoomLevel
-        let labelIsHidden = zoomLevel <= 13.0
-        labelViews.forEach { (view) in
-            view.label.isHidden = labelIsHidden
-        }
+        updatePinLabelVisibility()
         refreshRegionAnnotations()
     }
 

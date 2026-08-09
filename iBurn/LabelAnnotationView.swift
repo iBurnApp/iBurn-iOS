@@ -18,7 +18,13 @@ final class LabelAnnotationView: MLNAnnotationView {
     
     let label = UILabel()
     let imageView = UIImageView()
-    
+
+    /// True when `label` holds a camp's name, which the `camp-labels-big` style layer also
+    /// draws — at the very same coordinate, since a camp's GPS is its polygon centroid.
+    /// `MapViewAdapter.updatePinLabelVisibility()` uses this to keep exactly one of the two
+    /// showing. Reset on reuse like everything else this view carries.
+    var drawsCampName = false
+
     // MARK: Init
     
     override init(frame: CGRect) {
@@ -56,5 +62,7 @@ final class LabelAnnotationView: MLNAnnotationView {
     override func prepareForReuse() {
         imageView.image = nil
         label.text = nil
+        label.isHidden = false
+        drawsCampName = false
     }
 }

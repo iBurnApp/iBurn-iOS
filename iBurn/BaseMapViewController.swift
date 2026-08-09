@@ -112,6 +112,7 @@ private extension BaseMapViewController {
 
     @objc func embargoDidClear(notification: Notification) {
         mapLayerManager.updateAllLayers()
+        mapViewAdapter.updatePinLabelVisibility()
     }
     
     /// keeps the screen on for folks navigating in vehicles

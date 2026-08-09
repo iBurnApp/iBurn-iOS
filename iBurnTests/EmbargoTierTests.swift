@@ -104,48 +104,116 @@ final class EmbargoTierTests: XCTestCase {
 
     // MARK: - Camp boundary map layers
 
-    func testCampLayersHiddenWhileEmbargoedRegardlessOfSettings() {
-        let visibility = CampLayerVisibility.resolve(
-            showCampBoundaries: true,
-            showCampBoundariesAlways: true,
-            showBigCampNames: true,
-            embargoAllowsCamps: false
+    /// Defaults matching a stock install: boundaries and names on, "always" off, camp pins
+    /// gated on zoom. Individual tests override only what they are about.
+    private func makeCampLayers(showCampBoundaries: Bool = true,
+                                showCampBoundariesAlways: Bool = false,
+                                showBigCampNames: Bool = true,
+                                showCampsOnlyZoomedIn: Bool = true,
+                                embargoAllowsCamps: Bool = true,
+                                zoomLevel: Double) -> CampLayerVisibility {
+        CampLayerVisibility.resolve(
+            showCampBoundaries: showCampBoundaries,
+            showCampBoundariesAlways: showCampBoundariesAlways,
+            showBigCampNames: showBigCampNames,
+            showCampsOnlyZoomedIn: showCampsOnlyZoomedIn,
+            embargoAllowsCamps: embargoAllowsCamps,
+            zoomLevel: zoomLevel
         )
-        XCTAssertFalse(visibility.boundariesVisible)
-        XCTAssertNil(visibility.boundariesMinimumZoom)
-        XCTAssertFalse(visibility.labelsVisible)
+    }
+
+    func testCampLayersHiddenWhileEmbargoedRegardlessOfSettings() {
+        for zoomLevel in [14.0, 15.0, 17.0, 20.0] {
+            let visibility = makeCampLayers(showCampBoundariesAlways: true,
+                                            embargoAllowsCamps: false,
+                                            zoomLevel: zoomLevel)
+            XCTAssertFalse(visibility.boundariesVisible)
+            XCTAssertNil(visibility.boundariesMinimumZoom)
+            XCTAssertFalse(visibility.labelsVisible)
+            // Nothing is drawing camp names, so a leaked pin must not silently fill in.
+            XCTAssertFalse(visibility.campNamesDrawnByStyleLayer)
+        }
     }
 
     func testCampLayersFollowSettingsOnceUnlocked() {
-        let zoomed = CampLayerVisibility.resolve(
-            showCampBoundaries: true,
-            showCampBoundariesAlways: false,
-            showBigCampNames: true,
-            embargoAllowsCamps: true
-        )
+        let zoomed = makeCampLayers(zoomLevel: 16)
         XCTAssertTrue(zoomed.boundariesVisible)
         XCTAssertEqual(zoomed.boundariesMinimumZoom, 15)
         XCTAssertTrue(zoomed.labelsVisible)
 
-        let always = CampLayerVisibility.resolve(
-            showCampBoundaries: true,
-            showCampBoundariesAlways: true,
-            showBigCampNames: false,
-            embargoAllowsCamps: true
-        )
+        let always = makeCampLayers(showCampBoundariesAlways: true,
+                                    showBigCampNames: false,
+                                    zoomLevel: 16)
         XCTAssertTrue(always.boundariesVisible)
         XCTAssertEqual(always.boundariesMinimumZoom, 0)
         XCTAssertFalse(always.labelsVisible)
 
-        let disabled = CampLayerVisibility.resolve(
-            showCampBoundaries: false,
-            showCampBoundariesAlways: false,
-            showBigCampNames: false,
-            embargoAllowsCamps: true
-        )
+        let disabled = makeCampLayers(showCampBoundaries: false,
+                                      showBigCampNames: false,
+                                      zoomLevel: 16)
         XCTAssertFalse(disabled.boundariesVisible)
         XCTAssertNil(disabled.boundariesMinimumZoom)
         XCTAssertFalse(disabled.labelsVisible)
+    }
+
+    // MARK: - Camp names are drawn exactly once
+
+    /// Below the style layer's minzoom nothing draws camp names, so any camp pin that is on
+    /// screen (favourites, or "Camps (Always)") has to label itself.
+    func testCampPinsLabelThemselvesBelowTheStyleLayersMinimumZoom() {
+        XCTAssertFalse(makeCampLayers(zoomLevel: 14.9).campNamesDrawnByStyleLayer)
+        XCTAssertTrue(makeCampLayers(zoomLevel: 15).campNamesDrawnByStyleLayer)
+    }
+
+    /// The handover: the style layer stops exactly where the region path starts dropping
+    /// camp pins, so the two ranges abut with no gap and no overlap.
+    func testStyleLabelsStopWhereCampPinsBegin() {
+        let campPinZoom = MapRegionAnnotationFilter.campMinimumZoom
+        XCTAssertEqual(makeCampLayers(zoomLevel: 16).labelsMaximumZoom, Float(campPinZoom))
+        XCTAssertTrue(makeCampLayers(zoomLevel: campPinZoom - 0.01).campNamesDrawnByStyleLayer)
+        XCTAssertFalse(makeCampLayers(zoomLevel: campPinZoom).campNamesDrawnByStyleLayer)
+        XCTAssertFalse(makeCampLayers(zoomLevel: 20).campNamesDrawnByStyleLayer)
+    }
+
+    /// With camp pins turned off in the Map Filter nothing ever takes over, so the style
+    /// layer keeps the names all the way in.
+    func testStyleLabelsRunToFullZoomWhenCampPinsAreDisabled() {
+        let visibility = makeCampLayers(showCampsOnlyZoomedIn: false, zoomLevel: 20)
+        XCTAssertEqual(visibility.labelsMaximumZoom, CampLayerVisibility.styleMaximumZoom)
+        XCTAssertTrue(visibility.labelsVisible)
+        XCTAssertTrue(visibility.campNamesDrawnByStyleLayer)
+    }
+
+    /// Turning "Show Camp Names" off hands the job back to the pins at every zoom rather
+    /// than leaving camps nameless.
+    func testCampPinsLabelThemselvesWhenTheStyleLayerIsOff() {
+        for zoomLevel in [15.0, 16.0, 18.0] {
+            XCTAssertFalse(makeCampLayers(showBigCampNames: false, zoomLevel: zoomLevel)
+                .campNamesDrawnByStyleLayer)
+        }
+    }
+
+    /// Whatever the settings, the two mechanisms never both draw: `campNamesDrawnByStyleLayer`
+    /// is true exactly when the layer is visible and the zoom is inside its range.
+    func testStyleLabelVerdictAlwaysMatchesTheLayersOwnZoomRange() {
+        for showBigCampNames in [true, false] {
+            for showCampsOnlyZoomedIn in [true, false] {
+                for embargoAllowsCamps in [true, false] {
+                    for zoomLevel in [12.0, 14.9, 15.0, 16.9, 17.0, 22.0] {
+                        let v = makeCampLayers(showBigCampNames: showBigCampNames,
+                                               showCampsOnlyZoomedIn: showCampsOnlyZoomedIn,
+                                               embargoAllowsCamps: embargoAllowsCamps,
+                                               zoomLevel: zoomLevel)
+                        let layerIsPainting = v.labelsVisible
+                            && zoomLevel >= Double(CampLayerVisibility.labelsMinimumZoom)
+                            && zoomLevel < Double(v.labelsMaximumZoom)
+                        XCTAssertEqual(v.campNamesDrawnByStyleLayer, layerIsPainting,
+                                       "zoom \(zoomLevel), names \(showBigCampNames), "
+                                       + "zoomedIn \(showCampsOnlyZoomedIn), embargo \(embargoAllowsCamps)")
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Nearby location line

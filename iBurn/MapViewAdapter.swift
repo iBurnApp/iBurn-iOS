@@ -32,6 +32,10 @@ public class MapViewAdapter: NSObject {
     public weak var parent: UIViewController?
     public var onStyleLoaded: ((MLNStyle) -> Void)?
 
+    /// Zoom at or below which a pin's name label is unreadable clutter and stays hidden.
+    /// Overridable because the user-facing map keeps labels a little further out.
+    var pinLabelHiddenAtOrBelowZoom: Double { 14 }
+
     /// key is annotation ObjectIdentifier
     var annotationViews: [ObjectIdentifier: MLNAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
@@ -216,6 +220,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
             }
             labelAnnotationView.imageView.image = image
             labelAnnotationView.label.text = data.title
+            labelAnnotationView.drawsCampName = annotationIsCamp(annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
         } else if let data = annotation as? PlayaObjectAnnotation {
@@ -227,14 +232,20 @@ extension MapViewAdapter: MLNMapViewDelegate {
             }
             labelAnnotationView.imageView.image = image
             labelAnnotationView.label.text = data.title
+            labelAnnotationView.drawsCampName = annotationIsCamp(annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
         }
-        
+
         if let annotationView = annotationView {
             let identifier = ObjectIdentifier(annotation)
             annotationViews[identifier] = annotationView
         }
+
+        // Pins arrive between region changes (the region path fetches asynchronously, and
+        // the observation path fires on database writes), so a fresh view has to be told
+        // the current rule rather than waiting for the next pan to be corrected.
+        updatePinLabelVisibility()
 
         return annotationView
     }
@@ -298,11 +309,41 @@ extension MapViewAdapter: MLNMapViewDelegate {
         }
     }
     
-    public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {        
-        let labelIsHidden = mapView.zoomLevel <= 14
-        labelViews.forEach { (view) in
-            view.label.isHidden = labelIsHidden
+    public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
+        updatePinLabelVisibility()
+    }
+}
+
+// MARK: - Pin labels
+
+extension MapViewAdapter {
+
+    /// Applies the current zoom's rules to every live `LabelAnnotationView`.
+    ///
+    /// Beyond the plain "too far out to read" cut, camp pins have a second rule: the
+    /// `camp-labels-big` style layer draws the same camp names, and since a camp's GPS is
+    /// now its polygon centroid the two land on the identical coordinate. Whichever side
+    /// `CampLayerVisibility` says is drawing at this zoom is the one that shows the name.
+    ///
+    /// Call after anything that can change that verdict — zoom, embargo, the Map Filter.
+    func updatePinLabelVisibility() {
+        let zoomLevel = mapView.zoomLevel
+        let tooFarOut = zoomLevel <= pinLabelHiddenAtOrBelowZoom
+        let styleDrawsCampNames = CampLayerVisibility.current(zoomLevel: zoomLevel).campNamesDrawnByStyleLayer
+        for view in labelViews {
+            view.label.isHidden = tooFarOut || (view.drawsCampName && styleDrawsCampNames)
         }
+    }
+
+    /// Whether this annotation's name is also drawn by the `camp-labels-big` style layer.
+    func annotationIsCamp(_ annotation: MLNAnnotation) -> Bool {
+        if let playa = annotation as? PlayaObjectAnnotation {
+            return playa.id.objectType == .camp
+        }
+        if let data = annotation as? DataObjectAnnotation {
+            return data.object is BRCCampObject
+        }
+        return false
     }
 }
 
