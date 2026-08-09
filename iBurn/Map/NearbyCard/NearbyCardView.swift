@@ -33,11 +33,26 @@ struct NearbyCardView: View {
         min(380, UIScreen.main.bounds.width - 32)
     }
 
-    /// Sized for the tallest row we can produce: an event with a name, a time line and a
-    /// two-line address — 20 + 3 + 16 + 3 + 32 = 74pt of text under the row's 12pt top
-    /// inset. 100 leaves that its bottom breathing room instead of clipping into the footer.
-    private static let pageHeight: CGFloat = 100
-    private static let footerHeight: CGFloat = 30
+    /// The one inset every edge uses: the thumbnail's leading and top edge, and the
+    /// favorite button's top and trailing edge. Sharing a single number is what keeps the
+    /// heart from looking like it hugs the corner tighter than the row does.
+    private static let contentInset: CGFloat = 10
+
+    /// The row's text can't clear the favorite button, so it stops short of it: the heart
+    /// is 24pt wide at `contentInset` from the trailing edge, plus 4pt of breathing room.
+    private static let rowTrailingInset: CGFloat = contentInset + 24 + 4
+
+    /// Gap between the bottom of the tallest row and the footer. Small but non-zero so a
+    /// descender on the last line never touches the footer's controls.
+    private static let rowFooterGap: CGFloat = 2
+
+    /// Sized to the tallest row we can produce: an event with a name, a time line and a
+    /// two-line address — 20 + 2 + 16 + 2 + 32 = 72pt of text, under the row's
+    /// `contentInset` top inset and above `rowFooterGap`. 10 + 72 + 2 = 84.
+    private static let pageHeight: CGFloat = contentInset + 72 + rowFooterGap
+    /// Exactly the height of the footer's 28pt controls — the dots and labels are small
+    /// enough that any more than that is empty card.
+    private static let footerHeight: CGFloat = 28
     /// Page plus footer. Fixed for the same reason the width is.
     private static let cardHeight: CGFloat = pageHeight + footerHeight
 
@@ -112,13 +127,13 @@ struct NearbyCardView: View {
                         audioPlayer: audioPlayer,
                         onTap: { onSelect(item.detailSubject) }
                     )
-                    .padding(.leading, 14)
+                    .padding(.leading, Self.contentInset)
                     // Wider on the trailing edge so the row's text and audio button clear
                     // the favorite button sitting in the corner above them.
-                    .padding(.trailing, 34)
-                    .padding(.top, 12)
+                    .padding(.trailing, Self.rowTrailingInset)
+                    .padding(.top, Self.contentInset)
                     // The row now fills the page, so it needs its own gap above the footer.
-                    .padding(.bottom, 6)
+                    .padding(.bottom, Self.rowFooterGap)
                     .tag(item.id as String?)
                 }
             }
@@ -145,7 +160,9 @@ struct NearbyCardView: View {
                 seeAllButton
             }
         }
-        .padding(.horizontal, 10)
+        // 4 here plus the buttons' own 6pt label inset puts "Hide" and "See all" on the
+        // same `contentInset` line as the thumbnail and the favorite button above them.
+        .padding(.horizontal, Self.contentInset - 6)
         .frame(height: Self.footerHeight)
     }
 
@@ -199,8 +216,10 @@ struct NearbyCardView: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .padding(.top, 6)
-            .padding(.trailing, 6)
+            // Same inset the thumbnail uses on the opposite corner, so the card's padding
+            // reads as uniform all the way round.
+            .padding(.top, Self.contentInset)
+            .padding(.trailing, Self.contentInset)
             .accessibilityLabel(isFavorite ? "Unfavorite \(item.name)" : "Favorite \(item.name)")
         }
     }
@@ -296,7 +315,7 @@ private struct NearbyCardContentView: View {
             // Name, then when (events only), then where. The blurb used to take the
             // second line, which is the least useful thing to know about something 100m
             // away — it only appears now if there's nothing concrete to show.
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(item.name)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(themeColors.primaryColor)
