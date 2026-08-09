@@ -19,11 +19,11 @@ enum Preferences {
             description: "Use new detail screen instead of legacy implementation"
         )
 
-        /// Prototype: where the global search entry point is anchored.
-        /// Values are `MapSearchLayout` raw values; ignored below iOS 26.
+        /// Where the global search entry point is anchored.
+        /// Values are `MapSearchLayout` raw values; resolves to the nav bar below iOS 26.
         static let mapSearchLayout = Preference<String>(
             key: "userInterface.map.searchLayout",
-            defaultValue: MapSearchLayout.navigationBar.rawValue,
+            defaultValue: MapSearchLayout.searchTab.rawValue,
             description: "Anchor the map search bar in the nav bar, a tab accessory, or a search tab"
         )
     }

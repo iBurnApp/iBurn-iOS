@@ -5,16 +5,17 @@
 //  Created by Claude Code on 8/6/26.
 //  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
-//  Prototype switch for where the global search entry point lives. iOS 26 gives us
-//  two native "search at the bottom" shapes and they pull the rest of the map chrome
-//  in different directions, so we ship both behind a debug preference and compare.
+//  Switch for where the global search entry point lives. The search tab is the
+//  default on iOS 26; older systems resolve to the navigation bar layout. The
+//  bottom-accessory shape remains selectable for comparison.
 //
 
 import Foundation
 
 /// Where the global search affordance is anchored.
 enum MapSearchLayout: String, CaseIterable {
-    /// Ships today: `navigationItem.searchController` under the nav bar title.
+    /// Classic layout: `navigationItem.searchController` under the nav bar title.
+    /// Also what every layout resolves to below iOS 26.
     case navigationBar
 
     /// The search field rides in a `UITabAccessory` directly above the tab bar.
@@ -27,7 +28,7 @@ enum MapSearchLayout: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .navigationBar: return "Top (current)"
+        case .navigationBar: return "Top (classic)"
         case .bottomAccessory: return "Bottom accessory"
         case .searchTab: return "Search tab"
         }

@@ -41,6 +41,10 @@ final class TabConfigurationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         PreferenceServiceFactory.setService(InMemoryPreferenceService())
+        // The app defaults to the search-tab layout on iOS 26, which hides Events by
+        // default and shrinks bar capacity. These tests exercise layout-independent
+        // behavior under the classic layout; search-tab tests opt in explicitly.
+        MapSearchLayout.current = .navigationBar
     }
 
     override func tearDown() {
