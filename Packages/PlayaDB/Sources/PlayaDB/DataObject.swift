@@ -25,6 +25,15 @@ public protocol DataObject {
     var objectType: DataObjectType { get }
 }
 
+/// Unambiguous spelling of `DataObject` for importers that shadow the name.
+///
+/// The iBurn app declares its own legacy `DataObject` class, and the usual escape hatch —
+/// qualifying as `PlayaDB.DataObject` — does not work here because `PlayaDB` is both the
+/// module name and a protocol inside it, so the qualified form resolves against the
+/// protocol and fails. Client code that needs to name the existential uses
+/// `any PlayaDataObject`.
+public typealias PlayaDataObject = DataObject
+
 /// Types of data objects supported by the system
 public enum DataObjectType: String, CaseIterable, Codable {
     case art

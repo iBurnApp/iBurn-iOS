@@ -96,6 +96,19 @@ enum NearbyItem: Identifiable {
         }
     }
 
+    /// Whether this item's placement may be shown at all, per its embargo tier.
+    ///
+    /// Gates more than the address line: walk/bike estimates are derived from the same
+    /// embargoed coordinates, so a "6 min walk" on a locked camp narrows its placement just
+    /// as surely as printing "7:30 & Esplanade" would. See `NearbyViewModel.distanceString`.
+    var canShowLocation: Bool {
+        switch self {
+        case .art: BRCEmbargo.canShowArtLocations()
+        case .camp: BRCEmbargo.canShowCampLocations()
+        case .event(let r): BRCEmbargo.canShowLocation(for: r.object)
+        }
+    }
+
     var detailSubject: DetailSubject {
         switch self {
         case .art(let r): .art(r.object)

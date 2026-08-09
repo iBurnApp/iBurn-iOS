@@ -12,6 +12,70 @@ import BButton
 import MapKit
 import PlayaDB
 
+/// Zoom + embargo gate for the map's region-fetch annotation path.
+///
+/// `UserMapViewAdapter.regionDidChange` is a *second* annotation source, independent of
+/// `PlayaDBAnnotationDataSource`: it queries PlayaDB for whatever is inside the current
+/// viewport and drops pins for it. The bundled database ships real placement data, so this
+/// path has to apply exactly the same two-tier embargo the observation path does, or camp
+/// and art pins (with their playa addresses in the callout) leak before their tier opens.
+///
+/// Kept pure — no `BRCEmbargo`, no map view, no database — so the filtering is testable.
+/// The caller passes the tiers in; see `UserMapViewAdapter.refreshRegionAnnotations()`.
+struct MapRegionAnnotationFilter {
+
+    /// Zoom at or above which the region path runs at all, and art pins become eligible.
+    static let artMinimumZoom: Double = 16.0
+
+    /// Zoom at or above which camp pins become eligible.
+    static let campMinimumZoom: Double = 17.0
+
+    /// - Parameters:
+    ///   - objects: whatever `PlayaDB.fetchObjects(in:)` returned for the viewport.
+    ///   - zoomLevel: the map's current zoom.
+    ///   - activeEventUIDs: events the caller decided are happening/starting soon.
+    ///   - showArtOnlyZoomedIn: `UserSettings.showArtOnlyZoomedIn`.
+    ///   - showCampsOnlyZoomedIn: `UserSettings.showCampsOnlyZoomedIn`.
+    ///   - artAllowed: `BRCEmbargo.canShowArtLocations()`.
+    ///   - campAllowed: `BRCEmbargo.canShowCampLocations()`.
+    static func annotations(
+        from objects: [any PlayaDataObject],
+        zoomLevel: Double,
+        activeEventUIDs: Set<String>,
+        showArtOnlyZoomedIn: Bool,
+        showCampsOnlyZoomedIn: Bool,
+        artAllowed: Bool,
+        campAllowed: Bool
+    ) -> [PlayaObjectAnnotation] {
+        var annotations: [PlayaObjectAnnotation] = []
+        for object in objects {
+            if let art = object as? ArtObject {
+                guard artAllowed,
+                      showArtOnlyZoomedIn,
+                      zoomLevel >= artMinimumZoom,
+                      let annotation = PlayaObjectAnnotation(art: art) else { continue }
+                annotations.append(annotation)
+            } else if let camp = object as? CampObject {
+                guard campAllowed,
+                      showCampsOnlyZoomedIn,
+                      zoomLevel >= campMinimumZoom,
+                      let annotation = PlayaObjectAnnotation(camp: camp) else { continue }
+                annotations.append(annotation)
+            } else if let event = object as? EventObject {
+                // Matches `BRCEmbargo.canShowLocation(for:)`: an event at an art installation
+                // would leak the art location, so it rides the art tier; everything else
+                // unlocks with camps.
+                let allowed = (event.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
+                guard allowed,
+                      activeEventUIDs.contains(event.uid),
+                      let annotation = PlayaObjectAnnotation(event: event) else { continue }
+                annotations.append(annotation)
+            }
+        }
+        return annotations.sorted { ($0.title ?? "") < ($1.title ?? "") }
+    }
+}
+
 public class UserMapViewAdapter: MapViewAdapter {
 
     // MARK: - Private
@@ -24,11 +88,29 @@ public class UserMapViewAdapter: MapViewAdapter {
     @objc public override init(mapView: MLNMapView,
                       dataSource: AnnotationDataSource? = nil) {
         super.init(mapView: mapView, dataSource: dataSource)
+        observeEmbargo()
     }
 
     init(mapView: MLNMapView, dataSource: AnnotationDataSource? = nil, playaDB: PlayaDB) {
         self._playaDB = playaDB
         super.init(mapView: mapView, dataSource: dataSource)
+        observeEmbargo()
+    }
+
+    /// The region path snapshots the embargo tiers each time it runs, and it only runs on a
+    /// region change — so without this an unlock while the map is up leaves the viewport
+    /// empty of camp/art pins until the user pans or relaunches.
+    private func observeEmbargo() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        refreshRegionAnnotations()
     }
 
     private let mapRegionAnnotations = MapRegionDataSource()
@@ -178,67 +260,64 @@ public class UserMapViewAdapter: MapViewAdapter {
         labelViews.forEach { (view) in
             view.label.isHidden = labelIsHidden
         }
-        if zoomLevel >= 16.0 {
-            let bounds = mapView.visibleCoordinateBounds
-            let region = MKCoordinateRegion(
-                center: CLLocationCoordinate2D(
-                    latitude: (bounds.sw.latitude + bounds.ne.latitude) / 2,
-                    longitude: (bounds.sw.longitude + bounds.ne.longitude) / 2
-                ),
-                span: MKCoordinateSpan(
-                    latitudeDelta: bounds.ne.latitude - bounds.sw.latitude,
-                    longitudeDelta: bounds.ne.longitude - bounds.sw.longitude
-                )
-            )
-            Task { @MainActor in
-                guard let objects = try? await playaDB.fetchObjects(in: region) else { return }
-                let now = Date.present
-                let startingSoonThreshold: TimeInterval = 30 * 60
-                let endingSoonThreshold: TimeInterval = 15 * 60
+        refreshRegionAnnotations()
+    }
 
-                // Fetch current/upcoming events once for time filtering
-                let currentEvents = (try? await playaDB.fetchUpcomingEvents(within: 1, from: now)) ?? []
-                let activeEventUIDs = Set(currentEvents.compactMap { occ -> String? in
-                    let hasEnded = now > occ.occurrence.endTime
-                    let isHappening = now >= occ.occurrence.startTime && now <= occ.occurrence.endTime
-                    let timeUntilStart = occ.occurrence.startTime.timeIntervalSince(now)
-                    let isStartingSoon = timeUntilStart > 0 && timeUntilStart < startingSoonThreshold
-                    let timeUntilEnd = occ.occurrence.endTime.timeIntervalSince(now)
-                    let isEndingSoon = timeUntilEnd > 0 && timeUntilEnd < endingSoonThreshold
-                    if !hasEnded && (isHappening || isStartingSoon) && !isEndingSoon {
-                        return occ.event.uid
-                    }
-                    return nil
-                })
-
-                var annotations: [MLNAnnotation] = []
-                for object in objects {
-                    if let art = object as? ArtObject {
-                        if UserSettings.showArtOnlyZoomedIn {
-                            if let annotation = PlayaObjectAnnotation(art: art) {
-                                annotations.append(annotation)
-                            }
-                        }
-                    } else if let camp = object as? CampObject {
-                        if UserSettings.showCampsOnlyZoomedIn && zoomLevel >= 17.0 {
-                            if let annotation = PlayaObjectAnnotation(camp: camp) {
-                                annotations.append(annotation)
-                            }
-                        }
-                    } else if let event = object as? EventObject {
-                        if activeEventUIDs.contains(event.uid),
-                           let annotation = PlayaObjectAnnotation(event: event) {
-                            annotations.append(annotation)
-                        }
-                    }
-                }
-                annotations.sort { ($0.title.flatMap { $0 } ?? "") < ($1.title.flatMap { $0 } ?? "") }
-                self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
-                self.mapRegionAnnotations.annotations = annotations
-                self.addAnnotations(annotations)
-            }
-        } else {
+    /// Re-queries PlayaDB for the current viewport and rebuilds the region annotations.
+    ///
+    /// Driven by region changes, and re-run on `.BRCEmbargoDidClear` because the embargo
+    /// tiers are snapshotted per run.
+    func refreshRegionAnnotations() {
+        let zoomLevel = mapView.zoomLevel
+        guard zoomLevel >= MapRegionAnnotationFilter.artMinimumZoom else {
             removeAnnotations(mapRegionAnnotations.allAnnotations())
+            mapRegionAnnotations.annotations = []
+            return
+        }
+        let bounds = mapView.visibleCoordinateBounds
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(
+                latitude: (bounds.sw.latitude + bounds.ne.latitude) / 2,
+                longitude: (bounds.sw.longitude + bounds.ne.longitude) / 2
+            ),
+            span: MKCoordinateSpan(
+                latitudeDelta: bounds.ne.latitude - bounds.sw.latitude,
+                longitudeDelta: bounds.ne.longitude - bounds.sw.longitude
+            )
+        )
+        Task { @MainActor in
+            guard let objects = try? await playaDB.fetchObjects(in: region) else { return }
+            let now = Date.present
+            let startingSoonThreshold: TimeInterval = 30 * 60
+            let endingSoonThreshold: TimeInterval = 15 * 60
+
+            // Fetch current/upcoming events once for time filtering
+            let currentEvents = (try? await playaDB.fetchUpcomingEvents(within: 1, from: now)) ?? []
+            let activeEventUIDs = Set(currentEvents.compactMap { occ -> String? in
+                let hasEnded = now > occ.occurrence.endTime
+                let isHappening = now >= occ.occurrence.startTime && now <= occ.occurrence.endTime
+                let timeUntilStart = occ.occurrence.startTime.timeIntervalSince(now)
+                let isStartingSoon = timeUntilStart > 0 && timeUntilStart < startingSoonThreshold
+                let timeUntilEnd = occ.occurrence.endTime.timeIntervalSince(now)
+                let isEndingSoon = timeUntilEnd > 0 && timeUntilEnd < endingSoonThreshold
+                if !hasEnded && (isHappening || isStartingSoon) && !isEndingSoon {
+                    return occ.event.uid
+                }
+                return nil
+            })
+
+            let annotations = MapRegionAnnotationFilter.annotations(
+                from: objects,
+                zoomLevel: zoomLevel,
+                activeEventUIDs: activeEventUIDs,
+                showArtOnlyZoomedIn: UserSettings.showArtOnlyZoomedIn,
+                showCampsOnlyZoomedIn: UserSettings.showCampsOnlyZoomedIn,
+                artAllowed: BRCEmbargo.canShowArtLocations(),
+                campAllowed: BRCEmbargo.canShowCampLocations()
+            )
+            self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
+            self.mapRegionAnnotations.annotations = annotations
+            self.addAnnotations(annotations)
         }
     }
 }

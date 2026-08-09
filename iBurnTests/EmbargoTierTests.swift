@@ -245,4 +245,204 @@ final class EmbargoTierTests: XCTestCase {
         let art = ArtObject(uid: "art-1", name: "The Hitchin' Post", year: 2026, locationString: "Open Playa")
         XCTAssertEqual(eventItem(host: art, otherLocation: "Center Camp").address, "Center Camp")
     }
+
+    // MARK: - Nearby proximity line
+
+    // A walk/bike estimate is computed from the same embargoed coordinates as the address,
+    // so `NearbyItem.canShowLocation` gates both. `NearbyViewModel.distanceString` returns
+    // nil when it is false, which is what makes the row fall back to the masked "? min".
+
+    func testNearbyProximityHiddenForArtAndCampsBeforeAnyTierOpens() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertFalse(artItem(locationString: "Open Playa").canShowLocation)
+        XCTAssertFalse(campItem(locationString: "7:30 & Esplanade").canShowLocation)
+    }
+
+    func testNearbyProximityFollowsCampTierInsideTheCampWindow() throws {
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertFalse(artItem(locationString: "Open Playa").canShowLocation)
+        XCTAssertTrue(campItem(locationString: "7:30 & Esplanade").canShowLocation)
+    }
+
+    func testNearbyProximityVisibleForEverythingOnceGatesOpen() throws {
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertTrue(artItem(locationString: "Open Playa").canShowLocation)
+        XCTAssertTrue(campItem(locationString: "7:30 & Esplanade").canShowLocation)
+    }
+
+    func testNearbyProximityForEventsFollowsTheHostTier() throws {
+        let camp = CampObject(uid: "camp-1", name: "Camp Test", year: 2026, locationString: "7:30 & Esplanade")
+        let art = ArtObject(uid: "art-1", name: "The Hitchin' Post", year: 2026, locationString: "Open Playa")
+
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertTrue(eventItem(host: camp).canShowLocation)
+        XCTAssertFalse(eventItem(host: art).canShowLocation)
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertTrue(eventItem(host: art).canShowLocation)
+    }
+
+    // MARK: - Map region annotations
+
+    // `UserMapViewAdapter` drops pins for whatever `fetchObjects(in:)` returns for the
+    // current viewport — a second annotation source that bypassed the embargo entirely, so
+    // locked camps rendered pins whose callout is the full playa address.
+    // `MapRegionAnnotationFilter` is the pure seam that now gates it; the tiers are passed
+    // in rather than read from `BRCEmbargo`, so these cases need no mock date.
+
+    private let brcLatitude = 40.7931
+    private let brcLongitude = -119.2179
+
+    private func regionArt(uid: String = "art-1", name: String = "Region Art") -> ArtObject {
+        ArtObject(
+            uid: uid,
+            name: name,
+            year: 2026,
+            locationString: "Open Playa",
+            gpsLatitude: brcLatitude,
+            gpsLongitude: brcLongitude
+        )
+    }
+
+    private func regionCamp(uid: String = "camp-1", name: String = "Region Camp") -> CampObject {
+        CampObject(
+            uid: uid,
+            name: name,
+            year: 2026,
+            locationString: "7:30 & Esplanade",
+            gpsLatitude: brcLatitude,
+            gpsLongitude: brcLongitude
+        )
+    }
+
+    private func regionEvent(uid: String = "event-1",
+                             name: String = "Region Event",
+                             hostedByCamp: String? = nil,
+                             locatedAtArt: String? = nil) -> EventObject {
+        EventObject(
+            uid: uid,
+            name: name,
+            year: 2026,
+            eventTypeLabel: "Party",
+            eventTypeCode: "prty",
+            hostedByCamp: hostedByCamp,
+            locatedAtArt: locatedAtArt,
+            gpsLatitude: brcLatitude,
+            gpsLongitude: brcLongitude
+        )
+    }
+
+    private func regionAnnotationTitles(
+        _ objects: [any PlayaDataObject],
+        zoomLevel: Double = 18,
+        activeEventUIDs: Set<String> = [],
+        showArtOnlyZoomedIn: Bool = true,
+        showCampsOnlyZoomedIn: Bool = true,
+        artAllowed: Bool,
+        campAllowed: Bool
+    ) -> [String] {
+        MapRegionAnnotationFilter.annotations(
+            from: objects,
+            zoomLevel: zoomLevel,
+            activeEventUIDs: activeEventUIDs,
+            showArtOnlyZoomedIn: showArtOnlyZoomedIn,
+            showCampsOnlyZoomedIn: showCampsOnlyZoomedIn,
+            artAllowed: artAllowed,
+            campAllowed: campAllowed
+        ).compactMap(\.title)
+    }
+
+    func testRegionAnnotationsDropArtAndCampsWhileFullyEmbargoed() {
+        let titles = regionAnnotationTitles(
+            [regionArt(), regionCamp()],
+            artAllowed: false,
+            campAllowed: false
+        )
+        XCTAssertEqual(titles, [])
+    }
+
+    func testRegionAnnotationsShowCampsButNotArtInsideTheCampWindow() {
+        let titles = regionAnnotationTitles(
+            [regionArt(), regionCamp()],
+            artAllowed: false,
+            campAllowed: true
+        )
+        XCTAssertEqual(titles, ["Region Camp"])
+    }
+
+    func testRegionAnnotationsShowEverythingOnceUnlocked() {
+        let titles = regionAnnotationTitles(
+            [regionArt(), regionCamp()],
+            artAllowed: true,
+            campAllowed: true
+        )
+        XCTAssertEqual(titles, ["Region Art", "Region Camp"])
+    }
+
+    func testRegionEventAtArtStaysOnTheArtTier() {
+        let campEvent = regionEvent(uid: "event-camp", name: "Camp Event", hostedByCamp: "camp-1")
+        let artEvent = regionEvent(uid: "event-art", name: "Art Event", locatedAtArt: "art-1")
+        let active: Set<String> = ["event-camp", "event-art"]
+
+        XCTAssertEqual(
+            regionAnnotationTitles([campEvent, artEvent],
+                                   activeEventUIDs: active,
+                                   artAllowed: false,
+                                   campAllowed: true),
+            ["Camp Event"]
+        )
+        XCTAssertEqual(
+            regionAnnotationTitles([campEvent, artEvent],
+                                   activeEventUIDs: active,
+                                   artAllowed: true,
+                                   campAllowed: true),
+            ["Art Event", "Camp Event"]
+        )
+        XCTAssertEqual(
+            regionAnnotationTitles([campEvent, artEvent],
+                                   activeEventUIDs: active,
+                                   artAllowed: false,
+                                   campAllowed: false),
+            []
+        )
+    }
+
+    /// The embargo gate is additive: the pre-existing zoom, settings and happening-now
+    /// rules still have to hold once everything is unlocked.
+    func testRegionAnnotationsKeepZoomAndSettingsRulesWhenUnlocked() {
+        // Camps need z17; art is eligible from z16.
+        XCTAssertEqual(
+            regionAnnotationTitles([regionArt(), regionCamp()],
+                                   zoomLevel: 16.5,
+                                   artAllowed: true,
+                                   campAllowed: true),
+            ["Region Art"]
+        )
+        // Settings off means the always-on data source owns those pins, not this path.
+        XCTAssertEqual(
+            regionAnnotationTitles([regionArt(), regionCamp()],
+                                   showArtOnlyZoomedIn: false,
+                                   showCampsOnlyZoomedIn: false,
+                                   artAllowed: true,
+                                   campAllowed: true),
+            []
+        )
+        // An event that isn't happening now stays off the map even when unlocked.
+        XCTAssertEqual(
+            regionAnnotationTitles([regionEvent(hostedByCamp: "camp-1")],
+                                   activeEventUIDs: [],
+                                   artAllowed: true,
+                                   campAllowed: true),
+            []
+        )
+    }
+
+    /// Objects with no coordinates can't be annotated at all, embargo or not.
+    func testRegionAnnotationsSkipObjectsWithoutCoordinates() {
+        let placeless = CampObject(uid: "camp-2", name: "Placeless Camp", year: 2026)
+        XCTAssertEqual(
+            regionAnnotationTitles([placeless], artAllowed: true, campAllowed: true),
+            []
+        )
+    }
 }

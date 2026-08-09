@@ -172,8 +172,14 @@ final class NearbyViewModel: ObservableObject {
 
     // MARK: - Distance Display
 
+    /// Walk/bike estimate, or nil while the item's embargo tier still hides its placement.
+    ///
+    /// A distance is derived from the embargoed coordinates, so it has to be withheld along
+    /// with the address. Returning nil makes `ObjectRowView` fall back to its masked
+    /// `🚶🏽 ? min 🚴🏽 ? min` line, which is what search results already show.
     func distanceString(for item: NearbyItem) -> AttributedString? {
-        switch item {
+        guard item.canShowLocation else { return nil }
+        return switch item {
         case .art(let r): artProvider.distanceAttributedString(from: currentLocation, to: r.object)
         case .camp(let r): campProvider.distanceAttributedString(from: currentLocation, to: r.object)
         case .event(let r): eventProvider.distanceAttributedString(from: currentLocation, to: r.object)
