@@ -67,10 +67,10 @@ app:
 APP_DATA=$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)
 sqlite3 "file:$APP_DATA/Documents/PlayaDB.sqlite?mode=ro" "
   PRAGMA journal_mode;                          -- expect: wal
-  SELECT COUNT(*) FROM art_objects;             -- ~321 (2026 data)
-  SELECT COUNT(*) FROM camp_objects;            -- ~1201
-  SELECT COUNT(*) FROM event_objects;           -- ~2101
-  SELECT COUNT(*) FROM event_occurrences;       -- ~4431
+  SELECT COUNT(*) FROM art_objects;             -- ~332 (2026 data, Aug 9 refresh)
+  SELECT COUNT(*) FROM camp_objects;            -- ~1191 (placed; GPS non-null for ~1184)
+  SELECT COUNT(*) FROM event_objects;           -- ~2538
+  SELECT COUNT(*) FROM event_occurrences;       -- ~5032
   SELECT identifier FROM grdb_migrations;       -- v1-initial-schema
   SELECT object_type, object_id, is_favorite FROM object_metadata;"
 ```

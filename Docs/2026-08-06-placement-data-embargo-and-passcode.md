@@ -57,15 +57,14 @@ Verified in sim: mock apply → rebuild → JSON re-import → camp pins/callout
 (fixture) outlines render after unlock; revert → guards green, submodule clean.
 
 The real 2026 placement geojson will be generated from the placement PDF via
-[jspolsky/brcMapTools](https://github.com/jspolsky/brcMapTools) (Phase 3).
+community map-extraction tooling (Phase 3).
 
 ## Remaining Work (blocked on BMorg / release timing)
 
 1. **When placement drops in the API** (before Aug 23): re-run `fetch_and_geocode.js -y 2026`
    → expect real geocode counts → `playa-seed --fetch-media` → commit chain.
 2. **When the placement PDF arrives** (~Aug 23 last year): generate
-   `camp_outlines.geojson` / `camp_labels.geojson` with
-   [jspolsky/brcMapTools](https://github.com/jspolsky/brcMapTools) → replace
+   `camp_outlines.geojson` / `camp_labels.geojson` from it → replace
    placeholders in `data/2026/Map/Map.bundle/` → commit. Embargo gate already in place.
 3. Push submodule + app branches; publish `data/2026/` to public `iBurnApp/iBurn-Data`
    so `UPDATES_URL` OTA works; TestFlight build.
