@@ -59,7 +59,7 @@ ea0997b  Add scripts/apply_placement.js: merge the placement drop into the bundl
 4908585  Describe placement provenance generically in docs and comments
 ```
 
-**Open decision (user):** commit `8f2112e`'s *message* in the private repo names the data sender, the distribution channel, and the extraction tool. File contents are all sanitized (`4908585` covered the last two references, in the data repo's `CLAUDE.md` and `mock_locations.js`), but scrubbing the commit message itself means rewriting pushed history on the private `2026-updates` branch — not done without authorization. Must be decided before the private branch is mirrored to the public repo at gates-open; alternatives are a reworded rebase + force push (clean), or mirroring via a squashed/grafted publish instead of a direct branch push.
+**Open decision (user):** commit `8f2112e`'s *message* in the private repo names the data sender, the distribution channel, and the extraction tool. File contents are all sanitized (`4908585` covered the last two references, in the data repo's `CLAUDE.md` and `mock_locations.js`), but scrubbing the commit message itself means rewriting pushed history on the private `2026-updates` branch — not done without authorization. Must be decided before the private branch is mirrored to the public repo at gates-open; alternatives are a reworded rebase + force push (clean), or mirroring via a squashed/grafted publish instead of a direct branch push. *User decision 2026-08-09: fine for now — revisit at mirror time.*
 
 ### Validation
 
