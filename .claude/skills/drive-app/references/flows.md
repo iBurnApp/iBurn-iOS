@@ -48,9 +48,13 @@ UIKit/YapDatabase stack.
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
 and `grdb_migrations` contains every migration through `v6-pin-sync`. Seeded
-counts (2026 data, Aug 6 refresh): 330 art / 1196 camps / 2361 events /
-4894 occurrences / 495 mutant vehicles / **1580 `thumbnail_colors`**;
-`object_metadata` stays empty until the user favorites/views something.
+counts (2026 data, Aug 9 refresh + placement): 332 art / 1191 camps / 2491 events /
+5032 occurrences / 494 mutant vehicles / **1580 `thumbnail_colors`**;
+`object_metadata` stays empty until the user favorites/views something. Camp GPS is
+non-null for 1184 of the 1191, and every one of those 1184 coordinates is **distinct**
+(they are footprint centroids, not street-intersection geocodes) — a `SELECT COUNT(*)
+FROM (SELECT DISTINCT gps_latitude, gps_longitude …)` well below 1184 means the placement
+pipeline regressed to geocoder coordinates.
 
 `thumbnail_colors` being populated on a *fresh* install is the signal that the
 pre-baked seed restored. `iBurn/PlayaDB-<year>.zip` is gitignored and built by
@@ -192,6 +196,25 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
   "Show Camp Boundaries (Always)" map filter is on, and they appear live on
   unlock with the rest.
+- **A camp's name is drawn once, by exactly one of two mechanisms.** A camp's GPS is the
+  centroid of its own footprint — the same point `camp_labels.geojson` puts its label at —
+  so the pin and the style label would otherwise stack identical text on the same pixel.
+  `CampLayerVisibility.resolve` splits them by zoom: `camp-labels-big` draws names from
+  z15 up to `MapRegionAnnotationFilter.campMinimumZoom` (17), camp pins take over at z≥17
+  and carry the name in their own `LabelAnnotationView`. Below z15 (and whenever the style
+  layer is off) the pins label themselves at any zoom; `MapViewAdapter.updatePinLabelVisibility()`
+  applies that, keyed on `LabelAnnotationView.drawsCampName`. **What to check:** at any
+  zoom/filter combination each camp name appears exactly once, and no name is ever drawn
+  on top of itself. With "Camps (Zoomed)" **off** nothing takes over, so the style labels
+  run to full zoom and no camp pins appear.
+- Raising `camp-labels-big`'s zoom cap does not repaint tiles MapLibre already parsed
+  while the layer was out of range (lowering it hides immediately; toggling `visibility`
+  does not help). `MapLayerManager` therefore calls `mapView.reloadStyle` on that one
+  transition — so turning "Camps (Zoomed)" off at z≥17 shows the labels without panning.
+  If you ever see camps go nameless right after a filter change, that path regressed.
+- The Map Filter's Done callback re-runs all three: `updateAllLayers()`,
+  `refreshRegionAnnotations()`, `updatePinLabelVisibility()`. Camp pins appear/disappear
+  immediately on Done — no pan required.
 - **There are two independent annotation sources on the map, and both are gated.**
   `PlayaDBAnnotationDataSource` runs GRDB observations for the "always show" settings;
   `UserMapViewAdapter.refreshRegionAnnotations()` separately queries
