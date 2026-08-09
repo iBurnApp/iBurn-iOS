@@ -417,7 +417,20 @@ touch({ elementRef: "<ref of the 'Debug' text row>", down: true, up: true })
 
 "Use SwiftUI Lists" takes effect on next relaunch for tab construction. The Map
 Search Layout picker (`navigationBar` / `bottomAccessory` / `searchTab`) applies
-**live** via `.mapSearchLayoutDidChange` — no relaunch.
+**live** via `.mapSearchLayoutDidChange` — no relaunch. Both bottom layouts are iOS
+26-only; below 26 every choice resolves to `navigationBar` (`MapSearchLayout.resolved`),
+so an 18.x sim always shows the search field under the nav bar title and all five tabs.
+
+**Bar appearance is version-split too, and it's the map screen's alone.** The map asks for
+clear nav/tab bars (`Appearance.applyTransparent*Appearance`, applied in
+`MainMapViewController.viewWillAppear` and undone on disappear) so iOS 26 can paint Liquid
+Glass behind the floating controls. Below 26 there is no glass behind a clear bar, so those
+two calls fall back to the standard translucent `systemChromeMaterial` bars the rest of the
+app uses. **What to check on an 18.x sim:** the Map tab's nav bar and tab bar have the same
+material background as Nearby/Favorites/Events/More. Tab items or the search field sitting
+directly on the map with no bar background at all is the pre-26 regression this guards
+against; on 26 the same screens keep transparent bars with glass button capsules, which is
+correct there.
 
 `searchTab` adds a Search tab and **defaults Events off the bar**, so the tabs
 become Map / Nearby / Favorites / More plus a detached search button, with Events
