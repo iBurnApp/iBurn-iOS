@@ -7,7 +7,7 @@ label text, not on elementRef numbers (refs change every snapshot).
 
 > **Maintenance:** if a step here doesn't match the running app, fix this file in
 > the same session (see "Keeping the flow docs current" in SKILL.md).
-> Last verified: 2026-08-08 against the 2026 dataset, iPhone 17 Pro Max sim.
+> Last verified: 2026-08-09 against the 2026 dataset, iPhone 17 Pro Max sim.
 
 ## 1. First-launch onboarding (fresh install)
 
@@ -192,6 +192,21 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
   "Show Camp Boundaries (Always)" map filter is on, and they appear live on
   unlock with the rest.
+- **There are two independent annotation sources on the map, and both are gated.**
+  `PlayaDBAnnotationDataSource` runs GRDB observations for the "always show" settings;
+  `UserMapViewAdapter.refreshRegionAnnotations()` separately queries
+  `fetchObjects(in:)` for the visible bounds on every region change and adds art at
+  **z ≥ 16** / camps at **z ≥ 17** / happening-now events. That region path is the one
+  that actually draws camp pins in a default install (see the filter mapping below), so
+  when you check the locked state you must **zoom in to z ≈ 17–18 over a placed part of
+  the city** — a wide-zoom snapshot proves nothing. Its tier filtering lives in the pure
+  `MapRegionAnnotationFilter` (unit-tested in `EmbargoTierTests`), and it re-runs on
+  `BRCEmbargoDidClear` so an unlock repopulates the viewport without panning.
+- **Map Filter camp toggles map to two different defaults**, which is why the region path
+  matters: "Camps (Always)" is `kBRCShowCampsOnMapKey`, **default false** (so the
+  observation path adds no camps at all out of the box), while "Camps (Zoomed)" is
+  `showCampsOnlyZoomedIn`, **default true**. Art is the mirror image:
+  `showArtOnlyZoomedIn` defaults true.
 - To exercise location flows before placement drops, apply mock fixtures:
   `node scripts/mock_locations.js apply --map-fixtures` in
   `Submodules/iBurn-Data` (revert with `... revert`). Rebuild + relaunch: the
@@ -245,8 +260,8 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
   applies the two-tier check per item (art tier / camp tier / host's tier for events). Pre-
   embargo you should see the description line, never an address; if an art piece shows
   "Open Playa" while locked, that's a regression. **Check `kBRCEntered2026EmbargoPasscodeKey`
-  in the app's prefs plist before calling it one** — a passcode entered in an earlier
-  session persists and legitimately unlocks everything.
+  in the app's prefs plist before calling it one** (read it with the recipe in §8) — a
+  passcode entered in an earlier session persists and legitimately unlocks everything.
 - **Favorite button** (heart, **top-right corner of the card**, AX label
   "Favorite <name>" / "Unfavorite <name>"). It overlays the card *outside* the pager, so it
   keeps a fixed position and doesn't eat the swipe; it retargets to whichever page is
@@ -274,11 +289,12 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
 
 **Exercising the card outside the festival window.** Events only enter the card when an
 occurrence `isInNearbyWindow` (starts within 30 min / hasn't ended), so pre-event there is
-nothing but art + camps. Set `BRCMockDateEnabled`/`BRCMockDateValue` (app-container plist,
-app terminated; default mock is 2026-09-04T11:00-0700) to get live events — but note the
-mock date also lifts the embargo by date, and running with a BRC location under a festival
-date makes `enteredBurningManRegion` write `kBRCEntered2026EmbargoPasscodeKey = YES`
-permanently. Reset that key to `NO` (app terminated) when you next want the locked state.
+nothing but art + camps. Set `BRCMockDateEnabled`/`BRCMockDateValue` (app-container prefs
+via the §8 `defaults write` recipe, app terminated; default mock is 2026-09-04T11:00-0700)
+to get live events — but note the mock date also lifts the embargo by date, and running
+with a BRC location under a festival date makes `enteredBurningManRegion` write
+`kBRCEntered2026EmbargoPasscodeKey = YES` permanently. Delete that key (again, §8 recipe —
+**not** PlistBuddy) when you next want the locked state.
 Event-dense mock-time spots: **40.77546,-119.20512** (9 live events + 4 camps at 11:00) and
 **40.77245,-119.19365** (1 long-named event + 4 camps).
 
@@ -293,6 +309,20 @@ ships **no audio-tour `.m4a` files at all**, so the row's play button never appe
 data; drop a file at `<container>/Documents/MediaFiles/<art uid>.m4a` to exercise it
 (`afconvert -f m4af -d aac /System/Library/Sounds/Ping.aiff tour.m4a` makes a fixture; the
 art uids at 40.7864,-119.2065 are in `art_objects`). Delete it again when you're done.
+
+**Zooming the map from automation.** There is no programmatic camera control on the main map
+(it opens at z13 on the Man every launch) and no pinch primitive in the tooling. What works is
+a synthetic **double-tap**: `batch({ axCache: "perBatch", steps: [{action:"tap",elementRef:X},
+{action:"tap",elementRef:X}] })` is fast enough to register as one, and each batch zooms in.
+Use the **"You Are Here"** annotation as X after `simctl location set` + one tap on
+**"Tracking Mode"** (follow), so every zoom step stays centred on the coordinate you chose.
+From the default z13, four batches lands around z17–18 — art pins show up on the third,
+camps on the fourth. Two ways to read the annotations back: MapLibre publishes each one as an
+AX button whose **label is the name and value is the playa address**
+(`e20|tap|button|Moth|9:00 4815', Plaza|`), and the header **"List"** button opens Visible
+Pins, which says "No pins visible" when the map is genuinely empty. The snapshot's
+`screenHash` is a handy check that a locked and an unlocked run were compared at the *same*
+camera.
 
 **Automation hazard: MapLibre + accessibility.** `snapshot_ui` (and the AX refresh every
 `tap`/`batch` does) walks MapLibre's annotation container, which can throw
@@ -364,11 +394,38 @@ whichever layout is active (switch to `searchTab` → Events hides; switch away 
 back). Once the user moves Events in Customize Tabs, that choice is recorded in
 `userInterface.tabBar.visibilityOverrides` and sticks across layout switches until Reset.
 
-Setting the layout from outside the app: `simctl spawn <UDID> defaults write` does **not**
-reach the app's container. Terminate the app and edit the container plist instead —
-`/usr/libexec/PlistBuddy -c "Set :userInterface.map.searchLayout searchTab"
-"$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)/Library/Preferences/com.trailbehind.iBurn2010.plist"`
-(`plutil -replace` won't work: it reads the `.` in these keys as a key path).
+### Writing app preferences from outside the app
+
+Several flows need a preference set before launch. Two facts, both learned the hard way:
+
+- `simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 <key> …` — the *user-level*
+  domain — does **not** reach the app's container, which is what the app actually reads.
+- **Editing the container plist as a file (PlistBuddy / `plutil`) is unreliable.** The
+  simulator's `cfprefsd` holds a cached copy of that plist and rewrites it from cache, so a
+  PlistBuddy `Set` appears to succeed and is then silently discarded — you re-read the file
+  and the key is gone (or reverted). `plutil -replace` is doubly wrong here: it reads the
+  `.` in these key names as a key path.
+
+The reliable form goes through `defaults` **against the container path** (no `.plist`
+extension), with the **app terminated first** so nothing re-writes the file behind you:
+
+```bash
+xcrun simctl terminate <UDID> com.trailbehind.iBurn2010
+C=$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)
+PREFS="$C/Library/Preferences/com.trailbehind.iBurn2010"
+
+# Map Search Layout (§8)
+xcrun simctl spawn <UDID> defaults write "$PREFS" userInterface.map.searchLayout -string searchTab
+
+# Unlock the location embargo (§6)
+xcrun simctl spawn <UDID> defaults write "$PREFS" kBRCEntered2026EmbargoPasscodeKey -bool YES
+
+# …and re-lock it
+xcrun simctl spawn <UDID> defaults delete "$PREFS" kBRCEntered2026EmbargoPasscodeKey
+```
+
+Read values back the same way (`defaults read "$PREFS" <key>`), again with the app
+terminated — a running app's writes land in the cache, not the file.
 
 **Capturing animations:** `record_sim_video` has failed to return a file path here;
 `xcrun simctl io <UDID> recordVideo --codec h264 --force out.mov` in the background
@@ -602,6 +659,10 @@ Events / More, minus Events under `searchTab`).
 - "Error fetching updates: unsupported URL" in sim logs: the updates URL secret
   is empty in local builds. Expected.
 - Walk/bike times show "? min" until a location is set
-  (`xcrun simctl location <UDID> set 40.7864,-119.2065`).
+  (`xcrun simctl location <UDID> set 40.7864,-119.2065`) — **and also whenever the object's
+  embargo tier still hides its placement**, since the estimate is derived from the
+  embargoed coordinates. So on the Nearby screen pre-embargo, camps and art legitimately
+  read `🚶🏽 ? min 🚴🏽 ? min` even with a location fix; a real walk time there is a leak
+  (`NearbyItem.canShowLocation` / `NearbyViewModel.distanceString`).
 - The app dual-writes favorites Yap→PlayaDB; PlayaDB object data comes from the
   bundled seed only (network updates still flow through YapDatabase).
