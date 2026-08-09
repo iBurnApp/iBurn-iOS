@@ -89,6 +89,14 @@ User feedback after seeing the unlocked map: pins clustered at street intersecti
 - Known residual: favorited camps (and "Camps (Always)") draw their pin image over the style text between z15–17 — name still appears once, but a `text-offset` in the style JSON would be the clean fix; deferred as it changes rendering for all camps.
 - Commits: submodule `400c64b`/`b6408ae`/`907386b` (pushed to private origin), app `7f0dc81`/`002d2fe`.
 
+### Round 3: style labels win everywhere; nearby card accessory line
+
+User feedback: keep the styled map labels at all zooms and strip the text off camp pins instead (tap → callout still works); give the nearby card a dedicated location/time accessory line so the description survives embargo unlock; tighten the thumbnail→footer gap further.
+
+- **Per-camp label split** (`33b11f4`): new `CampStyleLabelIndex` lazily loads the uid set from the bundled `camp_labels.geojson` off-main; pins for labeled camps show a bare glyph at every zoom (pure `PinLabelVisibility` verdict, nil-index = assume-labeled to avoid doubled-text flash; empty/missing file ⇒ every pin labels itself, so a pre-placement year degrades to today's behavior). `CampLayerVisibility.resolve` lost its zoom-capping inputs and the `reloadStyle` workaround is deleted. Residual: at z≥17 the pin glyph sits on the style text (same coordinate); clean fix is a `text-offset` in the style JSON (data submodule) if it bothers anyone.
+- **Card accessory** (`4653ab5`): row is title / accessory (event timing · address, embargo-gated through `NearbyItem.address`) / description (2 lines when accessory absent, 1 when present). New arithmetic: text stack 56 ≤ thumbnail 60 → pageHeight 72, footer 28, **cardHeight 100** (was 112); the ~14 pt residual is gone. Text block scales via `@ScaledMetric` capped at XXXL — XXXL now grows the card clear of the footer; accessibility sizes truncate instead of overlapping.
+- Tests 290 → **302**; sim-validated: one name per camp with callouts intact, filter/fallback toggles live-update without `reloadStyle`, locked state still renders nothing, card verified locked/unlocked for camps and events (mock-date pinned), Dynamic Type checked. flows.md updated (`1a6d039`).
+
 ## Context Preservation
 
 - The 2026 API serving placement means future refreshes (`fetch_and_geocode.js`) keep camps placed without the drop; `apply_placement.js` re-applies geometry on top and is safe to re-run after any refresh (fill-only + idempotent).
