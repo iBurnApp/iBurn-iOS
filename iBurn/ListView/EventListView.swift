@@ -222,10 +222,7 @@ struct EventListView: View {
         // sheet's Reset-button visibility. Defaults: hide expired (includeExpired
         // false), all favorites, all types, 6h duration cap — so a nil-vs-non-nil
         // duration check (or the old `!includeExpired`) would always read active.
-        let hasActiveFilters = viewModel.filter.onlyFavorites
-            || viewModel.filter.includeExpired
-            || viewModel.filter.eventTypeCodes != nil
-            || viewModel.filter.maxDuration != EventListViewModel.defaultMaxDuration
+        let hasActiveFilters = !viewModel.filter.matchesSheetDefaults(.eventListDefaults)
         return hasActiveFilters
             ? "line.3.horizontal.decrease.circle.fill"
             : "line.3.horizontal.decrease.circle"

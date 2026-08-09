@@ -405,6 +405,37 @@ dismissing the Map Filter sheet. It is an automation-only crash, not a user-visi
 scroll ref (the one `drag` needs to page the card) to drop out of the AX tree periodically —
 relaunching the app brings it back.
 
+### Nearby screen (list) — event filter, window, ordering
+
+The full-screen Nearby list (tab, or the card's "See all") shares its event filter with the
+card above — one `NearbyEventFilterStore`, persisted under `nearbyEventFilter` /
+`nearbyEventFilter.maxDuration`.
+
+- Nav bar is **Warp (leading) | filter | map (trailing)**. The filter button (AX label
+  "Filter Nearby Events") opens the same `EventFilterSheet` the Events tab uses, minus the
+  "Show Expired Events" toggle — Nearby's time gate is its own now-window, so that control
+  would do nothing. Icon is `line.3.horizontal.decrease.circle`, **`.fill`** when anything
+  differs from the defaults, matching the sheet's Reset button.
+- **Max Duration defaults to 6h**, same as the Events tab, applied in SQL. Without it the
+  list is dominated by 10–12 h "amenity listing" pseudo-events (open bars, stamp stations).
+  Changing it re-queries **both** surfaces live — no relaunch, no leaving the map.
+- Events are ordered **starting-soon first (soonest first), then already-started
+  (most-recently-started first)**, not by ascending start time — a 12 h listing that began
+  at 09:00 must not outrank a set that starts in ten minutes.
+- Row timing labels use the **effective (warped) date**, not wall-clock now. Under Warp a
+  row reads "12:00pm (4h left)"; if it reads like a plain future date ("Wed 12:00pm (4h)")
+  while warped, the display date has been decoupled from the filter date again.
+- Quickest end-to-end check with the 2026 data: mock date `2026-09-02T19:00Z` and
+  `simctl location set 40.79169,-119.21120` puts 9 in-window events within the card's 100 m
+  (7 of them >6 h), so the card's page dots read **9 at "Any" and 2 at the 6h default** —
+  a one-glance proof that the cap reaches the card too.
+
+**A file edit to the prefs plist *does* stick if you restart the simulator's cfprefsd**
+(`xcrun simctl spawn <UDID> launchctl kickstart -k system/com.apple.cfprefsd.xpc.daemon`
+after the edit, before launching). Worth knowing for the few values `defaults` can't write
+comfortably — `nearbyEventFilter.maxDuration` is a JSON **data** blob
+(`{"limited":{"_0":21600}}` / `{"unlimited":{}}`), easiest to write with python3 `plistlib`.
+
 ## 7. Detail screen
 
 From any list row (event/camp/art):

@@ -2,15 +2,31 @@ import SwiftUI
 import PlayaDB
 
 /// Filter sheet for event list options.
+///
+/// Shared by the Events tab and Nearby. The two differ only in their baseline and in
+/// whether the expired toggle makes sense: Nearby's time gate is its own now-window, so
+/// "Show Expired Events" would be a control with no visible effect there and is hidden.
 struct EventFilterSheet: View {
     @Binding var filter: EventFilter
+
+    /// What Reset restores, and what the sheet compares against to decide whether Reset is
+    /// worth offering. Callers pass the same baseline their toolbar badge uses.
+    var defaultFilter: EventFilter = .eventListDefaults
+
+    /// Whether to show "Show Expired Events". Off for Nearby — see the type doc.
+    var showsExpiredToggle: Bool = true
+
+    var title: String = "Filter Events"
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Time")) {
-                    Toggle("Show Expired Events", isOn: $filter.includeExpired)
+                Section(header: Text(showsExpiredToggle ? "Time" : "Favorites")) {
+                    if showsExpiredToggle {
+                        Toggle("Show Expired Events", isOn: $filter.includeExpired)
+                    }
                     Toggle("Only Favorites", isOn: $filter.onlyFavorites)
                 }
 
@@ -46,7 +62,7 @@ struct EventFilterSheet: View {
                     }
                 }
             }
-            .navigationTitle("Filter Events")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -63,22 +79,20 @@ struct EventFilterSheet: View {
 
     // MARK: - Defaults / Reset
 
-    /// The sheet's controls at their defaults: hide expired, all favorites, all types,
-    /// and the Events-tab 6h duration cap. Reset is offered whenever any differ.
+    /// The sheet's controls at `defaultFilter`. Reset is offered whenever any differ.
     private var isDefaultFilter: Bool {
-        !filter.includeExpired
-            && !filter.onlyFavorites
-            && filter.eventTypeCodes == nil
-            && filter.maxDuration == EventListViewModel.defaultMaxDuration
+        filter.matchesSheetDefaults(defaultFilter, includingExpired: showsExpiredToggle)
     }
 
     /// One field at a time (not a wholesale `filter = EventFilter(...)`) so fields the
-    /// sheet doesn't expose (searchText, dates, activeWindow) are left untouched.
+    /// sheet doesn't expose (searchText, dates, activeWindow, region) are left untouched.
     private func resetToDefaults() {
-        filter.includeExpired = false
-        filter.onlyFavorites = false
-        filter.eventTypeCodes = nil
-        filter.maxDuration = EventListViewModel.defaultMaxDuration
+        if showsExpiredToggle {
+            filter.includeExpired = defaultFilter.includeExpired
+        }
+        filter.onlyFavorites = defaultFilter.onlyFavorites
+        filter.eventTypeCodes = defaultFilter.eventTypeCodes
+        filter.maxDuration = defaultFilter.maxDuration
     }
 
     // MARK: - Max Duration

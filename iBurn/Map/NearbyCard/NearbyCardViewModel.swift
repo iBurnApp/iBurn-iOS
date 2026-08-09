@@ -53,6 +53,10 @@ final class NearbyCardViewModel: ObservableObject {
     private let locationProvider: LocationProvider
     private let preferences: PreferenceService
 
+    /// Shared with the Nearby screen so one filter choice governs both — see
+    /// `NearbyEventFilterStore`.
+    private let filterStore: NearbyEventFilterStore
+
     // MARK: - State
 
     private var rawLocation: CLLocation?
@@ -101,7 +105,10 @@ final class NearbyCardViewModel: ObservableObject {
         campProvider: CampDataProvider,
         eventProvider: EventDataProvider,
         locationProvider: LocationProvider,
-        preferences: PreferenceService = PreferenceServiceFactory.shared
+        preferences: PreferenceService = PreferenceServiceFactory.shared,
+        // `nil` → the shared store. Not a `= .shared` default argument: default arguments
+        // are evaluated in a nonisolated context, and `shared` is main-actor isolated.
+        filterStore: NearbyEventFilterStore? = nil
     ) {
         self.playaDB = playaDB
         self.artProvider = artProvider
@@ -109,6 +116,7 @@ final class NearbyCardViewModel: ObservableObject {
         self.eventProvider = eventProvider
         self.locationProvider = locationProvider
         self.preferences = preferences
+        self.filterStore = filterStore ?? .shared
 
         self.isCardEnabled = preferences.getValue(Preferences.NearbyCard.enabled)
         self.enabledTypes = NearbyCardTypes.current(preferences)
@@ -182,13 +190,23 @@ final class NearbyCardViewModel: ObservableObject {
             }
         }
         .store(in: &preferenceSubscriptions)
+
+        // The Nearby screen's filter sheet writes through the shared store. The duration
+        // cap and type toggles are SQL-side, so the card has to re-query rather than
+        // re-filter what it already holds.
+        filterStore.$filter
+            .dropFirst()
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.startEventObservation() }
+            }
+            .store(in: &preferenceSubscriptions)
     }
 
     // MARK: - Item assembly
 
     /// Recompute `items` from the latest observations + location. Events that are
-    /// happening now or starting soon come first (by start time); then art + camps
-    /// merged by distance. Everything is gated to `nearbyRadius`, de-duped by id,
+    /// happening now or starting soon come first (see `NearbyEventOrdering`); then art +
+    /// camps merged by distance. Everything is gated to `nearbyRadius`, de-duped by id,
     /// and capped to `maxItems`.
     private func rebuildItems() {
         guard isCardEnabled, let location = currentLocation else {
@@ -211,9 +229,10 @@ final class NearbyCardViewModel: ObservableObject {
 
     /// Pure ordering used by `rebuildItems()`, exposed for unit testing.
     ///
-    /// Events that are happening now or starting soon come first (by start time);
-    /// then art + camps merged by distance. All gated to `radius` and to `types`,
-    /// de-duped by id, capped to `maxItems`. Objects without a location are dropped.
+    /// Events that are happening now or starting soon come first, in
+    /// `NearbyEventOrdering`'s order; then art + camps merged by distance. All gated to
+    /// `radius` and to `types`, de-duped by id, capped to `maxItems`. Objects without a
+    /// location are dropped.
     static func orderedItems(
         art: [ListRow<ArtObject>],
         camps: [ListRow<CampObject>],
@@ -224,7 +243,7 @@ final class NearbyCardViewModel: ObservableObject {
         radius: CLLocationDistance,
         maxItems: Int
     ) -> [NearbyItem] {
-        let orderedEvents = (types.contains(.events) ? events : [])
+        let windowedEvents = (types.contains(.events) ? events : [])
             .filter { row in
                 guard let loc = row.object.location,
                       location.distance(from: loc) <= radius else { return false }
@@ -233,7 +252,7 @@ final class NearbyCardViewModel: ObservableObject {
                 // through its final seconds and rendered it as "(0m left)".
                 return row.object.isInNearbyWindow(now: now)
             }
-            .sorted { $0.object.startDate < $1.object.startDate }
+        let orderedEvents = NearbyEventOrdering.sorted(windowedEvents, now: now)
             .map { NearbyItem.event($0) }
 
         var others: [(item: NearbyItem, distance: CLLocationDistance)] = []
@@ -325,10 +344,11 @@ final class NearbyCardViewModel: ObservableObject {
             rebuildItems()
             return
         }
-        // Region-filtered (R*Tree-backed). Fetch all in-region occurrences and apply the
-        // exact happening-now / starting-soon gate client-side at `now` (the region is
-        // tiny, and this also captures starting-soon events that `happeningNow` would drop).
-        let filter = EventFilter(region: region, includeExpired: true)
+        // Region-filtered (R*Tree-backed), plus the shared Nearby filter (duration cap,
+        // event types, favorites) applied in SQL. The exact happening-now / starting-soon
+        // gate stays client-side at `now` (the region is tiny, and this also captures
+        // starting-soon events that `happeningNow` would drop).
+        let filter = filterStore.observationFilter(region: region)
         eventTask = Task { [weak self] in
             guard let self else { return }
             for await rows in self.eventProvider.observeObjects(filter: filter) {

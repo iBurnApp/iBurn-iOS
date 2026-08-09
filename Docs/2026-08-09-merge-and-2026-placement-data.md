@@ -123,3 +123,163 @@ Known follow-up found on 18.6: the classic-layout search results overlay is see-
 - Fresh installs on iOS 26 land on the search-tab layout; older iOS gets the classic nav-bar search.
 - Builds ship real 2026 camp placement, fully hidden until 2026-08-23T07:01Z (camp tier), passcode, or gates; map outlines + text labels appear on unlock.
 - Re-running the pipeline after future API refreshes: `node scripts/apply_placement.js` in the private repo, then `playa-seed --fetch-media`, then commit (private) and bump the submodule pointer.
+
+---
+
+# Workstream 4: Nearby "happening now-ish" — duration cap, filter sheet, ordering
+
+## High-Level Plan
+
+**Problem (user report).** The Nearby screen and the map's nearby card were supposed to answer
+"what's near me right now", but (a) 10–12 hour "amenity listing" pseudo-events (open bars,
+stamp stations, mailboxes) flooded the list because neither surface capped occurrence
+duration, and (b) the user also saw events that "don't start for many hours". They asked for
+the Events tab's filter mechanism — especially its 6 h default max duration — to be reused,
+with a filters entry point in the Nearby nav bar.
+
+**Solution.**
+
+1. One shared, persisted `EventFilter` for both Nearby surfaces (`NearbyEventFilterStore`),
+   defaulting to the same 6 h cap the Events tab uses, applied **in SQL** (`EventFilter.maxDuration`).
+2. A filter button in the Nearby nav bar presenting the existing `EventFilterSheet`.
+3. A deliberate in-window ordering (`NearbyEventOrdering`) so just-started / starting-soon
+   events outrank long-runners.
+4. The "starts many hours from now" diagnosis (below) — a display-vs-filter date mismatch
+   under Warp.
+
+## Item-4 diagnosis: the far-future events
+
+There is no "upcoming" section on the Nearby screen — `sections` only ever contains
+`happeningEvents`, and that is gated by `isInNearbyWindow(now: effectiveDate)` (starts within
+30 min, hasn't ended). The window was not leaking. The **labels** were.
+
+`NearbyViewModel.effectiveDate` is `timeShiftConfig?.date ?? .present`, but the published
+`now` that `NearbyView` handed to `EventObjectOccurrence.timeDescription(now:)` was
+unconditionally `.present`:
+
+```swift
+@Published var now: Date = .present          // timer: self.now = .present
+...
+rightSubtitle: event.object.timeDescription(now: viewModel.now)
+```
+
+So whenever Warp was active — and `UserSettings.nearbyTimeShiftConfig` **persists across
+launches**, so a warp set once stays on until explicitly reset — the list was filtered at the
+warped date while every row was described against real wall-clock time. `timeDescription`
+then fell through both its `isStartingSoon` and `isCurrentlyHappening` branches to
+`defaultTimeText`, rendering "Wed 12:00pm (4h)": a date/time hours or days from now, on every
+row. Reproduced in the simulator (warp to Wed Sep 2 12:00 PM while real now is Aug 9) before
+the fix.
+
+**Fix:** `now` is now maintained as the effective date — set in `init`, in `timeShiftConfig.didSet`,
+and on each 60 s timer tick — so filtering and labeling always share one clock. Post-fix the
+same warped list reads "12:00pm (4h left)", "12:00pm (2h left)".
+
+The second half of the report (events that *look* far away) was the amenity listings
+themselves: a 12 h occurrence that started at 09:00 rendered "9:00am (7h left)" and sorted
+above everything, which the 6 h cap plus the new ordering both address.
+
+## Technical Details
+
+### New files
+
+- **`iBurn/ListView/EventFilterStorage.swift`** — the persistence rules, extracted from
+  `EventListViewModel` so both screens share them: `defaultMaxDuration` (6 h),
+  `durationStorageKey(for:)`, `load/saveMaxDuration`, `load/saveFilter`, plus
+  `EventFilter.eventListDefaults` / `.nearbyDefaults` and `matchesSheetDefaults(_:includingExpired:)`.
+  The duration is still stored under its own key as a `StoredMaxDuration` enum so
+  "never chosen" (→ 6 h) stays distinct from "explicitly Any" (→ no limit); the package
+  default in PlayaDB stays `nil`.
+- **`iBurn/ListView/NearbyEventFilterStore.swift`** — `@MainActor ObservableObject` holding the
+  Nearby `EventFilter` under key `nearbyEventFilter`. `.shared` is what both view models bind
+  to; a shared object rather than a notification, so a change made in the Nearby sheet
+  republishes to the card still alive underneath it in the map tab's stack.
+  `observationFilter(region:)` forces `includeExpired = true` and strips per-query state
+  (dates, search text, `activeWindow`, `happeningNow`).
+- **`iBurnTests/NearbyEventFilterTests.swift`** — 18 tests (below).
+
+### Modified
+
+- **`iBurn/ListView/NearbyViewModel.swift`** — takes an injectable `filterStore` (`nil` →
+  `.shared`; not a `= .shared` default argument, which Swift evaluates in a nonisolated
+  context); subscribes to `$filter` and restarts the event observation (the cap is a SQL
+  predicate, so a filter change must re-query, not re-filter); event query is now
+  `filterStore.observationFilter(region:)`; `happeningEvents` is internal and sorted via
+  `NearbyEventOrdering`; `now` follows `effectiveDate` (see diagnosis).
+- **`iBurn/Map/NearbyCard/NearbyCardViewModel.swift`** — same store injection + subscription;
+  `startEventObservation` uses `observationFilter(region:)`; `orderedItems` sorts its
+  in-window events with `NearbyEventOrdering`.
+- **`iBurn/ListView/NearbyItem.swift`** — added `NearbyEventOrdering` (pure, tested):
+  sort key `(phase, offset, uid)` where phase 0 = not yet started (soonest first) and
+  phase 1 = already started (most recently started first); `uid` breaks ties so rebuilds
+  (every location fix, every timer tick) don't shuffle rows.
+- **`iBurn/ListView/NearbyView.swift`** — trailing filter button (AX label
+  "Filter Nearby Events") beside the map button, filled icon when non-default, presenting
+  `EventFilterSheet` bound to `$filterStore.filter`.
+- **`iBurn/ListView/EventFilterSheet.swift`** — parameterized: `defaultFilter`
+  (what Reset restores / what "is default" compares against), `showsExpiredToggle`, `title`.
+  Events-tab behavior unchanged by the defaults.
+- **`iBurn/ListView/EventListViewModel.swift`** — persistence delegated to
+  `EventFilterStorage`; `defaultMaxDuration` kept as an alias.
+- **`iBurn/ListView/EventListView.swift`** — badge now uses `matchesSheetDefaults`.
+
+### Design decisions
+
+- **`includeExpired` is hidden on the Nearby sheet, not merely ignored.** Nearby's time gate
+  is the in-memory now-window at the *effective* date; PlayaDB's expiry predicate compares
+  against real wall-clock now, so honoring the toggle would empty the list whenever the user
+  warped into the past. The store forces it `true` for observations, and the sheet's section
+  header becomes "Favorites" (it only holds "Only Favorites" then). `onlyFavorites` and the
+  event-type toggles compose with the nearby query and are kept.
+- **One setting for screen and card.** They already share `isInNearbyWindow` precisely so the
+  two lists can't disagree; a per-surface cap would have put a 12 h listing back on the map
+  the moment the user swiped to it.
+- **Ordering.** Ascending start time buries the interesting rows. Descending everywhere would
+  put a listing that started 10 minutes ago above one starting in 5. The two-phase key is the
+  smallest rule that keeps "you can still make this" at the top.
+
+## Tests
+
+`iBurnTests/NearbyEventFilterTests.swift` (18 new): fresh-install 6 h default; `includeExpired`
+pinned true through reload and `observationFilter`; explicit "Any" vs. unset; explicit limit
+round-trip; event-type round-trip; Nearby key independent of `eventListFilter`;
+`observationFilter` strips per-query state; the cap reaching both view models' queries; a
+filter change re-querying **both** surfaces from the one store; a regression pinning that
+nothing outside the window reaches `sections` (4 h out, 26 h out, and ended rows all dropped);
+`now` following a warp; and five ordering tests (phase precedence, soonest-first, most-recent-first,
+`startDate == now` counting as started, uid tie-break stability).
+
+**Full suite: 328 passing** (310 before), 0 failures. App scheme builds clean on iOS 26.5
+(iPhone 17 Pro Max) and iOS 18.6 (iPhone 16 Pro Max, by UDID).
+
+## Simulator validation
+
+Mock date `2026-09-02T19:00Z`, `simctl location set 40.79169,-119.21120` (between Orphan
+Asylum, Nom De Plume and Maison Phi — 9 in-window events inside the card's 100 m, 7 of them
+> 6 h):
+
+- Nearby screen at the 6 h default lists only short/near-term events, top three all
+  "12:00pm (Nh left)" — warp-correct labels (the item-4 fix).
+- Filter button opens "Filter Nearby Events": Favorites / Max Duration (6h) / Event Types,
+  no expired toggle, no Reset while at defaults.
+- Dragging the slider to **Any** updates the list live — the 12 h `'Dust & Ink ayslum'` and
+  friends appear, ordered by most-recent start under the just-started ones.
+- Relaunch: the choice persists (`nearbyEventFilter.maxDuration` = `{"unlimited":{}}`,
+  filter icon filled).
+- The map card's page dots read **9 at "Any"** and **2 after Reset** (`{"limited":{"_0":21600}}`),
+  updating without leaving the map — the cap reaches the card through the shared store.
+
+Screenshots (job tmp): `01-nearby-capped-6h.jpg`, `02-filter-sheet.jpg`,
+`03-nearby-any-uncapped.jpg`, `04-card-any-9items.jpg`, `05-card-6h-2items.jpg`.
+
+`.claude/skills/drive-app/references/flows.md` gains a "Nearby screen (list)" subsection for
+the new button/cap/ordering, plus the note that a prefs-plist file edit *does* stick if you
+`launchctl kickstart -k system/com.apple.cfprefsd.xpc.daemon` in the sim afterwards (needed
+for data-typed keys like `nearbyEventFilter.maxDuration`).
+
+## Expected Outcomes
+
+- Nearby (screen and card) shows only what is happening now or starting within 30 minutes,
+  with 10–12 h amenity listings hidden by default and reachable by setting Max Duration to Any.
+- Timing labels always agree with the date the list was filtered at, warped or not.
+- One filter choice governs both Nearby surfaces and survives relaunch.

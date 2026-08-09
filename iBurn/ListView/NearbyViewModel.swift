@@ -1,3 +1,4 @@
+import Combine
 import CoreLocation
 import Foundation
 import MapKit
@@ -22,12 +23,20 @@ final class NearbyViewModel: ObservableObject {
     @Published var timeShiftConfig: TimeShiftConfiguration? {
         didSet {
             UserSettings.nearbyTimeShiftConfig = timeShiftConfig
+            now = effectiveDate
             restartObservations()
         }
     }
 
     @Published var isLoading: Bool = true
-    @Published var now: Date = .present
+
+    /// The date every timing readout on this screen is measured against.
+    ///
+    /// This is `effectiveDate`, NOT wall-clock now: the list is *filtered* at the warped
+    /// date, so labeling the rows against real time made a warped list read as a pile of
+    /// events that don't start for hours. Kept as stored published state (rather than a
+    /// computed property) so the refresh timer can tick it and re-render the rows.
+    @Published private(set) var now: Date = .present
 
     // MARK: - Dependencies
 
@@ -36,6 +45,10 @@ final class NearbyViewModel: ObservableObject {
     private let campProvider: CampDataProvider
     private let eventProvider: EventDataProvider
     private let locationProvider: LocationProvider
+
+    /// Shared with the map's nearby card — see `NearbyEventFilterStore`.
+    let filterStore: NearbyEventFilterStore
+    private var filterSubscription: AnyCancellable?
 
     // MARK: - Location State
 
@@ -85,21 +98,37 @@ final class NearbyViewModel: ObservableObject {
         artProvider: ArtDataProvider,
         campProvider: CampDataProvider,
         eventProvider: EventDataProvider,
-        locationProvider: LocationProvider
+        locationProvider: LocationProvider,
+        // `nil` → the shared store. Not a `= .shared` default argument: default arguments
+        // are evaluated in a nonisolated context, and `shared` is main-actor isolated.
+        filterStore: NearbyEventFilterStore? = nil
     ) {
         self.playaDB = playaDB
         self.artProvider = artProvider
         self.campProvider = campProvider
         self.eventProvider = eventProvider
         self.locationProvider = locationProvider
+        self.filterStore = filterStore ?? .shared
 
         self.selectedFilter = UserSettings.nearbyFilter
         self.timeShiftConfig = UserSettings.nearbyTimeShiftConfig
         self.rawLocation = locationProvider.currentLocation
+        self.now = timeShiftConfig?.date ?? .present
 
+        observeFilterChanges()
         startLocationUpdates()
         startRefreshTimer()
         restartObservations()
+    }
+
+    /// The duration cap and type toggles are applied in SQL, so a filter change has to
+    /// restart the event observation rather than re-filter what's already in memory.
+    private func observeFilterChanges() {
+        filterSubscription = filterStore.$filter
+            .dropFirst()
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.startEventObservation() }
+            }
     }
 
     deinit {
@@ -156,13 +185,18 @@ final class NearbyViewModel: ObservableObject {
     }
 
     /// Events happening at the effective date or starting within the next 30 minutes,
-    /// sorted by start time. The window itself lives on `EventObjectOccurrence` so the map's
-    /// nearby card shows exactly the same set.
-    private var happeningEvents: [ListRow<EventObjectOccurrence>] {
+    /// starting-soonest first, then most-recently-started. Window and ordering both live
+    /// outside this type so the map's nearby card shows exactly the same set in the same
+    /// order — see `isInNearbyWindow` and `NearbyEventOrdering`.
+    ///
+    /// Long-running "amenity listing" occurrences are excluded upstream by the SQL duration
+    /// cap in `filterStore.observationFilter(region:)`, not here.
+    var happeningEvents: [ListRow<EventObjectOccurrence>] {
         let date = effectiveDate
-        return eventItems
-            .filter { $0.object.isInNearbyWindow(now: date) }
-            .sorted { $0.object.startDate < $1.object.startDate }
+        return NearbyEventOrdering.sorted(
+            eventItems.filter { $0.object.isInNearbyWindow(now: date) },
+            now: date
+        )
     }
 
     private func distanceTo(_ location: CLLocation?, from reference: CLLocation) -> CLLocationDistance {
@@ -279,8 +313,9 @@ final class NearbyViewModel: ObservableObject {
             markReceived("event")
             return
         }
-        // Fetch all events in region; client-side filter for "happening now" at effectiveDate
-        let filter = EventFilter(region: region, includeExpired: true)
+        // The user's filter (duration cap, event types, favorites) applied in SQL; the
+        // now-window stays client-side so it can be evaluated at `effectiveDate`.
+        let filter = filterStore.observationFilter(region: region)
         eventTask = Task { [weak self] in
             guard let self else { return }
             for await items in self.eventProvider.observeObjects(filter: filter) {
@@ -361,7 +396,7 @@ final class NearbyViewModel: ObservableObject {
                 try? await Task.sleep(nanoseconds: 60_000_000_000)
                 guard let self else { return }
                 await MainActor.run {
-                    self.now = .present
+                    self.now = self.effectiveDate
                 }
             }
         }

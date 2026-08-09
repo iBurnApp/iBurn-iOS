@@ -34,6 +34,43 @@ extension EventObjectOccurrence {
     }
 }
 
+/// Ordering for the events inside the nearby window, shared by the Nearby screen and the
+/// map card so the two lists can't disagree.
+enum NearbyEventOrdering {
+
+    /// Sort key: `(phase, offset, uid)`.
+    ///
+    /// Ascending start time — the old ordering — buries the interesting rows: a 12-hour
+    /// amenity listing that began at midnight sorts above a set that started five minutes
+    /// ago, and above one starting in ten. So instead:
+    ///
+    /// 1. **Not yet started** (phase 0), soonest first. "Starts in 5m" outranks
+    ///    "starts in 25m", and both outrank anything already running — the user can still
+    ///    make these.
+    /// 2. **Already started** (phase 1), most recently started first. Something that began
+    ///    minutes ago is still joinable; something that began six hours ago is background.
+    ///
+    /// `uid` breaks ties so repeated rebuilds (every location fix, every timer tick) keep a
+    /// stable order instead of shuffling rows under the user's thumb.
+    static func sortKey(
+        for occurrence: EventObjectOccurrence,
+        now: Date
+    ) -> (Int, TimeInterval, String) {
+        let untilStart = occurrence.startDate.timeIntervalSince(now)
+        return untilStart > 0
+            ? (0, untilStart, occurrence.uid)
+            : (1, -untilStart, occurrence.uid)
+    }
+
+    /// Pure ordering over rows already gated to the nearby window.
+    static func sorted(
+        _ rows: [ListRow<EventObjectOccurrence>],
+        now: Date
+    ) -> [ListRow<EventObjectOccurrence>] {
+        rows.sorted { sortKey(for: $0.object, now: now) < sortKey(for: $1.object, now: now) }
+    }
+}
+
 /// Section identifiers for the nearby list
 enum NearbySectionID: String {
     case events

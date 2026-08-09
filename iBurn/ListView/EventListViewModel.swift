@@ -94,12 +94,10 @@ final class EventListViewModel: ObservableObject {
 
         // Load persisted filter or use sensible default (hide expired). The max-duration
         // preference is stored under its own key and overlaid here so the 6h default applies
-        // to fresh AND existing installs (see loadMaxDuration / StoredMaxDuration).
-        var loadedFilter = Self.loadFilter(key: filterStorageKey)
+        // to fresh AND existing installs (see EventFilterStorage).
+        var loadedFilter = EventFilterStorage.loadFilter(key: filterStorageKey)
             ?? EventFilter(includeExpired: false)
-        loadedFilter.maxDuration = Self.loadMaxDuration(
-            key: Self.durationStorageKey(for: filterStorageKey)
-        )
+        loadedFilter.maxDuration = EventFilterStorage.loadMaxDuration(filterKey: filterStorageKey)
         self.filter = loadedFilter
 
         self.currentLocation = locationProvider.currentLocation
@@ -307,65 +305,14 @@ final class EventListViewModel: ObservableObject {
     /// than 6h (all-day / half-day "amenity listing" pseudo-events). Applied to fresh AND
     /// existing installs until the user chooses their own value.
     ///
-    /// This default deliberately lives here — the Events-tab preference layer — and NOT in
-    /// PlayaDB's `EventFilter`, whose package default stays `nil` (no limit) so other
-    /// consumers (watch, Nearby / Right Now, detail screens) are unaffected.
-    static let defaultMaxDuration: TimeInterval = 6 * 3600
-
-    /// Persisted Events-tab duration choice. Stored under its own UserDefaults key rather
-    /// than inside the EventFilter blob so "never chosen" (key absent → 6h default) stays
-    /// distinct from "explicitly Any" (`.unlimited` → no limit). Synthesized Codable omits
-    /// nil optionals, so a `nil` maxDuration inside the blob would be indistinguishable from
-    /// a pre-existing install whose blob predates the field — collapsing both to the default.
-    private enum StoredMaxDuration: Codable {
-        case limited(TimeInterval)
-        case unlimited
-    }
-
-    private static func durationStorageKey(for filterKey: String) -> String {
-        "\(filterKey).maxDuration"
-    }
-
-    private static func loadMaxDuration(key: String) -> TimeInterval? {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let stored = try? JSONDecoder().decode(StoredMaxDuration.self, from: data) else {
-            // Unset (fresh or pre-existing install) → apply the Events-tab default.
-            return defaultMaxDuration
-        }
-        switch stored {
-        case .limited(let seconds): return seconds
-        case .unlimited: return nil
-        }
-    }
-
-    private func saveMaxDuration(_ maxDuration: TimeInterval?) {
-        let stored: StoredMaxDuration = maxDuration.map(StoredMaxDuration.limited) ?? .unlimited
-        guard let data = try? JSONEncoder().encode(stored) else { return }
-        UserDefaults.standard.set(data, forKey: Self.durationStorageKey(for: filterStorageKey))
-    }
+    /// The rule itself lives in `EventFilterStorage` — Nearby shares it — and deliberately
+    /// NOT in PlayaDB's `EventFilter`, whose package default stays `nil` (no limit) so other
+    /// consumers (watch, detail screens) are unaffected.
+    static let defaultMaxDuration: TimeInterval = EventFilterStorage.defaultMaxDuration
 
     // MARK: - Filter Persistence
 
     private func saveFilter() {
-        // Don't persist startDate/endDate (those come from selectedDay) or searchText.
-        // maxDuration is persisted separately (see saveMaxDuration) so its "unset vs. Any"
-        // distinction survives; strip it from the blob to keep a single source of truth.
-        var persistFilter = filter
-        persistFilter.startDate = nil
-        persistFilter.endDate = nil
-        persistFilter.searchText = nil
-        persistFilter.maxDuration = nil
-        if let data = try? JSONEncoder().encode(persistFilter) {
-            UserDefaults.standard.set(data, forKey: filterStorageKey)
-        }
-        saveMaxDuration(filter.maxDuration)
-    }
-
-    private static func loadFilter(key: String) -> EventFilter? {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let filter = try? JSONDecoder().decode(EventFilter.self, from: data) else {
-            return nil
-        }
-        return filter
+        EventFilterStorage.saveFilter(filter, key: filterStorageKey)
     }
 }

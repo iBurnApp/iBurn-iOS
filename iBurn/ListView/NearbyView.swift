@@ -3,6 +3,11 @@ import PlayaDB
 
 struct NearbyView: View {
     @StateObject private var viewModel: NearbyViewModel
+
+    /// Shared with the map's nearby card, so a change here also re-queries the card.
+    @ObservedObject private var filterStore: NearbyEventFilterStore
+
+    @State private var showingFilterSheet = false
     @Environment(\.themeColors) var themeColors
 
     let onSelectArt: (ArtObject) -> Void
@@ -20,6 +25,7 @@ struct NearbyView: View {
         onShowTimeShift: @escaping (NearbyViewModel) -> Void = { _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        _filterStore = ObservedObject(wrappedValue: viewModel.filterStore)
         self.onSelectArt = onSelectArt
         self.onSelectCamp = onSelectCamp
         self.onSelectEvent = onSelectEvent
@@ -53,11 +59,29 @@ struct NearbyView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingFilterSheet = true }) {
+                        Image(systemName: filterIconName)
+                            .foregroundColor(themeColors.primaryColor)
+                    }
+                    .accessibilityLabel("Filter Nearby Events")
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { onShowMap(viewModel.allAnnotations) }) {
                         Image(systemName: "map")
                             .foregroundColor(themeColors.primaryColor)
                     }
                 }
+            }
+            .sheet(isPresented: $showingFilterSheet) {
+                EventFilterSheet(
+                    filter: $filterStore.filter,
+                    defaultFilter: .nearbyDefaults,
+                    // Nearby's time gate is its own now-window (evaluated at the warped
+                    // date when the user is time-shifted), so an expired-events toggle
+                    // would be a control with no visible effect.
+                    showsExpiredToggle: false,
+                    title: "Filter Nearby Events"
+                )
             }
 
             // Loading overlay
@@ -98,6 +122,16 @@ struct NearbyView: View {
                 .padding()
             }
         }
+    }
+
+    // MARK: - Helpers
+
+    /// Filled icon = at least one control differs from Nearby's defaults, matching the
+    /// sheet's Reset-button visibility. Same rule the Events tab uses.
+    private var filterIconName: String {
+        filterStore.hasNonDefaultFilters
+            ? "line.3.horizontal.decrease.circle.fill"
+            : "line.3.horizontal.decrease.circle"
     }
 
     // MARK: - Header Controls
