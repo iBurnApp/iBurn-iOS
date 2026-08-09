@@ -78,6 +78,17 @@ The dedicated locked-state pass (fresh erased sim, no unlock keys, embargo alert
 
 Fix (commits `836c34d` code+tests, `f9e1cf1` flows.md): a pure `MapRegionAnnotationFilter` (zoom + per-tier embargo, tiers injected — same shape as `CampLayerVisibility.resolve`) now gates the region-fetch path; events follow their host's tier exactly as `PlayaDBAnnotationDataSource` does; annotations refresh on `.BRCEmbargoDidClear`; the stale below-z16 annotation cache is cleared. Nearby list masks walk/bike as `? min` while an item's tier is locked (matching search). 10 new `EmbargoTierTests` cases cover the path (285 total tests passing). Re-validated in-sim: locked and relocked map states are byte-identical AX snapshots with zero annotations and "No pins visible"; unlocked shows art at z≥16 and camps at z≥17 with addresses, and Nearby shows real times.
 
+### Round 2: camp pins on footprint centroids + one name per camp
+
+User feedback after seeing the unlocked map: pins clustered at street intersections (geocoder points — only 365 distinct coordinates for 1184 placed camps, fanned onto 20 m circles) and every camp's name drew twice (style label + pin label).
+
+- **GPS precedence in `apply_placement.js` is now `auto`: footprint centroid → address geocode → entrance centroid** (`--gps-source geocoder|entrance` remain for comparison). The centroid array written to `camp_labels.geojson` is the same array written to `camp.json`, so pin == label point by construction. Result: 1184 distinct coordinates (max 1 camp per coordinate), median pin movement 50 m, p90 95 m. Eventual goal recorded in the pipeline: pin at the center of the camp's street frontage on its road side (the entrance centroid approximates this and could become the default once trusted).
+- Both seeds rebuilt (PlayaDB + watch zips, legacy Yap seed; all gitignored; BRCCampObject 1191 verified).
+- **Name dedupe:** the pin's visible name is a `UILabel` in `LabelAnnotationView`, previously toggled on zoom alone. `CampLayerVisibility.resolve` now also takes `showCampsOnlyZoomedIn` + `zoomLevel` and returns `labelsMaximumZoom` (caps `camp-labels-big` at the camp-pin zoom threshold) and `campNamesDrawnByStyleLayer` (the pins' verdict) from one expression — double-draw is structurally impossible. Two refresh gaps fixed en route: Map Filter's Done now refreshes region annotations immediately, and raising a style layer's zoom cap goes through `reloadStyle` because MapLibre won't re-parse tiles built while the layer was capped (toggling `visibility` doesn't force it).
+- Tests 285 → 290 (settings×zoom cross-check that the pin verdict always complements the layer's range); sim-validated over the densest camp block: locked empty, unlocked z≥17 one pin + one name per camp with style labels capped, z15–16 style labels only, filter-off keeps labels, relock empty again.
+- Known residual: favorited camps (and "Camps (Always)") draw their pin image over the style text between z15–17 — name still appears once, but a `text-offset` in the style JSON would be the clean fix; deferred as it changes rendering for all camps.
+- Commits: submodule `400c64b`/`b6408ae`/`907386b` (pushed to private origin), app `7f0dc81`/`002d2fe`.
+
 ## Context Preservation
 
 - The 2026 API serving placement means future refreshes (`fetch_and_geocode.js`) keep camps placed without the drop; `apply_placement.js` re-applies geometry on top and is safe to re-run after any refresh (fill-only + idempotent).
