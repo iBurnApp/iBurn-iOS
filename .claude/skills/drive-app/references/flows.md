@@ -196,22 +196,32 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
   "Show Camp Boundaries (Always)" map filter is on, and they appear live on
   unlock with the rest.
-- **A camp's name is drawn once, by exactly one of two mechanisms.** A camp's GPS is the
-  centroid of its own footprint — the same point `camp_labels.geojson` puts its label at —
-  so the pin and the style label would otherwise stack identical text on the same pixel.
-  `CampLayerVisibility.resolve` splits them by zoom: `camp-labels-big` draws names from
-  z15 up to `MapRegionAnnotationFilter.campMinimumZoom` (17), camp pins take over at z≥17
-  and carry the name in their own `LabelAnnotationView`. Below z15 (and whenever the style
-  layer is off) the pins label themselves at any zoom; `MapViewAdapter.updatePinLabelVisibility()`
-  applies that, keyed on `LabelAnnotationView.drawsCampName`. **What to check:** at any
-  zoom/filter combination each camp name appears exactly once, and no name is ever drawn
-  on top of itself. With "Camps (Zoomed)" **off** nothing takes over, so the style labels
-  run to full zoom and no camp pins appear.
-- Raising `camp-labels-big`'s zoom cap does not repaint tiles MapLibre already parsed
-  while the layer was out of range (lowering it hides immediately; toggling `visibility`
-  does not help). `MapLayerManager` therefore calls `mapView.reloadStyle` on that one
-  transition — so turning "Camps (Zoomed)" off at z≥17 shows the labels without panning.
-  If you ever see camps go nameless right after a filter change, that path regressed.
+- **A camp's name is drawn once, and the style layer is the one that draws it.** A camp's
+  GPS is the centroid of its own footprint — the same point `camp_labels.geojson` puts its
+  label at — so the pin and the style label would otherwise stack identical text on the same
+  pixel. The split is per camp, not per zoom: `camp-labels-big` runs its full, **uncapped**
+  zoom range (z15 up), and any camp that file has a feature for shows a **bare pin glyph
+  with no text at any zoom**. `CampStyleLabelIndex` reads the uids out of the bundled
+  geojson (lazily, off-main, once per launch) and `PinLabelVisibility.labelIsHidden` makes
+  the call; `MapViewAdapter.updatePinLabelVisibility()` applies it, keyed on
+  `LabelAnnotationView.campUID`.
+- **The pin-labels-itself path still exists** for camps the geojson has no feature for
+  (8 of 1191 in 2026 — all of which also lack GPS, so none of them can produce a pin today),
+  for a pre-placement year whose `camp_labels.geojson` is empty or absent, below the layer's
+  z15 minzoom, and whenever the layer isn't painting. **The quickest way to exercise it in
+  the sim** is Map Filter → **"Show Camp Names (Zoomed)" off** → Done: the style text
+  disappears and every camp pin grows its own truncated `UILabel`. Turn it back on and the
+  pins go bare again.
+- **What to check:** at any zoom/filter combination each camp name appears exactly once, and
+  no name is drawn on top of itself. Expect the pin glyph to sit **over** the style text at
+  z≥17 (the label is centred on the same coordinate the pin is) — that overlap is known and
+  accepted; a `text-offset` in the style JSON would be the clean fix but that file lives in
+  the data submodule.
+- With "Camps (Zoomed)" **off** no camp pins appear and the style labels are untouched — they
+  are never capped, so no `reloadStyle` is needed and turning the filter off at a standing
+  camera shows clean labels immediately. (Before Aug 9 the layer *was* capped at the camp-pin
+  zoom, which needed a `mapView.reloadStyle` to undo because MapLibre will not re-parse tiles
+  it built while a layer was out of range. Both are gone.)
 - The Map Filter's Done callback re-runs all three: `updateAllLayers()`,
   `refreshRegionAnnotations()`, `updatePinLabelVisibility()`. Camp pins appear/disappear
   immediately on Done — no pan required.
@@ -258,33 +268,37 @@ the user (events first, then art + camps by distance; `simctl location set` requ
 stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all" (trailing)**,
 "See all" linking into the Nearby screen.
 
-- Card geometry is fixed: **84 pt page + 28 pt footer = 112 pt** tall, width
-  `min(380, screen − 32)`. The page is `contentInset (10) + 72 pt of worst-case text +
-  rowFooterGap (2)`, where 72 is an event's name + time + two-line address at default
-  Dynamic Type (20 + 2 + 16 + 2 + 32). Rows are **top-aligned** — the name's top edge sits
-  level with the 60×60 thumbnail's top on every page, so swiping between a 2-line and a
-  3-line row must not move the title vertically. Short rows therefore leave some empty space
-  above the footer (a 60 pt thumbnail-governed row leaves 14 pt); that is the fixed height,
-  not a layout bug.
+- Card geometry at default Dynamic Type: **72 pt page + 28 pt footer = 100 pt** tall, width
+  `min(380, screen − 32)`. The page is `contentInset (10) + row (60) + rowFooterGap (2)`,
+  where the row is `max(thumbnail 60, text stack)` and the **worst-case text stack is 56**
+  — name (20) + accessory (16) + description (16) with the VStack's two 2 pt gaps. The
+  60 pt thumbnail is therefore what sets the height, and the old ~14 pt of dead space above
+  the footer is gone. Rows are **top-aligned** — the name's top edge sits level with the
+  60×60 thumbnail's top on every page, so swiping between a 2-line and a 3-line row must not
+  move the title vertically.
 - **All four card edges use the same 10 pt inset**: the thumbnail's leading/top, the
   favorite button's top/trailing, and — via the footer's `contentInset − 6` horizontal
   padding plus each button's own 6 pt label inset — the "Hide" and "See all" labels. If the
   heart looks like it hugs the corner tighter than the row does, that's a regression. The
   row's text stops at `10 + 24 + 4 = 38` pt from the trailing edge so a long name truncates
   before the heart rather than sliding under it.
-- Dynamic Type headroom at that height: the 3-row event still clears the footer at
-  `extra-extra-extra-large`; at `accessibility-medium` the third line overlaps the footer
-  band (nothing is clipped, but it reads as a collision). Accessibility sizes are the known
-  limit of the fixed height, not a new bug.
-- Each page shows name (1 line), event timing (events only, 1 line), and then **either** the
-  playa address **or** — when the embargo still hides that object's location — the
-  description, either one wrapping to at most **2 lines**. The
-  address line is plain text with no pin glyph, and comes from `NearbyItem.address`, which
-  applies the two-tier check per item (art tier / camp tier / host's tier for events). Pre-
-  embargo you should see the description line, never an address; if an art piece shows
-  "Open Playa" while locked, that's a regression. **Check `kBRCEntered2026EmbargoPasscodeKey`
-  in the app's prefs plist before calling it one** (read it with the recipe in §8) — a
-  passcode entered in an earlier session persists and legitimately unlocks everything.
+- The height **follows Dynamic Type** (a `@ScaledMetric` on the text stack, relative to
+  `.subheadline`) up to `extra-extra-extra-large` and stops there. So all three lines clear
+  the footer at XXXL — the card is simply taller — and at `accessibility-medium` and above
+  the stack overflows the frozen height and the last line **truncates** rather than colliding
+  with the footer band. Accessibility sizes are still the known limit, but they now degrade by
+  truncation, not overlap.
+- Each page shows name (1 line), an **accessory line** (1 line, secondary), then the
+  description. The accessory is `NearbyItem.accessoryLine(now:)`: an event's live timing, the
+  playa address, or `"<time> · <address>"` when both apply. It is **absent entirely** when
+  there is nothing to show — a locked camp or art piece — and the description then gets **2
+  lines** instead of 1. The address half comes from `NearbyItem.address`, which applies the
+  two-tier check per item (art tier / camp tier / host's tier for events), so pre-embargo a
+  camp/art page is name + description only, exactly as before; an event keeps its timing.
+  If an art piece shows "Open Playa" while locked, that's a regression. **Check
+  `kBRCEntered2026EmbargoPasscodeKey` in the app's prefs plist before calling it one** (read
+  it with the recipe in §8) — a passcode entered in an earlier session persists and
+  legitimately unlocks everything.
 - **Favorite button** (heart, **top-right corner of the card**, AX label
   "Favorite <name>" / "Unfavorite <name>"). It overlays the card *outside* the pager, so it
   keeps a fixed position and doesn't eat the swipe; it retargets to whichever page is
@@ -321,13 +335,19 @@ with a BRC location under a festival date makes `enteredBurningManRegion` write
 Event-dense mock-time spots: **40.77546,-119.20512** (9 live events + 4 camps at 11:00) and
 **40.77245,-119.19365** (1 long-named event + 4 camps).
 
+**The card may not open on an event even when events are nearby.** Art/camp observations
+resolve before the event one, so the selection settles on the first camp and
+`reconcileSelection` deliberately keeps it there when the events arrive and are prepended.
+The dots show the real position (e.g. 5th of 12). Page **back** to reach the events: `drag`
+the card's title text ref to the **right**, one page per drag — the pager's own scroll ref is
+usually missing from the AX tree.
+
 **Data limits worth knowing before you go hunting for a worst case.** In the 2026 dataset no
 address is longer than 25 characters and every gps-bearing event resolves a host address, so
-a **two-line address is unreachable at default Dynamic Type** — the two-line detail only
-shows up via the embargo description fallback (e.g. Unhinged Lingering at
-40.786459,-119.205319). To see a wrapped 3-row event, raise Dynamic Type
-(`xcrun simctl ui <UDID> content_size …`) — see the Dynamic Type headroom note above for
-where it starts to collide. The 2026 build also
+the accessory line fits on one line for essentially all real data at default Dynamic Type.
+To see it wrap/truncate, raise Dynamic Type
+(`xcrun simctl ui <UDID> content_size …`) — see the Dynamic Type note above for
+where it stops growing. The 2026 build also
 ships **no audio-tour `.m4a` files at all**, so the row's play button never appears from real
 data; drop a file at `<container>/Documents/MediaFiles/<art uid>.m4a` to exercise it
 (`afconvert -f m4af -d aac /System/Library/Sounds/Ping.aiff tour.m4a` makes a fixture; the
