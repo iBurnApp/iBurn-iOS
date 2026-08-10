@@ -548,3 +548,155 @@ Also built clean for iOS 18.6 (iPhone 16 Pro Max), where none of this exists.
 - Simulator hygiene: neither `simctl spawn defaults delete` nor editing the container plist
   clears these preferences — `cfprefsd` rewrites the file from cache. Use the app's own UI
   (already noted in the flows doc).
+
+---
+
+# Workstream 3: "drop the person" — a transient look-from-here location on the map
+
+## High-Level Plan
+
+**Problem.** The map's nearby card, and the Nearby screen behind its "See all", can only
+answer "what's around *me*". There is no way to ask "what's around *there*" — planning a
+route, or scouting a corner of the city you aren't standing in, means walking there first.
+
+**Solution.** Long-press anywhere on the main map to stand a little person marker on that
+spot (the Street View pegman idea). While it is standing there:
+
+- the nearby card re-sources to it — its ~100 m of art/camps/events, and every distance,
+  are computed from the marker's coordinate, not the device's;
+- the card grows a header line naming the spot, resolved through the app's existing offline
+  reverse geocoder;
+- "See all" pushes the Nearby screen already measured from the same spot;
+- long-pressing elsewhere moves the person; the card's "Hide", and a remove button in the
+  marker's own callout, put it away and hand the card back to GPS.
+
+**The override is deliberately transient.** It lives only in the two view models, is never
+written to `UserSettings` or PlayaDB, and is gone after a relaunch. That is the whole reason
+it is a separate concept from Warp (`TimeShiftConfiguration`), which *is* persisted — the
+person changes *where* you're looking from, never *when*.
+
+## Technical Details
+
+### New files
+
+- `iBurn/Map/DroppedPersonAnnotation.swift` — the ephemeral annotation
+  (`MLNPointAnnotation` subclass conforming to the app's `ImageAnnotation`), the runtime
+  marker artwork (`DroppedPersonMarker`), and two small coordinate-identity helpers
+  (`isSameCoordinate(as:)`, `isSameSourceLocation`) used to tie asynchronous geocode results
+  back to the drop that asked for them.
+- `iBurnTests/DroppedPinSourceOverrideTests.swift` — 18 tests, below.
+
+### The override seam, on both surfaces
+
+- `iBurn/Map/NearbyCard/NearbyCardViewModel.swift` — new `sourceLocationOverride` /
+  `sourceLocationAddress` published state; `currentLocation` becomes
+  `sourceLocationOverride ?? rawLocation`, which is enough to move `searchRegion`, the radius
+  gate and every per-item distance in one edit. `setSourceLocationOverride(_:)` restarts the
+  region observations (the point is that a *different* circle is queried);
+  `setSourceLocationAddress(_:for:)` is coordinate-checked so a late geocode can't label a
+  spot the person has already left. The location stream still updates `rawLocation` while
+  pinned — so clearing snaps to a *current* fix — but returns early before any recenter.
+- `iBurn/ListView/NearbyViewModel.swift` — the same pair, plus precedence:
+  **dropped pin > Warp location > device**. The two explicit choices retire each other rather
+  than silently stacking: setting a Warp *location* clears the pin override (most recent
+  explicit action wins), and a time-only Warp leaves the pin standing. `isSourcePinned`
+  replaces the old `timeShiftConfig?.location == nil` guard in the location stream so either
+  kind of pinning suppresses GPS-driven re-queries. Nothing here touches
+  `UserSettings.nearbyTimeShiftConfig`.
+
+### Plumbing
+
+- `DependencyContainer.makeNearbyViewModel(locationOverride:)`,
+  `NearbyListHostingController(dependencies:locationOverride:)` and a Swift-only
+  `BRCAppDelegate.createNearbyViewController(locationOverride:)` overload widen the chain.
+  The no-argument `@objc` spelling is kept as-is because `BRCAppDelegate.m` calls it for tab
+  setup and a default argument would have renamed the selector. The other two callers
+  (`MoreViewController`, `FloatingActionButton`) are untouched.
+- `NearbyCardHostingController` passes `viewModel.sourceLocationOverride` into "See all", and
+  clears it from "Hide".
+- The hosting controller reverse-geocodes the handed-over location and applies the result
+  through the same coordinate-checked setter.
+
+### Map side
+
+- `UserMapViewAdapter` owns the marker: `dropPerson(at:title:)`, `updateDroppedPersonTitle`,
+  `removeDroppedPerson(notifyHost:)`, plus the annotation-view, callout-accessory and
+  callout-tap branches. It is held outside both annotation lists on purpose —
+  `reloadAnnotations()` and `refreshRegionAnnotations()` each remove only what they own, so
+  the person survives every pan, filter change and embargo unlock without being re-added.
+  `keyForAnnotation` returns nil for it (untracked, always added) and `campUID(for:)` returns
+  nil, so the camp pin-suppression and style-label logic ignore it entirely.
+- `MainMapViewController` installs the `UILongPressGestureRecognizer` (named
+  `iBurn.dropPersonLongPress`, 0.45 s) directly on the map view, following
+  `MapViewAdapter.installStyleLabelTapRecognizer()`'s naming/idempotence pattern. Scoped to
+  this screen rather than to `MapViewAdapter` because the card only exists here — detail maps
+  and "show on map" list maps keep their plain behaviour.
+
+### Design calls worth recording
+
+- **Marker artwork is generated, not shipped.** The bundle has teardrop pins and
+  `BRCUserPin*` glyphs but no person, so the marker is an SF Symbol figure drawn into a
+  circular chip with a white ring and a drop shadow. The fill is a fixed saturated blue
+  rather than the app's amber accent: the light base map is tan, and amber-on-tan is the one
+  combination that disappears.
+- **Removal affordance is the callout's ⊗**, not tap-to-remove. The callout is also what
+  *shows* the reverse-geocoded address, and a marker that vanishes on a stray tap is easy to
+  lose by accident.
+- **Card height** is `page + footer + (header ? header : 0)`, factored out as a pure
+  `NearbyCardView.cardHeight(pageHeight:headerHeight:)` so the arithmetic is unit-tested. The
+  header line follows Dynamic Type through the same capped `@ScaledMetric` pattern the row's
+  text stack uses (24 pt at default type, so 100 pt → 124 pt).
+- **Legacy path caveat.** The UIKit `NearbyViewController` (feature flag `useSwiftUILists`
+  off) ignores the override. Its location source is wired through its own *persisted*
+  time-shift configuration, and this override must not be persisted, so honoring it there is
+  a rewrite rather than a parameter. Documented at the factory.
+- **"Use My Location" on the Nearby screen clears that screen only** — the map keeps its
+  person until removed there. Two independent view model instances; making them one shared
+  source would have meant persisting or globally publishing the override.
+
+## Tests
+
+`iBurnTests/DroppedPinSourceOverrideTests.swift` — 18 new tests covering precedence on both
+view models, region re-centering, the GPS stream not clobbering an active override, clearing
+restoring device sourcing, stale-geocode rejection, the warp/pin interaction in both
+directions, non-persistence, and the card-height arithmetic. Two test doubles: a location
+provider whose stream stays open (the shared `MockLocationProvider` finishes immediately,
+which can't distinguish "pinned" from "no updates"), and a recording event provider that
+captures the region each observation was started with.
+
+**353 tests, 0 failures** on iOS 26.5 (was 335). Also built clean for iOS 18.6
+(iPhone 16 Pro Max, by UDID).
+
+## Simulator validation (iPhone 17 Pro Max, iOS 26.5)
+
+Location `40.7864,-119.2065`, embargo unlocked, all three card types enabled. Verified:
+long-press drops the marker; the card re-sources (different objects, different distances) and
+grows its geocoded header; long-pressing elsewhere moves it (only ever one on the map);
+"See all" opens the list already measured from the marker with its own banner and
+"Use My Location" reset; the callout's remove button and the card's "Hide" both clear
+everything back to GPS — the post-removal accessibility snapshot hashes identical to the
+pre-drop baseline; and a relaunch comes up with no marker, confirming transience.
+
+Screenshots (temp): `/tmp/claude/iburn-person-drop/` — `01-baseline-device-sourced.jpg`,
+`02-person-dropped-card-header.jpg`, `03-nearby-tab-device-sourced.jpg`,
+`04-nearby-see-all-pin-sourced.jpg`, `05-person-callout-remove.jpg`,
+`06-cleared-back-to-device-after-relaunch.jpg`.
+
+Flow documentation: `.claude/skills/drive-app/references/flows.md` gains a
+"Drop the person (long-press 'look from here')" section under §6, including the automation
+trick for choosing a drop coordinate (long-press an annotation button — the recognizer is on
+the map view, so touches inside any annotation reach it).
+
+## Caveats / Follow-ups
+
+- **Long-press then drag still pans.** The recognizer fires at 0.45 s and MapLibre's pan can
+  still begin afterwards if the finger keeps moving. The marker stays at the coordinate it
+  was dropped on, so the consequence is cosmetic, but a `require(toFail:)` relationship was
+  rejected as the cure — it would delay every pan by the press duration.
+- **With the card switched off, a drop has no visible effect** beyond the marker and its
+  callout, since the card is the only thing that surfaces the override on the map. Dropping
+  the person deliberately does *not* re-enable the card (that would be writing a preference
+  the user turned off).
+- **A drop onto empty playa hides the card**, header and all, because the card is removed
+  from the hierarchy whenever it has no items. The marker's callout is then the only
+  feedback. Showing an explicit "nothing within 100 m of …" state is a reasonable follow-up.

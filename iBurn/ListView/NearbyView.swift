@@ -154,6 +154,11 @@ struct NearbyView: View {
             }
             .pickerStyle(.segmented)
 
+            // Dropped-pin source, when the map handed one over
+            if let label = viewModel.sourceLocationLabel {
+                droppedPinInfoView(label)
+            }
+
             // Time shift info
             if let config = viewModel.timeShiftConfig, config.isActive {
                 timeShiftInfoView(config)
@@ -171,6 +176,29 @@ struct NearbyView: View {
         } else {
             return Text("Within \(Int(distance))m") + Text("")
         }
+    }
+
+    /// Says the list is measured from the person dropped on the map, not from the device,
+    /// and offers the one-tap way back. Without this the distances and ordering would be
+    /// silently wrong for anyone who forgot they left a pin standing.
+    private func droppedPinInfoView(_ label: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "figure.stand")
+                .font(.caption)
+            Text("Near \(label)")
+                .font(.caption)
+                .lineLimit(1)
+            Spacer(minLength: 8)
+            Button("Use My Location") {
+                viewModel.clearSourceLocationOverride()
+            }
+            .font(.caption.weight(.semibold))
+            .buttonStyle(.plain)
+            .foregroundColor(themeColors.secondaryColor)
+        }
+        .foregroundColor(themeColors.primaryColor)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
     }
 
     private func timeShiftInfoView(_ config: TimeShiftConfiguration) -> some View {

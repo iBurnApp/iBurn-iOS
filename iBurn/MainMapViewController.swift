@@ -123,6 +123,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         setupListButton()
         setupFilterButton()
         setupNearbyCard()
+        installDropPersonRecognizer()
         applySearchLayout()
         definesPresentationContext = true
 
@@ -170,7 +171,13 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     private func setupNearbyCard() {
         addChild(nearbyCardController)
         nearbyCardController.onCardHidden = { [weak self] in
+            // Hiding the card is also how you put the person away: with the card gone
+            // there'd be nothing left on screen tied to the dropped spot.
+            self?.clearDroppedPerson()
             self?.showNearbyCardHiddenTooltip()
+        }
+        userMapViewAdapter?.onDroppedPersonRemoved = { [weak self] in
+            self?.nearbyCardController.viewModel.clearSourceLocationOverride()
         }
 
         // The hosting view goes inside a container that hands touches outside the card
@@ -193,6 +200,65 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12).isActive = true
 
         nearbyCardController.didMove(toParent: self)
+    }
+
+    // MARK: - Dropped person marker
+
+    /// Identifies our recognizer on the map view, the same way the style-label tap does, so
+    /// a second `viewDidLoad` (or a rebuilt adapter) can't stack recognizers up.
+    private static let dropPersonRecognizerName = "iBurn.dropPersonLongPress"
+
+    /// Long-press anywhere on the main map to stand the person there.
+    ///
+    /// `MLNMapView` has no long-press of its own — the only long press in the app is the
+    /// per-annotation-view one that starts a user pin drag — so this is added directly to the
+    /// map view, following `MapViewAdapter.installStyleLabelTapRecognizer()`.
+    ///
+    /// Scoped to this screen alone rather than to `MapViewAdapter`: the nearby card is the
+    /// thing the drop re-sources, and it only exists here. Detail maps and the "show on map"
+    /// list maps keep their plain behaviour.
+    private func installDropPersonRecognizer() {
+        let existing = mapView.gestureRecognizers ?? []
+        guard !existing.contains(where: { $0.name == Self.dropPersonRecognizerName }) else { return }
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleMapLongPress(_:)))
+        longPress.name = Self.dropPersonRecognizerName
+        // Long enough not to fire during the pause at the start of a slow pan, short enough
+        // to feel like a deliberate press rather than a wait.
+        longPress.minimumPressDuration = 0.45
+        mapView.addGestureRecognizer(longPress)
+    }
+
+    @objc private func handleMapLongPress(_ sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began, let adapter = userMapViewAdapter else { return }
+        let coordinate = mapView.convert(sender.location(in: mapView), toCoordinateFrom: mapView)
+        guard CLLocationCoordinate2DIsValid(coordinate) else { return }
+        dropPerson(at: coordinate, adapter: adapter)
+    }
+
+    private func dropPerson(at coordinate: CLLocationCoordinate2D, adapter: UserMapViewAdapter) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        adapter.dropPerson(at: coordinate)
+
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        nearbyCardController.viewModel.setSourceLocationOverride(location)
+
+        // The address arrives asynchronously; both sinks re-check the coordinate, so a
+        // second drop while this one is in flight can't relabel the new spot.
+        geocoder.asyncReverseLookup(coordinate) { [weak self] address in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.nearbyCardController.viewModel.setSourceLocationAddress(address, for: coordinate)
+                self.userMapViewAdapter?.updateDroppedPersonTitle(address, for: coordinate)
+            }
+        }
+    }
+
+    /// Takes the person off the map and puts the card back on the device's own location.
+    private func clearDroppedPerson() {
+        // `notifyHost: false` — we're already the host, and are about to clear the override
+        // ourselves; letting the callback fire too would just do it twice.
+        userMapViewAdapter?.removeDroppedPerson(notifyHost: false)
+        nearbyCardController.viewModel.clearSourceLocationOverride()
     }
 
     // MARK: - Nearby card tooltip

@@ -23,10 +23,27 @@ final class NearbyViewModel: ObservableObject {
     @Published var timeShiftConfig: TimeShiftConfiguration? {
         didSet {
             UserSettings.nearbyTimeShiftConfig = timeShiftConfig
+            // Most recent explicit action wins: warping to a *place* is the user asking to
+            // look from there, so it retires an earlier dropped pin rather than being
+            // silently outranked by it. Warping in time only leaves the pin alone.
+            if timeShiftConfig?.location != nil {
+                sourceLocationOverride = nil
+                sourceLocationAddress = nil
+            }
             now = effectiveDate
             restartObservations()
         }
     }
+
+    /// Transient "look from here" location handed in by the map's dropped person marker.
+    ///
+    /// Never persisted — unlike `timeShiftConfig`, which round-trips through
+    /// `UserSettings.nearbyTimeShiftConfig`. It arrives as an init argument from the card's
+    /// "See all" and dies with the screen.
+    @Published private(set) var sourceLocationOverride: CLLocation?
+
+    /// Reverse-geocoded playa address for `sourceLocationOverride`, once it lands.
+    @Published private(set) var sourceLocationAddress: String?
 
     @Published var isLoading: Bool = true
 
@@ -67,11 +84,37 @@ final class NearbyViewModel: ObservableObject {
 
     // MARK: - Computed
 
+    /// Where this screen is looking from, in precedence order:
+    ///
+    /// 1. `sourceLocationOverride` — the person the user dropped on the map;
+    /// 2. the Warp configuration's location, when one was chosen;
+    /// 3. the device's own fix.
+    ///
+    /// The two explicit choices can't both be live: setting either one clears the other
+    /// (see `timeShiftConfig`'s `didSet` and `setSourceLocationOverride`), so the order
+    /// above only decides which is *stored*, never which of two live choices wins.
     var currentLocation: CLLocation? {
+        if let sourceLocationOverride {
+            return sourceLocationOverride
+        }
         if let config = timeShiftConfig, let location = config.location {
             return location
         }
         return rawLocation
+    }
+
+    /// True while some explicit choice — a dropped pin or a warp location — has taken the
+    /// screen off the device's fix. That is exactly when a GPS update must not re-query.
+    var isSourcePinned: Bool {
+        sourceLocationOverride != nil || timeShiftConfig?.location != nil
+    }
+
+    /// Banner text while a dropped pin is driving the screen.
+    var sourceLocationLabel: String? {
+        guard sourceLocationOverride != nil else { return nil }
+        let place = sourceLocationAddress?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let place, !place.isEmpty else { return DroppedPersonAnnotation.fallbackTitle }
+        return place
     }
 
     var effectiveDate: Date {
@@ -101,7 +144,10 @@ final class NearbyViewModel: ObservableObject {
         locationProvider: LocationProvider,
         // `nil` → the shared store. Not a `= .shared` default argument: default arguments
         // are evaluated in a nonisolated context, and `shared` is main-actor isolated.
-        filterStore: NearbyEventFilterStore? = nil
+        filterStore: NearbyEventFilterStore? = nil,
+        /// Transient "look from here" spot, handed in by the map card's "See all" when the
+        /// user has a person dropped. Nil for every other entry point into this screen.
+        sourceLocationOverride: CLLocation? = nil
     ) {
         self.playaDB = playaDB
         self.artProvider = artProvider
@@ -112,6 +158,12 @@ final class NearbyViewModel: ObservableObject {
 
         self.selectedFilter = UserSettings.nearbyFilter
         self.timeShiftConfig = UserSettings.nearbyTimeShiftConfig
+        // Safe next to a restored `timeShiftConfig` with a location: property observers
+        // don't fire for assignments made inside the declaring type's initializer, so the
+        // `didSet` that normally retires an override doesn't run here. A restored warp
+        // location is stale state; a freshly dropped pin is a live user action, and the
+        // precedence in `currentLocation` is what settles that.
+        self.sourceLocationOverride = sourceLocationOverride
         self.rawLocation = locationProvider.currentLocation
         self.now = timeShiftConfig?.date ?? .present
 
@@ -138,6 +190,31 @@ final class NearbyViewModel: ObservableObject {
         locationTask?.cancel()
         timerTask?.cancel()
         loadingGateTask?.cancel()
+    }
+
+    // MARK: - Dropped-pin source override
+
+    /// Points the screen at `location` (or back at the device when nil) and re-queries.
+    /// Purely in-memory: nothing here touches `UserSettings`.
+    func setSourceLocationOverride(_ location: CLLocation?) {
+        guard !isSameSourceLocation(sourceLocationOverride, location) else { return }
+        sourceLocationOverride = location
+        sourceLocationAddress = nil
+        lastObservedLocation = currentLocation
+        restartObservations()
+    }
+
+    /// Attaches the reverse-geocoded address for the drop at `coordinate`, ignoring results
+    /// that arrive after the user has moved or removed the person.
+    func setSourceLocationAddress(_ address: String?, for coordinate: CLLocationCoordinate2D) {
+        guard let current = sourceLocationOverride?.coordinate,
+              current.isSameCoordinate(as: coordinate) else { return }
+        sourceLocationAddress = address
+    }
+
+    /// Back to sourcing from the device (or from an active warp location, if there is one).
+    func clearSourceLocationOverride() {
+        setSourceLocationOverride(nil)
     }
 
     // MARK: - Sections
@@ -371,15 +448,16 @@ final class NearbyViewModel: ObservableObject {
                     if let last = self.lastObservedLocation {
                         if location.distance(from: last) > 50 {
                             self.lastObservedLocation = location
-                            // Only restart if not using time-shifted location
-                            if self.timeShiftConfig?.location == nil {
+                            // Only restart while the screen is actually following the
+                            // device — a dropped pin or a warp location pins it in place.
+                            if !self.isSourcePinned {
                                 self.restartObservations()
                             }
                         }
                     } else {
                         self.lastObservedLocation = location
-                        // First location — start observations if not already running with time shift
-                        if self.timeShiftConfig?.location == nil {
+                        // First location — start observations unless the screen is pinned
+                        if !self.isSourcePinned {
                             self.restartObservations()
                         }
                     }

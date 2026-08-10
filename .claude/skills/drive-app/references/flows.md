@@ -290,6 +290,53 @@ first letter ("Yoga") — harmless, FTS is case-insensitive.
   whether any visible annotation is a `DataObjectAnnotation`.
 - Search field "Search" is in the map header.
 
+### Drop the person (long-press "look from here")
+
+**Long-press anywhere on the main map** stands a little person marker there (Street View
+pegman idea) and re-points the nearby card at that spot: its ~100 m of art/camps/events, and
+every distance, are then measured from the marker instead of the device.
+
+- The marker is a **blue circular chip with a white `figure.stand` glyph**, drawn at runtime
+  from an SF Symbol (`DroppedPersonMarker`) — there is no person asset in the bundle. It is
+  an ephemeral `DroppedPersonAnnotation`, **never** a `BRCUserMapPoint`: nothing about it is
+  written to PlayaDB or `UserSettings`, and it is gone after a relaunch.
+- The gesture is a `UILongPressGestureRecognizer` installed by **`MainMapViewController`**
+  (named `iBurn.dropPersonLongPress`, 0.45 s), not by `MapViewAdapter` — detail maps and
+  "show on map" list maps are deliberately unaffected, because only the main map has the card.
+- The card grows a **header line** — "Nearby &lt;playa address&gt;" — from
+  `PlayaGeocoder.asyncReverseLookup`, falling back to "Nearby dropped pin" until (or unless)
+  the geocoder answers. The header costs the card `18 + 6 = 24 pt` at default Dynamic Type,
+  so it stands **124 pt** tall while a pin is down and 100 pt otherwise.
+- **Long-press elsewhere moves it** — there is only ever one person on the map; the old
+  annotation and its callout go away.
+- **Tap the person** → callout titled with its playa address, with an ⊗ **"Remove dropped
+  pin"** accessory. That, and the card's **"Hide"**, both take the marker off and put the card
+  back on the device's own location.
+- **"See all"** pushes the Nearby screen carrying the marker's location
+  (`createNearbyViewController(locationOverride:)` → `makeNearbyViewModel(locationOverride:)`).
+  That screen shows a banner **"Near &lt;address&gt;"** with a **"Use My Location"** button;
+  the button clears the override *for that screen only* — the map keeps its person until you
+  remove it there. The legacy UIKit `NearbyViewController` (`useSwiftUILists` off) ignores the
+  override entirely; that's a documented caveat, not a bug.
+- While a person is down the GPS stream keeps updating in the background but **cannot** move
+  the card or re-center its query. Removing the pin snaps to the *current* fix, not the one
+  from when the pin was dropped.
+- Precedence on the Nearby screen is **dropped pin > Warp location > device**, and the two
+  explicit choices retire each other: applying a Warp *location* drops the pin override, and
+  dropping a pin outranks a warp location. A time-only Warp leaves the pin standing — the
+  person changes *where*, never *when*.
+
+**Driving it from automation.** `long_press` needs an elementRef and the map view itself
+isn't one, but the recognizer is on `MLNMapView`, so a long press on **any annotation button
+inside the map** (`You Are Here`, a camp/art pin) delivers the touch to it and drops the
+person at that annotation's screen point. That is the only way to choose a drop coordinate
+without lldb. Assertions are cheap in the AX snapshot: the card header appears as text
+("Nearby 9:23 & Great Oak"), the marker as a button labelled with its address, and its
+callout exposes "Remove dropped pin". At 40.7864,-119.2065 with the embargo unlocked,
+long-pressing the `Snuggles` pin gives a visibly different card (camps at G & 9:15) and
+Nearby list (Moth 8 m, Snuggles 2 m) than the device-sourced one (Aeshtah / Spectral Scarab /
+Solar Library, all 3 m) — that contrast is the quickest proof the re-sourcing works.
+
 ### Nearby card (on-map)
 
 A compact swipeable card pinned near the **top** of the map lists what is within ~100 m of
@@ -297,7 +344,8 @@ the user (events first, then art + camps by distance; `simctl location set` requ
 stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all" (trailing)**,
 "See all" linking into the Nearby screen.
 
-- Card geometry at default Dynamic Type: **72 pt page + 28 pt footer = 100 pt** tall, width
+- Card geometry at default Dynamic Type: **72 pt page + 28 pt footer = 100 pt** tall (plus a
+  24 pt header while a person is dropped — see the flow above), width
   `min(380, screen − 32)`. The page is `contentInset (10) + row (60) + rowFooterGap (2)`,
   where the row is `max(thumbnail 60, text stack)` and the **worst-case text stack is 56**
   — name (20) + accessory (16) + description (16) with the VStack's two 2 pt gaps. The

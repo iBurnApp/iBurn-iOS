@@ -33,6 +33,17 @@ final class NearbyCardViewModel: ObservableObject {
     /// Live "now" for event timing display; refreshed on a timer.
     @Published var now: Date = .present
 
+    /// Where the card is looking from, when that isn't the device.
+    ///
+    /// Set by dropping the person marker on the map (see `DroppedPersonAnnotation`).
+    /// Purely transient: never written to `UserSettings`, never restored — it dies with the
+    /// map screen. While it is non-nil the GPS stream keeps updating `rawLocation` but can
+    /// no longer move the card, so the content stays put where the user put it.
+    @Published private(set) var sourceLocationOverride: CLLocation?
+
+    /// Reverse-geocoded playa address for `sourceLocationOverride`, once it lands.
+    @Published private(set) var sourceLocationAddress: String?
+
     // MARK: - Tuning
 
     /// Only surface objects within this radius of the user (meters).
@@ -81,7 +92,29 @@ final class NearbyCardViewModel: ObservableObject {
 
     // MARK: - Computed
 
-    var currentLocation: CLLocation? { rawLocation }
+    /// The dropped person wins over the device: everything downstream — the region query,
+    /// the radius gate, the per-item distances — is measured from here.
+    var currentLocation: CLLocation? { sourceLocationOverride ?? rawLocation }
+
+    /// Whether the card is sourcing from a dropped pin rather than the device.
+    var isSourceOverridden: Bool { sourceLocationOverride != nil }
+
+    /// The card's header line while the person is standing somewhere, e.g. "Nearby G & 4:47".
+    /// Nil when the card is sourcing from the device, which is when it has no header at all.
+    var headerText: String? {
+        guard isSourceOverridden else { return nil }
+        let place = sourceLocationAddress?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let place, !place.isEmpty else {
+            return String(
+                format: NSLocalizedString("Nearby %@", comment: "nearby card header for a dropped pin"),
+                DroppedPersonAnnotation.fallbackTitle.lowercased()
+            )
+        }
+        return String(
+            format: NSLocalizedString("Nearby %@", comment: "nearby card header for a dropped pin"),
+            place
+        )
+    }
 
     var count: Int { items.count }
 
@@ -150,6 +183,39 @@ final class NearbyCardViewModel: ObservableObject {
         } catch {
             // Favorite state is driven by DB observation; a failed toggle is a no-op.
         }
+    }
+
+    // MARK: - Dropped-pin source override
+
+    /// Points the card at `location` (or back at the device when nil).
+    ///
+    /// Restarts the region observations either way — the whole point of the override is
+    /// that a *different* 100 m circle is queried — and drops any address left over from a
+    /// previous drop so a stale playa address can never label a new spot.
+    func setSourceLocationOverride(_ location: CLLocation?) {
+        guard !isSameSourceLocation(sourceLocationOverride, location) else { return }
+        sourceLocationOverride = location
+        sourceLocationAddress = nil
+        // The GPS recenter threshold is measured against wherever the card is looking now,
+        // so that clearing the override doesn't immediately count as a "big move".
+        lastRegionLocation = currentLocation
+        restartObservations()
+    }
+
+    /// Attaches the reverse-geocoded address for a drop.
+    ///
+    /// `coordinate` is checked against the live override rather than trusted, because the
+    /// geocoder answers asynchronously and the user can drop the person again — or pick it
+    /// up — while a lookup is in flight.
+    func setSourceLocationAddress(_ address: String?, for coordinate: CLLocationCoordinate2D) {
+        guard let current = sourceLocationOverride?.coordinate,
+              current.isSameCoordinate(as: coordinate) else { return }
+        sourceLocationAddress = address
+    }
+
+    /// Back to sourcing from the device.
+    func clearSourceLocationOverride() {
+        setSourceLocationOverride(nil)
     }
 
     // MARK: - Configuration
@@ -369,7 +435,11 @@ final class NearbyCardViewModel: ObservableObject {
             for await location in self.locationProvider.locationStream {
                 guard let location else { continue }
                 await MainActor.run {
+                    // `rawLocation` keeps tracking the device even while pinned, so that
+                    // clearing the override snaps straight back to a current fix rather
+                    // than to wherever the user was when they dropped the person.
                     self.rawLocation = location
+                    guard !self.isSourceOverridden else { return }
                     if let last = self.lastRegionLocation,
                        location.distance(from: last) < self.regionRecenterThreshold {
                         // Small move: re-sort / re-gate against the existing observations.

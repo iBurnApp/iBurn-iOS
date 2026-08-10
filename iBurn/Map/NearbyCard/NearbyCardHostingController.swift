@@ -69,7 +69,12 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
     }
 
     /// Switches the card off and lets the map explain where it went.
+    ///
+    /// Hiding is also the "put the person away" gesture: with the card gone there is nothing
+    /// left on screen tied to the dropped location, so leaving the override in place would
+    /// strand an invisible source. The map removes the marker from `onCardHidden`.
     private func hideCard() {
+        viewModel.clearSourceLocationOverride()
         viewModel.setCardEnabled(false)
         onCardHidden?()
     }
@@ -81,8 +86,14 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
 
     /// Pushes the same Nearby screen the tab used to host, built through the app's own
     /// factory so it still honors the SwiftUI-lists feature flag.
+    ///
+    /// The card's dropped-pin source rides along, so "See all" opens the full list measured
+    /// from the same spot the card is showing rather than snapping back to the device. It is
+    /// handed over as a plain value — nothing about it is persisted on either screen.
     private func showNearbyList() {
-        let nearbyVC = BRCAppDelegate.shared.createNearbyViewController()
+        let nearbyVC = BRCAppDelegate.shared.createNearbyViewController(
+            locationOverride: viewModel.sourceLocationOverride
+        )
         navigationController?.pushViewController(nearbyVC, animated: true)
     }
 }

@@ -159,10 +159,55 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
 
     private let mapRegionAnnotations = MapRegionDataSource()
-    
+
     /// Set this if you want draggable
     var editingAnnotation: BRCMapPoint?
-    
+
+    // MARK: - Dropped person marker
+
+    /// The transient "look from here" person, while one is standing on the map.
+    ///
+    /// Held here rather than in the data source on purpose: it is not data. `reloadAnnotations()`
+    /// and `refreshRegionAnnotations()` both remove only the lists they own, so the person
+    /// survives every pan, filter change and embargo unlock without being re-added.
+    private(set) var droppedPerson: DroppedPersonAnnotation?
+
+    /// Fires when the person is taken off the map from the map's own affordance (its callout's
+    /// remove button), so the host can drop the matching card/list override.
+    var onDroppedPersonRemoved: (() -> Void)?
+
+    /// Puts the person down at `coordinate`, moving it if it was already out.
+    ///
+    /// Removed and re-added rather than repositioned: a fresh annotation is what closes any
+    /// open callout from the previous spot, and the marker view is cheap.
+    @discardableResult
+    func dropPerson(at coordinate: CLLocationCoordinate2D, title: String? = nil) -> DroppedPersonAnnotation {
+        removeDroppedPerson(notifyHost: false)
+        let person = DroppedPersonAnnotation(coordinate: coordinate, title: title)
+        droppedPerson = person
+        mapView.addAnnotation(person)
+        return person
+    }
+
+    /// Relabels the person's callout once the reverse geocoder answers, ignoring results for
+    /// a spot the person has already left.
+    func updateDroppedPersonTitle(_ title: String?, for coordinate: CLLocationCoordinate2D) {
+        guard let person = droppedPerson,
+              person.coordinate.isSameCoordinate(as: coordinate),
+              let title, !title.isEmpty else { return }
+        person.title = title
+    }
+
+    /// Picks the person back up. `notifyHost` is false for the internal move case, where the
+    /// override is about to be re-pointed rather than cleared.
+    func removeDroppedPerson(notifyHost: Bool = true) {
+        guard let person = droppedPerson else { return }
+        droppedPerson = nil
+        mapView.deselectAnnotation(person, animated: false)
+        mapView.removeAnnotation(person)
+        if notifyHost { onDroppedPersonRemoved?() }
+    }
+
     // MARK: - Public
     
     func editMapPoint(_ mapPoint: BRCMapPoint) {
@@ -183,6 +228,16 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
     
     override public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
+        // Handled ahead of `super`, which only builds image views for `BRCMapPoint`s — the
+        // person is deliberately not one of those (nothing about it is saved).
+        if let person = annotation as? DroppedPersonAnnotation {
+            let view = mapView.dequeueReusableAnnotationView(withIdentifier: DroppedPersonAnnotation.reuseIdentifier) as? ImageAnnotationView
+                ?? ImageAnnotationView(reuseIdentifier: DroppedPersonAnnotation.reuseIdentifier)
+            view.image = person.markerImage
+            view.isDraggable = false
+            return view
+        }
+
         let annotationView = super.mapView(mapView, viewFor: annotation)
         guard let imageAnnotationView = annotationView as? ImageAnnotationView,
         let point = annotation as? BRCMapPoint else { return annotationView }
@@ -223,6 +278,20 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
     
     override public func mapView(_ mapView: MLNMapView, rightCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
+        // Tap the person → callout (its playa address) → this button puts it away. Chosen
+        // over a bare tap-to-remove because the callout is also what *shows* the address,
+        // and a marker that vanishes on a stray tap is easy to lose by accident.
+        if annotation is DroppedPersonAnnotation {
+            let removeButton = UIButton(type: .system)
+            removeButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+            removeButton.tag = ButtonTag.delete.rawValue
+            removeButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+            removeButton.accessibilityLabel = NSLocalizedString(
+                "Remove dropped pin",
+                comment: "callout button that takes the dropped person marker off the map"
+            )
+            return removeButton
+        }
         guard annotation is BRCUserMapPoint else {
             return super.mapView(mapView, rightCalloutAccessoryViewFor: annotation)
         }
@@ -235,6 +304,10 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
     
     override public func mapView(_ mapView: MLNMapView, annotation: MLNAnnotation, calloutAccessoryControlTapped control: UIControl) {
+        if annotation is DroppedPersonAnnotation {
+            removeDroppedPerson()
+            return
+        }
         guard let point = annotation as? BRCMapPoint,
             let annotationView = annotationViews[ObjectIdentifier(point)] as? ImageAnnotationView,
             let tag = ButtonTag(rawValue: control.tag) else {

@@ -81,10 +81,44 @@ struct NearbyCardView: View {
     private var pageHeight: CGFloat { Self.contentInset + rowHeight + Self.rowFooterGap }
     /// Exactly the height of the footer's 28pt controls — the dots and labels are small
     /// enough that any more than that is empty card.
-    private static let footerHeight: CGFloat = 28
-    /// Page plus footer: 100 at default Dynamic Type. Fixed per type size for the same
-    /// reason the width is fixed.
-    private var cardHeight: CGFloat { pageHeight + Self.footerHeight }
+    static let footerHeight: CGFloat = 28
+
+    // MARK: - Dropped-pin header
+
+    /// The header line's own height at default Dynamic Type — one line of `caption2`.
+    static let baseHeaderLineHeight: CGFloat = 18
+
+    /// Space above the header line. Smaller than `contentInset` because the row below
+    /// already carries that inset, and two full insets stacked read as a gap.
+    static let headerTopInset: CGFloat = 6
+
+    /// Same cap the row's text stack uses, for the same reason: past `extraExtraExtraLarge`
+    /// the card would start covering the map instead of floating over it.
+    private static let maximumHeaderLineHeight: CGFloat = UIFontMetrics(forTextStyle: .caption2)
+        .scaledValue(for: baseHeaderLineHeight,
+                     compatibleWith: UITraitCollection(preferredContentSizeCategory: .extraExtraExtraLarge))
+
+    @ScaledMetric(relativeTo: .caption2) private var headerLineHeight = baseHeaderLineHeight
+
+    /// What the header costs the card when it is present: the line plus its top inset.
+    private var headerHeight: CGFloat {
+        min(headerLineHeight, Self.maximumHeaderLineHeight) + Self.headerTopInset
+    }
+
+    /// Only while the person is standing somewhere — the card has no header when it is
+    /// sourcing from the device, which is the overwhelmingly common case.
+    private var headerLine: String? { viewModel.headerText }
+
+    /// Page plus footer: 100 at default Dynamic Type, plus the header when a dropped pin is
+    /// driving the card (24 more at default Dynamic Type). Fixed per type size for the same
+    /// reason the width is fixed. Pure arithmetic, exposed for unit testing.
+    static func cardHeight(pageHeight: CGFloat, headerHeight: CGFloat?) -> CGFloat {
+        pageHeight + footerHeight + (headerHeight ?? 0)
+    }
+
+    private var cardHeight: CGFloat {
+        Self.cardHeight(pageHeight: pageHeight, headerHeight: headerLine == nil ? nil : headerHeight)
+    }
 
     init(
         viewModel: NearbyCardViewModel,
@@ -149,6 +183,10 @@ struct NearbyCardView: View {
 
     private var card: some View {
         VStack(spacing: 0) {
+            if let headerLine {
+                header(headerLine)
+            }
+
             TabView(selection: $viewModel.selectedID) {
                 ForEach(viewModel.items) { item in
                     NearbyCardContentView(
@@ -175,6 +213,32 @@ struct NearbyCardView: View {
         // Outside the `TabView` so it stays put while pages swipe under it — a control
         // inside the pager competes with the page gesture and can't be dragged past.
         .overlay(alignment: .topTrailing) { favoriteButton }
+    }
+
+    /// Says where the card is looking from while the dropped person is standing somewhere:
+    /// "Nearby G & 4:47". Absent — and costing the card no height at all — when the card is
+    /// sourcing from the device, which needs no explanation.
+    ///
+    /// Trailing inset clears the favorite button in the corner above the row, exactly as the
+    /// row's own text does.
+    private func header(_ text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "figure.stand")
+                .font(.system(size: 10, weight: .semibold))
+            Text(text)
+                .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(themeColors.secondaryColor)
+        .padding(.leading, Self.contentInset)
+        .padding(.trailing, Self.rowTrailingInset)
+        // Pinned to exactly what `headerHeight` charged the card for, so the page and
+        // footer below it land where their own fixed frames expect.
+        .frame(height: min(headerLineHeight, Self.maximumHeaderLineHeight))
+        .padding(.top, Self.headerTopInset)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(text)
     }
 
     /// "Hide" leading, page dots centered, "See all" trailing. The dots used to sit alone

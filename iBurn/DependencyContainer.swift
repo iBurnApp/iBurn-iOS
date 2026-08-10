@@ -6,6 +6,7 @@
 //  Copyright © 2025 Burning Man Earth. All rights reserved.
 //
 
+import CoreLocation
 import Foundation
 import PlayaDB
 
@@ -245,13 +246,17 @@ class DependencyContainer {
     }
 
     /// Create a NearbyViewModel with injected dependencies
-    func makeNearbyViewModel() -> NearbyViewModel {
+    /// - Parameter locationOverride: transient "look from here" spot (the map's dropped
+    ///   person marker). Nil — the default — leaves the screen sourcing from the device.
+    ///   Never persisted; it only lives as long as the view model does.
+    func makeNearbyViewModel(locationOverride: CLLocation? = nil) -> NearbyViewModel {
         NearbyViewModel(
             playaDB: playaDB,
             artProvider: artDataProvider,
             campProvider: campDataProvider,
             eventProvider: eventDataProvider,
-            locationProvider: locationProvider
+            locationProvider: locationProvider,
+            sourceLocationOverride: locationOverride
         )
     }
 

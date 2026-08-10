@@ -1,3 +1,4 @@
+import CoreLocation
 import SwiftUI
 import UIKit
 import PlayaDB
@@ -10,14 +11,32 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
     private var pagingDataSource: DetailPagingDataSource?
     private var geocoderTimer: Timer?
 
-    init(dependencies: DependencyContainer) {
+    /// - Parameter locationOverride: transient "look from here" spot handed over by the
+    ///   map card's "See all" when the user has the person marker dropped. Nil for every
+    ///   other entry point. Nothing about it is persisted.
+    init(dependencies: DependencyContainer, locationOverride: CLLocation? = nil) {
         self.playaDB = dependencies.playaDB
-        let vm = dependencies.makeNearbyViewModel()
+        let vm = dependencies.makeNearbyViewModel(locationOverride: locationOverride)
         self.viewModel = vm
         super.init(rootView: NearbyView(viewModel: vm))
         self.rootView = makeRootView()
         self.title = "Nearby"
         observeEmbargoDidClear()
+        geocodeSourceLocation(locationOverride)
+    }
+
+    /// Labels the dropped-pin banner with the offline reverse geocoder's playa address.
+    ///
+    /// The result is applied through the view model's coordinate-checked setter, so a lookup
+    /// still in flight when the user clears the override can't relabel the screen.
+    private func geocodeSourceLocation(_ location: CLLocation?) {
+        guard let location else { return }
+        let coordinate = location.coordinate
+        PlayaGeocoder.shared.asyncReverseLookup(coordinate) { [weak self] address in
+            Task { @MainActor in
+                self?.viewModel.setSourceLocationAddress(address, for: coordinate)
+            }
+        }
     }
 
     @MainActor required dynamic init?(coder aDecoder: NSCoder) {
