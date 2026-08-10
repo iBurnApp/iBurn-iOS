@@ -170,11 +170,15 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     /// reach for.
     private func setupNearbyCard() {
         addChild(nearbyCardController)
-        nearbyCardController.onCardHidden = { [weak self] in
-            // Hiding the card is also how you put the person away: with the card gone
-            // there'd be nothing left on screen tied to the dropped spot.
+        nearbyCardController.onCardHidden = { [weak self] action in
+            // Hiding the card is also how you put the person away: with the card possibly
+            // gone there'd be nothing left on screen tied to the dropped spot.
             self?.clearDroppedPerson()
-            self?.showNearbyCardHiddenTooltip()
+            // Only a real "the card is switched off now" needs the hint about where it went.
+            // Retiring a dropped pin leaves the card's own setting exactly as it was.
+            if action.disablesCard {
+                self?.showNearbyCardHiddenTooltip()
+            }
         }
         userMapViewAdapter?.onDroppedPersonRemoved = { [weak self] in
             self?.nearbyCardController.viewModel.clearSourceLocationOverride()

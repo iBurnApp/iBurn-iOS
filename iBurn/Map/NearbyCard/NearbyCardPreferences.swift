@@ -47,6 +47,52 @@ extension Preferences {
     }
 }
 
+// MARK: - Visibility
+
+/// What the footer's hide button just did.
+///
+/// The two cases exist because the button means different things depending on whether a
+/// person is standing on the map: with one down it retires the drop, without one it switches
+/// the card off for good. Only the second is a settings change, and only the second needs the
+/// map to explain where the card went.
+enum NearbyCardHideAction: Equatable {
+    /// The dropped pin was retired; the stored preference is untouched.
+    case clearDroppedPin
+    /// The card itself was switched off, and stays off until the map filter turns it back on.
+    case disableCard
+
+    var disablesCard: Bool { self == .disableCard }
+}
+
+/// The two rules that decide whether the nearby card is on screen and what hiding it means.
+///
+/// Pure functions over the only two inputs that matter — the stored preference and whether a
+/// dropped pin is currently sourcing the card — so the behaviour can be reasoned about (and
+/// tested) without a view model, a map, or `UserDefaults`.
+enum NearbyCardVisibility {
+
+    /// A dropped pin shows the card even when the preference has it switched off.
+    ///
+    /// Dropping the person is a direct request to look at somewhere else, and the answer
+    /// arrives in the card — so refusing to draw it because the user once hid the *"what's
+    /// around me"* card leaves the drop with nowhere to land. The show is transient: nothing
+    /// is written back, and removing the person returns the card to whatever the preference
+    /// says.
+    static func isVisible(cardEnabled: Bool, overrideActive: Bool) -> Bool {
+        cardEnabled || overrideActive
+    }
+
+    /// What "Hide" does, given whether a person is currently standing on the map.
+    ///
+    /// While a drop is active, hiding is scoped to the drop: the person comes off the map and
+    /// the card falls back to its stored state. The persisted preference therefore only ever
+    /// changes when the card is hidden in its normal, device-sourced state — checking out
+    /// another spot can't silently turn off "what's near me".
+    static func hideAction(overrideActive: Bool) -> NearbyCardHideAction {
+        overrideActive ? .clearDroppedPin : .disableCard
+    }
+}
+
 // MARK: - Type selection
 
 /// Which object types the nearby card may surface.

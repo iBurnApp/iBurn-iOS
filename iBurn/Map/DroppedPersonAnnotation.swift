@@ -85,15 +85,27 @@ func isSameSourceLocation(_ lhs: CLLocation?, _ rhs: CLLocation?) -> Bool {
 
 // MARK: - Marker artwork
 
-/// Draws the person marker. There is no person asset in the bundle — the app ships
-/// teardrop pins and `BRCUserPin*` glyphs — so the marker is rendered from an SF Symbol
-/// into a circular chip: a saturated fill with a white ring and a drop shadow reads on both
-/// the light (tan) and dark playa base maps, where a bare glyph would not.
+/// Draws the marker: the Man himself, standing in a circular chip. A saturated fill with a
+/// white ring and a drop shadow reads on both the light (tan) and dark playa base maps,
+/// where a bare glyph would not.
 enum DroppedPersonMarker {
 
     /// Chip diameter in points. Big enough to be an easy tap target for its callout,
     /// small enough not to blanket the camps it is standing among.
     static let diameter: CGFloat = 34
+
+    /// The Man, as already shipped for the map's center pin.
+    ///
+    /// The imageset is appearance-scoped — black artwork for light, white for dark — and is
+    /// not configured as a template, so the chip asks for the dark (white) variant *and*
+    /// re-colors it: `withTintColor` treats the artwork as an alpha mask, so the glyph comes
+    /// out crisp white whichever variant the catalog hands back.
+    static let glyphAssetName = "pin_center"
+
+    /// How tall the Man stands inside the chip. The artwork is a touch wider than it is tall
+    /// (1000×950), so the width follows from its own aspect ratio rather than being squared
+    /// off — 20pt tall leaves a comfortable margin inside the 29pt face.
+    private static let glyphHeight: CGFloat = 20
 
     /// Room around the chip for the shadow, so it isn't clipped by the image bounds.
     private static let shadowPadding: CGFloat = 5
@@ -126,16 +138,16 @@ enum DroppedPersonMarker {
             fillColor.setFill()
             UIBezierPath(ovalIn: chipRect.insetBy(dx: ringWidth, dy: ringWidth)).fill()
 
-            // Person glyph, drawn at its natural aspect ratio — `figure.stand` is tall and
-            // narrow, so squeezing it into a square would visibly stretch it.
-            let configuration = UIImage.SymbolConfiguration(pointSize: diameter * 0.58, weight: .semibold)
-            if let glyph = UIImage(systemName: "figure.stand", withConfiguration: configuration)?
-                .withTintColor(.white, renderingMode: .alwaysOriginal) {
+            // The Man, drawn at his natural aspect ratio — squeezing him into a square
+            // would visibly stretch the arms.
+            if let glyph = makeGlyph() {
+                let aspectRatio = glyph.size.height > 0 ? glyph.size.width / glyph.size.height : 1
+                let glyphSize = CGSize(width: glyphHeight * aspectRatio, height: glyphHeight)
                 let glyphRect = CGRect(
-                    x: chipRect.midX - glyph.size.width / 2,
-                    y: chipRect.midY - glyph.size.height / 2,
-                    width: glyph.size.width,
-                    height: glyph.size.height
+                    x: chipRect.midX - glyphSize.width / 2,
+                    y: chipRect.midY - glyphSize.height / 2,
+                    width: glyphSize.width,
+                    height: glyphSize.height
                 )
                 glyph.draw(in: glyphRect)
             }
@@ -143,5 +155,19 @@ enum DroppedPersonMarker {
         // The annotation view's image view would otherwise tint a template image with the
         // map's tint color and lose the chip entirely.
         return image.withRenderingMode(.alwaysOriginal)
+    }
+
+    /// The white Man, ready to be composited onto the chip.
+    ///
+    /// Falls back to the SF Symbol the marker used before the asset was wired up, so a
+    /// catalog miss degrades to a person rather than to an empty blue dot.
+    static func makeGlyph() -> UIImage? {
+        let darkTraits = UITraitCollection(userInterfaceStyle: .dark)
+        if let asset = UIImage(named: glyphAssetName, in: nil, compatibleWith: darkTraits) {
+            return asset.withTintColor(.white, renderingMode: .alwaysOriginal)
+        }
+        let configuration = UIImage.SymbolConfiguration(pointSize: diameter * 0.58, weight: .semibold)
+        return UIImage(systemName: "figure.stand", withConfiguration: configuration)?
+            .withTintColor(.white, renderingMode: .alwaysOriginal)
     }
 }

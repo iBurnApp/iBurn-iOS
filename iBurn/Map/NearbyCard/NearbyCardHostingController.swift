@@ -19,9 +19,12 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
     private let playaDB: PlayaDB
     let viewModel: NearbyCardViewModel
 
-    /// Called after the user hides the card with its close button, so the map can say
-    /// where it went. Nothing else on screen points back to the setting.
-    var onCardHidden: (() -> Void)?
+    /// Called after the user taps the footer's hide button, with what that tap actually did.
+    ///
+    /// The map takes the person off the map either way, and only explains where the card went
+    /// when the card was genuinely switched off — nothing else on screen points back to that
+    /// setting, whereas retiring a dropped pin needs no explanation.
+    var onCardHidden: ((NearbyCardHideAction) -> Void)?
 
     init(dependencies: DependencyContainer) {
         self.playaDB = dependencies.playaDB
@@ -68,15 +71,11 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
         viewModel.items.isEmpty ? .zero : bounds
     }
 
-    /// Switches the card off and lets the map explain where it went.
-    ///
-    /// Hiding is also the "put the person away" gesture: with the card gone there is nothing
-    /// left on screen tied to the dropped location, so leaving the override in place would
-    /// strand an invisible source. The map removes the marker from `onCardHidden`.
+    /// Handles the footer's hide button. The decision lives in `NearbyCardViewModel.hide()`;
+    /// all this layer does is pass on what it decided, so the map can take the person off the
+    /// map and — only when the card was genuinely switched off — say where it went.
     private func hideCard() {
-        viewModel.clearSourceLocationOverride()
-        viewModel.setCardEnabled(false)
-        onCardHidden?()
+        onCardHidden?(viewModel.hide())
     }
 
     private func showDetail(_ subject: DetailSubject) {

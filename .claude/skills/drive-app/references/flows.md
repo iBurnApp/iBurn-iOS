@@ -334,10 +334,16 @@ Automation notes:
 pegman idea) and re-points the nearby card at that spot: its ~100 m of art/camps/events, and
 every distance, are then measured from the marker instead of the device.
 
-- The marker is a **blue circular chip with a white `figure.stand` glyph**, drawn at runtime
-  from an SF Symbol (`DroppedPersonMarker`) — there is no person asset in the bundle. It is
-  an ephemeral `DroppedPersonAnnotation`, **never** a `BRCUserMapPoint`: nothing about it is
-  written to PlayaDB or `UserSettings`, and it is gone after a relaunch.
+- The marker is a **blue circular chip with a white Man glyph** (the Burning Man figure),
+  composited at runtime by `DroppedPersonMarker` from the `pin_center` imageset — the same
+  artwork the map's center pin uses. The imageset is appearance-scoped rather than a
+  template, so the code asks for the **dark (white) variant** and re-tints it white via
+  `withTintColor`; the Man stands 20 pt tall in the 34 pt chip, at his own aspect ratio.
+  The same glyph (template-rendered, secondary color) prefixes the card's header line.
+  If a marker ever renders as a person/`figure.stand` silhouette, the asset lookup failed —
+  that SF Symbol is only the fallback path. It is an ephemeral `DroppedPersonAnnotation`,
+  **never** a `BRCUserMapPoint`: nothing about it is written to PlayaDB or `UserSettings`,
+  and it is gone after a relaunch.
 - The gesture is a `UILongPressGestureRecognizer` installed by **`MainMapViewController`**
   (named `iBurn.dropPersonLongPress`, 0.45 s), not by `MapViewAdapter` — detail maps and
   "show on map" list maps are deliberately unaffected, because only the main map has the card.
@@ -347,9 +353,23 @@ every distance, are then measured from the marker instead of the device.
   so it stands **124 pt** tall while a pin is down and 100 pt otherwise.
 - **Long-press elsewhere moves it** — there is only ever one person on the map; the old
   annotation and its callout go away.
+- **Dropping always shows the card**, even when `userInterface.nearbyCard.enabled` is
+  `false`. The rule is `NearbyCardVisibility.isVisible(cardEnabled:overrideActive:)` —
+  `cardEnabled || overrideActive` — and the show is **transient**: the preference is not
+  written, so removing the person makes the card disappear again and a relaunch is back to
+  hidden. (Before this, dropping on a hidden card put a marker on the map with nothing to
+  read.)
 - **Tap the person** → callout titled with its playa address, with an ⊗ **"Remove dropped
-  pin"** accessory. That, and the card's **"Hide"**, both take the marker off and put the card
-  back on the device's own location.
+  pin"** accessory, which takes the marker off and puts the card back on the device's own
+  location (or back to hidden, if that's what the preference says).
+- The card's footer button is **relabelled while a person is down**: "Hide" becomes
+  **"Clear pin"** (AX label "Clear dropped pin"). It is scoped to the drop — marker off,
+  card back to its stored state — and **does not write the preference**. So: pin down +
+  card enabled → the card stays, now device-sourced; pin down + card hidden → the card
+  disappears again. Only "Hide" pressed with **no** pin down turns the card off for good,
+  and only that path raises the "turn it back on in Map Filter" tooltip. The invariant is
+  that checking out another spot can never change the user's own nearby-card setting; see
+  `NearbyCardVisibility.hideAction` / `NearbyCardViewModel.hide()`.
 - **"See all"** pushes the Nearby screen carrying the marker's location
   (`createNearbyViewController(locationOverride:)` → `makeNearbyViewModel(locationOverride:)`).
   That screen shows a banner **"Near &lt;address&gt;"** with a **"Use My Location"** button;
@@ -424,6 +444,8 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
   "Nearby card hidden — turn it back on in Map Filter." — fades in **in the card's place**
   for ~4 s, then auto-dismisses (tapping it dismisses early). There is no collapsed
   FAB/pin state any more; the card is either on screen or gone.
+  **While a person is dropped this button says "Clear pin" instead and writes nothing** —
+  see the drop-the-person flow above for the full rule.
 - The tooltip's 4 s life is **shorter than a screenshot round-trip**: `tap` → `screenshot`
   usually lands after it is gone. Record video instead
   (`xcrun simctl io <UDID> recordVideo --codec h264 --force out.mov`, `kill -INT`, then
@@ -531,6 +553,30 @@ From any list row (event/camp/art):
 - Viewing a detail writes `last_viewed`/`first_viewed` metadata (this must NOT
   cause list observations to re-emit — the metadata region excludes those
   columns; regression-tested in FilterObservationTests).
+
+### Detail → map: what the camera frames
+
+Tapping the detail screen's embedded map pushes `MapListViewController` with that one
+annotation. A **single** annotation is framed against a **second point** rather than on its
+own — otherwise the camera zooms all the way in on one dot in a featureless patch of playa:
+
+- **User inside `BRCLocations.burningManRegion`** (5 miles of the Man) → the second point is
+  the user, so the camera fits the user dot *and* the POI (which way do I walk).
+- **User outside it, or no/invalid fix** → the second point is the **Man**, so the camera
+  fits the POI against the city at city scale.
+- The rule is one function, `BRCLocations.mapFramingCoordinate(forUserLocation:)`, shared
+  with the detail screen's own small map (`MLNMapView.brc_showDestination`), so both frame
+  identically. Padding for the two-point fit is `top 120 / sides 60 / bottom 45` (the nav bar
+  overlaps the map; `edgesForExtendedLayout` is `.all`).
+- **Multi-pin pushes are unchanged**: a list's "show on map" with N pins still fits the
+  annotations alone at 10 pt padding, and the user location annotation never counts towards
+  that N.
+
+To drive it: `xcrun simctl location <UDID> set 40.7930,-119.1960` (deep playa — visibly not
+the Man) then open a camp detail → tap its map; both the orange user dot and the POI pin are
+in frame. `set 37.77,-122.41` (off playa) and repeat: the frame instead stretches from the POI
+to the Man. The zoom happens once per push (`hasZoomedToCoordinates`), so pop and re-push
+after changing the location rather than expecting the camera to re-fit in place.
 
 ### More → Visit List (PlayaDB, default)
 

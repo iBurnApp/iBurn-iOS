@@ -11,15 +11,58 @@
 //  clearing it restores device sourcing, and that none of it is ever persisted.
 //
 
+import Combine
 import CoreLocation
 import Dispatch
 import Foundation
 import MapKit
+import UIKit
 import XCTest
 @preconcurrency @testable import iBurn
 @testable import PlayaDB
 
 // MARK: - Test Doubles
+
+/// In-memory preferences that actually publish their changes.
+///
+/// `Just`-backed doubles are enough for code that only reads, but the card *observes* its
+/// enabled preference — a hide has to come back through the publisher before the view model
+/// believes it — so this one keeps a subject per key.
+private final class ObservablePreferenceService: PreferenceService {
+    private var storage: [String: Any] = [:]
+    private var subjects: [String: Any] = [:]
+
+    func getValue<T>(_ preference: Preference<T>) -> T {
+        storage[preference.key] as? T ?? preference.defaultValue
+    }
+
+    func setValue<T>(_ value: T, for preference: Preference<T>) {
+        storage[preference.key] = value
+        subject(for: preference).send(value)
+    }
+
+    func publisher<T>(for preference: Preference<T>) -> AnyPublisher<T, Never> {
+        subject(for: preference).eraseToAnyPublisher()
+    }
+
+    func reset<T>(_ preference: Preference<T>) {
+        storage.removeValue(forKey: preference.key)
+        subject(for: preference).send(preference.defaultValue)
+    }
+
+    func hasValue<T>(_ preference: Preference<T>) -> Bool {
+        storage[preference.key] != nil
+    }
+
+    private func subject<T>(for preference: Preference<T>) -> CurrentValueSubject<T, Never> {
+        if let existing = subjects[preference.key] as? CurrentValueSubject<T, Never> {
+            return existing
+        }
+        let created = CurrentValueSubject<T, Never>(getValue(preference))
+        subjects[preference.key] = created
+        return created
+    }
+}
 
 /// A location provider whose stream stays open, so a test can deliver GPS fixes *after* the
 /// view model has started observing. `MockLocationProvider` finishes its stream immediately,
@@ -112,9 +155,13 @@ final class DroppedPinSourceOverrideTests: XCTestCase {
         RecordingEventProvider(playaDB: try PlayaDBImpl(dbPath: ":memory:"))
     }
 
+    /// Card view model on its own island: an in-memory database and, unless a test supplies
+    /// one, its own preference store — so nothing here can be swayed by (or leak into) the
+    /// defaults the host app happens to be carrying.
     private func makeCardViewModel(
         eventProvider: RecordingEventProvider,
-        locationProvider: LocationProvider
+        locationProvider: LocationProvider,
+        preferences: PreferenceService = ObservablePreferenceService()
     ) throws -> NearbyCardViewModel {
         let playaDB = try PlayaDBImpl(dbPath: ":memory:")
         return NearbyCardViewModel(
@@ -122,7 +169,8 @@ final class DroppedPinSourceOverrideTests: XCTestCase {
             artProvider: ArtDataProvider(playaDB: playaDB),
             campProvider: CampDataProvider(playaDB: playaDB),
             eventProvider: eventProvider,
-            locationProvider: locationProvider
+            locationProvider: locationProvider,
+            preferences: preferences
         )
     }
 
@@ -247,6 +295,143 @@ final class DroppedPinSourceOverrideTests: XCTestCase {
             provider.lastRegionCenter.map { $0.isSameCoordinate(as: walkedTo.coordinate) } ?? false
         }
         XCTAssertTrue(recentered, "Clearing re-queries around the device")
+    }
+
+    // MARK: - Visibility rule
+
+    /// The whole truth table for "is the card on screen", which is the fix for the report
+    /// that dropping the person on a hidden card put a marker on the map with nothing to
+    /// read.
+    func testVisibilityRule() {
+        XCTAssertTrue(NearbyCardVisibility.isVisible(cardEnabled: true, overrideActive: false),
+                      "The ordinary case: the card is on and sourcing from the device")
+        XCTAssertTrue(NearbyCardVisibility.isVisible(cardEnabled: true, overrideActive: true),
+                      "A drop doesn't hide a card that was already showing")
+        XCTAssertTrue(NearbyCardVisibility.isVisible(cardEnabled: false, overrideActive: true),
+                      "A drop shows the card even when the preference has it hidden")
+        XCTAssertFalse(NearbyCardVisibility.isVisible(cardEnabled: false, overrideActive: false),
+                       "Hidden and nothing dropped: stays hidden")
+    }
+
+    func testHideActionDependsOnlyOnWhetherAPinIsDown() {
+        XCTAssertEqual(NearbyCardVisibility.hideAction(overrideActive: true), .clearDroppedPin)
+        XCTAssertEqual(NearbyCardVisibility.hideAction(overrideActive: false), .disableCard)
+
+        XCTAssertFalse(NearbyCardHideAction.clearDroppedPin.disablesCard,
+                       "Retiring a pin must never write the preference")
+        XCTAssertTrue(NearbyCardHideAction.disableCard.disablesCard)
+    }
+
+    // MARK: - Card view model: visibility + hide semantics
+
+    /// The reported bug: with the card hidden, dropping the person showed only the marker.
+    func testDroppingShowsTheCardEvenWhenThePreferenceHidesIt() async throws {
+        let preferences = ObservablePreferenceService()
+        preferences.setValue(false, for: Preferences.NearbyCard.enabled)
+        let vm = try makeCardViewModel(
+            eventProvider: try makeEventProvider(),
+            locationProvider: MockLocationProvider(mockLocation: deviceLocation),
+            preferences: preferences
+        )
+        await expectEventually("The stored preference reaches the view model") { !vm.isCardVisible }
+
+        vm.setSourceLocationOverride(droppedLocation)
+        XCTAssertTrue(vm.isCardVisible, "The drop shows the card transiently")
+
+        // …and the transient show is exactly that: nothing was written back.
+        XCTAssertFalse(preferences.getValue(Preferences.NearbyCard.enabled),
+                       "Showing the card for a drop must not turn the card on")
+
+        vm.clearSourceLocationOverride()
+        XCTAssertFalse(vm.isCardVisible, "Removing the person returns the card to the preference")
+    }
+
+    func testCardStaysVisibleAcrossADropWhenThePreferenceHasItOn() async throws {
+        let preferences = ObservablePreferenceService()
+        let vm = try makeCardViewModel(
+            eventProvider: try makeEventProvider(),
+            locationProvider: MockLocationProvider(mockLocation: deviceLocation),
+            preferences: preferences
+        )
+        XCTAssertTrue(vm.isCardVisible, "Default preference is on")
+
+        vm.setSourceLocationOverride(droppedLocation)
+        XCTAssertTrue(vm.isCardVisible)
+
+        vm.clearSourceLocationOverride()
+        XCTAssertTrue(vm.isCardVisible, "Back to the device, still showing")
+    }
+
+    /// The second reported bug: hiding while the person was down persisted the card off.
+    func testHidingWhileDroppedRetiresThePinAndLeavesThePreferenceAlone() async throws {
+        let preferences = ObservablePreferenceService()
+        let vm = try makeCardViewModel(
+            eventProvider: try makeEventProvider(),
+            locationProvider: MockLocationProvider(mockLocation: deviceLocation),
+            preferences: preferences
+        )
+        vm.setSourceLocationOverride(droppedLocation)
+
+        XCTAssertEqual(vm.hide(), .clearDroppedPin)
+
+        XCTAssertFalse(vm.isSourceOverridden, "The person comes off the map")
+        XCTAssertTrue(preferences.getValue(Preferences.NearbyCard.enabled),
+                      "\"Nearby yourself\" is untouched by the \"check out that spot\" flow")
+        XCTAssertTrue(vm.isCardVisible, "…so the card stays, now sourcing from the device")
+    }
+
+    /// Same gesture from the transient-show state: the card was only there for the pin, so it
+    /// goes away again — and the already-off preference is still off, not written twice.
+    func testHidingATransientlyShownCardJustTakesThePinAway() async throws {
+        let preferences = ObservablePreferenceService()
+        preferences.setValue(false, for: Preferences.NearbyCard.enabled)
+        let vm = try makeCardViewModel(
+            eventProvider: try makeEventProvider(),
+            locationProvider: MockLocationProvider(mockLocation: deviceLocation),
+            preferences: preferences
+        )
+        await expectEventually("The stored preference reaches the view model") { !vm.isCardVisible }
+        vm.setSourceLocationOverride(droppedLocation)
+        XCTAssertTrue(vm.isCardVisible)
+
+        XCTAssertEqual(vm.hide(), .clearDroppedPin)
+
+        XCTAssertFalse(vm.isSourceOverridden)
+        XCTAssertFalse(vm.isCardVisible, "The card disappears again")
+        XCTAssertFalse(preferences.getValue(Preferences.NearbyCard.enabled), "Still off, as it was")
+    }
+
+    /// The one path that is still allowed to change the setting.
+    func testHidingWithNoPinDownIsTheOneThatPersists() async throws {
+        let preferences = ObservablePreferenceService()
+        let vm = try makeCardViewModel(
+            eventProvider: try makeEventProvider(),
+            locationProvider: MockLocationProvider(mockLocation: deviceLocation),
+            preferences: preferences
+        )
+        XCTAssertTrue(vm.isCardVisible)
+
+        XCTAssertEqual(vm.hide(), .disableCard)
+
+        XCTAssertFalse(preferences.getValue(Preferences.NearbyCard.enabled),
+                       "Hiding the card in its normal state is what turns it off")
+        await expectEventually("…and the view model follows the preference") { !vm.isCardVisible }
+    }
+
+    /// Turning the card back on from the map filter screen still works, drop or no drop.
+    func testReenablingThePreferenceBringsTheCardBack() async throws {
+        let preferences = ObservablePreferenceService()
+        preferences.setValue(false, for: Preferences.NearbyCard.enabled)
+        let vm = try makeCardViewModel(
+            eventProvider: try makeEventProvider(),
+            locationProvider: MockLocationProvider(mockLocation: deviceLocation),
+            preferences: preferences
+        )
+        await expectEventually("Starts hidden") { !vm.isCardVisible }
+
+        preferences.setValue(true, for: Preferences.NearbyCard.enabled)
+
+        await expectEventually("The map filter's switch brings the card back") { vm.isCardVisible }
     }
 
     // MARK: - Card view model: header text
@@ -532,6 +717,26 @@ final class DroppedPinSourceOverrideTests: XCTestCase {
 
         XCTAssertEqual(NearbyCardView.cardHeight(pageHeight: pageHeight, headerHeight: nil), 100)
         XCTAssertEqual(NearbyCardView.cardHeight(pageHeight: pageHeight, headerHeight: headerHeight), 124)
+    }
+
+    // MARK: - Marker artwork
+
+    /// The marker draws the Man from the asset catalog rather than an SF Symbol, so a rename
+    /// or a dropped imageset would silently fall back to the old person glyph. These tests
+    /// run hosted in the app, so `UIImage(named:)` sees the app's catalog.
+    func testManGlyphResolvesFromTheAssetCatalog() {
+        XCTAssertNotNil(UIImage(named: DroppedPersonMarker.glyphAssetName),
+                        "The dropped marker's Man artwork is missing from the app bundle")
+        XCTAssertNotNil(DroppedPersonMarker.makeGlyph())
+    }
+
+    func testMarkerImageIsBuiltAtChipSizePlusShadowRoom() {
+        let image = DroppedPersonMarker.makeImage()
+        XCTAssertGreaterThan(image.size.width, DroppedPersonMarker.diameter,
+                             "The chip's shadow needs room inside the image bounds")
+        XCTAssertEqual(image.size.width, image.size.height, accuracy: 0.001, "The chip is round")
+        XCTAssertEqual(image.renderingMode, .alwaysOriginal,
+                       "A template image would be tinted flat by the map's tint color")
     }
 
     // MARK: - Coordinate identity helper

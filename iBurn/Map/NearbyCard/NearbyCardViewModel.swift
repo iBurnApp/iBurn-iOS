@@ -99,6 +99,12 @@ final class NearbyCardViewModel: ObservableObject {
     /// Whether the card is sourcing from a dropped pin rather than the device.
     var isSourceOverridden: Bool { sourceLocationOverride != nil }
 
+    /// Whether the card may draw at all. See `NearbyCardVisibility.isVisible` — a dropped pin
+    /// shows the card transiently even when the preference has it hidden.
+    var isCardVisible: Bool {
+        NearbyCardVisibility.isVisible(cardEnabled: isCardEnabled, overrideActive: isSourceOverridden)
+    }
+
     /// The card's header line while the person is standing somewhere, e.g. "Nearby G & 4:47".
     /// Nil when the card is sourcing from the device, which is when it has no header at all.
     var headerText: String? {
@@ -227,6 +233,30 @@ final class NearbyCardViewModel: ObservableObject {
         preferences.setValue(enabled, for: Preferences.NearbyCard.enabled)
     }
 
+    /// The footer's hide button, which means one of two things — see
+    /// `NearbyCardVisibility.hideAction`.
+    ///
+    /// While a person is standing on the map, hiding is scoped to that drop: the override is
+    /// cleared and the card falls back to whatever the stored preference says, *without*
+    /// writing that preference. Only hiding the card in its ordinary device-sourced state
+    /// switches it off for good — so checking out another spot can never silently turn off
+    /// the user's own nearby card.
+    ///
+    /// The override is cleared either way: the card may be about to disappear, and an
+    /// override with nothing on screen tied to it is a source the user can't see or undo.
+    ///
+    /// - Returns: What the tap did, so the map can remove the marker and decide whether the
+    ///   "here's where the card went" hint is warranted.
+    @discardableResult
+    func hide() -> NearbyCardHideAction {
+        let action = NearbyCardVisibility.hideAction(overrideActive: isSourceOverridden)
+        clearSourceLocationOverride()
+        if action.disablesCard {
+            setCardEnabled(false)
+        }
+        return action
+    }
+
     /// The preference service publishes off its own queue, so every value is hopped back
     /// to the main actor before it touches published state.
     private func observePreferences() {
@@ -275,7 +305,7 @@ final class NearbyCardViewModel: ObservableObject {
     /// camps merged by distance. Everything is gated to `nearbyRadius`, de-duped by id,
     /// and capped to `maxItems`.
     private func rebuildItems() {
-        guard isCardEnabled, let location = currentLocation else {
+        guard isCardVisible, let location = currentLocation else {
             items = []
             reconcileSelection()
             return

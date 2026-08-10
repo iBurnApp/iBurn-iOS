@@ -223,8 +223,14 @@ struct NearbyCardView: View {
     /// row's own text does.
     private func header(_ text: String) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: "figure.stand")
-                .font(.system(size: 10, weight: .semibold))
+            // The same Man that is standing on the map, forced to template rendering: the
+            // imageset ships black/white artwork per appearance rather than a template, and
+            // the header wants it in the card's own secondary color.
+            Image(DroppedPersonMarker.glyphAssetName)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 11)
             Text(text)
                 .font(.caption2.weight(.semibold))
                 .lineLimit(1)
@@ -279,9 +285,17 @@ struct NearbyCardView: View {
 
     /// Turns the card off. Replaces the corner "✕": a labelled control in the footer reads
     /// as an action with a consequence, where a close glyph reads as "dismiss for now".
+    ///
+    /// While a person is standing on the map the same button is scoped to that drop and says
+    /// so — it retires the pin and leaves the card's own setting alone (see
+    /// `NearbyCardVisibility.hideAction`). Relabelling is what keeps that from being a
+    /// surprise: "Hide" that doesn't hide would be one.
     private var hideButton: some View {
-        Button(action: onHide) {
-            Text("Hide")
+        let isDropped = viewModel.isSourceOverridden
+        return Button(action: onHide) {
+            Text(isDropped
+                 ? NSLocalizedString("Clear pin", comment: "nearby card button retiring the dropped pin")
+                 : NSLocalizedString("Hide", comment: "nearby card button hiding the card"))
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(themeColors.secondaryColor)
                 .padding(.horizontal, 6)
@@ -289,8 +303,10 @@ struct NearbyCardView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Hide nearby card")
-        .accessibilityHint("Turn it back on in Map Filter")
+        .accessibilityLabel(isDropped ? "Clear dropped pin" : "Hide nearby card")
+        .accessibilityHint(isDropped
+                           ? "Puts the card back on your own location"
+                           : "Turn it back on in Map Filter")
     }
 
     /// Favoriting the item the pager is showing. Sits in the card's corner rather than in

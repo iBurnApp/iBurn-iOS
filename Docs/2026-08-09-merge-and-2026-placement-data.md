@@ -853,3 +853,197 @@ check, matching `NearbyCardView.GlassSurface`.
 - Making the heart an accessibility element changes the AX tree of every `ObjectRowView`
   list, not just search. Existing automation that looked for the raw "Love" symbol image
   should prefer the new "Favorite <name>" button.
+
+---
+
+# Work Log — Drop-the-man feedback: real Man glyph + card visibility rules
+
+## High-Level Plan
+
+Two pieces of user feedback on the just-shipped long-press "drop the person" feature:
+
+1. The marker drew an SF Symbol person. The app already ships the Burning Man **Man**
+   artwork for the map's center pin; use that instead.
+2. With the nearby card previously hidden (its "Hide" button persists
+   `userInterface.nearbyCard.enabled = false`), dropping the marker put a pin on the map
+   and **nothing else** — the card that was supposed to answer "what's over there" never
+   appeared. And hiding the card *while* a marker was down cleared the drop **and** wrote
+   the preference off, so a "check out that other spot" gesture silently turned off the
+   user's own "what's near me" card.
+
+Fixes: draw the Man; make card visibility `cardEnabled || overrideActive` (a transient
+show, nothing written); and scope the hide button to the drop while one is active.
+
+## Technical Details
+
+### Man glyph — `iBurn/Map/DroppedPersonAnnotation.swift`
+
+`DroppedPersonMarker` keeps its chip construction (34 pt circle, 2.5 pt white ring, drop
+shadow, blue face) and swaps only the figure. The artwork is the existing
+`pin_center` imageset, which is **appearance-scoped** (black for light, white for dark)
+rather than template-configured, so the marker asks for the dark variant explicitly and
+re-tints it anyway:
+
+```swift
+static func makeGlyph() -> UIImage? {
+    let darkTraits = UITraitCollection(userInterfaceStyle: .dark)
+    if let asset = UIImage(named: glyphAssetName, in: nil, compatibleWith: darkTraits) {
+        return asset.withTintColor(.white, renderingMode: .alwaysOriginal)
+    }
+    // …SF Symbol fallback so a catalog miss degrades to a person, not an empty chip
+}
+```
+
+`withTintColor` treats the artwork as an alpha mask, so the glyph is crisp white whichever
+variant the catalog resolves. It is drawn at its own aspect ratio (the artwork is 1000×950,
+i.e. a touch wider than tall) at **20 pt tall** inside the chip's 29 pt face. The nearby
+card's header line uses the same asset, template-rendered at 11 pt in the card's secondary
+color, so the header and the marker match.
+
+### Visibility + hide rules — `iBurn/Map/NearbyCard/NearbyCardPreferences.swift`
+
+Two pure functions over the only two inputs that matter, plus the outcome type:
+
+```swift
+enum NearbyCardHideAction: Equatable { case clearDroppedPin, disableCard }
+
+enum NearbyCardVisibility {
+    static func isVisible(cardEnabled: Bool, overrideActive: Bool) -> Bool {
+        cardEnabled || overrideActive
+    }
+    static func hideAction(overrideActive: Bool) -> NearbyCardHideAction {
+        overrideActive ? .clearDroppedPin : .disableCard
+    }
+}
+```
+
+- `NearbyCardViewModel.isCardVisible` wraps the first, and `rebuildItems()` now gates on it
+  instead of the raw preference — so a drop repopulates `items` (and therefore the card,
+  which is removed from the hierarchy when `items` is empty) regardless of the setting.
+- `NearbyCardViewModel.hide()` performs the second and returns what it did. The hosting
+  controller shrank to `onCardHidden?(viewModel.hide())`, and `MainMapViewController` now
+  raises the "turn it back on in Map Filter" tooltip only for `.disableCard`.
+- `NearbyCardView`'s footer button is relabelled while a drop is active: **"Hide"** →
+  **"Clear pin"** (AX "Clear dropped pin", hint "Puts the card back on your own location").
+
+### Design call — what "Hide" means while a pin is down
+
+Considered: (a) always make the card disappear, persisting only in the non-dropped case —
+which needs a third "transiently hidden" state and makes a labelled "Hide" mean two
+different durations; (b) scope the button to the drop. Chose **(b)**, with the relabel as
+the thing that keeps it honest — a button that says "Hide" and doesn't hide would be the
+surprising outcome, but one that says "Clear pin" and clears the pin is not. Net behavior:
+
+| stored pref | pin down | card on screen | press the footer button      |
+|-------------|----------|----------------|------------------------------|
+| on          | no       | yes            | card off, preference written |
+| on          | yes      | yes            | pin cleared, card stays      |
+| off         | no       | no             | (no card, no button)         |
+| off         | yes      | yes (transient)| pin cleared, card hides again|
+
+The invariant: **the persisted preference changes only when the card is hidden in its
+normal, device-sourced state.**
+
+## Tests — `iBurnTests/DroppedPinSourceOverrideTests.swift`
+
+Added an `ObservablePreferenceService` double (`CurrentValueSubject` per key — the existing
+`Just`-based in-memory double can't deliver a change, and the card *observes* its preference),
+and the card view model helper now takes an injected preference store so nothing depends on
+the host app's defaults. New cases: the full `isVisible` truth table; `hideAction` both ways;
+drop-shows-a-hidden-card (and writes nothing); pin-down hide leaves the preference on; hide
+from the transient state just removes the pin; hide with no pin is the one that persists;
+re-enabling from Map Filter brings the card back; plus two marker cases (the `pin_center`
+asset resolves in the app bundle, and the chip image is round, shadow-padded and
+`.alwaysOriginal`).
+
+## Simulator validation (iPhone 17 Pro Max, iOS 26.5)
+
+- Long-press a camp pin → white Man on a blue chip, legible at map zoom
+  (`/tmp/claude/iburn-polish-round/A1-man-glyph-zoom.png`), header "Nearby 9:23 & Great Oak"
+  with the matching glyph, card content re-sourced to Snuggles.
+- "Clear pin" with the preference on → pin gone, card returns to device content (Aeshtah),
+  no tooltip. "Hide" with no pin → card gone + tooltip, preference reads `0`.
+- With the preference at `0`: drop → the card appears with dropped content, preference still
+  reads `0`; callout ⊗ "Remove dropped pin" → card disappears again; relaunch → no marker,
+  no card; Map Filter → "Show Nearby Card" → Done → normal card back.
+
+---
+
+# Work Log — Detail map zoom: fit user + POI, or POI + Man off playa
+
+## High-Level Plan
+
+Tapping a modern art/camp/event detail screen's map pushed `MapListViewController`, whose
+`viewDidAppear` fit **only the annotation coordinates** at 10 pt padding. With one annotation
+that is a maximum zoom onto a single dot surrounded by nothing. The legacy path
+(`MLNMapView.brc_showDestination`) had always done it right — second point = the user when
+inside `BRCLocations.burningManRegion`, else the Man — so the fix is to extract that rule and
+share it.
+
+## Technical Details
+
+### `iBurn/BRCLocations.swift` — the rule, in one place
+
+```swift
+@objc static func mapFramingCoordinate(forUserLocation location: CLLocation?) -> CLLocationCoordinate2D {
+    guard let coordinate = location?.coordinate,
+          CLLocationCoordinate2DIsValid(coordinate),
+          burningManRegion.contains(coordinate) else {
+        return blackRockCityCenter
+    }
+    return coordinate
+}
+```
+
+### `iBurn/MLNMapView+iBurn.m` — now calls it (no behavior change)
+
+The three-step dance (default to the city center, take the user coordinate if valid, fall
+back if outside the region) collapses to one call. Same result for every input.
+
+### `iBurn/MapListViewController.swift` — the two-point fit
+
+`viewDidAppear` now filters out `MLNUserLocation` (the map's own annotation, which must not
+count towards "how many pins am I showing") and invalid coordinates, bails on an empty set,
+and branches:
+
+- exactly one coordinate → append `mapFramingCoordinate(forUserLocation:)` and fit with
+  `top 120 / left 60 / bottom 45 / right 60` — generous at the top because the navigation bar
+  overlaps the map (`edgesForExtendedLayout` is `.all`), where `brc_showDestination`'s callers
+  pass a flat 45 pt box for a map that isn't under one;
+- two or more → unchanged: annotations only, 10 pt padding.
+
+`animated` is still passed straight through.
+
+## Tests — `iBurnTests/MapFramingCoordinateTests.swift` (new)
+
+Six cases over the extracted rule: inside the region (deep playa, standing on the Man, a
+couple of miles out) returns the user's coordinate; outside (a distant city, ~50 miles out)
+returns the Man; `nil` and an invalid coordinate return the Man. Each off-playa fixture
+asserts its own precondition against `burningManRegion` so a future region change fails
+loudly rather than silently passing for the wrong reason.
+
+## Simulator validation (iPhone 17 Pro Max, iOS 26.5)
+
+- `simctl location set 40.7930,-119.1960` (deep playa) → camp detail → tap map: the camera
+  frames the POI pin *and* the orange user dot
+  (`/tmp/claude/iburn-polish-round/B1b-onplaya-deep-playa-user-and-poi.png`).
+- `set 37.77,-122.41` (off playa) → same flow: the frame stretches from the POI to the Man
+  at city scale (`B2-offplaya-fits-poi-and-man.png`).
+- Nearby → "Show Map" (≈30 pins) is unchanged — tight fit around the cluster
+  (`B3-multipin-unchanged.png`).
+
+## Outcomes (both items)
+
+- iBurnTests: **428 passing** (baseline 411), zero failures.
+- Clean builds on iOS 26.5 (iPhone 17 Pro Max) and iOS 18.6 (iPhone 16 Pro Max).
+
+## Caveats / Follow-ups
+
+- The single-annotation branch keys off the annotation **count**, not off who pushed the
+  screen. A future list that legitimately pushes exactly one pin would also get the
+  two-point fit — which is arguably right, but it is a heuristic, not an intent.
+- If the user is standing essentially on top of the POI, the two-point fit degenerates to a
+  near-maximum zoom. `brc_showDestination` has always had the same property.
+- The Man glyph is drawn from an appearance-scoped imageset. If `pin_center` is ever
+  reorganized into a template asset, the explicit dark-variant lookup becomes redundant but
+  stays harmless; the unit test guards the name itself.
