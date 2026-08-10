@@ -337,25 +337,37 @@ final class TabConfigurationTests: XCTestCase {
         XCTAssertTrue(TabConfiguration.isUntouched)
     }
 
-    // MARK: - Floating Favorites button
+    // MARK: - Floating action button
     //
-    // The button exists to replace the Favorites tab the search layout takes away, so it
-    // has to appear exactly when that trade is in effect — never alongside a live
-    // Favorites tab, and never on a layout that never took the tab.
+    // The button exists to replace the tab the search layout takes away, so it has to
+    // appear exactly when that trade is in effect — never alongside a live tab for the
+    // screen it opens, never on a layout that never took a tab, and never when the user
+    // has turned it off.
 
-    func testFloatingFavoritesButtonNeedsBothConditions() {
-        XCTAssertTrue(FavoritesFABVisibility.isVisible(searchTabActive: true, favoritesDisplaced: true))
-        XCTAssertFalse(FavoritesFABVisibility.isVisible(searchTabActive: true, favoritesDisplaced: false))
-        XCTAssertFalse(FavoritesFABVisibility.isVisible(searchTabActive: false, favoritesDisplaced: true))
-        XCTAssertFalse(FavoritesFABVisibility.isVisible(searchTabActive: false, favoritesDisplaced: false))
+    func testFloatingButtonNeedsAllThreeConditions() {
+        for searchTabActive in [true, false] {
+            for enabled in [true, false] {
+                for displaced in [true, false] {
+                    XCTAssertEqual(
+                        FloatingActionButtonVisibility.isVisible(
+                            searchTabActive: searchTabActive,
+                            enabled: enabled,
+                            actionDisplaced: displaced
+                        ),
+                        searchTabActive && enabled && displaced,
+                        "search=\(searchTabActive) enabled=\(enabled) displaced=\(displaced)"
+                    )
+                }
+            }
+        }
     }
 
     @MainActor
-    func testFloatingFavoritesButtonTracksTheLiveConfiguration() throws {
-        XCTAssertFalse(FavoritesFABVisibility.isVisible, "classic layout keeps the Favorites tab")
+    func testFloatingButtonTracksTheLiveConfiguration() throws {
+        XCTAssertFalse(FloatingActionButtonVisibility.isVisible, "classic layout keeps the Favorites tab")
 
         try useSearchTabLayout()
-        XCTAssertTrue(FavoritesFABVisibility.isVisible)
+        XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
 
         // Dragging Favorites back onto the bar gives up another slot — and the button,
         // which would otherwise be a second door to the same screen.
@@ -363,10 +375,74 @@ final class TabConfigurationTests: XCTestCase {
             visible: [.map, .nearby, .favorites, .more],
             hidden: [.events]
         )
-        XCTAssertFalse(FavoritesFABVisibility.isVisible)
+        XCTAssertFalse(FloatingActionButtonVisibility.isVisible)
 
         TabConfiguration.resetToDefault()
-        XCTAssertTrue(FavoritesFABVisibility.isVisible)
+        XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
+    }
+
+    @MainActor
+    func testFloatingButtonSwitchedOffDisappearsRegardlessOfLayout() throws {
+        try useSearchTabLayout()
+        XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
+
+        FloatingActionButtonSettings.isEnabled = false
+        XCTAssertFalse(FloatingActionButtonVisibility.isVisible)
+
+        FloatingActionButtonSettings.isEnabled = true
+        XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
+    }
+
+    /// Pointing the button at a screen that still has its tab is the one combination the
+    /// picker can produce that hides the button — Events ships on the bar under this
+    /// layout, so choosing it means the button stands down until Events is hidden.
+    @MainActor
+    func testFloatingButtonHidesWhenItsActionStillHasATab() throws {
+        try useSearchTabLayout()
+
+        FloatingActionButtonSettings.action = .events
+        XCTAssertFalse(FloatingActionButtonVisibility.isVisible)
+
+        TabConfiguration.current = TabConfiguration(
+            visible: [.map, .nearby, .favorites, .more],
+            hidden: [.events]
+        )
+        XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
+
+        FloatingActionButtonSettings.action = .nearby
+        XCTAssertFalse(FloatingActionButtonVisibility.isVisible, "Nearby is on the bar")
+
+        // Favorites came back onto the bar two steps ago in exchange for Events, so it has
+        // a tab too; only the layout's own default puts it back under the button.
+        FloatingActionButtonSettings.action = .favorites
+        XCTAssertFalse(FloatingActionButtonVisibility.isVisible, "Favorites is on the bar right now")
+
+        TabConfiguration.resetToDefault()
+        XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
+    }
+
+    func testFloatingButtonDefaultsToAVisibleFavoritesButton() {
+        XCTAssertTrue(FloatingActionButtonSettings.isEnabled)
+        XCTAssertEqual(FloatingActionButtonSettings.action, .favorites)
+    }
+
+    /// Every action names a real tab, so the visibility rule always has something to ask
+    /// about and the button always has a glyph.
+    func testEveryFloatingButtonActionMapsToAHideableTab() {
+        for action in FloatingActionButtonAction.allCases {
+            XCTAssertTrue(action.tab.isHideable, "\(action.rawValue) opens a tab that can never leave the bar")
+            XCTAssertFalse(action.symbolName.isEmpty)
+        }
+    }
+
+    /// Anything unrecognized in storage — a downgrade, a hand-edited plist — falls back to
+    /// Favorites rather than leaving the button pointing at nothing.
+    func testUnknownStoredActionFallsBackToFavorites() {
+        PreferenceServiceFactory.shared.setValue(
+            "spaceship",
+            for: Preferences.UserInterface.floatingButtonAction
+        )
+        XCTAssertEqual(FloatingActionButtonSettings.action, .favorites)
     }
 
     func testMovingToHiddenIgnoresTabsThatCannotBeHidden() {

@@ -443,3 +443,108 @@ Screenshots (temp): `/tmp/claude/iburn-favorites-fab/01-map-fab-ios26.png`,
 On iOS 26 with the default search-tab layout: four primary tabs (Map, Nearby, Events, More)
 plus native search, with Favorites one tap away from every screen via the floating heart and
 still listed in More. Pre-26 and the other layouts are visually and behaviorally unchanged.
+
+# Floating button, round 2: real alignment, configurable action
+
+## High-Level Plan
+
+Three refinements to the floating button experiment above, plus the collision it was
+working around:
+
+1. **Align it with the search circle and tighten the gap.** Round 1 pinned the button to
+   the safe-area trailing edge with a 36pt gap above the bar. Both numbers were
+   compromises: the trailing inset only *approximately* lined up with the detached search
+   circle, and the 36pt gap existed solely to clear MapLibre's attribution ⓘ.
+2. **Outline glyph** instead of the filled heart.
+3. **Make the button configurable** — on/off, and *what it opens* — from Customize Tabs.
+
+## Technical Details
+
+### Alignment: measure the circle, don't guess at it
+
+`TabController.searchTabCenterX()` walks the tab bar's view tree for the trailing-most
+round item (square bounds, 36–80pt, in the bar's trailing quarter) and returns its center
+in the controller's coordinates; `alignFloatingButtonWithSearchTab()` drives a `centerX`
+constraint from it, guarded so a sub-point delta never re-enters layout. No private
+symbols, no view-class names — if nothing matches (another bar layout, a regular-width
+bar), the button keeps the trailing inset it was installed with.
+
+The part that actually made it work: **`tabBar.layoutIfNeeded()` before measuring.** Layout
+is top-down, so at `viewDidLayoutSubviews` the bar has a frame but every view inside it is
+still a zero rect. The first version of this shipped without the forced pass, found no
+candidate, and silently sat on the fallback — visually a ~8pt offset that looked like a
+tuning problem rather than a measurement that never happened. A view-hierarchy dump
+(temporary `NSLog`, since removed) is what surfaced it: the search circle is a `_UITabButton`
+under `_UITabBarAuxiliaryView` → `_UITabBarPlatterView`, i.e. genuinely inside the bar, just
+not laid out yet.
+
+Verified by pixel measurement rather than by eye: FAB center and search-circle center are
+both x = 1163.5px on an iPhone 17 Pro Max at 3x, with a 4-tab bar and again with a 2-tab
+bar. Vertical gap is now `tabBar.topAnchor` −12 (measured 12.3pt).
+
+### Attribution: hidden, not moved
+
+The first attempt shifted MapLibre's ⓘ left by the button's width
+(`attributionButtonMargins`). Per product direction this became: hide it outright.
+`MLNMapView.brc_setDefaults` now sets `attributionButton.isHidden = true`, which covers
+every map in the app from one seam. Map-data credit remains on the Credits screen and in
+the Settings acknowledgements (`LicensePlist`), and the MapLibre wordmark logo is
+untouched at bottom-left. Note the *accessibility* element "About this map" still shows up
+in UI snapshots — MapLibre publishes it from the map view itself — so verify this one from
+a screenshot.
+
+### Configurability
+
+- `iBurn/Tabs/FloatingActionButton.swift` (was `FavoritesFloatingButton.swift`) now holds
+  `FloatingActionButtonAction` (`favorites` | `events` | `nearby`, each mapping to a
+  `TabIdentifier`, an outline SF Symbol, and the matching `BRCAppDelegate.create*` factory),
+  `FloatingActionButtonSettings` (the two preferences + a `.floatingActionButtonDidChange`
+  notification on write), and `FloatingActionButtonVisibility` with the widened rule.
+- Preferences: `userInterface.fab.enabled` (Bool, default true) and `userInterface.fab.action`
+  (String, default `favorites`, unknown values falling back to `favorites`).
+- Visibility rule is still pure: `searchTabActive && enabled && actionDisplaced`.
+- `CustomizeTabsView` grows a **Floating Button** section (toggle + `.menu` picker), shown
+  only on the search-tab layout. `.menu` style because the list is permanently in edit mode,
+  where a navigation-link picker isn't reliably tappable. Bindings write through on set
+  (`Binding.writingThrough`) rather than `onChange(of:initial:)`, which needs iOS 17 while
+  the app still builds back to 16.6.
+- Nearby's glyph is `safari` (a compass, matching `BRCCompassIcon`); `location` renders the
+  same arrow as the map's tracking button.
+
+### The picker's awkward case, handled in copy
+
+Choosing Events or Nearby hides the button under the default layout, because those tabs are
+on the bar. Rather than filtering them out of the picker (which hides the capability), the
+section footer explains the consequence and the fix: "*Events* is on the tab bar, so the
+floating button is hidden — one way in is enough. Remove *Events* from the bar above to
+bring the button back." Verified end-to-end: pick Events → button vanishes; remove Events
+from the bar in the section above → button returns with a calendar glyph and opens the
+Events list.
+
+## Tests
+
+`iBurnTests/TabConfigurationTests.swift`: the two FAB tests became seven — a full truth
+table over the three conditions, live-configuration tracking, the enabled flag, the
+action-still-has-a-tab case, preference defaults, every action mapping to a hideable tab,
+and unknown-stored-action fallback. **335 tests, 0 failures** on iOS 26.5 (was 330).
+
+## Simulator validation (iPhone 17 Pro Max, iOS 26.5)
+
+Screenshots (temp): `/tmp/claude/iburn-fab-round2/` — `01-map-fab-aligned.png`,
+`02-alignment-closeup.png`, `03-favorites-sheet.png`, `04b-customize-tabs-crop.png`,
+`05b-fab-off-crop.png`, `06-action-picker-menu.png`, `07b-crop.png`,
+`08b-events-fab-crop.png`, `09-events-sheet.png`, `11-nearby-sheet.png`,
+`12b-nearby-fab-crop.png`.
+
+Also built clean for iOS 18.6 (iPhone 16 Pro Max), where none of this exists.
+
+## Caveats / Follow-ups
+
+- The round-item heuristic is a *measurement*, not a contract. If a future bar layout puts
+  another circular ornament at the trailing end, the button follows that instead. The
+  fallback keeps it in a sane corner either way.
+- `Reset` in Customize Tabs still only resets the tab arrangement; the floating button's
+  two preferences survive it. Arguably it should clear them too.
+- Simulator hygiene: neither `simctl spawn defaults delete` nor editing the container plist
+  clears these preferences — `cfprefsd` rewrites the file from cache. Use the app's own UI
+  (already noted in the flows doc).

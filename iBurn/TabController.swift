@@ -25,34 +25,40 @@ import UIKit
     private var tabCache: [ObjectIdentifier: AnyObject] = [:]
     private var searchTabCache: AnyObject?
 
-    /// The floating heart that stands in for the Favorites tab under the `.searchTab`
-    /// layout. Lives on the tab bar controller's own view rather than any child, so it is
-    /// there on every tab, and is created lazily — layouts that keep Favorites on the bar
-    /// never build it.
-    private lazy var favoritesButton: FavoritesFloatingButton = {
-        let button = FavoritesFloatingButton { [weak self] in
-            self?.presentFavorites()
+    /// The floating button that stands in for the tab the `.searchTab` layout takes away.
+    /// Lives on the tab bar controller's own view rather than any child, so it is there on
+    /// every tab, and is created lazily — layouts that keep the tab on the bar never build
+    /// it.
+    private lazy var floatingButton: FloatingActionButton = {
+        let button = FloatingActionButton { [weak self] in
+            self?.presentFloatingAction()
         }
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isHidden = true
         return button
     }()
 
-    private var favoritesButtonInstalled = false
+    private var floatingButtonInstalled = false
+
+    /// Horizontal placement, driven by `alignFloatingButtonWithSearchTab()`: the button
+    /// stacks directly above the detached search circle, so the constant is whatever the
+    /// bar puts that circle at. Kept as a leading-edge offset because the trailing inset
+    /// alone can't express "centered on something UIKit positions".
+    private var floatingButtonCenterX: NSLayoutConstraint?
 
     /// Whether the search field has taken the tab bar's place. Set from the search tab
     /// root's search controller, which is the only thing that reports the transition.
     private var searchIsActive = false {
         didSet {
             guard searchIsActive != oldValue else { return }
-            updateFavoritesButtonVisibility()
+            updateFloatingButtonVisibility()
         }
     }
 
     /// The button only if it has actually been built, so theme refreshes don't bring one
     /// into existence on a layout that doesn't want it.
-    private var favoritesButtonIfInstalled: FavoritesFloatingButton? {
-        favoritesButtonInstalled ? favoritesButton : nil
+    private var floatingButtonIfInstalled: FloatingActionButton? {
+        floatingButtonInstalled ? floatingButton : nil
     }
 
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -64,7 +70,8 @@ import UIKit
         super.viewDidLayoutSubviews()
         // Catches the bar moving off screen, which nothing announces. Search activation
         // does *not* re-lay out this view — that arrives via `searchIsActive` instead.
-        updateFavoritesButtonVisibility()
+        updateFloatingButtonVisibility()
+        alignFloatingButtonWithSearchTab()
     }
 
     /// Installs the app's root view controllers and arranges them for the active
@@ -84,6 +91,12 @@ import UIKit
             name: .tabConfigurationDidChange,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateFloatingButton),
+            name: .floatingActionButtonDidChange,
+            object: nil
+        )
     }
 
     /// Arranges the roots for the user's tab configuration and the active search layout.
@@ -92,7 +105,7 @@ import UIKit
     /// including the Favorites tab the `.searchTab` layout takes away by default, which is
     /// folded into that configuration (see `TabConfiguration.layoutHiddenByDefault`) so a
     /// user who drags Favorites back onto the bar actually gets it. All this adds on top is
-    /// the `UISearchTab` itself and the floating Favorites button that replaces the tab.
+    /// the `UISearchTab` itself and the floating button that replaces the tab.
     /// Anything off the bar also shows up as a `MoreViewController` row.
     @objc public func rebuildTabs() {
         guard !roots.isEmpty else { return }
@@ -132,63 +145,123 @@ import UIKit
             previousIdentifier: previousIdentifier,
             usesSearchTab: usesSearchTab
         )
-        updateFavoritesButton()
+        updateFloatingButton()
     }
 
-    // MARK: - Floating Favorites button
+    // MARK: - Floating action button
 
-    /// Adds the button on first need and re-applies the visibility rule. Called from every
-    /// rebuild, which covers both notifications that can change the answer: the layout
-    /// switch and the user's tab customization.
-    private func updateFavoritesButton() {
-        guard FavoritesFABVisibility.isVisible else {
-            if favoritesButtonInstalled { favoritesButton.isHidden = true }
+    /// Adds the button on first need, points it at the chosen screen, and re-applies the
+    /// visibility rule. Called from every rebuild plus the floating-button notification,
+    /// which together cover everything that can change the answer: the layout switch, the
+    /// user's tab customization, and the button's own settings.
+    @objc private func updateFloatingButton() {
+        guard FloatingActionButtonVisibility.isVisible else {
+            if floatingButtonInstalled { floatingButton.isHidden = true }
             return
         }
-        installFavoritesButtonIfNeeded()
-        updateFavoritesButtonVisibility()
+        installFloatingButtonIfNeeded()
+        floatingButton.configure(for: FloatingActionButtonSettings.action)
+        updateFloatingButtonVisibility()
+        alignFloatingButtonWithSearchTab()
     }
 
-    private func installFavoritesButtonIfNeeded() {
-        guard !favoritesButtonInstalled else { return }
-        favoritesButtonInstalled = true
-        view.addSubview(favoritesButton)
+    private func installFloatingButtonIfNeeded() {
+        guard !floatingButtonInstalled else { return }
+        floatingButtonInstalled = true
+        view.addSubview(floatingButton)
+        // Starts on the trailing inset — the same corner the button used before it learned
+        // to find the search circle — so a bar that never reports a circle still puts the
+        // button somewhere sensible. `alignFloatingButtonWithSearchTab()` takes over on the
+        // first layout pass that can measure one.
+        let centerX = floatingButton.centerXAnchor.constraint(
+            equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+            constant: -(FloatingActionButton.trailingInset + FloatingActionButton.diameter / 2)
+        )
+        floatingButtonCenterX = centerX
         NSLayoutConstraint.activate([
-            favoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            centerX,
             // Anchored to the bar itself rather than the safe area: the iOS 26 tab bar
             // floats, and pinning to its top keeps the same gap whether or not an
             // accessory is installed, and follows the bar when it slides away.
-            //
-            // The gap is 36 rather than a snug 12 because the map — the tab this button
-            // spends most of its life over — parks MapLibre's attribution ⓘ in exactly
-            // this corner, and that button has to stay tappable.
-            favoritesButton.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: -36),
+            floatingButton.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: -FloatingActionButton.barGap),
         ])
+    }
+
+    /// Centers the button on the detached search circle at the trailing end of the bar.
+    ///
+    /// The circle is UIKit's, positioned by the bar's own metrics, and there is no public
+    /// API for its frame — so this measures rather than assumes: it looks through the tab
+    /// bar's view tree for the trailing-most round item and centers on it. Nothing here
+    /// depends on private symbols or view-class names; if the search circle ever stops
+    /// matching (a new bar layout, an accessory, a regular-width bar), no candidate is
+    /// found and the button keeps the trailing inset it was installed with.
+    private func alignFloatingButtonWithSearchTab() {
+        guard floatingButtonInstalled, let centerX = floatingButtonCenterX else { return }
+        guard let measured = searchTabCenterX() else { return }
+        let target = measured - view.safeAreaLayoutGuide.layoutFrame.maxX
+        // A layout pass writing a constraint constant re-enters layout, so only a real
+        // move counts — otherwise the two would trade sub-point corrections forever.
+        guard abs(centerX.constant - target) > 0.5 else { return }
+        centerX.constant = target
+        view.layoutIfNeeded()
+    }
+
+    /// Center of the trailing-most circular item in the tab bar, in `view` coordinates.
+    ///
+    /// "Circular item" is the whole test: square bounds in the size range UIKit uses for a
+    /// bar item, sitting in the trailing quarter of the bar. On the `.searchTab` layout
+    /// that is the search circle, which the bar draws detached from the pill holding the
+    /// other tabs.
+    private func searchTabCenterX() -> CGFloat? {
+        guard TabConfiguration.searchTabOccupiesBarSlot else { return nil }
+        // Layout runs top-down: by the time this controller hears `viewDidLayoutSubviews`
+        // the bar has a frame but its own subtree hasn't been positioned yet, so measuring
+        // it now reads a pile of zero rects. Forcing the bar to settle first is what makes
+        // the measurement real — without it the button silently keeps its fallback inset.
+        tabBar.layoutIfNeeded()
+        let barBounds = tabBar.bounds
+        guard barBounds.width > 0 else { return nil }
+        let trailingRegion = barBounds.maxX - barBounds.width / 4
+
+        var best: CGRect?
+        func visit(_ parent: UIView) {
+            for subview in parent.subviews {
+                let frame = parent.convert(subview.frame, to: tabBar)
+                let isRoundItem = frame.width >= 36 && frame.width <= 80 && abs(frame.width - frame.height) <= 10
+                if isRoundItem, frame.midX > trailingRegion, frame.midX > (best?.midX ?? -.greatestFiniteMagnitude) {
+                    best = frame
+                }
+                visit(subview)
+            }
+        }
+        visit(tabBar)
+
+        guard let best else { return nil }
+        return tabBar.convert(CGPoint(x: best.midX, y: best.midY), to: view).x
     }
 
     /// The button rides above the tab bar, so it is only ever on screen when the bar is:
     /// activating search replaces the bar with a search field that then follows the
     /// keyboard up the screen, and anything that hides the bar moves it off the bottom
     /// edge.
-    private func updateFavoritesButtonVisibility() {
-        guard favoritesButtonInstalled else { return }
-        guard FavoritesFABVisibility.isVisible, !searchIsActive else {
-            favoritesButton.isHidden = true
+    private func updateFloatingButtonVisibility() {
+        guard floatingButtonInstalled else { return }
+        guard FloatingActionButtonVisibility.isVisible, !searchIsActive else {
+            floatingButton.isHidden = true
             return
         }
-        favoritesButton.isHidden = tabBar.isHidden
+        floatingButton.isHidden = tabBar.isHidden
             || tabBar.alpha == 0
             || tabBar.frame.minY >= view.bounds.height
     }
 
-    /// Favorites as a sheet, built from the same factory the tab and the More row use so
-    /// all three paths land on one screen. `.large` only — it's a full list with search,
-    /// and detail pushes happen inside the sheet's own navigation controller.
-    @objc public func presentFavorites() {
+    /// The chosen screen as a sheet, built from the same factory the tab and the More row
+    /// use so all three paths land on one screen. `.large` only — these are full lists with
+    /// search, and detail pushes happen inside the sheet's own navigation controller.
+    @objc public func presentFloatingAction() {
         guard presentedViewController == nil else { return }
-        let favoritesVC = BRCAppDelegate.shared.createFavoritesViewController()
-        favoritesVC.title = "Favorites"
-        let navigationController = NavigationController(rootViewController: favoritesVC)
+        let viewController = FloatingActionButtonSettings.action.makeViewController()
+        let navigationController = NavigationController(rootViewController: viewController)
         if let sheet = navigationController.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
@@ -315,7 +388,7 @@ extension TabController {
 
         }
         tabBar.setColorTheme(Appearance.currentColors, animated: false)
-        favoritesButtonIfInstalled?.applyTheme()
+        floatingButtonIfInstalled?.applyTheme()
         refreshGlobalTheme()
         Appearance.setGlobalAppearance()
     }

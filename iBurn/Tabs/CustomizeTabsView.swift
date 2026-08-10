@@ -14,6 +14,8 @@ import SwiftUI
 struct CustomizeTabsView: View {
 
     @State private var configuration = TabConfiguration.current
+    @State private var floatingButtonEnabled = FloatingActionButtonSettings.isEnabled
+    @State private var floatingButtonAction = FloatingActionButtonSettings.action
 
     var body: some View {
         List {
@@ -43,6 +45,33 @@ struct CustomizeTabsView: View {
             } footer: {
                 Text(hiddenFooter)
                     .font(.footnote)
+            }
+
+            // Only the layout that spends a bar slot on search has a floating button at
+            // all; on any other layout these controls would edit something invisible.
+            if TabConfiguration.searchTabOccupiesBarSlot {
+                Section {
+                    Toggle("Show Floating Button", isOn: $floatingButtonEnabled.writingThrough {
+                        FloatingActionButtonSettings.isEnabled = $0
+                    })
+                    Picker("Opens", selection: $floatingButtonAction.writingThrough {
+                        FloatingActionButtonSettings.action = $0
+                    }) {
+                        ForEach(FloatingActionButtonAction.allCases) { action in
+                            Label(action.title, systemImage: action.symbolName)
+                                .tag(action)
+                        }
+                    }
+                    // Menu rather than the default push: the whole list is permanently in
+                    // edit mode, where a navigation-link row isn't reliably tappable.
+                    .pickerStyle(.menu)
+                    .disabled(!floatingButtonEnabled)
+                } header: {
+                    Text("Floating Button")
+                } footer: {
+                    Text(floatingButtonFooter)
+                        .font(.footnote)
+                }
             }
         }
         // The list is permanently in edit mode, and a cell recycled across the section
@@ -79,8 +108,8 @@ struct CustomizeTabsView: View {
             .first { configuration.isHidden($0) }
         if let displacedBySearch {
             text += " \(displacedBySearch.title) starts here because the search tab takes a slot on the bar."
-            if displacedBySearch == .favorites {
-                text += " The heart button above the tab bar opens it from any screen."
+            if floatingButtonEnabled && floatingButtonAction.tab == displacedBySearch {
+                text += " The floating button above the tab bar opens it from any screen."
             }
         }
         if isAtCapacity && !configuration.hidden.isEmpty {
@@ -91,6 +120,23 @@ struct CustomizeTabsView: View {
                 : " The tab bar is full — the search tab holds one slot, so hide another tab to add one back."
         }
         return text
+    }
+
+    /// Explains what the button is, and — the part that isn't guessable — why it can be
+    /// switched off by the picker itself: a screen that's on the tab bar already has an
+    /// entry point, so the button stands down rather than becoming a second door to it.
+    /// Without this line, choosing Events (which ships on the bar) reads as a bug.
+    private var floatingButtonFooter: String {
+        guard floatingButtonEnabled else {
+            return "A round button above the tab bar that opens one list from any screen."
+        }
+        let target = floatingButtonAction.tab
+        if configuration.visible.contains(target) {
+            return "\(target.title) is on the tab bar, so the floating button is hidden — "
+                + "one way in is enough. Remove \(target.title) from the bar above to bring the button back."
+        }
+        return "The button sits above the search circle and opens \(target.title) from any screen, "
+            + "as a sheet you can swipe away."
     }
 
     private func row(_ identifier: TabIdentifier, isHidden: Bool) -> some View {
@@ -166,6 +212,22 @@ struct CustomizeTabsView: View {
 private extension TabIdentifier {
     var barRowID: String { "bar." + rawValue }
     var moreRowID: String { "more." + rawValue }
+}
+
+private extension Binding {
+    /// The same binding, plus a side effect on write — here, persisting to
+    /// `FloatingActionButtonSettings`, which announces the change so the live button
+    /// updates while this screen is still on screen. `onChange(of:initial:_:)` would say
+    /// this more directly but needs iOS 17; the app still builds back to 16.6.
+    func writingThrough(_ persist: @escaping (Value) -> Void) -> Binding<Value> {
+        Binding(
+            get: { wrappedValue },
+            set: { newValue in
+                wrappedValue = newValue
+                persist(newValue)
+            }
+        )
+    }
 }
 
 struct CustomizeTabsView_Previews: PreviewProvider {

@@ -124,7 +124,7 @@ struct TabConfiguration: Equatable {
     ///
     /// The iOS 26 `.searchTab` layout spends a bar slot on search, and Favorites is the tab
     /// that gives way — but only because it keeps a *better* entry point than a bar slot:
-    /// the floating heart button above the bar (see `FavoritesFABVisibility`) reaches it
+    /// the floating heart button above the bar (see `FloatingActionButtonVisibility`) reaches it
     /// from every tab, sheet-style, so the slot goes back to Events, which is a browse
     /// surface with nowhere else to live.
     static var layoutHiddenByDefault: [TabIdentifier] {

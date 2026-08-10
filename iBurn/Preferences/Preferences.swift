@@ -26,6 +26,23 @@ enum Preferences {
             defaultValue: MapSearchLayout.searchTab.rawValue,
             description: "Anchor the map search bar in the nav bar, a tab accessory, or a search tab"
         )
+
+        /// Whether the floating button above the tab bar is shown at all. Only ever visible
+        /// on the layout that spends a bar slot on search — see
+        /// `FloatingActionButtonVisibility`.
+        static let floatingButtonEnabled = Preference<Bool>(
+            key: "userInterface.fab.enabled",
+            defaultValue: true,
+            description: "Show the floating button above the tab bar"
+        )
+
+        /// Which screen the floating button opens. Values are
+        /// `FloatingActionButtonAction` raw values.
+        static let floatingButtonAction = Preference<String>(
+            key: "userInterface.fab.action",
+            defaultValue: FloatingActionButtonAction.favorites.rawValue,
+            description: "Screen the floating button above the tab bar opens"
+        )
     }
     
     // MARK: - Feature Flags

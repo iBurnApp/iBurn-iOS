@@ -494,8 +494,9 @@ correct there.
 
 `searchTab` adds a Search tab and **defaults Favorites off the bar**, so the tabs
 become Map / Nearby / Events / More plus a detached search button. Favorites keeps two
-entry points instead of a tab: a **floating heart button** above the bar's trailing
-corner (§8a) and a row at the top of More. The map's nearby card also carries a "See all"
+entry points instead of a tab: a **floating button** stacked above the search circle
+(§8a — it opens Favorites by default, and the user can repoint it) and a row at the top of
+More. The map's nearby card also carries a "See all"
 link into Nearby. Switching layouts while standing on a tab that's no longer on the bar
 lands you on Map — `UITab`'s view controller provider is lazy, so the old selection isn't
 findable in the new arrangement.
@@ -511,26 +512,54 @@ whichever layout is active (switch to `searchTab` → Favorites hides; switch aw
 back). Once the user moves Favorites in Customize Tabs, that choice is recorded in
 `userInterface.tabBar.visibilityOverrides` and sticks across layout switches until Reset.
 
-### 8a. Floating Favorites button (`searchTab` layout only)
+### 8a. Floating action button (`searchTab` layout only)
 
-A 56pt Liquid Glass circle with a filled heart, AX label **"Favorites"**, identifier
-`favoritesFloatingButton`. It lives on `TabController`'s own view (so it is on screen over
-every tab), pinned to `view.safeAreaLayoutGuide` trailing −16 and **`tabBar.topAnchor` −36**
-— the extra gap keeps MapLibre's attribution ⓘ ("About this map") tappable in that same
-corner on the Map tab.
+A 56pt Liquid Glass circle with an **outline** glyph, AX label = the screen it opens,
+identifier `floatingActionButton` (`iBurn/Tabs/FloatingActionButton.swift`). It lives on
+`TabController`'s own view, so it is on screen over every tab.
 
-- **Visible only when** the `searchTab` layout is active *and* Favorites is off the bar
-  (`FavoritesFABVisibility.isVisible`). Re-add Favorites in Customize Tabs and the button
-  disappears — never two doors to one screen. Nothing on iOS 18.x, ever.
-- **Tap → Favorites as a `.large` sheet** with a grabber (`TabController.presentFavorites()`),
-  built from `BRCAppDelegate.createFavoritesViewController()` — the same screen the tab and
-  the More row use — wrapped in a `NavigationController`. Detail and "Show Map" pushes stay
-  *inside* the sheet. Dismiss by dragging the list down (the sheet has no Done button).
+**Placement — it stacks on the search circle.** Bottom pinned to `tabBar.topAnchor` −12;
+horizontally it is *measured*, not guessed: `TabController.searchTabCenterX()` walks the tab
+bar's view tree for the trailing-most round item (square bounds 36–80pt in the bar's trailing
+quarter — on this layout, the detached search circle) and centers the button on it, falling
+back to safe-area trailing −16 if nothing matches. The measurement only works because it
+calls `tabBar.layoutIfNeeded()` first: layout is top-down, so at `viewDidLayoutSubviews` time
+the bar has a frame but its subtree is still all zero rects, and without the forced pass the
+button silently keeps the fallback inset. Verify by screenshot, not by eye — the FAB and the
+search circle should share a center to the pixel (1163.5px on an iPhone 17 Pro Max at 3x,
+both with a 4-tab and a 2-tab bar).
+
+MapLibre's attribution ⓘ used to sit in that corner. It no longer renders at all:
+`MLNMapView.brc_setDefaults` sets `attributionButton.isHidden = true` app-wide, since the
+app credits map data on the Credits screen and in the Settings acknowledgements. The
+MapLibre wordmark logo is untouched, bottom-left. (The **AX element** "About this map" still
+appears in `snapshot_ui` output — MapLibre publishes it from the map view itself — so judge
+this from a screenshot, not the snapshot.)
+
+- **What it opens is a user setting.** `FloatingActionButtonAction` ∈ {`favorites` (default),
+  `events`, `nearby`}, stored in `userInterface.fab.action`; a master on/off lives in
+  `userInterface.fab.enabled` (default true). Both are edited in Customize Tabs (§10) and
+  write through `FloatingActionButtonSettings`, which posts `.floatingActionButtonDidChange`
+  so the live button updates **while that screen is still open**. Glyphs: `heart`,
+  `calendar`, `safari` (the compass, matching the Nearby tab icon — `location` would collide
+  with the map's tracking arrow).
+- **Visible only when** the `searchTab` layout is active *and* the button is enabled *and*
+  the chosen screen is off the bar (`FloatingActionButtonVisibility.isVisible`). Choosing
+  Events or Nearby therefore hides the button under the default layout, because those tabs
+  are on the bar — the Floating Button footer says so and tells the user to remove that tab.
+  Re-add the chosen screen in Customize Tabs and the button disappears — never two doors to
+  one screen. Nothing on iOS 18.x, ever.
+- **Tap → the chosen list as a `.large` sheet** with a grabber
+  (`TabController.presentFloatingAction()`), built from the matching
+  `BRCAppDelegate.create*ViewController()` — the same screen the tab and the More row use —
+  wrapped in a `NavigationController`. Detail and "Show Map" pushes stay *inside* the sheet.
+  Dismiss by dragging the list down (the sheet has no Done button); `drag` on the sheet's
+  scroll view is unreliable from automation, so relaunching the app is the quick way out.
 - **Hidden while search is active.** Selecting the search tab collapses the bar into a
   search field but triggers **no layout pass** on the tab bar controller, so this is driven
   by the search controller's delegate (`GlobalSearchTabFactory.makeSearchTabRoot(
   dependencies:searchActivationDidChange:)` → `TabController.searchIsActive`). If you touch
-  either, re-check: tap Search → heart gone; tap Close → heart back.
+  either, re-check: tap Search → button gone; tap Close → button back.
 
 ### Writing app preferences from outside the app
 
@@ -734,7 +763,7 @@ are not tap targets in the AX snapshot, so reach it with
 `touch({ elementRef: <ref of the "Customize Tabs" text row>, down: true, up: true })`.
 
 The screen is a SwiftUI list held in **permanent edit mode** (`.environment(\.editMode,
-.constant(.active))`), with two sections:
+.constant(.active))`), with three sections (the third only on the `searchTab` layout):
 
 - **Tab Bar** — every visible tab, each row `minus.circle.fill` (or a `lock.fill` for Map
   and More, which can't be hidden) + icon + title + a drag handle. Footer: "Drag to
@@ -746,9 +775,19 @@ The screen is a SwiftUI list held in **permanent edit mode** (`.environment(\.ed
   bar is at capacity the plus buttons are **disabled and grey** (they drop out of the AX
   targets entirely — a hidden row with no `Add <tab> to tab bar` ref is the disabled state),
   and the footer gains "The tab bar is full — …".
+- **Floating Button** (`searchTab` layout only — the section is absent otherwise, since
+  there is no button to configure) — a **Show Floating Button** toggle and an **Opens**
+  menu picker (Favorites / Events / Nearby) that greys out while the toggle is off. See
+  §8a. The footer is the whole UX for the awkward case: picking a screen that still has a
+  tab hides the button, and the footer says "*Events* is on the tab bar, so the floating
+  button is hidden — one way in is enough. Remove *Events* from the bar above to bring the
+  button back." Both controls write immediately and the button on screen follows within the
+  same frame.
 - **Reset** (nav bar trailing) is disabled only while nothing has been customized —
   including the invisible case where the user *explicitly* hid Favorites under `searchTab`,
   which looks identical to the default until you change layouts (`TabConfiguration.isUntouched`).
+  Reset covers the **tab arrangement only** — it does not touch the floating button's
+  settings, which are separate preferences.
 
 Every edit writes `TabConfiguration.current` (`userInterface.tabBar.order` +
 `userInterface.tabBar.hidden` + `userInterface.tabBar.visibilityOverrides`) and posts
@@ -756,14 +795,20 @@ Every edit writes `TabConfiguration.current` (`userInterface.tabBar.order` +
 nothing to save or cancel.
 
 Automation: the minus/plus buttons *do* receive taps in active edit mode (tap their
-`Remove <tab> from tab bar` / `Add <tab> to tab bar` AX refs). Reordering works with
+`Remove <tab> from tab bar` / `Add <tab> to tab bar` AX refs). The **Opens** picker needs
+the *value* element, not the row: `tap` on the row's `Opens` button ref lands on the label
+and does nothing — `touch({ elementRef: <ref of the value text, e.g. "Favorites">, down:
+true, up: true })` opens the menu, whose items then appear as `Favorites|heart`,
+`Events|calendar`, `Nearby|safari` refs. (The picker is `.menu` style precisely because a
+navigation-link picker is not reliably tappable in a permanently-editing List.) Reordering
+works with
 `drag` on a row's `drag` handle image — `distance ≈ 0.06` per row of travel, e.g.
 `drag({ elementRef: <handle>, direction: "down", distance: 0.12, duration: 1.6, steps: 30 })`.
 
 Verify: hiding a tab removes it from the bar and adds a row at the **top of More**;
 un-hiding puts it back (appended to the end of the bar — re-adding does *not* restore the
 original position); Reset restores the active layout's default (Map / Nearby / Favorites /
-Events / More, minus Favorites under `searchTab`, where the floating heart replaces it).
+Events / More, minus Favorites under `searchTab`, where the floating button replaces it).
 
 > Regression to re-check after any edit here: a **just-unhidden row must show a drag handle
 > and survive being dragged**. Both sections hold `TabIdentifier` values, so when they shared
