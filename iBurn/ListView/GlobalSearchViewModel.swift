@@ -34,6 +34,14 @@ final class GlobalSearchViewModel: ObservableObject {
     @Published var sections: [SearchResultSection] = []
     @Published var isSearching: Bool = false
 
+    /// Favorite state for the rows currently on screen, keyed by
+    /// `SearchResultItem.favoriteIdentity` (the parent event's uid for occurrences).
+    ///
+    /// Kept beside `sections` rather than baked into the items: results are plain objects
+    /// from one-shot fetches, and a set is what both the DB lookup and the optimistic
+    /// toggle write to.
+    @Published private(set) var favoriteIdentifiers: Set<String> = []
+
     /// UIDs of results that came from AI semantic search (not FTS5)
     @Published var aiSuggestedUIDs: Set<String> = []
 
@@ -44,28 +52,33 @@ final class GlobalSearchViewModel: ObservableObject {
 
     private let playaDB: PlayaDB
     private let aiSearchService: AISearchService?
+    private let favoriteSync: FavoriteSyncService
     /// `nil` opts out of persistence entirely (previews, tests).
     private let filterStorageKey: String?
 
     // MARK: - Tasks
 
     private var searchTask: Task<Void, Never>?
+    private var favoriteTask: Task<Void, Never>?
 
     // MARK: - Init
 
     init(
         playaDB: PlayaDB,
         aiSearchService: AISearchService? = nil,
+        favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared,
         filterStorageKey: String? = "globalSearchFilter"
     ) {
         self.playaDB = playaDB
         self.aiSearchService = aiSearchService
+        self.favoriteSync = favoriteSync
         self.filterStorageKey = filterStorageKey
         self.filter = filterStorageKey.flatMap(Self.loadFilter(key:)) ?? GlobalSearchFilter()
     }
 
     deinit {
         searchTask?.cancel()
+        favoriteTask?.cancel()
     }
 
     /// Whether AI-enhanced search is available on this device
@@ -100,6 +113,7 @@ final class GlobalSearchViewModel: ObservableObject {
 
         guard query.count >= 2 else {
             sections = []
+            favoriteIdentifiers = []
             aiSuggestedUIDs = []
             isSearching = false
             isAISearching = false
@@ -127,6 +141,8 @@ final class GlobalSearchViewModel: ObservableObject {
 
                 self.sections = results.sections
                 self.isSearching = false
+                await self.refreshFavorites()
+                guard !Task.isCancelled else { return }
 
                 if runAI {
                     await self.runAISearch(
@@ -139,6 +155,7 @@ final class GlobalSearchViewModel: ObservableObject {
             } catch {
                 guard !Task.isCancelled else { return }
                 self.sections = []
+                self.favoriteIdentifiers = []
                 self.isSearching = false
                 print("Search error: \(error)")
             }
@@ -163,7 +180,11 @@ final class GlobalSearchViewModel: ObservableObject {
             )
             matchedUIDs.formUnion(art.map(\.uid))
             if !art.isEmpty {
-                sections.append(SearchResultSection(id: .art, title: "Art", items: art.map(SearchResultItem.art)))
+                sections.append(SearchResultSection(
+                    id: .art,
+                    title: "Art",
+                    items: Self.sortedByName(art.map(SearchResultItem.art))
+                ))
             }
         }
 
@@ -173,24 +194,19 @@ final class GlobalSearchViewModel: ObservableObject {
             )
             matchedUIDs.formUnion(camps.map(\.uid))
             if !camps.isEmpty {
-                sections.append(SearchResultSection(id: .camp, title: "Camps", items: camps.map(SearchResultItem.camp)))
+                sections.append(SearchResultSection(
+                    id: .camp,
+                    title: "Camps",
+                    items: Self.sortedByName(camps.map(SearchResultItem.camp))
+                ))
             }
         }
 
         if scope.allows(.event) {
             let occurrences = try await playaDB.fetchEvents(
-                filter: EventFilter(
-                    searchText: query,
-                    onlyFavorites: filter.onlyFavorites,
-                    includeExpired: true,
-                    happeningNow: filter.happeningNow
-                )
+                filter: Self.eventFilter(query: query, filter: filter)
             )
-            // One row per event, matching the previous EventObject → first-occurrence
-            // display. The fetch is ordered by start time, so "first seen" is the
-            // earliest matching occurrence.
-            var seenEventUIDs: Set<String> = []
-            let deduped = occurrences.filter { seenEventUIDs.insert($0.event.uid).inserted }
+            let deduped = Self.dedupedOccurrences(occurrences, filter: filter)
             matchedUIDs.formUnion(deduped.map(\.event.uid))
             if !deduped.isEmpty {
                 sections.append(
@@ -209,13 +225,139 @@ final class GlobalSearchViewModel: ObservableObject {
                     SearchResultSection(
                         id: .mutantVehicle,
                         title: "Vehicles",
-                        items: vehicles.map(SearchResultItem.mutantVehicle)
+                        items: Self.sortedByName(vehicles.map(SearchResultItem.mutantVehicle))
                     )
                 )
             }
         }
 
         return (sections, matchedUIDs)
+    }
+
+    /// Case- and diacritic-insensitive, numeric-aware name order.
+    ///
+    /// PlayaDB already returns art / camps / vehicles `orderedByName()`, but that is
+    /// SQLite's binary collation: "Zoo" sorts before "aardvark", and a lowercase or
+    /// accented initial would put a second "A" run below "Z". The results index rail reads
+    /// as a monotonic A→Z only if the rows underneath it actually are, so the order is
+    /// normalized here rather than trusted from SQL.
+    nonisolated static func sortedByName(_ items: [SearchResultItem]) -> [SearchResultItem] {
+        items.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    // MARK: - Event Filtering
+
+    /// SQL-level event filter for the current query and knobs. The day picker narrows
+    /// here (`startDate`/`endDate` bound the occurrence's *start*, i.e. calendar-day
+    /// bucketing, same as `EventFilter.forDay(_:)`); the time-of-day band does not,
+    /// because it is an hour-of-day predicate that no single date range can express once
+    /// "any day" is selected.
+    nonisolated static func eventFilter(query: String, filter: GlobalSearchFilter) -> EventFilter {
+        let bounds = filter.dayBounds
+        return EventFilter(
+            searchText: query,
+            onlyFavorites: filter.onlyFavorites,
+            includeExpired: true,
+            happeningNow: filter.happeningNow,
+            startDate: bounds?.start,
+            endDate: bounds?.end
+        )
+    }
+
+    /// One row per event, matching the previous `EventObject` → first-occurrence display.
+    ///
+    /// The time-of-day band is applied to the occurrences *before* collapsing, so an event
+    /// that runs daily at both 9am and 11pm is represented by its 11pm occurrence under
+    /// "Late night" rather than being dropped because its earliest occurrence is a morning
+    /// one. The fetch is ordered by start time, so "first seen" is the earliest occurrence
+    /// that matches.
+    nonisolated static func dedupedOccurrences(
+        _ occurrences: [EventObjectOccurrence],
+        filter: GlobalSearchFilter,
+        calendar: Calendar = .current
+    ) -> [EventObjectOccurrence] {
+        var seenEventUIDs: Set<String> = []
+        return occurrences
+            .filter { filter.timeOfDay.contains($0.startDate, calendar: calendar) }
+            .filter { seenEventUIDs.insert($0.event.uid).inserted }
+    }
+
+    // MARK: - Favorites
+
+    /// Whether this row's object (or, for an occurrence, its parent event) is favorited.
+    func isFavorite(_ item: SearchResultItem) -> Bool {
+        favoriteIdentifiers.contains(item.favoriteIdentity)
+    }
+
+    /// Flip the favorite state of a search result.
+    ///
+    /// The row state is flipped up front rather than waiting for the write to land. Screens
+    /// backed by a GRDB observation let the stream deliver the new state, but these results
+    /// come from one-shot fetches with no observation behind them — without an optimistic
+    /// flip the heart wouldn't change until the next search. The database is still the
+    /// source of truth: the write is re-read on failure, and every re-run of the search
+    /// re-syncs the whole set from `favoriteIdentifiers(among:)`.
+    func toggleFavorite(_ item: SearchResultItem) {
+        let key = item.favoriteIdentity
+        let wasFavorite = favoriteIdentifiers.contains(key)
+        setFavoriteState(!wasFavorite, for: key)
+
+        let object = item.dataObject
+        let syncType = Self.syncType(for: item)
+        let syncUID = key
+
+        favoriteTask?.cancel()
+        favoriteTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.playaDB.toggleFavorite(object)
+                let isFavorite = try await self.playaDB.isFavorite(object)
+                self.setFavoriteState(isFavorite, for: key)
+                // Fire-and-forget mirror into legacy YapDatabase, matching the list
+                // screens' data providers. PlayaDB is the source of truth and the UI
+                // must not wait on the Yap write.
+                let favoriteSync = self.favoriteSync
+                Task {
+                    await favoriteSync.mirrorFavorite(type: syncType, uid: syncUID, isFavorite: isFavorite)
+                }
+            } catch {
+                // Put the heart back where the database says it belongs.
+                self.setFavoriteState(wasFavorite, for: key)
+                print("Search favorite toggle error: \(error)")
+            }
+        }
+    }
+
+    private func setFavoriteState(_ isFavorite: Bool, for key: String) {
+        if isFavorite {
+            favoriteIdentifiers.insert(key)
+        } else {
+            favoriteIdentifiers.remove(key)
+        }
+    }
+
+    /// Re-read favorite state for everything currently listed. Cheap — one indexed query
+    /// per type present — and it picks up favorites toggled on other screens.
+    private func refreshFavorites() async {
+        let objects = sections.flatMap(\.items).map(\.dataObject)
+        guard !objects.isEmpty else {
+            favoriteIdentifiers = []
+            return
+        }
+        do {
+            favoriteIdentifiers = try await playaDB.favoriteIdentifiers(among: objects)
+        } catch {
+            print("Search favorite lookup error: \(error)")
+        }
+    }
+
+    private static func syncType(for item: SearchResultItem) -> FavoriteSyncObjectType {
+        switch item {
+        case .art: .art
+        case .camp: .camp
+        case .event: .event
+        case .mutantVehicle: .mutantVehicle
+        }
     }
 
     /// Run AI search and merge any new results not found by FTS5
@@ -266,6 +408,7 @@ final class GlobalSearchViewModel: ObservableObject {
 
             aiSuggestedUIDs = resolvedUIDs
             mergeAIResults(newItems)
+            await refreshFavorites()
             isAISearching = false
         } catch {
             print("AI search error: \(error)")
@@ -273,15 +416,21 @@ final class GlobalSearchViewModel: ObservableObject {
         }
     }
 
-    /// AI results bypass the SQL filters, so the happening-now knob is applied here:
-    /// an event only survives if one of its occurrences is running right now.
+    /// AI results bypass the SQL filters, so the event-scoped knobs are applied here: an
+    /// event only survives if one of its occurrences satisfies all of them.
     private func pickOccurrence(
         from occurrences: [EventObjectOccurrence],
         filter: GlobalSearchFilter
     ) -> EventObjectOccurrence? {
-        guard filter.happeningNow else { return occurrences.first }
         let now = Date()
-        return occurrences.first { $0.isCurrentlyHappening(now) }
+        let bounds = filter.dayBounds
+        return occurrences.first { occurrence in
+            if filter.happeningNow && !occurrence.isCurrentlyHappening(now) { return false }
+            if let bounds, occurrence.startDate < bounds.start || occurrence.startDate >= bounds.end {
+                return false
+            }
+            return filter.timeOfDay.contains(occurrence.startDate)
+        }
     }
 
     /// Merge AI-discovered items into existing sections
@@ -300,18 +449,28 @@ final class GlobalSearchViewModel: ObservableObject {
             }
         }
 
+        // Re-sorted rather than appended: AI results land at the end of their section
+        // otherwise, which would break the A→Z run the index rail is built from.
         var newSections: [SearchResultSection] = []
         if !artItems.isEmpty {
-            newSections.append(SearchResultSection(id: .art, title: "Art", items: artItems))
+            newSections.append(SearchResultSection(id: .art, title: "Art", items: Self.sortedByName(artItems)))
         }
         if !campItems.isEmpty {
-            newSections.append(SearchResultSection(id: .camp, title: "Camps", items: campItems))
+            newSections.append(SearchResultSection(id: .camp, title: "Camps", items: Self.sortedByName(campItems)))
         }
         if !eventItems.isEmpty {
-            newSections.append(SearchResultSection(id: .event, title: "Events", items: eventItems))
+            newSections.append(SearchResultSection(
+                id: .event,
+                title: "Events",
+                items: eventItems.sorted { $0.startDate ?? .distantFuture < $1.startDate ?? .distantFuture }
+            ))
         }
         if !mvItems.isEmpty {
-            newSections.append(SearchResultSection(id: .mutantVehicle, title: "Vehicles", items: mvItems))
+            newSections.append(SearchResultSection(
+                id: .mutantVehicle,
+                title: "Vehicles",
+                items: Self.sortedByName(mvItems)
+            ))
         }
         self.sections = newSections
     }

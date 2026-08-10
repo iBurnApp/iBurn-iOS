@@ -2178,6 +2178,33 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    func favoriteIdentifiers(among objects: [any DataObject]) async throws -> Set<String> {
+        guard !objects.isEmpty else { return [] }
+
+        // Collapse to metadata identities first: several occurrences of one event share a
+        // single metadata row, so the query asks about each event only once.
+        var mutableIDsByType: [DataObjectType: Set<String>] = [:]
+        for object in objects {
+            let identity = metadataIdentity(for: object)
+            mutableIDsByType[identity.type, default: []].insert(identity.uid)
+        }
+        let idsByType = mutableIDsByType
+
+        return try await dbQueue.read { db in
+            var favorites: Set<String> = []
+            for (type, ids) in idsByType {
+                let favorited = try ObjectMetadata
+                    .select(ObjectMetadata.Columns.objectId, as: String.self)
+                    .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                    .filter(ObjectMetadata.Columns.isFavorite == true)
+                    .filter(ids.contains(ObjectMetadata.Columns.objectId))
+                    .fetchAll(db)
+                favorites.formUnion(favorited)
+            }
+            return favorites
+        }
+    }
+
     func setVisitStatus(_ status: VisitStatus, for object: any DataObject) async throws {
         let identity = metadataIdentity(for: object)
         try await dbQueue.write { db in

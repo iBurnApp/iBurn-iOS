@@ -16,6 +16,54 @@ private struct TransparentListBackground: ViewModifier {
     }
 }
 
+/// Backing for the scope bar.
+///
+/// On iOS 26 the bar is its own Liquid Glass element — the same treatment as the app's
+/// other floating map chrome — rather than a strip painted across the top of the results.
+/// Glass adapts its own contrast to whatever scrolls under it, which a flat `.bar` fill
+/// cannot: the plain fill read as a dirty band over the list, and dropping it altogether
+/// left the segmented control unreadable over passing rows.
+///
+/// Earlier releases have no glass, so they keep the arrangement that was already legible:
+/// a material capsule where the bar floats over the map, the opaque strip where the list
+/// scrolls under it.
+///
+/// Both branches stay behind `canImport` as well as the availability check — the fallback
+/// is what compiles against pre-26 SDKs.
+private struct ScopeBarChrome: ViewModifier {
+    let isOverlay: Bool
+    let showsResultList: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let shape = Capsule(style: .continuous)
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular, in: shape)
+        } else {
+            fallback(content, shape: shape)
+        }
+        #else
+        fallback(content, shape: shape)
+        #endif
+    }
+
+    @ViewBuilder
+    private func fallback(_ content: Content, shape: Capsule) -> some View {
+        if isOverlay {
+            // The results list already paints a full-screen material behind everything in
+            // overlay mode, so the bar only needs its own backing while that is absent.
+            if showsResultList {
+                content
+            } else {
+                content.background(.regularMaterial, in: shape)
+            }
+        } else {
+            content.background(Rectangle().fill(.bar))
+        }
+    }
+}
+
 /// Reusable SwiftUI view for displaying global FTS5 search results grouped by type.
 struct GlobalSearchView: View {
     @ObservedObject var viewModel: GlobalSearchViewModel
@@ -69,6 +117,14 @@ struct GlobalSearchView: View {
                     results
                     scopeBar
                 }
+            } else if #available(iOS 26.0, *) {
+                // `safeAreaBar` rather than `safeAreaInset`: it treats the scope control
+                // as chrome, which is what earns it the scroll edge effect — the system
+                // softens the results passing underneath so the Liquid Glass segmented
+                // control stays legible without a background strip of its own.
+                results
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .safeAreaBar(edge: .top, spacing: 0) { scopeBar }
             } else {
                 // A safe-area inset rather than the top half of a `VStack`: the bar stays
                 // pinned to the top of the screen in every state — prompt, loading,
@@ -119,26 +175,24 @@ struct GlobalSearchView: View {
                 .accessibilityLabel(Text("Search Filters"))
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(scopeBarBackground)
-        .padding(.horizontal, isOverlay && !showsResultList ? 12 : 0)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .modifier(ScopeBarChrome(isOverlay: isOverlay, showsResultList: showsResultList))
+        .padding(.horizontal, scopeBarOuterPadding)
         .padding(.vertical, isOverlay ? 6 : 0)
     }
 
-    /// The results list paints a full-screen material behind everything in overlay mode, so
-    /// the bar only needs its own backing while that material is absent. Hosted normally
-    /// the bar is a safe-area inset with the list running under it, so it always needs one.
-    @ViewBuilder
-    private var scopeBarBackground: some View {
-        if isOverlay {
-            if !showsResultList {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(.regularMaterial)
-            }
-        } else {
-            Rectangle().fill(.bar)
-        }
+    /// A floating capsule needs room to read as one; a full-width strip does not.
+    private var scopeBarOuterPadding: CGFloat {
+        if isOverlay { return showsResultList ? 0 : 12 }
+        if #available(iOS 26.0, *) { return 12 }
+        return 0
+    }
+
+    /// Room the rows give up to the index rail, so their trailing text doesn't run
+    /// underneath it. Zero when the results are too short for a rail.
+    private var indexRailInset: CGFloat {
+        SearchResultIndex.isEnabled(for: viewModel.sections) ? SearchResultIndex.railRowInset : 0
     }
 
     private var filterIconName: String {
@@ -186,29 +240,56 @@ struct GlobalSearchView: View {
                 }
             } else {
                 // Results list
-                List {
-                    ForEach(viewModel.sections) { section in
-                        Section(header: Text(section.title)) {
-                            ForEach(section.items) { item in
-                                overlayRowBackground(resultRow(for: item))
+                ScrollViewReader { proxy in
+                    List {
+                        ForEach(viewModel.sections) { section in
+                            Section(header: Text(section.title).padding(.trailing, indexRailInset)) {
+                                ForEach(section.items) { item in
+                                    overlayRowBackground(
+                                        resultRow(for: item).padding(.trailing, indexRailInset)
+                                    )
+                                }
+                            }
+                        }
+                        if viewModel.isAISearching {
+                            Section {
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                    Text("Finding more with AI...")
+                                        .font(.caption)
+                                        .foregroundColor(themeColors.secondaryColor)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .listRowBackground(Color.clear)
                             }
                         }
                     }
-                    if viewModel.isAISearching {
-                        Section {
-                            HStack(spacing: 8) {
-                                ProgressView()
-                                Text("Finding more with AI...")
-                                    .font(.caption)
-                                    .foregroundColor(themeColors.secondaryColor)
+                    .listStyle(.plain)
+                    .modifier(TransparentListBackground(isEnabled: isOverlay))
+                    // The rail is sized to the list, not to the screen: how many index
+                    // stops it can show depends on how tall it is allowed to be.
+                    .overlay(alignment: .trailing) {
+                        GeometryReader { geo in
+                            let entries = SearchResultIndex.entries(
+                                for: viewModel.sections,
+                                maxCount: SearchResultIndex.maxEntries(forHeight: geo.size.height - 24)
+                            )
+                            if !entries.isEmpty {
+                                SearchResultIndexView(entries: entries) { anchorID in
+                                    withAnimation(.easeOut(duration: 0.15)) {
+                                        proxy.scrollTo(anchorID, anchor: .top)
+                                    }
+                                }
+                                .padding(.trailing, 2)
+                                .frame(
+                                    maxWidth: .infinity,
+                                    maxHeight: .infinity,
+                                    alignment: .trailing
+                                )
                             }
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .listRowBackground(Color.clear)
                         }
                     }
                 }
-                .listStyle(.plain)
-                .modifier(TransparentListBackground(isEnabled: isOverlay))
             }
         }
     }
@@ -247,14 +328,15 @@ struct GlobalSearchView: View {
     @ViewBuilder
     private func resultRow(for item: SearchResultItem) -> some View {
         let isAISuggested = viewModel.isAISuggested(item)
+        let isFavorite = viewModel.isFavorite(item)
         switch item {
         case .art(let art):
             ObjectRowView(
                 object: art,
                 subtitle: nil,
                 rightSubtitle: art.artist,
-                isFavorite: false,
-                onFavoriteTap: { }
+                isFavorite: isFavorite,
+                onFavoriteTap: { viewModel.toggleFavorite(item) }
             ) { _ in EmptyView() }
             .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
             .contentShape(Rectangle())
@@ -265,8 +347,8 @@ struct GlobalSearchView: View {
                 object: camp,
                 subtitle: nil,
                 rightSubtitle: camp.hometown,
-                isFavorite: false,
-                onFavoriteTap: { }
+                isFavorite: isFavorite,
+                onFavoriteTap: { viewModel.toggleFavorite(item) }
             ) { _ in EmptyView() }
             .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
             .contentShape(Rectangle())
@@ -278,8 +360,8 @@ struct GlobalSearchView: View {
                 rightSubtitle: event.timeDescription(now: Date()),
                 hostName: event.hostName,
                 hostAddress: BRCEmbargo.canShowLocation(for: event) ? event.hostAddress : nil,
-                isFavorite: false,
-                onFavoriteTap: { }
+                isFavorite: isFavorite,
+                onFavoriteTap: { viewModel.toggleFavorite(item) }
             ) { _ in
                 Text(EventTypeInfo.emoji(for: event.eventTypeCode))
                     .font(.subheadline)
@@ -293,8 +375,8 @@ struct GlobalSearchView: View {
                 object: mv,
                 subtitle: nil,
                 rightSubtitle: mv.artist,
-                isFavorite: false,
-                onFavoriteTap: { }
+                isFavorite: isFavorite,
+                onFavoriteTap: { viewModel.toggleFavorite(item) }
             ) { _ in EmptyView() }
             .overlay(alignment: .topTrailing) { aiBadge(visible: isAISuggested) }
             .contentShape(Rectangle())

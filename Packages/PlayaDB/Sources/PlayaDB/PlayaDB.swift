@@ -183,6 +183,17 @@ public protocol PlayaDB {
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
 
+    /// Batch favorite lookup for a heterogeneous set of objects, in one read.
+    ///
+    /// Returns the *metadata identity* uids of whichever `objects` are favorited — the
+    /// parent event's uid for an `EventObjectOccurrence`, the object's own uid for
+    /// everything else — so a caller holding several occurrences of the same event gets a
+    /// single key that marks all of them favorited.
+    ///
+    /// Use this when results come from one-shot fetches that return bare objects
+    /// (e.g. global search) rather than `ListRow`s, which already carry metadata.
+    func favoriteIdentifiers(among objects: [any DataObject]) async throws -> Set<String>
+
     /// Set the visit status of an object. Setting the same value again is a
     /// no-op (no write), and `.unvisited` never materializes a metadata row.
     func setVisitStatus(_ status: VisitStatus, for object: any DataObject) async throws

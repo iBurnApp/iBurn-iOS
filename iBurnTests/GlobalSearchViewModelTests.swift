@@ -2,10 +2,24 @@ import XCTest
 @preconcurrency @testable import iBurn
 @testable import PlayaDB
 
+/// No-op stand-in for the legacy YapDatabase mirror so tests never touch Yap.
+private final class StubFavoriteSyncService: FavoriteSyncService, @unchecked Sendable {
+    private(set) var mirroredFavorites: [(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool)] = []
+
+    func mirrorFavorite(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) async {
+        mirroredFavorites.append((type, uid, isFavorite))
+    }
+
+    func mirrorVisitStatus(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) async {}
+
+    func mirrorNotes(type: FavoriteSyncObjectType, uid: String, notes: String) async {}
+}
+
 @MainActor
 final class GlobalSearchViewModelTests: XCTestCase {
 
     private var playaDB: PlayaDB!
+    private var favoriteSync: StubFavoriteSyncService!
     private var viewModel: GlobalSearchViewModel!
 
     override func setUp() async throws {
@@ -16,13 +30,19 @@ final class GlobalSearchViewModelTests: XCTestCase {
             campData: Self.campJSON,
             eventData: Self.eventJSON
         )
+        favoriteSync = StubFavoriteSyncService()
         // nil storage key keeps the filter out of UserDefaults, so tests don't leak
         // filter state into each other or into the simulator's defaults.
-        viewModel = GlobalSearchViewModel(playaDB: playaDB, filterStorageKey: nil)
+        viewModel = GlobalSearchViewModel(
+            playaDB: playaDB,
+            favoriteSync: favoriteSync,
+            filterStorageKey: nil
+        )
     }
 
     override func tearDown() async throws {
         viewModel = nil
+        favoriteSync = nil
         playaDB = nil
         try await super.tearDown()
     }
@@ -55,6 +75,21 @@ final class GlobalSearchViewModelTests: XCTestCase {
             try? await Task.sleep(nanoseconds: pollNanoseconds)
         }
         return condition()
+    }
+
+    /// `eventually` for conditions that have to hit the database.
+    private func eventuallyAsync(
+        timeoutSeconds: TimeInterval = 3.0,
+        pollNanoseconds: UInt64 = 50_000_000,
+        _ condition: @MainActor () async -> Bool
+    ) async -> Bool {
+        let timeoutNanoseconds = UInt64(timeoutSeconds * 1_000_000_000)
+        let start = DispatchTime.now().uptimeNanoseconds
+        while DispatchTime.now().uptimeNanoseconds - start < timeoutNanoseconds {
+            if await condition() { return true }
+            try? await Task.sleep(nanoseconds: pollNanoseconds)
+        }
+        return await condition()
     }
 
     // MARK: - Tests
@@ -232,6 +267,194 @@ final class GlobalSearchViewModelTests: XCTestCase {
         let hasResults = await eventually { !self.viewModel.sections.isEmpty }
         XCTAssertTrue(hasResults, "Event-only knob should be inert for art")
         XCTAssertEqual(viewModel.sections.map(\.id), [.art])
+    }
+
+    // MARK: - Favorites
+
+    /// Search a term and return the first item of the section of the given type.
+    private func firstItem(ofType type: DataObjectType, query: String) async throws -> SearchResultItem {
+        viewModel.searchText = query
+        let hasResults = await eventually { self.viewModel.sections.contains { $0.id == type } }
+        XCTAssertTrue(hasResults, "Expected \(type) results for \u{201C}\(query)\u{201D}")
+        let section = try XCTUnwrap(viewModel.sections.first { $0.id == type })
+        return try XCTUnwrap(section.items.first)
+    }
+
+    func testResultsStartUnfavorited() async throws {
+        let camp = try await firstItem(ofType: .camp, query: "Services")
+        XCTAssertFalse(viewModel.isFavorite(camp))
+        XCTAssertTrue(viewModel.favoriteIdentifiers.isEmpty)
+    }
+
+    func testTogglingCampFavoriteFlipsRowStateImmediately() async throws {
+        let camp = try await firstItem(ofType: .camp, query: "Services")
+
+        viewModel.toggleFavorite(camp)
+        XCTAssertTrue(viewModel.isFavorite(camp), "Heart should fill without waiting on the write")
+
+        let persisted = await eventuallyAsync {
+            (try? await self.playaDB.isFavorite(camp.dataObject)) == true
+        }
+        XCTAssertTrue(persisted, "Toggle should reach the database")
+    }
+
+    func testUnfavoritingFromSearchClearsBothRowAndDatabase() async throws {
+        let camp = try await firstItem(ofType: .camp, query: "Services")
+        try await playaDB.setFavorite(true, for: camp.dataObject)
+
+        // Re-running the search re-reads favorite state from the database.
+        viewModel.searchText = "Services"
+        let showsFavorite = await eventually { self.viewModel.isFavorite(camp) }
+        XCTAssertTrue(showsFavorite, "Favorites set elsewhere should show up on the next search")
+
+        viewModel.toggleFavorite(camp)
+        XCTAssertFalse(viewModel.isFavorite(camp))
+
+        let cleared = await eventuallyAsync {
+            (try? await self.playaDB.isFavorite(camp.dataObject)) == false
+        }
+        XCTAssertTrue(cleared)
+    }
+
+    func testEventFavoriteIsKeyedByParentEventUID() async throws {
+        viewModel.scope = .events
+        let event = try await firstItem(ofType: .event, query: "Tarot")
+        guard case .event(let occurrence) = event else {
+            return XCTFail("Expected an event occurrence")
+        }
+        XCTAssertNotEqual(occurrence.uid, occurrence.event.uid,
+                          "Occurrence uid is the synthesized composite, not the API uid")
+        XCTAssertEqual(event.favoriteIdentity, occurrence.event.uid)
+
+        viewModel.toggleFavorite(event)
+        XCTAssertTrue(viewModel.favoriteIdentifiers.contains(occurrence.event.uid))
+
+        let wroteParentRow = await eventuallyAsync {
+            let events = try? await self.playaDB.fetchEvents()
+            guard let match = events?.first(where: { $0.event.uid == occurrence.event.uid }) else {
+                return false
+            }
+            return (try? await self.playaDB.isFavorite(match)) == true
+        }
+        XCTAssertTrue(wroteParentRow, "Favorite should land on the parent event's metadata row")
+    }
+
+    func testEventFavoriteAppliesToEveryOccurrenceOfThatEvent() async throws {
+        viewModel.scope = .events
+        let event = try await firstItem(ofType: .event, query: "Tarot")
+        guard case .event(let occurrence) = event else {
+            return XCTFail("Expected an event occurrence")
+        }
+        viewModel.toggleFavorite(event)
+
+        // A different occurrence of the same event answers to the same key, so its row
+        // renders filled too.
+        let sibling = EventObjectOccurrence(
+            event: occurrence.event,
+            occurrence: EventOccurrence(
+                id: (occurrence.occurrence.id ?? 0) + 999,
+                eventId: occurrence.event.uid,
+                startTime: occurrence.startDate.addingTimeInterval(86400),
+                endTime: occurrence.endDate.addingTimeInterval(86400)
+            )
+        )
+        XCTAssertTrue(viewModel.isFavorite(.event(sibling)))
+    }
+
+    func testFavoriteTogglesMirrorIntoLegacyDatabase() async throws {
+        let camp = try await firstItem(ofType: .camp, query: "Services")
+        viewModel.toggleFavorite(camp)
+
+        let mirrored = await eventually { !self.favoriteSync.mirroredFavorites.isEmpty }
+        XCTAssertTrue(mirrored, "Legacy Yap mirror should be invoked, as on the list screens")
+        let entry = try XCTUnwrap(favoriteSync.mirroredFavorites.first)
+        XCTAssertEqual(entry.uid, camp.uid)
+        XCTAssertTrue(entry.isFavorite)
+    }
+
+    func testEventMirrorUsesUnsuffixedAPIUID() async throws {
+        viewModel.scope = .events
+        let event = try await firstItem(ofType: .event, query: "Tarot")
+        guard case .event(let occurrence) = event else {
+            return XCTFail("Expected an event occurrence")
+        }
+        viewModel.toggleFavorite(event)
+
+        let mirrored = await eventually { !self.favoriteSync.mirroredFavorites.isEmpty }
+        XCTAssertTrue(mirrored)
+        let entry = try XCTUnwrap(favoriteSync.mirroredFavorites.first)
+        XCTAssertEqual(entry.uid, occurrence.event.uid,
+                       "Yap fans the API uid out to per-occurrence objects itself")
+    }
+
+    func testClearingSearchClearsFavoriteState() async throws {
+        let camp = try await firstItem(ofType: .camp, query: "Services")
+        viewModel.toggleFavorite(camp)
+        XCTAssertFalse(viewModel.favoriteIdentifiers.isEmpty)
+
+        viewModel.searchText = ""
+        let cleared = await eventually { self.viewModel.favoriteIdentifiers.isEmpty }
+        XCTAssertTrue(cleared)
+    }
+
+    // MARK: - Event Day / Time Filters
+
+    func testDayFilterKeepsMatchingDay() async throws {
+        // The fixture occurrence starts 2025-08-28 12:00 -0700.
+        let day = try XCTUnwrap(ISO8601DateFormatter().date(from: "2025-08-28T12:00:00-07:00"))
+        viewModel.scope = .events
+        viewModel.filter.day = day
+        viewModel.searchText = "Tarot"
+
+        let found = await eventually { self.viewModel.sections.contains { $0.id == .event } }
+        XCTAssertTrue(found, "The event's only occurrence is on the selected day")
+    }
+
+    func testDayFilterExcludesOtherDays() async {
+        let otherDay = Date(timeIntervalSince1970: 0)
+        viewModel.scope = .events
+        viewModel.filter.day = otherDay
+        viewModel.searchText = "Tarot"
+
+        let empty = await eventually {
+            !self.viewModel.isSearching && self.viewModel.sections.isEmpty
+        }
+        XCTAssertTrue(empty, "A day with no occurrences should return nothing")
+    }
+
+    func testTimeOfDayFilterExcludesNonMatchingOccurrences() async {
+        viewModel.scope = .events
+        viewModel.searchText = "Tarot"
+        let hasEvent = await eventually { self.viewModel.sections.contains { $0.id == .event } }
+        XCTAssertTrue(hasEvent)
+
+        // The fixture occurrence starts at noon — afternoon, not late night.
+        viewModel.filter.timeOfDay = .lateNight
+        let filteredOut = await eventually {
+            !self.viewModel.isSearching && self.viewModel.sections.isEmpty
+        }
+        XCTAssertTrue(filteredOut)
+
+        viewModel.filter.timeOfDay = .afternoon
+        let backAgain = await eventually { self.viewModel.sections.contains { $0.id == .event } }
+        XCTAssertTrue(backAgain)
+    }
+
+    func testDayAndTimeFiltersAreInertForNonEventScopes() async {
+        viewModel.scope = .art
+        viewModel.filter.day = Date(timeIntervalSince1970: 0)
+        viewModel.filter.timeOfDay = .lateNight
+        viewModel.searchText = "Burning"
+
+        let hasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(hasResults, "Event-only knobs should not touch art")
+        XCTAssertEqual(viewModel.sections.map(\.id), [.art])
+    }
+
+    func testDayOrTimeFilterMarksFilterActive() {
+        XCTAssertTrue(viewModel.filter.isDefault)
+        viewModel.filter.timeOfDay = .evening
+        XCTAssertFalse(viewModel.filter.isDefault, "Filter button should read as active")
     }
 
     // MARK: - AI Search Integration Tests

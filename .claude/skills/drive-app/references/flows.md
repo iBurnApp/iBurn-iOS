@@ -148,12 +148,15 @@ The global search screen (`GlobalSearchView`, reached from the Search tab in the
 chrome above the results:
 
 - **Scope bar**: a segmented control `All / Art / Camps / Events / Vehicles`, **pinned to
-  the top of the content area in every state** (prompt, loading, no-results, results) as a
-  `safeAreaInset`; the result list scrolls *underneath* it. Scoping changes which tables
-  are queried at all, so a scoped search returns only that section (e.g. Camps + "yoga" →
-  a single "Camps" section, alphabetical). Changing scope re-runs the query without
-  retyping. In the map-overlay layout the bar sits at the *bottom*, next to the docked
-  field, instead.
+  the top of the content area in every state** (prompt, loading, no-results, results); the
+  result list scrolls *underneath* it. Scoping changes which tables are queried at all, so
+  a scoped search returns only that section (e.g. Camps + "yoga" -> a single "Camps"
+  section, alphabetical). Changing scope re-runs the query without retyping. In the
+  map-overlay layout the bar sits at the *bottom*, next to the docked field, instead.
+  - On **iOS 26** the bar is a floating **Liquid Glass capsule** (`glassEffect`) inset
+    from the screen edges, hung off `safeAreaBar` so the system's scroll edge effect
+    softens the rows passing underneath. Pre-26 it is a `safeAreaInset` over an opaque
+    `.bar` strip (there is no glass to keep it legible otherwise).
 - **Filter button**, `line.3.horizontal.decrease.circle`, filled (`.fill`) whenever a
   filter is on — that fill is the *only* on-screen cue, and the filter persists in
   `UserDefaults` (`globalSearchFilter`) across relaunches while the scope resets to All.
@@ -170,17 +173,52 @@ chrome above the results:
   arrives with search already active, and an active search controller otherwise hides the
   nav bar (which is what left an empty band at the top of the screen).
 - Sheet contents: **Only Favorites** (all scopes; also disables AI suggestions) and, under
-  an "Events" section, **Happening Now** — which is shown **only for the All and Events
-  scopes**. A **Reset** button appears in the sheet when the filter is non-default.
+  an "Events" section shown **only for the All and Events scopes**, three event knobs:
+  **Happening Now**, **Day** ("Any day" + each festival day from `YearSettings`), and
+  **Time of Day** (Any / Morning 6a-12p / Afternoon 12p-5p / Evening 5p-10p / Late night
+  10p-6a, which wraps midnight). Day narrows at the SQL level (`EventFilter`
+  `startDate`/`endDate`); the time band is applied to occurrences *before* the
+  one-row-per-event collapse, so an event that also runs at 11pm survives a "Late night"
+  filter and shows its 11pm occurrence. Day and Time are **disabled while Happening Now is
+  on** (it already pins the window to now). A **Reset** button appears in the sheet when
+  the filter is non-default; the sheet footer spells out the selected band's hours.
+- **Favoriting works from search.** Every result row's heart is live: tapping it flips the
+  row immediately and writes through `PlayaDB.toggleFavorite` (mirrored into legacy Yap
+  like the list screens). Event favorites are keyed by the **parent event uid**, so every
+  occurrence of that event shows filled, and favorites set on other screens show up the
+  next time the search re-runs. Verify in the DB with
+  `SELECT object_type, object_id, is_favorite FROM object_metadata WHERE is_favorite = 1`
+  - an event row's `object_id` must match an `event_objects.uid`, never `"<uid>_<n>"`.
 - Empty states name the scope: "No camps for "Yoga"" / "Nothing matches that with these
   filters on." / "Try clearing the filters"; with no filter on it is "Nothing in this
   year's data matches that."
 - Matching is **AND-of-tokens** FTS, so "questions burning" matches a name containing both
   words in either order.
 
-Automation note: `type_text` into the field works here (the field is a stable AX target,
-unlike the `searchable` fields in §5's list screens). The simulator autocapitalizes the
-first letter ("Yoga") — harmless, FTS is case-insensitive.
+- **Results index rail** (right edge, `SearchResultIndexView`). Appears once the results
+  run to ~12+ rows and offer more than one destination. It is the Yap-era global-search
+  `sectionIndexTitles` ported forward: a **type icon** at the head of each section
+  (`BRCArtIcon` / `BRCCampIcon` / `BRCEventIcon`, `car.fill` for vehicles), then
+  **uppercased first letters** for art/camps/vehicles (`#` for anything non-alphabetic)
+  and **day-initial + clock hour** stops for events ("M6" = Monday 6 o'clock, the format
+  `GroupTransformers.searchGroup` produced). Drag it to scrub: a haptic tick per stop and a
+  floating bubble naming where you are - "Camps - B", "Events - Mon 9a". When the stops
+  outnumber the rail's height, type markers are kept whole and the letters between them are
+  sampled with bullets in the gaps (what `UITableView` does to a crowded index). Rows
+  reserve trailing room for the rail so their text never runs under it.
+  - Art/camps/vehicles results are sorted with `localizedStandardCompare` client-side
+    (SQLite's binary `ORDER BY name` would put "aardvark" after "Zoo" and break the A->Z
+    run the rail depends on).
+
+Automation notes:
+- `type_text` into the field works here (the field is a stable AX target, unlike the
+  `searchable` fields in §5's list screens). The simulator autocapitalizes the first letter
+  ("Yoga") - harmless, FTS is case-insensitive.
+- **Favorite hearts ARE in the accessibility tree** in every `ObjectRowView` list, labelled
+  "Favorite <name>" / "Unfavorite <name>" - tap them by `elementRef` and read the label back
+  to assert state (this supersedes the older "screenshot the heart" advice in SKILL.md).
+- The index rail is one accessibility element labelled **"Search result index"**; resolve it
+  with `wait_for_ui` and scrub it with `drag`.
 
 ## 6. Map + embargo
 

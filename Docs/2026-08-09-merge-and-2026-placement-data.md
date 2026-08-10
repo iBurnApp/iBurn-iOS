@@ -700,3 +700,156 @@ the map view, so touches inside any annotation reach it).
 - **A drop onto empty playa hides the card**, header and all, because the card is removed
   from the hierarchy whenever it has no items. The marker's callout is then the only
   feedback. Showing an explicit "nothing within 100 m of …" state is a reasonable follow-up.
+
+---
+
+# Work Log — Global Search: Favorites, Event Time Filters, Results Index
+
+## High-Level Plan
+
+Four user-reported items on the global search screen (`iBurn/ListView/GlobalSearch*`),
+which is hosted three ways: the classic nav-bar `UISearchController`, the map's
+`MapBottomSearchController` overlay, and the iOS 26 `UISearchTab`.
+
+1. **Favoriting from search did nothing** (day-one gap). Every row passed
+   `isFavorite: false` and an empty `onFavoriteTap` to `ObjectRowView`, so the heart was
+   permanently unfilled and inert.
+2. **No way to narrow events by when they happen.** The filter sheet had only
+   "Only Favorites" and "Happening Now".
+3. **No quick-scroll index.** Long result sets had to be flicked through.
+4. **The scope segmented control read badly** against the strip painted behind it.
+
+## Item 1 — Favoriting from search
+
+**Data.** Search results come from one-shot per-type fetches that return bare objects, not
+the `ListRow`s the observation-backed list screens get, so nothing carried metadata. Rather
+than adding four `ListRow` variants, one batched lookup was added to the data layer:
+
+```swift
+// Packages/PlayaDB/Sources/PlayaDB/PlayaDB.swift
+func favoriteIdentifiers(among objects: [any DataObject]) async throws -> Set<String>
+```
+
+It returns *metadata identity* uids — the parent event's uid for an occurrence, the
+object's own uid otherwise — collapsing several occurrences of one event to a single query
+key. The implementation (`PlayaDBImpl`) groups by type and runs one indexed
+`object_metadata` query per type present.
+
+**View model.** `GlobalSearchViewModel` gained `favoriteIdentifiers: Set<String>`, refreshed
+after every fetch (and after an AI merge), plus `isFavorite(_:)` / `toggleFavorite(_:)`.
+`SearchResultItem` gained `dataObject` and `favoriteIdentity`.
+
+**Why the optimistic flip.** Project convention is that view models backed by GRDB
+observations do *not* optimistically mutate state — they let the stream deliver. This view
+model is not observation-backed: it is one-shot fetches with no stream behind it, so
+without an optimistic flip the heart would not change until the next search. The write is
+still authoritative — the post-write `isFavorite` result is applied, a failure restores the
+previous state, and every re-run of the search re-syncs the whole set from the database.
+
+Legacy Yap mirroring goes through `FavoriteSyncService` exactly as the list screens'
+data providers do, with the unsuffixed API uid for events.
+
+**Accessibility fix (needed, and worth having).** `ObjectRowView`'s heart is an
+`Image` + `onTapGesture` (deliberately, so it does not fight an outer row `Button`), which
+left it out of the accessibility tree in *every* list screen — unreachable by VoiceOver and
+untappable by UI automation. It is now an explicit accessibility element with the
+`.isButton` trait and a "Favorite <name>" / "Unfavorite <name>" label, matching the
+`NearbyCardView` convention.
+
+## Item 2 — Day and time-of-day event filters
+
+`GlobalSearchFilter` gained `day: Date?` and `timeOfDay: SearchTimeOfDay`
+(`any` / `morning` 6–12 / `afternoon` 12–17 / `evening` 17–22 / `lateNight` 22–6).
+
+- **Day** threads into `EventFilter.startDate`/`endDate` as calendar-day bounds, i.e. it
+  narrows in SQL, matching `EventFilter.forDay(_:)`.
+- **Time of day** is an hour-of-day predicate, which no single date range can express once
+  "any day" is selected, so it is applied client-side to the already-fetched occurrences —
+  **before** the one-row-per-event collapse. That ordering matters: an event running at
+  both 9am and 11pm keeps its 11pm occurrence under "Late night" instead of being dropped
+  because its earliest occurrence is a morning one. `lateNight` wraps midnight, so its
+  membership test is a union of two ranges (`hour >= 22 || hour < 6`).
+- Both surface through the existing filled-icon "filter is active" cue (they are part of
+  `isDefault`), and both reset to "Any". They are disabled while "Happening Now" is on,
+  which already pins the window to this moment.
+- `GlobalSearchFilter` decodes field-by-field with defaults so a filter persisted by an
+  older build restores instead of being discarded.
+
+## Item 3 — Results index rail (Yap-style)
+
+Originally built as a section-jump rail; reworked on feedback to reproduce the **original
+Yap-based index**. `BRCDatabaseManager.registerSearchObjectsView` grouped searchable
+objects two ways — non-events by uppercased first letter of the title (non-alphabetic into
+`#`), events by `"yyyy-MM-dd HH"` in playa time — and `GroupTransformers.searchGroup`
+rendered the event groups as a day initial plus a 12-hour clock hour ("M6"). Those group
+names *were* the `sectionIndexTitles`: letters for camps/art/vehicles, numbers for events.
+
+`SearchResultIndex` (pure, fully unit-tested) turns sections into rail entries:
+
+- a **type marker** at the head of each section, using the app's existing iconography
+  (`BRCArtIcon` / `BRCCampIcon` / `BRCEventIcon`; `car.fill` for vehicles, as the More
+  screen uses). Markers are jump targets too.
+- one stop per consecutive run of rows sharing an index title, anchored to the first row of
+  the run, so scrubbing down never jumps backwards.
+- a composed bubble label per stop — "Camps — B", "Events — Mon 9a" — since the rail glyph
+  alone is too terse to tell you where you have landed.
+- **crowding collapse**: when stops outnumber the available slots, type markers are kept
+  whole and the letter/number stops between them are sampled evenly, with every other
+  survivor drawn as a bullet. That is what `UITableView` does to a crowded index, and it is
+  why the legacy screens could show a full A–Z on a small phone. Slot count comes from the
+  rail's measured height.
+
+The drag/haptics/measurement machinery is `EventHourIndexView`'s (PreferenceKey-measured
+labels in a named coordinate space, `DragGesture(minimumDistance: 0)` nearest-label
+hit-test, light impact per step, floating bubble). Rows reserve trailing room for the rail
+so their text does not run underneath it.
+
+Art/camps/vehicles are re-sorted with `localizedStandardCompare` in the view model: PlayaDB
+returns them `orderedByName()`, but that is SQLite's binary collation, which sorts "Zoo"
+before "aardvark" and would put a second "A" run below "Z". AI-merged results are re-sorted
+into their section for the same reason.
+
+## Item 4 — Scope bar chrome
+
+The segmented control sat on a flat `.bar` strip, which on iOS 26 reads as a dirty band
+across the top of the results. Removing the strip outright made the control unreadable over
+scrolling rows, so the control now floats as **its own Liquid Glass element**
+(`glassEffect(.regular, in: Capsule())`), inset from the screen edges and hung off
+`safeAreaBar` rather than `safeAreaInset` so the system's scroll edge effect softens the
+content passing underneath. Pre-26 keeps the arrangement that was already legible: a
+material capsule where the bar floats over the map, the opaque strip where the list scrolls
+under it. Both branches sit behind `canImport(FoundationModels)` as well as the availability
+check, matching `NearbyCardView.GlassSurface`.
+
+## Files
+
+- `Packages/PlayaDB/Sources/PlayaDB/PlayaDB.swift`, `PlayaDBImpl.swift` — batch favorite lookup
+- `iBurn/ListView/GlobalSearchScope.swift` — `SearchTimeOfDay`, day/time on `GlobalSearchFilter`
+- `iBurn/ListView/GlobalSearchViewModel.swift` — favorites, event filter construction, dedupe, name sorting
+- `iBurn/ListView/GlobalSearchView.swift` — live hearts, index rail host, scope bar chrome
+- `iBurn/ListView/GlobalSearchFilterSheet.swift` — day + time-of-day pickers
+- `iBurn/ListView/SearchResultIndexView.swift` — new; index model + rail view
+- `iBurn/ListView/SearchResultItem.swift` — `dataObject`, `favoriteIdentity`, `startDate`
+- `iBurn/ListView/ObjectRowView.swift` — favorite heart accessibility
+- `iBurnTests/GlobalSearchFilterTests.swift` — new; pure-logic coverage
+- `iBurnTests/GlobalSearchViewModelTests.swift` — favorites + day/time integration
+
+## Outcomes
+
+- iBurnTests: 411 passing (baseline 353), zero failures.
+- Clean builds on iOS 26.5 (iPhone 17 Pro Max) and iOS 18.6 (iPhone 16 Pro Max).
+- Simulator pass on the iOS 26 search-tab host: heart fills instantly and the favorite
+  appears in the Favorites screen; the event favorite shows on every occurrence of that
+  event; the day filter shifts results from Monday to Wednesday; "Late night" empties a
+  morning-only query while "Morning" restores it; the rail renders icons + letters +
+  event stops and scrubbing jumps between them.
+
+## Caveats / Follow-ups
+
+- Event index stops use the legacy day-initial + hour format ("M6"). If bare hour digits
+  are preferred, it is a one-line change in `SearchResultIndex.eventTitle(for:)`.
+- The bubble is only visible while a drag is in progress, so it cannot be captured by a
+  screenshot taken after the gesture completes.
+- Making the heart an accessibility element changes the AX tree of every `ObjectRowView`
+  list, not just search. Existing automation that looked for the raw "Love" symbol image
+  should prefer the new "Favorite <name>" button.

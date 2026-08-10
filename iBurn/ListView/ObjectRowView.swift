@@ -163,6 +163,10 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
 
     /// Leading-edge favorite icon. Uses `Image + onTapGesture` (not `Button`)
     /// so it doesn't conflict with an outer row-level `Button` for selection.
+    ///
+    /// That choice keeps it out of the accessibility tree by default, which left the
+    /// hearts unreachable by VoiceOver on every list screen — hence the explicit element
+    /// and button trait below.
     private func favoriteIcon(colors: ImageColors) -> some View {
         Image(systemName: isFavorite ? "heart.fill" : "heart")
             .foregroundColor(isFavorite ? .pink : colors.detailColor)
@@ -170,6 +174,10 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             .frame(width: 28, height: 28)
             .contentShape(Rectangle())
             .onTapGesture { onFavoriteTap() }
+            .accessibilityElement()
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(isFavorite ? "Unfavorite \(object.name)" : "Favorite \(object.name)")
+            .accessibilityAction { onFavoriteTap() }
     }
 
     private var listRowBackground: some View {
