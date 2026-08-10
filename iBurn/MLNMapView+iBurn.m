@@ -25,18 +25,10 @@
 - (void)brc_showDestination:(id<MLNAnnotation>)destination animated:(BOOL) animated padding:(UIEdgeInsets)padding {
     NSParameterAssert(destination);
     if (!destination) { return; }
-    CLLocationCoordinate2D userCoord = [BRCLocations blackRockCityCenter];
-    CLLocation *userLocation = self.userLocation.location;
-    if (userLocation && CLLocationCoordinate2DIsValid(userLocation.coordinate)) {
-        userCoord = userLocation.coordinate;
-    }
-    
-    // Check if user coord is super far away
-    CLCircularRegion *burningManRegion = [BRCLocations burningManRegion];
-    if (![burningManRegion containsCoordinate:userCoord]) {
-        userCoord = [BRCLocations blackRockCityCenter];
-    }
-    
+    // The user when they're on playa, the Man when they aren't — see
+    // +[BRCLocations mapFramingCoordinateForUserLocation:].
+    CLLocationCoordinate2D userCoord = [BRCLocations mapFramingCoordinateForUserLocation:self.userLocation.location];
+
     CLLocationCoordinate2D destinationCoord = destination.coordinate;
     if (CLLocationCoordinate2DIsValid(destinationCoord)) {
         CLLocationCoordinate2D *coordinates = malloc(sizeof(CLLocationCoordinate2D) * 2);
