@@ -174,21 +174,39 @@ public protocol PlayaDB {
     /// Get all favorited objects
     func getFavorites() async throws -> [any DataObject]
     
-    /// Toggle the favorite status of an object
+    /// Toggle the favorite status of an object.
+    ///
+    /// Event favorites are **per occurrence**: passing an `EventObjectOccurrence` affects
+    /// only that showing (see ``EventFavoriteKey``). Passing a bare `EventObject` — which
+    /// names no particular showing — means the whole series, and toggles every occurrence
+    /// together.
     func toggleFavorite(_ object: any DataObject) async throws
 
-    /// Set the favorite status of an object to a specific value
+    /// Set the favorite status of an object to a specific value.
+    /// Same per-occurrence vs. series distinction as `toggleFavorite`.
     func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws
+
+    /// Favorites (or unfavorites) every occurrence of one event at once.
+    ///
+    /// This is what "favorite all showings of this event" does — the offer made after a
+    /// single occurrence is favorited. Returns the number of rows actually changed, so a
+    /// caller can tell a no-op from real work.
+    @discardableResult
+    func setFavorite(_ isFavorite: Bool, forEventSeries eventUID: String) async throws -> Int
+
+    /// The occurrences of one event that are currently favorited, oldest first.
+    /// Empty when none are.
+    func favoriteOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence]
 
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
 
     /// Batch favorite lookup for a heterogeneous set of objects, in one read.
     ///
-    /// Returns the *metadata identity* uids of whichever `objects` are favorited — the
-    /// parent event's uid for an `EventObjectOccurrence`, the object's own uid for
-    /// everything else — so a caller holding several occurrences of the same event gets a
-    /// single key that marks all of them favorited.
+    /// Returns the *favorite identity* of whichever `objects` are favorited — an
+    /// `EventObjectOccurrence.favoriteIdentity` composite for event occurrences, the
+    /// object's own uid for everything else. Two showings of the same event therefore get
+    /// separate keys, and only the favorited ones come back.
     ///
     /// Use this when results come from one-shot fetches that return bare objects
     /// (e.g. global search) rather than `ListRow`s, which already carry metadata.
@@ -219,7 +237,8 @@ public protocol PlayaDB {
     /// Clear all recently viewed history
     func clearAllRecentlyViewed() async throws
 
-    /// Fetch favorited events with their occurrences (for schedule optimization)
+    /// Every favorited event *occurrence*, oldest first — exactly the showings the user
+    /// favorited, not every showing of an event with one favorited showing.
     func fetchFavoriteEvents() async throws -> [EventObjectOccurrence]
 
     /// Batch fetch objects of any type by their UIDs (4 queries total, one per type)
@@ -285,8 +304,12 @@ public protocol PlayaDB {
     /// Fetch all calendar entries for an event, ordered by occurrence key.
     func fetchCalendarEntries(eventId: String) async throws -> [EventCalendarEntry]
 
-    /// Delete every calendar entry belonging to an event (used when a favorite is removed).
+    /// Delete every calendar entry belonging to an event.
     func deleteCalendarEntries(eventId: String) async throws
+
+    /// Delete the calendar entry for one occurrence — what unfavoriting a single showing
+    /// of a recurring event removes.
+    func deleteCalendarEntry(eventId: String, occurrenceKey: String) async throws
 
     /// Fetch every calendar entry, ordered by event id then occurrence key.
     func fetchAllCalendarEntries() async throws -> [EventCalendarEntry]

@@ -1,0 +1,220 @@
+# Per-occurrence event favorites
+
+## High-level plan
+
+**Problem.** Favoriting an event favorited *every* showing of it. "Yoga - on a Bamboo
+Floor!" runs six mornings; tapping the heart on Wednesday's row filled all six. Users want
+the session they picked.
+
+**Solution.** Event favorites are now keyed per occurrence. `object_metadata.object_id`
+for an event favorite is a composite `"<eventUID>#<ISO-8601 UTC start>"`, and every read
+surface resolves favorites through that key. Right after a single occurrence is favorited,
+a small bottom toast offers "Favorite all N" for the rest of the series.
+
+**Key changes**
+
+| Area | Change |
+| --- | --- |
+| Identity | New `EventFavoriteKey` (composite id) + `EventObjectOccurrence.favoriteIdentity` |
+| Resolution | New `EventFavoriteIndex` — one query, the whole precedence rule in one place |
+| Writes | `favoriteTarget(for:)` splits "one occurrence" from "the whole series" |
+| Migration | Open-time `foldLegacyEventFavorites` promotes legacy parent rows |
+| Calendar | `reconcile` became a full per-occurrence reconcile against DB state |
+| Yap mirror | `mirrorEvent` targets the one Yap occurrence whose `startDate` matches |
+| UI | `FavoriteSeriesToast*` — a window-level offer to favorite the rest |
+
+## Design decisions
+
+### Identity: `"<eventUID>#<ISO-8601 UTC start>"`
+
+`Packages/PlayaDB/Sources/PlayaDB/Models/EventFavoriteKey.swift`
+
+The occurrence half reuses `EventCalendarEntry.occurrenceKey(for:)` verbatim, so a favorite
+and its calendar entry name the same occurrence with the same string. Start instants come
+from the API and are never rewritten by import (only end times are, see
+`correctedOccurrenceTimes`).
+
+Rejected, again, for the same reason as in the calendar work: `event_occurrences.id`
+(AUTOINCREMENT, deleted and reissued wholesale by every `importFromData`) and array
+positions in `occurrence_set` (reorderable by the API). `EventObjectOccurrence.uid`
+(`"<uid>_<rowid>"`) is built on the former and is never a storage key.
+
+Separator is `#`, deliberately different from the `_` of the synthesized uid and the `-` of
+legacy Yap occurrence keys, so the pre-existing `migrateOccurrenceKeyedMetadata` fold (which
+matches on `_`) ignores these.
+
+### Only *favorites* are per occurrence
+
+Notes, visit status, and view history stay on the parent event's row. "I visited this" and
+"my note about this" are statements about the event; splitting them would fragment Recently
+Viewed and the Visits list for no user benefit. `PlayaDBImpl.metadata(for:)` merges the two:
+the parent row supplies notes/visits/views, and `isFavorite` is overlaid from the
+occurrence-keyed row. `ListRow` inflation does the same overlay (`observeListRows` gained a
+`favoriteIdentity` closure).
+
+### Read precedence (the rule, in one place)
+
+1. The occurrence-keyed row, when one exists — it always wins, which is how unfavoriting a
+   single showing of a legacy series favorite works.
+2. Otherwise the parent event row's `is_favorite` — a legacy series favorite lights every
+   occurrence that has no opinion of its own.
+3. Otherwise not favorited.
+
+`EventFavoriteIndex` implements this once and every read surface uses it: both event-fetch
+paths' `onlyFavorites` filter, `fetchFavoriteEvents`, `favoriteIdentifiers(among:)`,
+`favoriteOccurrences(forEventUID:)`, and ListRow inflation.
+
+### SQL narrows, Swift decides
+
+`onlyFavorites` used to be a SQL `EXISTS` on the parent uid. Deriving the ISO-8601 key from
+a stored date inside SQLite would mean writing the rule a second time, in a second language.
+Instead SQL narrows to `event_id IN (candidateEventUIDs)` — events with *any* favorited row,
+which keeps the query selective — and the exact per-occurrence rule runs in Swift over the
+result. Both `eventObjectOccurrences` and `eventObjectOccurrencesJoined` do this identically.
+
+### Bare `EventObject` means the series
+
+Detail can be opened on an event rather than on a showing (`DetailSubject.event`), and the
+Right Now screen resolves events, not occurrences. A bare `EventObject` names no particular
+showing, so its heart means all of them: `favoriteTarget` returns `.eventSeries`, and
+`toggleFavorite`/`setFavorite` write every occurrence row plus the parent row.
+`isFavorite` for a bare event is "any occurrence is favorited".
+
+### Search rows stand in for one showing
+
+`SearchResultItem.favoriteIdentity` is now the occurrence composite. Global search collapses
+an event to a single row (the soonest matching showing); that row's heart is that showing's
+state, tapping it favorites that showing, and the series toast follows — exactly like the
+event list. A different showing favorited elsewhere leaves the row's heart empty, which is
+correct: the row represents one showing, not the event.
+
+### The fold leaves the parent row alone
+
+`foldLegacyEventFavorites` (open-time, `PlayaDBImpl.swift`) writes per-occurrence rows for
+each favorited bare-uid row, inheriting its `favorite_updated_at`. It **does not** clear the
+parent row:
+
+- The parent stays the fallback for occurrences with no row of their own — including ones a
+  later data refresh adds, and ones a peer on an older build knows about.
+- Clearing it would push an "unfavorited" edit at those peers through `favoriteSyncItems`,
+  silently dropping favorites on a device that hasn't updated.
+
+It never overwrites an existing occurrence row, so a user who already unfavorited one
+showing keeps that decision, and it is a no-op once run (parent rows whose occurrences all
+have rows produce no writes). Data-dependent: events with no occurrences yet are skipped and
+picked up on a later open; the fallback keeps behaviour correct in the meantime.
+
+### Calendar reconcile reads the database
+
+`EventCalendarService.reconcile(eventUID:isFavorite:)` was add-all-or-remove-all. It is now a
+full reconcile: fetch the favorited occurrences, remove entries for occurrences that are no
+longer favorited, create entries for favorited occurrences missing a live EKEvent. The
+`isFavorite` argument survives only as the coalescing key (two passes with opposite intents
+must not merge) — the database, not the caller, decides what the calendar should contain.
+This is correct whether the trigger was favoriting one showing, unfavoriting one, or
+accepting "favorite all". Added `PlayaDB.deleteCalendarEntry(eventId:occurrenceKey:)`.
+
+### Yap mirroring is occurrence-scoped (no series-grained fallback needed)
+
+`FavoriteSyncServiceImpl.mirrorEvent` now takes a favorite identity. Given a composite it
+mirrors onto the single Yap object whose `startDate` renders to the same occurrence key —
+the object has to be loaded to be written anyway, so matching on start time costs nothing and
+avoids index-position guessing (wrong the moment the API reorders an `occurrence_set`). A
+bare uid still fans out to every occurrence. The calendar hook now fires even when no Yap
+object matched, so a device with no legacy database still gets its calendar reconciled.
+
+## Files changed
+
+**PlayaDB package**
+- `Sources/PlayaDB/Models/EventFavoriteKey.swift` (new) — composite id + `favoriteIdentity`
+- `Sources/PlayaDB/EventFavoriteIndex.swift` (new) — one-query resolution of the rule
+- `Sources/PlayaDB/PlayaDBImpl.swift` — `favoriteTarget`, `writeFavorite`,
+  `writeSeriesFavorite`, `isFavoriteOccurrence`, `isFavoriteSeries`,
+  `occurrenceIdentities`, `foldLegacyEventFavorites`, favorite-filter rewrite in both fetch
+  paths, ListRow favorite overlay, `fetchFavoriteEvents`, `favoriteIdentifiers`,
+  `getFavorites`, `deleteCalendarEntry`
+- `Sources/PlayaDB/PlayaDB.swift` — `setFavorite(_:forEventSeries:)`,
+  `favoriteOccurrences(forEventUID:)`, `deleteCalendarEntry(eventId:occurrenceKey:)`, docs
+
+**App**
+- `iBurn/Favorites/FavoriteSeriesToast.swift` (new) — model + pure eligibility rule
+- `iBurn/Favorites/FavoriteSeriesToastView.swift` (new) — the UIKit card
+- `iBurn/Favorites/FavoriteSeriesToastPresenter.swift` (new) — notification seam + hosting
+- `iBurn/DependencyContainer.swift` — owns and starts the presenter
+- `iBurn/Calendar/EventCalendarService.swift` — per-occurrence reconcile
+- `iBurn/FavoriteSyncService.swift` — occurrence-scoped Yap mirror
+- `iBurn/ListView/SearchResultItem.swift`, `GlobalSearchViewModel.swift` — search identity
+- `iBurn/ListView/EventDataProvider.swift`, `iBurn/Detail/ViewModels/DetailViewModel.swift`
+  — pass the occurrence identity to the mirror
+- `iBurn/ListView/VisiblePinsViewModel.swift` — per-occurrence keys, and asks
+  `favoriteIdentifiers(among:)` about the rows on screen instead of fetching all favorites
+
+**Tests**
+- `Packages/PlayaDB/Tests/PlayaDBTests/PerOccurrenceFavoriteTests.swift` (new, 19 tests)
+- `Packages/PlayaDB/Tests/PlayaDBTests/MetadataIdentityTests.swift` — inverted invariant
+- `iBurnTests/PerOccurrenceFavoriteAppTests.swift` (new, 6 tests)
+- `iBurnTests/EventCalendarServiceTests.swift` — favorites are written before reconciling
+  (`favoriteSeriesAndReconcile`), plus two per-occurrence calendar tests
+- `iBurnTests/GlobalSearchViewModelTests.swift` — search identity is the occurrence key
+
+## The toast
+
+`FavoriteSeriesToastEligibility` is a pure rule, split from the plumbing so it can be read
+and tested on its own. An offer appears only when the change **added** a favorite, on an
+**event occurrence** (a composite key — a bare event heart already means the series), for an
+event with **more than one occurrence**.
+
+The seam is `.playaDBFavoriteDidChange`, the notification `PlayaDB.toggleFavorite` already
+posts (the tab bar's favorite-button glow is the other listener). Hearts live in a dozen
+screens that all funnel through that one method, so one subscriber covers them all and can't
+drift as screens are added. `setFavorite` deliberately does not post, which is what stops the
+toast's own "favorite them all" write from re-raising the toast.
+
+Hosting: one `FavoriteSeriesToastView` added to `BRCAppDelegate.shared.window`, positioned
+above the tab bar (measured from the tab bar's real frame, with a fallback constant because
+iOS 26's floating capsule is not a subview of the tab controller's view). Nothing covers the
+rest of the screen, so the list underneath keeps scrolling. 5-second auto-dismiss;
+Reduce Motion trades the slide for a cross-fade.
+
+## Debugging notes worth keeping
+
+**A toast that "renders but is invisible" was a measurement artifact.** Several rounds were
+spent chasing why the toast appeared in every accessibility snapshot but in no screenshot —
+through a dedicated `UIWindow`, a root-view-controller overlay, a window subview, and a
+rewrite from SwiftUI to UIKit. The actual cause: the toast auto-dismisses after 5 seconds,
+and a `screenshot` tool call is a separate round trip several seconds after the `tap` that
+raised it. The AX snapshot returned *by the tap itself* was inside the window; every
+screenshot was outside it. Raising `displayDuration` temporarily made it visible
+immediately. This is now recorded in the `drive-app` SKILL.md.
+
+Two facts learned along the way are still true and worth keeping:
+- iBurn is a **pre-scene** app (no `UIApplicationSceneManifest`; `BRCAppDelegate` makes its
+  own window), so `UIApplication.shared.connectedScenes` is not a reliable way to find the
+  window that is on screen. The presenter uses `BRCAppDelegate.shared.window`.
+- The iOS 26 floating tab bar is not findable as a `UITabBar` subview of the tab
+  controller's view, and that view reports no bottom safe-area inset — hence the measured
+  lookup plus `tabBarFallback`.
+
+## Validation
+
+- **PlayaDB package**: 290 tests, 0 failures (baseline 271 + 19 new).
+- **App**: 476 tests, 0 failures (baseline 468 + 8 net new).
+- **Builds**: iOS 26.5 (iPhone 17 Pro Max), iOS 18.6 (iPhone 16 Pro Max, by UDID), and
+  watchOS 26.5 — all clean.
+- **Simulator** (iPhone 17 Pro Max, 2026 data): favorited one occurrence of a
+  6-occurrence event → only that heart filled, siblings unfilled, toast showed
+  "It has 5 other occurrences." / "Favorite all 6"; tapped it → all 6 occurrence rows plus
+  the parent row written, 6 calendar entries created; Favorites lists exactly the favorited
+  occurrences. A legacy parent-uid row seeded before launch was folded into 5
+  occurrence-keyed rows sharing its stamp, with the parent row intact.
+- Screenshots: `/tmp/claude/iburn-favorites-round/` — `02-one-occurrence-favorited-with-toast.jpg`
+  (one heart filled among siblings), `18-toast-visible.png` / `18-bottom.png` (the toast),
+  `19-favorites-tab.png` (Favorites listing occurrences).
+
+## Follow-ups
+
+- `getFavorites()` still answers in whole `EventObject`s (collapsing composite ids to the
+  parent uid). Callers that want showings should use `fetchFavoriteEvents`. The AI Right Now
+  screen resolves bare events and so is series-grained by construction — coherent, but worth
+  revisiting if that screen starts showing specific showings.
+- The toast's copy is not localized (nothing in this app is yet).

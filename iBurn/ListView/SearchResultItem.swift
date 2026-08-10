@@ -66,15 +66,21 @@ enum SearchResultItem: Identifiable {
         }
     }
 
-    /// Key under which this item's favorite state is stored. Event occurrences share
-    /// their parent event's metadata row, so every occurrence of one event answers to the
-    /// same key — favoriting from any of them lights up all of them.
+    /// Key under which this item's favorite state is stored.
+    ///
+    /// Event favorites are per *occurrence*, so this is the occurrence's
+    /// `EventFavoriteKey` composite, not the parent event uid. Search collapses an event
+    /// to a single row (the soonest matching showing), so the row's heart is that
+    /// showing's state and tapping it favorites exactly that showing — the same thing the
+    /// event list does, and the same thing the "favorite all N showings?" offer follows up
+    /// on. A different showing of the same event favorited elsewhere does not fill this
+    /// heart, which is correct: the row is standing in for one showing, not for the event.
     ///
     /// Mirrors `PlayaDB.favoriteIdentifiers(among:)`, whose returned keys this is matched
     /// against.
     var favoriteIdentity: String {
         switch self {
-        case .event(let o): o.event.uid
+        case .event(let o): o.favoriteIdentity
         default: uid
         }
     }

@@ -77,12 +77,13 @@ class EventDataProvider: ObjectListDataProvider {
         try await playaDB.toggleFavorite(object)
         let isFavorite = try await playaDB.isFavorite(object)
         // Fire-and-forget mirror into legacy YapDatabase; PlayaDB is the source
-        // of truth and the UI must not wait on the Yap write. The API uid fans
-        // out to every per-occurrence Yap object and refreshes calendar entries.
+        // of truth and the UI must not wait on the Yap write. The occurrence's
+        // composite identity mirrors onto the one matching Yap occurrence and
+        // reconciles the event's calendar entries.
         let favoriteSync = self.favoriteSync
-        let apiUID = object.event.uid
+        let identity = object.favoriteIdentity
         Task {
-            await favoriteSync.mirrorFavorite(type: .event, uid: apiUID, isFavorite: isFavorite)
+            await favoriteSync.mirrorFavorite(type: .event, uid: identity, isFavorite: isFavorite)
         }
     }
 

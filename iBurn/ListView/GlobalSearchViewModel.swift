@@ -35,7 +35,8 @@ final class GlobalSearchViewModel: ObservableObject {
     @Published var isSearching: Bool = false
 
     /// Favorite state for the rows currently on screen, keyed by
-    /// `SearchResultItem.favoriteIdentity` (the parent event's uid for occurrences).
+    /// `SearchResultItem.favoriteIdentity` (an `EventFavoriteKey` composite for event
+    /// occurrences, since event favorites are per showing).
     ///
     /// Kept beside `sections` rather than baked into the items: results are plain objects
     /// from one-shot fetches, and a set is what both the DB lookup and the optimistic
@@ -296,7 +297,8 @@ final class GlobalSearchViewModel: ObservableObject {
 
     // MARK: - Favorites
 
-    /// Whether this row's object (or, for an occurrence, its parent event) is favorited.
+    /// Whether this row's object is favorited — for an event row, the specific showing
+    /// the row is standing in for.
     func isFavorite(_ item: SearchResultItem) -> Bool {
         favoriteIdentifiers.contains(item.favoriteIdentity)
     }

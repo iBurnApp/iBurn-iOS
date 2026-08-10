@@ -19,14 +19,23 @@ import PlayaDB
 /// Replaces the Yap-metadata bookkeeping (`BRCEventMetadata.calendarEventIdentifier`)
 /// when `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on.
 protocol EventCalendarService {
-    /// Reconciles the calendar entries of one API event with `isFavorite`.
+    /// Brings one API event's calendar entries into agreement with which of its
+    /// *occurrences* are currently favorited.
     ///
-    /// - Favorite: creates an EKEvent for every occurrence that doesn't already have a
-    ///   live one, and records its identifier in PlayaDB.
-    /// - Unfavorite: removes every EKEvent recorded for the event and deletes the rows.
+    /// Favorites are per occurrence (PlayaDB's `EventFavoriteKey`), so this is a full
+    /// reconcile of the event rather than a blanket add-all/remove-all:
+    ///
+    /// - Every favorited occurrence without a live EKEvent gets one, recorded in PlayaDB.
+    /// - Every EKEvent recorded for an occurrence that is *not* favorited is removed, and
+    ///   its row deleted.
+    ///
+    /// `isFavorite` says only what just happened, and is used to keep passes with opposite
+    /// intents from coalescing; the database, not the caller, decides what the calendar
+    /// should contain. That makes the pass correct whether it was triggered by favoriting
+    /// one showing, unfavoriting one, or accepting "favorite all showings".
     ///
     /// Idempotent: repeat calls with the same state are no-ops, and an EKEvent the user
-    /// deleted by hand is recreated on the next favorite reconcile (legacy semantics).
+    /// deleted by hand is recreated on the next reconcile (legacy semantics).
     ///
     /// - Parameter eventUID: The *API* event uid (PlayaDB `EventObject.uid`), not a
     ///   legacy per-occurrence uid — use `FavoriteSyncServiceImpl.apiEventUID(fromYapUID:)`
@@ -112,57 +121,26 @@ actor EventCalendarServiceImpl: EventCalendarService {
 
     // MARK: Reconcile
 
+    /// `isFavorite` is retained for the coalescing key in `reconcile` (two passes with
+    /// different intents must not merge) but is not consulted here: with per-occurrence
+    /// favorites, "what should be in the calendar" is a question only the database can
+    /// answer, and it answers it the same way regardless of which tap started the pass.
     private func performReconcile(eventUID: String, isFavorite: Bool) async {
         guard !eventUID.isEmpty else { return }
         // No permission means nothing can be created *or* removed; matching legacy,
         // an undetermined status prompts and this pass writes nothing.
         guard await eventStore.ensureAccess() else { return }
 
-        if isFavorite {
-            await addEntries(eventUID: eventUID)
-        } else {
-            await removeEntries(eventUID: eventUID)
-        }
-    }
-
-    private func addEntries(eventUID: String) async {
-        let occurrences: [EventObjectOccurrence]
+        // Which showings the user actually wants, straight from the database.
+        let favorited: [EventObjectOccurrence]
         do {
-            occurrences = try await playaDB.fetchOccurrences(forEventUID: eventUID)
+            favorited = try await playaDB.favoriteOccurrences(forEventUID: eventUID)
         } catch {
-            print("EventCalendarService: failed to load occurrences for \(eventUID): \(error)")
+            print("EventCalendarService: failed to load favorite occurrences for \(eventUID): \(error)")
             return
         }
-        guard !occurrences.isEmpty else { return }
+        let favoritedKeys = Set(favorited.map(\.calendarOccurrenceKey))
 
-        let existing = await fetchEntriesByOccurrenceKey(eventUID: eventUID)
-        if existing.isEmpty {
-            // Nothing of ours on file: anything in the calendar for this event came
-            // from the legacy Yap stack. Take it over before creating replacements so
-            // the user doesn't end up with two copies of every occurrence.
-            await takeOverLegacyEntries(eventUID: eventUID)
-        }
-
-        for occurrence in occurrences {
-            let includeLocation = embargoAllowsLocation(occurrence)
-            let key = occurrence.calendarOccurrenceKey
-            if let identifier = existing[key], eventStore.lookupEvent(identifier: identifier) != .notFound {
-                // Still in the calendar (or unverifiable under write-only access):
-                // leave it alone, exactly like legacy's "event already exists" check.
-                continue
-            }
-            let draft = Self.makeDraft(for: occurrence, includeLocation: includeLocation)
-            do {
-                let identifier = try eventStore.createEvent(draft)
-                let entry = EventCalendarEntry(occurrence: occurrence, ekEventIdentifier: identifier)
-                try await playaDB.saveCalendarEntry(entry)
-            } catch {
-                print("EventCalendarService: failed to add calendar entry for \(eventUID) @ \(key): \(error)")
-            }
-        }
-    }
-
-    private func removeEntries(eventUID: String) async {
         let entries: [EventCalendarEntry]
         do {
             entries = try await playaDB.fetchCalendarEntries(eventId: eventUID)
@@ -171,24 +149,66 @@ actor EventCalendarServiceImpl: EventCalendarService {
             return
         }
 
-        for entry in entries {
+        if entries.isEmpty {
+            // Nothing of ours on file, so anything already in the calendar for this event
+            // came from the legacy Yap stack. Take it over — before creating replacements,
+            // so the user doesn't end up with two copies of every occurrence, and also when
+            // this pass is a removal, since those EKEvents are tracked only in Yap.
+            await takeOverLegacyEntries(eventUID: eventUID)
+        }
+
+        await removeStaleEntries(entries, keeping: favoritedKeys, eventUID: eventUID)
+        await addMissingEntries(for: favorited, existing: entries, eventUID: eventUID)
+    }
+
+    /// Deletes the EKEvents (and rows) of occurrences that are no longer favorited.
+    private func removeStaleEntries(
+        _ entries: [EventCalendarEntry],
+        keeping favoritedKeys: Set<String>,
+        eventUID: String
+    ) async {
+        for entry in entries where !favoritedKeys.contains(entry.occurrenceKey) {
             do {
                 try eventStore.removeEvent(identifier: entry.ekEventIdentifier)
             } catch {
                 print("EventCalendarService: failed to remove calendar event \(entry.ekEventIdentifier): \(error)")
             }
-        }
-
-        if !entries.isEmpty {
             do {
-                try await playaDB.deleteCalendarEntries(eventId: eventUID)
+                try await playaDB.deleteCalendarEntry(eventId: eventUID, occurrenceKey: entry.occurrenceKey)
             } catch {
-                print("EventCalendarService: failed to delete calendar entries for \(eventUID): \(error)")
+                print("EventCalendarService: failed to delete calendar entry for \(eventUID) @ \(entry.occurrenceKey): \(error)")
             }
-        } else {
-            // Nothing on file here, so any calendar events for this favorite were
-            // created by the legacy stack and are tracked only in Yap metadata.
-            await takeOverLegacyEntries(eventUID: eventUID)
+        }
+    }
+
+    /// Creates an EKEvent for every favorited occurrence that doesn't have a live one.
+    private func addMissingEntries(
+        for favorited: [EventObjectOccurrence],
+        existing entries: [EventCalendarEntry],
+        eventUID: String
+    ) async {
+        let identifiersByKey = entries.reduce(into: [String: String]()) {
+            $0[$1.occurrenceKey] = $1.ekEventIdentifier
+        }
+        for occurrence in favorited {
+            let key = occurrence.calendarOccurrenceKey
+            if let identifier = identifiersByKey[key],
+               eventStore.lookupEvent(identifier: identifier) != .notFound {
+                // Still in the calendar (or unverifiable under write-only access):
+                // leave it alone, exactly like legacy's "event already exists" check.
+                continue
+            }
+            let draft = Self.makeDraft(
+                for: occurrence,
+                includeLocation: embargoAllowsLocation(occurrence)
+            )
+            do {
+                let identifier = try eventStore.createEvent(draft)
+                let entry = EventCalendarEntry(occurrence: occurrence, ekEventIdentifier: identifier)
+                try await playaDB.saveCalendarEntry(entry)
+            } catch {
+                print("EventCalendarService: failed to add calendar entry for \(eventUID) @ \(key): \(error)")
+            }
         }
     }
 
@@ -206,16 +226,6 @@ actor EventCalendarServiceImpl: EventCalendarService {
             }
         }
         await legacyIdentifierStore.clearIdentifiers(forEventUID: eventUID)
-    }
-
-    private func fetchEntriesByOccurrenceKey(eventUID: String) async -> [String: String] {
-        do {
-            let entries = try await playaDB.fetchCalendarEntries(eventId: eventUID)
-            return entries.reduce(into: [:]) { $0[$1.occurrenceKey] = $1.ekEventIdentifier }
-        } catch {
-            print("EventCalendarService: failed to load calendar entries for \(eventUID): \(error)")
-            return [:]
-        }
     }
 
     // MARK: Draft Building

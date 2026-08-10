@@ -53,6 +53,12 @@ class DependencyContainer {
         EventCalendarServiceFactory.makeService(playaDB: playaDB)
     }()
 
+    /// Offers "favorite the other showings too?" after a single occurrence of a recurring
+    /// event is favorited. Listens app-wide rather than per screen — see the type's docs.
+    private(set) lazy var favoriteSeriesToastPresenter: FavoriteSeriesToastPresenter = {
+        FavoriteSeriesToastPresenter(playaDB: playaDB, favoriteSync: favoriteSyncService)
+    }()
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
@@ -152,6 +158,9 @@ class DependencyContainer {
         })
         watchSyncManager.start()
         self.watchSyncManager = watchSyncManager
+
+        // Every heart in the app posts through PlayaDB, so one listener covers them all.
+        self.favoriteSeriesToastPresenter.start()
     }
 
     // MARK: - Factory Methods

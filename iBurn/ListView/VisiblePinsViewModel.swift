@@ -60,12 +60,27 @@ enum VisiblePinItem: Identifiable {
 
     /// UID used for favorite lookups. `getFavorites()` returns base `EventObject`s,
     /// so events key off the event uid rather than the occurrence uid.
+    /// Key this row's heart answers to — `PlayaDB.favoriteIdentifiers(among:)`'s key.
+    /// Event occurrences use their per-occurrence composite, so favoriting one showing
+    /// from the map sheet doesn't fill the hearts of its siblings.
     var favoriteUID: String? {
         switch self {
         case .art(let o): return o.uid
         case .camp(let o): return o.uid
-        case .eventOccurrence(let o): return o.event.uid
+        case .eventOccurrence(let o): return o.favoriteIdentity
         case .event(let o): return o.uid
+        case .userPin: return nil
+        }
+    }
+
+    /// The record behind this row, for APIs taking `any PlayaDataObject`.
+    /// Spelled `PlayaDataObject`: the app module has its own unrelated `DataObject` class.
+    var playaObject: (any PlayaDataObject)? {
+        switch self {
+        case .art(let o): return o
+        case .camp(let o): return o
+        case .eventOccurrence(let o): return o
+        case .event(let o): return o
         case .userPin: return nil
         }
     }
@@ -283,10 +298,14 @@ final class VisiblePinsViewModel: ObservableObject {
 
     private func loadFavorites() {
         favoritesTask?.cancel()
+        // Asked about the rows actually on screen rather than fetching every favorite:
+        // event favorites are per occurrence, and only the occurrences listed here can
+        // answer to a composite key.
+        let objects = (artItems + campItems + eventItems).compactMap(\.playaObject)
         favoritesTask = Task { [weak self] in
             guard let self else { return }
-            guard let favorites = try? await self.playaDB.getFavorites() else { return }
-            self.favoriteUIDs = Set(favorites.map(\.uid))
+            guard let identifiers = try? await self.playaDB.favoriteIdentifiers(among: objects) else { return }
+            self.favoriteUIDs = identifiers
         }
     }
 

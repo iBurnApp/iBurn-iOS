@@ -447,6 +447,9 @@ class DetailViewModel: ObservableObject {
                 syncFavoriteToYapDB(type: .camp, uid: camp.uid, isFavorite: isFavorite)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
+                // A bare EventObject names no particular showing, so its heart means the
+                // whole series — PlayaDB toggles every occurrence, and the bare uid fans
+                // the mirror out to every Yap occurrence to match.
                 try await playaDB.toggleFavorite(event)
                 isFavorite = try await playaDB.isFavorite(event)
                 syncFavoriteToYapDB(type: .event, uid: event.uid, isFavorite: isFavorite)
@@ -454,7 +457,8 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(occ)
                 isFavorite = try await playaDB.isFavorite(occ)
-                syncFavoriteToYapDB(type: .event, uid: occ.event.uid, isFavorite: isFavorite)
+                // The occurrence's composite identity: only this showing changed.
+                syncFavoriteToYapDB(type: .event, uid: occ.favoriteIdentity, isFavorite: isFavorite)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(mv)

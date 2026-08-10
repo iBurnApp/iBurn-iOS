@@ -316,30 +316,32 @@ final class GlobalSearchViewModelTests: XCTestCase {
         XCTAssertTrue(cleared)
     }
 
-    func testEventFavoriteIsKeyedByParentEventUID() async throws {
+    func testEventFavoriteIsKeyedByTheDisplayedOccurrence() async throws {
         viewModel.scope = .events
         let event = try await firstItem(ofType: .event, query: "Tarot")
         guard case .event(let occurrence) = event else {
             return XCTFail("Expected an event occurrence")
         }
-        XCTAssertNotEqual(occurrence.uid, occurrence.event.uid,
-                          "Occurrence uid is the synthesized composite, not the API uid")
-        XCTAssertEqual(event.favoriteIdentity, occurrence.event.uid)
+        XCTAssertNotEqual(occurrence.uid, occurrence.favoriteIdentity,
+                          "Occurrence uid is a synthesized rowid composite; the favorite key is start-time based")
+        XCTAssertEqual(event.favoriteIdentity, occurrence.favoriteIdentity)
 
         viewModel.toggleFavorite(event)
-        XCTAssertTrue(viewModel.favoriteIdentifiers.contains(occurrence.event.uid))
+        XCTAssertTrue(viewModel.favoriteIdentifiers.contains(occurrence.favoriteIdentity))
 
-        let wroteParentRow = await eventuallyAsync {
+        let wroteOccurrenceRow = await eventuallyAsync {
             let events = try? await self.playaDB.fetchEvents()
-            guard let match = events?.first(where: { $0.event.uid == occurrence.event.uid }) else {
+            guard let match = events?.first(where: { $0.favoriteIdentity == occurrence.favoriteIdentity }) else {
                 return false
             }
             return (try? await self.playaDB.isFavorite(match)) == true
         }
-        XCTAssertTrue(wroteParentRow, "Favorite should land on the parent event's metadata row")
+        XCTAssertTrue(wroteOccurrenceRow, "Favorite should land on the occurrence's own metadata row")
     }
 
-    func testEventFavoriteAppliesToEveryOccurrenceOfThatEvent() async throws {
+    /// A search row stands in for one showing, so its heart is that showing's state —
+    /// a different showing of the same event favorited elsewhere leaves this row empty.
+    func testEventFavoriteDoesNotFillSiblingOccurrences() async throws {
         viewModel.scope = .events
         let event = try await firstItem(ofType: .event, query: "Tarot")
         guard case .event(let occurrence) = event else {
@@ -347,8 +349,6 @@ final class GlobalSearchViewModelTests: XCTestCase {
         }
         viewModel.toggleFavorite(event)
 
-        // A different occurrence of the same event answers to the same key, so its row
-        // renders filled too.
         let sibling = EventObjectOccurrence(
             event: occurrence.event,
             occurrence: EventOccurrence(
@@ -358,7 +358,8 @@ final class GlobalSearchViewModelTests: XCTestCase {
                 endTime: occurrence.endDate.addingTimeInterval(86400)
             )
         )
-        XCTAssertTrue(viewModel.isFavorite(.event(sibling)))
+        XCTAssertNotEqual(sibling.favoriteIdentity, occurrence.favoriteIdentity)
+        XCTAssertFalse(viewModel.isFavorite(.event(sibling)))
     }
 
     func testFavoriteTogglesMirrorIntoLegacyDatabase() async throws {
@@ -372,7 +373,7 @@ final class GlobalSearchViewModelTests: XCTestCase {
         XCTAssertTrue(entry.isFavorite)
     }
 
-    func testEventMirrorUsesUnsuffixedAPIUID() async throws {
+    func testEventMirrorUsesTheOccurrenceCompositeKey() async throws {
         viewModel.scope = .events
         let event = try await firstItem(ofType: .event, query: "Tarot")
         guard case .event(let occurrence) = event else {
@@ -383,8 +384,9 @@ final class GlobalSearchViewModelTests: XCTestCase {
         let mirrored = await eventually { !self.favoriteSync.mirroredFavorites.isEmpty }
         XCTAssertTrue(mirrored)
         let entry = try XCTUnwrap(favoriteSync.mirroredFavorites.first)
-        XCTAssertEqual(entry.uid, occurrence.event.uid,
-                       "Yap fans the API uid out to per-occurrence objects itself")
+        XCTAssertEqual(entry.uid, occurrence.favoriteIdentity,
+                       "The mirror matches the one Yap occurrence starting at that instant")
+        XCTAssertEqual(EventFavoriteKey.eventUID(from: entry.uid), occurrence.event.uid)
     }
 
     func testClearingSearchClearsFavoriteState() async throws {

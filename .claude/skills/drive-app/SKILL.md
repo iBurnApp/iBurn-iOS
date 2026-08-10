@@ -54,8 +54,15 @@ app:
   (PermissionScope buttons) → calendar full-access. See flows.md for exact steps.
 - After onboarding, an **embargo alert** ("Locations Are Hidden") appears over the
   map — dismiss via "Ok cool whatever".
-- **Favorite hearts are not in the accessibility tree.** To verify heart state in
-  a list, take a `screenshot` and inspect the image; don't grep the AX snapshot.
+- **Favorite hearts are not in the accessibility tree** as state, but the *button* is:
+  match on its label, which flips between `"Favorite <name>"` and `"Unfavorite <name>"`
+  (and the sibling image reports `heart` vs `heart.fill`). For a visual check take a
+  `screenshot` and inspect the image.
+- **Transient UI needs a screenshot in the same beat.** Anything that auto-dismisses - the
+  favorite-series toast is up for 5s - will be gone by the time a separate `screenshot`
+  tool call lands, because each round trip costs seconds. The AX snapshot returned *by the
+  tap itself* still shows it, which makes it look like the view exists but never renders.
+  To photograph it, temporarily raise its duration, rebuild, then screenshot.
 - **SwiftUI searchable fields flicker in and out of the AX tree** (the
   "Search events" field may not be listed after scrolling). Prefer validating
   search at the database layer (FTS MATCH query below) unless the search UI
@@ -76,9 +83,23 @@ sqlite3 "file:$APP_DATA/Documents/PlayaDB.sqlite?mode=ro" "
 ```
 
 Invariants worth asserting after UI actions:
-- Favoriting an **event** writes exactly one `object_metadata` row keyed by the
-  **parent event uid** (a real uid from `event_objects`, never a synthesized
-  `"<uid>_<n>"` form).
+- Favoriting one **event occurrence** writes exactly one `object_metadata` row keyed
+  `"<eventUID>#<ISO-8601 UTC start>"` (e.g. `pZKm9hfs...#2026-08-31T00:00:00Z`) - the
+  `EventFavoriteKey` composite. Its left half must be a real uid from `event_objects` and
+  its right half must match one of that event's `event_occurrences.start_time` values
+  rendered as `strftime('%Y-%m-%dT%H:%M:%SZ', ...)`. **Never** the synthesized
+  `"<uid>_<rowid>"` form (rowids are reissued by every import), and - since favorites
+  became per occurrence - never the bare parent uid alone for a heart tapped on a row.
+  Siblings of that occurrence must have **no** row.
+- **"Favorite all N"** (the series toast, and a bare-`EventObject` heart) writes one row
+  per occurrence *plus* a row on the bare parent uid.
+- A **bare parent-uid row** from before this change is still honored: every occurrence with
+  no row of its own reads as favorited from it. On the next app open,
+  `foldLegacyEventFavorites` promotes it into explicit per-occurrence rows and leaves the
+  parent row favorited as the fallback - so after a relaunch expect *N + 1* rows for such
+  an event, all sharing the parent's `favorite_updated_at`.
+- **Calendar entries follow occurrences**: `event_calendar_entries` must hold exactly one
+  row per *favorited* occurrence, not per occurrence of a favorited event.
 - Plain browsing/fetching must **not** create `object_metadata` rows (reads are
   write-free).
 - FTS health: `INSERT INTO event_objects_fts(event_objects_fts)

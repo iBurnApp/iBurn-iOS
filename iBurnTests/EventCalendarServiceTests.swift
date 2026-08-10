@@ -217,13 +217,41 @@ final class EventCalendarServiceTests: XCTestCase {
         return identifiers
     }
 
+    /// Reconcile the way the app does it: the favorite state lands in PlayaDB first, then
+    /// the hook fires. Since favorites became per occurrence, `reconcile` reads the wanted
+    /// state out of the database rather than taking the caller's word for it, so a test
+    /// that only calls `reconcile` is describing an event nobody favorited.
+    private func favoriteSeriesAndReconcile(
+        _ service: EventCalendarService,
+        _ db: PlayaDB,
+        uid: String = EventCalendarServiceTests.eventUID,
+        isFavorite: Bool
+    ) async throws {
+        _ = try await db.setFavorite(isFavorite, forEventSeries: uid)
+        await service.reconcile(eventUID: uid, isFavorite: isFavorite)
+    }
+
+    /// Favorites a single occurrence, identified by its position in start order.
+    @discardableResult
+    private func favoriteOccurrence(
+        _ db: PlayaDB,
+        uid: String = EventCalendarServiceTests.eventUID,
+        at index: Int
+    ) async throws -> EventObjectOccurrence {
+        let occurrences = try await db.fetchOccurrences(forEventUID: uid)
+            .sorted { $0.startDate < $1.startDate }
+        let occurrence = try XCTUnwrap(index < occurrences.count ? occurrences[index] : nil)
+        try await db.setFavorite(true, for: occurrence)
+        return occurrence
+    }
+
     // MARK: - Favoriting
 
     func testFavoriteCreatesOneEventAndEntryPerOccurrence() async throws {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.createdIdentifiers.count, 2)
         let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
@@ -236,7 +264,7 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         let draft = try XCTUnwrap(store.createdDrafts.first)
         XCTAssertEqual(draft.title, "Fairycore Tarot Meetup")
@@ -253,7 +281,7 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db, embargoAllowsLocation: { _ in false })
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         let draft = try XCTUnwrap(store.createdDrafts.first)
         XCTAssertEqual(draft.location, "Test Camp")
@@ -263,7 +291,7 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.hostlessEventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.hostlessEventUID, isFavorite: true)
 
         let draft = try XCTUnwrap(store.createdDrafts.first)
         XCTAssertEqual(draft.location, "Center Camp Plaza")
@@ -273,9 +301,9 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.createdIdentifiers.count, 2, "Re-favoriting must not create extra EKEvents")
         let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
@@ -288,6 +316,7 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
+        _ = try await db.setFavorite(true, forEventSeries: Self.eventUID)
         await withTaskGroup(of: Void.self) { group in
             for _ in 0..<5 {
                 group.addTask { await service.reconcile(eventUID: Self.eventUID, isFavorite: true) }
@@ -303,11 +332,11 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
         let firstIdentifier = try XCTUnwrap(store.createdIdentifiers.first)
         store.deleteExternally(identifier: firstIdentifier)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.createdIdentifiers.count, 3, "Only the deleted occurrence should be recreated")
         let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
@@ -317,11 +346,43 @@ final class EventCalendarServiceTests: XCTestCase {
         XCTAssertTrue(identifiers.contains(try XCTUnwrap(store.createdIdentifiers.last)))
     }
 
+    func testFavoritingOneOccurrenceCreatesExactlyOneCalendarEvent() async throws {
+        let db = try await makePlayaDB()
+        let service = makeService(playaDB: db)
+
+        let occurrence = try await favoriteOccurrence(db, at: 0)
+        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+
+        XCTAssertEqual(store.createdIdentifiers.count, 1,
+                       "Only the favorited showing belongs in the calendar")
+        let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
+        XCTAssertEqual(entries.map(\.occurrenceKey), [occurrence.calendarOccurrenceKey])
+    }
+
+    func testUnfavoritingOneOccurrenceRemovesOnlyItsCalendarEvent() async throws {
+        let db = try await makePlayaDB()
+        let service = makeService(playaDB: db)
+
+        try await favoriteSeriesAndReconcile(service, db, isFavorite: true)
+        XCTAssertEqual(store.createdIdentifiers.count, 2)
+        let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
+
+        let first = try await favoriteOccurrence(db, at: 0)
+        try await db.setFavorite(false, for: first)
+        await service.reconcile(eventUID: Self.eventUID, isFavorite: false)
+
+        let removed = try XCTUnwrap(entries.first { $0.occurrenceKey == first.calendarOccurrenceKey })
+        XCTAssertEqual(store.removedIdentifiers, [removed.ekEventIdentifier])
+        let remaining = try await db.fetchCalendarEntries(eventId: Self.eventUID)
+        XCTAssertEqual(remaining.count, 1)
+        XCTAssertNotEqual(remaining.first?.occurrenceKey, first.calendarOccurrenceKey)
+    }
+
     func testUnknownEventIsNoOp() async throws {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: "not-a-real-event", isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: "not-a-real-event", isFavorite: true)
 
         XCTAssertTrue(store.createdIdentifiers.isEmpty)
         let entries = try await db.fetchCalendarEntries(eventId: "not-a-real-event")
@@ -334,10 +395,10 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
         let created = store.createdIdentifiers
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: false)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
 
         XCTAssertEqual(store.removedIdentifiers.sorted(), created.sorted())
         let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
@@ -348,9 +409,9 @@ final class EventCalendarServiceTests: XCTestCase {
         let db = try await makePlayaDB()
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: false)
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.createdIdentifiers.count, 4)
         let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
@@ -365,7 +426,7 @@ final class EventCalendarServiceTests: XCTestCase {
         store = SpyEventStore(authorization: .denied)
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.ensureAccessCount, 1)
         XCTAssertTrue(store.createdIdentifiers.isEmpty)
@@ -378,8 +439,8 @@ final class EventCalendarServiceTests: XCTestCase {
         store = SpyEventStore(authorization: .notDetermined)
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: false)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
 
         XCTAssertTrue(store.createdIdentifiers.isEmpty)
         XCTAssertTrue(store.removeAttempts.isEmpty)
@@ -394,8 +455,8 @@ final class EventCalendarServiceTests: XCTestCase {
         store = SpyEventStore(authorization: .writeOnly)
         let service = makeService(playaDB: db)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.createdIdentifiers.count, 2, "Unverifiable events must not be recreated")
     }
@@ -427,7 +488,7 @@ final class EventCalendarServiceTests: XCTestCase {
         let service = makeService(playaDB: db, legacyIdentifierStore: legacyStore)
 
         // PlayaDB has no entries: everything in the calendar came from the legacy stack.
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: false)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
 
         XCTAssertEqual(store.removedIdentifiers.sorted(), ["legacy-0", "legacy-1"])
         XCTAssertEqual(try legacyIdentifiersInYap(), [nil, nil], "Yap identifiers must be cleared")
@@ -439,7 +500,7 @@ final class EventCalendarServiceTests: XCTestCase {
         let legacyStore = YapLegacyCalendarIdentifierStore(connection: connection)
         let service = makeService(playaDB: db, legacyIdentifierStore: legacyStore)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.removedIdentifiers.sorted(), ["legacy-0", "legacy-1"])
         XCTAssertEqual(store.createdIdentifiers.count, 2, "One fresh EKEvent per occurrence")
@@ -454,9 +515,9 @@ final class EventCalendarServiceTests: XCTestCase {
         let legacyStore = YapLegacyCalendarIdentifierStore(connection: connection)
         let service = makeService(playaDB: db, legacyIdentifierStore: legacyStore)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
         let removalsAfterTakeover = store.removeAttempts.count
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.removeAttempts.count, removalsAfterTakeover,
                        "The Yap takeover is one-way; it must not repeat once PlayaDB owns the entries")
@@ -467,7 +528,7 @@ final class EventCalendarServiceTests: XCTestCase {
         try seedLegacyYapIdentifiers(["legacy-0", "legacy-1"])
         let service = makeService(playaDB: db, legacyIdentifierStore: nil)
 
-        await service.reconcile(eventUID: Self.eventUID, isFavorite: false)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
 
         XCTAssertTrue(store.removeAttempts.isEmpty)
         XCTAssertEqual(try legacyIdentifiersInYap(), ["legacy-0", "legacy-1"])

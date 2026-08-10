@@ -5,11 +5,17 @@ import GRDB
 @testable import PlayaAPI
 import PlayaAPITestHelpers
 
-/// Verifies that event occurrences share their parent event's metadata identity.
+/// Verifies how an event occurrence's metadata is addressed.
 ///
-/// EventObjectOccurrence.uid is a synthesized "<eventUID>_<occurrenceID>". Earlier
-/// versions wrote favorites under that synthesized key, which the JOIN-based favorite
-/// filter and ListRow metadata inflation (both keyed by event uid) never matched.
+/// Two different rules live here, on purpose:
+/// - **Notes, visits, view history** share the parent event's row — they are statements
+///   about the event, not about one showing of it.
+/// - **Favorites** are per occurrence, keyed by ``EventFavoriteKey`` (see
+///   `PerOccurrenceFavoriteTests` for the full behaviour).
+///
+/// Neither ever uses `EventObjectOccurrence.uid`, a synthesized "<eventUID>_<occurrenceID>"
+/// whose numeric half is reissued by every import. Earlier versions did, producing rows
+/// invisible to every favorite query; `migrateOccurrenceKeyedMetadata` still cleans those up.
 final class MetadataIdentityTests: XCTestCase {
     var playaDB: PlayaDB!
     var dbQueue: any DatabaseWriter {
@@ -43,7 +49,7 @@ final class MetadataIdentityTests: XCTestCase {
 
     // MARK: - Identity normalization
 
-    func testFavoritingOccurrenceWritesParentEventMetadata() async throws {
+    func testFavoritingOccurrenceWritesOccurrenceKeyedMetadata() async throws {
         let occurrence = try await firstOccurrence()
 
         try await playaDB.toggleFavorite(occurrence)
@@ -54,8 +60,10 @@ final class MetadataIdentityTests: XCTestCase {
                 WHERE object_type = 'event' AND is_favorite = 1
                 """)
         }
-        XCTAssertEqual(storedIds, [occurrence.event.uid],
-                       "Favorite must be stored under the parent event uid, not the synthesized occurrence uid")
+        XCTAssertEqual(storedIds, [occurrence.favoriteIdentity],
+                       "Favorite must be stored under the occurrence composite key, not the parent uid and not the synthesized occurrence uid")
+        XCTAssertEqual(EventFavoriteKey.split(occurrence.favoriteIdentity)?.eventUID,
+                       occurrence.event.uid)
 
         let viaOccurrence = try await playaDB.isFavorite(occurrence)
         XCTAssertTrue(viaOccurrence)

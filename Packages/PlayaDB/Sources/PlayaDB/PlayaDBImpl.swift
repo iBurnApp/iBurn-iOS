@@ -378,6 +378,11 @@ internal class PlayaDBImpl: PlayaDB {
             // Migration: fold occurrence-keyed event metadata into parent event rows.
             try self.migrateOccurrenceKeyedMetadata(db)
 
+            // Migration: split legacy series favorites (one row on the bare event uid)
+            // into per-occurrence rows. Runs after the fold above so rows it rescued are
+            // included. Data-dependent: no-ops until event_occurrences is populated.
+            try self.foldLegacyEventFavorites(db)
+
             // Migration: collapse duplicate home/bike pins written by the pre-upsert
             // placement path (see `collapseDuplicateSingletonPins`).
             try Self.collapseDuplicateSingletonPins(db)
@@ -1159,16 +1164,20 @@ internal class PlayaDBImpl: PlayaDB {
             .including(optional: EventObject.locatedArt))
 
         // Push remaining filters into SQL.
+        //
+        // Favorites are keyed per occurrence (`EventFavoriteKey`), whose id embeds an
+        // ISO-8601 rendering of the start instant. Rather than have SQLite re-derive that
+        // string from the stored date, SQL narrows to events with *any* favorited row and
+        // the exact per-occurrence rule runs in Swift below — same rule, same one place.
+        let favoriteIndex: EventFavoriteIndex?
         if filter.onlyFavorites {
-            let predicate: SQL = SQL("""
-                EXISTS (
-                    SELECT 1 FROM object_metadata
-                    WHERE object_metadata.object_type = \(DataObjectType.event.rawValue)
-                      AND object_metadata.object_id = event_occurrences.event_id
-                      AND object_metadata.is_favorite = 1
-                )
-            """)
-            request = request.filter(predicate)
+            let index = try EventFavoriteIndex.load(db)
+            let candidates = index.candidateEventUIDs
+            guard !candidates.isEmpty else { return [] }
+            request = request.filter(candidates.contains(EventOccurrence.Columns.eventId))
+            favoriteIndex = index
+        } else {
+            favoriteIndex = nil
         }
         if let year = filter.year {
             request = request.joining(required: eventAssociation
@@ -1185,7 +1194,9 @@ internal class PlayaDBImpl: PlayaDB {
         }
 
         let joined = try EventOccurrenceJoinedRow.fetchAll(db, request)
-        return joined.map { $0.toEventObjectOccurrence() }
+        let inflated = joined.map { $0.toEventObjectOccurrence() }
+        guard let favoriteIndex else { return inflated }
+        return inflated.filter { favoriteIndex.isFavorite($0) }
     }
 
     private func eventObjectOccurrences(
@@ -1216,28 +1227,28 @@ internal class PlayaDBImpl: PlayaDB {
             let regionIDs = try occurrenceIDsInRegion(db, region: region)
             occurrenceRequest = occurrenceRequest.filter(regionIDs.contains(EventOccurrence.Columns.id))
         }
+        // Same narrowing as `eventObjectOccurrencesJoined`: events with any favorited row
+        // in SQL, the exact per-occurrence rule in Swift.
+        let favoriteIndex: EventFavoriteIndex?
+        if filter.onlyFavorites {
+            let index = try EventFavoriteIndex.load(db)
+            let candidates = index.candidateEventUIDs
+            guard !candidates.isEmpty else { return [] }
+            occurrenceRequest = occurrenceRequest
+                .filter(candidates.contains(EventOccurrence.Columns.eventId))
+            favoriteIndex = index
+        } else {
+            favoriteIndex = nil
+        }
+
         let occurrences = try occurrenceRequest.fetchAll(db)
 
         let pairs = try eventObjectOccurrences(for: occurrences, db: db)
 
-        let favoriteEventIds: Set<String>
-        if filter.onlyFavorites {
-            let metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
-                .filter(ObjectMetadata.Columns.isFavorite == true)
-                .fetchAll(db)
-            favoriteEventIds = Set(metadata.map(\.objectId))
-        } else {
-            favoriteEventIds = []
-        }
-
         return pairs.filter { pair in
             let event = pair.event
 
-            // Favorites are keyed by the parent event uid (metadataIdentity normalizes
-            // occurrence writes; migrateOccurrenceKeyedMetadata folded legacy rows).
-            // This matches the SQL EXISTS predicate in eventObjectOccurrencesJoined.
-            if filter.onlyFavorites, !favoriteEventIds.contains(event.uid) {
+            if let favoriteIndex, !favoriteIndex.isFavorite(pair) {
                 return false
             }
 
@@ -1298,9 +1309,14 @@ internal class PlayaDBImpl: PlayaDB {
     /// - Parameter regions: Explicit observation regions. When provided, only changes to these
     ///   regions trigger re-evaluation. The fetch closure can read from any table freely.
     ///   When nil, GRDB auto-tracks all tables accessed in the fetch closure.
+    /// - Parameter favoriteIdentity: When the object's favorite bit lives on a *different*
+    ///   `object_metadata` row than its notes/visits/views — which is the case for event
+    ///   occurrences (see ``EventFavoriteKey``) — this returns that row's id, and the
+    ///   inflated `ListRow.metadata` gets `isFavorite` overlaid from it.
     private func observeListRows<T: Equatable>(
         type: DataObjectType,
         ids: @escaping ([T]) -> [String],
+        favoriteIdentity: (@Sendable (T) -> String)? = nil,
         regions: [any DatabaseRegionConvertible]? = nil,
         value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([ListRow<T>]) -> Void,
@@ -1325,11 +1341,35 @@ internal class PlayaDBImpl: PlayaDB {
                 .fetchAll(db)
             let colorsByID = Dictionary(uniqueKeysWithValues: allColors.map { ($0.objectId, $0) })
 
+            // One read of the event metadata slice covers every row's favorite overlay.
+            let favoriteIndex = favoriteIdentity == nil ? nil : try EventFavoriteIndex.load(db)
+
             return objects.map { obj in
                 let uid = ids([obj]).first ?? ""
+                var metadata = metaByID[uid]
+                if let favoriteIdentity, let favoriteIndex {
+                    let isFavorite = favoriteIndex.isFavorite(identity: favoriteIdentity(obj))
+                    if metadata != nil {
+                        metadata?.isFavorite = isFavorite
+                    } else if isFavorite {
+                        // No parent row (never viewed, no notes) but the occurrence is
+                        // favorited: synthesize the record the row needs to draw a
+                        // filled heart. Not persisted — it's a read-time projection.
+                        // Fixed timestamps, not `Date()`: these values feed the
+                        // observation's `removeDuplicates`, and a fresh `now` on every
+                        // fetch would make every emission look like a change.
+                        metadata = ObjectMetadata(
+                            objectType: typeRaw,
+                            objectId: uid,
+                            isFavorite: true,
+                            createdAt: .distantPast,
+                            updatedAt: .distantPast
+                        )
+                    }
+                }
                 return ListRow(
                     object: obj,
-                    metadata: metaByID[uid],
+                    metadata: metadata,
                     thumbnailColors: colorsByID[uid]
                 )
             }
@@ -1410,6 +1450,7 @@ internal class PlayaDBImpl: PlayaDB {
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
+            favoriteIdentity: { $0.favoriteIdentity },
             regions: [
                 EventOccurrence.all(),
                 EventObject.all(),
@@ -1472,6 +1513,7 @@ internal class PlayaDBImpl: PlayaDB {
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
+            favoriteIdentity: { $0.favoriteIdentity },
             regions: [
                 EventOccurrence.all(),
                 EventObject.all(),
@@ -1742,6 +1784,15 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    func deleteCalendarEntry(eventId: String, occurrenceKey: String) async throws {
+        _ = try await dbQueue.write { db in
+            try EventCalendarEntry
+                .filter(EventCalendarEntry.Columns.eventId == eventId)
+                .filter(EventCalendarEntry.Columns.occurrenceKey == occurrenceKey)
+                .deleteAll(db)
+        }
+    }
+
     func fetchAllCalendarEntries() async throws -> [EventCalendarEntry] {
         try await dbQueue.read { db in
             try EventCalendarEntry
@@ -1968,15 +2019,65 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - Metadata Helpers
 
-    /// Metadata identity for an object. Event occurrences share their parent event's
-    /// metadata row — favorites, notes, and view history apply to the event, not to a
-    /// single occurrence (EventObjectOccurrence.uid is a synthesized
-    /// "<eventUID>_<occurrenceID>" that never matches the event_objects table).
+    /// Metadata identity for an object's *non-favorite* fields (notes, visit status,
+    /// view history). Event occurrences share their parent event's row here: "I visited
+    /// this" and "my note about this" are statements about the event, not about one
+    /// morning of it. (`EventObjectOccurrence.uid` is a synthesized
+    /// "<eventUID>_<occurrenceID>" that never matches the event_objects table, and whose
+    /// numeric half is reissued by every import — it is never a storage key.)
+    ///
+    /// Favorites are the exception and are keyed per occurrence — see
+    /// ``favoriteTarget(for:)`` and ``EventFavoriteKey``.
     private func metadataIdentity(for object: any DataObject) -> (type: DataObjectType, uid: String) {
         if let occurrence = object as? EventObjectOccurrence {
             return (.event, occurrence.event.uid)
         }
         return (object.objectType, object.uid)
+    }
+
+    /// What a favorite write or read is actually about.
+    private enum FavoriteTarget {
+        /// One `object_metadata` row: any non-event object, or one event occurrence
+        /// (whose objectID is the ``EventFavoriteKey`` composite).
+        case single(type: DataObjectType, objectID: String)
+        /// Every occurrence of one event. A bare `EventObject` has no occurrence to
+        /// point at, so its heart means the whole series (Detail opened on an event
+        /// rather than on a specific showing).
+        case eventSeries(eventUID: String)
+    }
+
+    /// Where an object's favorite bit lives. Event occurrences get their own row so
+    /// favoriting Tuesday's yoga leaves Wednesday's alone.
+    private func favoriteTarget(for object: any DataObject) -> FavoriteTarget {
+        if let occurrence = object as? EventObjectOccurrence {
+            return .single(type: .event, objectID: occurrence.favoriteIdentity)
+        }
+        if let event = object as? EventObject {
+            return .eventSeries(eventUID: event.uid)
+        }
+        return .single(type: object.objectType, objectID: object.uid)
+    }
+
+    /// Resolves an occurrence's favorite state, honoring the legacy parent-uid row.
+    /// See ``EventFavoriteKey`` for the precedence rule.
+    private static func isFavoriteOccurrence(identity: String, db: Database) throws -> Bool {
+        if let own = try Bool.fetchOne(db, sql: """
+            SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+            """, arguments: [DataObjectType.event.rawValue, identity]) {
+            return own
+        }
+        let parentUID = EventFavoriteKey.eventUID(from: identity)
+        return try Bool.fetchOne(db, sql: """
+            SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+            """, arguments: [DataObjectType.event.rawValue, parentUID]) ?? false
+    }
+
+    /// Every occurrence identity of one event, oldest first.
+    private static func occurrenceIdentities(eventUID: String, db: Database) throws -> [String] {
+        let startDates = try Date.fetchAll(db, sql: """
+            SELECT start_time FROM event_occurrences WHERE event_id = ? ORDER BY start_time
+            """, arguments: [eventUID])
+        return startDates.map { EventFavoriteKey.objectID(eventUID: eventUID, startDate: $0) }
     }
 
     /// Merges legacy occurrence-keyed event metadata rows ("<eventUID>_<occID>") into
@@ -2017,6 +2118,54 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: """
                 DELETE FROM object_metadata WHERE object_type = ? AND object_id = ?
                 """, arguments: [DataObjectType.event.rawValue, synthetic.objectId])
+        }
+    }
+
+    /// Promotes legacy series favorites (a favorited row keyed by the bare event uid)
+    /// into explicit per-occurrence rows.
+    ///
+    /// Before per-occurrence favorites, favoriting any showing of a recurring event wrote
+    /// one row under the parent uid, which meant *every* occurrence read as favorited.
+    /// That intent is preserved literally: each occurrence of the event gets its own row
+    /// carrying the parent's `is_favorite` and `favorite_updated_at`.
+    ///
+    /// Notes:
+    /// - **The parent row is left favorited.** It stays the fallback for occurrences that
+    ///   have no row of their own — including ones a later data refresh adds, and ones a
+    ///   peer running an older build knows about. Clearing it would also push an
+    ///   "unfavorited" edit at those peers through `favoriteSyncItems`.
+    /// - **Explicit occurrence rows are never overwritten**, so a user who has already
+    ///   unfavorited one showing keeps that decision.
+    /// - **Data-dependent and idempotent.** Events with no occurrences yet (the fold can
+    ///   run before the first import or seed restore) are skipped and picked up on a later
+    ///   open; occurrences that already have a row are skipped every time after the first.
+    private func foldLegacyEventFavorites(_ db: Database) throws {
+        let parentRows = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+            .filter(ObjectMetadata.Columns.isFavorite == true)
+            .fetchAll(db)
+            .filter { !EventFavoriteKey.isComposite($0.objectId) }
+        guard !parentRows.isEmpty else { return }
+
+        for parent in parentRows {
+            let identities = try Self.occurrenceIdentities(eventUID: parent.objectId, db: db)
+            guard !identities.isEmpty else { continue }
+
+            let existing = try ObjectMetadata
+                .select(ObjectMetadata.Columns.objectId, as: String.self)
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .filter(identities.contains(ObjectMetadata.Columns.objectId))
+                .fetchSet(db)
+
+            for identity in identities where !existing.contains(identity) {
+                var row = ObjectMetadata(
+                    objectType: DataObjectType.event.rawValue,
+                    objectId: identity,
+                    isFavorite: true,
+                    favoriteUpdatedAt: parent.favoriteUpdatedAt ?? parent.updatedAt
+                )
+                try row.insert(db)
+            }
         }
     }
 
@@ -2125,17 +2274,117 @@ internal class PlayaDBImpl: PlayaDB {
 
     func metadata(for object: any DataObject) async throws -> ObjectMetadata {
         let identity = metadataIdentity(for: object)
+        let favorite = favoriteTarget(for: object)
         try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         return try await dbQueue.read { db in
-            guard let metadata = try ObjectMetadata
+            guard var metadata = try ObjectMetadata
                 .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
                 .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
+            // Notes/visits/views come from the row above; the favorite bit may live on a
+            // different (occurrence-keyed) row. Overlay it so callers see one coherent
+            // record — the merge belongs here, not in every screen.
+            switch favorite {
+            case let .single(_, objectID) where objectID != identity.uid:
+                metadata.isFavorite = try Self.isFavoriteOccurrence(identity: objectID, db: db)
+            case let .eventSeries(eventUID):
+                let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                metadata.isFavorite = try Self.isFavoriteSeries(
+                    eventUID: eventUID, identities: identities, db: db)
+            case .single:
+                break
+            }
             return metadata
         }
+    }
+
+    /// Whether *any* showing of an event is favorited — what a bare `EventObject`'s heart
+    /// answers. Falls back to the parent row for events with no occurrences on file.
+    private static func isFavoriteSeries(
+        eventUID: String,
+        identities: [String],
+        db: Database
+    ) throws -> Bool {
+        guard !identities.isEmpty else {
+            return try Bool.fetchOne(db, sql: """
+                SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+                """, arguments: [DataObjectType.event.rawValue, eventUID]) ?? false
+        }
+        for identity in identities {
+            if try isFavoriteOccurrence(identity: identity, db: db) { return true }
+        }
+        return false
+    }
+
+    /// Writes one favorite row, creating it when needed. Returns whether anything changed.
+    @discardableResult
+    private static func writeFavorite(
+        _ isFavorite: Bool,
+        type: DataObjectType,
+        objectID: String,
+        currentValue: Bool,
+        db: Database
+    ) throws -> Bool {
+        let existing = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+            .filter(ObjectMetadata.Columns.objectId == objectID)
+            .fetchOne(db)
+
+        if var metadata = existing {
+            guard metadata.isFavorite != isFavorite else { return false }
+            metadata.isFavorite = isFavorite
+            metadata.favoriteUpdatedAt = Date()
+            metadata.updatedAt = Date()
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.isFavorite,
+                ObjectMetadata.Columns.favoriteUpdatedAt,
+                ObjectMetadata.Columns.updatedAt,
+            ])
+            return true
+        }
+
+        // No row of our own. `currentValue` may still be true — an occurrence inheriting a
+        // legacy parent favorite — in which case a `false` row has to be materialized to
+        // out-vote the parent (see `EventFavoriteKey`). Only a no-op `false` is skipped.
+        guard isFavorite || currentValue else { return false }
+        var newMetadata = ObjectMetadata(
+            objectType: type.rawValue,
+            objectId: objectID,
+            isFavorite: isFavorite,
+            favoriteUpdatedAt: Date()
+        )
+        try newMetadata.insert(db)
+        return true
+    }
+
+    /// Sets every occurrence of an event to `isFavorite`, plus the parent row so the
+    /// series answer survives a later data refresh adding occurrences.
+    /// Returns the number of rows actually changed.
+    @discardableResult
+    private static func writeSeriesFavorite(
+        _ isFavorite: Bool,
+        eventUID: String,
+        db: Database
+    ) throws -> Int {
+        var changed = 0
+        for identity in try occurrenceIdentities(eventUID: eventUID, db: db) {
+            let current = try isFavoriteOccurrence(identity: identity, db: db)
+            if try writeFavorite(isFavorite, type: .event, objectID: identity,
+                                 currentValue: current, db: db) {
+                changed += 1
+            }
+        }
+        let parentCurrent = try Bool.fetchOne(db, sql: """
+            SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+            """, arguments: [DataObjectType.event.rawValue, eventUID]) ?? false
+        if try writeFavorite(isFavorite, type: .event, objectID: eventUID,
+                             currentValue: parentCurrent, db: db) {
+            changed += 1
+        }
+        return changed
     }
 
     // MARK: - Metadata Operations
@@ -2153,7 +2402,11 @@ internal class PlayaDBImpl: PlayaDB {
                 switch meta.dataObjectType {
                 case .art: artIDs.append(meta.objectId)
                 case .camp: campIDs.append(meta.objectId)
-                case .event: eventIDs.append(meta.objectId)
+                // Favorites for events are per occurrence, but this API answers in whole
+                // `EventObject`s — collapse composite ids back to the parent uid so an
+                // event with any favorited showing appears exactly once. Callers that
+                // need the showings use `fetchFavoriteEvents`.
+                case .event: eventIDs.append(EventFavoriteKey.eventUID(from: meta.objectId))
                 case .mutantVehicle: mvIDs.append(meta.objectId)
                 case .none: break
                 }
@@ -2177,91 +2430,106 @@ internal class PlayaDBImpl: PlayaDB {
     }
     
     func toggleFavorite(_ object: any DataObject) async throws {
-        let identity = metadataIdentity(for: object)
-        let isFavorite = try await dbQueue.write { db -> Bool in
-            let objectType = identity.type.rawValue
-            let objectId = identity.uid
-
-            let existingMetadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.objectId == objectId)
-                .fetchOne(db)
-
-            if var metadata = existingMetadata {
-                metadata.isFavorite = !metadata.isFavorite
-                metadata.favoriteUpdatedAt = Date()
-                metadata.updatedAt = Date()
-                try metadata.update(db, columns: [
-                    ObjectMetadata.Columns.isFavorite,
-                    ObjectMetadata.Columns.favoriteUpdatedAt,
-                    ObjectMetadata.Columns.updatedAt,
-                ])
-                return metadata.isFavorite
-            } else {
-                var newMetadata = ObjectMetadata(
-                    objectType: objectType,
-                    objectId: objectId,
-                    isFavorite: true,
-                    favoriteUpdatedAt: Date()
-                )
-                try newMetadata.insert(db)
-                return true
+        let target = favoriteTarget(for: object)
+        let postedType: DataObjectType
+        switch target {
+        case let .single(type, _): postedType = type
+        case .eventSeries: postedType = .event
+        }
+        let result = try await dbQueue.write { db -> (uid: String, isFavorite: Bool) in
+            switch target {
+            case let .single(type, objectID):
+                // Current state, not "the row we happen to have": an occurrence with no
+                // row of its own can still read favorited through the legacy parent row,
+                // and tapping its heart has to turn that *off*.
+                let current = type == .event
+                    ? try Self.isFavoriteOccurrence(identity: objectID, db: db)
+                    : try ObjectMetadata
+                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                        .filter(ObjectMetadata.Columns.objectId == objectID)
+                        .fetchOne(db)?.isFavorite ?? false
+                try Self.writeFavorite(!current, type: type, objectID: objectID,
+                                       currentValue: current, db: db)
+                return (objectID, !current)
+            case let .eventSeries(eventUID):
+                let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                let current = try Self.isFavoriteSeries(
+                    eventUID: eventUID, identities: identities, db: db)
+                try Self.writeSeriesFavorite(!current, eventUID: eventUID, db: db)
+                return (eventUID, !current)
             }
         }
         // Every screen that toggles a heart funnels through here, which is what makes this
         // the one place a "someone just favorited this" signal can be posted once. See
-        // `FavoriteChangeNotification.swift`.
+        // `FavoriteChangeNotification.swift`. For event occurrences the uid is the
+        // ``EventFavoriteKey`` composite, which is what lets an observer tell "one showing"
+        // from "the whole series" (see `FavoriteSeriesToastCoordinator` in the app).
         PlayaDBFavoriteChange.post(
-            objectType: identity.type.rawValue,
-            uid: identity.uid,
-            isFavorite: isFavorite
+            objectType: postedType.rawValue,
+            uid: result.uid,
+            isFavorite: result.isFavorite
         )
     }
 
     func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {
-        let identity = metadataIdentity(for: object)
+        let target = favoriteTarget(for: object)
         try await dbQueue.write { db in
-            let objectType = identity.type.rawValue
-            let objectId = identity.uid
-
-            let existingMetadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.objectId == objectId)
-                .fetchOne(db)
-
-            if var metadata = existingMetadata {
-                guard metadata.isFavorite != isFavorite else { return }
-                metadata.isFavorite = isFavorite
-                metadata.favoriteUpdatedAt = Date()
-                metadata.updatedAt = Date()
-                try metadata.update(db, columns: [
-                    ObjectMetadata.Columns.isFavorite,
-                    ObjectMetadata.Columns.favoriteUpdatedAt,
-                    ObjectMetadata.Columns.updatedAt,
-                ])
-            } else {
-                var newMetadata = ObjectMetadata(
-                    objectType: objectType,
-                    objectId: objectId,
-                    isFavorite: isFavorite,
-                    favoriteUpdatedAt: Date()
-                )
-                try newMetadata.insert(db)
+            switch target {
+            case let .single(type, objectID):
+                let current = type == .event
+                    ? try Self.isFavoriteOccurrence(identity: objectID, db: db)
+                    : try ObjectMetadata
+                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                        .filter(ObjectMetadata.Columns.objectId == objectID)
+                        .fetchOne(db)?.isFavorite ?? false
+                try Self.writeFavorite(isFavorite, type: type, objectID: objectID,
+                                       currentValue: current, db: db)
+            case let .eventSeries(eventUID):
+                try Self.writeSeriesFavorite(isFavorite, eventUID: eventUID, db: db)
             }
+        }
+    }
+
+    func setFavorite(_ isFavorite: Bool, forEventSeries eventUID: String) async throws -> Int {
+        try await dbQueue.write { db in
+            try Self.writeSeriesFavorite(isFavorite, eventUID: eventUID, db: db)
+        }
+    }
+
+    func favoriteOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence] {
+        try await dbQueue.read { db in
+            let index = try EventFavoriteIndex.load(db)
+            let occurrences = try EventOccurrence
+                .filter(EventOccurrence.Columns.eventId == uid)
+                .order(EventOccurrence.Columns.startTime)
+                .fetchAll(db)
+            let inflated = try self.eventObjectOccurrences(for: occurrences, db: db)
+            return inflated.filter { index.isFavorite($0) }
         }
     }
 
     func favoriteIdentifiers(among objects: [any DataObject]) async throws -> Set<String> {
         guard !objects.isEmpty else { return [] }
 
-        // Collapse to metadata identities first: several occurrences of one event share a
-        // single metadata row, so the query asks about each event only once.
+        // Non-event objects answer to their own uid; event occurrences answer to their
+        // ``EventFavoriteKey`` composite, so two showings of one event are asked about
+        // separately (which is the whole point).
         var mutableIDsByType: [DataObjectType: Set<String>] = [:]
+        var occurrenceIdentities: Set<String> = []
+        var seriesUIDs: Set<String> = []
         for object in objects {
-            let identity = metadataIdentity(for: object)
-            mutableIDsByType[identity.type, default: []].insert(identity.uid)
+            switch favoriteTarget(for: object) {
+            case let .single(type, objectID) where type == .event:
+                occurrenceIdentities.insert(objectID)
+            case let .single(type, objectID):
+                mutableIDsByType[type, default: []].insert(objectID)
+            case let .eventSeries(eventUID):
+                seriesUIDs.insert(eventUID)
+            }
         }
         let idsByType = mutableIDsByType
+        let occurrences = occurrenceIdentities
+        let series = seriesUIDs
 
         return try await dbQueue.read { db in
             var favorites: Set<String> = []
@@ -2273,6 +2541,18 @@ internal class PlayaDBImpl: PlayaDB {
                     .filter(ids.contains(ObjectMetadata.Columns.objectId))
                     .fetchAll(db)
                 favorites.formUnion(favorited)
+            }
+            if !occurrences.isEmpty || !series.isEmpty {
+                let index = try EventFavoriteIndex.load(db)
+                for identity in occurrences where index.isFavorite(identity: identity) {
+                    favorites.insert(identity)
+                }
+                for eventUID in series {
+                    let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                    if index.isAnyFavorite(eventUID: eventUID, occurrenceIdentities: identities) {
+                        favorites.insert(eventUID)
+                    }
+                }
             }
             return favorites
         }
@@ -2350,17 +2630,21 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func isFavorite(_ object: any DataObject) async throws -> Bool {
-        let identity = metadataIdentity(for: object)
+        let target = favoriteTarget(for: object)
         return try await dbQueue.read { db in
-            let objectType = identity.type.rawValue
-            let objectId = identity.uid
-
-            let metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.objectId == objectId)
-                .fetchOne(db)
-
-            return metadata?.isFavorite ?? false
+            switch target {
+            case let .single(type, objectID) where type == .event:
+                return try Self.isFavoriteOccurrence(identity: objectID, db: db)
+            case let .single(type, objectID):
+                return try ObjectMetadata
+                    .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                    .filter(ObjectMetadata.Columns.objectId == objectID)
+                    .fetchOne(db)?.isFavorite ?? false
+            case let .eventSeries(eventUID):
+                let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                return try Self.isFavoriteSeries(
+                    eventUID: eventUID, identities: identities, db: db)
+            }
         }
     }
 
@@ -2541,22 +2825,22 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    /// Every favorited *occurrence*, oldest first.
+    ///
+    /// Since favorites became per occurrence this returns exactly the showings the user
+    /// picked — not every showing of an event with one favorited showing, which is what
+    /// the Favorites screen used to list.
     func fetchFavoriteEvents() async throws -> [EventObjectOccurrence] {
         let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
-            let favoriteMetadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.isFavorite == true)
-                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+            let index = try EventFavoriteIndex.load(db)
+            let candidates = index.candidateEventUIDs
+            guard !candidates.isEmpty else { return [] }
+
+            let occurrences = try EventOccurrence
+                .filter(candidates.contains(EventOccurrence.Columns.eventId))
                 .fetchAll(db)
-
-            let favoriteIds = Set(favoriteMetadata.map(\.objectId))
-            guard !favoriteIds.isEmpty else { return [] }
-
-            // Batch fetch all favorite events at once
-            let eventObjects = try EventObject
-                .filter(favoriteIds.contains(Column("uid")))
-                .fetchAll(db)
-
-            return try eventObjectOccurrences(for: eventObjects, db: db)
+            let inflated = try eventObjectOccurrences(for: occurrences, db: db)
+            return inflated.filter { index.isFavorite($0) }
         }
         return events.sorted { $0.startDate < $1.startDate }
     }

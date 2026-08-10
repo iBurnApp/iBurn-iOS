@@ -102,29 +102,53 @@ and a far jump (e.g. 12am → 8pm) may land on a blank viewport until the next
 swipe/touch materializes rows (LazyVStack far-target estimation; short jumps land
 exactly).
 
-## 4. Favorite an event (end-to-end)
+## 4. Favorite an event occurrence (end-to-end)
 
-Preconditions: flow 3; pick any event row.
+Favorites are **per occurrence** since 2026-08-10: tapping a heart favorites the single
+showing on that row, not every showing of the event. See `EventFavoriteKey` in PlayaDB.
 
-1. Tap an event row → detail screen (title, HOSTED BY CAMP, NEXT EVENT,
-   host's other events).
-2. Tap the **"Add Favorite"** heart button (top bar; becomes "Remove Favorite").
-3. Tap the back button ("Events") to return to the list.
-4. Take a **screenshot** — the favorited row's heart is filled/red; others are
-   outlined. (Hearts are not in the AX tree.)
-5. Tap the **Favorites** tab — the event appears with all its occurrences,
-   under All/Events filter tabs.
+Preconditions: flow 3. Pick a **recurring** event, or the flow proves nothing — find one
+with `SELECT e.uid, e.name, COUNT(o.id) c FROM event_objects e JOIN event_occurrences o
+ON o.event_id = e.uid GROUP BY e.uid HAVING c > 2;` ("Booty Hour" and
+"Yoga - on a Bamboo Floor!" both have 6 in the 2026 data). Typing the event's name into
+"Search events" lists **all** of its occurrences on one screen, which is the easiest way
+to see the siblings.
 
-Verify in DB: exactly one new `object_metadata` row, `object_type='event'`,
-`object_id` equal to the parent event uid in `event_objects` (never
-`"<uid>_<n>"`), `is_favorite=1`.
+1. Tap the heart on one occurrence row. Its button label flips to
+   `"Unfavorite <name>"`; every sibling still reads `"Favorite <name>"`.
+2. The **series toast** rises above the tab bar: "Favorited this occurrence of <name>." /
+   "It has N other occurrences." with a **"Favorite all N+1"** button and a dismiss X.
+   It is up for 5 seconds only — see the screenshot-timing note in SKILL.md.
+   No toast appears for a one-off event, or when *un*favoriting; that is correct.
+3. Tap **"Favorite all N+1"** — every occurrence's heart fills.
+4. Tap the **Favorites** tab (or the floating Favorites button in the `.searchTab`
+   layout): it lists exactly the favorited *occurrences*, not every occurrence of a
+   favorited event.
+5. Unfavorite one occurrence from Favorites — only that row leaves.
+
+Verify in DB after step 1: exactly one new `object_metadata` row with
+`object_type='event'` and `object_id = '<eventUID>#<ISO-8601 UTC start>'`; after step 3,
+one row per occurrence plus one on the bare `<eventUID>`. See "Invariants worth asserting"
+in SKILL.md for the full set, including the legacy parent-uid fold.
+
+`event_calendar_entries` should hold one row per **favorited** occurrence — six for a
+six-occurrence event after "Favorite all 6", one after favoriting a single showing.
 
 Also verify the Yap mirror (`FavoriteSyncService`): in
-`<app container>/Library/Application Support/iBurn/iBurn-2026/iBurn-2026.sqlite`,
-every per-occurrence row (`database2` table, collection `BRCEventObject`, keys
-`"<apiUID>-<n>"`) gets an updated metadata blob containing `isFavorite=true` and
-(with calendar permission granted) an EKEvent `calendarEventIdentifier`. The
-favorited blobs are larger than the ~440-byte import-stamped baseline.
+`<app container>/Library/Application Support/iBurn/iBurn-2026/iBurn-2026.sqlite`, the
+per-occurrence row (`database2` table, collection `BRCEventObject`, keys `"<apiUID>-<n>"`)
+whose `startDate` matches the favorited occurrence gets an updated metadata blob with
+`isFavorite=true`; a series-wide change updates all of them. The favorited blobs are
+larger than the ~440-byte import-stamped baseline.
+
+## 4b. Pre-existing (legacy) favorites survive
+
+A favorite written before per-occurrence keys is a single row on the bare event uid. To
+reproduce: terminate the app, `INSERT INTO object_metadata (object_type, object_id,
+is_favorite, favorite_updated_at, created_at, updated_at) VALUES ('event', '<uid>', 1, ...)`,
+relaunch. Every occurrence of that event shows filled, and the DB now holds N
+occurrence-keyed rows (added by `foldLegacyEventFavorites` at open) plus the original
+parent row, all sharing its `favorite_updated_at`.
 
 ## 5. Search (FTS)
 
@@ -192,11 +216,12 @@ chrome above the results:
   the filter is non-default; the sheet footer spells out the selected band's hours.
 - **Favoriting works from search.** Every result row's heart is live: tapping it flips the
   row immediately and writes through `PlayaDB.toggleFavorite` (mirrored into legacy Yap
-  like the list screens). Event favorites are keyed by the **parent event uid**, so every
-  occurrence of that event shows filled, and favorites set on other screens show up the
-  next time the search re-runs. Verify in the DB with
+  like the list screens). Search collapses an event to one row, and that row stands in for
+  one *showing*: its heart is that occurrence's state, tapping it favorites only that
+  occurrence, and the series toast follows. A different showing favorited elsewhere leaves
+  this heart empty. Verify in the DB with
   `SELECT object_type, object_id, is_favorite FROM object_metadata WHERE is_favorite = 1`
-  - an event row's `object_id` must match an `event_objects.uid`, never `"<uid>_<n>"`.
+  - an event row's `object_id` is `"<uid>#<ISO start>"`, never `"<uid>_<n>"`.
 - Empty states name the scope: "No camps for "Yoga"" / "Nothing matches that with these
   filters on." / "Try clearing the filters"; with no filter on it is "Nothing in this
   year's data matches that."

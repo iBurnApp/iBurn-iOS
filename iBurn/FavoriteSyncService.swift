@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import PlayaDB
 import YapDatabase
 
 /// The kind of object whose favorite state is being mirrored into the legacy database.
@@ -27,10 +28,12 @@ protocol FavoriteSyncService {
     ///
     /// - Parameters:
     ///   - type: The kind of object. `.mutantVehicle` is a no-op (there is no legacy Yap class).
-    ///   - uid: The PlayaDB uid (i.e. the raw API uid). For events, pass the *unsuffixed*
-    ///     API uid; every Yap per-occurrence object (`"<apiUID>-<index>"`, see
-    ///     `BRCRecurringEventObject.eventObjects()`) is updated, and the calendar entry
-    ///     for each occurrence is refreshed to match (EKEvent created/removed).
+    ///   - uid: The PlayaDB favorite identity. For events that is either an
+    ///     `EventFavoriteKey` composite (`"<apiUID>#<ISO start>"`), which mirrors onto the
+    ///     one Yap occurrence starting at that instant, or a bare API uid, which mirrors
+    ///     onto every Yap occurrence of the event (`"<apiUID>-<index>"`, see
+    ///     `BRCRecurringEventObject.eventObjects()`). Either way the event's calendar
+    ///     entries are reconciled afterwards.
     ///   - isFavorite: The new favorite state from PlayaDB.
     func mirrorFavorite(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) async
 
@@ -112,7 +115,7 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
         case .camp:
             await mirror(uid: uid, collection: BRCCampObject.yapCollection, isFavorite: isFavorite)
         case .event:
-            await mirrorEvent(apiUID: uid, isFavorite: isFavorite)
+            await mirrorEvent(favoriteIdentity: uid, isFavorite: isFavorite)
         case .mutantVehicle:
             // Mutant vehicles have no legacy YapDatabase representation; nothing to mirror.
             return
@@ -127,7 +130,10 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
         case .camp:
             didChange = await mirrorVisitStatus(uid: uid, collection: BRCCampObject.yapCollection, visitStatus: visitStatus)
         case .event:
-            didChange = await mirrorEventVisitStatus(apiUID: uid, visitStatus: visitStatus)
+            // Visit status is event-wide (only favorites are per occurrence), so a
+            // composite id arriving from favorite sync is normalized back to its event.
+            didChange = await mirrorEventVisitStatus(
+                apiUID: EventFavoriteKey.eventUID(from: uid), visitStatus: visitStatus)
         case .mutantVehicle:
             // Mutant vehicles have no legacy YapDatabase representation; nothing to mirror.
             return
@@ -148,7 +154,7 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
         case .camp:
             await mirrorNotes(uid: uid, collection: BRCCampObject.yapCollection, notes: notes)
         case .event:
-            await mirrorEventNotes(apiUID: uid, notes: notes)
+            await mirrorEventNotes(apiUID: EventFavoriteKey.eventUID(from: uid), notes: notes)
         case .mutantVehicle:
             // Mutant vehicles have no legacy YapDatabase representation; nothing to mirror.
             return
@@ -200,12 +206,26 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
         }
     }
 
-    /// Fans an event favorite out to *all* Yap occurrence objects derived from the API uid.
+    /// Mirrors an event favorite onto the Yap occurrence objects it refers to.
     ///
-    /// Yap stores one `BRCEventObject` per occurrence, keyed `"<apiUID>-<index>"`, so a
-    /// single PlayaDB favorite maps to N Yap objects. Keys are matched by exact equality
-    /// with the API uid (defensive) or by the `"<apiUID>-<digits>"` pattern.
-    private func mirrorEvent(apiUID: String, isFavorite: Bool) async {
+    /// Yap stores one `BRCEventObject` per occurrence, keyed `"<apiUID>-<index>"`. PlayaDB
+    /// favorites are per occurrence and identified by start instant, so:
+    ///
+    /// - A composite `favoriteIdentity` mirrors onto the single Yap object whose
+    ///   `startDate` renders to the same `EventCalendarEntry.occurrenceKey`. The Yap object
+    ///   has to be loaded to be written anyway, so matching on its start time costs nothing
+    ///   — no index-position guessing, which would be wrong the moment the API reorders an
+    ///   `occurrence_set`.
+    /// - A bare API uid (a series-wide change, e.g. from a bare `EventObject` heart or a
+    ///   peer running an older build) fans out to every occurrence, as before.
+    ///
+    /// Keys are matched by exact equality with the API uid (defensive) or by the
+    /// `"<apiUID>-<digits>"` pattern.
+    private func mirrorEvent(favoriteIdentity: String, isFavorite: Bool) async {
+        let parts = EventFavoriteKey.split(favoriteIdentity)
+        let apiUID = parts?.eventUID ?? favoriteIdentity
+        let targetOccurrenceKey = parts?.occurrenceKey
+
         let updatedKeys: [String] = await withCheckedContinuation { continuation in
             var mirroredKeys: [String] = []
             connection.asyncReadWrite({ transaction in
@@ -218,6 +238,10 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
                     guard let event = transaction.object(forKey: key, inCollection: collection) as? BRCEventObject else {
                         continue
                     }
+                    if let targetOccurrenceKey,
+                       EventCalendarEntry.occurrenceKey(for: event.startDate) != targetOccurrenceKey {
+                        continue
+                    }
                     let metadata = event.metadata(with: transaction).metadataCopy()
                     metadata.isFavorite = isFavorite
                     event.replace(metadata, transaction: transaction)
@@ -228,10 +252,16 @@ final class FavoriteSyncServiceImpl: FavoriteSyncService {
             })
         }
         // Match legacy detail behavior: favoriting creates an EKEvent (per occurrence),
-        // unfavoriting removes it and clears the stored identifier. Invoked after the
-        // metadata write has committed so the hook's own transaction sees the new state.
-        for key in updatedKeys {
-            calendarRefreshHook(key, isFavorite)
+        // unfavoriting removes it. Invoked after the metadata write has committed so the
+        // hook's own transaction sees the new state. Fired even when no Yap object matched
+        // — a device with no legacy database (or an occurrence Yap never knew about) still
+        // needs its calendar reconciled, and the hook keys off the API uid either way.
+        if updatedKeys.isEmpty {
+            calendarRefreshHook(apiUID, isFavorite)
+        } else {
+            for key in updatedKeys {
+                calendarRefreshHook(key, isFavorite)
+            }
         }
     }
 
