@@ -377,6 +377,10 @@ internal class PlayaDBImpl: PlayaDB {
 
             // Migration: fold occurrence-keyed event metadata into parent event rows.
             try self.migrateOccurrenceKeyedMetadata(db)
+
+            // Migration: collapse duplicate home/bike pins written by the pre-upsert
+            // placement path (see `collapseDuplicateSingletonPins`).
+            try Self.collapseDuplicateSingletonPins(db)
         }
     }
     
@@ -1610,10 +1614,69 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - User Map Pins
 
+    /// Upserts the pin, and — for the singleton types — retires whatever else was
+    /// holding that type.
+    ///
+    /// Home and bike are one-per-device by design (see `UserMapPinType.singletonTypes`).
+    /// Enforcing that here rather than in the UI is what makes a double tap on the map's
+    /// bike button harmless: the second write supersedes the first instead of leaving two
+    /// rows behind, no matter how the two taps interleave.
     func saveUserMapPin(_ pin: UserMapPin) async throws {
         try await dbQueue.write { db in
             var pin = pin
             try pin.save(db, onConflict: .replace)
+            try Self.retireOtherSingletonPins(db, keeping: pin)
+        }
+    }
+
+    /// Tombstones every *other* live row sharing `pin`'s type, when that type is a
+    /// singleton. Soft-deleted rather than hard-deleted so the collapse survives sync:
+    /// a row that simply vanished here would come straight back from the peer's snapshot.
+    private static func retireOtherSingletonPins(_ db: Database, keeping pin: UserMapPin) throws {
+        guard UserMapPinType(pinTypeString: pin.pinType).isSingleton, !pin.isDeleted else { return }
+        let losers = try UserMapPin
+            .filter(UserMapPin.Columns.pinType == pin.pinType)
+            .filter(UserMapPin.Columns.isDeleted == false)
+            .filter(UserMapPin.Columns.id != pin.id)
+            .fetchAll(db)
+        try tombstone(losers, in: db)
+    }
+
+    /// Marks each pin deleted with a stamp strictly newer than the one it replaces, so
+    /// last-writer-wins on the peer resolves in the tombstone's favour.
+    private static func tombstone(_ pins: some Sequence<UserMapPin>, in db: Database) throws {
+        let now = Date()
+        for pin in pins {
+            var tombstoned = pin
+            tombstoned.isDeleted = true
+            tombstoned.modifiedDate = max(now, pin.modifiedDate.addingTimeInterval(1))
+            try tombstoned.update(db)
+        }
+    }
+
+    /// Folds pre-existing duplicate home/bike rows down to one live row per type.
+    ///
+    /// Placing a home or bike used to be "ask the database whether one exists, insert if
+    /// not", with the insert unawaited — so two quick taps could both miss and both write.
+    /// `saveUserMapPin` now upserts by type, but databases written by earlier builds still
+    /// carry the duplicates, which show up as stacked pins on the map. Run at open, next
+    /// to the other data-dependent folds. Idempotent, and it writes nothing at all in the
+    /// overwhelmingly common case of at most one live row per type.
+    static func collapseDuplicateSingletonPins(_ db: Database) throws {
+        for type in UserMapPinType.singletonTypes {
+            let live = try UserMapPin
+                .filter(UserMapPin.Columns.pinType == type.rawValue)
+                .filter(UserMapPin.Columns.isDeleted == false)
+                .fetchAll(db)
+            guard live.count > 1 else { continue }
+            // Newest edit wins, with creation date and id as tie-breakers so two devices
+            // folding the same rows independently keep the same survivor.
+            let ordered = live.sorted { lhs, rhs in
+                if lhs.modifiedDate != rhs.modifiedDate { return lhs.modifiedDate < rhs.modifiedDate }
+                if lhs.createdDate != rhs.createdDate { return lhs.createdDate < rhs.createdDate }
+                return lhs.id < rhs.id
+            }
+            try tombstone(ordered.dropLast(), in: db)
         }
     }
 

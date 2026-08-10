@@ -163,6 +163,22 @@ public class UserMapViewAdapter: MapViewAdapter {
     /// Set this if you want draggable
     var editingAnnotation: BRCMapPoint?
 
+    /// A pin this adapter put on the map itself, rather than taking from the data source:
+    /// a brand-new home/bike/star that the user is still naming and that no `user_map_pins`
+    /// row exists for yet.
+    ///
+    /// It has to be remembered separately because `reloadAnnotations` removes only the
+    /// data source's own list. Once the save commits, the observation delivers a second
+    /// `BRCUserMapPoint` for the same `pinId`, and this reference is what lets the adapter
+    /// hand the pin over (see `willReplaceDataSourceAnnotations`) instead of leaving the
+    /// placed copy on the map underneath the database's copy — the stacked-pin bug.
+    private(set) var locallyPlacedAnnotation: BRCMapPoint?
+
+    /// True while a just-placed pin is still waiting to be named and saved. The map's
+    /// placement buttons check this so a second impatient tap doesn't start a second
+    /// placement on top of the first.
+    var hasUnsavedPlacement: Bool { locallyPlacedAnnotation != nil }
+
     // MARK: - Dropped person marker
 
     /// The transient "look from here" person, while one is standing on the map.
@@ -210,23 +226,66 @@ public class UserMapViewAdapter: MapViewAdapter {
 
     // MARK: - Public
     
+    /// Puts `mapPoint` up for editing: on the map if it isn't already, selected, with the
+    /// rename alert over it.
     func editMapPoint(_ mapPoint: BRCMapPoint) {
-        clearEditingAnnotation()
+        if registry.annotation(matching: mapPoint) == nil {
+            // Nothing on the map holds this pin's id, so it is a fresh placement and this
+            // adapter owns it until the database takes over. Added through the tracked
+            // path — a bare `mapView.addAnnotation` here is what let the observation's
+            // copy land on top of it.
+            discardUnsavedPlacement()
+            locallyPlacedAnnotation = mapPoint
+            addAnnotations([mapPoint])
+        }
         self.editingAnnotation = mapPoint
-        mapView.addAnnotation(mapPoint)
         mapView.selectAnnotation(mapPoint, animated: true, completionHandler: nil)
         showEditMapPointTitleAlert(for: mapPoint)
     }
-    
+
+    /// Centres on and selects the pin already on the map for `point`.
+    ///
+    /// The sidebar's "find my bike/home" answers from the database, so the object it hands
+    /// over is a *different instance* than the one drawn on the map; selecting that
+    /// instance did nothing at all, which is why the button looked dead once a pin
+    /// existed. Resolve it to the on-map pin first.
+    func revealUserMapPoint(_ point: BRCUserMapPoint) {
+        let onMap = (registry.annotation(matching: point) as? BRCMapPoint) ?? point
+        if registry.annotation(matching: onMap) == nil {
+            // The observation hasn't delivered this pin yet (a save still in flight, say).
+            addAnnotations([onMap])
+        }
+        mapView.setCenter(onMap.coordinate, animated: true)
+        mapView.selectAnnotation(onMap, animated: true, completionHandler: nil)
+    }
+
     // MARK: - MLNMapViewDelegate Overrides
-    
+
+    override func willReplaceDataSourceAnnotations(with annotations: [MLNAnnotation]) {
+        // A pin taken *from* the data source for editing is about to be replaced by a
+        // fresh instance of itself, so the stale reference has to go — otherwise
+        // `didDeselect` would later re-save an object that is no longer on the map.
+        // A pin this adapter placed is not in that list and survives, so naming or
+        // dragging it isn't interrupted by an unrelated reload.
+        if let editing = editingAnnotation, editing !== locallyPlacedAnnotation {
+            editingAnnotation = nil
+        }
+
+        guard let placed = locallyPlacedAnnotation,
+              MapAnnotationRegistry.contains(keyOf: placed, in: annotations) else { return }
+        // The save landed and the database now publishes this pin: hand it over, so the
+        // copy on the map is the one that keeps up with later edits and peer syncs. The
+        // tracked removal is what frees the key for the incoming copy.
+        locallyPlacedAnnotation = nil
+        if editingAnnotation === placed { editingAnnotation = nil }
+        removeAnnotations([placed])
+    }
+
     override public func reloadAnnotations() {
-        // Clear editing annotation - removes from map and nils reference
-        clearEditingAnnotation()
         campPinsBuiltForStyleDrawing = styleDrawsCampNames
         super.reloadAnnotations()
     }
-    
+
     override public func mapView(_ mapView: MLNMapView, viewFor annotation: MLNAnnotation) -> MLNAnnotationView? {
         // Handled ahead of `super`, which only builds image views for `BRCMapPoint`s — the
         // person is deliberately not one of those (nothing about it is saved).
@@ -448,26 +507,49 @@ public class UserMapViewAdapter: MapViewAdapter {
 // MARK: - Public
 
 private extension UserMapViewAdapter {
-    
-    func clearEditingAnnotation() {
-        guard let existingMapPoint = self.editingAnnotation else { return }
-        editingAnnotation = nil  // Clear reference first
-        mapView.removeAnnotation(existingMapPoint)
-    }
-    
-    func saveMapPoint(_ mapPoint: BRCMapPoint) {
-        if let userPin = mapPoint as? BRCUserMapPoint {
-            let pin = userPin.toUserMapPin()
-            Task { try? await playaDB.saveUserMapPin(pin) }
-        }
 
-        // For new/edited pins, just clear the editing reference
-        // Don't remove from map - it should stay visible
+    /// Takes an unsaved placement back off the map, tracking included, so nothing is left
+    /// holding its key.
+    func discardUnsavedPlacement() {
+        guard let placed = locallyPlacedAnnotation else { return }
+        locallyPlacedAnnotation = nil
+        if editingAnnotation === placed { editingAnnotation = nil }
+        mapView.deselectAnnotation(placed, animated: false)
+        removeAnnotations([placed])
+    }
+
+    /// Backs out of the rename alert. A pin placed for this edit and never saved comes off
+    /// the map entirely; one that already exists in the database keeps its old name and
+    /// stays where it is.
+    func cancelEdit(of mapPoint: BRCMapPoint) {
+        if mapPoint === locallyPlacedAnnotation {
+            discardUnsavedPlacement()
+        } else if mapPoint === editingAnnotation {
+            editingAnnotation = nil
+        }
+    }
+
+    func saveMapPoint(_ mapPoint: BRCMapPoint) {
+        // The pin stays on the map: what replaces it is the copy the observation delivers
+        // once the write commits, handed over in `willReplaceDataSourceAnnotations`.
         if mapPoint === editingAnnotation {
             editingAnnotation = nil
         }
-
-        DDLogInfo("Saved user annotation: \(mapPoint)")
+        guard let userPin = mapPoint as? BRCUserMapPoint else { return }
+        let pin = userPin.toUserMapPin()
+        Task { @MainActor in
+            do {
+                try await playaDB.saveUserMapPin(pin)
+                DDLogInfo("Saved user annotation: \(mapPoint)")
+            } catch {
+                DDLogError("Failed to save user annotation \(mapPoint): \(error)")
+                // Nothing is coming to supersede it, so release ownership rather than
+                // leaving the placement buttons wedged on a pin that never landed.
+                if mapPoint === self.locallyPlacedAnnotation {
+                    self.locallyPlacedAnnotation = nil
+                }
+            }
+        }
     }
 
     func deleteMapPoint(_ mapPoint: BRCMapPoint) {
@@ -475,11 +557,17 @@ private extension UserMapViewAdapter {
             Task { try? await playaDB.deleteUserMapPin(id: userPin.pinId) }
         }
 
-        // Remove from map immediately
         if mapPoint === editingAnnotation {
             editingAnnotation = nil
         }
-        mapView.removeAnnotation(mapPoint)
+        if mapPoint === locallyPlacedAnnotation {
+            locallyPlacedAnnotation = nil
+        }
+        // Tracked removal: a bare `mapView.removeAnnotation` left the pin's id registered,
+        // so re-adding that pin later (undo, peer sync) would silently be de-duplicated
+        // against a pin that is no longer there.
+        mapView.deselectAnnotation(mapPoint, animated: false)
+        removeAnnotations([mapPoint])
 
         DDLogInfo("Deleted user annotation: \(mapPoint)")
     }
@@ -518,18 +606,20 @@ private extension UserMapViewAdapter {
             textField.returnKeyType = .done
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in }
-        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.cancelEdit(of: mapPoint)
+        }
+
         let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self,
                   let textField = alertController.textFields?.first,
                   let newTitle = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                   !newTitle.isEmpty else {
-                guard let self else { return }
-                self.clearEditingAnnotation()
+                // An empty name discards a brand-new pin, same as Cancel.
+                self?.cancelEdit(of: mapPoint)
                 return
             }
-            
+
             mapPoint.title = newTitle
             
             self.saveMapPoint(mapPoint)

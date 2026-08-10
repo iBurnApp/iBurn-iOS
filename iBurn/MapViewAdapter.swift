@@ -44,9 +44,9 @@ public class MapViewAdapter: NSObject {
 
     /// for checking if annotations overlap
     private var overlappingAnnotations: [CLLocationCoordinate2DBox: [any OffsettableAnnotation]] = [:]
-    
-    /// Dictionary tracking all annotations currently on the map by stable keys
-    private var annotationsByID: [AnyHashable: MLNAnnotation] = [:]
+
+    /// Which annotation is on the map under which stable key. See `MapAnnotationRegistry`.
+    private(set) var registry = MapAnnotationRegistry()
 
     /// For PlayaDB annotations, the host can provide routing for callout actions.
     public var onPlayaInfoTapped: ((AnyDataObjectID) -> Void)?
@@ -77,47 +77,30 @@ public class MapViewAdapter: NSObject {
     /// labels. Declared here rather than in an extension so it can be overridden at all.
     func shouldDisplay(_ annotation: MLNAnnotation) -> Bool { true }
 
-    // MARK: - Helper Methods
-    
-    /// Generate unique key for an annotation
-    private func keyForAnnotation(_ annotation: MLNAnnotation) -> AnyHashable? {
-        if let data = annotation as? DataObjectAnnotation {
-            let className = String(describing: type(of: data.object))
-            return AnyHashable("\(className):\(data.object.uniqueID)")
-        } else if let playa = annotation as? PlayaObjectAnnotation {
-            return AnyHashable(playa.id)
-        } else if let userPin = annotation as? BRCUserMapPoint {
-            // `yapKey` is a fresh random UUID every time the pin is rebuilt from PlayaDB,
-            // so it can never de-duplicate. `pinId` is the stable PlayaDB row id.
-            return AnyHashable("BRCUserMapPoint:\(userPin.pinId)")
-        } else if let mapPoint = annotation as? BRCMapPoint {
-            let className = String(describing: type(of: mapPoint))
-            return AnyHashable("\(className):\(mapPoint.yapKey)")
-        }
-        return nil // Non-trackable annotations
+    // MARK: - Public API
+
+    @objc public func reloadAnnotations() {
+        // `shouldDisplay` is applied here rather than inside `addAnnotations` so that
+        // `self.annotations` tracks exactly what the data source wanted on the map.
+        let incoming = (dataSource?.allAnnotations() ?? []).filter { shouldDisplay($0) }
+        willReplaceDataSourceAnnotations(with: incoming)
+        // Only remove annotations that came from the data source. Removal is
+        // identity-checked (see `MapAnnotationRegistry.remove`), so an instance that was
+        // de-duplicated away at add time can't deregister the key of the pin that really
+        // is on the map.
+        removeAnnotations(self.annotations)
+        self.annotations = incoming
+        addAnnotations(incoming)
     }
 
-    // MARK: - Public API
-    
-    @objc public func reloadAnnotations() {
-        // Only remove annotations that came from the data source
-        removeAnnotations(self.annotations)
-        // Don't clear the entire dictionary - removeAnnotations already handles cleanup
-        // `shouldDisplay` is applied here rather than inside `addAnnotations` so that
-        // `self.annotations` tracks exactly what went on the map — the next reload removes
-        // this list, and a rejected annotation left in it would deregister the key of a
-        // *different* annotation that legitimately holds it (a favourite camp, say).
-        self.annotations = (dataSource?.allAnnotations() ?? []).filter { shouldDisplay($0) }
-        addAnnotations(self.annotations)
-    }
-    
+    /// Hook for subclasses, called with the pin set that is about to replace the current
+    /// one, before anything is added or removed. `UserMapViewAdapter` uses it to hand a
+    /// pin it placed itself over to the database's copy of that same pin.
+    func willReplaceDataSourceAnnotations(with annotations: [MLNAnnotation]) {}
+
     @objc public func removeAnnotations(_ annotations: [MLNAnnotation]) {
-        annotations.forEach { annotation in
-            // Remove from tracking dictionary
-            if let key = keyForAnnotation(annotation) {
-                annotationsByID.removeValue(forKey: key)
-            }
-            
+        let removed = registry.remove(annotations)
+        removed.forEach { annotation in
             // Clean up overlap tracking for offsettable annotations
             if let data = annotation as? any OffsettableAnnotation {
                 let originalCoordinate = data.originalCoordinate
@@ -126,46 +109,32 @@ public class MapViewAdapter: NSObject {
                 overlappingAnnotations[.init(originalCoordinate)] = overlapping
             }
         }
-        mapView.removeAnnotations(annotations)
+        mapView.removeAnnotations(removed)
     }
-    
+
     /// Adds annotations in a way that avoid overlap and de-duplicates
     @objc public func addAnnotations(_ annotations: [MLNAnnotation]) {
-        // Single pass: filter, track, and offset
-        let newAnnotations = annotations.filter { annotation in
-            guard let key = keyForAnnotation(annotation) else {
-                return true // Non-trackable always added
-            }
-            
-            if annotationsByID[key] != nil {
-                return false // Already on map
-            }
-            
-            // Track it
-            annotationsByID[key] = annotation
-            
-            // Handle overlap offset for annotations that support it.
-            if let data = annotation as? any OffsettableAnnotation {
-                let originalCoordinate = data.originalCoordinate
-                var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-                overlapping.append(data)
-                
-                // Sort by stable ID for consistent ordering
-                overlapping.sort { $0.stableID < $1.stableID }
-                overlappingAnnotations[.init(originalCoordinate)] = overlapping
-                
-                // Re-offset ALL annotations in this group if there's overlap
-                if overlapping.count > 1 {
-                    for (index, overlappingAnnotation) in overlapping.enumerated() {
-                        let percentage = Double(index) / Double(overlapping.count) + 0.18
-                        overlappingAnnotation.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
-                    }
+        let newAnnotations = registry.add(annotations)
+
+        // Handle overlap offset for annotations that support it.
+        for case let data as any OffsettableAnnotation in newAnnotations {
+            let originalCoordinate = data.originalCoordinate
+            var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
+            overlapping.append(data)
+
+            // Sort by stable ID for consistent ordering
+            overlapping.sort { $0.stableID < $1.stableID }
+            overlappingAnnotations[.init(originalCoordinate)] = overlapping
+
+            // Re-offset ALL annotations in this group if there's overlap
+            if overlapping.count > 1 {
+                for (index, overlappingAnnotation) in overlapping.enumerated() {
+                    let percentage = Double(index) / Double(overlapping.count) + 0.18
+                    overlappingAnnotation.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
                 }
             }
-            
-            return true
         }
-        
+
         mapView.addAnnotations(newAnnotations)
     }
 }

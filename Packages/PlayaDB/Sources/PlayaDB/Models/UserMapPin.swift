@@ -96,6 +96,18 @@ public enum UserMapPinType: String, CaseIterable, Sendable {
     /// amenities, or written by breadcrumb tracking.
     public static let userCreatable: [UserMapPinType] = [.userBike, .userHome, .userStar]
 
+    /// Types the apps allow exactly one live row of. Placing your home or your bike
+    /// again *moves* it — both the phone's map and the watch present a single button
+    /// per type — so the database enforces the singleton instead of trusting every
+    /// caller to look for an existing row first (which races: two taps before the
+    /// first write commits both see "none" and both insert).
+    ///
+    /// Order is fixed so the open-time fold visits types deterministically.
+    /// Stars, breadcrumbs and the imported amenities all accumulate.
+    public static let singletonTypes: [UserMapPinType] = [.userHome, .userBike]
+
+    public var isSingleton: Bool { Self.singletonTypes.contains(self) }
+
     public init(pinTypeString: String) {
         self = UserMapPinType(rawValue: pinTypeString) ?? .userStar
     }

@@ -1224,3 +1224,153 @@ the glow and how to catch it).
   That seems right (same puck, same question) but it wasn't asked for explicitly.
 - The AI flag is snapshotted at view-model construction, so toggling it in the debug screen
   needs search to be reopened — noted in the toggle's footer and in flows.md.
+
+---
+
+# User map pin duplication ("duplicated pins and whatnot")
+
+## High-Level Plan
+
+**Problem.** Every placement of a bike/home/star pin left **two identical annotations stacked
+on one coordinate** until the app was relaunched, and a fast double tap on "Find my bike"
+could write a **second `user_map_pins` row**. "Find my bike" with a pin already placed did
+nothing visible. Reported as: *"map pin bike/home/favorite thing is buggy as fuck. duplicated
+pins and whatnot"*.
+
+**Root cause.** A user pin reaches the map as several *different objects* standing for the
+same `user_map_pins` row: the one the user places, the one `observeUserMapPins` rebuilds on
+every write, the one `UserGuidance.findNearest` builds to answer "where's my bike".
+`MapViewAdapter` de-duplicates by key (`BRCUserMapPoint:<pinId>`) — but only for annotations
+that go through `addAnnotations`/`removeAnnotations`. Three paths bypassed it:
+
+1. `UserMapViewAdapter.editMapPoint` added the freshly placed pin with a bare
+   `mapView.addAnnotation`, so it was never registered. The save's own observation then
+   delivered a second object for the same `pinId`, `reloadAnnotations` removed only the data
+   source's list (which the placed pin was not in), and the fresh copy landed **on top** of
+   the untracked one. Deterministic: 100% of placements.
+2. `saveMapPoint` nil'd `editingAnnotation` synchronously before the unawaited write
+   committed, so the `clearEditingAnnotation()` guard inside `reloadAnnotations` — the thing
+   that used to catch this — was always a no-op by the time the reload arrived.
+3. `deleteMapPoint` removed with a bare `mapView.removeAnnotation`, leaving a stale key
+   registered.
+
+Plus a database-level race: home/bike were singletons **only by UI convention** (find one,
+insert if absent), so two taps before the first unawaited write committed both saw "none"
+and both inserted.
+
+History: Yap-era commits 5255012/a772cdb (Aug 2025) fixed this class of bug; the PlayaDB
+migration of user pins (99587a3, 2026-04-05) reintroduced it by adding a reactive
+reload-on-save without an equivalent guard.
+
+## Fixes
+
+### 1. `MapAnnotationRegistry` — new, pure (`iBurn/MapAnnotationRegistry.swift`)
+
+The key→annotation bookkeeping lifted out of `MapViewAdapter` so the de-duplication rules
+are testable without an `MLNMapView`. Two invariants:
+
+- `add` returns only what the caller should put on the map (untracked pass-throughs, plus
+  tracked ones whose key was free).
+- `remove` is **identity-checked**: an annotation whose key is held by a *different* instance
+  is dropped from the result rather than deregistered. It was deduped away at add time, so it
+  was never on the map, and letting it clear the key would strand the pin that is. This alone
+  is what makes repeated reloads incapable of accumulating copies.
+
+`MapViewAdapter` now routes both directions through it and gained a
+`willReplaceDataSourceAnnotations(with:)` hook (called with the incoming set before anything
+is added or removed) so `reloadAnnotations` still builds the data-source list exactly once.
+
+### 2. Placement lifecycle (`iBurn/UserMapViewAdapter.swift`)
+
+- `editMapPoint` claims ownership **only** when nothing on the map already holds the pin's
+  key (the callout's pencil hands back a pin the data source owns), records it in
+  `locallyPlacedAnnotation`, and adds it through the tracked path.
+- `willReplaceDataSourceAnnotations` hands the placed pin over — tracked removal, freeing the
+  key — the moment the incoming set carries its `pinId`, i.e. once the write has committed.
+  A reload that *doesn't* carry it (favorite toggle, filter change) leaves it alone, so an
+  in-progress placement is never clobbered. An editing reference into the *data source* is
+  dropped instead, since those instances are about to be replaced wholesale.
+- `saveMapPoint` awaits the write in a `Task` and releases ownership on failure, so a failed
+  save can't wedge the placement buttons.
+- Cancel (and an empty name) now discards an unsaved placement instead of leaving it on the
+  map to be saved by the next `didDeselect`.
+- `deleteMapPoint` uses tracked removal.
+- New `revealUserMapPoint(_:)` resolves `UserGuidance`'s answer to the instance actually on
+  the map, centers on it, and selects it.
+
+### 3. Singleton pins in the database (`Packages/PlayaDB/.../PlayaDBImpl.swift`)
+
+- `UserMapPinType.singletonTypes = [.userHome, .userBike]` (+ `isSingleton`). Stars,
+  breadcrumbs and imported amenities accumulate; `userCamp`/`userHeart` are marked unused in
+  `BRCMapPoint.h`.
+- `saveUserMapPin` upserts, then **tombstones** every other live row of that type in the same
+  transaction. Soft delete, not hard: a row that simply vanished here would come straight back
+  from the peer's snapshot. The tombstone's `modified_date` is strictly newer than the row it
+  replaces so it wins last-writer-wins.
+- `collapseDuplicateSingletonPins` runs in the existing open-time maintenance block (next to
+  `migrateOccurrenceKeyedMetadata`), keeping the newest live row per singleton type. Ordering
+  is `(modifiedDate, createdDate, id)` so two devices folding the same rows pick the same
+  survivor. Writes nothing when there is at most one row per type.
+
+### 4. Call sites (`iBurn/MainMapViewController.swift`)
+
+- `findNearestAction` routes a found pin through `revealUserMapPoint` instead of selecting a
+  database object that isn't on the map.
+- `addUserMapPoint` refuses to start a second placement while one is unnamed
+  (`adapter.hasUnsavedPlacement`) — the second alert couldn't present over the first anyway.
+
+## Tests
+
+- **PlayaDB package: 271** (was 262). Nine new in `UserMapPinTests`: singleton replace,
+  tombstone-not-vanish, re-save keeps, home+bike coexist, stars accumulate, breadcrumbs
+  accumulate, fold collapses to newest / leaves stars, fold idempotent + write-free, and a
+  file-backed **reopen** test proving the fold runs at DB open.
+  `UserMapPinSyncTests.testSnapshotIncludesTombstonesButFetchDoesNot` switched to stars — two
+  live bikes is no longer a representable state.
+- **App: 468** (was 453). `MapAnnotationRegistryTests` (10, pure) and
+  `UserMapPinLifecycleTests` (5) — the latter drives the real `UserMapViewAdapter` over a real
+  (unrendered) `MLNMapView` with an in-memory `PlayaDBImpl`. **Verified they catch the bug:**
+  restoring the bare `mapView.addAnnotation` makes them fail with `("2") is not equal to
+  ("1") - two stacked pins is the reported bug`.
+
+## Simulator evidence (iPhone 17 Pro Max, iOS 26.5, GPS 37.7749,-122.4194)
+
+Seeded the "existing victim" state by inserting two live `userBike` and two live `userHome`
+rows with `sqlite3` while the app was terminated.
+
+| Step | Result |
+| --- | --- |
+| Relaunch (open-time fold) | `dupe-bike-old` / `dupe-home-a` → `is_deleted=1`, newest kept, star untouched |
+| "Find my bike" with a pin present | camera flies to the pin, callout opens, **no new pin, no new row** |
+| Callout → More → Delete | pin gone from AX tree, zero live bike rows |
+| **Rapid double tap "Find my bike"** | **one** alert, Save → **one** pin, **one** row |
+| 4× Map Filter toggles (reload stress) | one Bike / one Home / one Favorite throughout |
+| Drop a pin ×2 ("Star A", "Star B") | both coexist alongside the existing star — 3 live stars |
+| Rename existing pin → Save | still exactly one of each |
+| Terminate + relaunch | `userBike 1 / userHome 1 / userStar 3`, AX shows one button each |
+| Tab away → Map ×2 (`viewWillAppear` reload) | unchanged |
+
+Screenshots taken at the "find my bike" callout and after the star placements.
+
+## Caveats / Follow-ups
+
+- **The physical drag gesture could not be synthesized** — the annotation view drops out of
+  the AX tree while its callout is up, and the automation has no coordinate-based
+  long-press-and-drag. The drag's save (`onDragEnded` → `saveUserMapPin`) is byte-identical in
+  effect to the rename save that *was* driven end to end, and the reload consequence is
+  covered by `testFurtherReloadsKeepExactlyOnePinPerRow`.
+- **Renaming a home or bike pin has no visible effect.** `BRCMapPoint.title` (BRCMapPoint.m
+  ~191) returns hard-coded "Home"/"Bike" for those types regardless of what is stored. Found
+  while writing the tests; longstanding and out of scope, but it is why the rename test uses a
+  star. Worth deciding whether the alert should even offer to rename them.
+- `applyUserMapPinSync` does **not** collapse singletons — a peer pushing two live homes is
+  resolved by the next open-time fold rather than at merge time. Deliberate: the fold is
+  deterministic, so both devices converge on the same survivor without a push ping-pong.
+- Duplicate `userStar` *rows* are still possible by design (stars are not singletons); what is
+  now impossible is two annotations for one row.
+
+## Docs updated
+
+`.claude/skills/drive-app/references/flows.md` §6 — one-pin-per-row invariant and how to
+verify it, singleton enforcement + how to exercise the fold, recenter-on-existing behavior,
+and the home/bike rename gotcha.

@@ -84,8 +84,10 @@ final class UserMapPinSyncTests: XCTestCase {
     // MARK: - Snapshot
 
     func testSnapshotIncludesTombstonesButFetchDoesNot() async throws {
-        try await playaDB.saveUserMapPin(makePin(id: "live"))
-        try await playaDB.saveUserMapPin(makePin(id: "gone"))
+        // Stars, so the two pins can be alive at once: saving a second *bike* now retires
+        // the first (see `UserMapPinType.singletonTypes`).
+        try await playaDB.saveUserMapPin(makePin(id: "live", type: .userStar))
+        try await playaDB.saveUserMapPin(makePin(id: "gone", type: .userStar))
         try await playaDB.deleteUserMapPin(id: "gone")
 
         let snapshot = try await playaDB.userMapPinSyncSnapshot()

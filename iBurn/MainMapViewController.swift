@@ -442,7 +442,10 @@ private extension MainMapViewController {
             Task { @MainActor in
                 if let point = await UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, playaDB: playaDB) {
                     DDLogInfo("Found closest point: \(point)")
-                    await self.mapView.selectAnnotation(point, animated: true)
+                    // Hand it to the adapter rather than selecting it here: the object
+                    // `UserGuidance` built from the database is not the instance drawn on
+                    // the map, and selecting it does nothing.
+                    self.userMapViewAdapter?.revealUserMapPoint(point)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     self.addUserMapPoint(type: mapPointType)
                 }
@@ -454,6 +457,13 @@ private extension MainMapViewController {
     }
     
     func addUserMapPoint(type: BRCMapPointType) {
+        // One placement at a time. "Find my bike" answers from the database, so two quick
+        // taps both used to see "no bike yet" and both placed one; the second alert can't
+        // even present over the first.
+        guard let adapter = userMapViewAdapter, !adapter.hasUnsavedPlacement else {
+            DDLogInfo("Ignoring placement request: a pin is already waiting to be named")
+            return
+        }
         // On playa the pin lands on the user; off playa it lands in the middle of whatever
         // they've panned to, so it's on screen and draggable. See
         // `BRCLocations.userMapPointCoordinate(forUserLocation:viewportCenter:)`.
@@ -462,7 +472,7 @@ private extension MainMapViewController {
             viewportCenter: self.mapView.centerCoordinate
         )
         let mapPoint = BRCUserMapPoint(title: nil, coordinate: coordinate, type: type)
-        userMapViewAdapter?.editMapPoint(mapPoint)
+        adapter.editMapPoint(mapPoint)
     }
 }
 

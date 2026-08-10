@@ -270,6 +270,35 @@ Automation notes:
   app** (a running app doesn't pick the new fix up — "You Are Here" disappearing from
   `snapshot_ui` is the confirmation it did), pan the map somewhere distinctive, tap **Drop a
   pin**, Save → the star lands dead center of the map view.
+- **One pin per row, always — user pins never stack.** A user pin reaches the map as several
+  different objects standing for the same `user_map_pins` row (the one you just placed, the
+  one `observeUserMapPins` rebuilds on every write, the one "find my bike" builds to answer),
+  and `MapAnnotationRegistry` is what keeps exactly one of them up: every add and remove the
+  adapter makes is keyed on `pinId` **and identity-checked**, so a copy that was deduped away
+  can't deregister the pin that is really on the map. `UserMapViewAdapter` hands its own
+  freshly placed pin over to the database's copy in `willReplaceDataSourceAnnotations` once
+  the row exists. Before Aug 2026 the placement path added the pin with a bare
+  `mapView.addAnnotation`, outside that bookkeeping, and every single placement left **two
+  stacked pins** until relaunch. Verify by AX snapshot: exactly one button per pin name after
+  place → Save, after a rename, after any Map Filter toggle or tab switch (both reload), and
+  after relaunch.
+- **Home and bike are singletons, enforced in the database.** `PlayaDB.saveUserMapPin`
+  upserts by type — saving a second `userHome`/`userBike` **tombstones** the previous row
+  (soft-deleted, so the collapse survives peer sync) — and `collapseDuplicateSingletonPins`
+  folds pre-existing duplicates at every DB open, keeping the newest per type. Stars,
+  breadcrumbs and the imported amenities still accumulate. The UI also refuses to start a
+  second placement while one is waiting to be named
+  (`UserMapViewAdapter.hasUnsavedPlacement`), so a rapid double tap on **Find my bike** shows
+  one alert and writes one row. To exercise the fold: terminate the app, `INSERT` two live
+  `userBike` rows with `sqlite3`, relaunch → the older one comes back `is_deleted=1`.
+- **"Find my camp" / "Find my bike" recenter on the pin you already have.** With a matching
+  pin in the database the button flies the camera to it and opens its callout (no second pin
+  is placed); only when there is none does it place one. It resolves `UserGuidance`'s answer
+  to the instance actually drawn on the map first — selecting the database object directly
+  did nothing at all, which used to make the button look dead.
+- **Renaming a home or bike pin has no visible effect**: `BRCMapPoint.title` returns the
+  hard-coded "Home"/"Bike" for those two types, whatever is stored. Only stars show the name
+  you typed. Longstanding, not a regression — don't chase it as one.
 - The camp boundary/label style layers (`camp-boundaries`, `camp-labels-big`,
   geojson shipped inside `Map.bundle`) are gated on the camp tier via
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
