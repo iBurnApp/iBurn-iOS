@@ -15,7 +15,7 @@
 @class TabController;
 
 NS_ASSUME_NONNULL_BEGIN
-@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
+@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic, strong) TabController *tabBarController;

@@ -288,7 +288,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     [self.tabBarController configureWithRootViewControllers:@[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreNavController]];
 
     self.tabBarController.moreNavigationController.delegate = self;
-    self.tabBarController.delegate = self;
 }
 
 - (void) preloadExistingData {
@@ -367,21 +366,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         [self enteredBurningManRegion];
     }
     // Breadcrumb tracking is handled by LocationStorage (GRDB-backed)
-}
-
-#pragma mark UITabBarControllerDelegate
-
-- (void) tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
-    if ([viewController isKindOfClass:[UINavigationController class]]) {
-        UINavigationController *navController = (UINavigationController*)viewController;
-        UIViewController *topViewController = navController.topViewController;
-        if ([topViewController isKindOfClass:[MainMapViewController class]]) {
-            MainMapViewController *mapViewController = (MainMapViewController*)topViewController;
-            if (mapViewController.isVisible) {
-                [mapViewController centerMapAtManCoordinatesAnimated:YES];
-            }
-        }
-    }
 }
 
 #pragma mark UINavigationControllerDelegate

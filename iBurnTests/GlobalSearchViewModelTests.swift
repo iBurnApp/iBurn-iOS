@@ -473,7 +473,7 @@ final class GlobalSearchViewModelTests: XCTestCase {
         let mockAI = MockAISearchService(results: [
             AISearchResult(uid: "ai-uid-1", reason: "semantically relevant")
         ])
-        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil)
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil, isAISearchFlagEnabled: true)
 
         XCTAssertTrue(vm.isAISearchAvailable)
 
@@ -494,7 +494,7 @@ final class GlobalSearchViewModelTests: XCTestCase {
         let mockAI = MockAISearchService(results: [
             AISearchResult(uid: "ai-uid-1", reason: "test")
         ])
-        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil)
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil, isAISearchFlagEnabled: true)
 
         vm.searchText = "Burning"
         let hasResults = await eventually { !vm.sections.isEmpty }
@@ -507,13 +507,39 @@ final class GlobalSearchViewModelTests: XCTestCase {
 
     func testOnlyFavoritesDisablesAISearch() {
         let mockAI = MockAISearchService(results: [])
-        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil)
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil, isAISearchFlagEnabled: true)
 
         XCTAssertTrue(vm.isAISearchEnabled)
 
         // The model can't see local favorite state, so it can't answer this query.
         vm.filter.onlyFavorites = true
         XCTAssertFalse(vm.isAISearchEnabled)
+    }
+
+    /// The shipping default: an available service still yields no AI pass, which is what
+    /// keeps the "Finding more with AI…" row and the sparkles badges off screen.
+    func testFeatureFlagOffDisablesAISearchEvenWithAService() {
+        let mockAI = MockAISearchService(results: [
+            AISearchResult(uid: "ai-uid-1", reason: "would have merged")
+        ])
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil, isAISearchFlagEnabled: false)
+
+        XCTAssertFalse(vm.isAISearchAvailable)
+        XCTAssertFalse(vm.isAISearchEnabled)
+    }
+
+    func testFeatureFlagOffLeavesResultsFreeOfAISuggestions() async {
+        let mockAI = MockAISearchService(results: [
+            AISearchResult(uid: "ai-uid-1", reason: "would have merged")
+        ])
+        let vm = GlobalSearchViewModel(playaDB: playaDB, aiSearchService: mockAI, filterStorageKey: nil, isAISearchFlagEnabled: false)
+
+        vm.searchText = "Burning"
+        let hasResults = await eventually { !vm.sections.isEmpty }
+        XCTAssertTrue(hasResults, "FTS5 results should still arrive")
+
+        XCTAssertFalse(vm.isAISearching, "No spinner row without the flag")
+        XCTAssertTrue(vm.aiSuggestedUIDs.isEmpty, "No sparkles badges without the flag")
     }
 }
 

@@ -6,6 +6,7 @@
 //  Copyright © 2022 iBurn. All rights reserved.
 //
 
+import PlayaDB
 import UIKit
 
 @objc public final class TabController: UITabBarController {
@@ -24,6 +25,11 @@ import UIKit
     /// because stored properties can't carry an availability annotation.
     private var tabCache: [ObjectIdentifier: AnyObject] = [:]
     private var searchTabCache: AnyObject?
+
+    /// Which of the two tab systems the last rebuild left the bar on. A tap arrives through
+    /// a different delegate callback in each, and both callbacks exist on this one object,
+    /// so this is what keeps a single tap from being handled twice.
+    private var usesSearchTab = false
 
     /// The floating button that stands in for the tab the `.searchTab` layout takes away.
     /// Lives on the tab bar controller's own view rather than any child, so it is there on
@@ -78,7 +84,16 @@ import UIKit
     /// prototype layout. Replaces assigning `viewControllers` directly.
     @objc public func configure(withRootViewControllers viewControllers: [UIViewController]) {
         roots = viewControllers
+        // Re-tap handling lives here rather than in the app delegate: it needs to know which
+        // tab system the bar is currently running, which is this object's business alone.
+        delegate = self
         rebuildTabs()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(favoriteDidChange(_:)),
+            name: .playaDBFavoriteDidChange,
+            object: nil
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(rebuildTabs),
@@ -118,6 +133,7 @@ import UIKit
         // native More overflow (`•••`) on the bar next to the app's own More tab.
         let arranged = Array(arrangedRoots(for: configuration).prefix(TabConfiguration.visibleCapacity))
         var usesSearchTab = false
+        defer { self.usesSearchTab = usesSearchTab }
 
         if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
             usesSearchTab = true
@@ -377,6 +393,90 @@ import UIKit
 
     static var eventsIsDisplacedFromTabBar: Bool {
         isDisplacedFromTabBar(.events)
+    }
+
+    // MARK: - Map tab re-tap
+
+    /// The map tab's root, found the same way everything else here identifies a tab: by what
+    /// the root's leaf view controller is, not by a position that reordering invalidates.
+    private var mapRoot: UIViewController? {
+        roots.first { TabIdentifier.identifier(forRoot: $0) == .map }
+    }
+
+    private var mapNavigationController: UINavigationController? {
+        mapRoot as? UINavigationController
+    }
+
+    private var mapViewController: MainMapViewController? {
+        mapNavigationController?.viewControllers.first as? MainMapViewController
+            ?? mapRoot as? MainMapViewController
+    }
+
+    /// Runs `MapTabReselection`'s verdict. Both delegate callbacks funnel here so the two tab
+    /// systems can't drift apart in behavior.
+    private func handleTabSelection(candidate: TabIdentifier?, isAlreadySelected: Bool) {
+        guard let navigationController = mapNavigationController else { return }
+        let outcome = MapTabReselection.outcome(
+            selected: candidate,
+            isAlreadySelected: isAlreadySelected,
+            navigationStackDepth: navigationController.viewControllers.count
+        )
+        switch outcome {
+        case .ignore:
+            break
+        case .popToRoot:
+            navigationController.popToRootViewController(animated: true)
+        case .recenter:
+            mapViewController?.centerMapAtManCoordinatesAnimated(true)
+        }
+    }
+
+    // MARK: - Favorite glow
+
+    /// Favoriting anything anywhere makes the floating button glow, when the button is the
+    /// door to Favorites and is actually on screen. See `FloatingActionButtonGlow`.
+    @objc private func favoriteDidChange(_ notification: Notification) {
+        guard floatingButtonInstalled,
+              let isFavorite = PlayaDBFavoriteChange.isFavorite(from: notification) else { return }
+        let onScreen = FloatingActionButtonVisibility.isVisible && !floatingButton.isHidden
+        guard FloatingActionButtonGlow.shouldGlow(
+            isVisible: onScreen,
+            action: FloatingActionButtonSettings.action,
+            favoriteWasAdded: isFavorite
+        ) else { return }
+        floatingButton.playFavoriteAddedGlow()
+    }
+}
+
+// MARK: - UITabBarControllerDelegate
+
+extension TabController: UITabBarControllerDelegate {
+
+    /// Classic `viewControllers` mode: everything below iOS 26, and every layout that keeps
+    /// search off the bar. Re-tap is "the tap is asking for the tab that's already selected".
+    public func tabBarController(
+        _ tabBarController: UITabBarController,
+        shouldSelect viewController: UIViewController
+    ) -> Bool {
+        guard !usesSearchTab else { return true }
+        handleTabSelection(
+            candidate: TabIdentifier.identifier(forRoot: viewController),
+            isAlreadySelected: viewController === selectedViewController
+        )
+        return true
+    }
+
+    /// `UITab` mode (the iOS 26 search-tab layout). `shouldSelectTab` rather than
+    /// `didSelectTab:previousTab:` because only the former is guaranteed to be asked when the
+    /// tap doesn't change the selection — which is the entire case being handled.
+    @available(iOS 18.0, *)
+    public func tabBarController(_ tabBarController: UITabBarController, shouldSelectTab tab: UITab) -> Bool {
+        guard usesSearchTab else { return true }
+        handleTabSelection(
+            candidate: TabIdentifier.identifier(forTabIdentifier: tab.identifier),
+            isAlreadySelected: tab === selectedTab
+        )
+        return true
     }
 }
 

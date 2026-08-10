@@ -24,6 +24,9 @@ struct FeatureFlagsView: View {
     // Prototype: where the global search entry point lives
     @State private var searchLayout = MapSearchLayout.current
 
+    // AI semantic merge in global search — off by default, see the flag's doc comment
+    @State private var useAISearch = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useAISearch)
+
     // Dynamically calculated Burning Man dates based on Labor Day
     private var eventYear: Int {
         Calendar.current.component(.year, from: Date())
@@ -117,10 +120,14 @@ struct FeatureFlagsView: View {
                     .onChange(of: useSwiftUILists) { newValue in
                         PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useSwiftUILists)
                     }
+                Toggle("AI Search Merge", isOn: $useAISearch)
+                    .onChange(of: useAISearch) { newValue in
+                        PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useAISearch)
+                    }
             } header: {
                 Text("UI Features")
             } footer: {
-                Text("Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps. Turn off to fall back to the legacy UIKit lists.")
+                Text("Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps. Turn off to fall back to the legacy UIKit lists. AI Search Merge folds on-device semantic matches into global search — off by default while the results aren't useful. Reopen search after changing it.")
                     .font(.footnote)
             }
 

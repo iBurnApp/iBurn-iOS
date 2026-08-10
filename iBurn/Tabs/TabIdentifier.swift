@@ -53,6 +53,12 @@ enum TabIdentifier: String, CaseIterable {
         "iBurn.tab.\(rawValue)"
     }
 
+    /// The reverse of `tabIdentifier`, for the `UITab` delegate callbacks — a tab reports
+    /// itself by identifier string, and the search tab's own identifier matches nothing here.
+    static func identifier(forTabIdentifier tabIdentifier: String) -> TabIdentifier? {
+        allCases.first { $0.tabIdentifier == tabIdentifier }
+    }
+
     /// Matches a tab root (usually a `NavigationController`) to its identifier by leaf type.
     /// Both the SwiftUI and legacy implementations of each list are recognized.
     static func identifier(forRoot root: UIViewController) -> TabIdentifier? {

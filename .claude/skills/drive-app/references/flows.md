@@ -172,6 +172,14 @@ chrome above the results:
   because `hidesNavigationBarDuringPresentation` is off: `UISearchTab.automaticallyActivatesSearch`
   arrives with search already active, and an active search controller otherwise hides the
   nav bar (which is what left an empty band at the top of the screen).
+- **The AI merge is off.** `GlobalSearchViewModel` can fold on-device semantic matches in
+  after the FTS5 results land — a "Finding more with AI…" spinner row, then extra rows badged
+  with a purple `sparkles`. It is gated on `Preferences.FeatureFlags.useAISearch`
+  (`featureFlag.search.useAI`), which **ships off** because the merge doesn't return useful
+  results yet, so on a stock build there is no spinner row and no badge: expect neither, and
+  neither is a regression. The flag is read once per view model, so flip it in Debug →
+  Feature Flags → **AI Search Merge** (or write the default) and then *reopen* search. The
+  implementation is intact behind the flag; nothing was deleted.
 - Sheet contents: **Only Favorites** (all scopes; also disables AI suggestions) and, under
   an "Events" section shown **only for the All and Events scopes**, three event knobs:
   **Happening Now**, **Day** ("Any day" + each festival day from `YearSettings`), and
@@ -229,6 +237,39 @@ Automation notes:
   gates (`YearSettings.campLocationUnlock`), art (and art-located events) at
   gates-open (`eventStart`). Location-dependent pins won't appear in pre-event
   builds — this is expected, not a bug.
+- **Re-tapping the Map tab resets the map**, stock-iOS style and in two steps: with
+  something pushed (a detail screen, the visible-pins list) the first re-tap **pops to the
+  map**; the next one, now at the root, **flies the camera back** to
+  `BRCLocations.blackRockCityCenter` at zoom 13 (`centerMapAtManCoordinatesAnimated:`).
+  Switching to Map *from another tab* does neither. The rule is
+  `MapTabReselection.outcome(selected:isAlreadySelected:navigationStackDepth:)` (pure,
+  unit-tested); `TabController` is its own `UITabBarControllerDelegate` and handles both tab
+  systems — `shouldSelect(viewController:)` in classic `viewControllers` mode (iOS 18.x, and
+  any non-`searchTab` layout) and `shouldSelectTab:` in `UITab` mode (iOS 26 `.searchTab`).
+  `shouldSelect*`, not `didSelect*`: only the former is guaranteed to fire when the tap
+  doesn't change the selection, which is the whole case. **Verify by screen hash, not by
+  eye:** pan the map away, note `snapshot_ui`'s `screenHash`, push the List button, re-tap
+  Map → the hash must return to the *panned* one (popped, not recentered), then re-tap again
+  → it must become the centered-map hash. Exercise it on **both** an iOS 26 sim (search-tab
+  layout) and an iOS 18.x sim (classic 5-tab bar) — they take different delegate callbacks.
+  (This behavior used to live in `BRCAppDelegate`'s `didSelectViewController:`, which was
+  dead on the `UITab` layout; the app delegate is no longer the tab bar's delegate at all.)
+- **The user puck always shows a heading arrow** — `brc_setDefaults` sets
+  `showsUserHeadingIndicator = true`, so the arrow is drawn in every tracking mode rather
+  than only in follow-with-heading. MapLibre documents it as not rotating the camera.
+  **The simulator can't prove this:** it delivers no compass heading, so the puck renders as
+  the plain orange dot and the arrow never appears. Judge it on a device, or by reading the
+  property.
+- **Bike / home / star pins land at the viewport center when you're off playa.** The sidebar
+  buttons (Find my camp, Find my bike, Drop a pin) place a `BRCUserMapPoint` at the user's
+  coordinate when it is valid *and* inside `BRCLocations.burningManRegion` (5 miles of the
+  Man), and otherwise at `mapView.centerCoordinate` —
+  `BRCLocations.userMapPointCoordinate(forUserLocation:viewportCenter:)`, pure and
+  unit-tested. It used to fall back to the Man, which put the pin off screen whenever you'd
+  panned. To exercise: `xcrun simctl location <UDID> set 37.7749,-122.4194`, **relaunch the
+  app** (a running app doesn't pick the new fix up — "You Are Here" disappearing from
+  `snapshot_ui` is the confirmation it did), pan the map somewhere distinctive, tap **Drop a
+  pin**, Save → the star lands dead center of the map view.
 - The camp boundary/label style layers (`camp-boundaries`, `camp-labels-big`,
   geojson shipped inside `Map.bundle`) are gated on the camp tier via
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
@@ -597,7 +638,8 @@ More tab → **Visit List** pushes the SwiftUI `VisitListHostingController`
 ## 8. Feature Flags screen
 
 More tab → scroll to the bottom → **"Debug"** (DEBUG only). Contains the date
-override, "Use SwiftUI Lists", and the **Map Search Layout** picker.
+override, "Use SwiftUI Lists", **"AI Search Merge"** (off by default — see §5), and the
+**Map Search Layout** picker.
 
 Navigating here is awkward: `MoreViewController`'s table cells are **not exposed
 as tap targets** in the AX snapshot — "Debug" shows up only as a `text` row. Use
@@ -650,6 +692,16 @@ A 56pt Liquid Glass circle with an **outline** glyph, AX label = the screen it o
 identifier `floatingActionButton` (`iBurn/Tabs/FloatingActionButton.swift`). It lives on
 `TabController`'s own view, so it is on screen over every tab.
 
+**Glyph color = an unselected tab item**, i.e. `Appearance.currentColors.secondaryColor`
+(`.label`), *not* the accent — the accent is what the bar uses to mean "selected", and the
+button wearing it read as the current screen from whichever tab you were on. Note this is
+`secondaryColor`, not the `detailColor` that `Appearance.applyTabBarAppearance` nominally
+assigns to `unselectedItemTintColor`: the iOS 26 floating bar ignores that appearance and
+draws unselected items in `label`. Check it by sampling a screenshot, not by eye — the
+darkest pixel of the FAB glyph and of the search-circle magnifier right below it should both
+land in the near-black range (≈`#000000` on the map, ≈`#1E1813` for glyphs behind the bar's
+warm glass); `.secondaryLabel` renders ≈`#888689` and reads as disabled.
+
 **Placement — it stacks on the search circle.** Bottom pinned to `tabBar.topAnchor` −12;
 horizontally it is *measured*, not guessed: `TabController.searchTabCenterX()` walks the tab
 bar's view tree for the trailing-most round item (square bounds 36–80pt in the bar's trailing
@@ -692,6 +744,22 @@ this from a screenshot, not the snapshot.)
   by the search controller's delegate (`GlobalSearchTabFactory.makeSearchTabRoot(
   dependencies:searchActivationDidChange:)` → `TabController.searchIsActive`). If you touch
   either, re-check: tap Search → button gone; tap Close → button back.
+- **It glows when a favorite is added anywhere.** `PlayaDBImpl.toggleFavorite` posts
+  `.playaDBFavoriteDidChange` (main queue, `userInfo[isFavorite]`) — the one point every
+  screen's heart funnels through — and `TabController.favoriteDidChange` runs
+  `FloatingActionButtonGlow.shouldGlow`: **visible && added && action == .favorites**. The
+  animation is a ~0.75s scale pulse plus an accent halo blooming out of the circle and
+  fading (`FloatingActionButton.playFavoriteAddedGlow()`); under Reduce Motion nothing
+  scales and only the halo fades in and out. Deliberately *not* fired for un-favoriting, for
+  an Events/Nearby-configured button (the "it landed in here" metaphor breaks), or while the
+  button is off screen — and nothing is queued for later.
+  **Driving it:** favorite something on Nearby/Events/a detail screen (not from the search
+  tab — the button is hidden while search is active). The animation is far too short to
+  catch with a follow-up `screenshot` call; run a `for i in $(seq 200); do xcrun simctl io
+  <UDID> screenshot live/s$i.png; done` loop in the background, tap the heart, then rank the
+  frames by mean HSB saturation over a crop of the FAB — the glow frames stand out by an
+  order of magnitude (≈0.5 vs ≈0.04 baseline) and span ~4 frames. `simctl recordVideo`
+  works too but mangles the colors.
 
 ### Writing app preferences from outside the app
 

@@ -46,4 +46,31 @@ import Foundation
         }
         return coordinate
     }
+
+    /// Where a bike / home / star pin lands when the user drops one.
+    ///
+    /// On playa the answer is the user: "my bike is where I'm standing" is the whole point
+    /// of the button. Off playa their GPS fix is a street address a few hundred miles away,
+    /// and dropping the pin there put it somewhere they could neither see nor drag —
+    /// planning from the couch silently produced a pin in the couch. So the off-playa
+    /// fallback is the map they're actually looking at: the pin appears mid-screen, ready
+    /// to be dragged onto the block they mean. Unconditional, because whatever is centered
+    /// in the viewport is by definition on screen.
+    ///
+    /// Same 5-mile `burningManRegion` line as `mapFramingCoordinate(forUserLocation:)`.
+    ///
+    /// - Parameters:
+    ///   - location: The device's last known location, or nil if there isn't one.
+    ///   - viewportCenter: The center of the map the user is looking at.
+    @objc static func userMapPointCoordinate(
+        forUserLocation location: CLLocation?,
+        viewportCenter: CLLocationCoordinate2D
+    ) -> CLLocationCoordinate2D {
+        guard let coordinate = location?.coordinate,
+              CLLocationCoordinate2DIsValid(coordinate),
+              burningManRegion.contains(coordinate) else {
+            return viewportCenter
+        }
+        return coordinate
+    }
 }

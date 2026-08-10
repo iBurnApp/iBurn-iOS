@@ -58,6 +58,19 @@ enum Preferences {
             defaultValue: true,
             description: "Sync favorited events to the device calendar from PlayaDB; disable to fall back to legacy YapDatabase calendar entries"
         )
+
+        /// Whether global search folds in semantic matches from the on-device model after
+        /// the FTS5 results land (the "Finding more with AI…" pass).
+        ///
+        /// Off by default: the merge doesn't return useful results yet, so it only ever
+        /// showed a spinner and the occasional off-topic row. The implementation is intact
+        /// — `GlobalSearchViewModel.isAISearchAvailable` reads this flag, so flipping it on
+        /// restores both the fetch and the UI it drives.
+        static let useAISearch = Preference<Bool>(
+            key: "featureFlag.search.useAI",
+            defaultValue: false,
+            description: "Fold on-device AI semantic matches into global search results"
+        )
     }
     
     // MARK: - Location & Navigation

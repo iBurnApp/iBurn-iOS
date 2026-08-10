@@ -421,6 +421,58 @@ final class TabConfigurationTests: XCTestCase {
         XCTAssertTrue(FloatingActionButtonVisibility.isVisible)
     }
 
+    // MARK: - Favorite glow
+
+    /// The flourish is "your favorite landed in here", so it needs all three: a button on
+    /// screen to land in, a button that actually opens Favorites, and a favorite being added
+    /// rather than taken away.
+    func testGlowNeedsAllThreeConditions() {
+        for isVisible in [true, false] {
+            for action in FloatingActionButtonAction.allCases {
+                for wasAdded in [true, false] {
+                    XCTAssertEqual(
+                        FloatingActionButtonGlow.shouldGlow(
+                            isVisible: isVisible,
+                            action: action,
+                            favoriteWasAdded: wasAdded
+                        ),
+                        isVisible && wasAdded && action == .favorites,
+                        "visible=\(isVisible) action=\(action.rawValue) added=\(wasAdded)"
+                    )
+                }
+            }
+        }
+    }
+
+    /// Unfavoriting is a removal; the animation says "saved", so it stays out of it.
+    func testRemovingAFavoriteNeverGlows() {
+        XCTAssertFalse(
+            FloatingActionButtonGlow.shouldGlow(isVisible: true, action: .favorites, favoriteWasAdded: false)
+        )
+    }
+
+    /// A button pointing at Events or Nearby would be claiming the favorite went somewhere
+    /// it didn't.
+    func testOnlyTheFavoritesActionGlows() {
+        XCTAssertTrue(
+            FloatingActionButtonGlow.shouldGlow(isVisible: true, action: .favorites, favoriteWasAdded: true)
+        )
+        XCTAssertFalse(
+            FloatingActionButtonGlow.shouldGlow(isVisible: true, action: .events, favoriteWasAdded: true)
+        )
+        XCTAssertFalse(
+            FloatingActionButtonGlow.shouldGlow(isVisible: true, action: .nearby, favoriteWasAdded: true)
+        )
+    }
+
+    /// Nothing is queued for later: a favorite made while the button is off screen is simply
+    /// not celebrated.
+    func testFavoritingWithTheButtonHiddenDoesNotQueueAGlow() {
+        XCTAssertFalse(
+            FloatingActionButtonGlow.shouldGlow(isVisible: false, action: .favorites, favoriteWasAdded: true)
+        )
+    }
+
     func testFloatingButtonDefaultsToAVisibleFavoritesButton() {
         XCTAssertTrue(FloatingActionButtonSettings.isEnabled)
         XCTAssertEqual(FloatingActionButtonSettings.action, .favorites)

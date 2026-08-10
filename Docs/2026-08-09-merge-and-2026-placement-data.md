@@ -1047,3 +1047,180 @@ loudly rather than silently passing for the wrong reason.
 - The Man glyph is drawn from an appearance-scoped imageset. If `pin_center` is ever
   reorganized into a template asset, the explicit dark-variant lookup becomes redundant but
   stays harmless; the unit test guards the name itself.
+
+---
+
+# Session 3 (2026-08-09, later): six small fixes
+
+## High-Level Plan
+
+A bundle of six independent, small user-facing fixes on `2026-updates` (from `6eecd11`).
+Nothing here shares code with anything else in the bundle except items 5 and 6, which both
+land on the floating action button.
+
+1. Hide the global-search "finding more with AI" pass — it doesn't return useful results.
+2. Re-tapping the Map tab resets the map (the behavior the legacy app had, dead since the
+   `UITab` layout landed).
+3. Always show the user's compass heading on the map puck.
+4. Bike/home/star pins land at the viewport center when the user is off playa.
+5. The FAB glyph should read as an unselected tab item, not as the accent.
+6. Whimsy: the FAB glows when a favorite is added anywhere.
+
+## Technical Details
+
+### 1. AI search behind a feature flag
+
+- `iBurn/Preferences/Preferences.swift` — new `Preferences.FeatureFlags.useAISearch`
+  (`featureFlag.search.useAI`), **default false**.
+- `iBurn/ListView/GlobalSearchViewModel.swift` — the flag is snapshotted into a new
+  `isAISearchFlagEnabled` init parameter (defaulting to the preference) and ANDed into
+  `isAISearchAvailable`. Gating there rather than at the call site is what turns off the
+  fetch, the "Finding more with AI…" spinner row, *and* the per-row `sparkles` badge in one
+  place: with the flag down `runAISearch` never runs, so `isAISearching` stays false and
+  `aiSuggestedUIDs` stays empty. Nothing was deleted — `AISearchService`,
+  `runAISearch`, `mergeAIResults` and the SwiftUI row are all intact.
+- The parameter (rather than reading the preference inside the getter) exists so the three
+  existing AI tests can force the feature on without writing to the shared defaults the app
+  reads; two new tests cover the off state.
+- `iBurn/Preferences/FeatureFlagsView.swift` — "AI Search Merge" toggle in the DEBUG screen.
+
+### 2. Map tab re-tap → pop, then recenter
+
+The legacy implementation lived in `BRCAppDelegate`'s
+`tabBarController:didSelectViewController:` (added in `9b432f7`, 2014). That callback only
+fires in classic `viewControllers` mode, so the behavior had been silently dead on the iOS 26
+`.searchTab` layout, which drives selection through `UITab`.
+
+- **New** `iBurn/Tabs/MapTabReselection.swift` — a pure
+  `outcome(selected:isAlreadySelected:navigationStackDepth:) -> .ignore | .popToRoot | .recenter`.
+  Stock iOS re-tap semantics: pop first if anything is pushed, recenter only once the map
+  itself is on screen. Switching *to* Map from another tab does neither.
+- `iBurn/TabController.swift` — `TabController` is now its own `UITabBarControllerDelegate`
+  (set in `configure(withRootViewControllers:)`) and implements **both**
+  `shouldSelect(viewController:)` (classic) and `shouldSelectTab:` (iOS 18+). A stored
+  `usesSearchTab`, written by `rebuildTabs()`, routes each tap to exactly one of them so a
+  single tap can't be handled twice. `shouldSelect*` rather than `didSelect*` because only
+  the former is guaranteed to be asked when the tap doesn't change the selection — which is
+  the entire case being handled. Recenter calls the same
+  `centerMapAtManCoordinatesAnimated(true)` the legacy path did
+  (`BRCLocations.blackRockCityCenter`, zoom 13).
+- `iBurn/Tabs/TabIdentifier.swift` — `identifier(forTabIdentifier:)`, the reverse of
+  `tabIdentifier`, so the `UITab` callback can name the tab it was handed.
+- `iBurn/BRCAppDelegate.{h,m}` — dropped `UITabBarControllerDelegate` conformance, the
+  `self.tabBarController.delegate = self` assignment, and the legacy handler.
+
+### 3. `showsUserHeadingIndicator`
+
+`iBurn/MLNMapView+iBurn.swift`, one line in `brc_setDefaults` next to `showsUserLocation`.
+MapLibre documents the property as *not* rotating the camera and as a no-op in the
+follow-with-heading/course modes that draw their own arrow, so tracking mode is untouched.
+One-line revert if it's unwanted.
+
+### 4. Off-playa pin placement → viewport center
+
+- `iBurn/BRCLocations.swift` — new
+  `userMapPointCoordinate(forUserLocation:viewportCenter:)`, same 5-mile `burningManRegion`
+  test as `mapFramingCoordinate(forUserLocation:)` from `6eecd11`, different fallback. The
+  two rules are deliberately separate functions rather than one parameterized one: framing a
+  destination wants the Man (context), placing a pin wants the screen (reachability).
+- `iBurn/MainMapViewController.swift` — `addUserMapPoint(type:)` now passes
+  `mapView.centerCoordinate` as the fallback, replacing the old
+  `BRCLocations.blackRockCityCenter`. The viewport center is used unconditionally when off
+  playa: whatever is centered on screen is by definition visible and draggable.
+
+### 5. FAB glyph color
+
+`iBurn/Tabs/FloatingActionButton.swift` — `applyTheme()` moved the glyph from
+`primaryColor` (the accent, i.e. what the bar uses to mean *selected*) to
+`secondaryColor` (`.label`).
+
+**Not** `detailColor`, which is what `Appearance.applyTabBarAppearance` nominally assigns to
+`unselectedItemTintColor` and to every `normal.iconColor`. The iOS 26 floating bar — the only
+layout the FAB exists on — ignores that appearance and draws its unselected items in `label`.
+Sampled from a shipped screenshot: every unselected bar glyph, including the search circle
+directly below the button, is `#1E1813`; `detailColor`/`.secondaryLabel` renders `#888689`
+and reads as disabled beside them. On iOS 18.x the appearance *is* honored (unselected items
+render gray), but the FAB never appears there, so matching the 26 bar is the whole job.
+
+### 6. FAB glow on favorite-added
+
+**Seam chosen: `PlayaDBImpl.toggleFavorite`.** The brief preferred an app-level seam, and
+there isn't one — the per-type `ObjectListDataProvider`s cover only the browse lists, while
+Detail, Right Now, Nearby, the map's visible-pins sheet, Recently Viewed, Visits and global
+search all call `PlayaDB.toggleFavorite` directly (~30 call sites across 32 files).
+`FavoriteSyncService.mirrorFavorite` is downstream, explicitly non-authoritative, and invoked
+separately by each caller, so it's neither complete nor the right layer. `PlayaDBImpl` is the
+single point everything passes through.
+
+- **New** `Packages/PlayaDB/Sources/PlayaDB/FavoriteChangeNotification.swift` —
+  `Notification.Name.playaDBFavoriteDidChange` plus a `PlayaDBFavoriteChange` namespace for
+  the `userInfo` keys and an `isFavorite(from:)` reader.
+- `Packages/PlayaDB/Sources/PlayaDB/PlayaDBImpl.swift` — `toggleFavorite` now returns the
+  resulting state out of the GRDB write and posts on the main queue. **`setFavorite` does
+  not post** — that's how watch sync and merges write, and those aren't a person tapping a
+  heart.
+- `iBurn/Tabs/FloatingActionButton.swift` — `FloatingActionButtonGlow.shouldGlow(
+  isVisible:action:favoriteWasAdded:)` (pure, mirroring `FloatingActionButtonVisibility`'s
+  shape) and `playFavoriteAddedGlow()`: ~0.75s, a 1.12× scale pulse with a spring settle plus
+  an accent halo (a `glow` subview behind the glass, `shadowRadius` 16, peak alpha 0.55)
+  blooming to 1.45× and fading. Under `UIAccessibility.isReduceMotionEnabled` nothing scales
+  and only the halo fades in and out.
+- `iBurn/TabController.swift` — observes the notification and runs the rule.
+
+**Eligibility choice: Favorites-only.** The glow says "your favorite landed *in here*", which
+only parses if the button is the door to Favorites; a halo on a calendar glyph after
+favoriting a camp is a promise the button doesn't keep. So it fires on
+**visible && added && action == .favorites** — never on removal, never for an
+Events/Nearby-configured button, and nothing is queued for a button that was off screen.
+
+## Tests
+
+New: `iBurnTests/MapTabReselectionTests.swift` (10 — including the pop-then-recenter
+sequence and the `TabIdentifier` string round trip), `iBurnTests/UserMapPointCoordinateTests.swift`
+(10 — on playa, off playa, invalid/no fix, and a case pinning the divergence from
+`mapFramingCoordinate`), 4 glow-eligibility tests in `TabConfigurationTests.swift`, 2 AI
+flag-off tests in `GlobalSearchViewModelTests.swift`.
+
+- **iBurnTests: 453 passing** (baseline 428), zero failures.
+- **PlayaDB package: 262 passing**, zero failures (pre-existing Swift 6 capture warnings).
+- Clean builds on iOS 26.5 (iPhone 17 Pro Max) and iOS 18.6 (iPhone 16 Pro Max, by UDID).
+
+## Simulator validation (iPhone 17 Pro Max iOS 26.5, plus iPhone 16 Pro Max iOS 18.6)
+
+Screenshots in `$TMPDIR/iburn-shots/`:
+
+| Item | Evidence |
+| --- | --- |
+| 1 | `01-search-no-ai-row.png` — "yoga" results, no spinner row, no sparkles badges |
+| 2 | `02a-map-panned-away.png` → `02b-map-recentered-after-retap.png`; plus a `screenHash` trace: panned `06981ga` → push List → re-tap → `06981ga` (popped, *not* recentered) → re-tap → `0gpomy0` (centered). Repeated on the 18.6 classic bar: `11t7jsp` → push → re-tap → `11t7jsp` → re-tap → recentered |
+| 3 | `03-user-puck-zoom.png` — puck renders; **no arrow, because the simulator delivers no compass heading**. Unverifiable in the sim by construction |
+| 4 | `04b-pin-at-viewport-center.png` — GPS at 37.77,-122.41, map panned, "Drop a pin" → star lands dead center |
+| 5 | `05-fab-vs-tabs.png` — heart matches the search magnifier and the Nearby/Events/More glyphs; only the selected Map tab is orange. Sampled: FAB `#000000`, search circle / unselected tabs `#1E1813`, selected Map `#D17900` |
+| 6 | `06-fab-glow-real.png` — four consecutive frames through the bloom. Per-frame mean HSB saturation over a crop of the FAB: baseline ≈0.039, glow peak 0.494 across ~4 frames (~0.75s at the capture rate); the *un*favorite tap earlier in the same capture shows no spike at all |
+
+Capture note: `simctl recordVideo` mangles colors badly enough to be useless for judging a
+tint. The reliable technique is a background `for i in $(seq 200); do xcrun simctl io <UDID>
+screenshot …; done` loop, tap, then rank frames by saturation over a crop.
+
+## Docs updated
+
+`.claude/skills/drive-app/references/flows.md` — §5 (AI merge is flag-off), §6 (map re-tap,
+heading indicator, off-playa pin placement), §8 (new debug toggle), §8a (FAB glyph color,
+the glow and how to catch it).
+
+## Caveats / Follow-ups
+
+- **Item 3 is unverified on real hardware.** The simulator has no heading, so only a device
+  can confirm the arrow renders and that it doesn't rotate the camera in practice. One-line
+  revert (`showsUserHeadingIndicator` in `brc_setDefaults`) if it misbehaves.
+- **The favorite notification lives in the PlayaDB package**, against the preference for an
+  app-level seam, because no app-level seam sees every toggle. If one is ever introduced
+  (e.g. every screen routing through a single app-side favorites service), the post should
+  move there and the package should go back to being UI-agnostic.
+- **Glow intensity is a single constant** — the halo's peak alpha (0.55) in
+  `playFavoriteAddedGlow()`. It reads strong against the dark, image-themed list rows and
+  softer over the map; dial it there if it wants to be quieter.
+- **`brc_setDefaults` applies to every map**, so the heading indicator is on detail maps too.
+  That seems right (same puck, same question) but it wasn't asked for explicitly.
+- The AI flag is snapshotted at view-model construction, so toggling it in the debug screen
+  needs search to be reopened — noted in the toggle's footer and in flows.md.

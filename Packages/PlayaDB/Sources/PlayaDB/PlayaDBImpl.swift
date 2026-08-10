@@ -2115,7 +2115,7 @@ internal class PlayaDBImpl: PlayaDB {
     
     func toggleFavorite(_ object: any DataObject) async throws {
         let identity = metadataIdentity(for: object)
-        try await dbQueue.write { db in
+        let isFavorite = try await dbQueue.write { db -> Bool in
             let objectType = identity.type.rawValue
             let objectId = identity.uid
 
@@ -2133,6 +2133,7 @@ internal class PlayaDBImpl: PlayaDB {
                     ObjectMetadata.Columns.favoriteUpdatedAt,
                     ObjectMetadata.Columns.updatedAt,
                 ])
+                return metadata.isFavorite
             } else {
                 var newMetadata = ObjectMetadata(
                     objectType: objectType,
@@ -2141,8 +2142,17 @@ internal class PlayaDBImpl: PlayaDB {
                     favoriteUpdatedAt: Date()
                 )
                 try newMetadata.insert(db)
+                return true
             }
         }
+        // Every screen that toggles a heart funnels through here, which is what makes this
+        // the one place a "someone just favorited this" signal can be posted once. See
+        // `FavoriteChangeNotification.swift`.
+        PlayaDBFavoriteChange.post(
+            objectType: identity.type.rawValue,
+            uid: identity.uid,
+            isFavorite: isFavorite
+        )
     }
 
     func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {

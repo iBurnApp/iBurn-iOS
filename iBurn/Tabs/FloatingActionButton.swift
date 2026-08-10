@@ -113,6 +113,29 @@ enum FloatingActionButtonVisibility {
     }
 }
 
+/// When favoriting something anywhere in the app makes the floating button glow.
+///
+/// The flourish is an "it landed in there" gesture — the heart you tapped flying home to the
+/// button that opens Favorites. That only reads if the button *is* the way to Favorites, so a
+/// button configured to open Events or Nearby stays still: a glow pointing at a calendar
+/// after you favorite a camp is a promise the button doesn't keep.
+///
+/// Removals don't glow either. The animation says "saved"; playing it while something leaves
+/// the list would make the button a change-notifier instead of a destination.
+///
+/// Nothing is queued: a favorite made while the button is off screen (wrong layout, user
+/// turned it off, Favorites is on the bar as a real tab) simply doesn't glow, because there's
+/// nothing to glow at and no moment later where the animation would still mean anything.
+enum FloatingActionButtonGlow {
+    static func shouldGlow(
+        isVisible: Bool,
+        action: FloatingActionButtonAction,
+        favoriteWasAdded: Bool
+    ) -> Bool {
+        isVisible && favoriteWasAdded && action == .favorites
+    }
+}
+
 /// A glass circle with an outline glyph in it, matching the map's `SidebarButtonsView`
 /// treatment but larger: this one is a primary entry point standing in for a tab, not an
 /// on-map utility, so it reads at FAB size rather than the map column's 40pt.
@@ -129,6 +152,11 @@ final class FloatingActionButton: UIView {
     private let button = UIButton(type: .system)
     private var action: (() -> Void)?
 
+    /// The halo behind the glass, invisible until a favorite lands. Its own view rather than
+    /// a layer on the glass: the bloom has to spill *outside* the circle, and the glass view
+    /// clips to its corner radius so anything drawn there is cut off at the edge.
+    private let glow = UIView()
+
     init(action: @escaping () -> Void) {
         self.action = action
         super.init(frame: .zero)
@@ -141,6 +169,15 @@ final class FloatingActionButton: UIView {
         } else {
             effect = UIBlurEffect(style: .systemThinMaterial)
         }
+        glow.translatesAutoresizingMaskIntoConstraints = false
+        glow.isUserInteractionEnabled = false
+        glow.alpha = 0
+        glow.layer.cornerRadius = Self.diameter / 2
+        glow.layer.shadowOffset = .zero
+        glow.layer.shadowRadius = 16
+        glow.layer.shadowOpacity = 1
+        addSubview(glow)
+
         let container = UIVisualEffectView(effect: effect)
         container.translatesAutoresizingMaskIntoConstraints = false
         container.clipsToBounds = true
@@ -153,6 +190,10 @@ final class FloatingActionButton: UIView {
         container.contentView.addSubview(button)
 
         NSLayoutConstraint.activate([
+            glow.leadingAnchor.constraint(equalTo: leadingAnchor),
+            glow.trailingAnchor.constraint(equalTo: trailingAnchor),
+            glow.topAnchor.constraint(equalTo: topAnchor),
+            glow.bottomAnchor.constraint(equalTo: bottomAnchor),
             container.leadingAnchor.constraint(equalTo: leadingAnchor),
             container.trailingAnchor.constraint(equalTo: trailingAnchor),
             container.topAnchor.constraint(equalTo: topAnchor),
@@ -183,7 +224,80 @@ final class FloatingActionButton: UIView {
     }
 
     func applyTheme() {
-        button.tintColor = Appearance.currentColors.primaryColor
+        let colors = Appearance.currentColors
+        // The unselected tab-item color, not the accent. The button stands in for a tab, and
+        // the accent is what the bar uses to mean *selected* — wearing it made the button
+        // read as the current screen from whichever tab you were actually on.
+        //
+        // `secondaryColor` (`.label`) rather than the `detailColor` that
+        // `Appearance.applyTabBarAppearance` nominally assigns to `unselectedItemTintColor`:
+        // the iOS 26 floating bar — the only layout this button exists on — ignores that
+        // appearance and draws its unselected items in `label`. Sampling the shipped bar,
+        // every unselected glyph including the search circle right below this button comes
+        // out at #1E1813, while `detailColor`/`.secondaryLabel` renders #888689 and reads as
+        // disabled beside them. Matching what the bar actually draws is the point.
+        button.tintColor = colors.secondaryColor
+        // The halo keeps the accent: it's a momentary event, not chrome, and it's the one
+        // place on this button where "highlighted" is the intended reading.
+        glow.backgroundColor = colors.primaryColor
+        glow.layer.shadowColor = colors.primaryColor.resolvedColor(with: traitCollection).cgColor
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        // `shadowColor` is a CGColor, which doesn't follow light/dark on its own.
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
+        glow.layer.shadowColor = Appearance.currentColors.primaryColor.resolvedColor(with: traitCollection).cgColor
+    }
+
+    /// A brief confirmation flourish for a favorite added anywhere in the app: the button
+    /// swells and a halo blooms out of it and fades, ~0.75s end to end. See
+    /// `FloatingActionButtonGlow` for when this is allowed to run at all.
+    ///
+    /// Under Reduce Motion nothing scales — the halo alone fades up and out, so the
+    /// confirmation still registers without any movement on screen.
+    func playFavoriteAddedGlow() {
+        // A button that isn't on screen has nothing to confirm, and an animation left
+        // running on a hidden view would play to no one.
+        guard !isHidden, window != nil else { return }
+
+        glow.layer.removeAllAnimations()
+        layer.removeAllAnimations()
+        transform = .identity
+        glow.transform = .identity
+
+        guard !UIAccessibility.isReduceMotionEnabled else {
+            UIView.animate(withDuration: 0.2, delay: 0, options: [.beginFromCurrentState, .curveEaseOut]) {
+                self.glow.alpha = 0.5
+            } completion: { _ in
+                UIView.animate(withDuration: 0.5, delay: 0, options: [.beginFromCurrentState, .curveEaseIn]) {
+                    self.glow.alpha = 0
+                }
+            }
+            return
+        }
+
+        UIView.animate(withDuration: 0.18, delay: 0, options: [.beginFromCurrentState, .curveEaseOut]) {
+            self.glow.alpha = 0.55
+            self.glow.transform = CGAffineTransform(scaleX: 1.18, y: 1.18)
+            self.transform = CGAffineTransform(scaleX: 1.12, y: 1.12)
+        } completion: { _ in
+            UIView.animate(
+                withDuration: 0.55,
+                delay: 0,
+                usingSpringWithDamping: 0.55,
+                initialSpringVelocity: 0,
+                options: [.beginFromCurrentState]
+            ) {
+                self.transform = .identity
+            }
+            UIView.animate(withDuration: 0.5, delay: 0.05, options: [.beginFromCurrentState, .curveEaseIn]) {
+                self.glow.alpha = 0
+                self.glow.transform = CGAffineTransform(scaleX: 1.45, y: 1.45)
+            } completion: { _ in
+                self.glow.transform = .identity
+            }
+        }
     }
 
     @objc private func buttonPressed() {

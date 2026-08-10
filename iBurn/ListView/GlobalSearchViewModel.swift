@@ -55,6 +55,10 @@ final class GlobalSearchViewModel: ObservableObject {
     private let favoriteSync: FavoriteSyncService
     /// `nil` opts out of persistence entirely (previews, tests).
     private let filterStorageKey: String?
+    /// Snapshot of `Preferences.FeatureFlags.useAISearch`, taken once so a screen can't
+    /// change its mind mid-session — and injectable so the AI tests can exercise the merge
+    /// without writing to the shared defaults the app reads.
+    private let isAISearchFlagEnabled: Bool
 
     // MARK: - Tasks
 
@@ -67,12 +71,14 @@ final class GlobalSearchViewModel: ObservableObject {
         playaDB: PlayaDB,
         aiSearchService: AISearchService? = nil,
         favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared,
-        filterStorageKey: String? = "globalSearchFilter"
+        filterStorageKey: String? = "globalSearchFilter",
+        isAISearchFlagEnabled: Bool = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useAISearch)
     ) {
         self.playaDB = playaDB
         self.aiSearchService = aiSearchService
         self.favoriteSync = favoriteSync
         self.filterStorageKey = filterStorageKey
+        self.isAISearchFlagEnabled = isAISearchFlagEnabled
         self.filter = filterStorageKey.flatMap(Self.loadFilter(key:)) ?? GlobalSearchFilter()
     }
 
@@ -81,9 +87,15 @@ final class GlobalSearchViewModel: ObservableObject {
         favoriteTask?.cancel()
     }
 
-    /// Whether AI-enhanced search is available on this device
+    /// Whether AI-enhanced search is available on this device.
+    ///
+    /// Gated on `Preferences.FeatureFlags.useAISearch`, which ships off — the merge doesn't
+    /// return useful results yet, and checking the flag here (rather than at the call site)
+    /// is what keeps the fetch, the "Finding more with AI…" row, and the per-row sparkles
+    /// badge all off together: with the flag down `runAISearch` never runs, so
+    /// `isAISearching` stays false and `aiSuggestedUIDs` stays empty.
     var isAISearchAvailable: Bool {
-        aiSearchService?.isAvailable == true
+        isAISearchFlagEnabled && aiSearchService?.isAvailable == true
     }
 
     /// AI results are ranked by the model, which has no view of local favorite state,

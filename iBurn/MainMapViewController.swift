@@ -454,15 +454,13 @@ private extension MainMapViewController {
     }
     
     func addUserMapPoint(type: BRCMapPointType) {
-        var coordinate = BRCLocations.blackRockCityCenter
-        if let userLocation = self.mapView.userLocation?.location {
-            coordinate = userLocation.coordinate
-        }
-        // don't drop user-location pins if youre not at BM
-        if !BRCLocations.burningManRegion.contains(coordinate) ||
-            !CLLocationCoordinate2DIsValid(coordinate) {
-            coordinate = BRCLocations.blackRockCityCenter
-        }
+        // On playa the pin lands on the user; off playa it lands in the middle of whatever
+        // they've panned to, so it's on screen and draggable. See
+        // `BRCLocations.userMapPointCoordinate(forUserLocation:viewportCenter:)`.
+        let coordinate = BRCLocations.userMapPointCoordinate(
+            forUserLocation: self.mapView.userLocation?.location,
+            viewportCenter: self.mapView.centerCoordinate
+        )
         let mapPoint = BRCUserMapPoint(title: nil, coordinate: coordinate, type: type)
         userMapViewAdapter?.editMapPoint(mapPoint)
     }
