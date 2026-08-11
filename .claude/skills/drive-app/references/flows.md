@@ -425,23 +425,30 @@ Automation notes:
 
 ### Drop the person (long-press "look from here")
 
-**Long-press anywhere on the main map** stands a little person marker there (Street View
-pegman idea) and re-points the nearby card at that spot: its ~100 m of art/camps/events, and
+**Long-press anywhere on the main map** stands an observer marker there (Street View pegman
+idea) and re-points the nearby card at that spot: its ~100 m of art/camps/events, and
 every distance, are then measured from the marker instead of the device.
 
-- The marker is a **blue circular chip with a white Man glyph** (the Burning Man figure),
-  composited at runtime by `DroppedPersonMarker` from the `pin_center` imageset — the same
-  artwork the map's center pin uses. The imageset is appearance-scoped rather than a
-  template, so the code asks for the **dark (white) variant** and re-tints it white via
-  `withTintColor`; the Man stands 20 pt tall in the 34 pt chip, at his own aspect ratio.
-  The same glyph (template-rendered, secondary color) prefixes the card's header line.
-  If a marker ever renders as a person/`figure.stand` silhouette, the asset lookup failed —
-  that SF Symbol is only the fallback path. It is an ephemeral `DroppedPersonAnnotation`,
-  **never** a `BRCUserMapPoint`: nothing about it is written to PlayaDB or `UserSettings`,
-  and it is gone after a relaunch.
+- The marker is a **blue circular chip with a white eye** (`eye.fill`), composited at
+  runtime by `DroppedPersonMarker`: 34 pt chip, white ring, drop shadow, glyph aspect-fitted
+  into a 20 pt box. The same SF Symbol prefixes the card's header line and the Nearby
+  screen's banner (`DroppedPersonMarker.glyphSymbolName` is the single source). It used to
+  be the Burning Man figure from the `pin_center` imageset; that artwork is **trademarked
+  and is no longer used here** — if you see the Man on this marker, you are running an old
+  build. (The imageset still exists for the map style's Man POI; don't remove it.) The
+  marker is an ephemeral `DroppedPersonAnnotation`, **never** a `BRCUserMapPoint`: nothing
+  about it is written to PlayaDB or `UserSettings`, and it is gone after a relaunch.
 - The gesture is a `UILongPressGestureRecognizer` installed by **`MainMapViewController`**
   (named `iBurn.dropPersonLongPress`, 0.45 s), not by `MapViewAdapter` — detail maps and
   "show on map" list maps are deliberately unaffected, because only the main map has the card.
+- **A long press on one of the user's own pins does not drop the person.** Home/bike/saved
+  favourite pins are draggable and own that press (MapLibre's drag, plus the pin's own 0.5 s
+  recognizer); before this gate, pressing one both picked the pin up *and* stood a marker on
+  top of it. The map's recognizer has a delegate whose `gestureRecognizerShouldBegin` asks
+  the pure `DropPersonGate`: it declines when the hit-tested view chain contains a
+  **draggable** `MLNAnnotationView`, and declines anywhere on the map while
+  `UserMapViewAdapter.isEditingUserPin` is true. Camp/art pins, the dropped person itself and
+  the "You Are Here" dot are all non-draggable, so long-pressing them still drops.
 - The card grows a **header line** — "Nearby &lt;playa address&gt;" — from
   `PlayaGeocoder.asyncReverseLookup`, falling back to "Nearby dropped pin" until (or unless)
   the geocoder answers. The header costs the card `18 + 6 = 24 pt` at default Dynamic Type,
@@ -480,10 +487,20 @@ every distance, are then measured from the marker instead of the device.
   person changes *where*, never *when*.
 
 **Driving it from automation.** `long_press` needs an elementRef and the map view itself
-isn't one, but the recognizer is on `MLNMapView`, so a long press on **any annotation button
-inside the map** (`You Are Here`, a camp/art pin) delivers the touch to it and drops the
-person at that annotation's screen point. That is the only way to choose a drop coordinate
-without lldb. Assertions are cheap in the AX snapshot: the card header appears as text
+isn't one, but the recognizer is on `MLNMapView`, so a long press on **any non-user
+annotation button inside the map** (`You Are Here`, a camp/art pin) delivers the touch to it
+and drops the person at that annotation's screen point. That is the only way to choose a
+drop coordinate without lldb — and it is why `DropPersonGate` vetoes only *draggable*
+annotation views. Long-pressing `Home` / `Bike` / a saved `Favorite` pin is the negative
+case: nothing should drop.
+
+> **Trap:** user pins created by "Drop a pin" / "Find my camp" / "Find my bike" sit on the
+> device's own coordinate, and `MLNFaux3DUserLocationAnnotationView` (22×22) is stacked on
+> top of them — a `long_press` on the pin's elementRef then hit-tests to the *blue dot*
+> (non-draggable) and drops the person, which looks like the gate failing. Move the device
+> away first: `xcrun simctl location <UDID> set 40.7810,-119.2140`.
+
+Assertions are cheap in the AX snapshot: the card header appears as text
 ("Nearby 9:23 & Great Oak"), the marker as a button labelled with its address, and its
 callout exposes "Remove dropped pin". At 40.7864,-119.2065 with the embargo unlocked,
 long-pressing the `Snuggles` pin gives a visibly different card (camps at G & 9:15) and

@@ -85,27 +85,33 @@ func isSameSourceLocation(_ lhs: CLLocation?, _ rhs: CLLocation?) -> Bool {
 
 // MARK: - Marker artwork
 
-/// Draws the marker: the Man himself, standing in a circular chip. A saturated fill with a
-/// white ring and a drop shadow reads on both the light (tan) and dark playa base maps,
-/// where a bare glyph would not.
+/// Draws the marker: an open eye — "look at the playa from here" — inside a circular chip. A
+/// saturated fill with a white ring and a drop shadow reads on both the light (tan) and dark
+/// playa base maps, where a bare glyph would not.
+///
+/// The eye replaced the Burning Man figure ("the Man") that the marker used to composite from
+/// the `pin_center` imageset: that artwork is trademarked, and reusing it as a general-purpose
+/// UI glyph is a use the app shouldn't make of it. The imageset itself stays — the map style's
+/// Man POI still draws it — but nothing in this feature touches it any more.
 enum DroppedPersonMarker {
 
     /// Chip diameter in points. Big enough to be an easy tap target for its callout,
     /// small enough not to blanket the camps it is standing among.
     static let diameter: CGFloat = 34
 
-    /// The Man, as already shipped for the map's center pin.
-    ///
-    /// The imageset is appearance-scoped — black artwork for light, white for dark — and is
-    /// not configured as a template, so the chip asks for the dark (white) variant *and*
-    /// re-colors it: `withTintColor` treats the artwork as an alpha mask, so the glyph comes
-    /// out crisp white whichever variant the catalog hands back.
-    static let glyphAssetName = "pin_center"
+    /// The marker's glyph, as an SF Symbol. Public so the surfaces that explain the drop —
+    /// the nearby card's header, the Nearby screen's banner — can prefix themselves with the
+    /// same mark the user sees standing on the map.
+    static let glyphSymbolName = "eye.fill"
 
-    /// How tall the Man stands inside the chip. The artwork is a touch wider than it is tall
-    /// (1000×950), so the width follows from its own aspect ratio rather than being squared
-    /// off — 20pt tall leaves a comfortable margin inside the 29pt face.
-    private static let glyphHeight: CGFloat = 20
+    /// Point size the symbol is requested at. SF Symbols return an image a little larger than
+    /// their point size, and `eye.fill` is much wider than it is tall, so the drawn size is
+    /// derived by aspect-fitting into `glyphBoxSide` rather than used directly.
+    private static let glyphPointSize: CGFloat = 20
+
+    /// The square the glyph is fitted inside, centered in the chip. 20 pt across the 29 pt
+    /// face leaves the eye a comfortable margin without shrinking it to a dot.
+    private static let glyphBoxSide: CGFloat = 20
 
     /// Room around the chip for the shadow, so it isn't clipped by the image bounds.
     private static let shadowPadding: CGFloat = 5
@@ -138,11 +144,10 @@ enum DroppedPersonMarker {
             fillColor.setFill()
             UIBezierPath(ovalIn: chipRect.insetBy(dx: ringWidth, dy: ringWidth)).fill()
 
-            // The Man, drawn at his natural aspect ratio — squeezing him into a square
-            // would visibly stretch the arms.
+            // Drawn at its natural aspect ratio — `eye.fill` is roughly 3:2, and squaring it
+            // off would visibly squash the pupil.
             if let glyph = makeGlyph() {
-                let aspectRatio = glyph.size.height > 0 ? glyph.size.width / glyph.size.height : 1
-                let glyphSize = CGSize(width: glyphHeight * aspectRatio, height: glyphHeight)
+                let glyphSize = fittedGlyphSize(for: glyph.size)
                 let glyphRect = CGRect(
                     x: chipRect.midX - glyphSize.width / 2,
                     y: chipRect.midY - glyphSize.height / 2,
@@ -157,17 +162,23 @@ enum DroppedPersonMarker {
         return image.withRenderingMode(.alwaysOriginal)
     }
 
-    /// The white Man, ready to be composited onto the chip.
+    /// The white eye, ready to be composited onto the chip.
     ///
-    /// Falls back to the SF Symbol the marker used before the asset was wired up, so a
-    /// catalog miss degrades to a person rather than to an empty blue dot.
+    /// `alwaysOriginal` so the white survives whatever tint the annotation view's image view
+    /// would otherwise apply.
     static func makeGlyph() -> UIImage? {
-        let darkTraits = UITraitCollection(userInterfaceStyle: .dark)
-        if let asset = UIImage(named: glyphAssetName, in: nil, compatibleWith: darkTraits) {
-            return asset.withTintColor(.white, renderingMode: .alwaysOriginal)
-        }
-        let configuration = UIImage.SymbolConfiguration(pointSize: diameter * 0.58, weight: .semibold)
-        return UIImage(systemName: "figure.stand", withConfiguration: configuration)?
+        let configuration = UIImage.SymbolConfiguration(pointSize: glyphPointSize, weight: .semibold)
+        return UIImage(systemName: glyphSymbolName, withConfiguration: configuration)?
             .withTintColor(.white, renderingMode: .alwaysOriginal)
+    }
+
+    /// Aspect-fits `size` into the glyph box. Exposed for tests: the whole point of fitting
+    /// rather than scaling by height is that a wide symbol still lands inside the chip's face.
+    static func fittedGlyphSize(for size: CGSize) -> CGSize {
+        guard size.width > 0, size.height > 0 else {
+            return CGSize(width: glyphBoxSide, height: glyphBoxSide)
+        }
+        let scale = min(glyphBoxSide / size.width, glyphBoxSide / size.height)
+        return CGSize(width: size.width * scale, height: size.height * scale)
     }
 }

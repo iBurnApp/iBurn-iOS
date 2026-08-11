@@ -16,7 +16,7 @@ import EventKitUI
 import SwiftUI
 import PlayaDB
 
-public class MainMapViewController: BaseMapViewController, ListButtonHelper {
+public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIGestureRecognizerDelegate {
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
     let geocoder = PlayaGeocoder.shared
@@ -229,6 +229,9 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         // Long enough not to fire during the pause at the start of a slow pan, short enough
         // to feel like a deliberate press rather than a wait.
         longPress.minimumPressDuration = 0.45
+        // The delegate is what keeps this off the user's own pins, whose drag/edit UX owns
+        // the same press. See `DropPersonGate`.
+        longPress.delegate = self
         mapView.addGestureRecognizer(longPress)
     }
 
@@ -255,6 +258,17 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
                 self.userMapViewAdapter?.updateDroppedPersonTitle(address, for: coordinate)
             }
         }
+    }
+
+    /// Vetoes the drop when the press belongs to a user pin instead. Scoped by recognizer
+    /// name so this delegate can never change the behaviour of anything else on the map.
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer.name == Self.dropPersonRecognizerName else { return true }
+        let hitView = mapView.hitTest(gestureRecognizer.location(in: mapView), with: nil)
+        return DropPersonGate.shouldDropPerson(
+            target: DropPersonGate.target(forHitView: hitView),
+            isEditingUserPin: userMapViewAdapter?.isEditingUserPin ?? false
+        )
     }
 
     /// Takes the person off the map and puts the card back on the device's own location.

@@ -163,6 +163,10 @@ public class UserMapViewAdapter: MapViewAdapter {
     /// Set this if you want draggable
     var editingAnnotation: BRCMapPoint?
 
+    /// True while a user pin is being moved or renamed. The map's drop-person long press
+    /// reads this and stands down for the duration — see `DropPersonGate`.
+    var isEditingUserPin: Bool { editingAnnotation != nil }
+
     /// A pin this adapter put on the map itself, rather than taking from the data source:
     /// a brand-new home/bike/star that the user is still naming and that no `user_map_pins`
     /// row exists for yet.

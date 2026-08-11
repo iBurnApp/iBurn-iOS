@@ -223,11 +223,8 @@ struct NearbyCardView: View {
     /// row's own text does.
     private func header(_ text: String) -> some View {
         HStack(spacing: 4) {
-            // The same Man that is standing on the map, forced to template rendering: the
-            // imageset ships black/white artwork per appearance rather than a template, and
-            // the header wants it in the card's own secondary color.
-            Image(DroppedPersonMarker.glyphAssetName)
-                .renderingMode(.template)
+            // The same eye that is standing on the map, in the card's own secondary color.
+            Image(systemName: DroppedPersonMarker.glyphSymbolName)
                 .resizable()
                 .scaledToFit()
                 .frame(height: 11)

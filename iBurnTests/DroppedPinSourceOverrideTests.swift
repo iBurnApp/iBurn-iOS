@@ -721,13 +721,30 @@ final class DroppedPinSourceOverrideTests: XCTestCase {
 
     // MARK: - Marker artwork
 
-    /// The marker draws the Man from the asset catalog rather than an SF Symbol, so a rename
-    /// or a dropped imageset would silently fall back to the old person glyph. These tests
-    /// run hosted in the app, so `UIImage(named:)` sees the app's catalog.
-    func testManGlyphResolvesFromTheAssetCatalog() {
-        XCTAssertNotNil(UIImage(named: DroppedPersonMarker.glyphAssetName),
-                        "The dropped marker's Man artwork is missing from the app bundle")
-        XCTAssertNotNil(DroppedPersonMarker.makeGlyph())
+    /// The marker's glyph is an SF Symbol eye, deliberately *not* the Burning Man figure the
+    /// `pin_center` imageset carries — that artwork is trademarked and this feature has no
+    /// claim on it. A typo'd symbol name would leave the marker an empty blue dot.
+    func testEyeGlyphResolvesFromSFSymbols() throws {
+        XCTAssertEqual(DroppedPersonMarker.glyphSymbolName, "eye.fill",
+                       "The marker glyph is an eye; the Man is trademarked and off-limits here")
+        let glyph = try XCTUnwrap(DroppedPersonMarker.makeGlyph(),
+                                  "SF Symbol \(DroppedPersonMarker.glyphSymbolName) did not resolve")
+        XCTAssertEqual(glyph.renderingMode, .alwaysOriginal,
+                       "The white glyph must survive the annotation view's tint")
+    }
+
+    /// `eye.fill` is much wider than it is tall, so the draw size is aspect-fitted rather
+    /// than scaled by height — height-scaling would push the eye past the chip's face.
+    func testGlyphIsAspectFittedInsideTheChipFace() throws {
+        let wide = DroppedPersonMarker.fittedGlyphSize(for: CGSize(width: 60, height: 20))
+        XCTAssertEqual(wide.width / wide.height, 3, accuracy: 0.001, "Aspect ratio is preserved")
+        XCTAssertLessThanOrEqual(max(wide.width, wide.height), DroppedPersonMarker.diameter,
+                                 "The glyph has to fit inside the chip")
+
+        let glyph = try XCTUnwrap(DroppedPersonMarker.makeGlyph())
+        let drawn = DroppedPersonMarker.fittedGlyphSize(for: glyph.size)
+        XCTAssertLessThan(max(drawn.width, drawn.height), DroppedPersonMarker.diameter,
+                          "The real symbol leaves a margin inside the chip's ring")
     }
 
     func testMarkerImageIsBuiltAtChipSizePlusShadowRoom() {

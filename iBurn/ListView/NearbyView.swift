@@ -183,7 +183,8 @@ struct NearbyView: View {
     /// silently wrong for anyone who forgot they left a pin standing.
     private func droppedPinInfoView(_ label: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: "figure.stand")
+            // Same mark as the marker standing on the map. See `DroppedPersonMarker`.
+            Image(systemName: DroppedPersonMarker.glyphSymbolName)
                 .font(.caption)
             Text("Near \(label)")
                 .font(.caption)

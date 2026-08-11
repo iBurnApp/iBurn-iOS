@@ -218,3 +218,81 @@ Two facts learned along the way are still true and worth keeping:
   screen resolves bare events and so is series-grained by construction — coherent, but worth
   revisiting if that screen starts showing specific showings.
 - The toast's copy is not localized (nothing in this app is yet).
+
+---
+
+# Round 2: map gesture gate, eye marker, rounded detail map, tip-anchored pins
+
+Four small user-requested changes landed the same day, on `2026-updates`. They are
+unrelated to per-occurrence favorites; they share this document only because it is the
+same-day doc (per `CLAUDE.md`).
+
+## High-level plan
+
+| # | Problem | Fix |
+| --- | --- | --- |
+| 1 | Long-pressing a home/bike/favourite pin both started the pin drag **and** dropped the person on top of it | Gate the map's drop-person recognizer behind a `UIGestureRecognizerDelegate`, backed by a pure `DropPersonGate` |
+| 2 | The dropped-person marker composited the **Man** (`pin_center`) — trademarked artwork | Swap the glyph for the SF Symbol `eye.fill` and delete the asset-catalog path |
+| 3 | The 200 pt map preview on the detail screen had square, edge-to-edge corners | Round it in `DetailMapViewRepresentable` (14 pt, continuous) and inset `.mapView` cells like every other cell |
+| 4 | Favourited camp pins sat on top of the `camp-labels-big` style text | `centerOffset` on `LabelAnnotationView` so the teardrop's **tip** is the anchor, not its middle |
+
+## 1. Drop-person gesture gate
+
+**Files**
+
+- `iBurn/Map/DropPersonGate.swift` (new) — `DropPersonTouchTarget` (`.map` /
+  `.userPin` / `.otherAnnotation`) plus two pure functions:
+  `shouldDropPerson(target:isEditingUserPin:)` and `target(forHitView:classify:)`.
+- `iBurn/MainMapViewController.swift` — conforms to `UIGestureRecognizerDelegate`, sets
+  itself as the drop-person recognizer's delegate, implements
+  `gestureRecognizerShouldBegin` scoped by recognizer name.
+- `iBurn/UserMapViewAdapter.swift` — new read-only `isEditingUserPin`
+  (`editingAnnotation != nil`).
+- `iBurnTests/DropPersonGateTests.swift` (new) — 10 tests.
+
+**Why a delegate and not `require(toFail:)`.** The pin's own long press lives on a view
+that may not exist when the map's recognizer is installed, and the two aren't in a
+fail/succeed relationship — the pin drag simply owns that touch.
+
+**Judgment call: only *user* pins veto the drop.** The brief said "decline when the touch
+hit-tests into any `MLNAnnotationView`". Implemented narrower: decline for annotation views
+that are `isDraggable` (which `UserMapViewAdapter` sets on, and only on, `BRCUserMapPoint`
+views — the same views it hangs the drag long-press off), plus decline everywhere while
+`isEditingUserPin`. Reasons:
+
+1. Only user pins have a competing gesture. A long press on a camp or art pin does nothing
+   today, and dropping the person there is a natural "look from this camp".
+2. It is the *only* lever UI automation has for choosing a drop coordinate — the map view
+   itself is not an accessibility element (see `flows.md`). Declining on every annotation
+   view would have made the feature unverifiable in the simulator and silently broken the
+   documented driving recipe.
+
+The seam is one `switch`, so flipping `.otherAnnotation` to `false` is a one-line change if
+the wider rule is ever wanted.
+
+**Testability.** `target(forHitView:classify:)` takes the per-view verdict as an injectable
+closure, so the superview walk is tested with plain `UIView`s; the MapLibre-specific line
+(`annotationTarget(for:)`) is tested separately with real `MLNAnnotationView`s.
+
+## 2. Eye marker instead of the Man
+
+`DroppedPersonMarker` now draws `eye.fill` (SF Symbol, 20 pt, `.semibold`, white),
+aspect-fitted into a 20 pt box centred in the unchanged 34 pt blue chip (white ring, drop
+shadow, +5 pt shadow padding). The asset-catalog lookup, the `figure.stand` fallback, and
+the `glyphAssetName` constant are gone; `glyphSymbolName` replaces it.
+
+The `pin_center` imageset itself is untouched — the map style's Man POI still draws it.
+Two other surfaces reused the marker's glyph and were switched with it:
+
+- `iBurn/Map/NearbyCard/NearbyCardView.swift` — the card's "Nearby &lt;address&gt;" header
+  prefix (was `Image(DroppedPersonMarker.glyphAssetName)` with forced template rendering).
+- `iBurn/ListView/NearbyView.swift` — the Nearby screen's "Near &lt;address&gt;" banner
+  (was a hardcoded `figure.stand`).
+
+New helper `DroppedPersonMarker.fittedGlyphSize(for:)` — `eye.fill` is ~3:2, so scaling by
+height alone would have pushed it past the chip's 29 pt face.
+
+Tests renamed/rewritten in `iBurnTests/DroppedPinSourceOverrideTests.swift`:
+`testManGlyphResolvesFromTheAssetCatalog` → `testEyeGlyphResolvesFromSFSymbols`, plus a new
+`testGlyphIsAspectFittedInsideTheChipFace`.
+
