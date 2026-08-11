@@ -296,3 +296,68 @@ Tests renamed/rewritten in `iBurnTests/DroppedPinSourceOverrideTests.swift`:
 `testManGlyphResolvesFromTheAssetCatalog` → `testEyeGlyphResolvesFromSFSymbols`, plus a new
 `testGlyphIsAspectFittedInsideTheChipFace`.
 
+## 3. Rounded detail map preview
+
+`DetailMapViewRepresentable.makeUIView` sets `layer.cornerRadius = 14`,
+`cornerCurve = .continuous`, `masksToBounds = true` — done once inside the representable so
+both `.mapView` and `.mapAnnotation` cells get it and cannot drift apart. `masksToBounds`
+clips MapLibre's `MTKView` render layer fine.
+
+`DetailView.DetailCellView` previously excluded `.mapView` from horizontal *and* vertical
+padding ("maps should extend to edges"), which would have clipped a notch out of the
+rounded corner at the screen edge. Only `.image` keeps the full bleed now; `.mapView` joins
+`.mapAnnotation` on the standard 16 pt inset.
+
+## 4. Tip-anchored label pins
+
+`LabelAnnotationView.commonInit` sets `centerOffset = CGVector(dx: 0, dy: -imageSide / 2)`
+(= `-15`). The 30×30 `imageView` is centred in the 100×45 view, so its bottom edge is 15 pt
+below the view's centre; lifting the centre by 15 pt puts the teardrop's tip on the
+coordinate. `centerOffset` was unused codebase-wide before this.
+
+The obvious hazard — this view also draws its own title *below* the image, so lifting the
+pin could just slide that title into the style text — does not bite: for style-labeled
+camps `PinLabelVisibility.labelIsHidden` has already hidden this view's `label` (that rule
+predates this change), and camps the layer has no feature for have no style text to collide
+with. Art/event pins keep the same pin-over-label relationship, just shifted up 15 pt.
+
+This affects every `LabelAnnotationView` (art, camps, events, map points) — intended,
+tip-anchoring is simply more correct for a teardrop. `ImageAnnotationView` (user pins,
+dropped person) was deliberately left centred.
+
+## Validation
+
+- **App build**: clean (iPhone 17 Pro Max, iOS 26.5).
+- **Tests**: `iBurnTests` 491 passed, 0 failed (baseline 476 + 15 new/rewritten).
+- **Simulator** (iPhone 17 Pro Max, device location 40.7864,-119.2065 then moved to
+  40.7810,-119.2140, embargo unlocked):
+  - **(1)** Long press on a saved favourite user pin → **no** person dropped; a temporary
+    `NSLog` of the hit-test chain confirmed the press resolved to
+    `iBurn.ImageAnnotationView > MLNAnnotationContainerView > MTKView > BRCMapView` and the
+    gate returned false. Long press on a camp pin (`Sobremesa`) and on the user-location dot
+    (`MLNFaux3DUserLocationAnnotationView`, non-draggable) still dropped the person, card
+    header and "Clear dropped pin" and all.
+    - *Gotcha for future rounds:* user pins placed with "Drop a pin" / "Find my camp" land
+      on the device's own coordinate, where `MLNFaux3DUserLocationAnnotationView` (22×22)
+      is stacked on top of them and wins the hit test. Move the simulator location away
+      with `xcrun simctl location <UDID> set …` before long-pressing a user pin, or the
+      test silently exercises the blue dot instead.
+  - **(2)** Blue chip with a white eye visible on the map, and the same eye prefixes the
+    nearby card's "Nearby 3:27 & Bodhi" header.
+  - **(3)** Sobremesa detail screen, light mode: preview inset 16 pt with a clearly
+    rounded continuous corner (verified on a cropped full-resolution screenshot); dark mode
+    renders the dark base map inside the same rounded, inset frame — nothing broken.
+  - **(4)** At z≥15 (double-tapped into the style-label zoom) a favourited camp's purple
+    teardrop points at its coordinate with its body entirely above the `camp-labels-big`
+    text, instead of straddling it. **Honest caveat:** no paired "before" screenshot was
+    captured — the comparison is against the known previous geometry (pin centred on the
+    coordinate), not against a re-built old binary.
+- Instrumentation `NSLog` was removed and the app rebuilt clean afterwards.
+
+## Residual / follow-ups
+
+- MapLibre's own press-and-hold drag on user pins was not separately re-verified as
+  *starting* — only that the drop no longer happens. The brief allowed this ("or at
+  minimum does NOT drop the person").
+- `DropPersonGate` treats every non-draggable annotation view as droppable. If the "no drop
+  on any pin" rule is preferred later, change the single `switch` case.

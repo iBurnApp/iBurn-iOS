@@ -350,9 +350,14 @@ Automation notes:
   - **camps the geojson doesn't name** — exactly **1 of 1191 in 2026** (`Westlandia`, the
     only camp with GPS and no feature; the other 7 unlabelled camps have no GPS, so they
     produce no pin either way). It keeps a pin *and* its own `UILabel`;
-  - **favourites** — a starred camp keeps its pin over its style label, because the text
+  - **favourites** — a starred camp keeps its pin *above* its style label, because the text
     can't say "you starred this" and `showFavoritesOnMap` toggles independently of
-    `showCampsOnMap`. Favourite any placed camp and watch its pin appear on the browse map;
+    `showCampsOnMap`. Favourite any placed camp and watch its pin appear on the browse map.
+    Since Aug 10 the pin is **tip-anchored**: `LabelAnnotationView.centerOffset` lifts the
+    view by half its 30 pt image box so the teardrop's point (not its middle) lands on the
+    coordinate, which is also where the style layer sets its text — that is what keeps the
+    glyph off the letters. Applies to every `LabelAnnotationView` (art, camps, events), not
+    just camps;
   - **the layer not painting** — Map Filter → **"Show Camp Names (Zoomed)" off** → Done, or
     any zoom below z15, or the camp tier still embargoed. Every camp pin comes back, each
     labelling itself. Turning the filter back on removes them again on Done.
@@ -662,6 +667,10 @@ From any list row (event/camp/art):
 - Title + description, host section (tap navigates to host detail),
   "NEXT EVENT" section, "See all N events from <host>".
 - Top bar: Share, favorite heart, back.
+- The embedded **map preview** is 200 pt tall with **rounded corners** (14 pt, continuous,
+  applied on the `MLNMapView`'s layer inside `DetailMapViewRepresentable` so `.mapView` and
+  `.mapAnnotation` cells cannot drift apart) and is inset 16 pt like every other cell. Only
+  `.image` cells still bleed to the screen edges.
 - Viewing a detail writes `last_viewed`/`first_viewed` metadata (this must NOT
   cause list observations to re-emit — the metadata region excludes those
   columns; regression-tested in FilterObservationTests).

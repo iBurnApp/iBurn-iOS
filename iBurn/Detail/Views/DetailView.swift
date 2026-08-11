@@ -153,19 +153,23 @@ struct DetailCellView: View {
     
     private var shouldAddHorizontalPadding: Bool {
         switch cell.type {
-        case .image, .mapView:
-            return false // Images and maps should extend to edges
+        case .image:
+            // Hero images still bleed to the edges.
+            return false
         default:
-            return true // All other cells get horizontal padding
+            // Map previews included: they are rounded (see `DetailMapViewRepresentable`),
+            // and a rounded corner pinned to the screen edge just clips a notch out of the
+            // map. `.mapAnnotation` was already inset; this puts `.mapView` alongside it.
+            return true
         }
     }
-    
+
     private var shouldAddVerticalPadding: Bool {
         switch cell.type {
-        case .image, .mapView:
-            return false // Images and maps should extend to edges
+        case .image:
+            return false
         default:
-            return true // All other cells get horizontal padding
+            return true
         }
     }
     
