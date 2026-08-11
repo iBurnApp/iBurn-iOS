@@ -84,6 +84,20 @@ enum RecentlyViewedItem: Identifiable {
         }
     }
 
+    /// Whether this item's placement may be shown at all, per its embargo tier.
+    ///
+    /// Gates the walk/bike estimate as well as any address: a distance is derived from the
+    /// same embargoed coordinates, so "6 min walk" narrows a locked camp's placement just as
+    /// surely as printing its cross street would. Mirrors `NearbyItem.canShowLocation`.
+    var canShowLocation: Bool {
+        switch self {
+        case .art: BRCEmbargo.canShowArtLocations()
+        case .camp: BRCEmbargo.canShowCampLocations()
+        case .event(let o, _): BRCEmbargo.canShowLocation(for: o)
+        case .mutantVehicle: false
+        }
+    }
+
     var detailSubject: DetailSubject {
         switch self {
         case .art(let o, _): .art(o)

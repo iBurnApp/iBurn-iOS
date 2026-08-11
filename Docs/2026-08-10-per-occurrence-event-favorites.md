@@ -361,3 +361,187 @@ dropped person) was deliberately left centred.
   minimum does NOT drop the person").
 - `DropPersonGate` treats every non-draggable annotation view as droppable. If the "no drop
   on any pin" rule is preferred later, change the single `switch` case.
+
+---
+
+# Follow-up round: four map / list fixes (2026-08-10, later)
+
+Four independent bugs reported after the round above. Same day, same branch
+(`2026-updates`), so they continue this document.
+
+## High-level plan
+
+| # | Symptom | Root cause | Fix |
+| --- | --- | --- | --- |
+| 1 | Event map callout says "9:00 AM - 11:00 AM" with no day | `PlayaObjectAnnotation.init?(event:)` used `startAndEndString` alone; the legacy `DataObjectAnnotation` path prefixed the weekday | Prefix `startWeekdayString` unless the occurrence is happening now; pin both PlayaDB formatters to playa time |
+| 2 | A pin's own label sits on top of the camp name the style layer draws | Label was pinned flush to the image's bottom edge (0 pt), and since `10b24fa` the tip — hence the label's top — sits *on* the coordinate, which is exactly where `camp-labels-big` centres its text | 18 pt gap between tip and label; frame grown to fit; `centerOffset` re-derived from the new geometry |
+| 3 | "Today's Favorites Only" appears not to filter the map | **Not** a filter bypass — the Map Filter sheet only saved on **Done**; a swipe-down dismissal silently discarded the flip | Swipe-dismiss now applies the edits (Cancel still discards) |
+| 4 | Recently Viewed shows "417.3km" | `RecentlyViewedViewModel.distanceString(for:)` hand-rolled a metric string instead of using the shared walk/bike humanizer | Replaced with `distanceAttributedString(for:)` over `TTTLocationFormatter.brc_humanizedString(forDistance:)` |
+
+## Fix 1 — weekday in the event callout
+
+`iBurn/PlayaObjectAnnotation.swift` — new `calloutSubtitle(for:now:)`, mirroring
+`AnnotationDataSource.swift`'s legacy rule: times alone while the occurrence is running,
+`"Monday 8:30 AM - 9:30 AM"` otherwise. It reads the clock through `Date.present`, so the
+mock-date scheme still behaves.
+
+`Packages/PlayaDB/Sources/PlayaDB/Models/EventObjectOccurrence.swift` — `startAndEndString`
+and `startWeekdayString` built a fresh `DateFormatter` per call **in the device timezone**.
+An event's schedule is a fact about the playa, and a phone still on Eastern time would put
+a Thursday 9 pm event on Friday. Both now use cached formatters pinned to
+`America/Los_Angeles` (`DateFormatter.playaTimeZone`) — the same zone the app's
+`TimeZone.burningManTimeZone` names as a fixed PDT offset. PlayaDB is a separate package
+with no such helper (only `PlayaDBImpl`'s private `playaCalendar` used the identifier), so
+the helper was added there.
+
+Test: `Packages/PlayaDB/Tests/PlayaDBTests/EventObjectOccurrenceTests.swift` →
+`testStartStringsUsePlayaTimeRegardlessOfDeviceTimeZone` — a 04:00 UTC instant renders as
+Thursday 9:00 PM, and *not* as the UTC rendering.
+
+## Fix 2 — pin label vs. the style layer's camp name
+
+`iBurn/LabelAnnotationView.swift`. Old geometry: 30×30 image centred in a 100×45 frame,
+`label.top == imageView.bottom` (no gap), `centerOffset = (0, -15)`. Net effect: the tip on
+the coordinate **and the label starting at the coordinate** — where `camp-labels-big` draws
+the camp name (a camp's GPS is its footprint centroid, and the layer has no `text-offset`,
+so its text block is centred on the point). Camps don't hit this because
+`PinLabelVisibility` hides their own labels; event pins have `campUID == nil`, so theirs
+never hide — hence "Morning Beats & B…" over "Camp TeaPunk".
+
+New geometry:
+
+```swift
+static let imageSide: CGFloat = 30
+static let labelTopGap: CGFloat = 18
+static let labelHeight: CGFloat = 14
+static let frameSize = CGSize(width: 100, height: imageSide + labelTopGap + labelHeight) // 100×62
+static let tipAnchoringCenterOffset = CGVector(dx: 0, dy: frameSize.height / 2 - imageSide) // (0, +1)
+```
+
+The image is now anchored to the view's **top** rather than its centre, so the tip's
+distance from the top edge is the constant `imageSide` and the offset can be derived from
+it: MapLibre puts the view's centre at `coordinate + centerOffset`, the tip is
+`imageSide - height/2` below that centre, so `dy = height/2 - imageSide` lands it on the
+point. With the taller frame that is `+1`, not `-15` — the same tip position, expressed
+against a frame that now extends further below than above. Centre-anchoring would have
+needed a 94 pt-tall frame (double the wasted space above the pin) to contain the same
+label.
+
+18 pt clears one line of style text at every zoom the layer draws (9 pt at z15 → 14 pt at
+z20, plus a 2 pt halo, centred on the point) and still clears most of a wrapped two-line
+name.
+
+Tests: `iBurnTests/LabelAnnotationViewAnchorTests.swift` rewritten to lay the view out for
+real and assert against the coordinate, not against constants — tip lands exactly on the
+coordinate, label's top edge lands exactly `labelTopGap` below it, label stays inside the
+bounds.
+
+## Fix 3 — "Today's Favorites Only": what the runtime actually showed
+
+The static reading was right and the runtime confirmed it: **the date filter works.** The
+window is computed from `Date.present` and applied in SQL
+(`PlayaDBImpl.eventOccurrenceRequest` → `startTime >= start AND startTime < end`), and
+every path was exercised in the simulator (embargo unlocked, 5 favorited burn-week events
+with camp hosts, today = 2026-08-10):
+
+| Path driven | Result |
+| --- | --- |
+| Toggle OFF + **Done** | 5 favorited weeks-out event pins appear immediately |
+| Toggle ON + **Done** | all 5 disappear immediately |
+| Toggle OFF + **swipe-dismiss** (after fix) | pins appear; `kBRCShowTodaysFavoritesOnlyOnMapKey = 0` written to the app-container plist |
+| Relaunch with the key forced to `1` | no event pins (the launch path honours it) |
+| Favorite a *new* weeks-out occurrence while ON | no pin appears (the live observation re-runs the same SQL) |
+
+There is no second favourites pipeline: on the main map only
+`PlayaDBAnnotationDataSource` (favourites/always-show observations) and
+`UserMapViewAdapter.refreshRegionAnnotations()` (viewport query, events gated to
+happening/starting-soon) add pins, and only the first can produce a weeks-out event.
+`FilteredMapDataSource.updateFilters()` does tear down and rebuild the observations.
+
+**So the reproducible defect is the sheet, not the filter.** `MapFilterView` writes
+`UserSettings` only from the Done button; Cancel and swipe-down discarded silently, while
+the section footer narrates the *unsaved* local state ("Showing only today's favorited
+events on the map"). Flip the switch, swipe the sheet away — the natural gesture — and the
+map is unchanged with the toggle having just read ON.
+
+Chosen fix (option (c) of the brief): **apply on swipe-dismiss**, rather than
+`isModalInPresentation`. Every control here reads as a live switch, and taking away the
+sheet gesture to protect a save felt worse than honouring it. `Cancel` remains the way to
+discard.
+
+```swift
+// MapFilterViewController
+func installSwipeDismissHandler(on presented: UIViewController)   // nav controller owns the presentation controller
+func presentationControllerDidDismiss(_:)                          // → viewModel.saveSettings()
+```
+
+`didResolveExplicitly` guards against a double-save; UIKit only calls
+`presentationControllerDidDismiss` for interactive dismissals, so Done/Cancel never reach
+it. Wired from `MainMapViewController.filterButtonPressed`.
+
+Also extracted, so the window is testable without a database:
+
+```swift
+// PlayaDBAnnotationDataSource
+static func favoriteEventFilter(showTodaysOnly:includeExpired:now:calendar:) -> EventFilter
+```
+
+Test: `iBurnTests/MapFavoriteEventFilterTests.swift` — exactly one day wide, half-open
+around midnight, a burn-week occurrence outside a 2026-08-10 window, no dates at all when
+the switch is off.
+
+## Fix 4 — Recently Viewed distance
+
+`iBurn/ListView/RecentlyViewedViewModel.swift` — `distanceString(for:)` → 
+`distanceAttributedString(for:) -> AttributedString?`, built from
+`TTTLocationFormatter.brc_humanizedString(forDistance:)` exactly as
+`CampDataProvider`/`NearbyViewModel` do. `RecentlyViewedView.subtitleString(for:)` now just
+forwards it. The raw-metres comparison in `sortedItems` (`.nearest`) is untouched — that is
+ordering, not display.
+
+While here: the row is also now embargo-gated. `RecentlyViewedItem.canShowLocation` mirrors
+`NearbyItem.canShowLocation` (art tier / camp tier / event's host tier), because a walk
+estimate is derived from the same embargoed coordinates as the address it sits next to.
+`nil` makes `ObjectRowView` fall back to its masked `🚶🏽 ? min 🚴🏽 ? min` line, which is
+what search results already show.
+
+The humanizer returns a real (if absurd) estimate at 400 km rather than nil, which is what
+every other screen shows from off playa — matched rather than special-cased.
+
+## Validation
+
+- **App build**: clean (iPhone 17 Pro Max, iOS 26.5 simulator).
+- **Tests**: `iBurnTests` **497 passed / 0 failed** (491 before, +6: 4 filter-window, +2 net
+  in the rewritten anchor tests). PlayaDB package **291 passed / 0 failed** (+1).
+- **Simulator** (iPhone 17 Pro Max, embargo unlocked, device at BRC):
+  - **(1)** Favorited event pins on the main map read
+    `"Yoga - on a Bamboo Floor! | Monday 8:30 AM - 9:30 AM"`, `"Booty Hour | Sunday 5:00 PM
+    - 7:00 PM"` in the AX tree — weekday present, playa time.
+  - **(2)** Event detail → map preview → full-screen map for *Booty Hour* (hosted by camp
+    *Best Butt*): the purple teardrop points at the camp's coordinate, `camp-labels-big`
+    draws **"Best Butt"** at that point, and the pin's own **"Booty Hour"** label sits
+    clearly below it with daylight between the two.
+    **Honest caveat:** no paired "before" screenshot — the comparison is against the known
+    previous geometry, not a rebuilt old binary. XcodeBuildMCP cannot pinch-zoom the main
+    map; the full-screen detail map was the way to reach a style-label zoom.
+  - **(3)** The five-row table above, driven end to end.
+  - **(4)** Recently Viewed rows show `🚶🏽 31m 🚴🏽 11m` (colour-coded) instead of
+    `417.3km` / `1.2km`.
+
+## Follow-ups (known-latent, deliberately not fixed here)
+
+- **`QueryExtensions` reads the wall clock, not `Date.present`.** `notExpired()`,
+  `happeningNow()` and `startingWithin(hours:)` default to `Date()`, while the callers
+  around them (`PlayaDBAnnotationDataSource`, `UserMapViewAdapter`) use `Date.present`.
+  Under the Mock Date scheme the two disagree by weeks: the today-window is the mocked day
+  and the expiry cut is the real one. Nothing user-visible in a release build (they are the
+  same value), but any time-travel debugging of the map is misleading until the default is
+  threaded through.
+- **`MapAnnotationRegistry` keys event annotations by the parent event uid**
+  (`PlayaObjectAnnotation.id` is `event.event.anyID`), so several favorited occurrences of
+  one event collapse to whichever the query returned first. With per-occurrence favorites
+  that is now reachable in normal use: favourite two showings of the same event and only
+  one pin exists (harmless today — same coordinate — but the callout names one arbitrary
+  showing). `rebuildCache()` also concatenates active-events *before* favorites, so the
+  unfavourited active-event annotation wins the key when both are present.
+- No paired before/after screenshot for fix 2 (above).

@@ -207,7 +207,6 @@ struct RecentlyViewedView: View {
     // MARK: - Subtitle
 
     private func subtitleString(for item: RecentlyViewedItem) -> AttributedString? {
-        guard let dist = viewModel.distanceString(for: item) else { return nil }
-        return AttributedString(dist)
+        viewModel.distanceAttributedString(for: item)
     }
 }

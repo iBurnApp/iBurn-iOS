@@ -117,14 +117,26 @@ final class RecentlyViewedViewModel: ObservableObject {
 
     // MARK: - Distance
 
-    func distanceString(for item: RecentlyViewedItem) -> String? {
-        guard let location = currentLocation, let itemLoc = item.location else { return nil }
-        let meters = location.distance(from: itemLoc)
-        if meters < 1000 {
-            return "\(Int(meters))m"
-        } else {
-            return String(format: "%.1fkm", meters / 1000)
+    /// Walk/bike estimate for the row's subtitle, or nil when there is nothing to measure
+    /// (no fix, no placement) or the item's embargo tier still hides its coordinates.
+    ///
+    /// The same `TTTLocationFormatter` humanizer every other list uses, rather than a raw
+    /// "417.3km": distance on the playa is a question of how long it takes to get there, and
+    /// a bare kilometre figure in one screen out of ten reads as a different app. Returning
+    /// nil makes `ObjectRowView` fall back to its masked `🚶🏽 ? min 🚴🏽 ? min` line, exactly
+    /// as Nearby and search results do — see `NearbyViewModel.distanceString(for:)`.
+    ///
+    /// `sortedItems` keeps comparing raw metres for the `.nearest` order; this is display only.
+    func distanceAttributedString(for item: RecentlyViewedItem) -> AttributedString? {
+        guard item.canShowLocation,
+              let location = currentLocation,
+              let itemLocation = item.location,
+              let humanized = TTTLocationFormatter.brc_humanizedString(
+                forDistance: location.distance(from: itemLocation)
+              ) else {
+            return nil
         }
+        return AttributedString(humanized)
     }
 
     // MARK: - Last Viewed Formatting
