@@ -293,20 +293,48 @@ public extension EventObjectOccurrence {
         return !hasEnded(now) && (isStartingSoon(now) || isHappeningRightNow(now)) && !isEndingSoon(now)
     }
     
-    /// Format start and end time as string (e.g. "10:00AM - 4:00PM")
+    /// Format start and end time as string (e.g. "10:00 AM - 4:00 PM")
+    ///
+    /// Rendered in Black Rock City's timezone, not the device's: an event's schedule is a
+    /// fact about the playa, and a phone that never left home (or is still on the airplane's
+    /// timezone) would otherwise print a start time hours away from the one on the poster.
     var startAndEndString: String {
+        let formatter = DateFormatter.playaTimeOnly
+        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
+    }
+
+    /// Format start date as weekday string, in Black Rock City's timezone.
+    ///
+    /// The timezone matters more here than for the time: a 9pm Thursday event read on a
+    /// device three hours east is a *Friday* event, which is the wrong day to show up.
+    var startWeekdayString: String {
+        DateFormatter.playaDayOfWeek.string(from: startDate)
+    }
+}
+
+// MARK: - Playa-time formatters
+
+extension DateFormatter {
+    /// Black Rock City runs on US Pacific time; the app's `TimeZone.burningManTimeZone`
+    /// is the same zone, expressed as the fixed PDT offset the event always falls in.
+    static let playaTimeZone = TimeZone(identifier: "America/Los_Angeles") ?? .current
+
+    /// e.g. "4:19 PM"
+    static let playaTimeOnly: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
-    }
-    
-    /// Format start date as weekday string
-    var startWeekdayString: String {
+        formatter.timeZone = playaTimeZone
+        return formatter
+    }()
+
+    /// e.g. "Monday"
+    static let playaDayOfWeek: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
-        return formatter.string(from: startDate)
-    }
+        formatter.timeZone = playaTimeZone
+        return formatter
+    }()
 }
 
 // MARK: - GRDB Joined Row

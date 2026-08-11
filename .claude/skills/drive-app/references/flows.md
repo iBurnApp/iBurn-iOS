@@ -353,11 +353,15 @@ Automation notes:
   - **favourites** — a starred camp keeps its pin *above* its style label, because the text
     can't say "you starred this" and `showFavoritesOnMap` toggles independently of
     `showCampsOnMap`. Favourite any placed camp and watch its pin appear on the browse map.
-    Since Aug 10 the pin is **tip-anchored**: `LabelAnnotationView.centerOffset` lifts the
-    view by half its 30 pt image box so the teardrop's point (not its middle) lands on the
-    coordinate, which is also where the style layer sets its text — that is what keeps the
-    glyph off the letters. Applies to every `LabelAnnotationView` (art, camps, events), not
-    just camps;
+    Since Aug 10 the pin is **tip-anchored**: `LabelAnnotationView.centerOffset` is derived
+    from the image box (`frameSize.height/2 - imageSide`) so the teardrop's point (not its
+    middle) lands on the coordinate, which is also where the style layer sets its text —
+    that is what keeps the glyph off the letters. A second Aug-10 change puts an
+    **18 pt gap** (`labelTopGap`) between that tip and the pin's own name label, so the
+    label starts *below* the style text instead of on it; the frame grew to 100×62 to
+    contain it. The event-at-a-camp case is the one to eyeball: the pin's label ("Booty
+    Hour") must sit clearly under the camp name the layer draws ("Best Butt"), not across
+    it. Applies to every `LabelAnnotationView` (art, camps, events), not just camps;
   - **the layer not painting** — Map Filter → **"Show Camp Names (Zoomed)" off** → Done, or
     any zoom below z15, or the camp tier still embargoed. Every camp pin comes back, each
     labelling itself. Turning the filter back on removes them again on Done.
@@ -378,6 +382,26 @@ Automation notes:
 - The Map Filter's Done callback re-runs all four: `updateAllLayers()`,
   `refreshRegionAnnotations()`, `reloadAnnotations()`, `updatePinLabelVisibility()`. Camp pins
   appear/disappear immediately on Done — no pan required.
+- **The Map Filter sheet saves on Done *and* on swipe-down; only Cancel discards.** Since
+  Aug 10 `MapFilterViewController` is the presentation controller's delegate and applies the
+  edits from `presentationControllerDidDismiss`. Before that, swiping the sheet away threw
+  the flip out silently while the section footer narrated the unsaved state ("Showing only
+  today's favorited events on the map") — which is what "the filter doesn't stick" reports
+  turn out to be. Driving it: the sheet's Form is scrollable, so a swipe-down first scrolls
+  the form to the top and only the *second* swipe dismisses.
+- **"Today's Favorites Only"** narrows the favourited-events layer to occurrences starting
+  inside `[startOfDay, +1 day)` of `Date.present`, in SQL. Off playa (all events weeks out)
+  it hides every favourited event pin and leaves favourited camps/art alone — that is the
+  quickest check: toggle it off → Done → the favourited events' pins appear; toggle on →
+  they all go. The window itself is `PlayaDBAnnotationDataSource.favoriteEventFilter(…)`,
+  pure and unit-tested (`MapFavoriteEventFilterTests`).
+- **Map filter settings live in the app-container plist, not the user defaults domain.**
+  `xcrun simctl spawn <UDID> defaults read com.trailbehind.iBurn2010` does **not** show
+  them and writing there does nothing. Read/write
+  `"$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)/Library/Preferences/com.trailbehind.iBurn2010"`
+  instead (keys `kBRCShowFavoritesOnMapKey`, `kBRCShowTodaysFavoritesOnlyOnMapKey`,
+  `kBRCEntered2026EmbargoPasscodeKey` — the last one unlocks the embargo for a driving
+  session without a passcode).
 - Crossing the layer's **z15 minzoom** also changes which camps need a pin, and the
   observation path is zoom-blind, so `UserMapViewAdapter` rebuilds the pin set from
   `regionDidChangeAnimated` — but only when the `campNamesDrawnByStyleLayer` verdict actually
@@ -402,6 +426,15 @@ Automation notes:
   runs `visibleFeaturesInRect:inStyleLayersWithIdentifiers:` to assert what a tap at a given
   point would resolve to. `snapshot_ui` is then the assertion: map annotations appear as
   buttons labelled with the object's name.
+  - **A cheaper route to a style-label zoom**: an event/camp **detail screen → tap its map
+    preview** pushes a full-screen map framed on that object, well past z15. (The inline
+    preview itself is ~150 pt tall and frames the object *plus* the user-or-Man coordinate,
+    so it usually ends up around z13 — don't judge label geometry from it.) Double-tapping
+    an annotation button on the main map also zooms in a level at a time.
+  - **An event pin's callout subtitle carries the weekday** — the AX value reads
+    `"Monday 8:30 AM - 9:30 AM"`, dropping to bare times only while the occurrence is
+    actually running. It is rendered in playa time (`America/Los_Angeles`) whatever the
+    simulator's timezone is, so a schedule assertion doesn't need the host clock to match.
 - **Map Filter camp toggles map to two different defaults**, which is why the region path
   matters: "Camps (Always)" is `kBRCShowCampsOnMapKey`, **default false** (so the
   observation path adds no camps at all out of the box), while "Camps (Zoomed)" is

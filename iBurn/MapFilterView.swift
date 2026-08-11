@@ -263,7 +263,11 @@ struct MapFilterView: View {
 class MapFilterViewController: UIHostingController<MapFilterView> {
     private let viewModel: MapFilterViewModel
     private let onFilterChanged: (() -> Void)?
-    
+
+    /// True once Done or Cancel has decided what happens to the edits, so the swipe-dismiss
+    /// hook below knows it has nothing left to do.
+    private var didResolveExplicitly = false
+
     init(onFilterChanged: (() -> Void)? = nil) {
         self.onFilterChanged = onFilterChanged
         self.viewModel = MapFilterViewModel(
@@ -271,11 +275,37 @@ class MapFilterViewController: UIHostingController<MapFilterView> {
         )
         super.init(rootView: MapFilterView(viewModel: viewModel))
         viewModel.onDismiss = { [weak self] in
+            self?.didResolveExplicitly = true
             self?.dismiss(animated: true)
         }
     }
-    
+
     @MainActor required dynamic init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    /// Wires up the swipe-to-dismiss hook. Called by whoever presents this screen, because
+    /// the presentation controller belongs to the *presented* container — the navigation
+    /// controller this is wrapped in — not to this view controller.
+    func installSwipeDismissHandler(on presented: UIViewController) {
+        presented.presentationController?.delegate = self
+    }
+}
+
+// MARK: - Swipe-to-dismiss
+
+extension MapFilterViewController: UIAdaptivePresentationControllerDelegate {
+
+    /// Swiping the sheet down applies the edits, rather than silently throwing them away.
+    ///
+    /// Every toggle here reads as a live switch — the section footer even narrates the
+    /// current selection ("Showing only today's favorited events on the map") — so a filter
+    /// that was flipped and then swiped away looks applied and isn't. Cancel is still the way
+    /// to discard, and it resolves the screen explicitly, so it never reaches this method
+    /// (UIKit only calls it for interactive dismissals).
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        guard !didResolveExplicitly else { return }
+        didResolveExplicitly = true
+        viewModel.saveSettings()
     }
 }

@@ -155,16 +155,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
         // Favorite events
         if UserSettings.showFavoritesOnMap {
-            var eventFilter = EventFilter(
-                onlyFavorites: true,
-                includeExpired: UserSettings.showExpiredEventsInFavorites
+            let eventFilter = Self.favoriteEventFilter(
+                showTodaysOnly: UserSettings.showTodaysFavoritesOnlyOnMap,
+                includeExpired: UserSettings.showExpiredEventsInFavorites,
+                now: .present
             )
-            if UserSettings.showTodaysFavoritesOnlyOnMap {
-                let calendar = Calendar.current
-                let today = Date.present
-                eventFilter.startDate = calendar.startOfDay(for: today)
-                eventFilter.endDate = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: today))
-            }
             let token = playaDB.observeEvents(filter: eventFilter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
@@ -193,6 +188,31 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         favoriteCampAnnotations.removeAll()
         favoriteEventAnnotations.removeAll()
         cachedAnnotations.removeAll()
+    }
+
+    // MARK: - Favourite-event filter
+
+    /// The filter behind the map's favourited-events layer.
+    ///
+    /// "Today's Favorites Only" narrows it to occurrences that *start* inside today —
+    /// `[startOfDay, startOfDay + 1 day)` — which is what keeps the map readable during the
+    /// event, when a week of favourites would otherwise pin the whole city at once. The
+    /// window is applied in SQL (`PlayaDBImpl.eventOccurrenceRequest`), so an occurrence
+    /// weeks out is never fetched, let alone drawn.
+    ///
+    /// Pure, and split out of `startObserving()` so the window can be tested without a
+    /// database: it reads the clock through `now` (`Date.present`, which honours the
+    /// mock-date scheme) rather than calling `Date()` itself.
+    static func favoriteEventFilter(showTodaysOnly: Bool,
+                                    includeExpired: Bool,
+                                    now: Date,
+                                    calendar: Calendar = .current) -> EventFilter {
+        var filter = EventFilter(onlyFavorites: true, includeExpired: includeExpired)
+        guard showTodaysOnly else { return filter }
+        let startOfDay = calendar.startOfDay(for: now)
+        filter.startDate = startOfDay
+        filter.endDate = calendar.date(byAdding: .day, value: 1, to: startOfDay)
+        return filter
     }
 
     // MARK: - Private

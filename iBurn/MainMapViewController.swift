@@ -402,6 +402,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIG
             self.mapViewAdapter.updatePinLabelVisibility()
         }
         let nav = UINavigationController(rootViewController: filterVC)
+        filterVC.installSwipeDismissHandler(on: nav)
         present(nav, animated: true)
     }
     

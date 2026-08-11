@@ -85,9 +85,22 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
             id: event.event.anyID,
             coordinate: location.coordinate,
             title: event.name,
-            subtitle: event.startAndEndString,
+            subtitle: Self.calloutSubtitle(for: event),
             object: .eventOccurrence(event)
         )
+    }
+
+    /// A pin's callout has to say *which day* — the map shows favourites weeks ahead of the
+    /// burn, and "9:00 AM - 11:00 AM" alone is unreadable when the answer could be any of
+    /// eight days. Dropped only while the occurrence is actually running, when the day is
+    /// implied and the times are all that's left to say. Same rule as the legacy
+    /// `DataObjectAnnotation.subtitle`.
+    static func calloutSubtitle(for event: EventObjectOccurrence,
+                                now: Date = .present) -> String {
+        if event.isHappeningRightNow(now) {
+            return event.startAndEndString
+        }
+        return "\(event.startWeekdayString) \(event.startAndEndString)"
     }
 
     convenience init?(event: EventObject) {
