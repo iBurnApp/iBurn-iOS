@@ -724,7 +724,7 @@ struct EventSummaryHeaderView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("AI SLOP SUMMARY", systemImage: "sparkles")
+            Label("AI Summary", systemImage: "sparkles")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundColor(themeColors.detailColor)
