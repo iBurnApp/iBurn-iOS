@@ -58,6 +58,20 @@ enum VisiblePinItem: Identifiable {
         }
     }
 
+    /// Whether this row's placement may be shown at all, per its embargo tier.
+    ///
+    /// Gates the walk/bike estimate as well as the address: both are derived from the same
+    /// embargoed coordinates. A user's own dropped pin is their own data, never embargoed.
+    var canShowLocation: Bool {
+        switch self {
+        case .art: return BRCEmbargo.canShowArtLocations()
+        case .camp: return BRCEmbargo.canShowCampLocations()
+        case .eventOccurrence(let o): return BRCEmbargo.canShowLocation(for: o)
+        case .event(let o): return BRCEmbargo.canShowLocation(for: o)
+        case .userPin: return true
+        }
+    }
+
     /// UID used for favorite lookups. `getFavorites()` returns base `EventObject`s,
     /// so events key off the event uid rather than the occurrence uid.
     /// Key this row's heart answers to — `PlayaDB.favoriteIdentifiers(among:)`'s key.
@@ -233,14 +247,14 @@ final class VisiblePinsViewModel: ObservableObject {
 
     // MARK: Display helpers
 
-    /// Walk/bike estimate string, matching the other PlayaDB list screens.
+    /// Walk/bike estimate string, matching the other PlayaDB list screens — embargo-gated
+    /// and sanity-clamped by `PlayaDistanceString`.
     func distanceString(for item: VisiblePinItem) -> AttributedString? {
-        guard let location = currentLocation,
-              let itemLocation = item.location,
-              let formatted = TTTLocationFormatter.brc_humanizedString(forDistance: location.distance(from: itemLocation)) else {
-            return nil
-        }
-        return AttributedString(formatted)
+        PlayaDistanceString.make(
+            from: currentLocation,
+            to: item.location,
+            canShowLocation: item.canShowLocation
+        )
     }
 
     func isFavorite(_ item: VisiblePinItem) -> Bool {

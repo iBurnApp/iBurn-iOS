@@ -167,7 +167,11 @@ class DependencyContainer {
 
     /// Create a GlobalSearchViewModel with injected dependencies
     func makeGlobalSearchViewModel() -> GlobalSearchViewModel {
-        GlobalSearchViewModel(playaDB: playaDB, aiSearchService: aiSearchService)
+        GlobalSearchViewModel(
+            playaDB: playaDB,
+            aiSearchService: aiSearchService,
+            locationProvider: locationProvider
+        )
     }
 
     /// Create a GlobalSearchHostingController for use as UISearchController.searchResultsController

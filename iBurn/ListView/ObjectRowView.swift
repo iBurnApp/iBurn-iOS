@@ -125,32 +125,32 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             }
             .padding(.top, 4)
 
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .layoutPriority(1)
-                } else {
-                    Text("🚶🏽 ? min   🚴🏽 ? min")
-                        .font(.subheadline)
-                        .foregroundColor(colors.secondaryColor)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .layoutPriority(1)
-                }
+            // No distance means no distance line. The row used to fall back to a masked
+            // `🚶🏽 ? min   🚴🏽 ? min`, which turned every unmeasurable row — embargoed
+            // placement, no fix, no coordinates — into an advertisement for missing data.
+            // `PlayaDistanceString` returns nil in exactly those cases and the fragment
+            // simply drops, the way the Nearby card already handles a locked address.
+            if subtitle != nil || !(rightSubtitle ?? "").isEmpty {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .layoutPriority(1)
+                    }
 
-                Spacer(minLength: 0)
+                    Spacer(minLength: 0)
 
-                if let rightSubtitle, !rightSubtitle.isEmpty {
-                    Text(rightSubtitle)
-                        .font(.subheadline)
-                        .foregroundColor(colors.secondaryColor)
-                        .lineLimit(1)
+                    if let rightSubtitle, !rightSubtitle.isEmpty {
+                        Text(rightSubtitle)
+                            .font(.subheadline)
+                            .foregroundColor(colors.secondaryColor)
+                            .lineLimit(1)
+                    }
                 }
+                .padding(.top, 8)
             }
-            .padding(.top, 8)
         }
         .padding(.vertical, 0)
         .listRowBackground(listRowBackground)

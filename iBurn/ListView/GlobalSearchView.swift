@@ -333,7 +333,7 @@ struct GlobalSearchView: View {
         case .art(let art):
             ObjectRowView(
                 object: art,
-                subtitle: nil,
+                subtitle: viewModel.distanceAttributedString(for: item),
                 rightSubtitle: art.artist,
                 isFavorite: isFavorite,
                 onFavoriteTap: { viewModel.toggleFavorite(item) }
@@ -345,7 +345,7 @@ struct GlobalSearchView: View {
         case .camp(let camp):
             ObjectRowView(
                 object: camp,
-                subtitle: nil,
+                subtitle: viewModel.distanceAttributedString(for: item),
                 rightSubtitle: camp.hometown,
                 isFavorite: isFavorite,
                 onFavoriteTap: { viewModel.toggleFavorite(item) }
@@ -357,6 +357,7 @@ struct GlobalSearchView: View {
         case .event(let event):
             ObjectRowView(
                 object: event,
+                subtitle: viewModel.distanceAttributedString(for: item),
                 rightSubtitle: event.timeDescription(now: Date()),
                 hostName: event.hostName,
                 hostAddress: BRCEmbargo.canShowLocation(for: event) ? event.hostAddress : nil,

@@ -87,17 +87,9 @@ class EventDataProvider: ObjectListDataProvider {
         }
     }
 
+    /// Walk/bike estimate, embargo-gated and sanity-clamped in `PlayaDistanceString`. An
+    /// event follows its host's tier, so an art-hosted event stays dark until art unlocks.
     func distanceAttributedString(from location: CLLocation?, to object: EventObjectOccurrence) -> AttributedString? {
-        guard let location = location,
-              let objectLocation = object.location else {
-            return nil
-        }
-
-        let distance = location.distance(from: objectLocation)
-
-        guard let nsAttributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) else {
-            return nil
-        }
-        return AttributedString(nsAttributedString)
+        PlayaDistanceString.forEvent(from: location, to: object)
     }
 }

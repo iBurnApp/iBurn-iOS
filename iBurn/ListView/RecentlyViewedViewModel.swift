@@ -123,20 +123,16 @@ final class RecentlyViewedViewModel: ObservableObject {
     /// The same `TTTLocationFormatter` humanizer every other list uses, rather than a raw
     /// "417.3km": distance on the playa is a question of how long it takes to get there, and
     /// a bare kilometre figure in one screen out of ten reads as a different app. Returning
-    /// nil makes `ObjectRowView` fall back to its masked `🚶🏽 ? min 🚴🏽 ? min` line, exactly
-    /// as Nearby and search results do — see `NearbyViewModel.distanceString(for:)`.
+    /// nil drops the line entirely, exactly as Nearby and search results do — see
+    /// `PlayaDistanceString`.
     ///
     /// `sortedItems` keeps comparing raw metres for the `.nearest` order; this is display only.
     func distanceAttributedString(for item: RecentlyViewedItem) -> AttributedString? {
-        guard item.canShowLocation,
-              let location = currentLocation,
-              let itemLocation = item.location,
-              let humanized = TTTLocationFormatter.brc_humanizedString(
-                forDistance: location.distance(from: itemLocation)
-              ) else {
-            return nil
-        }
-        return AttributedString(humanized)
+        PlayaDistanceString.make(
+            from: currentLocation,
+            to: item.location,
+            canShowLocation: item.canShowLocation
+        )
     }
 
     // MARK: - Last Viewed Formatting

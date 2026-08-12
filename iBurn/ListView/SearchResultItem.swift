@@ -55,6 +55,19 @@ enum SearchResultItem: Identifiable {
         }
     }
 
+    /// Whether this result's placement may be shown at all, per its embargo tier.
+    ///
+    /// Gates the walk/bike estimate alongside the address — see `PlayaDistanceString`.
+    /// Mutant vehicles roam, so they carry no placement to gate or show.
+    var canShowLocation: Bool {
+        switch self {
+        case .art: BRCEmbargo.canShowArtLocations()
+        case .camp: BRCEmbargo.canShowCampLocations()
+        case .event(let o): BRCEmbargo.canShowLocation(for: o)
+        case .mutantVehicle: false
+        }
+    }
+
     /// The underlying record, for APIs that take `any DataObject` (favorites, metadata).
     /// Spelled `PlayaDataObject`: the app module has its own unrelated `DataObject` class.
     var dataObject: any PlayaDataObject {

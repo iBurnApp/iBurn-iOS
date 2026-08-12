@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import PlayaDB
 
@@ -49,11 +50,19 @@ final class GlobalSearchViewModel: ObservableObject {
     /// Whether AI search is currently running (FTS5 results already shown)
     @Published var isAISearching: Bool = false
 
+    /// Latest user fix, so search rows can carry the same walk/bike estimate the list
+    /// screens do. Without it every result rendered a distance-less row, which read as a
+    /// different (and worse) answer to the same question the Camps list had just answered.
+    @Published var currentLocation: CLLocation?
+
     // MARK: - Dependencies
 
     private let playaDB: PlayaDB
     private let aiSearchService: AISearchService?
     private let favoriteSync: FavoriteSyncService
+    /// `nil` in the contexts that have no location plumbing (previews, most tests); rows
+    /// then simply carry no distance.
+    private let locationProvider: LocationProvider?
     /// `nil` opts out of persistence entirely (previews, tests).
     private let filterStorageKey: String?
     /// Snapshot of `Preferences.FeatureFlags.useAISearch`, taken once so a screen can't
@@ -65,6 +74,7 @@ final class GlobalSearchViewModel: ObservableObject {
 
     private var searchTask: Task<Void, Never>?
     private var favoriteTask: Task<Void, Never>?
+    private var locationTask: Task<Void, Never>?
 
     // MARK: - Init
 
@@ -72,20 +82,52 @@ final class GlobalSearchViewModel: ObservableObject {
         playaDB: PlayaDB,
         aiSearchService: AISearchService? = nil,
         favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared,
+        locationProvider: LocationProvider? = nil,
         filterStorageKey: String? = "globalSearchFilter",
         isAISearchFlagEnabled: Bool = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useAISearch)
     ) {
         self.playaDB = playaDB
         self.aiSearchService = aiSearchService
         self.favoriteSync = favoriteSync
+        self.locationProvider = locationProvider
         self.filterStorageKey = filterStorageKey
         self.isAISearchFlagEnabled = isAISearchFlagEnabled
         self.filter = filterStorageKey.flatMap(Self.loadFilter(key:)) ?? GlobalSearchFilter()
+        self.currentLocation = locationProvider?.currentLocation
+        startLocationUpdates()
     }
 
     deinit {
         searchTask?.cancel()
         favoriteTask?.cancel()
+        locationTask?.cancel()
+    }
+
+    // MARK: - Location
+
+    private func startLocationUpdates() {
+        guard locationProvider != nil else { return }
+        locationTask?.cancel()
+        locationTask = Task { [weak self] in
+            guard let self, let stream = self.locationProvider?.locationStream else { return }
+            for await location in stream {
+                await MainActor.run {
+                    self.currentLocation = location
+                }
+            }
+        }
+    }
+
+    /// Walk/bike estimate for a result row, matching the list screens exactly.
+    ///
+    /// `nil` — no distance fragment at all — whenever there is no fix, no placement, or the
+    /// item's embargo tier still hides its coordinates. See `PlayaDistanceString`.
+    func distanceAttributedString(for item: SearchResultItem) -> AttributedString? {
+        PlayaDistanceString.make(
+            from: currentLocation,
+            to: item.location,
+            canShowLocation: item.canShowLocation
+        )
     }
 
     /// Whether AI-enhanced search is available on this device.

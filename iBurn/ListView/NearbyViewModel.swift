@@ -299,8 +299,10 @@ final class NearbyViewModel: ObservableObject {
     /// Walk/bike estimate, or nil while the item's embargo tier still hides its placement.
     ///
     /// A distance is derived from the embargoed coordinates, so it has to be withheld along
-    /// with the address. Returning nil makes `ObjectRowView` fall back to its masked
-    /// `🚶🏽 ? min 🚴🏽 ? min` line, which is what search results already show.
+    /// with the address. Returning nil drops the distance line from the row entirely —
+    /// `ObjectRowView` renders nothing for a nil subtitle. The providers apply the same
+    /// gate (plus the implausible-distance clamp) in `PlayaDistanceString`; the guard here
+    /// keeps the intent legible at the call site.
     func distanceString(for item: NearbyItem) -> AttributedString? {
         guard item.canShowLocation else { return nil }
         return switch item {

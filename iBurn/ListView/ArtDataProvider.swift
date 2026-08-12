@@ -62,18 +62,10 @@ class ArtDataProvider: ObjectListDataProvider {
         }
     }
 
+    /// Walk/bike estimate, embargo-gated and sanity-clamped in `PlayaDistanceString` —
+    /// art placement is the last thing to unlock, and an estimate leaks it just as surely
+    /// as the address would.
     func distanceAttributedString(from location: CLLocation?, to object: ArtObject) -> AttributedString? {
-        guard let location = location,
-              let objectLocation = object.location else {
-            return nil
-        }
-
-        let distance = location.distance(from: objectLocation)
-
-        // Use existing TTTLocationFormatter for consistent walk/bike estimates + coloring.
-        guard let nsAttributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) else {
-            return nil
-        }
-        return AttributedString(nsAttributedString)
+        PlayaDistanceString.forArt(from: location, to: object.location)
     }
 }

@@ -62,16 +62,8 @@ class CampDataProvider: ObjectListDataProvider {
         }
     }
 
+    /// Walk/bike estimate, embargo-gated and sanity-clamped in `PlayaDistanceString`.
     func distanceAttributedString(from location: CLLocation?, to object: CampObject) -> AttributedString? {
-        guard let location = location,
-              let objectLocation = object.location else {
-            return nil
-        }
-
-        let distance = location.distance(from: objectLocation)
-        guard let nsAttributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) else {
-            return nil
-        }
-        return AttributedString(nsAttributedString)
+        PlayaDistanceString.forCamp(from: location, to: object.location)
     }
 }
