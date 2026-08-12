@@ -28,6 +28,19 @@ extension BRCEmbargo {
         }
         return canShowCampLocations()
     }
+
+    /// The occurrences a proximity surface may list, at the current embargo state.
+    ///
+    /// Both nearby surfaces (`NearbyViewModel`, `NearbyCardViewModel`) source events from a
+    /// region query, so an occurrence's mere presence — and its rank in a list ordered by
+    /// distance — places its host. The tier is therefore per occurrence, not per screen:
+    /// events at an art installation ride the art tier, everything else unlocks with camps.
+    /// Shared (and kept side-effect free) so the rule has one definition and one test seam.
+    static func visibleNearbyEvents(
+        _ rows: [ListRow<EventObjectOccurrence>]
+    ) -> [ListRow<EventObjectOccurrence>] {
+        rows.filter { canShowLocation(for: $0.object) }
+    }
 }
 
 extension Notification.Name {

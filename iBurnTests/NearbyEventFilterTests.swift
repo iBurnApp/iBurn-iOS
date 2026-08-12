@@ -48,6 +48,22 @@ final class NearbyEventFilterTests: XCTestCase {
 
     private let sixHours: TimeInterval = 6 * 3600
 
+    /// These tests pin the duration/window rules, not the embargo, and their fixture events
+    /// are hostless — which rides the camp tier and would vanish while locked (see
+    /// `BRCEmbargo.visibleNearbyEvents`, covered by `NearbyEmbargoGatingTests`). Run unlocked.
+    private var originalUnlocked = false
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        originalUnlocked = UserDefaults.enteredEmbargoPasscode
+        UserDefaults.enteredEmbargoPasscode = true
+    }
+
+    override func tearDownWithError() throws {
+        UserDefaults.enteredEmbargoPasscode = originalUnlocked
+        try super.tearDownWithError()
+    }
+
     // MARK: - Helpers
 
     private func makeDefaults() throws -> UserDefaults {

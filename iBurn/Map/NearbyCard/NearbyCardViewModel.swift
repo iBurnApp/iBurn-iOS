@@ -164,9 +164,22 @@ final class NearbyCardViewModel: ObservableObject {
         self.lastRegionLocation = rawLocation
 
         observePreferences()
+        observeEmbargoClear()
         startLocationUpdates()
         startRefreshTimer()
         restartObservations()
+    }
+
+    /// Unlocking only flips a `UserDefaults` flag, so the embargo guards in the
+    /// observation starters never re-evaluate on their own — restart them on the
+    /// unlock notification or newly visible locations wait for a relaunch.
+    private func observeEmbargoClear() {
+        NotificationCenter.default
+            .publisher(for: .BRCEmbargoDidClear)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.restartObservations() }
+            }
+            .store(in: &preferenceSubscriptions)
     }
 
     deinit {
@@ -397,7 +410,9 @@ final class NearbyCardViewModel: ObservableObject {
 
     private func startArtObservation() {
         artTask?.cancel()
-        guard let region = searchRegion else {
+        // A region-sourced result leaks embargoed placement by presence and rank alone,
+        // so locked tiers contribute nothing — same rule as `MapRegionAnnotationFilter`.
+        guard let region = searchRegion, BRCEmbargo.canShowArtLocations() else {
             artItems = []
             rebuildItems()
             return
@@ -416,7 +431,7 @@ final class NearbyCardViewModel: ObservableObject {
 
     private func startCampObservation() {
         campTask?.cancel()
-        guard let region = searchRegion else {
+        guard let region = searchRegion, BRCEmbargo.canShowCampLocations() else {
             campItems = []
             rebuildItems()
             return
@@ -449,7 +464,9 @@ final class NearbyCardViewModel: ObservableObject {
             guard let self else { return }
             for await rows in self.eventProvider.observeObjects(filter: filter) {
                 await MainActor.run {
-                    self.eventItems = rows
+                    // Per-occurrence tier: an event's presence here places its host, so a
+                    // locked host hides the event (art-located events ride the art tier).
+                    self.eventItems = BRCEmbargo.visibleNearbyEvents(rows)
                     self.rebuildItems()
                 }
             }
