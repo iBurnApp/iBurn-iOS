@@ -121,6 +121,11 @@ Do this in June/July. Everything below is year-stamped and silently wrong if mis
 - [ ] Media/thumbnails downloaded for new records; audio tour present if released.
 - [ ] URL sanitization held: no user-entered `url` values with spaces/commas.
       *Why:* strict `URL` decoding in PlayaAPI throws on them.
+- [ ] No null-island (0,0) GPS records and no upstream test rows in the shipped JSON.
+      *Why:* Aug 2026's `art.json` carried 17 records at `0,0` (rendering as 4,800-hour
+      walks before the `PlayaDistanceString` clamp) including 4 BMorg test entries
+      ("deputy test", "spec", "WG Test"…). The display clamp hides the distances, but the
+      records still ship — filter or fix them at refresh time.
 
 ## 3. Seeds Regenerated
 
