@@ -48,12 +48,12 @@ UIKit/YapDatabase stack.
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
 and `grdb_migrations` contains every migration through `v6-pin-sync`. Seeded
-counts (2026 data, Aug 9 refresh + placement): 332 art / 1191 camps / 2491 events /
-5032 occurrences / 494 mutant vehicles / **1580 `thumbnail_colors`**;
+counts (2026 data, Aug 11 refresh + placement): 331 art / 1190 camps / 2587 events /
+5240 occurrences / 495 mutant vehicles / **1579 `thumbnail_colors`**;
 `object_metadata` stays empty until the user favorites/views something. Camp GPS is
-non-null for 1184 of the 1191, and every one of those 1184 coordinates is **distinct**
+non-null for 1183 of the 1190, and every one of those 1183 coordinates is **distinct**
 (they are footprint centroids, not street-intersection geocodes) — a `SELECT COUNT(*)
-FROM (SELECT DISTINCT gps_latitude, gps_longitude …)` well below 1184 means the placement
+FROM (SELECT DISTINCT gps_latitude, gps_longitude …)` well below 1183 means the placement
 pipeline regressed to geocoder coordinates.
 
 `thumbnail_colors` being populated on a *fresh* install is the signal that the
@@ -347,7 +347,7 @@ Automation notes:
   `campNamesDrawnByStyleLayer` first, so a tap on a stale tile can never open an embargoed
   camp.
 - **Which camps still get a pin**, and how to exercise each in the sim:
-  - **camps the geojson doesn't name** — exactly **1 of 1191 in 2026** (`Westlandia`, the
+  - **camps the geojson doesn't name** — exactly **1 of 1190 in 2026** (`Westlandia`, the
     only camp with GPS and no feature; the other 7 unlabelled camps have no GPS, so they
     produce no pin either way). It keeps a pin *and* its own `UILabel`;
   - **favourites** — a starred camp keeps its pin *above* its style label, because the text
@@ -359,9 +359,11 @@ Automation notes:
     that is what keeps the glyph off the letters. A second Aug-10 change puts an
     **18 pt gap** (`labelTopGap`) between that tip and the pin's own name label, so the
     label starts *below* the style text instead of on it; the frame grew to 100×62 to
-    contain it. The event-at-a-camp case is the one to eyeball: the pin's label ("Booty
-    Hour") must sit clearly under the camp name the layer draws ("Best Butt"), not across
-    it. Applies to every `LabelAnnotationView` (art, camps, events), not just camps;
+    contain it. **Since Aug 11 favourited-event pins opt out of the label entirely**
+    (`PinLabelVisibility.pinDrawsOwnLabel` — the gap read as floating text): the pin is
+    the event's type emoji with a status dot (green starting-soon/happening, orange
+    ending-soon, red ended; `EventPinStatus`) and a heart at the tip, and the only text
+    nearby is the style layer's camp name. Art, camps, and user map points keep labels;
   - **the layer not painting** — Map Filter → **"Show Camp Names (Zoomed)" off** → Done, or
     any zoom below z15, or the camp tier still embargoed. Every camp pin comes back, each
     labelling itself. Turning the filter back on removes them again on Done.
@@ -389,19 +391,21 @@ Automation notes:
   today's favorited events on the map") — which is what "the filter doesn't stick" reports
   turn out to be. Driving it: the sheet's Form is scrollable, so a swipe-down first scrolls
   the form to the top and only the *second* swipe dismisses.
-- **"Today's Favorites Only"** narrows the favourited-events layer to occurrences starting
-  inside `[startOfDay, +1 day)` of `Date.present`, in SQL. Off playa (all events weeks out)
-  it hides every favourited event pin and leaves favourited camps/art alone — that is the
-  quickest check: toggle it off → Done → the favourited events' pins appear; toggle on →
-  they all go. The window itself is `PlayaDBAnnotationDataSource.favoriteEventFilter(…)`,
-  pure and unit-tested (`MapFavoriteEventFilterTests`).
+- **Favourited events are today-only, unconditionally** (since Aug 11; the "Today's
+  Favorites Only" toggle and `kBRCShowTodaysFavoritesOnlyOnMapKey` are gone). The window
+  is an *overlap* window — `[startOfDay, +1 day)` intersecting `[start, end)` — applied in
+  SQL and re-checked at delivery, with an `NSCalendarDayChanged` observer rebuilding the
+  query at midnight. Pre-event (all occurrences weeks out) no favourited event ever pins
+  the map; drive it with the Mock Date env (`MOCK_DATE=1` launch env equals the
+  `iBurn (Mock Date)` scheme) and favourite one today-occurrence and one other-day
+  occurrence — only the today one pins. `PlayaDBAnnotationDataSource.favoriteEventFilter(…)`
+  is pure and unit-tested (`MapFavoriteEventFilterTests`, `MapEventPinStyleTests`).
 - **Map filter settings live in the app-container plist, not the user defaults domain.**
   `xcrun simctl spawn <UDID> defaults read com.trailbehind.iBurn2010` does **not** show
   them and writing there does nothing. Read/write
   `"$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)/Library/Preferences/com.trailbehind.iBurn2010"`
-  instead (keys `kBRCShowFavoritesOnMapKey`, `kBRCShowTodaysFavoritesOnlyOnMapKey`,
-  `kBRCEntered2026EmbargoPasscodeKey` — the last one unlocks the embargo for a driving
-  session without a passcode).
+  instead (keys `kBRCShowFavoritesOnMapKey`, `kBRCEntered2026EmbargoPasscodeKey` — the
+  last one unlocks the embargo for a driving session without a passcode).
 - Crossing the layer's **z15 minzoom** also changes which camps need a pin, and the
   observation path is zoom-blind, so `UserMapViewAdapter` rebuilds the pin set from
   `regionDidChangeAnimated` — but only when the `campNamesDrawnByStyleLayer` verdict actually
@@ -551,6 +555,13 @@ A compact swipeable card pinned near the **top** of the map lists what is within
 the user (events first, then art + camps by distance; `simctl location set` required or it
 stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all" (trailing)**,
 "See all" linking into the Nearby screen.
+
+- **Embargo-gated since Aug 11** (both the card and the Nearby screen): while a tier is
+  locked its region observations never run — a locked fresh install shows **no card at
+  all** and an empty Nearby list, because presence in a proximity list would place the
+  item. Per-occurrence event tiering is `BRCEmbargo.visibleNearbyEvents`
+  (`NearbyEmbargoGatingTests`); both VMs restart on `.BRCEmbargoDidClear`. Unlock via the
+  container-plist passcode key (§ map filter) to drive these surfaces pre-event.
 
 - Card geometry at default Dynamic Type: **72 pt page + 28 pt footer = 100 pt** tall (plus a
   24 pt header while a person is dropped — see the flow above), width
