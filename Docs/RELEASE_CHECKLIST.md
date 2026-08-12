@@ -34,27 +34,30 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
       `EmbargoTierTests`.
 - [x] Real placement geojson dropped into `Map.bundle` (Aug 9) — outlines + labels non-empty and
       gated; no `MOCK_LOCATIONS` sentinel present in `APIData.bundle`.
-- [x] Seeds regenerated Aug 9: `iBurn/PlayaDB-2026.zip`, `iBurnWatch/PlayaDB-2026.zip`,
-      legacy `iBurn/iBurn-2026.zip`.
-- [x] `MARKETING_VERSION = 2026.0` on all targets.
+- [x] Data refreshed Aug 11 (iBurn-Data `179f801`): API counts 331 art / 1190 camps / 2606 events /
+      495 MVs; placement re-applied (1183 camps with distinct centroid GPS); tiles regenerated for
+      the upstream Point 3 CPN move; PlayaDB suite 291 green.
+- [x] Seeds regenerated Aug 11 from that data and **verified on-sim**: fresh install restores both
+      seeds instantly (log: `PlayaDB seed restored`), and a backdated `update_info` + deleted row
+      correctly triggered a full re-import from the newer bundled JSON.
+- [x] `MARKETING_VERSION = 2026.0` on all targets; `CURRENT_PROJECT_VERSION = 109` on **both**
+      app and watch targets (watch was 108 — fixed 2026-08-11).
+- [x] CI/deploy/PR workflows moved to `macos-26-arm64` + Xcode 26.6 (was 16.4, which predates the
+      iOS 26 SDK) with iPhone 17 Pro test destinations. Runner image confirmed to ship 26.6.
 - [x] Mock-data ship guards in place at all three layers (playa-seed, `MockDataShipGuardTests`,
       deploy.yml "Refuse mock placement data").
+- [x] Nearby-screen / nearby-card embargo leak found in the Aug 11 audit (region-sourced
+      art/camps/events with no tier gate — presence and rank leak placement) and gated like the
+      map path, with `.BRCEmbargoDidClear` restart on unlock.
 
 **Pending / needs human action before tagging**
 
-- [ ] ⚠️ **Watch build number is 108, app is 109.** `CURRENT_PROJECT_VERSION` must match across the
-      `iBurn` and `iBurnWatch` targets or App Store Connect rejects the bundle pairing. Bump the
-      watch target to 109.
 - [ ] ⚠️ **`UPDATES_URL` GitHub secret is unverified for 2026.** It must resolve to the *public*
       repo path `.../iBurnApp/iBurn-Data/.../data/2026/APIData.bundle/update.json`. The value is a
       secret so it cannot be inspected from the repo — check it manually in GitHub Settings →
       Secrets. If it still points at `data/2025`, OTA updates silently no-op all season.
 - [ ] ⚠️ **`data/2026/` is not yet published to the public `iBurnApp/iBurn-Data` repo.** OTA updates
       404 until it is. Publish only content that is safe to be public at that moment (see Embargo).
-- [ ] ⚠️ **Xcode pin in CI is stale.** `.github/workflows/{ci,deploy}.yml` pin Xcode `16.4`, but the
-      app now targets the iOS 26 SDK (Liquid Glass, iOS 26.5 simulator locally). CI will fail or
-      build the wrong SDK — bump `DEVELOPER_DIR` and `xcode-version` to the Xcode the local
-      checkout builds with, and confirm the runner image provides it.
 - [ ] App Store metadata entry (release notes / description / keywords / screenshots) —
       drafts live in `fastlane/metadata/en-US/`; still must be pasted into App Store Connect.
 - [ ] Full test pass + archive on the release commit.
@@ -150,6 +153,13 @@ The highest-stakes section. A leak here is a real-world problem, not a bug.
       have a unit test for the locked case. *Why:* the 2026 camp-boundary layers rendered
       unconditionally for a full year because the style JSON bypassed `BRCEmbargo` entirely.
       Assume any surface written since last season is ungated until proven otherwise.
+      *Known-ungated but unreachable in 2026.0:* the AI "Right Now" flow
+      (`iBurn/AISearch/RightNowViewModel.swift` / `RightNowWorkflow.swift`) takes a region with
+      no embargo check — it ships dark behind `featureFlag.search.useAI` (default off). Gate it
+      before that flag ever defaults on.
+      *Pre-existing quirk:* the date-based self-unlock at gates-open writes the passcode flag
+      without posting `.BRCEmbargoDidClear`, so an app already running at that instant shows
+      locations only after relaunch (region-entry and passcode unlocks post it live).
 - [ ] Manual sim check: fresh install → locked state hides camp outlines even with
       "Show Camp Boundaries (Always)" enabled → unlock reveals them live, without relaunch.
 - [ ] Manual sim check: locked state shows no coordinates in list rows, detail views, or search.
