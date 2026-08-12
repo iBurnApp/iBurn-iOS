@@ -24,7 +24,6 @@ class MapFilterViewModel: ObservableObject {
     @Published var showCampsAlways: Bool
     @Published var showActiveEvents: Bool
     @Published var showFavorites: Bool
-    @Published var showTodaysFavoritesOnly: Bool
     @Published var showVisited: Bool
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
@@ -67,7 +66,6 @@ class MapFilterViewModel: ObservableObject {
         self.showCampsAlways = UserSettings.showCampsOnMap
         self.showActiveEvents = UserSettings.showActiveEventsOnMap
         self.showFavorites = UserSettings.showFavoritesOnMap
-        self.showTodaysFavoritesOnly = UserSettings.showTodaysFavoritesOnlyOnMap
         self.showVisited = UserSettings.showVisitedOnMap
         self.showWantToVisit = UserSettings.showWantToVisitOnMap
         self.showUnvisited = UserSettings.showUnvisitedOnMap
@@ -111,7 +109,6 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showCampsOnMap = showCampsAlways
         UserSettings.showActiveEventsOnMap = showActiveEvents
         UserSettings.showFavoritesOnMap = showFavorites
-        UserSettings.showTodaysFavoritesOnlyOnMap = showTodaysFavoritesOnly
         UserSettings.showVisitedOnMap = showVisited
         UserSettings.showWantToVisitOnMap = showWantToVisit
         UserSettings.showUnvisitedOnMap = showUnvisited
@@ -194,11 +191,10 @@ struct MapFilterView: View {
             Section(header: Text("Favorites"), footer:
                 Group {
                     if viewModel.showFavorites {
-                        if viewModel.showTodaysFavoritesOnly {
-                            Text("Showing only today's favorited events on the map")
-                        } else {
-                            Text("Showing all favorited items on the map")
-                        }
+                        // Favorited events are always narrowed to today; a week of them
+                        // pins the whole city at once. See
+                        // `PlayaDBAnnotationDataSource.favoriteEventFilter`.
+                        Text("Showing favorited art and camps, and today's favorited events")
                     } else {
                         Text("Favorites are hidden from the map")
                     }
@@ -207,8 +203,6 @@ struct MapFilterView: View {
                 .foregroundColor(.secondary)
             ) {
                 Toggle("Show Favorites", isOn: $viewModel.showFavorites)
-                Toggle("Today's Favorites Only", isOn: $viewModel.showTodaysFavoritesOnly)
-                    .disabled(!viewModel.showFavorites)
             }
             
             // TODO: Visit status filtering is temporarily disabled - needs proper implementation

@@ -7,6 +7,7 @@
 
 import Foundation
 import CocoaLumberjack
+import PlayaDB
 
 /// Which camps the `camp-labels-big` style layer already draws a name for.
 ///
@@ -135,6 +136,25 @@ enum PinLabelVisibility {
         guard let campUID, styleDrawsCampNames else { return false }
         guard let styleLabeledCampUIDs else { return true }
         return styleLabeledCampUIDs.contains(campUID)
+    }
+
+    /// Whether a pin carries its own name text at all, before the zoom/style rules above get
+    /// a say.
+    ///
+    /// One exception, and it is the favourited-event pin. Its label is the event's name — a
+    /// long one, truncated to "Black Rock Philhar…" — and since pins became tip-anchored it
+    /// hangs 18pt *below* the tip, reading as text floating loose over whatever camp it is
+    /// standing on. The pin itself already carries the information that matters (a typed,
+    /// time-coloured, favourited event is here), the camp underneath is named by the style
+    /// layer, and tapping the pin says the rest in the callout. Art, camps and map points
+    /// keep their labels: nothing else names them at close zoom.
+    ///
+    /// - Parameters:
+    ///   - objectType: the annotation's object type, or `nil` for pins that have none
+    ///     (user map points, the dropped person).
+    ///   - isFavorite: whether the pin came from a favourites source.
+    static func pinDrawsOwnLabel(objectType: DataObjectType?, isFavorite: Bool) -> Bool {
+        !(isFavorite && objectType == .event)
     }
 }
 

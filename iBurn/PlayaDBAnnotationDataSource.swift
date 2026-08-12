@@ -53,11 +53,27 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             name: .BRCEmbargoDidClear,
             object: nil
         )
+        // The favourites layer is bounded by *today*, and that boundary is baked into the
+        // query when the observation starts. A phone left on the map overnight — the normal
+        // case on playa — would otherwise show yesterday's favourites until it was relaunched.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(dayDidChange),
+            name: .NSCalendarDayChanged,
+            object: nil
+        )
     }
 
     @objc private func embargoDidClear() {
         guard isObserving else { return }
         startObserving()
+    }
+
+    @objc private func dayDidChange() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.isObserving else { return }
+            self.startObserving()
+        }
     }
 
     // MARK: - AnnotationDataSource
@@ -153,17 +169,24 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             observationTokens.append(token)
         }
 
-        // Favorite events
+        // Favorite events — today's occurrences only, see `favoriteEventFilter`.
         if UserSettings.showFavoritesOnMap {
             let eventFilter = Self.favoriteEventFilter(
-                showTodaysOnly: UserSettings.showTodaysFavoritesOnlyOnMap,
                 includeExpired: UserSettings.showExpiredEventsInFavorites,
                 now: .present
             )
             let token = playaDB.observeEvents(filter: eventFilter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
+                    // The SQL window was fixed when this observation started; re-checked
+                    // here against the clock at delivery so a map left up across midnight
+                    // can't keep drawing yesterday's favourites (the day-change observer
+                    // rebuilds the query itself).
+                    let now = Date.present
                     self.favoriteEventAnnotations = rows.compactMap { row in
+                        guard Self.occurrenceIsToday(startDate: row.object.startDate,
+                                                     endDate: row.object.endDate,
+                                                     now: now) else { return nil }
                         let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
                         return allowed ? PlayaObjectAnnotation(event: row.object)?.markedFavorite() : nil
                     }
@@ -192,26 +215,49 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
     // MARK: - Favourite-event filter
 
+    /// Today, as the map means it: `[startOfDay, startOfDay + 1 day)` in the device calendar.
+    static func todayWindow(now: Date, calendar: Calendar = .current) -> DateInterval {
+        let startOfDay = calendar.startOfDay(for: now)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)
+            ?? startOfDay.addingTimeInterval(24 * 60 * 60)
+        return DateInterval(start: startOfDay, end: endOfDay)
+    }
+
+    /// Whether a favourited occurrence belongs on the map right now.
+    ///
+    /// Overlap, not start-time bucketing: an occurrence that began at 11pm yesterday and is
+    /// still running at 1am is a thing you can still walk to, and a 10pm–2am set favourited
+    /// for tonight belongs on tonight's map. `[start, end)` intersecting `[startOfDay,
+    /// tomorrow)` is the same predicate the SQL below runs, kept here so the in-memory
+    /// re-check and the query can't drift apart.
+    static func occurrenceIsToday(startDate: Date,
+                                  endDate: Date,
+                                  now: Date,
+                                  calendar: Calendar = .current) -> Bool {
+        let window = todayWindow(now: now, calendar: calendar)
+        return startDate < window.end && endDate > window.start
+    }
+
     /// The filter behind the map's favourited-events layer.
     ///
-    /// "Today's Favorites Only" narrows it to occurrences that *start* inside today —
-    /// `[startOfDay, startOfDay + 1 day)` — which is what keeps the map readable during the
-    /// event, when a week of favourites would otherwise pin the whole city at once. The
-    /// window is applied in SQL (`PlayaDBImpl.eventOccurrenceRequest`), so an occurrence
-    /// weeks out is never fetched, let alone drawn.
+    /// Always narrowed to today. Favourites are per-occurrence (`EventFavoriteKey` embeds the
+    /// occurrence's start instant), and a week of them pins the whole city at once: the
+    /// Wednesday set you starred is noise on Monday's map, drawn over the camps you are
+    /// actually standing in. The list screens are where the whole week lives.
+    ///
+    /// The window is an *overlap* window (`EventFilter.activeWindow`), not a start-time
+    /// range, so an occurrence running across midnight stays on the map while it runs. It is
+    /// applied in SQL (`PlayaDBImpl.eventOccurrenceRequest`), so an occurrence weeks out is
+    /// never fetched, let alone drawn.
     ///
     /// Pure, and split out of `startObserving()` so the window can be tested without a
     /// database: it reads the clock through `now` (`Date.present`, which honours the
     /// mock-date scheme) rather than calling `Date()` itself.
-    static func favoriteEventFilter(showTodaysOnly: Bool,
-                                    includeExpired: Bool,
+    static func favoriteEventFilter(includeExpired: Bool,
                                     now: Date,
                                     calendar: Calendar = .current) -> EventFilter {
         var filter = EventFilter(onlyFavorites: true, includeExpired: includeExpired)
-        guard showTodaysOnly else { return filter }
-        let startOfDay = calendar.startOfDay(for: now)
-        filter.startDate = startOfDay
-        filter.endDate = calendar.date(byAdding: .day, value: 1, to: startOfDay)
+        filter.activeWindow = todayWindow(now: now, calendar: calendar)
         return filter
     }
 

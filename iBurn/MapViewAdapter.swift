@@ -222,7 +222,11 @@ extension MapViewAdapter: MLNMapViewDelegate {
                 labelAnnotationView = LabelAnnotationView(reuseIdentifier: LabelAnnotationView.reuseIdentifier)
             }
             labelAnnotationView.imageView.image = image
-            labelAnnotationView.label.text = data.title
+            // Favourited event pins carry no text — see `PinLabelVisibility.pinDrawsOwnLabel`.
+            labelAnnotationView.label.text = PinLabelVisibility.pinDrawsOwnLabel(
+                objectType: data.id.objectType,
+                isFavorite: data.isFavorite
+            ) ? data.title : nil
             labelAnnotationView.campUID = campUID(for: annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView

@@ -136,9 +136,79 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
         case .camp:
             return UIImage(named: "BRCPurplePin")
         case .event:
-            return UIImage(named: "BRCPurplePin")
+            // Event pins are typed and time-coloured, the same as the legacy
+            // `BRCDataObject.brc_markerImage` path. `BRCPurplePin` is the last-resort
+            // fallback it always was — a favourited event drawn as a generic purple
+            // teardrop says nothing about what it is or whether it has started.
+            return eventMarkerImage() ?? UIImage(named: "BRCPurplePin")
         case .mutantVehicle:
             return UIImage(named: "BRCGreenPin")
+        }
+    }
+
+    /// Type emoji + status dot for an event pin, or nil when this annotation carries no
+    /// event payload to type it from.
+    private func eventMarkerImage(now: Date = .present) -> UIImage? {
+        let emoji: String
+        let statusColor: UIColor?
+        switch object {
+        case .eventOccurrence(let occurrence):
+            emoji = EventTypeInfo.emoji(for: occurrence.eventTypeCode)
+            statusColor = EventPinStatus.status(
+                startDate: occurrence.startDate,
+                endDate: occurrence.endDate,
+                now: now
+            ).statusDotColor
+        case .event(let event):
+            // No occurrence resolved, so there is no schedule to colour by.
+            emoji = EventTypeInfo.emoji(for: event.eventTypeCode)
+            statusColor = nil
+        case .art, .camp, .none:
+            return nil
+        }
+        return EmojiImageRenderer.shared.renderEmoji(
+            emoji,
+            configuration: .mapPinWithStatus(color: statusColor, isFavorite: isFavorite)
+        )
+    }
+}
+
+/// Where an occurrence sits relative to now, for the map pin's status dot.
+///
+/// Pure — dates in, case out — so the colour rules can be tested without a database or a
+/// map. Mirrors the legacy `BRCDataObject+EmojiMarker` chain exactly, including its order:
+/// "starting soon" is checked before "ending soon" before "ended".
+enum EventPinStatus: Equatable {
+    case notStarted
+    case startingSoon
+    case happeningNow
+    case endingSoon
+    case ended
+
+    /// Matches `EventObjectOccurrence.isStartingSoon`.
+    static let startingSoonThreshold: TimeInterval = 30 * 60
+
+    /// Matches `EventObjectOccurrence.isEndingSoon`.
+    static let endingSoonThreshold: TimeInterval = 15 * 60
+
+    static func status(startDate: Date, endDate: Date, now: Date) -> EventPinStatus {
+        let untilStart = startDate.timeIntervalSince(now)
+        let untilEnd = endDate.timeIntervalSince(now)
+        if untilStart > 0 {
+            return untilStart <= startingSoonThreshold ? .startingSoon : .notStarted
+        }
+        if untilEnd <= 0 { return .ended }
+        return untilEnd <= endingSoonThreshold ? .endingSoon : .happeningNow
+    }
+
+    /// The dot `EmojiImageRenderer` paints on the pin; nil for an event that hasn't come
+    /// round yet, which is most of them and wants no decoration.
+    var statusDotColor: UIColor? {
+        switch self {
+        case .startingSoon, .happeningNow: return .systemGreen
+        case .endingSoon: return .systemOrange
+        case .ended: return .systemRed
+        case .notStarted: return nil
         }
     }
 }
