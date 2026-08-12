@@ -10,12 +10,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
 jobs:
   validate:
     name: Build & Test
-    runs-on: macos-15-arm64
+    runs-on: macos-26-arm64
     timeout-minutes: 45
     
     steps:
@@ -30,7 +30,7 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.4'
+        xcode-version: '26.6'
     
     - name: Cache Ruby Gems
       uses: actions/cache@v4
@@ -87,7 +87,7 @@ jobs:
         xcodebuild -workspace iBurn.xcworkspace \
                    -scheme iBurn \
                    -sdk iphonesimulator \
-                   -destination "platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64,OS=latest" \
+                   -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
                    build | xcpretty -c
     
     - name: Run Tests
@@ -96,14 +96,14 @@ jobs:
         xcodebuild -workspace iBurn.xcworkspace \
                    -scheme iBurnTests \
                    -sdk iphonesimulator \
-                   -destination "platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64,OS=latest" \
+                   -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
                    test | xcpretty -c
         
         # Run PlayaKitTests
         xcodebuild -workspace iBurn.xcworkspace \
                    -scheme PlayaKitTests \
                    -sdk iphonesimulator \
-                   -destination "platform=iOS Simulator,name=iPhone 16 Pro,arch=arm64,OS=latest" \
+                   -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
                    test | xcpretty -c
     
     - name: Upload Test Results
