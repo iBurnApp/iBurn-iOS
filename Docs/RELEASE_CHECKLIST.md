@@ -52,16 +52,13 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
 
 **Pending / needs human action before tagging**
 
-- [ ] ⚠️ **`UPDATES_URL` GitHub secret is unverified for 2026.** It must resolve to the *public*
-      repo path `.../iBurnApp/iBurn-Data/.../data/2026/APIData.bundle/update.json`. The value is a
-      secret so it cannot be inspected from the repo — check it manually in GitHub Settings →
-      Secrets. If it still points at `data/2025`, OTA updates silently no-op all season.
-- [ ] ⚠️ **`data/2026/` is not yet published to the public `iBurnApp/iBurn-Data` repo.** OTA updates
-      404 until it is. Publish only content that is safe to be public at that moment (see Embargo).
 - [ ] App Store metadata entry (release notes / description / keywords / screenshots) —
       drafts live in `fastlane/metadata/en-US/`; still must be pasted into App Store Connect.
 - [ ] Full test pass + archive on the release commit.
 - [ ] Passcode distribution to authorized early users (Placement etc.).
+
+*(Removed from this list 2026-08-12: `UPDATES_URL` secret verification and public `data/2026/`
+publish — those assumed an in-app OTA data-update feature, which does not exist in 2026. See §5.)*
 
 ---
 
@@ -177,15 +174,21 @@ The highest-stakes section. A leak here is a real-world problem, not a bug.
 - [ ] **Nothing embargoed in `Docs/`, commit messages, or PR descriptions.** This directory is
       public: no passcode, no hash, no provenance details about where restricted data comes from.
 
-## 5. OTA Updates
+## 5. OTA Updates — not a 2026 feature
 
-- [ ] `UPDATES_URL` GitHub secret points at the **public** repo's
-      `data/<YEAR>/APIData.bundle/update.json`. *Why:* the URL embeds the year; it must be
-      re-pointed every season and the secret cannot be diffed from the repo — **verify manually**.
-- [ ] The public repo actually serves that path (fetch it and confirm valid JSON + a 200).
-- [ ] `data/<YEAR>/` published to public `iBurnApp/iBurn-Data`, with embargo timing respected.
-- [ ] In-app update applies cleanly over a shipped seed (install the archive build, then trigger a
-      data update, then confirm counts change).
+There is **no in-app remote data-update feature** in 2026 (possible 2027 work). Data ships only
+inside app builds: the pre-baked seed plus bundled JSON, with `needsImport` re-importing when a
+build ships JSON newer than the seeded DB (this path is verified — see §3). Consequences:
+
+- [ ] Mid-event data refreshes require **point releases** (`<YEAR>.1`, `.2`, …) — keep the archive
+      lane warm and budget for App Review turnaround during the event.
+- [ ] Public `iBurnApp/iBurn-Data` publishing still matters for the open-source project and the
+      Android app, but on the *post-release* schedule (§10), not as a ship blocker.
+
+If OTA lands in 2027, restore these checks: `UPDATES_URL` secret re-pointed to the year's public
+`update.json` (verify manually — secrets can't be diffed); the public repo serves that path with a
+200 and valid JSON; `data/<YEAR>/` published with embargo timing respected; an in-app update
+verified to apply cleanly over a shipped seed.
 
 ## 6. Versioning
 
