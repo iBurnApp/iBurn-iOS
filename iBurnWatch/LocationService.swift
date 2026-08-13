@@ -70,6 +70,10 @@ extension LocationService: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let latest = locations.last else { return }
         Task { @MainActor in
+            // Before publishing: a fix on the playa latches the region half of
+            // the embargo rule, and every location-driven surface re-renders off
+            // the assignment below, so it sees the new state on this fix.
+            WatchEmbargo.noteLocationFix(latest)
             self.location = latest
         }
     }

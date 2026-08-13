@@ -1,11 +1,16 @@
+import CoreLocation
 import XCTest
 @testable import PlayaDB
 
 /// The two-tier BMorg location embargo, as a pure function of (tier, now,
-/// passcode). This is the seam the watch app gates every distance, Nearby
-/// query, and Navigate affordance on, so the boundary behaviour is the whole
-/// contract: one second early is a ToS violation, one second late is a
+/// passcode, in-region). This is the seam the watch app gates every distance,
+/// Nearby query, and Navigate affordance on, so the boundary behaviour is the
+/// whole contract: one second early is a ToS violation, one second late is a
 /// user-visible regression.
+///
+/// The rule under test is `passcodeUnlocked || (inRegion && now >= unlock)`.
+/// The date half alone must never unlock anything — the device clock is
+/// user-settable, and a calendar-only gate is defeated in Settings.
 final class LocationEmbargoTests: XCTestCase {
 
     // 2026: camps at 12:01 am PDT on the Sunday before, art at gate opening.
@@ -34,50 +39,94 @@ final class LocationEmbargoTests: XCTestCase {
         XCTAssertEqual(artUnlock, try date("2026-08-30T07:00:00Z"))
     }
 
-    // MARK: - Tier dates
+    // MARK: - Tier dates (for a device that is on the playa)
 
     func testEverythingLockedBeforeTheCampWindow() throws {
         let now = try date("2026-08-10T12:00:00Z")
-        XCTAssertFalse(embargo.canShowCampLocations(now: now, passcodeUnlocked: false))
-        XCTAssertFalse(embargo.canShowArtLocations(now: now, passcodeUnlocked: false))
+        XCTAssertFalse(embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: true))
+        XCTAssertFalse(embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: true))
     }
 
     /// Inclusive at the instant itself: `>=`, matching `BRCEmbargo`.
     func testCampTierUnlocksExactlyAtCampLocationUnlock() throws {
         let oneSecondEarly = campUnlock.addingTimeInterval(-1)
-        XCTAssertFalse(embargo.canShowCampLocations(now: oneSecondEarly, passcodeUnlocked: false))
-        XCTAssertTrue(embargo.canShowCampLocations(now: campUnlock, passcodeUnlocked: false))
-        XCTAssertFalse(embargo.canShowArtLocations(now: campUnlock, passcodeUnlocked: false))
+        XCTAssertFalse(embargo.canShowCampLocations(now: oneSecondEarly, passcodeUnlocked: false, inRegion: true))
+        XCTAssertTrue(embargo.canShowCampLocations(now: campUnlock, passcodeUnlocked: false, inRegion: true))
+        XCTAssertFalse(embargo.canShowArtLocations(now: campUnlock, passcodeUnlocked: false, inRegion: true))
     }
 
     func testCampWindowShowsCampsButNotArt() throws {
         let now = try date("2026-08-25T12:00:00Z")
-        XCTAssertTrue(embargo.canShowCampLocations(now: now, passcodeUnlocked: false))
-        XCTAssertFalse(embargo.canShowArtLocations(now: now, passcodeUnlocked: false))
+        XCTAssertTrue(embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: true))
+        XCTAssertFalse(embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: true))
     }
 
     func testArtTierUnlocksExactlyAtEventStart() {
-        XCTAssertFalse(embargo.canShowArtLocations(now: artUnlock.addingTimeInterval(-1), passcodeUnlocked: false))
-        XCTAssertTrue(embargo.canShowArtLocations(now: artUnlock, passcodeUnlocked: false))
+        XCTAssertFalse(embargo.canShowArtLocations(
+            now: artUnlock.addingTimeInterval(-1), passcodeUnlocked: false, inRegion: true
+        ))
+        XCTAssertTrue(embargo.canShowArtLocations(now: artUnlock, passcodeUnlocked: false, inRegion: true))
     }
 
     func testEverythingUnlockedOnceGatesOpen() throws {
         let now = try date("2026-08-31T12:00:00Z")
-        XCTAssertTrue(embargo.canShowCampLocations(now: now, passcodeUnlocked: false))
-        XCTAssertTrue(embargo.canShowArtLocations(now: now, passcodeUnlocked: false))
+        XCTAssertTrue(embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: true))
+        XCTAssertTrue(embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: true))
     }
 
     func testPasscodeUnlocksBothTiersEarly() throws {
         let now = try date("2026-08-10T12:00:00Z")
-        XCTAssertTrue(embargo.canShowCampLocations(now: now, passcodeUnlocked: true))
-        XCTAssertTrue(embargo.canShowArtLocations(now: now, passcodeUnlocked: true))
+        XCTAssertTrue(embargo.canShowCampLocations(now: now, passcodeUnlocked: true, inRegion: false))
+        XCTAssertTrue(embargo.canShowArtLocations(now: now, passcodeUnlocked: true, inRegion: false))
     }
 
     /// Mutant vehicles (and anything else off both tiers) were never embargoed.
     func testUnrestrictedTierIsAlwaysVisible() throws {
         let now = try date("2020-01-01T00:00:00Z")
-        XCTAssertTrue(embargo.canShowLocations(tier: .unrestricted, now: now, passcodeUnlocked: false))
+        XCTAssertTrue(embargo.canShowLocations(
+            tier: .unrestricted, now: now, passcodeUnlocked: false, inRegion: false
+        ))
         XCTAssertNil(embargo.unlockDate(for: .unrestricted))
+    }
+
+    // MARK: - The date alone never unlocks
+
+    /// The regression test for the whole policy: a clock rolled forward past
+    /// both unlock dates, on a device that has never been to Black Rock City,
+    /// still shows nothing.
+    func testDateAloneNeverUnlocksWithoutTheRegion() throws {
+        for now in [campUnlock, artUnlock, try date("2026-09-02T12:00:00Z"), try date("2030-01-01T00:00:00Z")] {
+            XCTAssertFalse(
+                embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: false),
+                "camps must stay locked off-playa at \(now)"
+            )
+            XCTAssertFalse(
+                embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: false),
+                "art must stay locked off-playa at \(now)"
+            )
+        }
+    }
+
+    /// …and the region alone doesn't either: showing up in the desert in July
+    /// unlocks nothing.
+    func testRegionAloneNeverUnlocksBeforeTheDates() throws {
+        let now = try date("2026-07-04T12:00:00Z")
+        XCTAssertFalse(embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: true))
+        XCTAssertFalse(embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: true))
+    }
+
+    /// Both halves, per tier: on playa, camps open a week before art does.
+    func testRegionPlusDateUnlocksTierByTier() throws {
+        XCTAssertTrue(embargo.canShowCampLocations(now: campUnlock, passcodeUnlocked: false, inRegion: true))
+        XCTAssertFalse(embargo.canShowArtLocations(now: campUnlock, passcodeUnlocked: false, inRegion: true))
+        XCTAssertTrue(embargo.canShowArtLocations(now: artUnlock, passcodeUnlocked: false, inRegion: true))
+    }
+
+    /// The passcode is the only bypass, and it needs neither half.
+    func testPasscodeUnlocksWithoutRegionOrDate() throws {
+        let longBefore = try date("2020-01-01T00:00:00Z")
+        XCTAssertTrue(embargo.canShowCampLocations(now: longBefore, passcodeUnlocked: true, inRegion: false))
+        XCTAssertTrue(embargo.canShowArtLocations(now: longBefore, passcodeUnlocked: true, inRegion: false))
     }
 
     // MARK: - Missing CampLocationUnlock
@@ -89,15 +138,15 @@ final class LocationEmbargoTests: XCTestCase {
         XCTAssertEqual(fallback.schedule.campLocationUnlock, artUnlock)
 
         let insideCampWindow = try date("2026-08-25T12:00:00Z")
-        XCTAssertFalse(fallback.canShowCampLocations(now: insideCampWindow, passcodeUnlocked: false))
-        XCTAssertTrue(fallback.canShowCampLocations(now: artUnlock, passcodeUnlocked: false))
+        XCTAssertFalse(fallback.canShowCampLocations(now: insideCampWindow, passcodeUnlocked: false, inRegion: true))
+        XCTAssertTrue(fallback.canShowCampLocations(now: artUnlock, passcodeUnlocked: false, inRegion: true))
     }
 
     /// Defence against a mis-edited plist: camps can never stay locked past the
     /// moment everything else opens.
     func testCampUnlockLaterThanGatesStillOpensAtTheGates() throws {
         let broken = makeEmbargo(campUnlock: try date("2026-09-05T07:00:00Z"))
-        XCTAssertTrue(broken.canShowCampLocations(now: artUnlock, passcodeUnlocked: false))
+        XCTAssertTrue(broken.canShowCampLocations(now: artUnlock, passcodeUnlocked: false, inRegion: true))
     }
 
     // MARK: - Which tier an object rides
@@ -162,28 +211,136 @@ final class LocationEmbargoTests: XCTestCase {
 
     func testCanShowLocationForObjectFollowsTheObjectsTier() throws {
         let insideCampWindow = try date("2026-08-25T12:00:00Z")
-        XCTAssertTrue(embargo.canShowLocation(for: camp(), now: insideCampWindow, passcodeUnlocked: false))
-        XCTAssertFalse(embargo.canShowLocation(for: art(), now: insideCampWindow, passcodeUnlocked: false))
+        XCTAssertTrue(embargo.canShowLocation(
+            for: camp(), now: insideCampWindow, passcodeUnlocked: false, inRegion: true
+        ))
+        XCTAssertFalse(embargo.canShowLocation(
+            for: art(), now: insideCampWindow, passcodeUnlocked: false, inRegion: true
+        ))
         XCTAssertTrue(embargo.canShowLocation(for: event(hostedByCamp: "camp-1"),
                                               now: insideCampWindow,
-                                              passcodeUnlocked: false))
+                                              passcodeUnlocked: false,
+                                              inRegion: true))
         XCTAssertFalse(embargo.canShowLocation(for: event(locatedAtArt: "art-1"),
                                                now: insideCampWindow,
-                                               passcodeUnlocked: false))
+                                               passcodeUnlocked: false,
+                                               inRegion: true))
 
         let afterGates = try date("2026-08-31T12:00:00Z")
-        XCTAssertTrue(embargo.canShowLocation(for: art(), now: afterGates, passcodeUnlocked: false))
+        XCTAssertTrue(embargo.canShowLocation(
+            for: art(), now: afterGates, passcodeUnlocked: false, inRegion: true
+        ))
         XCTAssertTrue(embargo.canShowLocation(for: event(locatedAtArt: "art-1"),
                                               now: afterGates,
-                                              passcodeUnlocked: false))
+                                              passcodeUnlocked: false,
+                                              inRegion: true))
+
+        // Same objects, same instant, off playa: nothing.
+        XCTAssertFalse(embargo.canShowLocation(
+            for: camp(), now: afterGates, passcodeUnlocked: false, inRegion: false
+        ))
+        XCTAssertFalse(embargo.canShowLocation(
+            for: art(), now: afterGates, passcodeUnlocked: false, inRegion: false
+        ))
+    }
+
+    // MARK: - Am I at Burning Man? (the GPS half)
+
+    /// 2026 Man coordinate, as shipped in `iBurn/YearSettings.plist`.
+    private var manCenter: EmbargoRegion {
+        EmbargoRegion(centerLatitude: 40.783242, centerLongitude: -119.207871)
+    }
+
+    /// Center camp-ish, the coordinate the simulator is parked at for the watch
+    /// runtime check.
+    private func blackRockCity() -> CLLocation {
+        CLLocation(latitude: 40.7864, longitude: -119.2065)
+    }
+
+    private func reno() -> CLLocation {
+        CLLocation(latitude: 39.5296, longitude: -119.8138)
+    }
+
+    func testRegionContainsThePlayaAndNotReno() {
+        XCTAssertTrue(manCenter.contains(blackRockCity()))
+        XCTAssertFalse(manCenter.contains(reno()))
+    }
+
+    /// ~0.3° of latitude is ~33 km (inside the 5 * 8046.72 m radius), ~0.5° is
+    /// ~55 km (outside it).
+    func testRegionEdgeIsTheBRCLocationsRadius() {
+        XCTAssertEqual(EmbargoRegion.defaultRadius, 5 * 8046.72, accuracy: 0.001)
+        let justInside = CLLocation(latitude: 40.783242 + 0.30, longitude: -119.207871)
+        let wellOutside = CLLocation(latitude: 40.783242 + 0.50, longitude: -119.207871)
+        XCTAssertTrue(manCenter.contains(justInside))
+        XCTAssertFalse(manCenter.contains(wellOutside))
+    }
+
+    /// A fix that never resolved reads as (0, 0), which is a real coordinate in
+    /// the Atlantic — it must not be treated as "somewhere", let alone the playa.
+    func testNullIslandAndInvalidCoordinatesAreOutsideTheRegion() {
+        XCTAssertFalse(manCenter.contains(CLLocation(latitude: 0, longitude: 0)))
+        XCTAssertFalse(manCenter.contains(CLLocation(latitude: 200, longitude: 500)))
+    }
+
+    func testIsInRegionAnswersFromAFix() {
+        XCTAssertTrue(LocationEmbargo.isInRegion(location: blackRockCity(), region: manCenter))
+        XCTAssertFalse(LocationEmbargo.isInRegion(location: reno(), region: manCenter))
+    }
+
+    /// No fix and no region are both "I don't know where you are", which is not
+    /// the playa.
+    func testIsInRegionFailsClosedWithoutAFixOrARegion() {
+        XCTAssertFalse(LocationEmbargo.isInRegion(location: nil, region: manCenter))
+        XCTAssertFalse(LocationEmbargo.isInRegion(location: blackRockCity(), region: nil))
+        XCTAssertFalse(LocationEmbargo.isInRegion(location: nil, region: nil))
+    }
+
+    /// End-to-end shape of the watch's composition: on playa, mid-event, both
+    /// tiers open; the same fix a month early opens nothing.
+    func testRegionFixDrivesTheInRegionHalf() throws {
+        let onPlaya = LocationEmbargo.isInRegion(location: blackRockCity(), region: manCenter)
+        let duringEvent = try date("2026-09-02T12:00:00Z")
+        XCTAssertTrue(embargo.canShowCampLocations(now: duringEvent, passcodeUnlocked: false, inRegion: onPlaya))
+        XCTAssertTrue(embargo.canShowArtLocations(now: duringEvent, passcodeUnlocked: false, inRegion: onPlaya))
+
+        let earlyAugust = try date("2026-08-01T12:00:00Z")
+        XCTAssertFalse(embargo.canShowCampLocations(now: earlyAugust, passcodeUnlocked: false, inRegion: onPlaya))
+        XCTAssertFalse(embargo.canShowArtLocations(now: earlyAugust, passcodeUnlocked: false, inRegion: onPlaya))
+
+        let offPlaya = LocationEmbargo.isInRegion(location: reno(), region: manCenter)
+        XCTAssertFalse(embargo.canShowCampLocations(now: duringEvent, passcodeUnlocked: false, inRegion: offPlaya))
+    }
+
+    /// A year whose settings can't be read yields no `LocationEmbargo` at all,
+    /// so the watch's `guard let embargo else { tier == .unrestricted }` hides
+    /// every coordinate — even standing at the Man mid-event.
+    func testMissingScheduleFailsClosedEvenInRegion() throws {
+        let missing = URL(fileURLWithPath: "/nonexistent/YearSettings.plist")
+        XCTAssertNil(EmbargoSchedule.load(contentsOf: missing))
+        XCTAssertNil(EmbargoRegion.load(contentsOf: missing))
+
+        let shown = EmbargoSchedule.load(contentsOf: missing)
+            .map(LocationEmbargo.init(schedule:))?
+            .canShowArtLocations(
+                now: try date("2026-09-02T12:00:00Z"),
+                passcodeUnlocked: false,
+                inRegion: LocationEmbargo.isInRegion(location: blackRockCity(), region: manCenter)
+            )
+        XCTAssertNil(shown)
+        XCTAssertFalse(shown ?? false)
     }
 
     // MARK: - Reading the schedule out of a bundle
 
-    private func writeSettings(campUnlock: Date?) throws -> URL {
+    private func writeSettings(campUnlock: Date?, manCenter: Bool = false) throws -> URL {
         var settings: [String: Any] = ["EventStart": artUnlock, "PlayaYear": "2026"]
         if let campUnlock {
             settings["CampLocationUnlock"] = campUnlock
+        }
+        if manCenter {
+            settings["ManCenterLatitude"] = 40.783242
+            settings["ManCenterLongitude"] = -119.207871
         }
         let data = try PropertyListSerialization.data(
             fromPropertyList: settings,
@@ -235,6 +392,22 @@ final class LocationEmbargoTests: XCTestCase {
 
     /// The shipped `iBurn/YearSettings.plist` is the file both apps read; if the
     /// keys ever drift the watch fails closed and hides everything all season.
+    func testRegionLoadsTheManCenterFromAPlist() throws {
+        let url = try writeSettings(campUnlock: campUnlock, manCenter: true)
+        let region = try XCTUnwrap(EmbargoRegion.load(contentsOf: url))
+        XCTAssertEqual(region.centerLatitude, 40.783242, accuracy: 0.000001)
+        XCTAssertEqual(region.centerLongitude, -119.207871, accuracy: 0.000001)
+        XCTAssertEqual(region.radius, EmbargoRegion.defaultRadius, accuracy: 0.001)
+    }
+
+    /// No centre means no region, which means no GPS auto-unlock — the same
+    /// fail-closed shape the schedule uses.
+    func testRegionIsNilWhenThePlistOmitsTheManCenter() throws {
+        let url = try writeSettings(campUnlock: campUnlock)
+        XCTAssertNil(EmbargoRegion.load(contentsOf: url))
+        XCTAssertNil(EmbargoRegion.load(contentsOf: URL(fileURLWithPath: "/nonexistent/YearSettings.plist")))
+    }
+
     func testShippedYearSettingsPlistParses() throws {
         let plist = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // PlayaDBTests
@@ -245,5 +418,10 @@ final class LocationEmbargoTests: XCTestCase {
             .appendingPathComponent("iBurn/YearSettings.plist")
         let schedule = try XCTUnwrap(EmbargoSchedule.load(contentsOf: plist))
         XCTAssertLessThan(schedule.campLocationUnlock, schedule.artLocationUnlock)
+
+        // Same file carries the Man coordinate the watch's auto-unlock rides on.
+        let region = try XCTUnwrap(EmbargoRegion.load(contentsOf: plist))
+        XCTAssertTrue(region.contains(blackRockCity()))
+        XCTAssertFalse(region.contains(reno()))
     }
 }

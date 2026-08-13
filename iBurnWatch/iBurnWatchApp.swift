@@ -115,4 +115,10 @@ extension Notification.Name {
     /// Posted (from a background queue) after favorites synced from the paired
     /// phone have been applied to the local PlayaDB.
     static let favoritesSyncDidApply = Notification.Name("favoritesSyncDidApply")
+
+    /// Posted when an embargo latch flips — the phone's passcode unlock, or this
+    /// watch's first fix inside the Burning Man region. Surfaces whose rows
+    /// aren't already recomputed on every location fix listen so they stop
+    /// hiding distances while they're on screen.
+    static let embargoDidUnlock = Notification.Name("embargoDidUnlock")
 }

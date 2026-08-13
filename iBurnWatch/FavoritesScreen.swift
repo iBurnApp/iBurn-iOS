@@ -191,6 +191,14 @@ struct FavoritesScreen: View {
             // appear while this screen is open.
             refreshToken += 1
         }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .embargoDidUnlock)
+                .receive(on: DispatchQueue.main)
+        ) { _ in
+            // Rows here are built once per refresh, not per location fix, so an
+            // unlock landing mid-screen needs an explicit re-sort with distances.
+            refreshToken += 1
+        }
     }
 
     private func refresh() async {

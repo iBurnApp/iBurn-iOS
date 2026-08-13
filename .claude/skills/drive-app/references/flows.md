@@ -998,26 +998,54 @@ the tell that the restore was used and no JSON import ran.
    Favorites / Want to Visit / Visited and "Type": All/Camps/Art/Events/Vehicles;
    icon fills when non-default). Rows sort by distance, falling back to name —
    so while everything is embargoed the list is alphabetical.
-8a. **Location embargo (watch).** The watch enforces the same two-tier BMorg
-   embargo as the phone: camps (and camp-hosted events) unlock at
-   `CampLocationUnlock`, art (and art-located events) at `EventStart`. The seed
-   database ships full GPS — there is no OTA update path — so the gate lives in
-   the UI: `iBurnWatch/WatchEmbargo.swift` over the shared pure seam
-   `PlayaDB.LocationEmbargo`. `iBurn/YearSettings.plist` is a **shared resource
-   of both app targets** (added to the watch's Resources build phase); if it
-   ever stops shipping the watch fails closed and hides every location.
+8a. **Location embargo (watch) — strict rule: date + GPS, or passcode.**
+   The seed database ships full GPS — there is no OTA update path — so the gate
+   lives in the UI: `iBurnWatch/WatchEmbargo.swift` over the shared pure seam
+   `PlayaDB.LocationEmbargo`. A tier's coordinates are shown only when
+
+   ```
+   passcodeUnlocked || (inRegion && now >= <tier unlock date>)
+   ```
+
+   with camps (and camp-hosted events) at `CampLocationUnlock` and art (and
+   art-located events) at `EventStart`. **The date alone never unlocks** —
+   the watch clock is user-settable, so a calendar-only gate is defeated in
+   Settings ▸ Date & Time. `inRegion` means this watch has taken a GPS fix
+   inside the Burning Man region (Man centre from `YearSettings.plist`, radius
+   `5 * 8046.72` m — the phone's `BRCLocations.burningManRegion`); that fact is
+   latched into `UserDefaults` key `embargoRegionSeen` by
+   `WatchEmbargo.noteLocationFix(_:)`, which every fix from `LocationService`
+   passes through. Persisting *that* is safe — no clock change manufactures a
+   past visit to BRC — and it keeps the unlock stable when GPS drops out
+   mid-event. Accepted consequence: a watch that never gets a playa fix and
+   never hears from a phone stays locked all season (a server-side path is 2027
+   work). `iBurn/YearSettings.plist` is a **shared resource of both app
+   targets** (added to the watch's Resources build phase); if it ever stops
+   shipping, the watch fails closed and hides every location.
+   (The iOS app still runs the older date-or-passcode `BRCEmbargo` and is
+   expected to adopt this rule in a separate change; the seam already takes
+   `inRegion:` for it.)
    While a tier is locked: no distance line anywhere (lists, Nearby,
    Favorites), no Navigate, and Nearby never even queries that tier — with both
    locked it reads "Camp and art locations unlock when the gates open."
    The watch has no passcode UI; the phone pushes its unlock over
    WatchConnectivity (`PeerSyncManager`, key `embargoUnlockedV1`, latch-only)
    and the watch stores it under `UserDefaults` key `embargoUnlockedFromPhone`.
-   To drive the unlocked state in a sim without a paired phone, write that key
-   into the watch app container's
-   `Library/Preferences/com.trailbehind.iBurn2010.watchkitapp.plist` and relaunch
-   (clearing it back needs an `simctl erase` — cfprefsd caches the old value).
+   Either latch flipping posts `embargoDidUnlock`; location-driven surfaces
+   recompute per fix anyway (the region latch is written *before* the fix is
+   published), and Favorites, whose rows are built per refresh, listens for the
+   notification.
+   Driving it: `xcrun simctl location <WATCH_UDID> set 40.7864,-119.2065`
+   satisfies the region half only. Before `CampLocationUnlock` the lists stay
+   distance-free — that is the pass state, not a bug. To drive the unlocked
+   state without a paired phone, write `embargoUnlockedFromPhone` (or
+   `embargoRegionSeen`, if the real date has passed) into the watch app
+   container's `Library/Preferences/com.trailbehind.iBurn2010.watchkitapp.plist`
+   and relaunch (clearing it back needs an `simctl erase` — cfprefsd caches the
+   old value).
    **Never** use MOCK_DATE / the Mock Date scheme to test this: its date is past
-   `EventStart`, so everything self-unlocks and the gate looks broken-open.
+   `EventStart`, so the date half is always satisfied and the gate looks
+   broken-open.
 9. **User map pins** (bike / home / star), synced with the phone:
    - Drop: bottom-right toolbar button → sheet with tinted Bike (green) /
      Home (orange) / Pin (yellow) rows → tap saves at the **current GPS fix**
