@@ -81,3 +81,36 @@ requires are present.
 
 - `Docs/2025-08-07-deep-linking-ios.md`, `Docs/2025-08-08-deeplink-implementation.md`
 - `Docs/2025-08-09-deeplink-url-format-fix.md` (URL format the router parses)
+
+---
+
+# Same-day: watch app embargo gating (ship blocker found and fixed)
+
+**Problem.** The Aug 12 watch screenshot/audit pass found the watch app had *no* embargo
+gating: `BRCEmbargo` is iOS-only Obj-C, never linked into iBurnWatch. On a fresh locked
+install the watch showed camp/art distances in every list, a metre-precision Nearby ranking,
+and a Navigate screen plotting any camp with live distance+bearing. The detail screen's
+"Location hidden until gates open" only appeared for the ~7 camps with no GPS — a
+data-presence check masquerading as a gate.
+
+**Fix (`375e0399`).** New pure `LocationEmbargo` seam in `Packages/PlayaDB` (the one package
+both targets link): two-tier date-driven unlock (`EmbargoSchedule.load` from
+`YearSettings.plist`, now a shared watch resource; missing `CampLocationUnlock` falls back to
+the stricter art date; camp unlock clamped to `min(camp, art)`). `iBurnWatch/WatchEmbargo.swift`
+is the watch glue — `distance(for:from:)` is the single funnel for every distance label,
+computed from `Date()` each call, failing closed if the plist can't load. Gated surfaces:
+ObjectListScreen row distances, NearbyScreen (locked tiers never fetched), DetailScreen
+Navigate, FavoritesScreen distance + sort (alphabetical while locked). Phone passcode unlock
+latches to the watch via a publish-true-only `embargoUnlockedV1` key in `PeerSyncManager`'s
+application context, pushed on `.BRCEmbargoDidClear`; absence never re-locks.
+
+**Verification.** 20 new `LocationEmbargoTests` (boundary instants, tier riding, plist
+fallbacks, live parse of the shipped plist); iBurnTests 549 green, PlayaDB 311 green; erased
+Ultra 3 sim fresh install shows no distances/Navigate/Nearby rows, and a positive control
+(setting the phone-unlock latch) restores them — proving the gate is date-driven, not
+accidentally fail-closed. Evidence in `fastlane/screenshots/watch/_embargo-leak-evidence/`.
+
+**Also today:** five locked-state watch App Store screenshots (410×502) in
+`fastlane/screenshots/watch/en-US/` (422×514 natives kept alongside); watch seed restore
+verified on-sim (331/1190/2587/5240); checklist §5 rewritten — OTA updates are not a 2026
+feature (`a3587b00`); checklist §4 gained watch-audit and share-URL line items.

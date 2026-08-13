@@ -49,6 +49,17 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
 - [x] Nearby-screen / nearby-card embargo leak found in the Aug 11 audit (region-sourced
       art/camps/events with no tier gate — presence and rank leak placement) and gated like the
       map path, with `.BRCEmbargoDidClear` restart on unlock.
+- [x] **Watch app had no embargo gating at all** (found in the Aug 12 watch audit: list
+      distances, metre-precision Nearby, Navigate with live bearing — `BRCEmbargo` was
+      iOS-only). Fixed via the shared `LocationEmbargo` seam in PlayaDB + `WatchEmbargo`
+      glue; phone passcode unlock latches over `PeerSyncManager`. Verified locked on an
+      erased Ultra 3 sim (`375e0399`).
+- [x] SwiftUI detail share button now emits real iburnapp.com deeplinks via the
+      `ShareURLBuilder` seam (it previously shared a plain string; locked tiers omit
+      lat/lng/addr) (`9a38cc78`).
+- [x] Watch scheme builds clean at 2026.0 (109); watch seed restore verified on-sim
+      (331/1190/2587/5240). Five locked-state 410×502 watch screenshots in
+      `fastlane/screenshots/watch/en-US/` (ASC natives at 422×514 kept alongside).
 
 **Pending / needs human action before tagging**
 
@@ -162,6 +173,14 @@ The highest-stakes section. A leak here is a real-world problem, not a bug.
       *Pre-existing quirk:* the date-based self-unlock at gates-open writes the passcode flag
       without posting `.BRCEmbargoDidClear`, so an app already running at that instant shows
       locations only after relaunch (region-entry and passcode unlocks post it live).
+- [ ] **The watch target gates through `WatchEmbargo`/`LocationEmbargo`, not `BRCEmbargo`** —
+      any new watch surface must call `WatchEmbargo.distance(for:from:)` /
+      `canShowLocation(for:)`. `BRCEmbargo` is invisible to the watch target, so an iOS-side
+      audit passes while the watch leaks (exactly what shipped-almost-happened in 2026.0:
+      the watch had zero gating until the Aug 12 audit). Watch unlock = same dates from the
+      shared `YearSettings.plist` + phone-passcode latch via `PeerSyncManager`.
+- [ ] Share/deeplink URLs (`ShareURLBuilder`) omit lat/lng/addr for locked tiers — covered by
+      `ShareURLBuilderTests`; keep those green and re-audit if new params are added.
 - [ ] Manual sim check: fresh install → locked state hides camp outlines even with
       "Show Camp Boundaries (Always)" enabled → unlock reveals them live, without relaunch.
 - [ ] Manual sim check: locked state shows no coordinates in list rows, detail views, or search.
