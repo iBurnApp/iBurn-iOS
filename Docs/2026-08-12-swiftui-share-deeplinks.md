@@ -184,3 +184,45 @@ URLs, calendar entries — now stays locked for remote users past `CampLocationU
 `EventStart`. Previously those surfaces lit up for everyone on the calendar date. App Review
 consequently always sees a locked map; review notes must carry unlock instructions and the
 passcode (private ASC field only).
+
+---
+
+# Same-day: strict embargo (both platforms), map/list UX fixes, iPad launch crash, website 2026
+
+**Strict embargo (user decision):** the device clock is spoofable, so date-only unlock is gone
+everywhere. Rule: `passcodeUnlocked || (inRegion && now >= tierDate)`. Watch `32f576fc`, phone
+`3b92e413` (BRCEmbargo → EmbargoService → shared PlayaDB seam; year-keyed persisted region
+latch; honest passcode-screen copy; watch latch now carries the phone's full verdict). Remote
+users stay locked without the passcode — App Review notes must include unlock instructions.
+Relaxation may ship in a later release; server-assisted no-GPS unlock is 2027.
+
+**Map fixes (`2ca3edc4`):** finished favorite-event pins age out after a 1h grace
+(recentlyEndedGrace; SQL window trimmed + live re-check per allAnnotations() read, no timer —
+documented gap: untouched on-screen map holds a stale pin until next reload). Camp label
+offset regression (387ed3ea's 18pt labelTopGap) reverted to 0 — the style-label collision it
+dodged is already prevented by PinLabelVisibility.
+
+**A–Z quick-scroll rail (`3a40a52d`):** Camps/Art/MV lists; shared IndexRailView extracted
+from the event-hour and search rails; pure AlphabetIndex logic (case/diacritic folding, '#'
+bucket, nearest-letter snap, Dynamic Type sampling). Known pre-existing issue: binary SQL
+collation sorts ~31 lowercase-initial names after Z, unreachable by rail — fix is
+case-insensitive ordering in the browse path (global search already re-sorts client-side).
+
+**iPad launch crash (`7557adda`, found by the iPad screenshot pass):** FAB constrained to
+tabBar.topAnchor, illegal on iPad/iOS 26 (floating top bar out of hierarchy) → crash on every
+launch; app had never been launched on iPad. FloatingActionButtonPlacement picks the legal
+anchor per layout pass. Checklist §7 now mandates an iPad-sim launch each release. iPad polish
+backlog (not fixed): iPhone zoom level on 13", full-width list rows with dead center zone,
+cramped index rails, detail title under the floating tab bar.
+
+**Screenshots:** iPhone set resized to ASC's 1284×2778 (natives kept; sizes documented in
+checklist §9, `097f1005`); 01/05/06 re-captured after the UI fixes; full iPad set at native
+2064×2752 in en-US-ipad/ (01-map re-taken post-crash-fix with the FAB visible). All locked,
+all audited.
+
+**Website (`iburnapp.github.io`, branch fix-imessage-preview, four commits, not pushed):**
+client-side deeplink embargo gate (`b19d1f9`); 1604 media thumbnails mirrored (`f688e43`);
+embargo-safe 2026 map — style/glyphs/sprites/pmtiles, single vector source, zero geojson,
+camp layers deliberately absent until the post-embargo commit (`588a7a6`); homepage "back for
+2026" + intro map on the 2026 style (`f6be46e`). R2 has map-2026.pmtiles live (user upload,
+verified 206).
