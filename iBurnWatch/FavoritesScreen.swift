@@ -215,10 +215,18 @@ struct FavoritesScreen: View {
                 .map { object in
                     ObjectRow(
                         object: object,
-                        distance: userLocation.flatMap { user in object.location?.distance(from: user) }
+                        distance: WatchEmbargo.distance(for: object, from: userLocation)
                     )
                 }
-                .sorted { ($0.distance ?? .infinity) < ($1.distance ?? .infinity) }
+                // Distance first where it is allowed to exist, name otherwise —
+                // while a tier is embargoed every distance is nil, so the list
+                // is alphabetical rather than secretly ordered by proximity.
+                .sorted { lhs, rhs in
+                    let left = lhs.distance ?? .infinity
+                    let right = rhs.distance ?? .infinity
+                    if left != right { return left < right }
+                    return lhs.object.name.localizedCaseInsensitiveCompare(rhs.object.name) == .orderedAscending
+                }
             loadError = nil
             loaded = true
         } catch {

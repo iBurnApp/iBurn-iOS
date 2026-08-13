@@ -88,27 +88,42 @@ struct NearbyScreen: View {
             status = "Waiting for GPS…"
             return
         }
+        // The whole screen is a proximity ranking of embargoed coordinates, so
+        // a locked tier isn't filtered out of the results — it is never fetched.
+        let showCamps = WatchEmbargo.canShowCampLocations
+        let showArt = WatchEmbargo.canShowArtLocations
+        guard showCamps || showArt else {
+            rows = []
+            status = "Camp and art locations unlock when the gates open."
+            return
+        }
         do {
             let region = MKCoordinateRegion(
                 center: userLocation.coordinate,
                 latitudinalMeters: Self.searchRadiusMeters * 2,
                 longitudinalMeters: Self.searchRadiusMeters * 2
             )
-            async let art = playaDB.fetchArt(filter: ArtFilter(region: region))
-            async let camps = playaDB.fetchCamps(filter: CampFilter(region: region))
+            async let art: [ArtObject] = showArt
+                ? (try await playaDB.fetchArt(filter: ArtFilter(region: region)))
+                : []
+            async let camps: [CampObject] = showCamps
+                ? (try await playaDB.fetchCamps(filter: CampFilter(region: region)))
+                : []
             let objects: [any DataObject] = try await art + camps
 
             let sorted = objects
                 .compactMap { object -> ObjectRow? in
-                    guard let objectLocation = object.location else { return nil }
-                    return ObjectRow(object: object, distance: objectLocation.distance(from: userLocation))
+                    guard let distance = WatchEmbargo.distance(for: object, from: userLocation) else {
+                        return nil
+                    }
+                    return ObjectRow(object: object, distance: distance)
                 }
                 .sorted { ($0.distance ?? .infinity) < ($1.distance ?? .infinity) }
                 .prefix(30)
 
             rows = Array(sorted)
             status = rows.isEmpty
-                ? "Nothing nearby yet — camp and art locations unlock when the gates open."
+                ? (showArt ? "Nothing nearby." : "Nothing nearby — art locations unlock when the gates open.")
                 : nil
         } catch {
             status = "Error: \(error.localizedDescription)"

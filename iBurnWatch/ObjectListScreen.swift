@@ -32,9 +32,11 @@ struct ObjectListScreen: View {
             ? objects
             : objects.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         return filtered.map { object in
+            // Embargoed camps/art show a name and nothing else — a distance is
+            // a coordinate in disguise.
             ObjectRow(
                 object: object,
-                distance: userLocation.flatMap { user in object.location?.distance(from: user) }
+                distance: WatchEmbargo.distance(for: object, from: userLocation)
             )
         }
     }

@@ -155,9 +155,23 @@ class DependencyContainer {
                     )
                 }
             }
+        }, embargoUnlockedProvider: {
+            // Date-based unlock is computed independently on each side; this
+            // only carries the passcode, which the watch has no UI to enter.
+            UserDefaults.enteredEmbargoPasscode
         })
         watchSyncManager.start()
         self.watchSyncManager = watchSyncManager
+
+        // Push the unlock the moment the passcode is accepted rather than
+        // waiting for the next favorite change or app launch.
+        NotificationCenter.default.addObserver(
+            forName: .BRCEmbargoDidClear,
+            object: nil,
+            queue: .main
+        ) { [weak watchSyncManager] _ in
+            watchSyncManager?.embargoUnlockStateDidChange()
+        }
 
         // Every heart in the app posts through PlayaDB, so one listener covers them all.
         self.favoriteSeriesToastPresenter.start()

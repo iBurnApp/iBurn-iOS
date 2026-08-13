@@ -15,6 +15,7 @@
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
 		69E87EE357276FE574287C5F /* points.geojson in Resources */ = {isa = PBXBuildFile; fileRef = E4C02C37EA6C6EC484366C05 /* points.geojson */; };
+		D9EB0A012EAB000100000001 /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9EB0A002EAB000000000002 /* YearSettings.plist */; };
 		6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */; };
 		7B2FA7D941A961C1D7E01881 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 943BDAA9ED89068B088FA38F /* Foundation.framework */; };
 		93CBF9AE70B2AF9D4E656366 /* polygons.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 9E10477F2E42824CFC141C92 /* polygons.geojson */; };
@@ -168,6 +169,7 @@
 		DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		E4C02C37EA6C6EC484366C05 /* points.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = points.geojson; path = "Submodules/iBurn-Data/data/2026/geo/points.geojson"; sourceTree = "<group>"; };
+		D9EB0A002EAB000000000002 /* YearSettings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = YearSettings.plist; path = iBurn/YearSettings.plist; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 		E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PlayaKitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 				16AFD3CDCF12A2E73AC3DB68 /* Pods */,
 				73700CCA398E66852345DABB /* iBurnWatch */,
 				76F55C269BF93A3607E2054F /* iBurnWatch CityGeo */,
+				D9EB0A022EAB000200000003 /* iBurnWatch Shared */,
 			);
 			sourceTree = "<group>";
 		};
@@ -346,6 +349,14 @@
 				AA73916E34175C0642838724 /* watchOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D9EB0A022EAB000200000003 /* iBurnWatch Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D9EB0A002EAB000000000002 /* YearSettings.plist */,
+			);
+			name = "iBurnWatch Shared";
 			sourceTree = "<group>";
 		};
 		76F55C269BF93A3607E2054F /* iBurnWatch CityGeo */ = {
@@ -600,6 +611,7 @@
 				04720AD2C99286B359A608F3 /* fence.geojson in Resources */,
 				C6E7832B37C2F274DE417CD3 /* toilets.geojson in Resources */,
 				93CBF9AE70B2AF9D4E656366 /* polygons.geojson in Resources */,
+				D9EB0A012EAB000100000001 /* YearSettings.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

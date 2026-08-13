@@ -20,10 +20,26 @@ public final class PeerSyncManager: NSObject, @unchecked Sendable {
     /// Application-context key carrying the JSON-encoded `[FavoriteSyncItem]`.
     private static let favoritesKey = "favoritesV1"
 
+    /// Application-context key carrying the phone's embargo passcode state.
+    ///
+    /// Only ever published as `true`: the phone knows a passcode was entered,
+    /// but its absence means nothing (an old phone build, or a context that
+    /// predates the unlock), so a peer must never read "no key" or `false` as
+    /// "re-lock". Each side still computes the date-based unlock itself.
+    private static let embargoUnlockedKey = "embargoUnlockedV1"
+
     /// Application-context key carrying the JSON-encoded `[UserMapPin]`.
     private static let pinsKey = "userMapPinsV1"
 
     private let playaDB: PlayaDB
+
+    /// Reports whether this device's embargoed location data is unlocked by
+    /// passcode. Supplied by the phone only; `nil` publishes nothing.
+    private let embargoUnlockedProvider: (@Sendable () -> Bool)?
+
+    /// Invoked (on an arbitrary background queue) when a peer reports that its
+    /// embargoed data is unlocked. Only ever called with `true`.
+    private let onEmbargoUnlocked: (@Sendable () -> Void)?
 
     /// Invoked (on an arbitrary background queue) with the favorite/visit items
     /// that were actually applied locally after receiving a peer snapshot.
@@ -45,12 +61,23 @@ public final class PeerSyncManager: NSObject, @unchecked Sendable {
     public init(
         playaDB: PlayaDB,
         onFavoritesApplied: (([FavoriteSyncItem]) -> Void)? = nil,
-        onPinsApplied: (([UserMapPin]) -> Void)? = nil
+        onPinsApplied: (([UserMapPin]) -> Void)? = nil,
+        embargoUnlockedProvider: (@Sendable () -> Bool)? = nil,
+        onEmbargoUnlocked: (@Sendable () -> Void)? = nil
     ) {
         self.playaDB = playaDB
         self.onFavoritesApplied = onFavoritesApplied
         self.onPinsApplied = onPinsApplied
+        self.embargoUnlockedProvider = embargoUnlockedProvider
+        self.onEmbargoUnlocked = onEmbargoUnlocked
         super.init()
+    }
+
+    /// Publishes the current embargo unlock state now, rather than waiting for
+    /// the next favorite/pin change or app launch. Called by the phone right
+    /// after the passcode is accepted.
+    public func embargoUnlockStateDidChange() {
+        pushLatestSnapshot()
     }
 
     /// Activates the WCSession and begins observing local state. No-op when
@@ -132,6 +159,9 @@ public final class PeerSyncManager: NSObject, @unchecked Sendable {
             if let pins {
                 context[Self.pinsKey] = try Self.makeEncoder().encode(pins)
             }
+            if embargoUnlockedProvider?() == true {
+                context[Self.embargoUnlockedKey] = true
+            }
             guard !context.isEmpty else { return }
             try session.updateApplicationContext(context)
         } catch {
@@ -143,6 +173,12 @@ public final class PeerSyncManager: NSObject, @unchecked Sendable {
     /// ignored — never crash on peer data, and never let one bad key stop the
     /// other from applying.
     private func applyReceivedContext(_ applicationContext: [String: Any]) {
+        // Latch-only: a peer that says it is unlocked unlocks us too, and a peer
+        // that says nothing leaves our own date-based verdict alone.
+        if applicationContext[Self.embargoUnlockedKey] as? Bool == true {
+            onEmbargoUnlocked?()
+        }
+
         let favorites: [FavoriteSyncItem] = decode(applicationContext[Self.favoritesKey], label: "favorites")
         let pins: [UserMapPin] = decode(applicationContext[Self.pinsKey], label: "pins")
         guard !favorites.isEmpty || !pins.isEmpty else { return }

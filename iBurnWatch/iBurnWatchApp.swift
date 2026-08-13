@@ -96,6 +96,11 @@ struct IBurnWatchApp: App {
                         playaDB: playaDB,
                         onFavoritesApplied: { _ in
                             NotificationCenter.default.post(name: .favoritesSyncDidApply, object: nil)
+                        },
+                        onEmbargoUnlocked: {
+                            // The phone has the passcode entered; latch it so the
+                            // watch stops embargoing camp/art locations too.
+                            WatchEmbargo.setUnlockedFromPhone()
                         }
                     )
                     manager.start()

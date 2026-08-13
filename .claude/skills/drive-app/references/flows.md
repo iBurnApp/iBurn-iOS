@@ -982,17 +982,42 @@ the tell that the restore was used and no JSON import ran.
 6. **Browse** → rows: 📍 Nearby / 📌 Pins / 🏕️ Camps / 🎨 Art / 🚌 Vehicles / 🎪 Events.
    - Camps/Art/Vehicles: alphabetical searchable list (search field automation
      is unreliable — the watch keyboard's AX field doesn't accept `type_text`;
-     verify search logic in code/DB instead), distances shown with a GPS fix.
+     verify search logic in code/DB instead), distances shown with a GPS fix
+     **once the object's embargo tier has unlocked** — see the embargo note below.
    - Events: day-chip strip ("Sun 30" …, defaults to today or first day; chips
      switch the list instantly) over name + "5:00 PM (2h)" rows. `adlt` events
      are excluded unless the user's location is on-playa.
 7. Nearby → tap a row → Detail (favorite toggle, **visit-status button** — tap
    opens a sheet: Not Visited / Visited / Want to Visit — description,
-   event occurrence times, **Navigate** when the object has GPS) → Navigate
-   shows target marker + user dot + live "<distance> · <bearing>°" readout.
+   event occurrence times, **Navigate** when the object has GPS *and* its tier
+   is unlocked) → Navigate shows target marker + user dot + live
+   "<distance> · <bearing>°" readout. Embargoed objects show
+   "Location hidden until gates open" instead; an unlocked object that simply
+   has no coordinates says "No location available".
 8. Favorites toolbar has a **Filter** button (sheet with "Show":
    Favorites / Want to Visit / Visited and "Type": All/Camps/Art/Events/Vehicles;
-   icon fills when non-default).
+   icon fills when non-default). Rows sort by distance, falling back to name —
+   so while everything is embargoed the list is alphabetical.
+8a. **Location embargo (watch).** The watch enforces the same two-tier BMorg
+   embargo as the phone: camps (and camp-hosted events) unlock at
+   `CampLocationUnlock`, art (and art-located events) at `EventStart`. The seed
+   database ships full GPS — there is no OTA update path — so the gate lives in
+   the UI: `iBurnWatch/WatchEmbargo.swift` over the shared pure seam
+   `PlayaDB.LocationEmbargo`. `iBurn/YearSettings.plist` is a **shared resource
+   of both app targets** (added to the watch's Resources build phase); if it
+   ever stops shipping the watch fails closed and hides every location.
+   While a tier is locked: no distance line anywhere (lists, Nearby,
+   Favorites), no Navigate, and Nearby never even queries that tier — with both
+   locked it reads "Camp and art locations unlock when the gates open."
+   The watch has no passcode UI; the phone pushes its unlock over
+   WatchConnectivity (`PeerSyncManager`, key `embargoUnlockedV1`, latch-only)
+   and the watch stores it under `UserDefaults` key `embargoUnlockedFromPhone`.
+   To drive the unlocked state in a sim without a paired phone, write that key
+   into the watch app container's
+   `Library/Preferences/com.trailbehind.iBurn2010.watchkitapp.plist` and relaunch
+   (clearing it back needs an `simctl erase` — cfprefsd caches the old value).
+   **Never** use MOCK_DATE / the Mock Date scheme to test this: its date is past
+   `EventStart`, so everything self-unlocks and the gate looks broken-open.
 9. **User map pins** (bike / home / star), synced with the phone:
    - Drop: bottom-right toolbar button → sheet with tinted Bike (green) /
      Home (orange) / Pin (yellow) rows → tap saves at the **current GPS fix**

@@ -23,6 +23,10 @@ struct DetailScreen: View {
     @State private var showingVisitStatusPicker = false
     @State private var occurrences: [EventObjectOccurrence] = []
 
+    private var locationIsUnlocked: Bool {
+        WatchEmbargo.canShowLocation(for: object)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
@@ -76,7 +80,15 @@ struct DetailScreen: View {
                     .navigationTitle("Visit Status")
                 }
 
-                if object.hasLocation {
+                // Navigate plots the object as a labelled marker with a live
+                // distance/bearing readout, so it is the most direct leak of an
+                // embargoed coordinate on the watch. Two different reasons it
+                // can be missing, and the copy no longer conflates them.
+                if !locationIsUnlocked {
+                    Text("Location hidden until gates open")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else if object.hasLocation {
                     NavigationLink {
                         NavigationScreen(
                             target: object,
@@ -88,7 +100,7 @@ struct DetailScreen: View {
                     }
                     .tint(.orange)
                 } else {
-                    Text("Location hidden until gates open")
+                    Text("No location available")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
