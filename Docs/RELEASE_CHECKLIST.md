@@ -260,6 +260,10 @@ verified to apply cleanly over a shipped seed.
 - [ ] `iBurn (Mock Date)` scheme launches and lands inside the event week.
 - [ ] Manual flow pass per `.claude/skills/drive-app/references/flows.md`; update that doc if
       reality has diverged.
+- [ ] **Launch on an iPad simulator** (e.g. iPad Pro 13-inch, current iOS) — fresh install through
+      onboarding *and* a second launch, in both orientations. *Why:* iPad's floating top tab bar
+      puts views in a different hierarchy than iPhone's docked bottom bar; 2026.0 shipped a
+      launch-blocking `no common ancestor` constraint crash that no iPhone run could ever hit.
 
 ## 8. Build / Archive
 

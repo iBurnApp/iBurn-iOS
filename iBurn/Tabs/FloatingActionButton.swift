@@ -113,6 +113,28 @@ enum FloatingActionButtonVisibility {
     }
 }
 
+/// What the floating button's bottom edge is allowed to hang from.
+///
+/// The button wants to ride just above the tab bar, but `tabBar` is only a legal constraint
+/// partner when it is actually inside the tab bar controller's view. On iPad running iOS 26 the
+/// bar is hoisted out of that hierarchy into a floating top bar, and constraining to it there
+/// throws `NSGenericException: … no common ancestor` before the app ever draws a frame. The
+/// same is true, less dramatically, whenever the bar is docked somewhere other than the bottom:
+/// "above the bar" would put the button under the status bar.
+///
+/// So: hang from the bar only when it is both in-hierarchy *and* at the bottom; otherwise fall
+/// back to the view's own bottom safe area, which always exists and is always an ancestor.
+enum FloatingActionButtonPlacement: Equatable {
+    /// Pinned `barGap` above the tab bar's top edge.
+    case aboveTabBar
+    /// Pinned `barGap` above the view's bottom safe-area edge.
+    case bottomSafeArea
+
+    static func placement(tabBarIsInHierarchy: Bool, tabBarIsDockedAtBottom: Bool) -> Self {
+        tabBarIsInHierarchy && tabBarIsDockedAtBottom ? .aboveTabBar : .bottomSafeArea
+    }
+}
+
 /// When favoriting something anywhere in the app makes the floating button glow.
 ///
 /// The flourish is an "it landed in there" gesture — the heart you tapped flying home to the

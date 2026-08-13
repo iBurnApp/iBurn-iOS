@@ -52,6 +52,12 @@ import UIKit
     /// alone can't express "centered on something UIKit positions".
     private var floatingButtonCenterX: NSLayoutConstraint?
 
+    /// Vertical placement. Rebuilt whenever the tab bar moves between hierarchies or edges
+    /// (iPad's floating top bar, rotation, size-class changes), because the constraint's
+    /// partner view differs per placement — see `FloatingActionButtonPlacement`.
+    private var floatingButtonBottom: NSLayoutConstraint?
+    private var floatingButtonPlacement: FloatingActionButtonPlacement?
+
     /// Whether the search field has taken the tab bar's place. Set from the search tab
     /// root's search controller, which is the only thing that reports the transition.
     private var searchIsActive = false {
@@ -76,6 +82,9 @@ import UIKit
         super.viewDidLayoutSubviews()
         // Catches the bar moving off screen, which nothing announces. Search activation
         // does *not* re-lay out this view — that arrives via `searchIsActive` instead.
+        // The placement check rides along because the same pass is where a rotation or a
+        // size-class change has just moved the bar between hierarchies.
+        updateFloatingButtonPlacement()
         updateFloatingButtonVisibility()
         alignFloatingButtonWithSearchTab()
     }
@@ -194,13 +203,67 @@ import UIKit
             constant: -(FloatingActionButton.trailingInset + FloatingActionButton.diameter / 2)
         )
         floatingButtonCenterX = centerX
-        NSLayoutConstraint.activate([
-            centerX,
-            // Anchored to the bar itself rather than the safe area: the iOS 26 tab bar
-            // floats, and pinning to its top keeps the same gap whether or not an
-            // accessory is installed, and follows the bar when it slides away.
-            floatingButton.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: -FloatingActionButton.barGap),
-        ])
+        NSLayoutConstraint.activate([centerX])
+        updateFloatingButtonPlacement()
+    }
+
+    /// Picks the vertical anchor that is legal *right now* and swaps the constraint if the
+    /// answer changed.
+    ///
+    /// On iPhone the bar is a bottom-docked subview of this controller's view, so the button
+    /// hangs off `tabBar.topAnchor` exactly as it always has — same gap, same pixel position,
+    /// and it still follows the bar when the map slides it away. On iPad with iOS 26 the bar
+    /// is a floating top bar living outside this view, where that constraint has no common
+    /// ancestor and throws; there the button hangs off the view's own bottom safe area
+    /// instead. Re-evaluated on every layout pass so rotation or a size-class change that
+    /// moves the bar between those two worlds re-anchors rather than re-crashing.
+    private func updateFloatingButtonPlacement() {
+        guard floatingButtonInstalled else { return }
+        let placement = FloatingActionButtonPlacement.placement(
+            tabBarIsInHierarchy: tabBarIsInHierarchy,
+            tabBarIsDockedAtBottom: tabBarIsDockedAtBottom
+        )
+        guard placement != floatingButtonPlacement else { return }
+        floatingButtonPlacement = placement
+
+        floatingButtonBottom?.isActive = false
+        let bottom: NSLayoutConstraint
+        switch placement {
+        case .aboveTabBar:
+            bottom = floatingButton.bottomAnchor.constraint(
+                equalTo: tabBar.topAnchor,
+                constant: -FloatingActionButton.barGap
+            )
+        case .bottomSafeArea:
+            bottom = floatingButton.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -FloatingActionButton.barGap
+            )
+        }
+        floatingButtonBottom = bottom
+        bottom.isActive = true
+    }
+
+    /// Whether the tab bar is a descendant of this controller's view — the only case in which
+    /// it can legally take part in a constraint with the button.
+    private var tabBarIsInHierarchy: Bool {
+        tabBar.isDescendant(of: view)
+    }
+
+    /// Whether the bar sits in the lower half of the view, i.e. the button belongs above it.
+    /// Measured rather than inferred from idiom so an unfamiliar bar layout degrades to the
+    /// safe-area placement instead of guessing.
+    private var tabBarIsDockedAtBottom: Bool {
+        guard tabBarIsInHierarchy, let barFrame = tabBarFrameInView else { return false }
+        return barFrame.midY > view.bounds.midY
+    }
+
+    /// The bar's frame in `view` coordinates, or nil when the two aren't in the same window
+    /// and no meaningful conversion exists.
+    private var tabBarFrameInView: CGRect? {
+        guard let superview = tabBar.superview else { return nil }
+        guard superview === view || (tabBar.window != nil && tabBar.window === view.window) else { return nil }
+        return superview.convert(tabBar.frame, to: view)
     }
 
     /// Centers the button on the detached search circle at the trailing end of the bar.
@@ -213,6 +276,10 @@ import UIKit
     /// found and the button keeps the trailing inset it was installed with.
     private func alignFloatingButtonWithSearchTab() {
         guard floatingButtonInstalled, let centerX = floatingButtonCenterX else { return }
+        // Only meaningful when the button is stacked on the bar. A floating top bar puts the
+        // search circle nowhere near the button's row, so its x is not a placement the button
+        // should chase — it keeps the trailing inset instead.
+        guard floatingButtonPlacement == .aboveTabBar else { return }
         guard let measured = searchTabCenterX() else { return }
         let target = measured - view.safeAreaLayoutGuide.layoutFrame.maxX
         // A layout pass writing a constraint constant re-enters layout, so only a real
@@ -266,9 +333,10 @@ import UIKit
             floatingButton.isHidden = true
             return
         }
+        let barIsOffscreen = tabBarFrameInView.map { $0.minY >= view.bounds.height } ?? false
         floatingButton.isHidden = tabBar.isHidden
             || tabBar.alpha == 0
-            || tabBar.frame.minY >= view.bounds.height
+            || barIsOffscreen
     }
 
     /// The chosen screen as a sheet, built from the same factory the tab and the More row
