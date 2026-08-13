@@ -282,6 +282,16 @@ verified to apply cleanly over a shipped seed.
       (keywords ≤ 100 characters including commas).
 - [ ] Screenshots refreshed for the current device sizes, **captured without embargoed placement
       data** (see Embargo).
+- [ ] **Screenshot pixel sizes match what ASC actually accepts** — simulator-native captures are
+      usually NOT accepted sizes; aspect-resize + center-crop rather than re-shooting. As of
+      2026 ASC accepts (portrait):
+      - iPhone 6.5"-class: **1284×2778** (or 1242×2688) — iPhone 17 Pro Max native is 1320×2868;
+        `sips --resampleWidth 1284` then `--cropToHeightWidth 2778 1284` (≈6 px off top+bottom).
+      - iPad 13": **2064×2752** (or 2048×2732) — iPad Pro 13" sim is natively 2064×2752.
+      - Apple Watch: **410×502** — Ultra sim is natively 422×514; scale to 410 wide, letterbox or
+        crop to 502.
+      Keep the untouched natives in a sibling `*-native-<WxH>/` folder; check "View All Sizes in
+      Media Manager" in ASC if these numbers have drifted since 2026.
 - [ ] Age rating, privacy nutrition label, and support/marketing URLs still accurate.
 - [ ] App Review notes mention that location data is embargoed by the event organizer and that some
       map content unlocks on a date — reviewers otherwise see an "empty" map and may reject.
