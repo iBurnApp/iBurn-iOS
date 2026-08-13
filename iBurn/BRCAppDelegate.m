@@ -308,26 +308,26 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 }
 
 - (void) enteredBurningManRegion {
-    BRCLocations.hasEnteredBurningManRegion = true;
-    // +allowEmbargoedData can itself flip the stored flag once the festival has started,
-    // so snapshot the previous state to detect an unlock that happens right here.
-    BOOL wasUnlocked = [[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode];
-    if ([BRCEmbargo allowEmbargoedData]) {
-        if (!wasUnlocked) {
-            [BRCEmbargoNotifier postDidClear];
-        }
+    // Being here is the un-forgeable half of the embargo rule, so it latches. It
+    // unlocks nothing by itself — the tier's date still has to arrive — which is
+    // why this can fire harmlessly weeks before the event.
+    BOOL campWasVisible = [BRCEmbargo canShowCampLocations];
+    BOOL artWasVisible = [BRCEmbargo canShowArtLocations];
+    BOOL alreadyLatched = BRCEmbargoService.hasSeenBurningManRegion;
+    [BRCEmbargoService noteEnteredBurningManRegion];
+    BOOL didUnlock = ([BRCEmbargo canShowCampLocations] != campWasVisible)
+        || ([BRCEmbargo canShowArtLocations] != artWasVisible);
+    if (!didUnlock) {
         return;
     }
-    NSDate *now = [NSDate present];
-    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
+    // Something just became visible: tell the live observations (map annotations,
+    // SwiftUI rows) so they don't wait for a relaunch.
+    [BRCEmbargoNotifier postDidClear];
+    if (!alreadyLatched) {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The restricted data is now unlocked." preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Sweet!" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:cancel];
         [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
-        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-        [BRCEmbargoNotifier postDidClear];
     }
 }
 
@@ -410,7 +410,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     if (![BRCEmbargo allowEmbargoedData]) {
         UIAlertController *alert = [UIAlertController 
             alertControllerWithTitle:@"Locations Are Hidden"
-            message:@"Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nDon't worry, the app will automatically unlock itself after gates open at 12:01am Sunday and you're on playa."
+            message:@"Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nThe app unlocks itself once you're on playa and those dates have passed. Until you arrive, locations stay hidden unless you enter the embargo passcode."
             preferredStyle:UIAlertControllerStyleAlert];
         
         UIAlertAction *okAction = [UIAlertAction 

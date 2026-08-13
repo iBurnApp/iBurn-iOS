@@ -90,8 +90,10 @@ Do this in June/July. Everything below is year-stamped and silently wrong if mis
       `Packages/PlayaDB/Package.swift`, and the iBurn-Data root `Package.swift`.
 - [ ] `iBurn/BRCDatabaseManager.m` — `iBurn-<YEAR>.sqlite` + folder name.
       *Why:* forces a clean rebuild so last year's rows can't linger.
-- [ ] `iBurn/NSUserDefaults+iBurn.m` — `kBRCEntered<YEAR>EmbargoPasscodeKey`.
-      *Why:* re-arms the embargo so last year's unlock doesn't carry over.
+- [ ] `iBurn/NSUserDefaults+iBurn.m` — `kBRCEntered<YEAR>EmbargoPasscodeKey` **and**
+      `kBRCEntered<YEAR>BurningManRegionKey`.
+      *Why:* re-arms the embargo so last year's unlock — passcode or playa visit — doesn't
+      carry over.
 - [ ] `iBurn/BRCArtObject.m` — default year.
 - [ ] `iBurn/NSDate+iBurn.m` — mock-date fallback (used by the `iBurn (Mock Date)` scheme).
 - [ ] **Hardcoded year paths (both, every year):**
@@ -155,6 +157,27 @@ The highest-stakes section. A leak here is a real-world problem, not a bug.
 
 - [ ] Two-tier unlock dates correct for the year: camps + camp-hosted events at
       `CampLocationUnlock`; art + art-located events at `EventStart`.
+- [ ] **The unlock rule is strict on both platforms** (since 2026.0). A tier's locations are
+      shown only when
+
+          passcodeUnlocked || (inRegion && now >= <tier unlock date>)
+
+      A date alone never unlocks anything: the device clock is user-settable, so the old
+      "after `EventStart`" check was defeated by moving Settings ▸ Date & Time forward — and
+      it *latched* that into the passcode flag, unlocking the device for the season. The
+      un-forgeable half (having been inside `BRCLocations.burningManRegion`) is what
+      persists: `kBRCEntered<YEAR>BurningManRegionKey` on the phone,
+      `embargoRegionSeen` on the watch. One rule, one implementation:
+      `PlayaDB.LocationEmbargo`, adopted by `iBurn/EmbargoService.swift` (which `BRCEmbargo`
+      now merely fronts) and `iBurnWatch/WatchEmbargo.swift`.
+      *Consequence — check before every submission:* **off-playa users, including App Review,
+      now always see a locked map.** Nothing unlocks by waiting. The App Store Connect review
+      notes must therefore carry unlock instructions and the passcode (private ASC field
+      only — never in this repo). Same for TestFlight testers who want to see locations from
+      home.
+      *Consequence for users:* someone at home stays locked past the unlock dates unless they
+      enter the passcode. Accepted for 2026.0; a server-side design for no-GPS auto-unlock is
+      2027 work.
 - [ ] No `MOCK_LOCATIONS` sentinel in `data/<YEAR>/APIData/APIData.bundle/`.
 - [ ] `camp_outlines.geojson` / `camp_labels.geojson` are not the previous year's fixtures
       (the deploy workflow greps for `<name>_<lastyear>`).
@@ -170,9 +193,12 @@ The highest-stakes section. A leak here is a real-world problem, not a bug.
       (`iBurn/AISearch/RightNowViewModel.swift` / `RightNowWorkflow.swift`) takes a region with
       no embargo check — it ships dark behind `featureFlag.search.useAI` (default off). Gate it
       before that flag ever defaults on.
-      *Pre-existing quirk:* the date-based self-unlock at gates-open writes the passcode flag
-      without posting `.BRCEmbargoDidClear`, so an app already running at that instant shows
-      locations only after relaunch (region-entry and passcode unlocks post it live).
+      *Live-refresh note:* both remaining unlock paths post `.BRCEmbargoDidClear` — passcode
+      entry (`EmbargoPasscodeViewModel`) and region entry (`BRCAppDelegate
+      -enteredBurningManRegion`, which posts only when the verdict actually flips). The one
+      case with no live refresh is a tier's date arriving while the app is already running on
+      playa (nothing re-evaluates on a timer); locations appear on the next relaunch, or the
+      next region callback.
 - [ ] **The watch target gates through `WatchEmbargo`/`LocationEmbargo`, not `BRCEmbargo`** —
       any new watch surface must call `WatchEmbargo.distance(for:from:)` /
       `canShowLocation(for:)`. `BRCEmbargo` is invisible to the watch target, so an iOS-side
@@ -183,6 +209,9 @@ The highest-stakes section. A leak here is a real-world problem, not a bug.
       `ShareURLBuilderTests`; keep those green and re-audit if new params are added.
 - [ ] Manual sim check: fresh install → locked state hides camp outlines even with
       "Show Camp Boundaries (Always)" enabled → unlock reveals them live, without relaunch.
+      Unlock for this check with the passcode, or by simulating a playa fix
+      (`xcrun simctl location <UDID> set 40.7864,-119.2065`) once the tier's date has passed —
+      **not** by moving the clock, which no longer unlocks anything.
 - [ ] Manual sim check: locked state shows no coordinates in list rows, detail views, or search.
 - [ ] Passcode: hash present in gitignored `iBurn/BRCSecrets.m` and in the
       `EMBARGO_PASSCODE_SHA256` GitHub secret; unlock verified in the sim.

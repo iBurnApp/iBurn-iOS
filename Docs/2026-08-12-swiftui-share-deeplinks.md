@@ -114,3 +114,73 @@ accidentally fail-closed. Evidence in `fastlane/screenshots/watch/_embargo-leak-
 `fastlane/screenshots/watch/en-US/` (422×514 natives kept alongside); watch seed restore
 verified on-sim (331/1190/2587/5240); checklist §5 rewritten — OTA updates are not a 2026
 feature (`a3587b00`); checklist §4 gained watch-audit and share-URL line items.
+
+# Same-day: iOS adopts the strict embargo rule (policy change for 2026.0)
+
+**Problem.** The watch shipped the strict rule earlier today; the phone was still on the old
+date-only one. `BRCEmbargo.allowEmbargoedData` returned YES the moment `Date.present` passed
+`EventStart` — and wrote the passcode flag while doing it — so dragging Settings ▸ Date &
+Time forward for one minute published every camp and art coordinate for the rest of the
+season, permanently, on any device anywhere. `canShowCampLocations` had the same shape for
+the camp tier (date-only, no latch). The device clock is user input, not evidence.
+
+**Policy (user-decided).** One rule on both platforms:
+
+```
+passcodeUnlocked || (inRegion && now >= unlockDate(tier))
+```
+
+The accepted cost is explicit: off-playa users stay locked past the unlock dates unless they
+enter the BMorg passcode. "We will keep it strict and release an app update that relaxes it";
+a 2027 server-side design covers no-GPS auto-unlock.
+
+**Implementation.** No new rule — the phone adopts the seam the watch already uses.
+
+- `iBurn/EmbargoService.swift` (new, `@objc(BRCEmbargoService)`): builds
+  `PlayaDB.LocationEmbargo` from `YearSettings.campLocationUnlock` / `.eventStart`, sources
+  `passcodeUnlocked` from the existing defaults flag and `inRegion` from the region latch,
+  evaluates the date live against `Date.present`. Also exposes the pure
+  `canShowLocations(tier:now:passcodeUnlocked:inRegion:)` as the test seam, plus
+  `noteEnteredBurningManRegion()` / `noteLocationFix(_:)`.
+- `iBurn/BRCEmbargo.m`: kept as the Obj-C façade (dozens of call sites unchanged), now three
+  one-line forwards. The date-only branches and the self-latching passcode write are gone;
+  `canShowLocationForObject:` keeps its tier mapping (art → art, art-hosted events → art,
+  everything else → camp) unchanged.
+- Region latch persisted: `kBRCEntered2026BurningManRegionKey` in `NSUserDefaults+iBurn`
+  (year-stamped like the passcode key, so next season re-arms), surfaced as
+  `UserDefaults.enteredBurningManRegion`. `EmbargoService.hasSeenBurningManRegion` ORs it with
+  the in-memory `BRCLocations.hasEnteredBurningManRegion`, which other features
+  (`EventListViewModel`, `RegionStatusService`, `BRCDatabaseManager`) still read as before.
+  Persisting a *visit* is safe in a way persisting a date check is not — no clock change can
+  manufacture a past trip to Black Rock City.
+- `BRCAppDelegate -enteredBurningManRegion` latches, then posts `.BRCEmbargoDidClear` only
+  when a tier's verdict actually flipped, and shows the "Data Unlocked" alert only on the
+  first latch that unlocks something. Region entry is now the live unlock trigger.
+- `DependencyContainer.embargoUnlockedProvider` publishes the phone's *full* verdict
+  (`BRCEmbargo.allowEmbargoedData()`) rather than the bare passcode flag. The watch treats
+  that latch as `passcodeUnlocked` and skips its own region check — correct: a phone that
+  legitimately unlocked, either way, should unlock the watch on the wrist next to it.
+- Copy: the passcode screen and the "Locations Are Hidden" alert no longer promise a date
+  unlock ("the app unlocks itself once you're on playa and those dates have passed …
+  until you arrive, locations stay hidden unless you enter the passcode"), and the countdown
+  no longer claims "Location Data Unlocked!" once gates open on a still-locked device — it
+  says gates are open and locations unlock on arrival.
+
+**Verification.** New `iBurnTests/EmbargoStrictUnlockTests.swift` (12 cases): date-alone
+never unlocks any tier at any instant; asking past gates-open writes neither defaults flag
+(the regression that mattered); region+camp-date opens camps only; region+gates opens
+everything; passcode alone unlocks with no visit; the latch survives a defaults round-trip
+with the in-memory flag cleared; fixes outside the region don't latch; and a full truth table
+of the pure rule. `EmbargoTierTests` now runs as a device that has been to BRC (its subject
+is which date opens which tier), which is the only change it needed. iBurn build clean,
+iBurnTests 561 green, iBurnWatch build clean, PlayaDB 324 green. Sim sanity on an erased
+iPhone 17 Pro Max at the real date: locked with no fix; a BRC fix latches
+`kBRCEntered2026BurningManRegionKey` and the app *stays* locked, because Aug 12 is before
+`CampLocationUnlock` — which is the pass condition.
+
+**Call sites whose behaviour changes:** everything gated on `BRCEmbargo` — list rows and
+addresses, nearby surfaces, map annotations and camp boundary layers, detail views, share
+URLs, calendar entries — now stays locked for remote users past `CampLocationUnlock` and
+`EventStart`. Previously those surfaces lit up for everyone on the calendar date. App Review
+consequently always sees a locked map; review notes must carry unlock instructions and the
+passcode (private ASC field only).

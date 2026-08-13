@@ -262,6 +262,21 @@ Automation notes:
   gates (`YearSettings.campLocationUnlock`), art (and art-located events) at
   gates-open (`eventStart`). Location-dependent pins won't appear in pre-event
   builds — this is expected, not a bug.
+- **The rule is strict — a date alone never unlocks anything** (iOS adopted the watch's
+  rule on Aug 12; `iBurn/EmbargoService.swift` over `PlayaDB.LocationEmbargo`, with
+  `BRCEmbargo` reduced to a façade):
+
+      passcodeUnlocked || (inRegion && now >= <tier unlock date>)
+
+  `inRegion` means this device has taken a fix inside `BRCLocations.burningManRegion`
+  (5 miles round the Man), latched into the app-container plist key
+  `kBRCEntered2026BurningManRegionKey` by `BRCAppDelegate -enteredBurningManRegion`, so it
+  survives relaunches. **Moving the clock forward no longer unlocks the app** (it used to,
+  and used to latch the passcode flag while doing it), so a driving session that needs
+  locations must either write `kBRCEntered2026EmbargoPasscodeKey` (§8 recipe) or combine a
+  BRC fix (`xcrun simctl location <UDID> set 40.7864,-119.2065`) with a date past the tier.
+  A sim off the playa stays locked at every date — that is the correct behaviour, not a
+  broken build.
 - **Re-tapping the Map tab resets the map**, stock-iOS style and in two steps: with
   something pushed (a detail screen, the visible-pins list) the first re-tap **pops to the
   map**; the next one, now at the root, **flies the camera back** to
@@ -626,10 +641,12 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
 occurrence `isInNearbyWindow` (starts within 30 min / hasn't ended), so pre-event there is
 nothing but art + camps. Set `BRCMockDateEnabled`/`BRCMockDateValue` (app-container prefs
 via the §8 `defaults write` recipe, app terminated; default mock is 2026-09-04T11:00-0700)
-to get live events — but note the mock date also lifts the embargo by date, and running
-with a BRC location under a festival date makes `enteredBurningManRegion` write
-`kBRCEntered2026EmbargoPasscodeKey = YES` permanently. Delete that key (again, §8 recipe —
-**not** PlistBuddy) when you next want the locked state.
+to get live events. Since Aug 12 the mock date **no longer lifts the embargo on its own**
+(the rule needs a playa fix or the passcode — see §6), and nothing writes
+`kBRCEntered2026EmbargoPasscodeKey` behind your back any more. What a BRC location *does*
+write is the region latch `kBRCEntered2026BurningManRegionKey = YES`, which combined with a
+festival mock date unlocks the tiers; delete that key (§8 recipe — **not** PlistBuddy) when
+you next want the locked state.
 Event-dense mock-time spots: **40.77546,-119.20512** (9 live events + 4 camps at 11:00) and
 **40.77245,-119.19365** (1 long-named event + 4 camps).
 
@@ -908,11 +925,16 @@ PREFS="$C/Library/Preferences/com.trailbehind.iBurn2010"
 # Map Search Layout (§8)
 xcrun simctl spawn <UDID> defaults write "$PREFS" userInterface.map.searchLayout -string searchTab
 
-# Unlock the location embargo (§6)
+# Unlock the location embargo outright, passcode-style (§6) — the only date-independent path
 xcrun simctl spawn <UDID> defaults write "$PREFS" kBRCEntered2026EmbargoPasscodeKey -bool YES
 
-# …and re-lock it
+# The region half of the strict rule: pretend this device has been to BRC. On its own it
+# unlocks nothing until the tier's date arrives (real or mocked).
+xcrun simctl spawn <UDID> defaults write "$PREFS" kBRCEntered2026BurningManRegionKey -bool YES
+
+# …and re-lock (both halves)
 xcrun simctl spawn <UDID> defaults delete "$PREFS" kBRCEntered2026EmbargoPasscodeKey
+xcrun simctl spawn <UDID> defaults delete "$PREFS" kBRCEntered2026BurningManRegionKey
 ```
 
 Read values back the same way (`defaults read "$PREFS" <key>`), again with the app

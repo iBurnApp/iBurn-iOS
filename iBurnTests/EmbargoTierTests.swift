@@ -17,16 +17,23 @@ import PlayaDB
 final class EmbargoTierTests: XCTestCase {
 
     private var originalUnlocked = false
+    private var originalRegionSeen = false
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         originalUnlocked = UserDefaults.enteredEmbargoPasscode
+        originalRegionSeen = UserDefaults.enteredBurningManRegion
         UserDefaults.enteredEmbargoPasscode = false
+        // These cases are about *which tier* a date opens, so they run as a device
+        // that has been to Black Rock City. The other half of the strict rule —
+        // that a date alone never unlocks anything — is `EmbargoStrictUnlockTests`.
+        UserDefaults.enteredBurningManRegion = true
         UserDefaults.standard.set(true, forKey: "BRCMockDateEnabled")
     }
 
     override func tearDownWithError() throws {
         UserDefaults.enteredEmbargoPasscode = originalUnlocked
+        UserDefaults.enteredBurningManRegion = originalRegionSeen
         UserDefaults.standard.removeObject(forKey: "BRCMockDateEnabled")
         UserDefaults.standard.removeObject(forKey: "BRCMockDateValue")
         try super.tearDownWithError()

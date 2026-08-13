@@ -37,34 +37,28 @@
     return [bundledPasscodeHash isEqualToString:hashString];
 }
 
+// Every verdict below comes from BRCEmbargoService (EmbargoService.swift), which
+// applies the shared strict rule:
+//
+//     passcodeUnlocked || (inRegion && now >= unlockDate(tier))
+//
+// A date alone never unlocks anything: the device clock is user-settable, so the
+// old "after festival start" check (which also latched the passcode flag) was
+// defeated by moving Settings ▸ Date & Time forward. This class stays as the
+// Objective-C façade the app already calls; only the answers changed.
 + (BOOL)allowEmbargoedData
 {
-    if ([[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode]) {
-        return YES;
-    }
-    //Data is not embargoed after start of festival or if the passcode has been entered
-    NSDate *now = [NSDate present];
-    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
-        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-        return YES;
-    }
-    return NO;
+    return [BRCEmbargoService allowEmbargoedData];
 }
 
 + (BOOL)canShowCampLocations
 {
-    if ([BRCEmbargo allowEmbargoedData]) {
-        return YES;
-    }
-    NSDate *now = [NSDate present];
-    return [now timeIntervalSinceDate:YearSettings.campLocationUnlock] >= 0;
+    return [BRCEmbargoService canShowCampLocations];
 }
 
 + (BOOL)canShowArtLocations
 {
-    return [BRCEmbargo allowEmbargoedData];
+    return [BRCEmbargoService canShowArtLocations];
 }
 
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject

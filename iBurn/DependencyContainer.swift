@@ -156,9 +156,14 @@ class DependencyContainer {
                 }
             }
         }, embargoUnlockedProvider: {
-            // Date-based unlock is computed independently on each side; this
-            // only carries the passcode, which the watch has no UI to enter.
-            UserDefaults.enteredEmbargoPasscode
+            // The phone's full verdict under the strict rule: the passcode, or
+            // being at Burning Man on or after gates open. The watch treats this
+            // latch the way it treats a passcode — it bypasses its own region
+            // check — which is right: a phone that legitimately unlocked should
+            // unlock the watch on its wrist, whichever way it got there. The
+            // watch has no passcode UI of its own, so this is its only path
+            // besides taking its own playa fix.
+            BRCEmbargo.allowEmbargoedData()
         })
         watchSyncManager.start()
         self.watchSyncManager = watchSyncManager
