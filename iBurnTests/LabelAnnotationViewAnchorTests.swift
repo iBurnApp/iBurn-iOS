@@ -48,20 +48,22 @@ final class LabelAnnotationViewAnchorTests: XCTestCase {
                        "The bottom edge of the pin artwork — its tip — belongs on the coordinate")
     }
 
-    /// …and the pin's own name label starts a clear gap *below* the coordinate, so it can't
-    /// sit on top of the camp name the style layer draws there.
-    func testNameLabelClearsTheCoordinateByTheGap() {
+    /// …and the pin's own name label hangs directly off the tip. A gap here reads as a caption
+    /// floating loose in the desert rather than as this pin's name, which is the regression
+    /// the 18 pt version shipped; duplicate camp names are suppressed by `PinLabelVisibility`
+    /// instead.
+    func testNameLabelHangsDirectlyOffTheTip() {
         let view = laidOutView()
         XCTAssertEqual(offsetBelowCoordinate(ofLocalY: view.label.frame.minY, in: view),
                        LabelAnnotationView.labelTopGap,
                        accuracy: 0.001,
-                       "The label's top edge should clear the style layer's text line")
-        XCTAssertGreaterThanOrEqual(LabelAnnotationView.labelTopGap, 14,
-                                    "A smaller gap runs back into a single line of style text")
+                       "The label's top edge sits exactly `labelTopGap` below the coordinate")
+        XCTAssertLessThanOrEqual(LabelAnnotationView.labelTopGap, 4,
+                                 "A bigger gap separates the label from the pin it names")
     }
 
-    /// The label has to fit inside the (grown) frame rather than spilling past its bottom.
-    func testFrameIsTallEnoughForTheGappedLabel() {
+    /// The label has to fit inside the frame rather than spilling past its bottom.
+    func testFrameIsTallEnoughForTheLabel() {
         let view = laidOutView()
         XCTAssertEqual(view.bounds.size, LabelAnnotationView.frameSize)
         XCTAssertLessThanOrEqual(view.label.frame.maxY, view.bounds.height + 0.5,

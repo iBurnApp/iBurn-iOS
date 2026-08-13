@@ -46,7 +46,7 @@ final class MapFavoriteEventFilterTests: XCTestCase {
 
     // MARK: - The SQL window
 
-    func testTheWindowIsExactlyTheCurrentCalendarDay() throws {
+    func testTheWindowEndsAtMidnightAndStartsAtTheGraceEdge() throws {
         let calendar = try playaCalendar()
         let now = try middayBeforeTheBurn()
 
@@ -57,9 +57,27 @@ final class MapFavoriteEventFilterTests: XCTestCase {
         )
 
         let window = try XCTUnwrap(filter.activeWindow)
-        XCTAssertEqual(window.start, calendar.startOfDay(for: now))
-        XCTAssertEqual(window.duration, 24 * 60 * 60, "The window is exactly one day wide")
+        XCTAssertEqual(window.end,
+                       try XCTUnwrap(calendar.date(byAdding: .day, value: 1,
+                                                   to: calendar.startOfDay(for: now))),
+                       "The window still runs to the end of today")
+        XCTAssertEqual(window.start,
+                       now.addingTimeInterval(-PlayaDBAnnotationDataSource.recentlyEndedGrace),
+                       "…and its front edge is the grace edge, not the top of the day")
         XCTAssertTrue(filter.onlyFavorites)
+    }
+
+    /// Early in the morning the grace edge is still before midnight, so the day boundary wins
+    /// and the window can't reach back into yesterday.
+    func testTheWindowNeverReachesBackIntoYesterday() throws {
+        let calendar = try playaCalendar()
+        let now = try date(year: 2026, month: 8, day: 10, hour: 0, minute: 20)
+
+        let window = try XCTUnwrap(PlayaDBAnnotationDataSource.favoriteEventFilter(
+            includeExpired: true, now: now, calendar: calendar
+        ).activeWindow)
+
+        XCTAssertEqual(window.start, calendar.startOfDay(for: now))
     }
 
     /// There is no "show me the whole week" escape any more: the layer is always today's.
@@ -141,6 +159,98 @@ final class MapFavoriteEventFilterTests: XCTestCase {
             startDate: start, endDate: end, now: today, calendar: calendar))
     }
 
+    // MARK: - The grace period for occurrences that just ended
+
+    /// The reported bug in its second form: this morning's workshop still pinned at 2pm.
+    func testAnOccurrenceThatEndedHoursAgoIsOffTheMap() throws {
+        let now = try middayBeforeTheBurn()
+        let end = now.addingTimeInterval(-3 * 60 * 60)
+
+        XCTAssertFalse(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: end.addingTimeInterval(-60 * 60),
+            endDate: end,
+            now: now,
+            calendar: try playaCalendar()
+        ))
+    }
+
+    /// …but the set you were walking to twenty minutes ago is still worth a red pin.
+    func testAnOccurrenceThatJustEndedStaysOnTheMap() throws {
+        let now = try middayBeforeTheBurn()
+        let end = now.addingTimeInterval(-20 * 60)
+
+        XCTAssertTrue(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: end.addingTimeInterval(-60 * 60),
+            endDate: end,
+            now: now,
+            calendar: try playaCalendar()
+        ))
+    }
+
+    /// The boundary is exclusive: at exactly one hour past the end time the pin is gone.
+    func testTheGraceBoundaryIsExactlyAnHour() throws {
+        let calendar = try playaCalendar()
+        let now = try middayBeforeTheBurn()
+        let grace = PlayaDBAnnotationDataSource.recentlyEndedGrace
+        XCTAssertEqual(grace, 60 * 60)
+
+        let atTheEdge = now.addingTimeInterval(-grace)
+        let justInside = now.addingTimeInterval(-grace + 1)
+
+        XCTAssertFalse(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: atTheEdge.addingTimeInterval(-3600), endDate: atTheEdge,
+            now: now, calendar: calendar))
+        XCTAssertTrue(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: justInside.addingTimeInterval(-3600), endDate: justInside,
+            now: now, calendar: calendar))
+    }
+
+    /// Grace only ever removes finished things. Anything still running, or yet to start, is
+    /// untouched by it.
+    func testRunningAndNotYetStartedOccurrencesAreUnaffected() throws {
+        let calendar = try playaCalendar()
+        let now = try middayBeforeTheBurn()
+
+        XCTAssertTrue(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: now.addingTimeInterval(-4 * 60 * 60),
+            endDate: now.addingTimeInterval(60 * 60),
+            now: now, calendar: calendar), "A long set still in progress stays")
+        XCTAssertTrue(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: now.addingTimeInterval(3 * 60 * 60),
+            endDate: now.addingTimeInterval(4 * 60 * 60),
+            now: now, calendar: calendar), "Tonight's favourite is still tonight's")
+    }
+
+    /// The day rule outranks the grace: an occurrence that ended ten minutes before midnight
+    /// is inside the grace at 00:05, but it is not today's any more.
+    func testGraceDoesNotResurrectYesterdaysOccurrence() throws {
+        let calendar = try playaCalendar()
+        let now = try date(year: 2026, month: 8, day: 11, hour: 0, minute: 5)
+        let end = try date(year: 2026, month: 8, day: 10, hour: 23, minute: 55)
+
+        XCTAssertFalse(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: end.addingTimeInterval(-3600), endDate: end,
+            now: now, calendar: calendar))
+    }
+
+    /// Favourites are per occurrence (`EventFavoriteKey` embeds the start instant), so two
+    /// showings of the same event are judged one at a time: the noon one ages off while the
+    /// evening one waits its turn.
+    func testTwoOccurrencesOfOneEventAreJudgedIndependently() throws {
+        let calendar = try playaCalendar()
+        let now = try middayBeforeTheBurn()
+
+        let noonStart = try date(year: 2026, month: 8, day: 10, hour: 10)
+        let noonEnd = try date(year: 2026, month: 8, day: 10, hour: 11)
+        let eveningStart = try date(year: 2026, month: 8, day: 10, hour: 20)
+        let eveningEnd = try date(year: 2026, month: 8, day: 10, hour: 22)
+
+        XCTAssertFalse(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: noonStart, endDate: noonEnd, now: now, calendar: calendar))
+        XCTAssertTrue(PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
+            startDate: eveningStart, endDate: eveningEnd, now: now, calendar: calendar))
+    }
+
     /// The in-memory rule and the SQL window are the same predicate; if they drift, a pin
     /// the query fetched would survive the re-check (or vice versa).
     func testTheInMemoryRuleAgreesWithTheQueryWindow() throws {
@@ -152,6 +262,8 @@ final class MapFavoriteEventFilterTests: XCTestCase {
 
         let cases: [(Date, Date)] = [
             (try date(year: 2026, month: 8, day: 10, hour: 9), try date(year: 2026, month: 8, day: 10, hour: 11)),
+            (try date(year: 2026, month: 8, day: 10, hour: 13), try date(year: 2026, month: 8, day: 10, hour: 14, minute: 20)),
+            (try date(year: 2026, month: 8, day: 10, hour: 12), try date(year: 2026, month: 8, day: 10, hour: 15)),
             (try date(year: 2026, month: 8, day: 9, hour: 23), try date(year: 2026, month: 8, day: 10, hour: 1)),
             (try date(year: 2026, month: 8, day: 10, hour: 23), try date(year: 2026, month: 8, day: 11, hour: 2)),
             (try date(year: 2026, month: 8, day: 12, hour: 9), try date(year: 2026, month: 8, day: 12, hour: 10)),
@@ -160,7 +272,7 @@ final class MapFavoriteEventFilterTests: XCTestCase {
         for (start, end) in cases {
             let sqlWouldMatch = start < window.end && end > window.start
             XCTAssertEqual(
-                PlayaDBAnnotationDataSource.occurrenceIsToday(
+                PlayaDBAnnotationDataSource.occurrenceBelongsOnMap(
                     startDate: start, endDate: end, now: now, calendar: calendar),
                 sqlWouldMatch,
                 "Disagreement for \(start)–\(end)"

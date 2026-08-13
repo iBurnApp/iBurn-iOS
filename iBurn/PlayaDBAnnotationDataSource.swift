@@ -27,9 +27,22 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     private var eventAnnotations: [MLNAnnotation] = []
     private var favoriteArtAnnotations: [MLNAnnotation] = []
     private var favoriteCampAnnotations: [MLNAnnotation] = []
-    private var favoriteEventAnnotations: [MLNAnnotation] = []
 
-    /// Merged cache returned by allAnnotations()
+    /// Favourited-event pins with the occurrence times they live or die by. Kept apart from
+    /// the other caches because this is the one layer whose membership changes with the clock
+    /// and not with the database: an occurrence ages out of `recentlyEndedGrace` while nothing
+    /// at all is written, so the set is re-derived on every `allAnnotations()` rather than
+    /// frozen at delivery.
+    private var favoriteEventCandidates: [FavoriteEventCandidate] = []
+
+    private struct FavoriteEventCandidate {
+        let annotation: MLNAnnotation
+        let startDate: Date
+        let endDate: Date
+    }
+
+    /// Merged cache of the clock-independent layers, returned (plus live favourite events)
+    /// by `allAnnotations()`.
     private var cachedAnnotations: [MLNAnnotation] = []
 
     /// Active observation tokens
@@ -79,7 +92,19 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     // MARK: - AnnotationDataSource
 
     func allAnnotations() -> [MLNAnnotation] {
-        cachedAnnotations
+        // Re-checked against the clock on every read, not cached: `MapViewAdapter` calls this
+        // on every reload (returning to the map, closing the filter sheet, any database
+        // write), which is what makes a pin whose grace has run out actually leave the map
+        // without a timer ticking behind it.
+        cachedAnnotations + favoriteEventAnnotations(now: .present)
+    }
+
+    private func favoriteEventAnnotations(now: Date) -> [MLNAnnotation] {
+        favoriteEventCandidates.compactMap { candidate in
+            Self.occurrenceBelongsOnMap(startDate: candidate.startDate,
+                                        endDate: candidate.endDate,
+                                        now: now) ? candidate.annotation : nil
+        }
     }
 
     // MARK: - Observation Lifecycle
@@ -178,17 +203,17 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeEvents(filter: eventFilter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    // The SQL window was fixed when this observation started; re-checked
-                    // here against the clock at delivery so a map left up across midnight
-                    // can't keep drawing yesterday's favourites (the day-change observer
-                    // rebuilds the query itself).
-                    let now = Date.present
-                    self.favoriteEventAnnotations = rows.compactMap { row in
-                        guard Self.occurrenceIsToday(startDate: row.object.startDate,
-                                                     endDate: row.object.endDate,
-                                                     now: now) else { return nil }
+                    // The SQL window was fixed when this observation started; every row is
+                    // re-checked against the clock on each `allAnnotations()` read, so what
+                    // is kept here is the candidate set, not the answer.
+                    self.favoriteEventCandidates = rows.compactMap { row in
                         let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
-                        return allowed ? PlayaObjectAnnotation(event: row.object)?.markedFavorite() : nil
+                        guard allowed,
+                              let annotation = PlayaObjectAnnotation(event: row.object)?.markedFavorite()
+                        else { return nil }
+                        return FavoriteEventCandidate(annotation: annotation,
+                                                      startDate: row.object.startDate,
+                                                      endDate: row.object.endDate)
                     }
                     self.rebuildCache()
                 }
@@ -209,7 +234,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         eventAnnotations.removeAll()
         favoriteArtAnnotations.removeAll()
         favoriteCampAnnotations.removeAll()
-        favoriteEventAnnotations.removeAll()
+        favoriteEventCandidates.removeAll()
         cachedAnnotations.removeAll()
     }
 
@@ -238,6 +263,41 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         return startDate < window.end && endDate > window.start
     }
 
+    /// How long a finished occurrence stays on the map after its end time.
+    ///
+    /// "Today" alone leaves a 10am workshop pinned through to midnight, and by afternoon the
+    /// map is a museum of things that already happened. But dropping a pin the instant its
+    /// end time passes is wrong in the other direction: sets run long, and the thing you were
+    /// walking to twenty minutes ago is still the thing you are walking to. So a finished
+    /// occurrence lingers for an hour — drawn red-for-ended by `EventPinStatus` the whole
+    /// time — and then goes.
+    static let recentlyEndedGrace: TimeInterval = 60 * 60
+
+    /// The window the map actually draws: today, with everything that finished more than
+    /// `recentlyEndedGrace` ago trimmed off the front.
+    ///
+    /// Only the *start* of today's window moves. Anything still running has an end time later
+    /// than `now`, so it is never trimmed, and an occurrence starting later today is untouched
+    /// — the trim can only ever remove things that are already over.
+    static func mapWindow(now: Date, calendar: Calendar = .current) -> DateInterval {
+        let today = todayWindow(now: now, calendar: calendar)
+        let graceStart = now.addingTimeInterval(-recentlyEndedGrace)
+        return DateInterval(start: max(today.start, graceStart), end: today.end)
+    }
+
+    /// Whether a favourited occurrence belongs on the map at `now`: today's, and not finished
+    /// longer ago than the grace period.
+    ///
+    /// Identical to overlapping `mapWindow`, written as the two rules it is made of so the
+    /// reason each pin is gone stays readable.
+    static func occurrenceBelongsOnMap(startDate: Date,
+                                       endDate: Date,
+                                       now: Date,
+                                       calendar: Calendar = .current) -> Bool {
+        occurrenceIsToday(startDate: startDate, endDate: endDate, now: now, calendar: calendar)
+            && endDate > now.addingTimeInterval(-recentlyEndedGrace)
+    }
+
     /// The filter behind the map's favourited-events layer.
     ///
     /// Always narrowed to today. Favourites are per-occurrence (`EventFavoriteKey` embeds the
@@ -250,6 +310,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// applied in SQL (`PlayaDBImpl.eventOccurrenceRequest`), so an occurrence weeks out is
     /// never fetched, let alone drawn.
     ///
+    /// Its front edge is also trimmed by `recentlyEndedGrace` (see `mapWindow`), so the query
+    /// stops fetching this morning's finished workshops instead of fetching them for the
+    /// in-memory re-check to throw away. The re-check still has to exist: this bound is frozen
+    /// when the observation starts, and occurrences keep ending after that.
+    ///
     /// Pure, and split out of `startObserving()` so the window can be tested without a
     /// database: it reads the clock through `now` (`Date.present`, which honours the
     /// mock-date scheme) rather than calling `Date()` itself.
@@ -257,7 +322,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                                     now: Date,
                                     calendar: Calendar = .current) -> EventFilter {
         var filter = EventFilter(onlyFavorites: true, includeExpired: includeExpired)
-        filter.activeWindow = todayWindow(now: now, calendar: calendar)
+        filter.activeWindow = mapWindow(now: now, calendar: calendar)
         return filter
     }
 
@@ -269,7 +334,6 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             + eventAnnotations
             + favoriteArtAnnotations
             + favoriteCampAnnotations
-            + favoriteEventAnnotations
         delegate?.annotationDataSourceDidUpdate(self)
     }
 }

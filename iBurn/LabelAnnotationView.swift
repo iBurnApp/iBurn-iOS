@@ -50,14 +50,16 @@ final class LabelAnnotationView: MLNAnnotationView {
     static let imageSide: CGFloat = 30
 
     /// Clear air between the teardrop's tip — which sits *on* the coordinate — and the top of
-    /// the pin's own name label.
+    /// the pin's own name label. Zero: the label hangs directly off the pin, which is how it
+    /// has always read as *this pin's* name.
     ///
-    /// The `camp-labels-big` style layer draws a camp's name centred on that same coordinate
-    /// at 9–14 pt with a 2 pt halo, so a label starting at the coordinate lands on top of the
-    /// letters (an event pin at a camp: "Morning Beats & B…" over "Camp TeaPunk"). 18 pt
-    /// clears a single line of style text at every zoom the layer draws at, and still clears
-    /// most of a wrapped two-line name, without floating the label away from its pin.
-    static let labelTopGap: CGFloat = 18
+    /// This was briefly 18 pt, to keep a label off the camp name the `camp-labels-big` style
+    /// layer draws at the very same coordinate. It bought that clearance by floating the label
+    /// so far under the teardrop that the two stopped looking like one pin, and the collision
+    /// it was defending against is now handled where it belongs: `PinLabelVisibility` hides a
+    /// camp's own label when the style layer already names it (`CampStyleLabelIndex`), and
+    /// favourited event pins draw no label at all.
+    static let labelTopGap: CGFloat = 0
 
     /// Height reserved for the one-line name label (10 pt system font ≈ 12 pt line box).
     static let labelHeight: CGFloat = 14
@@ -96,8 +98,7 @@ final class LabelAnnotationView: MLNAnnotationView {
     /// `imageSide` below the view's top edge, i.e. `imageSide - height/2` below the centre —
     /// so shifting the centre up by exactly that much lands the tip on the point. Nothing
     /// takes its place on the style text: for style-labeled camps `PinLabelVisibility` has
-    /// already hidden this view's own `label`, and the `labelTopGap` keeps every other pin's
-    /// label below whatever the layer drew.
+    /// already hidden this view's own `label`.
     static let tipAnchoringCenterOffset = CGVector(dx: 0, dy: frameSize.height / 2 - imageSide)
 
     // MARK: Overrides

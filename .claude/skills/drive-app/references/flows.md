@@ -371,10 +371,12 @@ Automation notes:
     Since Aug 10 the pin is **tip-anchored**: `LabelAnnotationView.centerOffset` is derived
     from the image box (`frameSize.height/2 - imageSide`) so the teardrop's point (not its
     middle) lands on the coordinate, which is also where the style layer sets its text —
-    that is what keeps the glyph off the letters. A second Aug-10 change puts an
-    **18 pt gap** (`labelTopGap`) between that tip and the pin's own name label, so the
-    label starts *below* the style text instead of on it; the frame grew to 100×62 to
-    contain it. **Since Aug 11 favourited-event pins opt out of the label entirely**
+    that is what keeps the glyph off the letters. An Aug-10 change briefly put an
+    **18 pt gap** (`labelTopGap`) between that tip and the pin's own name label; it read as
+    a caption floating loose in the desert rather than as the pin's name, and **since Aug 12
+    the gap is back to 0** (frame 100×44, `tipAnchoringCenterOffset.dy = -8`). Duplicate camp
+    names are suppressed by `PinLabelVisibility`, not by pushing labels away.
+    **Since Aug 11 favourited-event pins opt out of the label entirely**
     (`PinLabelVisibility.pinDrawsOwnLabel` — the gap read as floating text): the pin is
     the event's type emoji with a status dot (green starting-soon/happening, orange
     ending-soon, red ended; `EventPinStatus`) and a heart at the tip, and the only text
@@ -409,8 +411,15 @@ Automation notes:
 - **Favourited events are today-only, unconditionally** (since Aug 11; the "Today's
   Favorites Only" toggle and `kBRCShowTodaysFavoritesOnlyOnMapKey` are gone). The window
   is an *overlap* window — `[startOfDay, +1 day)` intersecting `[start, end)` — applied in
-  SQL and re-checked at delivery, with an `NSCalendarDayChanged` observer rebuilding the
-  query at midnight. Pre-event (all occurrences weeks out) no favourited event ever pins
+  SQL and re-checked in memory, with an `NSCalendarDayChanged` observer rebuilding the
+  query at midnight. **Since Aug 12 the front of that window is also trimmed by a one-hour
+  grace** (`recentlyEndedGrace`): an occurrence that ended twenty minutes ago still pins the
+  map, drawn red-for-ended, and one that ended three hours ago does not — that is the fix for
+  "this morning's workshop is still on my map at 2pm". The re-check runs on every
+  `allAnnotations()` read rather than at delivery, because a pin ages out while nothing is
+  written; in practice pins leave on the next reload (returning to the Map tab, closing the
+  filter sheet, any database write, midnight) — there is no timer.
+  Pre-event (all occurrences weeks out) no favourited event ever pins
   the map; drive it with the Mock Date env (`MOCK_DATE=1` launch env equals the
   `iBurn (Mock Date)` scheme) and favourite one today-occurrence and one other-day
   occurrence — only the today one pins. `PlayaDBAnnotationDataSource.favoriteEventFilter(…)`
