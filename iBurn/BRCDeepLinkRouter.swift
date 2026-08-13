@@ -234,109 +234,41 @@ enum DeepLinkObjectType: String {
 
 extension BRCDataObject {
     
+    /// Universal link for this object, embargo-filtered.
+    ///
+    /// URL construction lives in `ShareURLBuilder` so the legacy and SwiftUI share paths
+    /// emit identical links; this method only resolves the async host name and the embargo tier.
     @MainActor
     func generateShareURL() async -> URL? {
-        var components = URLComponents(string: "https://iburnapp.com")!
-
-        // Set path based on object type
-        if self is BRCArtObject {
-            components.path = "/art/"
-        } else if self is BRCCampObject {
-            components.path = "/camp/"
-        } else if self is BRCEventObject {
-            components.path = "/event/"
-        } else {
-            return nil
-        }
-
-        // Add query parameters
-        var queryItems: [URLQueryItem] = []
-
-        // UID as query parameter
-        queryItems.append(URLQueryItem(name: "uid", value: uniqueID))
-
-        // Universal parameters
-        queryItems.append(URLQueryItem(name: "title", value: title))
-
-        // Only include location data if embargo allows it
-        if BRCEmbargo.canShowLocation(for: self) {
-            if let location = location {
-                queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", location.coordinate.latitude)))
-                queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", location.coordinate.longitude)))
-            }
-
-            if let playaLocation = playaLocation, !playaLocation.isEmpty {
-                queryItems.append(URLQueryItem(name: "addr", value: playaLocation))
-            }
-        }
-
-        if let description = detailDescription, !description.isEmpty {
-            let truncated = String(description.prefix(100))
-            queryItems.append(URLQueryItem(name: "desc", value: truncated))
-        }
-
-        // Event-specific parameters
+        var hostName: String?
         if let event = self as? BRCEventObject {
-            let startDate = event.startDate
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withYear, .withMonth, .withDay, .withTime, .withColonSeparatorInTime]
-            queryItems.append(URLQueryItem(name: "start", value: formatter.string(from: startDate)))
-
-            let endDate = event.endDate
-            queryItems.append(URLQueryItem(name: "end", value: formatter.string(from: endDate)))
-
-            // Add host information via PlayaDB
             let playaDB = BRCAppDelegate.shared.dependencies.playaDB
             if let campId = event.hostedByCampUniqueID, !campId.isEmpty {
-                let campName = try? await playaDB.fetchCamp(uid: campId)?.name
-                if let campName { queryItems.append(URLQueryItem(name: "host", value: campName)) }
-                queryItems.append(URLQueryItem(name: "host_id", value: campId))
-                queryItems.append(URLQueryItem(name: "host_type", value: "camp"))
+                hostName = try? await playaDB.fetchCamp(uid: campId)?.name
             } else if let artId = event.hostedByArtUniqueID, !artId.isEmpty {
-                let artName = try? await playaDB.fetchArt(uid: artId)?.name
-                if let artName { queryItems.append(URLQueryItem(name: "host", value: artName)) }
-                queryItems.append(URLQueryItem(name: "host_id", value: artId))
-                queryItems.append(URLQueryItem(name: "host_type", value: "art"))
-            }
-
-            if event.isAllDay {
-                queryItems.append(URLQueryItem(name: "all_day", value: "true"))
+                hostName = try? await playaDB.fetchArt(uid: artId)?.name
             }
         }
 
-        // Add year
-        queryItems.append(URLQueryItem(name: "year", value: YearSettings.playaYear))
+        guard let payload = ShareURLPayload.legacy(
+            self,
+            hostName: hostName,
+            canShowLocation: BRCEmbargo.canShowLocation(for: self)
+        ) else { return nil }
 
-        components.queryItems = queryItems
-
-        return components.url
+        return ShareURLBuilderFactory.shared.url(for: payload)
     }
 }
 
 extension BRCMapPoint {
-    
+
     @objc func generateShareURL() -> URL? {
-        var components = URLComponents(string: "https://iburnapp.com")!
-        components.path = "/pin"
-        
-        // Add query parameters
-        var queryItems: [URLQueryItem] = []
-        
-        queryItems.append(URLQueryItem(name: "lat", value: String(format: "%.6f", coordinate.latitude)))
-        queryItems.append(URLQueryItem(name: "lng", value: String(format: "%.6f", coordinate.longitude)))
-        
-        if let title = title {
-            queryItems.append(URLQueryItem(name: "title", value: title))
-        }
-        
-        // Map point type
-        queryItems.append(URLQueryItem(name: "type", value: String(type.rawValue)))
-        
-        // Add year
-        queryItems.append(URLQueryItem(name: "year", value: YearSettings.playaYear))
-        
-        components.queryItems = queryItems
-        
-        return components.url
+        let payload = ShareURLPayload(
+            kind: .pin,
+            title: title,
+            coordinate: coordinate,
+            pinType: Int(type.rawValue)
+        )
+        return ShareURLBuilderFactory.shared.url(for: payload)
     }
 }

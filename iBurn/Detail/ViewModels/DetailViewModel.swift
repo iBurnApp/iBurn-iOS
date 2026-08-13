@@ -677,19 +677,72 @@ class DetailViewModel: ObservableObject {
         case .legacy(let legacyObject):
             // Show QR code share screen instead of direct share sheet
             coordinator.handle(.showShareScreen(legacyObject))
-        case .art(let art):
-            coordinator.handle(.share(["Art: \(art.name)\nID: \(art.uid)"]))
-        case .camp(let camp):
-            coordinator.handle(.share(["Camp: \(camp.name)\nID: \(camp.uid)"]))
-        case .event(let event):
-            coordinator.handle(.share(["Event: \(event.name)\nID: \(event.uid)"]))
-        case .eventOccurrence(let occ):
-            coordinator.handle(.share(["Event: \(occ.name)\nID: \(occ.event.uid)"]))
         case .mutantVehicle(let mv):
+            // Mutant vehicles have no deep link type on iburnapp.com yet.
             coordinator.handle(.share(["Mutant Vehicle: \(mv.name)\nID: \(mv.uid)"]))
+        case .art, .camp, .event, .eventOccurrence:
+            Task { @MainActor in
+                guard let payload = await shareURLPayload(),
+                      let url = ShareURLBuilderFactory.shared.url(for: payload) else {
+                    coordinator.handle(.share(["\(subject.title)\nID: \(subject.uid)"]))
+                    return
+                }
+                coordinator.handle(.showShareURLScreen(
+                    title: subject.title,
+                    locationText: payload.address,
+                    url: url,
+                    themeColors: getThemeBRCColors()
+                ))
+            }
         }
     }
-    
+
+    /// Share payload for the current PlayaDB subject, embargo-filtered.
+    ///
+    /// Location fields are only populated when `BRCEmbargo` allows that object's tier, so a
+    /// locked build never puts coordinates or a playa address into a shared link.
+    func shareURLPayload() async -> ShareURLPayload? {
+        switch subject {
+        case .art(let art):
+            return .art(art, canShowLocation: BRCEmbargo.canShowArtLocations())
+        case .camp(let camp):
+            return .camp(camp, canShowLocation: BRCEmbargo.canShowCampLocations())
+        case .event(let event):
+            let occurrence = resolvedEventOccurrences.first
+            return .event(
+                event,
+                startDate: occurrence?.startDate,
+                endDate: occurrence?.endDate,
+                host: await resolvedShareHost(for: event),
+                canShowLocation: BRCEmbargo.canShowLocation(for: event)
+            )
+        case .eventOccurrence(let occ):
+            return .event(occ, canShowLocation: BRCEmbargo.canShowLocation(for: occ))
+        case .legacy, .mutantVehicle:
+            return nil
+        }
+    }
+
+    /// Host camp/art for an `EventObject`, using the already-resolved name when available.
+    private func resolvedShareHost(for event: EventObject) async -> ShareURLHost? {
+        if let campID = event.hostedByCamp, !campID.isEmpty {
+            if let resolvedHostName {
+                return .camp(uid: campID, name: resolvedHostName)
+            }
+            let name = try? await playaDB?.fetchCamp(uid: campID)?.name
+            return .camp(uid: campID, name: name ?? nil)
+        }
+        if let artID = event.locatedAtArt, !artID.isEmpty {
+            if let resolvedHostName {
+                return .art(uid: artID, name: resolvedHostName)
+            }
+            let name = try? await playaDB?.fetchArt(uid: artID)?.name
+            return .art(uid: artID, name: name ?? nil)
+        }
+        return nil
+    }
+
+
     /// Extract theme colors following the same logic as BRCDetailViewController
     func getThemeColors() -> ImageColors {
         ImageColors(getThemeBRCColors())

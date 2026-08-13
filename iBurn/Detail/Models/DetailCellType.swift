@@ -109,6 +109,9 @@ enum DetailAction {
     case showEventEditor(BRCEventObject)
     case share([Any])
     case showShareScreen(BRCDataObject)
+    /// QR/share screen for a PlayaDB-backed object, whose share URL has already been built
+    /// (and embargo-filtered) by the view model.
+    case showShareURLScreen(title: String, locationText: String?, url: URL, themeColors: BRCImageColors)
     case navigateToViewController(UIViewController)
 }
 
