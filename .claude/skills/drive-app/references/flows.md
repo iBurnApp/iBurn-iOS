@@ -152,6 +152,29 @@ parent row, all sharing its `favorite_updated_at`.
 
 ## 5. Search (FTS)
 
+### A–Z index rail on the browse lists (More → Camps / Art / Mutant Vehicles)
+
+- Each of those three flat lists carries an alphabetical quick-scroll rail on its trailing
+  edge (`IndexRailView` fed by `AlphabetIndex`, attached via `.alphabetIndexRail`). It is
+  the same widget as global search's rail, with letters instead of type markers.
+- It draws `#` (only when something non-alphabetic sorts there) then **A–Z, always** —
+  a letter with no rows of its own snaps to the nearest letter that has some, forward
+  first, matching `UITableView.sectionIndexTitles`. Tap or drag-scrub it; a haptic ticks
+  per stop and a bubble names the letter.
+- It appears only at **20+ visible rows**, so it disappears as soon as a search or the
+  favorites-only filter shortens the list past that, and it always indexes the rows on
+  screen (never the unfiltered set).
+- AX labels: **"Camp index"**, **"Art index"**, **"Mutant vehicle index"**. The individual
+  letters show up as plain text nodes with no tap action — drive them with `touch`
+  (down+up on the letter's ref) or `drag`, not `tap`.
+- Verified 2026-08-12 on Camps (1190 rows, embargo on): rail renders `#ABC…Z`, the list
+  opens on `...cats` / `17 Virgins` (the `#` bucket), and touching "T" lands on
+  `T.B.C. / T33M0 / TBA / THE VEIL`.
+- Caveat: these lists come back from SQLite `ORDER BY name` (binary), so the ~15 camps /
+  11 art / 5 vehicles whose names start lowercase sort *after* `Z`. The rail anchors each
+  letter at its first run, which is the uppercase one, so those stragglers are reachable
+  only by scrolling to the bottom.
+
 The events/favorites lists have searchable fields ("Search events",
 "Search favorites"), but SwiftUI searchable fields drop out of the AX snapshot
 unpredictably. Two options:
@@ -228,7 +251,7 @@ chrome above the results:
 - Matching is **AND-of-tokens** FTS, so "questions burning" matches a name containing both
   words in either order.
 
-- **Results index rail** (right edge, `SearchResultIndexView`). Appears once the results
+- **Results index rail** (right edge, `IndexRailView` fed by `SearchResultIndex`). Appears once the results
   run to ~12+ rows and offer more than one destination. It is the Yap-era global-search
   `sectionIndexTitles` ported forward: a **type icon** at the head of each section
   (`BRCArtIcon` / `BRCCampIcon` / `BRCEventIcon`, `car.fill` for vehicles), then

@@ -2,33 +2,6 @@ import SwiftUI
 import UIKit
 import PlayaDB
 
-/// What a single rail slot draws.
-enum SearchIndexGlyph: Equatable {
-    /// A letter ("A", "#") or an event stop ("M6").
-    case text(String)
-    /// A label dropped for want of vertical room. Still a jump target.
-    case bullet
-    /// A type marker at the head of a section. Asset-catalog image, matching the tab bar
-    /// and More screen icons.
-    case assetIcon(String)
-    /// A type marker with no asset-catalog icon of its own.
-    case symbolIcon(String)
-}
-
-/// One stop on the search results index rail.
-struct SearchIndexEntry: Equatable, Identifiable {
-    /// Slot position in the rendered rail. Stable across redraws of the same result set.
-    let id: Int
-    let glyph: SearchIndexGlyph
-    /// What the scrub bubble says — "Camps — B", "Events — Mon 9a", "Art". Composed, so
-    /// the bubble still reads as a place even when the rail drew a bullet or an icon.
-    let bubbleLabel: String
-    /// `id` of the first row at this stop — what `ScrollViewReader` scrolls to.
-    let anchorID: String
-
-    var isBullet: Bool { glyph == .bullet }
-}
-
 /// Builds the search results index rail.
 ///
 /// This is the Yap-era global-search index ported forward. `BRCDatabaseManager`'s
@@ -66,13 +39,9 @@ enum SearchResultIndex {
     }
 
     /// Uppercased first letter; digits, punctuation and emoji all bucket into "#" — the
-    /// same rule the Yap grouping block used.
+    /// same rule the Yap grouping block used. Shared with the browse lists' A–Z rail.
     static func letterTitle(for name: String) -> String {
-        guard let first = name.first else { return "#" }
-        let upper = String(first).uppercased()
-        guard let scalar = upper.unicodeScalars.first,
-              CharacterSet.letters.contains(scalar) else { return "#" }
-        return upper
+        AlphabetIndex.letterTitle(for: name)
     }
 
     /// Day initial + 12-hour clock hour, e.g. "M6" for Monday 6:00. The day initial is
@@ -105,7 +74,7 @@ enum SearchResultIndex {
     }
 
     /// Type marker glyph, matching the tab bar / More screen iconography.
-    static func markerGlyph(for type: DataObjectType) -> SearchIndexGlyph {
+    static func markerGlyph(for type: DataObjectType) -> IndexRailGlyph {
         switch type {
         case .art: .assetIcon("BRCArtIcon")
         case .camp: .assetIcon("BRCCampIcon")
@@ -121,7 +90,7 @@ enum SearchResultIndex {
     /// A candidate rail stop before it is fitted to the available slots.
     struct Stop: Equatable {
         let anchorID: String
-        let glyph: SearchIndexGlyph
+        let glyph: IndexRailGlyph
         let bubbleLabel: String
         /// Type markers are never dropped when the rail has to shed stops — without them
         /// a restarting A–Z run is unreadable.
@@ -176,7 +145,7 @@ enum SearchResultIndex {
         for sections: [SearchResultSection],
         maxCount: Int,
         calendar: Calendar = brcCalendar
-    ) -> [SearchIndexEntry] {
+    ) -> [IndexRailEntry] {
         let stops = stops(for: sections, calendar: calendar)
         guard isEnabled(for: sections, calendar: calendar), maxCount >= 2 else { return [] }
 
@@ -193,7 +162,7 @@ enum SearchResultIndex {
                     glyph = .bullet
                 }
             }
-            return SearchIndexEntry(
+            return IndexRailEntry(
                 id: slot,
                 glyph: glyph,
                 bubbleLabel: stop.bubbleLabel,
@@ -231,7 +200,7 @@ enum SearchResultIndex {
     /// How many slots fit in `height` points of rail.
     static func maxEntries(forHeight height: CGFloat) -> Int {
         guard height > 0 else { return 0 }
-        return max(0, Int(height / SearchResultIndexView.slotHeight))
+        return max(0, Int(height / IndexRailView.defaultSlotHeight))
     }
 
     /// Whether these results warrant a rail at all, independent of how much vertical room
@@ -272,172 +241,4 @@ enum SearchResultIndex {
         formatter.timeZone = .burningManTimeZone
         return formatter
     }()
-}
-
-/// Right-edge quick-scrub index for the global search results list.
-///
-/// The gesture machinery is `EventHourIndexView`'s: labels measured with a `PreferenceKey`
-/// inside a named coordinate space, a zero-distance `DragGesture` that snaps to the
-/// nearest label, a haptic tick per stop, and a floating bubble naming the target. What
-/// differs is what the stops *are* — see `SearchResultIndex`.
-struct SearchResultIndexView: View {
-    let entries: [SearchIndexEntry]
-    /// Receives the row id to scroll to when the user taps or scrubs onto a stop.
-    let onScrollTo: (String) -> Void
-
-    @Environment(\.themeColors) private var themeColors
-    @State private var activeSlot: Int?
-    @State private var lastActiveEntry: SearchIndexEntry?
-    @State private var labelFrames: [Int: CGRect] = [:]
-    @State private var fingerY: CGFloat = 0
-    @State private var stripWidth: CGFloat = 30
-
-    /// Vertical room one stop occupies. Drives `SearchResultIndex.maxEntries(forHeight:)`,
-    /// so the rail never asks for more slots than it can draw.
-    static let slotHeight: CGFloat = 14
-
-    private static let bubbleSize = CGSize(width: 176, height: 42)
-    private static let horizontalGap: CGFloat = 8
-    private static let verticalGap: CGFloat = 48
-    private static let bubbleOpacity: CGFloat = 0.9
-    private static let stripActiveOpacity: CGFloat = 0.7
-    private static let labelWidth: CGFloat = 22
-    private static let iconSize: CGFloat = 12
-    /// Invisible leading-edge extension. Individual stops have to be small for an A–Z rail
-    /// to fit at all (this is true of the system index too), so the comfortable target is
-    /// the rail as a whole: this padding brings its grabbable width to ~44pt.
-    private static let hiddenTapPadding: CGFloat = 22
-
-    private var isScrubbing: Bool { activeSlot != nil }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(entries) { entry in
-                glyphView(entry.glyph)
-                    .frame(width: Self.labelWidth, height: Self.slotHeight)
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear.preference(
-                                key: SlotFramePreferenceKey.self,
-                                value: [entry.id: geo.frame(in: .named("searchResultIndexStrip"))]
-                            )
-                        }
-                    )
-            }
-        }
-        .padding(.vertical, isScrubbing ? 6 : 0)
-        .padding(.leading, isScrubbing ? 8 : 0)
-        .padding(.trailing, isScrubbing ? 8 : 0)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThinMaterial)
-                .opacity(isScrubbing ? Self.stripActiveOpacity : 0)
-        )
-        .background(
-            GeometryReader { geo in
-                Color.clear.preference(key: StripWidthPreferenceKey.self, value: geo.size.width)
-            }
-        )
-        .coordinateSpace(name: "searchResultIndexStrip")
-        .onPreferenceChange(SlotFramePreferenceKey.self) { labelFrames = $0 }
-        .onPreferenceChange(StripWidthPreferenceKey.self) { stripWidth = $0 }
-        .padding(.leading, Self.hiddenTapPadding)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    fingerY = value.location.y
-                    handleDrag(at: value.location.y)
-                }
-                .onEnded { _ in
-                    withAnimation(.easeOut(duration: 0.18)) {
-                        activeSlot = nil
-                    }
-                }
-        )
-        .animation(.easeInOut(duration: 0.15), value: activeSlot)
-        // Declared before the bubble overlay so the accessibility element's frame is the
-        // rail's own touch area. Applied after, it would grow to enclose the bubble —
-        // which floats well to the left — and point assistive tech (and UI automation) at
-        // empty space over the results.
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Search result index")
-        .overlay(alignment: .topTrailing) {
-            scrubberBubble
-                .offset(
-                    x: -(stripWidth + Self.horizontalGap),
-                    y: fingerY - Self.bubbleSize.height - Self.verticalGap
-                )
-                .opacity(isScrubbing ? Self.bubbleOpacity : 0)
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
-        }
-    }
-
-    @ViewBuilder
-    private func glyphView(_ glyph: SearchIndexGlyph) -> some View {
-        switch glyph {
-        case .text(let title):
-            Text(title)
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(themeColors.primaryColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        case .bullet:
-            Text("•")
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundColor(themeColors.primaryColor)
-        case .assetIcon(let name):
-            Image(name)
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .frame(width: Self.iconSize, height: Self.iconSize)
-                .foregroundColor(themeColors.primaryColor)
-        case .symbolIcon(let name):
-            Image(systemName: name)
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundColor(themeColors.primaryColor)
-        }
-    }
-
-    /// The bubble names the section and the stop, even when the rail drew a bullet or an
-    /// icon — while scrubbing it is the only thing telling you where you have landed.
-    private var scrubberBubble: some View {
-        Text(lastActiveEntry?.bubbleLabel ?? "")
-            .font(.system(size: 19, weight: .semibold))
-            .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            .padding(.horizontal, 10)
-            .foregroundColor(themeColors.primaryColor)
-            .frame(width: Self.bubbleSize.width, height: Self.bubbleSize.height)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(.ultraThinMaterial)
-            )
-    }
-
-    /// Snap to the slot whose center is closest to the touch Y. Touches in the rail's
-    /// padding fall outside every measured rect, so a strict-contains test would drop them
-    /// once `.contentShape(Rectangle())` widens the hit area.
-    private func handleDrag(at y: CGFloat) {
-        guard !labelFrames.isEmpty else { return }
-        let closest = labelFrames.min { lhs, rhs in
-            abs(y - lhs.value.midY) < abs(y - rhs.value.midY)
-        }
-        guard let hit = closest?.key, hit != activeSlot else { return }
-        activeSlot = hit
-        lastActiveEntry = entries.first { $0.id == hit }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        if let anchorID = lastActiveEntry?.anchorID {
-            onScrollTo(anchorID)
-        }
-    }
-}
-
-private struct SlotFramePreferenceKey: PreferenceKey {
-    static var defaultValue: [Int: CGRect] = [:]
-    static func reduce(value: inout [Int: CGRect], nextValue: () -> [Int: CGRect]) {
-        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
-    }
 }

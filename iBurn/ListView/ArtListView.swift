@@ -69,6 +69,7 @@ struct ArtListView: View {
                             EmptyView()
                         }
                     }
+                    .padding(.trailing, indexRailInset)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         onSelect(row.object)
@@ -76,6 +77,7 @@ struct ArtListView: View {
                 }
             }
             .listStyle(.plain)
+            .alphabetIndexRail(rows: indexRailRows, accessibilityLabel: "Art index")
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search art, artists, descriptions"
@@ -141,6 +143,17 @@ struct ArtListView: View {
     }
 
     // MARK: - Helper Properties
+
+    /// Rows the A–Z rail indexes: whatever the list is showing right now, so search and
+    /// the filters shorten the rail along with the list.
+    private var indexRailRows: [AlphabetIndexRow] {
+        viewModel.filteredItems.map { AlphabetIndexRow(id: $0.object.uid, name: $0.object.name) }
+    }
+
+    /// Room the rows give up to the rail so their trailing text doesn't run underneath it.
+    private var indexRailInset: CGFloat {
+        AlphabetIndex.isEnabled(rowCount: viewModel.filteredItems.count) ? AlphabetIndex.railRowInset : 0
+    }
 
     /// Icon name for filter button (filled when filters are active)
     private var filterIconName: String {

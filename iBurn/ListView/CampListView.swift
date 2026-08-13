@@ -43,6 +43,7 @@ struct CampListView: View {
                     ) { _ in
                         EmptyView()
                     }
+                    .padding(.trailing, indexRailInset)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         onSelect(row.object)
@@ -50,6 +51,7 @@ struct CampListView: View {
                 }
             }
             .listStyle(.plain)
+            .alphabetIndexRail(rows: indexRailRows, accessibilityLabel: "Camp index")
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search camps, descriptions, hometowns"
@@ -110,6 +112,17 @@ struct CampListView: View {
                 }
             }
         }
+    }
+
+    /// Rows the A–Z rail indexes: whatever the list is showing right now, so search and
+    /// the favorites-only filter shorten the rail along with the list.
+    private var indexRailRows: [AlphabetIndexRow] {
+        viewModel.filteredItems.map { AlphabetIndexRow(id: $0.object.uid, name: $0.object.name) }
+    }
+
+    /// Room the rows give up to the rail so their trailing text doesn't run underneath it.
+    private var indexRailInset: CGFloat {
+        AlphabetIndex.isEnabled(rowCount: viewModel.filteredItems.count) ? AlphabetIndex.railRowInset : 0
     }
 
     private var filterIconName: String {

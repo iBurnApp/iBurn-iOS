@@ -413,7 +413,7 @@ final class GlobalSearchFilterTests: XCTestCase {
         let sections = [section(.camp, title: "Camps", names: letters.map { $0 + "amp" })]
         let entries = SearchResultIndex.entries(for: sections, maxCount: 40)
         XCTAssertEqual(entries.first?.glyph, .assetIcon("BRCCampIcon"))
-        XCTAssertEqual(entries.dropFirst().map(\.glyph), letters.map { SearchIndexGlyph.text($0) })
+        XCTAssertEqual(entries.dropFirst().map(\.glyph), letters.map { IndexRailGlyph.text($0) })
         XCTAssertFalse(entries.contains { $0.isBullet })
         XCTAssertEqual(entries.map(\.id), Array(0..<(letters.count + 1)), "Slots are stable ids")
     }
@@ -478,7 +478,7 @@ final class GlobalSearchFilterTests: XCTestCase {
         XCTAssertEqual(entries.first?.glyph, .assetIcon("BRCEventIcon"))
         XCTAssertEqual(entries.dropFirst().map(\.glyph),
                        ["M6", "M7", "M8", "M9", "M10", "M11", "M12",
-                        "M1", "M2", "M3", "M4", "M5", "M6", "M7"].map { SearchIndexGlyph.text($0) })
+                        "M1", "M2", "M3", "M4", "M5", "M6", "M7"].map { IndexRailGlyph.text($0) })
     }
 
     func testMixedResultsGiveIconsLettersThenNumbers() throws {

@@ -275,7 +275,10 @@ struct GlobalSearchView: View {
                                 maxCount: SearchResultIndex.maxEntries(forHeight: geo.size.height - 24)
                             )
                             if !entries.isEmpty {
-                                SearchResultIndexView(entries: entries) { anchorID in
+                                IndexRailView(
+                                    entries: entries,
+                                    accessibilityLabel: "Search result index"
+                                ) { anchorID in
                                     withAnimation(.easeOut(duration: 0.15)) {
                                         proxy.scrollTo(anchorID, anchor: .top)
                                     }
