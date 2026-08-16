@@ -354,6 +354,25 @@ internal class PlayaDBImpl: PlayaDB {
             try db.execute(sql: "ALTER TABLE user_map_pins ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0")
         }
 
+        // v7: prefix indexes on the FTS5 tables.
+        //
+        // Live search now matches prefixes (`matching(searchText:)` → `temp*`), which an
+        // FTS table without `prefix=` answers by scanning the term dictionary. The option
+        // is part of the CREATE statement, and `setupFTS5Tables` creates with
+        // IF NOT EXISTS — so every database that already has FTS tables (every upgrade,
+        // and every install restored from the pre-baked seed) would keep the old
+        // definition forever. Drop the stale tables here; `setupFTS5Tables`, which runs
+        // right after migration, recreates them with `prefix=` and rebuilds the index
+        // from the content tables. External-content FTS tables store no source data, so
+        // dropping one loses nothing but the index.
+        migrator.registerMigration("v7-fts-prefix-index") { db in
+            for config in Self.ftsTableConfigs {
+                guard let sql = try Self.ftsTableDefinition(db, table: config.ftsTable),
+                      !sql.contains("prefix=") else { continue }
+                try db.execute(sql: "DROP TABLE IF EXISTS \(config.ftsTable)")
+            }
+        }
+
         try migrator.migrate(dbQueue)
 
         // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
@@ -407,8 +426,28 @@ internal class PlayaDBImpl: PlayaDB {
         FTSTableConfig(table: "mv_objects", indexedColumns: ["name", "description", "artist", "hometown", "tags_text"]),
     ]
 
+    /// FTS5 `prefix=` index sizes. Live search matches prefixes on every keystroke
+    /// (`matching(searchText:)` builds `temp*`), and without a prefix index FTS5 answers
+    /// `x*` by scanning every term in the dictionary that could start with `x` — the
+    /// shortest, earliest-typed prefixes being the most expensive. Indexing 2/3/4-char
+    /// prefixes covers the keystrokes users actually wait on; 5+ chars narrow enough that
+    /// the term scan is cheap. A 1-char index was skipped deliberately: it is nearly as
+    /// large as the whole term index and matches most of the corpus anyway.
+    private static let ftsPrefixSizes = "2 3 4"
+
     private func setupFTS5Tables(_ db: Database) throws {
         for config in Self.ftsTableConfigs {
+            // An FTS table created before `prefix=` was added answers prefix queries by
+            // term scan. Drop it so the CREATE below rebuilds it with the prefix index —
+            // external-content tables hold no source data, so nothing is lost.
+            // (The v7 migration does the same for existing installs; this is the
+            // belt-and-braces path for seed-restored databases.)
+            let existingSQL = try Self.ftsTableDefinition(db, table: config.ftsTable)
+            if let existingSQL, !existingSQL.contains("prefix=") {
+                try db.execute(sql: "DROP TABLE IF EXISTS \(config.ftsTable)")
+            }
+            let needsRebuild = existingSQL == nil || !existingSQL!.contains("prefix=")
+
             let indexed = config.indexedColumns.joined(separator: ",\n                    ")
             try db.execute(sql: """
                 CREATE VIRTUAL TABLE IF NOT EXISTS \(config.ftsTable) USING fts5(
@@ -416,11 +455,26 @@ internal class PlayaDBImpl: PlayaDB {
                     \(indexed),
                     content=\(config.table),
                     content_rowid=rowid,
-                    tokenize='porter unicode61'
+                    tokenize='porter unicode61',
+                    prefix='\(Self.ftsPrefixSizes)'
                 )
             """)
+            // A freshly created external-content table is empty until rebuilt. Cheap
+            // no-op on a first-run database (the content table is empty too).
+            if needsRebuild {
+                try db.execute(sql: "INSERT INTO \(config.ftsTable)(\(config.ftsTable)) VALUES('rebuild')")
+            }
             try setupFTS5Triggers(db, config: config)
         }
+    }
+
+    /// The `CREATE VIRTUAL TABLE` statement recorded for an FTS table, or nil if absent.
+    private static func ftsTableDefinition(_ db: Database, table: String) throws -> String? {
+        try String.fetchOne(
+            db,
+            sql: "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+            arguments: [table]
+        )
     }
 
     /// Keeps an external-content FTS5 table in sync with its content table.

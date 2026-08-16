@@ -14,7 +14,8 @@ final class SchemaMigrationTests: XCTestCase {
         "v3-visit-status",
         "v4-audio-tour",
         "v5-calendar-entries",
-        "v6-pin-sync"
+        "v6-pin-sync",
+        "v7-fts-prefix-index"
     ]
 
     var tempDBPath: String!

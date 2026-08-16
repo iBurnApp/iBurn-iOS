@@ -192,7 +192,13 @@ struct GlobalSearchView: View {
     /// Room the rows give up to the index rail, so their trailing text doesn't run
     /// underneath it. Zero when the results are too short for a rail.
     private var indexRailInset: CGFloat {
-        SearchResultIndex.isEnabled(for: viewModel.sections) ? SearchResultIndex.railRowInset : 0
+        // Both this and the rail overlay read the stops the view model built when the
+        // results landed. Deriving them here instead cost two O(n) passes — one of them
+        // formatting a date per event row — on every body evaluation, i.e. on every
+        // keystroke's worth of state change.
+        SearchResultIndex.isEnabled(stops: viewModel.indexStops, totalRows: viewModel.totalResultRows)
+            ? SearchResultIndex.railRowInset
+            : 0
     }
 
     private var filterIconName: String {
@@ -271,7 +277,8 @@ struct GlobalSearchView: View {
                     .overlay(alignment: .trailing) {
                         GeometryReader { geo in
                             let entries = SearchResultIndex.entries(
-                                for: viewModel.sections,
+                                stops: viewModel.indexStops,
+                                totalRows: viewModel.totalResultRows,
                                 maxCount: SearchResultIndex.maxEntries(forHeight: geo.size.height - 24)
                             )
                             if !entries.isEmpty {

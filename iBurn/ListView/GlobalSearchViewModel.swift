@@ -32,8 +32,32 @@ final class GlobalSearchViewModel: ObservableObject {
     /// navigation bar, where the app's other list screens keep their filter buttons.
     @Published var isShowingFilters: Bool = false
 
-    @Published var sections: [SearchResultSection] = []
+    @Published var sections: [SearchResultSection] = [] {
+        didSet {
+            indexStops = pendingIndexStops ?? SearchResultIndex.stops(for: sections)
+            pendingIndexStops = nil
+        }
+    }
     @Published var isSearching: Bool = false
+
+    /// Index-rail stops for the current results, computed once per result set.
+    ///
+    /// The rail used to be derived inside `GlobalSearchView.body`, where `isEnabled(for:)`
+    /// and `entries(for:maxCount:)` each walked every row — two O(n) passes, one of them
+    /// running a `DateFormatter` per event, on every single body evaluation. Hanging the
+    /// stops off the results instead means a keystroke pays for them once.
+    @Published private(set) var indexStops: [SearchResultIndex.Stop] = []
+
+    /// Stops computed off the main actor alongside the results they belong to. `sections`'
+    /// `didSet` consumes this instead of recomputing, so the hot path never walks the rows
+    /// on main; every other assignment (AI merge, clearing) falls back to computing here.
+    private var pendingIndexStops: [SearchResultIndex.Stop]?
+
+    /// Rows across all sections. Kept beside `indexStops` so the rail's enablement check
+    /// doesn't have to re-count them per render either.
+    var totalResultRows: Int {
+        sections.reduce(0) { $0 + $1.items.count }
+    }
 
     /// Favorite state for the rows currently on screen, keyed by
     /// `SearchResultItem.favoriteIdentity` (an `EventFavoriteKey` composite for event
@@ -191,9 +215,17 @@ final class GlobalSearchViewModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let results = try await self.fetchResults(query: query, scope: scope, filter: filter)
+                // Fetch, sort, dedup and rail-stop construction all happen off the main
+                // actor; only the assignment below hops back.
+                let results = try await Self.fetchResults(
+                    playaDB: self.playaDB,
+                    query: query,
+                    scope: scope,
+                    filter: filter
+                )
                 guard !Task.isCancelled else { return }
 
+                self.pendingIndexStops = results.stops
                 self.sections = results.sections
                 self.isSearching = false
                 await self.refreshFavorites()
@@ -217,76 +249,136 @@ final class GlobalSearchViewModel: ObservableObject {
         }
     }
 
+    /// Everything a finished search hands back to the UI.
+    struct SearchResults {
+        let sections: [SearchResultSection]
+        /// Keyed by *object* uid (the parent event uid for events) because that's the
+        /// identifier the AI service returns.
+        let matchedUIDs: Set<String>
+        /// Built here so the index rail doesn't have to walk the rows again on the main
+        /// actor. See `GlobalSearchViewModel.indexStops`.
+        let stops: [SearchResultIndex.Stop]
+    }
+
     /// Per-type filtered fetches, skipping any table the scope excludes.
     ///
-    /// `matchedUIDs` is keyed by *object* uid (the parent event uid for events) because
-    /// that's the identifier the AI service returns.
-    private func fetchResults(
+    /// `nonisolated` and `static` on purpose: the per-item work that follows each fetch —
+    /// `localizedStandardCompare` sorting, the occurrence dedup's calendar math, and the
+    /// rail's per-row title formatting — used to resume back on the main actor, so a
+    /// several-hundred-row result set stalled the run loop while the next keystroke waited.
+    /// The four fetches are issued concurrently for the same reason: `.all` scope no longer
+    /// pays four round trips end to end.
+    nonisolated private static func fetchResults(
+        playaDB: PlayaDB,
         query: String,
         scope: GlobalSearchScope,
         filter: GlobalSearchFilter
-    ) async throws -> (sections: [SearchResultSection], matchedUIDs: Set<String>) {
+    ) async throws -> SearchResults {
+        async let artResults = fetchArt(playaDB: playaDB, query: query, scope: scope, filter: filter)
+        async let campResults = fetchCamps(playaDB: playaDB, query: query, scope: scope, filter: filter)
+        async let eventResults = fetchEvents(playaDB: playaDB, query: query, scope: scope, filter: filter)
+        async let vehicleResults = fetchVehicles(playaDB: playaDB, query: query, scope: scope, filter: filter)
+
+        let art = try await artResults
+        let camps = try await campResults
+        let occurrences = try await eventResults
+        let vehicles = try await vehicleResults
+
+        try Task.checkCancellation()
+
         var sections: [SearchResultSection] = []
         var matchedUIDs: Set<String> = []
 
-        if scope.allows(.art) {
-            let art = try await playaDB.fetchArt(
-                filter: ArtFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
-            )
-            matchedUIDs.formUnion(art.map(\.uid))
-            if !art.isEmpty {
-                sections.append(SearchResultSection(
-                    id: .art,
-                    title: "Art",
-                    items: Self.sortedByName(art.map(SearchResultItem.art))
-                ))
-            }
+        matchedUIDs.formUnion(art.map(\.uid))
+        if !art.isEmpty {
+            sections.append(SearchResultSection(
+                id: .art,
+                title: "Art",
+                items: sortedByName(art.map(SearchResultItem.art))
+            ))
         }
 
-        if scope.allows(.camp) {
-            let camps = try await playaDB.fetchCamps(
-                filter: CampFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
-            )
-            matchedUIDs.formUnion(camps.map(\.uid))
-            if !camps.isEmpty {
-                sections.append(SearchResultSection(
-                    id: .camp,
-                    title: "Camps",
-                    items: Self.sortedByName(camps.map(SearchResultItem.camp))
-                ))
-            }
+        matchedUIDs.formUnion(camps.map(\.uid))
+        if !camps.isEmpty {
+            sections.append(SearchResultSection(
+                id: .camp,
+                title: "Camps",
+                items: sortedByName(camps.map(SearchResultItem.camp))
+            ))
         }
 
-        if scope.allows(.event) {
-            let occurrences = try await playaDB.fetchEvents(
-                filter: Self.eventFilter(query: query, filter: filter)
+        let deduped = dedupedOccurrences(occurrences, filter: filter)
+        matchedUIDs.formUnion(deduped.map(\.event.uid))
+        if !deduped.isEmpty {
+            sections.append(
+                SearchResultSection(id: .event, title: "Events", items: deduped.map(SearchResultItem.event))
             )
-            let deduped = Self.dedupedOccurrences(occurrences, filter: filter)
-            matchedUIDs.formUnion(deduped.map(\.event.uid))
-            if !deduped.isEmpty {
-                sections.append(
-                    SearchResultSection(id: .event, title: "Events", items: deduped.map(SearchResultItem.event))
+        }
+
+        matchedUIDs.formUnion(vehicles.map(\.uid))
+        if !vehicles.isEmpty {
+            sections.append(
+                SearchResultSection(
+                    id: .mutantVehicle,
+                    title: "Vehicles",
+                    items: sortedByName(vehicles.map(SearchResultItem.mutantVehicle))
                 )
-            }
-        }
-
-        if scope.allows(.mutantVehicle) {
-            let vehicles = try await playaDB.fetchMutantVehicles(
-                filter: MutantVehicleFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
             )
-            matchedUIDs.formUnion(vehicles.map(\.uid))
-            if !vehicles.isEmpty {
-                sections.append(
-                    SearchResultSection(
-                        id: .mutantVehicle,
-                        title: "Vehicles",
-                        items: Self.sortedByName(vehicles.map(SearchResultItem.mutantVehicle))
-                    )
-                )
-            }
         }
 
-        return (sections, matchedUIDs)
+        try Task.checkCancellation()
+
+        return SearchResults(
+            sections: sections,
+            matchedUIDs: matchedUIDs,
+            stops: SearchResultIndex.stops(for: sections)
+        )
+    }
+
+    nonisolated private static func fetchArt(
+        playaDB: PlayaDB,
+        query: String,
+        scope: GlobalSearchScope,
+        filter: GlobalSearchFilter
+    ) async throws -> [ArtObject] {
+        guard scope.allows(.art) else { return [] }
+        return try await playaDB.fetchArt(
+            filter: ArtFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
+        )
+    }
+
+    nonisolated private static func fetchCamps(
+        playaDB: PlayaDB,
+        query: String,
+        scope: GlobalSearchScope,
+        filter: GlobalSearchFilter
+    ) async throws -> [CampObject] {
+        guard scope.allows(.camp) else { return [] }
+        return try await playaDB.fetchCamps(
+            filter: CampFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
+        )
+    }
+
+    nonisolated private static func fetchEvents(
+        playaDB: PlayaDB,
+        query: String,
+        scope: GlobalSearchScope,
+        filter: GlobalSearchFilter
+    ) async throws -> [EventObjectOccurrence] {
+        guard scope.allows(.event) else { return [] }
+        return try await playaDB.fetchEvents(filter: eventFilter(query: query, filter: filter))
+    }
+
+    nonisolated private static func fetchVehicles(
+        playaDB: PlayaDB,
+        query: String,
+        scope: GlobalSearchScope,
+        filter: GlobalSearchFilter
+    ) async throws -> [MutantVehicleObject] {
+        guard scope.allows(.mutantVehicle) else { return [] }
+        return try await playaDB.fetchMutantVehicles(
+            filter: MutantVehicleFilter(searchText: query, onlyFavorites: filter.onlyFavorites)
+        )
     }
 
     /// Case- and diacritic-insensitive, numeric-aware name order.

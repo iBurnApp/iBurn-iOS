@@ -156,6 +156,26 @@ final class GlobalSearchViewModelTests: XCTestCase {
         }
     }
 
+    // MARK: - Index Rail Memoization
+
+    /// The rail reads `indexStops` instead of walking the rows in `body`, so the memo has
+    /// to match what the results actually say — including after they're cleared.
+    func testIndexStopsMatchTheCurrentSections() async {
+        XCTAssertTrue(viewModel.indexStops.isEmpty)
+
+        viewModel.searchText = "Burning"
+        let hasResults = await eventually { !self.viewModel.sections.isEmpty }
+        XCTAssertTrue(hasResults)
+
+        XCTAssertEqual(viewModel.indexStops, SearchResultIndex.stops(for: viewModel.sections))
+        XCTAssertEqual(viewModel.totalResultRows, viewModel.sections.reduce(0) { $0 + $1.items.count })
+
+        viewModel.searchText = ""
+        let cleared = await eventually { self.viewModel.sections.isEmpty }
+        XCTAssertTrue(cleared)
+        XCTAssertTrue(viewModel.indexStops.isEmpty, "Cleared results must clear the rail too")
+    }
+
     // MARK: - Scope
 
     func testInitialScopeIsAll() {

@@ -525,6 +525,48 @@ final class GlobalSearchFilterTests: XCTestCase {
         ))
     }
 
+    // MARK: Prebuilt stops
+
+    /// The render path feeds stops the view model already built rather than deriving them
+    /// per body evaluation, so the two entry points have to agree exactly.
+    func testEntriesFromPrebuiltStopsMatchTheSectionOverload() {
+        let letters = (0..<26).map { String(UnicodeScalar(UInt8(65 + $0))) }
+        let sections = [
+            section(.camp, title: "Camps", names: letters.map { $0 + "amp" }),
+            section(.art, title: "Art", names: names(14, prefix: "Art ")),
+        ]
+        let stops = SearchResultIndex.stops(for: sections)
+        let totalRows = sections.reduce(0) { $0 + $1.items.count }
+
+        for maxCount in [2, 8, 12, 20, 40] {
+            XCTAssertEqual(
+                SearchResultIndex.entries(stops: stops, totalRows: totalRows, maxCount: maxCount)
+                    .map(\.anchorID),
+                SearchResultIndex.entries(for: sections, maxCount: maxCount).map(\.anchorID),
+                "maxCount \(maxCount)"
+            )
+        }
+    }
+
+    func testIsEnabledFromPrebuiltStopsMatchesTheSectionOverload() {
+        let letters = (0..<26).map { String(UnicodeScalar(UInt8(65 + $0))) }
+        let cases = [
+            [section(.camp, title: "Camps", names: names(20, prefix: "Alpha "))],
+            [section(.camp, title: "Camps", names: ["Alpha", "Beta", "Cedar"])],
+            [section(.camp, title: "Camps", names: letters.map { $0 + "amp" })],
+            [],
+        ]
+        for sections in cases {
+            XCTAssertEqual(
+                SearchResultIndex.isEnabled(
+                    stops: SearchResultIndex.stops(for: sections),
+                    totalRows: sections.reduce(0) { $0 + $1.items.count }
+                ),
+                SearchResultIndex.isEnabled(for: sections)
+            )
+        }
+    }
+
     // MARK: - Name Sorting
 
     func testSortedByNameIsCaseInsensitive() {

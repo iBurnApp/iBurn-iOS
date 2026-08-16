@@ -146,8 +146,22 @@ enum SearchResultIndex {
         maxCount: Int,
         calendar: Calendar = brcCalendar
     ) -> [IndexRailEntry] {
-        let stops = stops(for: sections, calendar: calendar)
-        guard isEnabled(for: sections, calendar: calendar), maxCount >= 2 else { return [] }
+        entries(
+            stops: stops(for: sections, calendar: calendar),
+            totalRows: sections.reduce(0) { $0 + $1.items.count },
+            maxCount: maxCount
+        )
+    }
+
+    /// `entries(for:maxCount:)` over stops that were already built — the render path, which
+    /// gets them from `GlobalSearchViewModel.indexStops` rather than walking every row twice
+    /// per body evaluation.
+    static func entries(
+        stops: [Stop],
+        totalRows: Int,
+        maxCount: Int
+    ) -> [IndexRailEntry] {
+        guard isEnabled(stops: stops, totalRows: totalRows), maxCount >= 2 else { return [] }
 
         let kept = fitted(stops: stops, maxCount: maxCount)
         guard kept.count >= 2 else { return [] }
@@ -211,9 +225,16 @@ enum SearchResultIndex {
     /// share one letter produces a marker and a letter that both scroll to the same row,
     /// which is a rail that cannot take you anywhere.
     static func isEnabled(for sections: [SearchResultSection], calendar: Calendar = brcCalendar) -> Bool {
-        let totalRows = sections.reduce(0) { $0 + $1.items.count }
+        isEnabled(
+            stops: stops(for: sections, calendar: calendar),
+            totalRows: sections.reduce(0) { $0 + $1.items.count }
+        )
+    }
+
+    /// `isEnabled(for:)` over already-built stops. See `entries(stops:totalRows:maxCount:)`.
+    static func isEnabled(stops: [Stop], totalRows: Int) -> Bool {
         guard totalRows >= minimumRowCount else { return false }
-        return Set(stops(for: sections, calendar: calendar).map(\.anchorID)).count >= 2
+        return Set(stops.map(\.anchorID)).count >= 2
     }
 
     /// Trailing room a row must leave for the rail.
