@@ -723,6 +723,11 @@ dismissing the Map Filter sheet. It is an automation-only crash, not a user-visi
 scroll ref (the one `drag` needs to page the card) to drop out of the AX tree periodically —
 relaunching the app brings it back.
 
+**Automation hazard: bottom-of-sheet switches.** Map Filter switch rows near the bottom of
+the sheet (e.g. "Show Camp Names (Zoomed)" at y≈900) sit under the floating tab bar; `tap`
+and `batch` report success but the switch never flips. Write the backing preference key in
+the app container's plist instead (e.g. `kBRCShowBigCampNamesKey`) and relaunch.
+
 ### Nearby screen (list) — event filter, window, ordering
 
 The full-screen Nearby list (tab, or the card's "See all") shares its event filter with the
