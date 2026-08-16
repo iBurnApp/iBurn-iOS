@@ -185,3 +185,68 @@ Opus verification agent, orchestrated from the main session):
 - Last API refresh was Aug 11; refreshing again this session
   (fetch_and_geocode → generate_all → apply_placement → seed regen), private
   submodule remote only (embargo: labels unlock Aug 23, boundaries/art Aug 30).
+
+### 2026 API refresh (Aug 16) — completed
+
+Pipeline run exactly as documented in `Docs/2026-07-18-api-data-refresh.md` +
+`Docs/2026-08-09-merge-and-2026-placement-data.md`:
+
+1. `node src/cli/fetch_and_geocode.js --year 2026 …` (sandbox disabled;
+   `api.burningman.org` is outside the allowlist). Succeeded on the first
+   attempt — no `update.json` clobber to recover from this time.
+   Geocoder: 1175/1187 camps placed from addresses; the 6 hard failures are the
+   usual plaza/airport-road strings (Orphan Asylum, Nom De Plume, Bo_b Squad,
+   Venice Red Light, Flybynyte, Black Rock Travel Agency).
+2. `node src/cli/generate_all.js -d ../../data/2026` — no geo output changed
+   (layout/GIS inputs untouched, as expected). Geocoder bundle rebuild skipped.
+3. `node scripts/apply_placement.js --year 2026`.
+
+**Counts (Aug 11 → Aug 16)**
+
+| | before | after |
+|---|---|---|
+| camps | 1190 | 1187 |
+| camps with GPS | 1183 | 1180 |
+| camps with `location_string` | 1185 | 1182 |
+| art | 331 | 334 |
+| art with GPS | 331 | 334 |
+| events (raw rows) | 2606 | 2635 |
+| event occurrences (raw) | 5277 | 5316 |
+| mutant vehicles | 495 | 494 |
+| `camp_outlines`/`camp_labels` features | 1183 | 1178 |
+
+5 duplicate event uids in the feed (2635 rows → 2630 unique), deduped at
+import — down from 19 dupes on Aug 11.
+
+**Placement re-apply notes.** 13 camps get outlines only from the direct
+polygon export, 0 from the OCR fallback, 9 have no footprint at all, and 5
+placement records no longer match any camp in the API roster (those 5 dropped
+out of the geojson: 1183 → 1178). New this refresh: **16 fill-only conflicts**
+where the API's own location fields now disagree with the drop (Swan Forest,
+ta-keel-ya, Memento Mori, dimensions/exact_location wording on a few others).
+The API value is kept in every case, which is the correct precedence — the API
+is now the fresher source for text, the drop only contributes geometry. Aug 9
+logged zero conflicts because the drop was built from that day's API snapshot.
+
+**Seeds.** `swift run --package-path Packages/PlayaSeed playa-seed --fetch-media`
+→ `iBurn/PlayaDB-2026.zip` + `iBurnWatch/PlayaDB-2026.zip` (2 × 3051 KB;
+334 art / 1187 camps / 5311 occurrences / 494 MVs / 1580 thumbnail colours).
+5 new thumbnails downloaded and committed into `MediaFiles.bundle`.
+
+**Legacy Yap seed (`iBurn/iBurn-2026.zip`) is PENDING.** Part C of
+`Docs/2026-07-18-api-data-refresh.md` is a manual simulator procedure (fresh
+install → let the JSON import finish → zip the container's
+`Application Support/iBurn/iBurn-2026` folder), with no scripted equivalent, so
+it was not run here. The bundled zip is still the Aug 11 harvest; a first launch
+on a build shipping today's JSON will restore that seed and then re-import,
+which is correct but slow. Re-harvest before cutting the next build.
+
+**Validation.** `swift test --package-path Packages/PlayaDB` → 330 passing,
+0 failures. Ship guards clean (no `MOCK_LOCATIONS` sentinel, no 2025 fixture
+markers in the generated geojson).
+
+**Commits (local only — nothing pushed to any remote, `public` never contacted):**
+
+- submodule `b8934c2` — 2026 API refresh (Aug 16) + placement re-applied
+- submodule `4743806` — 2026 media: fetch 5 thumbnails new in the Aug 16 API data
+- app `0b4295fe` — Bump iBurn-Data: 2026 API refresh (Aug 16)
