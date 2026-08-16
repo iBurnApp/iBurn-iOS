@@ -116,12 +116,14 @@ final class EmbargoTierTests: XCTestCase {
     private func makeCampLayers(showCampBoundaries: Bool = true,
                                 showCampBoundariesAlways: Bool = false,
                                 showBigCampNames: Bool = true,
+                                embargoAllowsBoundaries: Bool = true,
                                 embargoAllowsCamps: Bool = true,
                                 zoomLevel: Double) -> CampLayerVisibility {
         CampLayerVisibility.resolve(
             showCampBoundaries: showCampBoundaries,
             showCampBoundariesAlways: showCampBoundariesAlways,
             showBigCampNames: showBigCampNames,
+            embargoAllowsBoundaries: embargoAllowsBoundaries,
             embargoAllowsCamps: embargoAllowsCamps,
             zoomLevel: zoomLevel
         )
@@ -130,6 +132,7 @@ final class EmbargoTierTests: XCTestCase {
     func testCampLayersHiddenWhileEmbargoedRegardlessOfSettings() {
         for zoomLevel in [14.0, 15.0, 17.0, 20.0] {
             let visibility = makeCampLayers(showCampBoundariesAlways: true,
+                                            embargoAllowsBoundaries: false,
                                             embargoAllowsCamps: false,
                                             zoomLevel: zoomLevel)
             XCTAssertFalse(visibility.boundariesVisible)
@@ -138,6 +141,40 @@ final class EmbargoTierTests: XCTestCase {
             // Nothing is drawing camp names, so a leaked pin must not silently fill in.
             XCTAssertFalse(visibility.campNamesDrawnByStyleLayer)
         }
+    }
+
+    /// The week between the camp-location release and gates: camp names may draw, but the
+    /// BMorg placement polygons may not.
+    func testBoundariesStayHiddenAfterCampUnlockUntilGatesOpen() {
+        let visibility = makeCampLayers(showCampBoundariesAlways: true,
+                                        embargoAllowsBoundaries: false,
+                                        embargoAllowsCamps: true,
+                                        zoomLevel: 16)
+        XCTAssertFalse(visibility.boundariesVisible)
+        XCTAssertNil(visibility.boundariesMinimumZoom)
+        XCTAssertTrue(visibility.labelsVisible)
+        XCTAssertTrue(visibility.campNamesDrawnByStyleLayer)
+    }
+
+    /// `CampLayerVisibility.current` must read the boundary layer off the art tier, so the
+    /// polygons only appear once gates open — a week after camp locations unlock.
+    func testCurrentBoundaryVisibilityTracksTheArtTier() throws {
+        let originalBoundaries = UserSettings.showCampBoundaries
+        let originalNames = UserSettings.showBigCampNames
+        defer {
+            UserSettings.showCampBoundaries = originalBoundaries
+            UserSettings.showBigCampNames = originalNames
+        }
+        UserSettings.showCampBoundaries = true
+        UserSettings.showBigCampNames = true
+
+        try timeTravel(to: "2026-08-25T12:00:00Z")  // after CampLocationUnlock, before gates
+        XCTAssertTrue(BRCEmbargo.canShowCampLocations())
+        XCTAssertFalse(BRCEmbargo.canShowArtLocations())
+        XCTAssertFalse(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible)
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")  // gates open
+        XCTAssertTrue(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible)
     }
 
     func testCampLayersFollowSettingsOnceUnlocked() {

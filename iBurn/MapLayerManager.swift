@@ -48,16 +48,21 @@ struct CampLayerVisibility: Equatable {
     ///   - showCampBoundaries: `UserSettings.showCampBoundaries`.
     ///   - showCampBoundariesAlways: `UserSettings.showCampBoundariesAlways`.
     ///   - showBigCampNames: `UserSettings.showBigCampNames`.
-    ///   - embargoAllowsCamps: `BRCEmbargo.canShowCampLocations()`. The camp geojson ships
-    ///     in the app bundle, so until the camp tier clears both layers stay hidden
-    ///     regardless of settings.
+    ///   - embargoAllowsBoundaries: `BRCEmbargo.canShowArtLocations()`. The boundary
+    ///     polygons are BMorg placement geometry, which stays embargoed until gates open —
+    ///     the *art* tier — not the week-early camp-location release.
+    ///   - embargoAllowsCamps: `BRCEmbargo.canShowCampLocations()`. Camp names at their
+    ///     placement centroid are camp-location data, so the label layer rides the camp
+    ///     tier. Both geojsons ship in the app bundle, so until their tier clears the
+    ///     matching layer stays hidden regardless of settings.
     ///   - zoomLevel: the map's current zoom, for `campNamesDrawnByStyleLayer`.
     static func resolve(showCampBoundaries: Bool,
                         showCampBoundariesAlways: Bool,
                         showBigCampNames: Bool,
+                        embargoAllowsBoundaries: Bool,
                         embargoAllowsCamps: Bool,
                         zoomLevel: Double) -> CampLayerVisibility {
-        let boundariesVisible = showCampBoundaries && embargoAllowsCamps
+        let boundariesVisible = showCampBoundaries && embargoAllowsBoundaries
         let labelsVisible = showBigCampNames && embargoAllowsCamps
         return CampLayerVisibility(
             boundariesVisible: boundariesVisible,
@@ -75,6 +80,7 @@ struct CampLayerVisibility: Equatable {
         resolve(showCampBoundaries: UserSettings.showCampBoundaries,
                 showCampBoundariesAlways: UserSettings.showCampBoundariesAlways,
                 showBigCampNames: UserSettings.showBigCampNames,
+                embargoAllowsBoundaries: BRCEmbargo.canShowArtLocations(),
                 embargoAllowsCamps: BRCEmbargo.canShowCampLocations(),
                 zoomLevel: zoomLevel)
     }
