@@ -25,8 +25,62 @@ public class StaticAnnotationDataSource: NSObject {
 }
 
 extension StaticAnnotationDataSource: AnnotationDataSource {
+    /// Filtered on read, not at init: this data source is built once and handed to a map that
+    /// may outlive an embargo *change* in either direction, and the annotations it holds are
+    /// the pins a detail screen or a list's "Show on Map" asked for. Every caller already
+    /// gates its own fetch at or above these tiers, so this subtracts nothing legitimate —
+    /// it is the last line before a coordinate reaches a map view.
     public func allAnnotations() -> [MLNAnnotation] {
-        return annotations
+        return annotations.filter { AnnotationEmbargo.allows($0) }
+    }
+}
+
+/// The embargo tier an already-built annotation answers to.
+///
+/// Annotation objects are the one place both object graphs meet — `PlayaObjectAnnotation`
+/// from PlayaDB, `DataObjectAnnotation` from Yap — so this is where a map can ask "may this
+/// pin be drawn?" without knowing which side built it. Annotations that carry no placement
+/// data (user map points, the Man, ordinary `MLNAnnotation`s) are always allowed.
+///
+/// These are the *single-object* tiers: a pin already selected by the user. The bulk map
+/// paths pick their own, stricter, tier — see `MapEmbargo`.
+enum AnnotationEmbargo {
+    static func allows(_ annotation: MLNAnnotation) -> Bool {
+        if let playa = annotation as? PlayaObjectAnnotation {
+            return allows(playa)
+        }
+        if let legacy = annotation as? DataObjectAnnotation {
+            return BRCEmbargo.canShowLocation(for: legacy.object)
+        }
+        return true
+    }
+
+    private static func allows(_ annotation: PlayaObjectAnnotation) -> Bool {
+        switch annotation.object {
+        case .art:
+            return MapEmbargo.allowsArtLocation()
+        case .camp:
+            return MapEmbargo.allowsSingleCampLocation()
+        case .eventOccurrence(let occurrence):
+            return allowsEvent(locatedAtArt: occurrence.event.locatedAtArt?.isEmpty == false)
+        case .event(let event):
+            return allowsEvent(locatedAtArt: event.locatedAtArt?.isEmpty == false)
+        case .none:
+            // Built from raw coordinates with no object behind it; fall back to the type in
+            // the id, and read an event with no payload as art-tier — the stricter guess.
+            switch annotation.id.objectType {
+            case .art: return MapEmbargo.allowsArtLocation()
+            case .camp: return MapEmbargo.allowsSingleCampLocation()
+            case .event: return MapEmbargo.allowsArtLocation()
+            case .mutantVehicle: return true
+            }
+        }
+    }
+
+    /// Same split as `BRCEmbargo.canShowLocation(for:)`: an event at an art piece leaks the
+    /// art's position, everything else leaks its host camp's.
+    private static func allowsEvent(locatedAtArt: Bool) -> Bool {
+        locatedAtArt ? MapEmbargo.allowsArtLocation() : MapEmbargo.allowsSingleCampLocation()
     }
 }
 
@@ -121,7 +175,12 @@ public extension BRCDataObject {
         return annotation(metadata: metadata)
     }
     
+    /// The one annotation constructor that used to hand out a coordinate with no embargo
+    /// check at all — `MapDetailViewController`'s pin comes through here. The tier is the
+    /// single-object one (a camp unlocks in the week before gates), matching what the detail
+    /// screen's address line is already allowed to say.
     func annotation(metadata: BRCObjectMetadata) -> DataObjectAnnotation? {
+        guard BRCEmbargo.canShowLocation(for: self) else { return nil }
         return DataObjectAnnotation(object: self, metadata: metadata)
     }
 }

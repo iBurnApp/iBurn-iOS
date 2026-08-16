@@ -70,6 +70,9 @@ class CampListHostingController: UIHostingController<CampListView> {
     }
 
     private func showMap(for camps: [CampObject]) {
+        // Gates tier on purpose, not an oversight: this pins the *whole camp list* at once,
+        // which is bulk placement, and the week-early camp release only covers a camp's
+        // address and the single camp a user opened. See `MapEmbargo`.
         guard BRCEmbargo.allowEmbargoedData() else {
             showMissingMapAlert()
             return

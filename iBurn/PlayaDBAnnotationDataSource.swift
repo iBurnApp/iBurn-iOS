@@ -115,8 +115,13 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         isObserving = true
 
         // Snapshotted per observation start; embargoDidClear() restarts observations.
-        let artAllowed = BRCEmbargo.canShowArtLocations()
-        let campAllowed = BRCEmbargo.canShowCampLocations()
+        let artAllowed = MapEmbargo.allowsArtLocation()
+        // The browse layers draw every camp in the city at once, which is exact placement
+        // data in bulk — gates tier, not the week-early camp release. See `MapEmbargo`.
+        let campBulkAllowed = MapEmbargo.allowsBulkCampPlacement()
+        // The favourites layers draw a set the user built by hand, one object at a time, the
+        // same subset the Favorites list shows; they stay on the camp tier with it.
+        let campFavoriteAllowed = MapEmbargo.allowsSingleCampLocation()
 
         // Art
         if UserSettings.showArtOnMap {
@@ -137,7 +142,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeCamps(filter: CampFilter()) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.campAnnotations = campAllowed
+                    self.campAnnotations = campBulkAllowed
                         ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object) }
                         : []
                     self.rebuildCache()
@@ -157,7 +162,12 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                 DispatchQueue.main.async {
                     guard let self else { return }
                     self.eventAnnotations = rows.compactMap { row in
-                        let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
+                        // Every event happening now, pinned at its host — which draws the
+                        // host camps' positions in bulk just as surely as the camp layer
+                        // does, so it rides the same gates tier.
+                        let allowed = (row.object.locatedAtArt?.isEmpty == false)
+                            ? artAllowed
+                            : campBulkAllowed
                         return allowed ? PlayaObjectAnnotation(event: row.object) : nil
                     }
                     self.rebuildCache()
@@ -185,7 +195,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
             let token = playaDB.observeCamps(filter: CampFilter(onlyFavorites: true)) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.favoriteCampAnnotations = campAllowed
+                    self.favoriteCampAnnotations = campFavoriteAllowed
                         ? rows.compactMap { PlayaObjectAnnotation(camp: $0.object)?.markedFavorite() }
                         : []
                     self.rebuildCache()
@@ -207,7 +217,9 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                     // re-checked against the clock on each `allAnnotations()` read, so what
                     // is kept here is the candidate set, not the answer.
                     self.favoriteEventCandidates = rows.compactMap { row in
-                        let allowed = (row.object.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
+                        let allowed = (row.object.locatedAtArt?.isEmpty == false)
+                            ? artAllowed
+                            : campFavoriteAllowed
                         guard allowed,
                               let annotation = PlayaObjectAnnotation(event: row.object)?.markedFavorite()
                         else { return nil }

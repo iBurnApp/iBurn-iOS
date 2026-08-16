@@ -36,8 +36,10 @@ struct MapRegionAnnotationFilter {
     ///   - activeEventUIDs: events the caller decided are happening/starting soon.
     ///   - showArtOnlyZoomedIn: `UserSettings.showArtOnlyZoomedIn`.
     ///   - showCampsOnlyZoomedIn: `UserSettings.showCampsOnlyZoomedIn`.
-    ///   - artAllowed: `BRCEmbargo.canShowArtLocations()`.
-    ///   - campAllowed: `BRCEmbargo.canShowCampLocations()`.
+    ///   - artAllowed: `MapEmbargo.allowsArtLocation()`.
+    ///   - campAllowed: `MapEmbargo.allowsBulkCampPlacement()` — this path draws every camp
+    ///     in the viewport, so it is bulk placement and waits for gates. Passed in rather
+    ///     than read here, so the tier choice stays at the call site.
     static func annotations(
         from objects: [any PlayaDataObject],
         zoomLevel: Double,
@@ -62,9 +64,10 @@ struct MapRegionAnnotationFilter {
                       let annotation = PlayaObjectAnnotation(camp: camp) else { continue }
                 annotations.append(annotation)
             } else if let event = object as? EventObject {
-                // Matches `BRCEmbargo.canShowLocation(for:)`: an event at an art installation
-                // would leak the art location, so it rides the art tier; everything else
-                // unlocks with camps.
+                // An event at an art installation leaks the art's location, so it rides the
+                // art tier; everything else leaks its host camp's, so it rides whatever tier
+                // the caller passes for camps — the *bulk* one here, since a viewport full of
+                // event pins maps the camps hosting them.
                 let allowed = (event.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
                 guard allowed,
                       activeEventUIDs.contains(event.uid),
@@ -498,8 +501,10 @@ public class UserMapViewAdapter: MapViewAdapter {
                 activeEventUIDs: activeEventUIDs,
                 showArtOnlyZoomedIn: UserSettings.showArtOnlyZoomedIn,
                 showCampsOnlyZoomedIn: UserSettings.showCampsOnlyZoomedIn,
-                artAllowed: BRCEmbargo.canShowArtLocations(),
-                campAllowed: BRCEmbargo.canShowCampLocations()
+                artAllowed: MapEmbargo.allowsArtLocation(),
+                // Everything the viewport holds, camp-hosted events included: bulk
+                // placement, so the gates tier rather than the week-early camp release.
+                campAllowed: MapEmbargo.allowsBulkCampPlacement()
             ).filter { self.shouldDisplay($0) }
             self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
             self.mapRegionAnnotations.annotations = annotations

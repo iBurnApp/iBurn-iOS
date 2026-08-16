@@ -6,6 +6,8 @@
 //  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
+import CoreLocation
+import MapLibre
 import XCTest
 @testable import iBurn
 import PlayaDB
@@ -116,15 +118,13 @@ final class EmbargoTierTests: XCTestCase {
     private func makeCampLayers(showCampBoundaries: Bool = true,
                                 showCampBoundariesAlways: Bool = false,
                                 showBigCampNames: Bool = true,
-                                embargoAllowsBoundaries: Bool = true,
-                                embargoAllowsCamps: Bool = true,
+                                embargoAllowsPlacement: Bool = true,
                                 zoomLevel: Double) -> CampLayerVisibility {
         CampLayerVisibility.resolve(
             showCampBoundaries: showCampBoundaries,
             showCampBoundariesAlways: showCampBoundariesAlways,
             showBigCampNames: showBigCampNames,
-            embargoAllowsBoundaries: embargoAllowsBoundaries,
-            embargoAllowsCamps: embargoAllowsCamps,
+            embargoAllowsPlacement: embargoAllowsPlacement,
             zoomLevel: zoomLevel
         )
     }
@@ -132,8 +132,7 @@ final class EmbargoTierTests: XCTestCase {
     func testCampLayersHiddenWhileEmbargoedRegardlessOfSettings() {
         for zoomLevel in [14.0, 15.0, 17.0, 20.0] {
             let visibility = makeCampLayers(showCampBoundariesAlways: true,
-                                            embargoAllowsBoundaries: false,
-                                            embargoAllowsCamps: false,
+                                            embargoAllowsPlacement: false,
                                             zoomLevel: zoomLevel)
             XCTAssertFalse(visibility.boundariesVisible)
             XCTAssertNil(visibility.boundariesMinimumZoom)
@@ -143,22 +142,23 @@ final class EmbargoTierTests: XCTestCase {
         }
     }
 
-    /// The week between the camp-location release and gates: camp names may draw, but the
-    /// BMorg placement polygons may not.
-    func testBoundariesStayHiddenAfterCampUnlockUntilGatesOpen() {
+    /// The week between the camp-location release and gates: neither the placement polygons
+    /// nor the names pinned to their centroids may draw. Both map the whole city at once.
+    func testBothCampLayersStayHiddenAfterCampUnlockUntilGatesOpen() {
         let visibility = makeCampLayers(showCampBoundariesAlways: true,
-                                        embargoAllowsBoundaries: false,
-                                        embargoAllowsCamps: true,
+                                        embargoAllowsPlacement: false,
                                         zoomLevel: 16)
         XCTAssertFalse(visibility.boundariesVisible)
         XCTAssertNil(visibility.boundariesMinimumZoom)
-        XCTAssertTrue(visibility.labelsVisible)
-        XCTAssertTrue(visibility.campNamesDrawnByStyleLayer)
+        XCTAssertFalse(visibility.labelsVisible)
+        // Nothing is painting camp names, so the pins that do survive keep labelling
+        // themselves rather than yielding to a layer that isn't there.
+        XCTAssertFalse(visibility.campNamesDrawnByStyleLayer)
     }
 
-    /// `CampLayerVisibility.current` must read the boundary layer off the art tier, so the
-    /// polygons only appear once gates open — a week after camp locations unlock.
-    func testCurrentBoundaryVisibilityTracksTheArtTier() throws {
+    /// `CampLayerVisibility.current` must read *both* camp layers off the gates tier, so
+    /// neither appears in the week after camp locations unlock.
+    func testCurrentCampLayerVisibilityTracksTheGatesTier() throws {
         let originalBoundaries = UserSettings.showCampBoundaries
         let originalNames = UserSettings.showBigCampNames
         defer {
@@ -171,10 +171,34 @@ final class EmbargoTierTests: XCTestCase {
         try timeTravel(to: "2026-08-25T12:00:00Z")  // after CampLocationUnlock, before gates
         XCTAssertTrue(BRCEmbargo.canShowCampLocations())
         XCTAssertFalse(BRCEmbargo.canShowArtLocations())
-        XCTAssertFalse(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible)
+        let embargoed = CampLayerVisibility.current(zoomLevel: 16)
+        XCTAssertFalse(embargoed.boundariesVisible)
+        XCTAssertFalse(embargoed.labelsVisible)
+        XCTAssertFalse(embargoed.campNamesDrawnByStyleLayer)
 
         try timeTravel(to: "2026-08-31T12:00:00Z")  // gates open
-        XCTAssertTrue(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible)
+        let unlocked = CampLayerVisibility.current(zoomLevel: 16)
+        XCTAssertTrue(unlocked.boundariesVisible)
+        XCTAssertTrue(unlocked.labelsVisible)
+        XCTAssertTrue(unlocked.campNamesDrawnByStyleLayer)
+    }
+
+    /// The passcode satisfies every tier, so it brings both layers back early.
+    func testCampLayersUnlockWithThePasscode() throws {
+        let originalBoundaries = UserSettings.showCampBoundaries
+        let originalNames = UserSettings.showBigCampNames
+        defer {
+            UserSettings.showCampBoundaries = originalBoundaries
+            UserSettings.showBigCampNames = originalNames
+        }
+        UserSettings.showCampBoundaries = true
+        UserSettings.showBigCampNames = true
+
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        UserDefaults.enteredEmbargoPasscode = true
+        let visibility = CampLayerVisibility.current(zoomLevel: 16)
+        XCTAssertTrue(visibility.boundariesVisible)
+        XCTAssertTrue(visibility.labelsVisible)
     }
 
     func testCampLayersFollowSettingsOnceUnlocked() {
@@ -229,16 +253,16 @@ final class EmbargoTierTests: XCTestCase {
     /// visible and the zoom is inside its (uncapped) range — the one fact the pins act on.
     func testStyleLabelVerdictAlwaysMatchesTheLayersOwnZoomRange() {
         for showBigCampNames in [true, false] {
-            for embargoAllowsCamps in [true, false] {
+            for embargoAllowsPlacement in [true, false] {
                 for zoomLevel in [12.0, 14.9, 15.0, 16.9, 17.0, 22.0] {
                     let v = makeCampLayers(showBigCampNames: showBigCampNames,
-                                           embargoAllowsCamps: embargoAllowsCamps,
+                                           embargoAllowsPlacement: embargoAllowsPlacement,
                                            zoomLevel: zoomLevel)
                     let layerIsPainting = v.labelsVisible
                         && zoomLevel >= Double(CampLayerVisibility.labelsMinimumZoom)
                     XCTAssertEqual(v.campNamesDrawnByStyleLayer, layerIsPainting,
                                    "zoom \(zoomLevel), names \(showBigCampNames), "
-                                   + "embargo \(embargoAllowsCamps)")
+                                   + "embargo \(embargoAllowsPlacement)")
                 }
             }
         }
@@ -733,5 +757,116 @@ final class EmbargoTierTests: XCTestCase {
             regionAnnotationTitles([placeless], artAllowed: true, campAllowed: true),
             []
         )
+    }
+
+    // MARK: - Bulk placement vs. a single camp
+
+    // The week-early camp release covers a camp's address and the pin for the one camp the
+    // user opened. It does not cover drawing the placement of the whole city — the browse
+    // map's camp pins, the style layers, the viewport fetch — which waits for gates with art.
+
+    func testBulkCampPlacementWaitsForGatesWhileSingleCampsUnlockEarly() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertFalse(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertFalse(MapEmbargo.allowsSingleCampLocation())
+
+        try timeTravel(to: "2026-08-25T12:00:00Z")  // camp tier open, gates shut
+        XCTAssertFalse(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertTrue(MapEmbargo.allowsSingleCampLocation())
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")  // gates open
+        XCTAssertTrue(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertTrue(MapEmbargo.allowsSingleCampLocation())
+    }
+
+    func testPasscodeUnlocksBulkPlacementToo() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        UserDefaults.enteredEmbargoPasscode = true
+        XCTAssertTrue(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertTrue(MapEmbargo.allowsSingleCampLocation())
+        XCTAssertTrue(MapEmbargo.allowsArtLocation())
+    }
+
+    /// A bulk event pin sits on its host, so it leaks the host's position: at art, the art
+    /// tier; at a camp, the *bulk* camp tier. Both are gates.
+    func testBulkEventPinsWaitForGatesWhereverTheyAreHosted() throws {
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertFalse(MapEmbargo.allowsBulkEventPin(locatedAtArt: true))
+        XCTAssertFalse(MapEmbargo.allowsBulkEventPin(locatedAtArt: false))
+        // …while the single-event surfaces (detail pin, favourites, nearby) keep the
+        // camp tier they have always had.
+        XCTAssertTrue(BRCEmbargo.canShowLocation(for: makeEvent(hostedByCamp: "camp-1")))
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertTrue(MapEmbargo.allowsBulkEventPin(locatedAtArt: true))
+        XCTAssertTrue(MapEmbargo.allowsBulkEventPin(locatedAtArt: false))
+    }
+
+    // MARK: - Single-pin constructors fail closed
+
+    // Nothing hands a coordinate to a map view without passing one of these, so they are the
+    // last line: a bug upstream costs a missing pin, not a leaked placement.
+
+    private func campAnnotation() throws -> PlayaObjectAnnotation {
+        try XCTUnwrap(PlayaObjectAnnotation(camp: regionCamp()))
+    }
+
+    private func artAnnotation() throws -> PlayaObjectAnnotation {
+        try XCTUnwrap(PlayaObjectAnnotation(art: regionArt()))
+    }
+
+    func testStaticDataSourceDropsEmbargoedPinsAndKeepsUnlockedOnes() throws {
+        let source = StaticAnnotationDataSource(annotations: [try campAnnotation(),
+                                                              try artAnnotation()])
+
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertEqual(source.allAnnotations().count, 0)
+
+        // The camp tier is the single-object tier, so a camp the user opened gets its pin.
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        let titles = source.allAnnotations().compactMap { ($0 as? PlayaObjectAnnotation)?.title }
+        XCTAssertEqual(titles, ["Region Camp"])
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertEqual(source.allAnnotations().count, 2)
+    }
+
+    /// Pins carrying no placement data at all — user map points, the Man — are never gated.
+    func testStaticDataSourceKeepsNonPlacementAnnotations() throws {
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        let point = BRCUserMapPoint(
+            title: "My Bike",
+            coordinate: CLLocationCoordinate2D(latitude: brcLatitude, longitude: brcLongitude),
+            type: .userBike
+        )
+        let source = StaticAnnotationDataSource(annotation: point)
+        XCTAssertEqual(source.allAnnotations().count, 1)
+    }
+
+    /// The legacy Yap constructor behind `MapDetailViewController`'s pin, which used to build
+    /// an annotation from any object's coordinate with no check at all.
+    func testLegacyCampAnnotationIsNilWhileEmbargoedAndBuiltOnceCampsUnlock() throws {
+        let camp = try XCTUnwrap(BRCCampObject())
+        camp.coordinate = CLLocationCoordinate2D(latitude: brcLatitude, longitude: brcLongitude)
+        let metadata = try XCTUnwrap(BRCCampMetadata())
+
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertNil(camp.annotation(metadata: metadata))
+
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertNotNil(camp.annotation(metadata: metadata))
+    }
+
+    /// Art keeps its own tier through the same constructor.
+    func testLegacyArtAnnotationWaitsForGates() throws {
+        let art = try XCTUnwrap(BRCArtObject())
+        art.coordinate = CLLocationCoordinate2D(latitude: brcLatitude, longitude: brcLongitude)
+        let metadata = try XCTUnwrap(BRCArtMetadata())
+
+        try timeTravel(to: "2026-08-25T12:00:00Z")
+        XCTAssertNil(art.annotation(metadata: metadata))
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")
+        XCTAssertNotNil(art.annotation(metadata: metadata))
     }
 }

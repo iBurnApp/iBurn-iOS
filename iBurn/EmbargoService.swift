@@ -123,3 +123,44 @@ public final class EmbargoService: NSObject {
         canShowLocations(tier: .art)
     }
 }
+
+/// Which tier a *map* surface answers to.
+///
+/// The camp tier (`YearSettings.campLocationUnlock`, the Sunday before gates) releases a
+/// camp's **address text** and the pin for a camp the user asked to see — one camp, on
+/// purpose. It does not release the city's placement: a screen that draws hundreds of camp
+/// pins, or the polygons/labels the placement geojson carries, is exact placement data in
+/// bulk and waits for gates (`YearSettings.eventStart`), the same instant art unlocks.
+///
+/// The passcode bypass is inherent — it satisfies every tier — so nothing here needs to
+/// special-case it.
+///
+/// Both verdicts are re-read on every call (never cached across the tier dates) and the
+/// live surfaces additionally restart on `.BRCEmbargoDidClear`.
+enum MapEmbargo {
+
+    /// Many camps' positions at once: the browse map's camp pins, the `camp-labels-big` and
+    /// `camp-boundaries` style layers, and the bulk event pins that sit on their host camp.
+    /// Gates-open tier.
+    static func allowsBulkCampPlacement() -> Bool {
+        EmbargoService.canShowLocations(tier: .art)
+    }
+
+    /// One camp the user navigated to: its detail pin, its pushed map, its address text.
+    /// Camp tier — this is the thing the week-early release is for.
+    static func allowsSingleCampLocation() -> Bool {
+        EmbargoService.canShowLocations(tier: .camp)
+    }
+
+    /// Art placement, in bulk or singly. Gates-open tier either way.
+    static func allowsArtLocation() -> Bool {
+        EmbargoService.canShowLocations(tier: .art)
+    }
+
+    /// A bulk event pin. An event at an art piece leaks the art's position and an event at a
+    /// camp leaks the camp's, so in bulk both wait for gates; the two tiers happen to
+    /// coincide there, and this stays spelled out so the reason survives.
+    static func allowsBulkEventPin(locatedAtArt: Bool) -> Bool {
+        locatedAtArt ? allowsArtLocation() : allowsBulkCampPlacement()
+    }
+}

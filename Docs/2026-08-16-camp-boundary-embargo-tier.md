@@ -250,3 +250,94 @@ markers in the generated geojson).
 - submodule `b8934c2` — 2026 API refresh (Aug 16) + placement re-applied
 - submodule `4743806` — 2026 media: fetch 5 thumbnails new in the Aug 16 API data
 - app `0b4295fe` — Bump iBurn-Data: 2026 API refresh (Aug 16)
+
+---
+
+# Session 3 (2026-08-16): Bulk camp placement moves to the gates tier
+
+## High-Level Plan
+
+**Policy (user decision).** Exact placement info — *anything that shows many camps'
+positions at once* — waits for gates open (`YearSettings.eventStart`, 2026-08-30).
+The Aug 23 camp tier (`YearSettings.campLocationUnlock`) keeps unlocking camp
+**address text** and **single-camp pins** only. The passcode bypasses both, as before.
+
+This supersedes Session 1 above, which left `camp-labels-big` on the camp tier: a camp
+name drawn at its placement centroid *is* that camp's exact position, and the layer
+draws the whole city at once.
+
+**New seam.** `MapEmbargo` (in `iBurn/EmbargoService.swift`) names the choice so call
+sites read as policy rather than as a tier lookup:
+
+- `allowsBulkCampPlacement()` → gates tier (`.art`)
+- `allowsSingleCampLocation()` → camp tier (`.camp`)
+- `allowsArtLocation()` → gates tier
+- `allowsBulkEventPin(locatedAtArt:)` → gates either way (spelled out, not collapsed)
+
+## Tier per surface after this change
+
+| Surface | Tier |
+|---|---|
+| `camp-labels-big` style layer (`CampLayerVisibility`) | **gates** (was camp) |
+| `camp-boundaries` style layer | gates (Session 1) |
+| Browse map camp pins (`PlayaDBAnnotationDataSource`) | **gates** (was camp) |
+| Browse map active-event pins hosted at camps | **gates** (was camp) |
+| Viewport region fetch (`UserMapViewAdapter.refreshRegionAnnotations`) | **gates** (was camp) |
+| Map favourite camp / favourite camp-hosted event pins | camp (user-curated, unchanged) |
+| Camp list "Show on Map" (`CampListHostingController`) | gates (already; comment added) |
+| Single camp pin — detail map, pushed map, `DataObjectAnnotation` | camp |
+| Camp address text (Nearby, detail, lists) | camp |
+| Art, anywhere | gates |
+| Nearby / Favorites / Recently Viewed / Visits / watch | camp (unchanged) |
+
+## Technical Details
+
+- `iBurn/EmbargoService.swift` — new `MapEmbargo` enum (bottom of file).
+- `iBurn/MapLayerManager.swift` — `CampLayerVisibility.resolve` collapses
+  `embargoAllowsBoundaries` + `embargoAllowsCamps` into one `embargoAllowsPlacement`;
+  `current(zoomLevel:)` feeds it `MapEmbargo.allowsBulkCampPlacement()`.
+  Consequence, and correct: pre-gates `campNamesDrawnByStyleLayer` is false, so the
+  camp pins that *do* survive (favourites) label themselves instead of yielding to a
+  layer that isn't painting. `MapViewAdapter.updatePinLabelVisibility()` and
+  `campUID(forStyleLabelAt:)` read the same resolver and needed no change — the tap
+  handler still refuses taps on stale tiles.
+- `iBurn/PlayaDBAnnotationDataSource.swift` — `campBulkAllowed` (gates) drives the
+  browse camp + active-event layers; new `campFavoriteAllowed` (camp tier) drives the
+  favourites layers.
+- `iBurn/UserMapViewAdapter.swift` — region fetch passes
+  `campAllowed: MapEmbargo.allowsBulkCampPlacement()`; `MapRegionAnnotationFilter`
+  itself is unchanged (tiers are still parameters).
+- `iBurn/AnnotationDataSource.swift` — defense in depth:
+  `BRCDataObject.annotation(metadata:)` now returns nil when
+  `BRCEmbargo.canShowLocation(for:)` says no (it was the one ungated constructor), and
+  new `AnnotationEmbargo.allows(_:)` filters `StaticAnnotationDataSource.allAnnotations()`
+  — the last line before a coordinate reaches a map view, at the single-object tiers, so
+  it subtracts nothing any caller legitimately shows.
+
+## Judgment calls
+
+1. **Map favourites stayed on the camp tier.** A favourites layer can hold many camps,
+   but it is the hand-built subset the Favorites list shows, and the brief explicitly
+   kept `FavoritesViewModel` on the camp tier. Flagged for a final call: one line
+   (`campFavoriteAllowed`) flips it.
+2. **Bulk event pins → gates.** A camp-hosted event pin sits on its host camp, so a
+   viewport of them maps the camps. Single-event surfaces keep the camp tier via
+   `BRCEmbargo.canShowLocation(for:)`.
+3. **PlayaDB single-pin guard placed at `StaticAnnotationDataSource`, not in
+   `PlayaObjectAnnotation`'s initializers.** Gating construction would have made the
+   bulk paths' explicit `artAllowed`/`campAllowed` parameters unfalsifiable and broken
+   the pure `MapRegionAnnotationFilter` tests, which pass tiers in on purpose.
+
+## Verification
+
+`xcodebuild test -scheme iBurnTests` (iPhone 17 Pro Max, iOS 26.5): **609 tests, 0
+failures** (601 before, +8 new). No pbxproj / `DEVELOPMENT_TEAM` churn.
+
+## Known gap (pre-existing, not introduced here)
+
+`.BRCEmbargoDidClear` is posted on region entry and on passcode entry only — nothing
+posts it when a tier's *date* rolls over with the app running. Both tier transitions
+therefore refresh live only via that notification or a relaunch; every consumer
+(`BaseMapViewController`, the list hosting controllers, `PlayaDBAnnotationDataSource`,
+`UserMapViewAdapter`) re-reads both tiers when it fires, so nothing about this change
+narrows what a post refreshes.

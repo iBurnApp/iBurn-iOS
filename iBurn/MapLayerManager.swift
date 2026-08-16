@@ -48,22 +48,21 @@ struct CampLayerVisibility: Equatable {
     ///   - showCampBoundaries: `UserSettings.showCampBoundaries`.
     ///   - showCampBoundariesAlways: `UserSettings.showCampBoundariesAlways`.
     ///   - showBigCampNames: `UserSettings.showBigCampNames`.
-    ///   - embargoAllowsBoundaries: `BRCEmbargo.canShowArtLocations()`. The boundary
-    ///     polygons are BMorg placement geometry, which stays embargoed until gates open —
-    ///     the *art* tier — not the week-early camp-location release.
-    ///   - embargoAllowsCamps: `BRCEmbargo.canShowCampLocations()`. Camp names at their
-    ///     placement centroid are camp-location data, so the label layer rides the camp
-    ///     tier. Both geojsons ship in the app bundle, so until their tier clears the
-    ///     matching layer stays hidden regardless of settings.
+    ///   - embargoAllowsPlacement: `MapEmbargo.allowsBulkCampPlacement()` — the gates-open
+    ///     tier. Both layers are built from the BMorg placement drop and both draw the whole
+    ///     city at once: the polygons are the footprints themselves, and a name pinned to its
+    ///     placement centroid is that camp's exact position with a label on it. Neither is
+    ///     the "one camp you looked up" the week-early camp release covers, so both wait for
+    ///     gates. Both geojsons ship in the app bundle, so until then the layers stay hidden
+    ///     regardless of settings.
     ///   - zoomLevel: the map's current zoom, for `campNamesDrawnByStyleLayer`.
     static func resolve(showCampBoundaries: Bool,
                         showCampBoundariesAlways: Bool,
                         showBigCampNames: Bool,
-                        embargoAllowsBoundaries: Bool,
-                        embargoAllowsCamps: Bool,
+                        embargoAllowsPlacement: Bool,
                         zoomLevel: Double) -> CampLayerVisibility {
-        let boundariesVisible = showCampBoundaries && embargoAllowsBoundaries
-        let labelsVisible = showBigCampNames && embargoAllowsCamps
+        let boundariesVisible = showCampBoundaries && embargoAllowsPlacement
+        let labelsVisible = showBigCampNames && embargoAllowsPlacement
         return CampLayerVisibility(
             boundariesVisible: boundariesVisible,
             boundariesMinimumZoom: boundariesVisible ? (showCampBoundariesAlways ? 0 : 15) : nil,
@@ -80,8 +79,7 @@ struct CampLayerVisibility: Equatable {
         resolve(showCampBoundaries: UserSettings.showCampBoundaries,
                 showCampBoundariesAlways: UserSettings.showCampBoundariesAlways,
                 showBigCampNames: UserSettings.showBigCampNames,
-                embargoAllowsBoundaries: BRCEmbargo.canShowArtLocations(),
-                embargoAllowsCamps: BRCEmbargo.canShowCampLocations(),
+                embargoAllowsPlacement: MapEmbargo.allowsBulkCampPlacement(),
                 zoomLevel: zoomLevel)
     }
 }
