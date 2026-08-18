@@ -153,6 +153,10 @@ to JSON import (non-fatal), so the release builder must have the zip present.
 **Regeneration procedure** (redo whenever `APIData.bundle` JSON is refreshed — especially
 the final pre-release August data drop, or the seed's saved timestamps go stale and first
 launch pays seed-copy + full re-import):
+0. **Move the existing `iBurn/iBurn-2026.zip` out of the way BEFORE building.** If the old
+   zip is in the build, the "fresh install" restores the *stale* seed and layers the new JSON
+   on top — records deleted upstream since the last harvest would survive into the new one.
+   (Found 2026-08-17; the harvest must start from an empty database.)
 1. Fresh install (`xcrun simctl uninstall <sim> com.trailbehind.iBurn2010` — note bundle id)
    of the current build; launch; complete onboarding; let the JSON import finish. Poll
    `sqlite3 "<container>/Library/Application Support/iBurn/iBurn-2026/iBurn-2026.sqlite"

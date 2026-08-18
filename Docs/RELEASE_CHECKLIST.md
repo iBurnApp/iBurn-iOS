@@ -54,9 +54,10 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
 - [x] Seeds regenerated Aug 17 from that data (`playa-seed --fetch-media`): both
       `iBurn/PlayaDB-2026.zip` and `iBurnWatch/PlayaDB-2026.zip` at 2 × 3048 KB
       (334 art / 1187 camps / 5300 occurrences / 494 MVs / 1580 thumbnail colours; 1 new
-      thumbnail committed in the submodule). **Legacy Yap seed `iBurn/iBurn-2026.zip` is still
-      an Aug 11 harvest — re-harvest before tagging** (manual sim procedure, Part C of
-      `Docs/2026-07-18-api-data-refresh.md`).
+      thumbnail committed in the submodule). Legacy Yap seed `iBurn/iBurn-2026.zip` re-harvested
+      same day (7083 rows, restore-verified on a fresh install; Part C of
+      `Docs/2026-07-18-api-data-refresh.md` — note the new step 0: remove the stale zip from
+      the build before harvesting).
 - [x] `MARKETING_VERSION = 2026.0` on all targets; `CURRENT_PROJECT_VERSION = 110` on **both**
       app and watch targets. The watch target has now lagged the app twice — 108 while the app
       was 109 (fixed 2026-08-11) and 109 while the app was 110 (fixed 2026-08-17). **Check all

@@ -160,9 +160,17 @@ minute after `camp.json` (20:56) — confirmed newer than the bundle they were b
 occurrences 5300 vs 5313 raw: the 13-row gap is the 6 duplicate uids plus their occurrences,
 the same shape as Aug 16 (5311 vs 5316).
 
-**Legacy Yap seed (`iBurn/iBurn-2026.zip`) NOT touched** — out of scope for this session and
-handled separately. It is still an Aug 11 harvest; see the Aug 16 doc for why (manual simulator
-procedure, Part C of `Docs/2026-07-18-api-data-refresh.md`).
+**Legacy Yap seed re-harvested same day (session 2).** Followed Part C of
+`Docs/2026-07-18-api-data-refresh.md` with one procedural fix now folded back into that doc:
+the stale Aug 11 zip must be moved out of `iBurn/` *before* building, or the "fresh install"
+restores the old seed and layers new JSON on top (upstream-deleted records would survive).
+Fresh install of the zip-less build stabilized at **7083 `database2` rows** (~60 s, import
+completes behind onboarding): 5559 `BRCEventObject`, 1187 `BRCCampObject`, 334 `BRCArtObject`,
+3 `BRCUpdateInfo`. Zipped after terminate (`-wal` fully checkpointed at 0 B, hence 4.37 MB vs
+Aug 11's 5.58 MB — no data loss) and dropped at `iBurn/iBurn-2026.zip` + the archival
+`Submodules/iBurn-Data/data/2026/iBurn-2026.zip` (md5 `a60a5e98…`, both gitignored).
+Restore-verified: rebuilt with the zip, fresh install restored all 7083 rows in ~15 s with no
+JSON import.
 
 ### 4. Watch build number 109 → 110
 
@@ -261,7 +269,6 @@ Executed  2 tests, with 0 failures  (MockDataShipGuardTests:
 
 ## Remaining Work
 
-- Legacy Yap seed (`iBurn/iBurn-2026.zip`) re-harvest — still an Aug 11 snapshot, manual
-  simulator procedure.
+- ~~Legacy Yap seed re-harvest~~ — done same day, see above (7083 rows, restore-verified).
 - App Store Connect metadata entry, and a full archive on the release commit.
 - Nothing has been pushed; the data submodule commit lives only in the local private clone.
