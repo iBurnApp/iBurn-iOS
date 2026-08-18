@@ -15,7 +15,6 @@
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
 		63CE2A5C1987140F00F65B01 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A5B1987140F00F65B01 /* UIKit.framework */; };
 		69E87EE357276FE574287C5F /* points.geojson in Resources */ = {isa = PBXBuildFile; fileRef = E4C02C37EA6C6EC484366C05 /* points.geojson */; };
-		D9EB0A012EAB000100000001 /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9EB0A002EAB000000000002 /* YearSettings.plist */; };
 		6BFCA46F5811DC4D2250FD31 /* libPods-iBurn-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DBD5A83089D2EE22EBE55E6 /* libPods-iBurn-iBurnTests.a */; };
 		7B2FA7D941A961C1D7E01881 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 943BDAA9ED89068B088FA38F /* Foundation.framework */; };
 		93CBF9AE70B2AF9D4E656366 /* polygons.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 9E10477F2E42824CFC141C92 /* polygons.geojson */; };
@@ -44,6 +43,7 @@
 		D9D12F601B5AF4FF0048229A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */; };
 		D9D12F621B5AF5070048229A /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D12F611B5AF5070048229A /* Social.framework */; };
 		D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */; };
+		D9EB0A012EAB000100000001 /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9EB0A002EAB000000000002 /* YearSettings.plist */; };
 		F7E3E8D3B6D02857B42F3284 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = 5E05B7773440522D30BDA948 /* PlayaDB */; };
 /* End PBXBuildFile section */
 
@@ -165,11 +165,11 @@
 		D9D12F5D1B5AF4F70048229A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D9D12F5F1B5AF4FF0048229A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		D9D12F611B5AF5070048229A /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		D9EB0A002EAB000000000002 /* YearSettings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = YearSettings.plist; path = iBurn/YearSettings.plist; sourceTree = "<group>"; };
 		DA3C557EE89E55C49BA20199 /* Pods-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitTests/Pods-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		DB8FB09ACAEC823BCA05D22E /* Pods-PlayaKit-PlayaKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E23CFC3F5287D4A5C520A1BF /* Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKitAbstract-PlayaKit/Pods-PlayaKitAbstract-PlayaKit.debug.xcconfig"; sourceTree = "<group>"; };
 		E4C02C37EA6C6EC484366C05 /* points.geojson */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = points.geojson; path = "Submodules/iBurn-Data/data/2026/geo/points.geojson"; sourceTree = "<group>"; };
-		D9EB0A002EAB000000000002 /* YearSettings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = YearSettings.plist; path = iBurn/YearSettings.plist; sourceTree = "<group>"; };
 		E4EF5D0A0750A3E3C14DA796 /* Pods-iBurnAbstract-iBurnTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iBurnAbstract-iBurnTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-iBurnAbstract-iBurnTests/Pods-iBurnAbstract-iBurnTests.release.xcconfig"; sourceTree = "<group>"; };
 		E686094C7D9925681B065AEA /* libPods-PlayaKitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PlayaKitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F0332CB537ACB8C39F50D0F6 /* Pods-PlayaKit-PlayaKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PlayaKit-PlayaKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PlayaKit-PlayaKitTests/Pods-PlayaKit-PlayaKitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -351,14 +351,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		D9EB0A022EAB000200000003 /* iBurnWatch Shared */ = {
-			isa = PBXGroup;
-			children = (
-				D9EB0A002EAB000000000002 /* YearSettings.plist */,
-			);
-			name = "iBurnWatch Shared";
-			sourceTree = "<group>";
-		};
 		76F55C269BF93A3607E2054F /* iBurnWatch CityGeo */ = {
 			isa = PBXGroup;
 			children = (
@@ -388,6 +380,14 @@
 				D9CB2A542117E7B500A0F2AE /* PlayaGeocoderTests (iOS).xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D9EB0A022EAB000200000003 /* iBurnWatch Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D9EB0A002EAB000000000002 /* YearSettings.plist */,
+			);
+			name = "iBurnWatch Shared";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -941,7 +941,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 109;
+				CURRENT_PROJECT_VERSION = 110;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -978,7 +978,7 @@
 				CODE_SIGN_ENTITLEMENTS = iBurn/iBurn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 109;
+				CURRENT_PROJECT_VERSION = 110;
 				DEVELOPMENT_TEAM = 4T8JLQR6GR;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
