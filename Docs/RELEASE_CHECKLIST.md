@@ -16,7 +16,7 @@ Companion runbooks (read these for the *how*; this file is the *what*):
 
 ---
 
-## First-2026-Build Status (2026.0 / build 109, as of 2026-08-11)
+## First-2026-Build Status (2026.0 / build 110, as of 2026-08-17)
 
 Snapshot for the first 2026 App Store submission. Replace this section wholesale each season.
 
@@ -40,8 +40,28 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
 - [x] Seeds regenerated Aug 11 from that data and **verified on-sim**: fresh install restores both
       seeds instantly (log: `PlayaDB seed restored`), and a backdated `update_info` + deleted row
       correctly triggered a full re-import from the newer bundled JSON.
-- [x] `MARKETING_VERSION = 2026.0` on all targets; `CURRENT_PROJECT_VERSION = 109` on **both**
-      app and watch targets (watch was 108 — fixed 2026-08-11).
+- [x] Data refreshed again Aug 16 (iBurn-Data `4743806`): 334 art / 1187 camps / 2635 events /
+      494 MVs; placement re-applied; PlayaDB suite 330 green. Logged in
+      `Docs/2026-08-16-camp-boundary-embargo-tier.md`.
+- [x] **Data refreshed Aug 17 (iBurn-Data `7979d35`) — current shipping snapshot:** 334 art /
+      1187 camps (1180 placed, 0 at null island) / 2629 events (5313 raw occurrences, 6 duplicate
+      uids deduped on import) / 494 MVs; `apply_placement.js` re-run (mandatory after every fetch —
+      `fetch_and_geocode.js` overwrites camp GPS with geocoder points), 1178 camps back on their
+      footprint centroids, outlines/labels byte-identical at 1178 features, 17 conflicts all
+      resolved API-wins. No tile regen (GIS submodule unchanged), no new placement drop.
+      20 art records at GPS `0,0` (4 are BMorg test rows) shipped as-is, same as Aug 11/16.
+      Details: `Docs/2026-08-17-api-refresh-and-release-prep.md`.
+- [x] Seeds regenerated Aug 17 from that data (`playa-seed --fetch-media`): both
+      `iBurn/PlayaDB-2026.zip` and `iBurnWatch/PlayaDB-2026.zip` at 2 × 3048 KB
+      (334 art / 1187 camps / 5300 occurrences / 494 MVs / 1580 thumbnail colours; 1 new
+      thumbnail committed in the submodule). **Legacy Yap seed `iBurn/iBurn-2026.zip` is still
+      an Aug 11 harvest — re-harvest before tagging** (manual sim procedure, Part C of
+      `Docs/2026-07-18-api-data-refresh.md`).
+- [x] `MARKETING_VERSION = 2026.0` on all targets; `CURRENT_PROJECT_VERSION = 110` on **both**
+      app and watch targets. The watch target has now lagged the app twice — 108 while the app
+      was 109 (fixed 2026-08-11) and 109 while the app was 110 (fixed 2026-08-17). **Check all
+      four `CURRENT_PROJECT_VERSION` entries in `project.pbxproj` after every build bump**; the
+      two iBurnWatch configs are the ones carrying `INFOPLIST_KEY_WKApplication = YES`.
 - [x] CI/deploy/PR workflows moved to `macos-26-arm64` + Xcode 26.6 (was 16.4, which predates the
       iOS 26 SDK) with iPhone 17 Pro test destinations. Runner image confirmed to ship 26.6.
 - [x] Mock-data ship guards in place at all three layers (playa-seed, `MockDataShipGuardTests`,
@@ -57,7 +77,7 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
 - [x] SwiftUI detail share button now emits real iburnapp.com deeplinks via the
       `ShareURLBuilder` seam (it previously shared a plain string; locked tiers omit
       lat/lng/addr) (`9a38cc78`).
-- [x] Watch scheme builds clean at 2026.0 (109); watch seed restore verified on-sim
+- [x] Watch scheme builds clean at 2026.0 (109, now 110); watch seed restore verified on-sim
       (331/1190/2587/5240). Five locked-state 410×502 watch screenshots in
       `fastlane/screenshots/watch/en-US/` (ASC natives at 422×514 kept alongside).
 
@@ -65,7 +85,9 @@ Snapshot for the first 2026 App Store submission. Replace this section wholesale
 
 - [ ] App Store metadata entry (release notes / description / keywords / screenshots) —
       drafts live in `fastlane/metadata/en-US/`; still must be pasted into App Store Connect.
-- [ ] Full test pass + archive on the release commit.
+- [ ] Full test pass + archive on the release commit. (Aug 17: `iBurnTests` and PlayaDB (330)
+      both green against the Aug 17 data — `MockDataShipGuardTests` and `EmbargoTierTests`
+      included — but no archive has been cut.)
 - [ ] Passcode distribution to authorized early users (Placement etc.).
 
 *(Removed from this list 2026-08-12: `UPDATES_URL` secret verification and public `data/2026/`
