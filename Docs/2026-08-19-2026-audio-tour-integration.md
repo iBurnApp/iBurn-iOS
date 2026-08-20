@@ -151,3 +151,25 @@ never produced the thumbnail. Verified live against `api.burningman.org/api/camp
 **Validation:** PlayaAPI `swift test` 74/74 pass; `playa-seed --fetch-media` rebuilt both
 zips with the warning gone (1580 colours, no missing-thumbnail message); `iBurn` scheme
 builds clean. `RELEASE_CHECKLIST.md` media/audio checkbox now ticked with a note.
+
+## Follow-up (same day): fresh API fetch — event uid dedup
+
+BMorg fixed API bugs causing event ID issues, so we re-fetched:
+
+```bash
+node src/cli/fetch_and_geocode.js -y 2026 -l ../../data/2026/layouts/layout.json \
+  -o ../../data/2026/APIData/APIData.bundle
+```
+
+**Verified:** event uids now unique — 2884 events / 2884 unique uids (previous snapshot had
+6 duplicate uids that `playa-seed` skipped on import; the skip message is gone). Counts:
+art 332 (−2), camps 1185 (−2), mv 492 (−2), event occurrences 5791 (+491 vs the Aug 17 seed).
+No uid dupes in art/camp/mv; no null-island camps/mv. The 20 null-island art rows (incl.
+"deputy test"/"WG Test" upstream test entries) are unchanged from the Aug 17 snapshot —
+still an open checklist item, display-clamped in the app.
+
+**Validation:** seed rebuilt clean (1574 thumbnail colours, both zips 3124 KB, no warnings),
+PlayaAPI tests 74/74, `iBurn` scheme builds clean, no pbxproj team flip.
+
+**Commits:** iBurn-Data `7295d21` "2026 API refresh (Aug 19): upstream event-uid dedup fix";
+parent repo submodule pointer bump.
