@@ -102,4 +102,42 @@ final class LenientURLTests: XCTestCase {
         let art = try makeDecoder().decode(Art.self, from: json)
         XCTAssertEqual(art.donationLink, try XCTUnwrap(URL(string: "http://www.donate.example.com")))
     }
+
+    func testDecodeCamp_ProcessingThumbnail_IsNil() throws {
+        // bmorg's image pipeline emits the literal string "processing" until the
+        // thumbnail is generated (seen live for camp a1XVI00000FN9rZ2AT in 2026).
+        // It must decode as "no image", not as a schemeless relative URL.
+        let json = """
+        { "uid": "a1XVI00000FN9rZ2AT", "name": "Fantastica Music Healing Camp", "year": 2026,
+          "images": [ { "thumbnail_url": "processing" } ] }
+        """.data(using: .utf8)!
+        let camp = try makeDecoder().decode(Camp.self, from: json)
+        XCTAssertEqual(camp.images.count, 1)
+        XCTAssertNil(camp.images[0].thumbnailUrl)
+    }
+
+    func testDecodeArt_ProcessingThumbnail_IsNil_AndRealThumbnailSurvives() throws {
+        let json = """
+        { "uid": "test", "name": "Art", "year": 2026,
+          "images": [ { "thumbnail_url": "processing", "gallery_ref": "ref1" },
+                      { "thumbnail_url": "https://embed.widencdn.net/img/bmorg/abc/640px/x.jpg" } ],
+          "guided_tours": false, "self_guided_tour_map": false }
+        """.data(using: .utf8)!
+        let art = try makeDecoder().decode(Art.self, from: json)
+        XCTAssertEqual(art.images.count, 2)
+        XCTAssertNil(art.images[0].thumbnailUrl)
+        XCTAssertEqual(art.images[0].galleryRef, "ref1")
+        XCTAssertEqual(art.images[1].thumbnailUrl,
+                       try XCTUnwrap(URL(string: "https://embed.widencdn.net/img/bmorg/abc/640px/x.jpg")))
+    }
+
+    func testDecodeMutantVehicle_ProcessingThumbnail_IsNil() throws {
+        let json = """
+        { "uid": "test", "name": "MV", "year": 2026, "tags": [],
+          "images": [ { "thumbnail_url": "processing" } ] }
+        """.data(using: .utf8)!
+        let mv = try makeDecoder().decode(MutantVehicle.self, from: json)
+        XCTAssertEqual(mv.images.count, 1)
+        XCTAssertNil(mv.images[0].thumbnailUrl)
+    }
 }

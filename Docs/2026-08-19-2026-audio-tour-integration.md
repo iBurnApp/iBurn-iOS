@@ -128,3 +128,26 @@ present if released." — the audio-tour half is now satisfied for 2026.
 
 On a fresh launch the Audio Tour list should show the intro plus 86 art tracks, each attached to
 its art object via uid, playable offline from `Documents/MediaFiles`.
+
+## Follow-up (same day): the "missing thumbnail" seed warning
+
+`playa-seed` warned: `1 object(s) reference a thumbnail that is not in the media bundle … a1XVI00000FN9rZ2AT`.
+
+**Root cause:** that uid is the camp "Fantastica Music Healing Camp", whose
+`images[0].thumbnail_url` is the literal string `"processing"` — bmorg's image pipeline
+never produced the thumbnail. Verified live against `api.burningman.org/api/camp?year=2026`
+(still `"processing"`, the only such record). There is no image to download.
+
+**Fix:** decode non-web `thumbnail_url` values as `nil` instead of a schemeless relative
+`URL`, reusing the existing `LenientURL` salvage helper:
+
+- `Packages/PlayaAPI/Sources/PlayaAPI/Models/Shared/Image.swift` — custom `init(from:)` on
+  `ArtImage` / `CampImage` using `decodeLenientURLIfPresent(forKey: .thumbnailUrl)`.
+- `Packages/PlayaAPI/Sources/PlayaAPI/Models/MutantVehicle.swift` — same for
+  `MutantVehicleImage`.
+- `Packages/PlayaAPI/Tests/PlayaAPITests/LenientURLTests.swift` — 3 new tests
+  (`processing` → nil for camp/art/MV; a real widencdn URL still decodes).
+
+**Validation:** PlayaAPI `swift test` 74/74 pass; `playa-seed --fetch-media` rebuilt both
+zips with the warning gone (1580 colours, no missing-thumbnail message); `iBurn` scheme
+builds clean. `RELEASE_CHECKLIST.md` media/audio checkbox now ticked with a note.

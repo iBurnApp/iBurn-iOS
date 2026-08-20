@@ -151,7 +151,10 @@ Do this in June/July. Everything below is year-stamped and silently wrong if mis
       few addresses (a radial-and-annular intersection, a plaza, a distance-based address).
 - [ ] Map styles reference the current year's asset bundle
       (`asset://iBurnData_iBurn<YEAR>Map.bundle`) in both light and dark JSON.
-- [ ] Media/thumbnails downloaded for new records; audio tour present if released.
+- [x] Media/thumbnails downloaded for new records; audio tour present if released.
+      *2026:* audio tour landed 2026-08-19 (86 tracks + intro). One camp's `thumbnail_url`
+      is the literal `"processing"` upstream (bmorg pipeline never finished); PlayaAPI now
+      decodes such values as no-image, so every *real* referenced thumbnail is bundled.
 - [ ] URL sanitization held: no user-entered `url` values with spaces/commas.
       *Why:* strict `URL` decoding in PlayaAPI throws on them.
 - [ ] No null-island (0,0) GPS records and no upstream test rows in the shipped JSON.

@@ -82,4 +82,10 @@ public struct MutantVehicleImage: Codable, Hashable, Sendable {
     public init(thumbnailUrl: URL? = nil) {
         self.thumbnailUrl = thumbnailUrl
     }
+
+    // See `ArtImage.init(from:)` — "processing" placeholder values decode to nil.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        thumbnailUrl = try container.decodeLenientURLIfPresent(forKey: .thumbnailUrl)
+    }
 }
