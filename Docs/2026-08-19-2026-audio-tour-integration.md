@@ -173,3 +173,74 @@ PlayaAPI tests 74/74, `iBurn` scheme builds clean, no pbxproj team flip.
 
 **Commits:** iBurn-Data `7295d21` "2026 API refresh (Aug 19): upstream event-uid dedup fix";
 parent repo submodule pointer bump.
+
+## Seed upgrade validation (App Store 2026.0 → Aug 19 data)
+
+**Question:** does a device carrying the seed shipped in App Store build 2026.0 (110)
+cleanly pick up today's bundled JSON on app update, without losing user data?
+
+**Why it isn't automatic:** on update the seed zip is never re-unzipped —
+`PlayaDBSeedRestore.restoreIfNeeded` returns `.skippedDatabaseExists` when
+`Documents/PlayaDB.sqlite` is present (`Packages/PlayaDB/Sources/PlayaDB/SeedRestore.swift:49-88`).
+The only refresh path is `PlayaDBImpl.needsImport(bundleUpdateData:)` (per-type strict `>`
+against the `update_info` rows) followed by `importFromData`, a single write transaction
+that does deleteAll + reinsert for art/camps/events/occurrences/mv, rebuilds FTS and the
+spatial index, and rewrites `update_info`. Vanished records are hard-deleted;
+`object_metadata` (favorites, visit status, notes), `thumbnail_colors` and `user_map_pins`
+are never touched.
+
+### Methodology
+
+The exact zip artifact shipped in 2026.0 is not recoverable from git (the seed zips are
+gitignored), but its *content* is: `playa-seed` builds it by running `importFromData` over
+the bundled JSON, so replaying that same call over the JSON pinned by the release commit
+reproduces the shipped database state. Release commit `30a1143c` pinned
+`Submodules/iBurn-Data` at `4743806d`; that snapshot's `art.json` / `camp.json` /
+`event.json` / `mv.json` / `update.json` were extracted with `git show` (working tree
+untouched) and imported into a throwaway SQLite file, then upgraded to the current pin
+`7295d21`. The harness was a temporary XCTest in `Packages/PlayaDB/Tests/PlayaDBTests/`,
+deleted after the run; the permanent coverage is the synthetic test described below.
+
+### Results — all assertions passed
+
+| Step | Result |
+| --- | --- |
+| Shipped snapshot (`4743806d`) JSON | art 334, camps 1187, events 2635 entries, mv 494 |
+| Duplicate event uids in shipped JSON | 5 (importer logged "Skipped 5 duplicate event UIDs") |
+| Shipped-seed DB after import | art 334, camps 1187, events 2630, occurrences 5311, mv 494 |
+| Diff old → new | vanished: art 2, camps 2, events 26, mv 3; added: events 280, mv 1 |
+| `needsImport(today's update.json)` before | `true` |
+| DB reopened before import (migrations v1..v7 over existing store) | no error |
+| After import: counts | art 332, camps 1185, events 2884, occurrences 5791, mv 492 — match today's JSON exactly |
+| Event uid uniqueness | 2884 rows / 2884 distinct uids |
+| Rows whose uid is absent from the new JSON | 0 across art/camp/event/mv |
+| `update_info` | all four rows equal today's `update.json` timestamps |
+| `needsImport` after | `false` |
+| Surviving favorites (1 art + 2 camps) | still favorited, still returned by `getFavorites()` |
+| Favorite on a camp that vanished (`a1XVI00000FMOXh2AP`) | `object_metadata` row survives (1 row), silently absent from `getFavorites()`, no error |
+| Per-occurrence event favorite (`24AzdtQPf9BzxqghcXgY#2026-08-31T18:00:00Z`) | still resolves; `fetchFavoriteEvents()` returns it (occurrence rowids were reissued, the composite key is start-instant based) |
+| User note on a surviving camp | preserved verbatim |
+| `object_metadata` row count | 5 before and after — import never touches the table |
+
+Note: this repo's earlier entry counted 6 duplicate event uids in the Aug 17 snapshot; the
+Aug 16 snapshot that actually shipped in 2026.0 had 5. Either way the importer drops the
+later entries (first in file order wins) and its occurrences.
+
+**Conclusion:** the App Store build upgrades cleanly. No bugs found. The only user-visible
+consequence is the expected one — a favorite whose camp/art was pulled from the API stops
+appearing in Favorites (its metadata row lingers harmlessly and would light up again if the
+record returned).
+
+### New regression test
+
+`Packages/PlayaDB/Tests/PlayaDBTests/ReimportUpgradeTests.swift` (7 tests, ~0.14s) covers
+the same contract with synthetic fixtures so it stays fast and independent of the shipping
+data: snapshot A (containing a duplicated event uid plus an art piece and an event that
+disappear in B) → set favorites (surviving object, doomed object, one event occurrence) and
+a note → snapshot B with newer timestamps. Asserts dedup (first entry wins, skipped
+entry's occurrences never land), stale hard-deletion, count correctness, `update_info`
+rewrite, `needsImport` true→false, favorite/note survival across a database reopen, and the
+benign orphan-metadata behavior.
+
+Suite: `swift test --package-path Packages/PlayaDB` → 337 passed / 0 failed. `iBurn` scheme
+builds clean; no pbxproj team flip.
