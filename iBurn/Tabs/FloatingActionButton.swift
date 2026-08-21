@@ -113,6 +113,37 @@ enum FloatingActionButtonVisibility {
     }
 }
 
+/// Whether the tab bar's current state says the button has to go away.
+///
+/// The button rides above the bar, so it follows the bar off screen — but only when the
+/// measurement means something. `configure(withRootViewControllers:)` runs before the window
+/// is assigned a root view controller, and at that moment every frame is `.zero`: the bar's
+/// `minY` (0) is `>=` the view's height (0), which reads as "the bar has slid off the bottom"
+/// and hid the button. Normally the first real layout pass corrected that invisibly; on a slow
+/// launch, mid tab-bar animation, no further pass arrived and the button stayed missing on the
+/// first tab until the user switched tabs.
+///
+/// So a view with no geometry yet is "unknown", not "off screen": the frame test is skipped and
+/// the button is left visible, pending a layout pass that can actually measure. `isHidden` and
+/// `alpha` are not measurements — they're states the bar was explicitly put into — so they
+/// still hide the button whatever the geometry says.
+enum FloatingActionButtonBarVisibility {
+    /// - Parameters:
+    ///   - barFrameMinY: The bar's top edge in the containing view's coordinates, or nil when
+    ///     no meaningful conversion exists (different windows, or no real geometry yet).
+    ///   - viewHeight: The containing view's height; 0 means the geometry isn't real yet.
+    static func isHidden(
+        tabBarHidden: Bool,
+        tabBarAlpha: CGFloat,
+        barFrameMinY: CGFloat?,
+        viewHeight: CGFloat
+    ) -> Bool {
+        if tabBarHidden || tabBarAlpha == 0 { return true }
+        guard viewHeight > 0, let barFrameMinY else { return false }
+        return barFrameMinY >= viewHeight
+    }
+}
+
 /// What the floating button's bottom edge is allowed to hang from.
 ///
 /// The button wants to ride just above the tab bar, but `tabBar` is only a legal constraint

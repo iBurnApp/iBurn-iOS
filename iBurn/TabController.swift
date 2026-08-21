@@ -89,6 +89,18 @@ import UIKit
         alignFloatingButtonWithSearchTab()
     }
 
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // The button is installed from `configure(withRootViewControllers:)`, which the app
+        // delegate calls *before* the window has a root view controller — everything measures
+        // as zero there. This is the guaranteed pass with real geometry: whatever an early,
+        // geometry-less pass decided, it gets re-decided here.
+        view.setNeedsLayout()
+        updateFloatingButtonPlacement()
+        updateFloatingButtonVisibility()
+        alignFloatingButtonWithSearchTab()
+    }
+
     /// Installs the app's root view controllers and arranges them for the active
     /// prototype layout. Replaces assigning `viewControllers` directly.
     @objc public func configure(withRootViewControllers viewControllers: [UIViewController]) {
@@ -219,12 +231,31 @@ import UIKit
     /// moves the bar between those two worlds re-anchors rather than re-crashing.
     private func updateFloatingButtonPlacement() {
         guard floatingButtonInstalled else { return }
+        // Before the window exists every frame is `.zero`, so "is the bar in the lower half"
+        // answers no and the safe-area fallback would be committed as if it had been measured.
+        // The button still needs *a* vertical constraint before the first layout pass, so take
+        // the always-legal one — but don't record it, so the first pass that can measure
+        // re-decides instead of finding a cached answer that matches.
+        guard geometryIsKnown else {
+            if floatingButtonBottom == nil { applyPlacement(.bottomSafeArea, record: false) }
+            return
+        }
         let placement = FloatingActionButtonPlacement.placement(
             tabBarIsInHierarchy: tabBarIsInHierarchy,
             tabBarIsDockedAtBottom: tabBarIsDockedAtBottom
         )
         guard placement != floatingButtonPlacement else { return }
-        floatingButtonPlacement = placement
+        applyPlacement(placement, record: true)
+    }
+
+    /// Whether this view has been laid out in a window yet — i.e. whether measuring it means
+    /// anything at all. See `FloatingActionButtonBarVisibility`.
+    private var geometryIsKnown: Bool {
+        view.window != nil && view.bounds.height > 0
+    }
+
+    private func applyPlacement(_ placement: FloatingActionButtonPlacement, record: Bool) {
+        floatingButtonPlacement = record ? placement : nil
 
         floatingButtonBottom?.isActive = false
         let bottom: NSLayoutConstraint
@@ -333,10 +364,13 @@ import UIKit
             floatingButton.isHidden = true
             return
         }
-        let barIsOffscreen = tabBarFrameInView.map { $0.minY >= view.bounds.height } ?? false
-        floatingButton.isHidden = tabBar.isHidden
-            || tabBar.alpha == 0
-            || barIsOffscreen
+        let knownGeometry = geometryIsKnown
+        floatingButton.isHidden = FloatingActionButtonBarVisibility.isHidden(
+            tabBarHidden: tabBar.isHidden,
+            tabBarAlpha: tabBar.alpha,
+            barFrameMinY: knownGeometry ? tabBarFrameInView?.minY : nil,
+            viewHeight: knownGeometry ? view.bounds.height : 0
+        )
     }
 
     /// The chosen screen as a sheet, built from the same factory the tab and the More row
