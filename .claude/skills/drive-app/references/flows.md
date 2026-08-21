@@ -22,6 +22,8 @@ Preconditions: simulator erased; feature flag set if you want the SwiftUI stack
 4. Page "Reminders" → tap **"⏰ Continue with Notifications"** → PermissionScope
    sheet → tap **"CONTINUE WITH EVENTS"** → system calendar alert → tap
    **"Allow Full Access"**.
+   To leave **calendar access undetermined** (needed to exercise the favorite
+   permission pre-prompt), swipe past this page instead of tapping its button.
 5. Pages "Search" and "Nearby" are info-only — the action button does nothing;
    **swipe left** on the page scroll-view to advance.
 6. Final page "Thank you!" → tap **"🔥 Ok let's burn!"**.
@@ -140,6 +142,18 @@ per-occurrence row (`database2` table, collection `BRCEventObject`, keys `"<apiU
 whose `startDate` matches the favorited occurrence gets an updated metadata blob with
 `isFavorite=true`; a series-wide change updates all of them. The favorited blobs are
 larger than the ~440-byte import-stamped baseline.
+
+### Calendar permission pre-prompt (verified 2026-08-20)
+
+With EventKit still `.notDetermined` (skip onboarding's Reminders page, §1 step 4):
+
+- The **first favorite** of a session raises the PermissionScope "Reminders" sheet
+  (`permissionscope.headerlabel`, buttons `permissionscope.button.events` /
+  `permissionscope.closeButton`). It appears *behind*/alongside the series toast.
+- Tapping **Close** dismisses it and leaves the status undetermined — but the sheet must
+  **not** come back: it is latched to once per app launch (`EKEventStoreProvider`).
+- **Un**favoriting must never raise it, from the events list or the Favorites sheet
+  (`EventCalendarService` passes `promptIfNeeded: isFavorite`).
 
 ## 4b. Pre-existing (legacy) favorites survive
 

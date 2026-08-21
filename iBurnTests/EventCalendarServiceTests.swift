@@ -26,6 +26,7 @@ private final class SpyEventStore: EventStoreProviding {
     private var _removed: [String] = []
     private var _live: Set<String> = []
     private var _ensureAccessCount = 0
+    private var _promptCount = 0
     private var _nextIdentifier = 0
 
     init(authorization: CalendarAuthorization = .fullAccess) {
@@ -59,6 +60,12 @@ private final class SpyEventStore: EventStoreProviding {
         return _ensureAccessCount
     }
 
+    /// How many times the in-app permission pre-prompt would have been shown.
+    var promptCount: Int {
+        lock.lock(); defer { lock.unlock() }
+        return _promptCount
+    }
+
     /// Simulates the user deleting an event from the Calendar app.
     func deleteExternally(identifier: String) {
         lock.lock(); defer { lock.unlock() }
@@ -79,16 +86,23 @@ private final class SpyEventStore: EventStoreProviding {
         return _authorization
     }
 
-    func ensureAccess() async -> Bool {
-        recordEnsureAccess()
+    func ensureAccess(promptIfNeeded: Bool) async -> Bool {
+        recordEnsureAccess(promptIfNeeded: promptIfNeeded)
     }
 
     /// Kept synchronous so the lock is never held across an async boundary
     /// (`NSLock.lock()` is unavailable from async contexts in Swift 6).
-    private func recordEnsureAccess() -> Bool {
+    ///
+    /// Models `EKEventStoreProvider.ensureAccess(promptIfNeeded:)`: an undetermined
+    /// status prompts only when asked to, and at most once per session.
+    private func recordEnsureAccess(promptIfNeeded: Bool) -> Bool {
         lock.lock(); defer { lock.unlock() }
         _ensureAccessCount += 1
-        return _authorization.allowsWriting
+        if _authorization.allowsWriting { return true }
+        if _authorization == .notDetermined, promptIfNeeded, _promptCount == 0 {
+            _promptCount += 1
+        }
+        return false
     }
 
     func lookupEvent(identifier: String) -> CalendarEventLookup {
@@ -448,6 +462,50 @@ final class EventCalendarServiceTests: XCTestCase {
         XCTAssertTrue(entries.isEmpty)
     }
 
+    /// Unfavoriting must never pop the permission prompt: nothing can be in the calendar
+    /// unless access was granted when it was written.
+    func testUnfavoriteNeverPrompts() async throws {
+        let db = try await makePlayaDB()
+        store = SpyEventStore(authorization: .notDetermined)
+        let service = makeService(playaDB: db)
+
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
+
+        XCTAssertEqual(store.promptCount, 0, "An unfavorite pass must not prompt")
+    }
+
+    /// The pre-prompt's "Close" leaves the status undetermined forever, so the store has
+    /// to latch: one pre-prompt per app launch, no matter how many favorites follow.
+    func testPromptsOncePerSessionWhileUndetermined() async throws {
+        let db = try await makePlayaDB()
+        store = SpyEventStore(authorization: .notDetermined)
+        let service = makeService(playaDB: db)
+
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        XCTAssertEqual(store.promptCount, 1, "The first favorite prompts exactly once")
+
+        // Unfavorite, re-favorite, and favorite a different event in the same session.
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.hostlessEventUID, isFavorite: true)
+
+        XCTAssertEqual(store.promptCount, 1, "The pre-prompt may show at most once per session")
+        XCTAssertTrue(store.createdIdentifiers.isEmpty)
+    }
+
+    /// A real `.denied` never prompts in either direction — iOS wouldn't show the system
+    /// alert anyway.
+    func testDeniedNeverPrompts() async throws {
+        let db = try await makePlayaDB()
+        store = SpyEventStore(authorization: .denied)
+        let service = makeService(playaDB: db)
+
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
+        try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
+
+        XCTAssertEqual(store.promptCount, 0)
+    }
+
     /// Write-only access (iOS 17+) cannot read events back, so bookkeeping must be
     /// trusted rather than treated as "the user deleted it".
     func testWriteOnlyAccessTrustsStoredEntries() async throws {
@@ -464,12 +522,15 @@ final class EventCalendarServiceTests: XCTestCase {
     func testEKEventStoreProviderGatesOnAuthorization() async {
         var promptCount = 0
         let provider = EKEventStoreProvider(prompt: { promptCount += 1 })
-        let granted = await provider.ensureAccess()
+        let granted = await provider.ensureAccess(promptIfNeeded: true)
+        // Repeats (and a removal pass) must never add another prompt.
+        _ = await provider.ensureAccess(promptIfNeeded: true)
+        _ = await provider.ensureAccess(promptIfNeeded: false)
 
         switch provider.authorization {
         case .notDetermined:
             XCTAssertFalse(granted)
-            XCTAssertEqual(promptCount, 1, "An undetermined status must prompt exactly once")
+            XCTAssertEqual(promptCount, 1, "An undetermined status must prompt exactly once per session")
         case .denied:
             XCTAssertFalse(granted)
             XCTAssertEqual(promptCount, 0)
@@ -477,6 +538,14 @@ final class EventCalendarServiceTests: XCTestCase {
             XCTAssertTrue(granted)
             XCTAssertEqual(promptCount, 0)
         }
+    }
+
+    /// A removal pass never prompts, even as the very first call of a session.
+    func testEKEventStoreProviderDoesNotPromptWithoutRequest() async {
+        var promptCount = 0
+        let provider = EKEventStoreProvider(prompt: { promptCount += 1 })
+        _ = await provider.ensureAccess(promptIfNeeded: false)
+        XCTAssertEqual(promptCount, 0)
     }
 
     // MARK: - Legacy Yap Takeover

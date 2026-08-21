@@ -77,13 +77,22 @@ protocol EventStoreProviding {
     /// Current permission state.
     var authorization: CalendarAuthorization { get }
 
-    /// Returns whether events may be written, prompting the user when the status is
-    /// undetermined.
+    /// Returns whether events may be written, optionally prompting the user when the
+    /// status is undetermined.
     ///
     /// Matches legacy `BRCEventObject.eventStore`: an undetermined status shows the
     /// permission prompt and reports failure for *this* attempt (the prompt is
     /// asynchronous, so nothing is written until the user acts and favorites again).
-    func ensureAccess() async -> Bool
+    ///
+    /// - Parameter promptIfNeeded: Whether an undetermined status may show the in-app
+    ///   pre-prompt. Only passes that *add* to the calendar should ask: nothing can be
+    ///   in the calendar without access having been granted at write time, so a removal
+    ///   pass without access has nothing to do and must stay silent.
+    ///
+    /// Implementations must show the pre-prompt at most once per app launch — repeated
+    /// favoriting while the status stays `.notDetermined` (the user dismissed the
+    /// pre-prompt without answering the system alert) must not re-prompt.
+    func ensureAccess(promptIfNeeded: Bool) async -> Bool
 
     /// Whether a previously created event still exists.
     func lookupEvent(identifier: String) -> CalendarEventLookup
@@ -103,6 +112,10 @@ final class EKEventStoreProvider: EventStoreProviding {
 
     private let store: EKEventStore
     private let prompt: () -> Void
+    /// Guards `hasPrompted`, which is read from whatever queue a reconcile lands on.
+    private let promptLock = NSLock()
+    /// Whether the in-app pre-prompt was already shown during this app launch.
+    private var hasPrompted = false
 
     /// - Parameters:
     ///   - store: The EventKit store. One long-lived store is reused for the app's
@@ -140,15 +153,29 @@ final class EKEventStoreProvider: EventStoreProviding {
         }
     }
 
-    func ensureAccess() async -> Bool {
+    func ensureAccess(promptIfNeeded: Bool) async -> Bool {
         let status = authorization
         if status.allowsWriting { return true }
-        if status == .notDetermined {
-            // Legacy behavior: prompt, then bail out of this pass. The prompt is
-            // asynchronous UI, so there is nothing to write until the user responds.
-            prompt()
-        }
+        // A real `.denied` never prompts (iOS wouldn't show the system alert anyway), and
+        // a removal pass never prompts — see the protocol docs.
+        guard status == .notDetermined, promptIfNeeded else { return false }
+        // The pre-prompt's "Close" button doesn't ask EventKit for anything, so the
+        // status stays `.notDetermined` forever. Without this latch every subsequent
+        // favorite would pop the modal again.
+        guard claimPrompt() else { return false }
+        // Legacy behavior: prompt, then bail out of this pass. The prompt is
+        // asynchronous UI, so there is nothing to write until the user responds.
+        prompt()
         return false
+    }
+
+    /// Returns true exactly once per app launch.
+    private func claimPrompt() -> Bool {
+        promptLock.lock()
+        defer { promptLock.unlock() }
+        if hasPrompted { return false }
+        hasPrompted = true
+        return true
     }
 
     func lookupEvent(identifier: String) -> CalendarEventLookup {

@@ -121,15 +121,19 @@ actor EventCalendarServiceImpl: EventCalendarService {
 
     // MARK: Reconcile
 
-    /// `isFavorite` is retained for the coalescing key in `reconcile` (two passes with
-    /// different intents must not merge) but is not consulted here: with per-occurrence
-    /// favorites, "what should be in the calendar" is a question only the database can
-    /// answer, and it answers it the same way regardless of which tap started the pass.
+    /// `isFavorite` does not decide *what* the calendar should contain — with
+    /// per-occurrence favorites that is a question only the database can answer, and it
+    /// answers it the same way regardless of which tap started the pass. It is used for
+    /// the coalescing key in `reconcile` (two passes with different intents must not
+    /// merge) and to decide whether this pass may ask for calendar permission: only an
+    /// *adding* pass is allowed to prompt.
     private func performReconcile(eventUID: String, isFavorite: Bool) async {
         guard !eventUID.isEmpty else { return }
-        // No permission means nothing can be created *or* removed; matching legacy,
-        // an undetermined status prompts and this pass writes nothing.
-        guard await eventStore.ensureAccess() else { return }
+        // No permission means nothing can be created *or* removed. Matching legacy, an
+        // undetermined status on a favoriting pass prompts and writes nothing this pass;
+        // an unfavoriting pass stays silent — nothing can be in the calendar unless
+        // access was granted when it was written.
+        guard await eventStore.ensureAccess(promptIfNeeded: isFavorite) else { return }
 
         // Which showings the user actually wants, straight from the database.
         let favorited: [EventObjectOccurrence]
@@ -270,6 +274,16 @@ actor EventCalendarServiceImpl: EventCalendarService {
         case let (nil, hostName?): return hostName
         case (nil, nil): return nil
         }
+    }
+}
+
+/// ObjC-visible mirror of `EventCalendarServiceFactory.isPlayaDBSyncEnabled`, so the
+/// legacy UIKit detail screen can skip the Yap calendar write without duplicating the
+/// feature flag's default.
+@objc(BRCCalendarSync)
+final class CalendarSyncBridge: NSObject {
+    @objc static var isPlayaDBSyncEnabled: Bool {
+        EventCalendarServiceFactory.isPlayaDBSyncEnabled
     }
 }
 
