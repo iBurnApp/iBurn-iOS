@@ -7,7 +7,8 @@ label text, not on elementRef numbers (refs change every snapshot).
 
 > **Maintenance:** if a step here doesn't match the running app, fix this file in
 > the same session (see "Keeping the flow docs current" in SKILL.md).
-> Last verified: 2026-08-09 against the 2026 dataset, iPhone 17 Pro Max sim.
+> Last verified: 2026-08-22 against the 2026 dataset (Aug 22 API refresh),
+> iPhone 17 Pro Max sim, iOS 26.5.
 
 ## 1. First-launch onboarding (fresh install)
 
@@ -30,10 +31,13 @@ Preconditions: simulator erased; feature flag set if you want the SwiftUI stack
 7. Main UI appears (Map tab) with the **embargo alert** "Locations Are Hidden" →
    tap **"Ok cool whatever"**.
 
-Verify: tab bar shows Map / Nearby / Favorites / Events / More — that is the *default*
-arrangement. Both the Map Search Layout (§8) and the user's own tab customization (§10)
-change which tabs are on the bar, so match on tab labels rather than assuming a fixed
-order or count.
+Verify: on iOS 26 a stock install lands on the **`searchTab`** layout —
+`Preferences.UserInterface.mapSearchLayout` defaults to it (§8) — so the bar reads
+Map / Nearby / Events / More plus a detached **Search** tab, with Favorites on the
+floating button (`floatingActionButton`) instead of the bar. Below iOS 26 every layout
+resolves to `navigationBar` and the bar is Map / Nearby / Favorites / Events / More. Both
+the Map Search Layout (§8) and the user's own tab customization (§10) change which tabs
+are on the bar, so match on tab labels rather than assuming a fixed order or count.
 
 ## 2. SwiftUI + PlayaDB stack (default ON; legacy fallback)
 
@@ -49,14 +53,16 @@ UIKit/YapDatabase stack.
 
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
-and `grdb_migrations` contains every migration through `v6-pin-sync`. Seeded
-counts (2026 data, Aug 11 refresh + placement): 331 art / 1190 camps / 2587 events /
-5240 occurrences / 495 mutant vehicles / **1579 `thumbnail_colors`**;
+and `grdb_migrations` contains every migration through `v7-fts-prefix-index`. Seeded
+counts (2026 data, **Aug 22 refresh** + placement): 331 art / 1184 camps / 2876 events /
+5778 occurrences / 493 mutant vehicles (`mv_objects`, not `mutant_vehicle_objects`) /
+**1574 `thumbnail_colors`**;
 `object_metadata` stays empty until the user favorites/views something. Camp GPS is
-non-null for 1183 of the 1190, and every one of those 1183 coordinates is **distinct**
+non-null for 1177 of the 1184, and every one of those 1177 coordinates is **distinct**
 (they are footprint centroids, not street-intersection geocodes) — a `SELECT COUNT(*)
-FROM (SELECT DISTINCT gps_latitude, gps_longitude …)` well below 1183 means the placement
-pipeline regressed to geocoder coordinates.
+FROM (SELECT DISTINCT gps_latitude, gps_longitude …)` well below 1177 means the placement
+pipeline regressed to geocoder coordinates. (These move with every API refresh; treat the
+magnitudes, not the exact integers, as the assertion.)
 
 `thumbnail_colors` being populated on a *fresh* install is the signal that the
 pre-baked seed restored. `iBurn/PlayaDB-<year>.zip` is gitignored and built by
@@ -181,13 +187,18 @@ parent row, all sharing its `favorite_updated_at`.
 - AX labels: **"Camp index"**, **"Art index"**, **"Mutant vehicle index"**. The individual
   letters show up as plain text nodes with no tap action — drive them with `touch`
   (down+up on the letter's ref) or `drag`, not `tap`.
-- Verified 2026-08-12 on Camps (1190 rows, embargo on): rail renders `#ABC…Z`, the list
-  opens on `...cats` / `17 Virgins` (the `#` bucket), and touching "T" lands on
-  `T.B.C. / T33M0 / TBA / THE VEIL`.
-- Caveat: these lists come back from SQLite `ORDER BY name` (binary), so the ~15 camps /
-  11 art / 5 vehicles whose names start lowercase sort *after* `Z`. The rail anchors each
-  letter at its first run, which is the uppercase one, so those stragglers are reachable
-  only by scrolling to the bottom.
+- Verified 2026-08-22 on Camps (1184 rows, embargo on): rail renders `#ABC…Z`, the list
+  opens on `...cats` / `2 girls 1 camp` / `7 Sirens Cove` / `8-bit Bunny` / `17 Virgins`
+  (the `#` bucket, numeric-aware so 17 comes *after* 8), and touching "T" lands in the T
+  run.
+- **Sorting is case-insensitive since 2026-08-22** (`orderedByName()` collates with
+  `localizedStandardCompare`, commit `7c66301`). The ~15 camps / 12 art / 5 vehicles whose
+  names start lowercase now interleave with the rest instead of piling up after `Z`:
+  Camps reads `… ADHz → AdramaNation → adult playground → AerialKnotics …`, Art reads
+  `… ALUNA → ancient future portal → Angst-in-the-Box …`. Global search results use the
+  same order, so the two agree (search Camps for "playground" → `adult playground` sorts
+  ahead of `AmberDust`). A lowercase name stranded at the bottom of one of these lists is
+  a regression — `Packages/PlayaDB/Tests/PlayaDBTests/NameOrderingTests.swift` covers it.
 
 The events/favorites lists have searchable fields ("Search events",
 "Search favorites"), but SwiftUI searchable fields drop out of the AX snapshot
@@ -530,10 +541,46 @@ Automation notes:
   app launch (baseline, never posts), `UIApplication.didBecomeActive` /
   `significantTimeChange` (this is what covers "suspended across midnight"), and a single
   one-shot `Timer` armed for the next unlock instant. It reads `Date.present`, so the
-  **iBurn (Mock Date)** scheme moves it too. To drive it: launch with a mock date before
-  `CampLocationUnlock`, move the mock date past it, then background + foreground the app —
-  camp addresses must appear without a relaunch. Unit tests:
-  `iBurnTests/EmbargoUnlockSchedulerTests.swift`. The watch equivalent is
+  **iBurn (Mock Date)** scheme moves it too.
+
+  **Driving the `didBecomeActive` trigger (verified 2026-08-22, PASS).** The mock date is a
+  *fixed instant*, not an offset, so the mock clock never advances on its own — the app
+  must be told a new instant. Recipe that keeps the same process alive (a relaunch would
+  prove nothing, since a fresh screen reads the live verdict anyway):
+
+  ```bash
+  UDID=<sim>; BID=com.trailbehind.iBurn2010
+  C=$(xcrun simctl get_app_container $UDID $BID data)
+  PREFS="$C/Library/Preferences/$BID"
+  # app terminated: start before the unlock
+  xcrun simctl spawn $UDID defaults write "$PREFS" BRCMockDateEnabled -bool YES
+  xcrun simctl spawn $UDID defaults write "$PREFS" BRCMockDateValue -date "2026-08-22 19:00:00 +0000"
+  # launch, open More -> Camps (rows read "Location Restricted"), then:
+  #   button({buttonType:"home"})            # suspend
+  xcrun simctl spawn $UDID defaults write "$PREFS" BRCMockDateValue -date "2026-08-23 19:00:00 +0000"
+  xcrun simctl launch $UDID $BID             # resumes; prints the SAME pid, no relaunch
+  ```
+
+  The still-open Camps list must flip in place from "Location Restricted" to playa
+  addresses. Writing the pref while the app is merely *suspended* does stick — this is the
+  one case where flows.md's "terminate first" rule can be relaxed, because the app is not
+  writing. Two caveats: `BRCMockDateEnabled`/`BRCMockDateValue` live in the **app
+  container** domain like every other pref here; and once you have used the in-app date
+  picker in this launch, `NSDate`'s `_customOverrideDate` static wins over UserDefaults, so
+  external writes are ignored until the next launch.
+
+  **The one-shot `Timer` trigger cannot be exercised under the mock date at all** — the
+  timer fires on the real clock while `Date.present` stays pinned to the mocked instant, so
+  the re-evaluation still sees "locked" and nothing posts. That path is covered by
+  `iBurnTests/EmbargoUnlockSchedulerTests.swift` only; don't claim a sim run proved it.
+
+  **In-app alternative:** More → Debug → "Override Date" exposes a real
+  `DatePicker`; tapping the date button opens a calendar popover whose day cells *are* AX
+  buttons ("Sunday, August 23"), so a mock date can be set from the UI without touching
+  prefs. That path changes `Date.present` live, but a screen pushed afterwards rebuilds
+  anyway — use it for the *state*, use the suspend recipe above for the *notification*.
+
+  Unit tests: `iBurnTests/EmbargoUnlockSchedulerTests.swift`. The watch equivalent is
   `WatchEmbargo.refreshUnlockState()` on scene phase `.active` (§8a).
 - "List" button (top-left) opens "Visible Pins" — a SwiftUI/PlayaDB list of what
   is currently drawn inside the map's visible bounds, sectioned Art / Camps /
