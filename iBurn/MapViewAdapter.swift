@@ -114,11 +114,25 @@ public class MapViewAdapter: NSObject {
 
     /// Adds annotations in a way that avoid overlap and de-duplicates
     @objc public func addAnnotations(_ annotations: [MLNAnnotation]) {
-        let newAnnotations = registry.add(annotations)
+        // Drop unusable coordinates *before* the registry sees them, so the registry never
+        // claims a key for a pin the map isn't drawing (which would then block the good
+        // copy of that pin from ever being added). MapLibre projects an annotation's
+        // coordinate straight into a `CALayer.position`, and a NaN there is a fatal
+        // `CALayerInvalidGeometry`, not a misplaced pin.
+        let placeable = annotations.filter { annotation in
+            guard BRCLocations.isUsable(annotation.coordinate) else {
+                DDLogWarn("Skipping annotation with invalid coordinate \(annotation.coordinate): \(String(describing: annotation.title ?? nil))")
+                return false
+            }
+            return true
+        }
+        let newAnnotations = registry.add(placeable)
 
-        // Handle overlap offset for annotations that support it.
+        // Handle overlap offset for annotations that support it. An offset divides by
+        // cos(latitude), so it is only computed for coordinates that survived the filter.
         for case let data as any OffsettableAnnotation in newAnnotations {
             let originalCoordinate = data.originalCoordinate
+            guard BRCLocations.isUsable(originalCoordinate) else { continue }
             var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
             overlapping.append(data)
 

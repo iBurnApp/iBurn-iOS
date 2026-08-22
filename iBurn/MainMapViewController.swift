@@ -486,6 +486,12 @@ private extension MainMapViewController {
             forUserLocation: self.mapView.userLocation?.location,
             viewportCenter: self.mapView.centerCoordinate
         )
+        // Last line of defense before MapLibre: a non-finite coordinate becomes a NaN
+        // `CALayer.position` and takes the app down with `CALayerInvalidGeometry`.
+        guard BRCLocations.isUsable(coordinate) else {
+            DDLogWarn("Refusing to place a user map point at an invalid coordinate: \(coordinate)")
+            return
+        }
         let mapPoint = BRCUserMapPoint(title: nil, coordinate: coordinate, type: type)
         adapter.editMapPoint(mapPoint)
     }

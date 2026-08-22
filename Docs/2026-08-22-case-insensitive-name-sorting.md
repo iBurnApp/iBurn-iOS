@@ -84,3 +84,81 @@ and asserts the expected order for:
 - `swift test --package-path Packages/PlayaDB` → 345 passed, 0 failed.
 - `xcodebuild -scheme iBurn` → success; `xcodebuild -scheme iBurnWatch` → success.
 - Art / Camps / Mutant Vehicles browse lists read as a single alphabet, matching search.
+
+---
+
+## CALayerInvalidGeometry crash when placing a user map pin (2026.0 build 109)
+
+### Crash trace (summary)
+
+```
+Fatal Exception: CALayerInvalidGeometry
+CA::Layer::set_position(CA::Vec2<double> const&, bool)
+-[UIView setCenter:]                      (MapLibre annotation view placement)
+MapViewAdapter.addAnnotations(_:)          MapViewAdapter.swift:138
+UserMapViewAdapter.editMapPoint(_:)        UserMapViewAdapter.swift:243
+MainMapViewController.addUserMapPoint(type:)  MainMapViewController.swift:490
+closure placePinAction in setupUserGuide() MainMapViewController.swift:465
+```
+
+A NaN coordinate reached MapLibre, which projects an annotation coordinate straight into
+a `CALayer.position`.
+
+### Root cause
+
+`addUserMapPoint` places the pin at
+`BRCLocations.userMapPointCoordinate(forUserLocation:viewportCenter:)`, whose off-playa
+fallback is `MLNMapView.centerCoordinate`. `centerCoordinate` unprojects the center of the
+map's bounds, and a map whose bounds are still degenerate (zero-sized / mid-transition at
+the moment the FAB is tapped) answers NaN. Nothing downstream rejected it:
+
+* `BRCLocations.userMapPointCoordinate` validated only the GPS branch.
+* `BRCMapPoint.coordinate` guarded with `_latitude == 0 || _longitude == 0` — NaN passes,
+  because every comparison against NaN is false.
+* `MapViewAdapter.addAnnotations` handed everything to `mapView.addAnnotations`.
+
+### Fix — defense in depth
+
+`iBurn/BRCLocations.swift`: new shared predicate plus a validated fallback.
+
+```swift
+@objc static func isUsable(_ coordinate: CLLocationCoordinate2D) -> Bool {
+    coordinate.latitude.isFinite
+        && coordinate.longitude.isFinite
+        && CLLocationCoordinate2DIsValid(coordinate)
+}
+// …userMapPointCoordinate off-playa branch:
+return isUsable(viewportCenter) ? viewportCenter : blackRockCityCenter
+```
+
+`iBurn/MainMapViewController.swift` (`addUserMapPoint`): refuses to build the pin at all.
+
+```swift
+guard BRCLocations.isUsable(coordinate) else {
+    DDLogWarn("Refusing to place a user map point at an invalid coordinate: \(coordinate)")
+    return
+}
+```
+
+`iBurn/MapViewAdapter.swift` (`addAnnotations`): unusable coordinates are filtered *before*
+`registry.add`, so the registry never claims a key for a pin the map isn't drawing (which
+would otherwise lock the good copy of that pin out forever). The overlap-offset loop —
+which divides by `cos(latitude)` — also skips non-finite `originalCoordinate`s.
+
+`iBurn/BRCMapPoint.m` (`coordinate` getter): keeps the existing "either component is 0 means
+unset" semantics and adds an `isfinite` + `CLLocationCoordinate2DIsValid` check, so the
+model itself can never publish a NaN.
+
+### Tests
+
+`iBurnTests/InvalidCoordinateGuardTests.swift` (new, 11 tests): `isUsable`; NaN viewport →
+Man, NaN viewport still loses to an on-playa fix, usable viewport unchanged; `BRCMapPoint`
+built from NaN → invalid coordinate and nil `location()`; adapter drops the invalid
+annotation, keeps a valid sibling, leaves `registry.count` consistent, and still accepts a
+later good copy of a rejected pin.
+
+```
+xcodebuild -scheme iBurn …                       → success, 0 errors
+xcodebuild test -scheme iBurnTests \
+  -only-testing:…/InvalidCoordinateGuardTests …  → 42 passed (1.239s)
+```

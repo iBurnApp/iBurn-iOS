@@ -59,6 +59,12 @@ import Foundation
     ///
     /// Same 5-mile `burningManRegion` line as `mapFramingCoordinate(forUserLocation:)`.
     ///
+    /// The viewport fallback is itself validated: `MLNMapView.centerCoordinate` projects the
+    /// center of the map's bounds, and a map whose bounds are still degenerate (zero-sized,
+    /// mid-transition, laid out but not yet sized) hands back NaN. A NaN pin coordinate
+    /// reaches `CALayer.position` and crashes with `CALayerInvalidGeometry`, so when the
+    /// viewport can't answer we fall back to the Man.
+    ///
     /// - Parameters:
     ///   - location: The device's last known location, or nil if there isn't one.
     ///   - viewportCenter: The center of the map the user is looking at.
@@ -69,8 +75,19 @@ import Foundation
         guard let coordinate = location?.coordinate,
               CLLocationCoordinate2DIsValid(coordinate),
               burningManRegion.contains(coordinate) else {
-            return viewportCenter
+            return isUsable(viewportCenter) ? viewportCenter : blackRockCityCenter
         }
         return coordinate
+    }
+
+    /// Whether a coordinate is safe to hand to MapLibre.
+    ///
+    /// `CLLocationCoordinate2DIsValid` already rejects NaN (every comparison against NaN is
+    /// false, so the range check fails) but not obviously, and it says nothing about
+    /// infinity beyond the range test. The explicit `isFinite` pair makes both intentional.
+    @objc static func isUsable(_ coordinate: CLLocationCoordinate2D) -> Bool {
+        coordinate.latitude.isFinite
+            && coordinate.longitude.isFinite
+            && CLLocationCoordinate2DIsValid(coordinate)
     }
 }
