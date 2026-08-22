@@ -162,3 +162,172 @@ xcodebuild -scheme iBurn …                       → success, 0 errors
 xcodebuild test -scheme iBurnTests \
   -only-testing:…/InvalidCoordinateGuardTests …  → 42 passed (1.239s)
 ```
+
+---
+
+# Crash: "A transaction has been left opened at the end of a database access" (GRDB bump 7.6.1 → 7.11.1)
+
+## High-Level Plan
+
+**Problem.** Production crash in build 2026.0 (110), crashed thread `GRDB.DatabasePool.reader.6`:
+
+```
+0 libswiftCore _assertionFailure
+1 $defer #1 in closure #1 in closure #1 in SerializedDatabase.execute<A>(_:) (Utils.swift:41)
+2 closure #1 in closure #1 in SerializedDatabase.execute<A>(_:) (SerializedDatabase.swift:265)
+4 DispatchQueueActor.execute<A>(_:) (DispatchQueueActor.swift:19)
+5 closure #1 in SerializedDatabase.execute<A>(_:) (SerializedDatabase.swift:257)
+```
+
+The fatal message is `preconditionNoUnsafeTransactionLeft` — "A transaction has been left
+opened at the end of a database access". The app has no manual transactions; the culprit is
+Task cancellation of async GRDB accesses (search type-ahead, list reloads, nearby
+recomputes cancel in-flight Tasks constantly).
+
+**Root cause: two GRDB bugs, both fixed upstream after the 7.6.1 we shipped.**
+
+**Fix.** Bump GRDB 7.6.1 → 7.11.1 everywhere it is pinned. No app-level workaround needed.
+
+## Mechanism (GRDB 7.6.1 source)
+
+`SerializedDatabase.execute(_:) async` (SerializedDatabase.swift:252-270) — the frame in the
+crash log:
+
+```swift
+return try await withTaskCancellationHandler {
+    try await actor.execute {
+        defer {
+            cancelMutex.store(nil)
+            db.uncancel()
+            preconditionNoUnsafeTransactionLeft(db)   // ← fatalError if isInsideTransaction
+        }
+        cancelMutex.store(db.cancel)
+        try Task.checkCancellation()
+        return try block(db)
+    }
+} onCancel: {
+    cancelMutex.withLock { $0?() }                    // → Database.cancel() → sqlite3_interrupt
+}
+```
+
+`Database.cancel` (Database.swift:1231-1253) sets `suspension.isCancelled` and calls
+`sqlite3_interrupt(sqliteConnection)`.
+
+`DatabasePool.read(_:) async` in 7.6.1 (DatabasePool.swift:354-372):
+
+```swift
+try await reader.execute { db in
+   defer {
+       // Ignore commit error, but make sure we leave the transaction
+       try? db.commit()
+       assert(!db.isInsideTransaction)     // compiled out in Release
+   }
+   try db.beginTransaction(.deferred)
+   try db.clearSchemaCacheIfNeeded()
+   return try value(db)
+}
+```
+
+So: if `commit()` throws, the deferred transaction stays open, the `assert` is stripped in a
+Release build, and the outer `preconditionNoUnsafeTransactionLeft` fires — exactly the crash
+stack. Two independent ways for that COMMIT (or a ROLLBACK) to throw after a cancellation:
+
+1. **No ROLLBACK fallback (fixed in 7.7.0).** `try? db.commit()` is the only attempt. GRDB's
+   own cancellation check does exempt COMMIT on read-only connections —
+   `checkForSuspensionViolation` (Database.swift:1332): `if statement.transactionEffect ==
+   .commitTransaction && isReadOnly { return }`, added by #1797 for 7.6.1 — but that does not
+   stop SQLite itself: `onCancel` runs concurrently with the reader queue, so
+   `sqlite3_interrupt` can land while the COMMIT statement is being prepared/stepped and
+   return `SQLITE_INTERRUPT`. 7.7.0 replaced the defer with commit-else-rollback
+   (upstream commit `4cfa692dd`, "Fix race condition regarding Task cancellation", shipped in
+   7.7.0 as "Fix another race condition regarding Task cancellation, completing #1797"):
+
+   ```swift
+   do { try db.commit() } catch { try? db.rollback() }
+   ```
+
+2. **Sticky interrupted state from FTS5 (fixed in 7.9.0, PR #1839 / issue #1838).** FTS5
+   leaks prepared statements (<https://sqlite.org/forum/forumpost/137c7662b3>), which keeps
+   the connection interrupted *after* the interrupted statement ends — so even the
+   COMMIT/ROLLBACK that is supposed to close the transaction fails with `SQLITE_INTERRUPT`.
+   The app is a heavy FTS5 user (search runs `MATCH` at SQL, imports write the `*_fts`
+   tables through triggers). 7.9.0's fix wraps `rollback()` and `endReadOnly()` in
+   `ignoringInterruption`, which resets every prepared statement on the connection and
+   retries:
+
+   ```swift
+   func ignoringInterruption<T>(_ value: () throws -> T) rethrows -> T {
+       do { return try value() }
+       catch is CancellationError, DatabaseError.SQLITE_INTERRUPT, DatabaseError.SQLITE_ABORT {
+           resetAllPreparedStatements()   // sqlite3_next_stmt + sqlite3_reset loop
+           return try value()
+       }
+   }
+   ```
+
+## Upstream status
+
+| Version | Relevant change |
+|---|---|
+| 7.6.1 (shipped in build 110) | #1797 first cancellation race fix — not enough |
+| 7.7.0 | "Fix another race condition regarding Task cancellation, completing #1797" — adds the ROLLBACK fallback in `DatabasePool.read` |
+| 7.9.0 | #1839 (issue #1838) "Fix cancellation of async tasks that use the FTS5 full-text engine" — transaction may not roll back on cancellation; read-only mode may not be left; FTS5 sticky-interrupt workaround. **Raises requirements to Swift 6.1+ / Xcode 16.3+** (we are on Xcode 26 — fine) |
+| 7.11.1 (June 18, 2026) | current release; what we now pin |
+
+Issue #1838 reports the identical message: `GRDB/SerializedDatabase.swift:261: Fatal error: A
+transaction has been left opened at the end of a database access`.
+
+## Changes
+
+* `Packages/PlayaDB/Package.swift` — `.upToNextMajor(from: "7.6.1")` → `"7.11.1"`
+* `Packages/PlayaDB/Package.resolved` — 7.6.1 / `8ba1bc9a` → 7.11.1 / `b83108d1`
+* `iBurn.xcodeproj/project.pbxproj` — `XCRemoteSwiftPackageReference "GRDB.swift"`
+  `minimumVersion` 7.6.1 → 7.11.1
+* `iBurn.xcworkspace/xcshareddata/swiftpm/Package.resolved` and
+  `iBurn.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved` — repinned to 7.11.1
+* `Packages/PlayaSeed/Package.resolved` already resolved 7.11.1 (it pins GRDB transitively
+  through the PlayaDB path dependency); PlayaAPI/PlayaColors/PlayaGeo do not depend on GRDB.
+* `Packages/PlayaDB/Tests/PlayaDBTests/TaskCancellationTransactionTests.swift` (new)
+
+No app-level mitigation was added. A `Task {}`-based "shielded read" wrapper around
+`dbQueue.read` was considered and rejected: unstructured `Task {}` does not inherit
+cancellation, so it would make every read uninterruptible (wasted work on every abandoned
+search keystroke) while only papering over a library bug that is fixed upstream.
+`Configuration.allowsUnsafeTransactions` was also rejected outright — it merely silences the
+precondition, and a pool reader returned to the pool *still inside* a deferred read
+transaction would hold a stale snapshot and keep WAL frames alive for every later borrower of
+that connection.
+
+## Reproduction
+
+`Packages/PlayaDB/Tests/PlayaDBTests/TaskCancellationTransactionTests.swift` opens a real
+on-disk `PlayaDBImpl` (so a `DatabasePool`, not the in-memory `DatabaseQueue`) and cancels
+async accesses:
+
+* `testCancellingWriteThatTouchedFTS5DoesNotLeaveTransactionOpen` — the write first UPDATEs
+  `art_objects` (whose triggers write `art_objects_fts`, leaking the FTS5 statements), signals
+  from inside the transaction, then burns time in a recursive CTE; the test cancels the Task at
+  that signal. **On GRDB 7.6.1 this reproduced the production fatalError deterministically on
+  the first iteration:**
+
+  ```
+  GRDB/SerializedDatabase.swift:261: Fatal error: A transaction has been left opened at the end of a database access
+  error: Process '…/xctest …' exited with unexpected signal code 5
+  ```
+
+  On 7.11.1 it passes.
+* `testCancellingReadsLeavesPoolUsable` — 200 cancelled reader Tasks at a deterministic
+  spread of delays through an FTS5 `MATCH` + slow scan. This did **not** reproduce the crash on
+  7.6.1 on its own (the reader-side COMMIT race is far narrower than the FTS5 write case, and
+  host macOS SQLite may not leak on FTS5 reads), but it is fast and deterministic, so it stays
+  as a smoke test of the cancelled-read path.
+
+A regression here does not fail the test — it kills the test process with a fatalError.
+
+## Verification
+
+```
+swift test --package-path Packages/PlayaDB                     → 349 passed, 0 failed
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn …        → success, 0 errors, 0 warnings
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurnWatch …   → success, 0 errors, 0 warnings
+```

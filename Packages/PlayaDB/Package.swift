@@ -17,7 +17,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/groue/GRDB.swift", .upToNextMajor(from: "7.6.1")),
+        .package(url: "https://github.com/groue/GRDB.swift", .upToNextMajor(from: "7.11.1")),
         .package(path: "../PlayaAPI"),
         .package(path: "../../Submodules/iBurn-Data"),
     ],
