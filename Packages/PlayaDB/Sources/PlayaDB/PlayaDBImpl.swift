@@ -731,13 +731,13 @@ internal class PlayaDBImpl: PlayaDB {
     
     func fetchArt() async throws -> [ArtObject] {
         try await dbQueue.read { db in
-            try ArtObject.fetchAll(db)
+            try ArtObject.all().orderedByName().fetchAll(db)
         }
     }
 
     func fetchCamps() async throws -> [CampObject] {
         try await dbQueue.read { db in
-            try CampObject.fetchAll(db)
+            try CampObject.all().orderedByName().fetchAll(db)
         }
     }
 
@@ -970,7 +970,7 @@ internal class PlayaDBImpl: PlayaDB {
 
     func fetchMutantVehicles() async throws -> [MutantVehicleObject] {
         try await dbQueue.read { db in
-            try MutantVehicleObject.fetchAll(db)
+            try MutantVehicleObject.all().orderedByName().fetchAll(db)
         }
     }
 

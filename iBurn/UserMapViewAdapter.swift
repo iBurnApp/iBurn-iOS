@@ -75,7 +75,9 @@ struct MapRegionAnnotationFilter {
                 annotations.append(annotation)
             }
         }
-        return annotations.sorted { ($0.title ?? "") < ($1.title ?? "") }
+        return annotations.sorted {
+            ($0.title ?? "").localizedStandardCompare($1.title ?? "") == .orderedAscending
+        }
     }
 }
 

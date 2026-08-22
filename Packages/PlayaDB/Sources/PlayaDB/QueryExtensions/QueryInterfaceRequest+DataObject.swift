@@ -7,9 +7,28 @@ import MapKit
 extension QueryInterfaceRequest where RowDecoder: DataObjectColumnProviding {
     private static var columns: RowDecoder.ColumnSet.Type { RowDecoder.columnSet }
 
-    /// Order by name
+    /// Order by name, the way a human reads a list.
+    ///
+    /// Plain `ORDER BY name` uses SQLite's BINARY collation, which sorts by UTF-8 code
+    /// point and therefore puts every capitalized name ahead of every lowercase one
+    /// ("Zebra" before "apple"). `localizedStandardCompare` is the Finder-style
+    /// comparison — case- and diacritic-insensitive, and numeric-aware so "Camp 2"
+    /// precedes "Camp 10". It matches `GlobalSearchViewModel.sortedByName`, so browse
+    /// lists and search results now agree.
+    ///
+    /// GRDB registers its built-in collations on every connection it opens (see
+    /// `Database.setUp`), so this works on databases restored from the pre-baked seed
+    /// too. The trade-off is that the `name` indexes are BINARY-collated and cannot
+    /// serve this ORDER BY; SQLite sorts these few-thousand-row result sets in memory,
+    /// which is not measurable here.
+    ///
+    /// `uid` breaks ties so equal-comparing names (case variants, differing diacritics)
+    /// keep a stable order across fetches.
     public func orderedByName() -> Self {
-        order(Self.columns.name.asc)
+        order(
+            Self.columns.name.collating(.localizedStandardCompare).asc,
+            Self.columns.uid.asc
+        )
     }
 
     /// Filter by year
