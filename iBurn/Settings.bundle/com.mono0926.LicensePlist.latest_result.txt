@@ -164,7 +164,7 @@ name: GoogleDataTransport, nameSpecified: GoogleDataTransport, owner: google, ve
 
 name: GoogleUtilities, nameSpecified: GoogleUtilities, owner: google, version: 8.1.0, source: https://github.com/google/GoogleUtilities
 
-name: GRDB.swift, nameSpecified: GRDB.swift, owner: groue, version: 7.6.1, source: https://github.com/groue/GRDB.swift
+name: GRDB.swift, nameSpecified: GRDB.swift, owner: groue, version: 7.11.1, source: https://github.com/groue/GRDB.swift
 
 name: grpc-binary, nameSpecified: gRPC, owner: google, version: 1.69.0, source: https://github.com/google/grpc-binary
 
