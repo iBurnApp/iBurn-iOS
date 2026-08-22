@@ -97,6 +97,34 @@ enum WatchEmbargo {
 
     static var canShowArtLocations: Bool { canShowLocations(tier: .art) }
 
+    /// The tier verdicts as of the last `refreshUnlockState()`.
+    ///
+    /// Every verdict above is computed live, so nothing on the watch caches an
+    /// embargo answer — but the screens that hold rows in `@State`
+    /// (`NearbyScreen`, `FavoritesScreen`) only recompute when something tells
+    /// them to, and until 2026-08-22 the only things that could change a verdict
+    /// were latches with a notification attached. The camp tier is now date-only,
+    /// so the clock alone can unlock it while the app sits on the wrist. This is
+    /// the phone's `EmbargoUnlockScheduler` in miniature: one snapshot, compared
+    /// on wake.
+    private static var lastKnownState: (camp: Bool, art: Bool)?
+
+    /// Re-evaluates the tiers and posts `.embargoDidUnlock` if one just opened.
+    /// Called on every `.active` scene phase (see `iBurnWatchApp`) — a watch app
+    /// is woken far more often than it is launched, so this is where a date
+    /// rollover gets noticed. No timer: watchOS suspends the app between
+    /// glances, so an armed timer would rarely be the thing that fires.
+    /// - Returns: whether it posted.
+    @discardableResult
+    static func refreshUnlockState() -> Bool {
+        let state = (camp: canShowCampLocations, art: canShowArtLocations)
+        defer { lastKnownState = state }
+        guard let previous = lastKnownState else { return false }
+        guard (state.camp && !previous.camp) || (state.art && !previous.art) else { return false }
+        NotificationCenter.default.post(name: .embargoDidUnlock, object: nil)
+        return true
+    }
+
     /// Whether this object's coordinates may be shown at all.
     static func canShowLocation(for object: any DataObject) -> Bool {
         canShowLocations(tier: object.embargoTier)

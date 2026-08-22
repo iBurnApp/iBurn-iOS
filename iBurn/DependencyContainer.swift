@@ -38,6 +38,12 @@ class DependencyContainer {
     /// Syncs favorites with the paired Apple Watch over WatchConnectivity.
     private var watchSyncManager: PeerSyncManager?
 
+    /// Re-posts `.BRCEmbargoDidClear` when the clock crosses a tier's unlock
+    /// instant (the camp tier is date-only since 2026-08-22), so an app that was
+    /// merely suspended across midnight stops saying "Location Restricted"
+    /// without being killed. See `EmbargoUnlockScheduler`.
+    private let embargoUnlockScheduler: EmbargoUnlockScheduling
+
     /// Mirrors PlayaDB favorite changes into the legacy YapDatabase so both stores agree.
     /// Lazy so BRCDatabaseManager is only touched once the first provider is used.
     private(set) lazy var favoriteSyncService: FavoriteSyncService = {
@@ -90,8 +96,15 @@ class DependencyContainer {
 
     /// Initialize the dependency container
     /// - Parameter preferenceService: The preference service to use (defaults to shared instance)
+    /// - Parameter embargoUnlockScheduler: Watches for a tier's unlock instant arriving
+    ///   (defaults to the shipping scheduler)
     /// - Throws: PlayaDB creation errors
-    init(preferenceService: PreferenceService = PreferenceServiceFactory.shared, playaDB: PlayaDB? = nil) throws {
+    init(
+        preferenceService: PreferenceService = PreferenceServiceFactory.shared,
+        playaDB: PlayaDB? = nil,
+        embargoUnlockScheduler: EmbargoUnlockScheduling = EmbargoUnlockSchedulerFactory.makeScheduler()
+    ) throws {
+        self.embargoUnlockScheduler = embargoUnlockScheduler
         // Restore a pre-populated PlayaDB from the bundled seed before the database
         // is opened. No-op for existing installs or when the seed is absent, in which
         // case the JSON import path (playaDBSeeder.seedIfNeeded, below) takes over.
@@ -177,6 +190,11 @@ class DependencyContainer {
         ) { [weak watchSyncManager] _ in
             watchSyncManager?.embargoUnlockStateDidChange()
         }
+
+        // Watch for the camp/art unlock instants arriving while the app is alive
+        // or suspended — region entry and passcode entry are no longer the only
+        // ways a tier can become visible.
+        self.embargoUnlockScheduler.start()
 
         // Every heart in the app posts through PlayaDB, so one listener covers them all.
         self.favoriteSeriesToastPresenter.start()

@@ -24,6 +24,10 @@ struct IBurnWatchApp: App {
     /// observations) survives re-runs of the root `.task`.
     @State private var syncManager: PeerSyncManager?
 
+    /// Wakes are how a watch app learns the clock moved; the camp tier unlocks
+    /// on the date alone, so each `.active` re-checks the embargo.
+    @Environment(\.scenePhase) private var scenePhase
+
     init() {
         // Restore the pre-populated database before it's opened, so a fresh install
         // opens the seeded file instead of an empty one. No-op for existing installs
@@ -106,6 +110,13 @@ struct IBurnWatchApp: App {
                     manager.start()
                     syncManager = manager
                 }
+            }
+            .onChange(of: scenePhase) { _, phase in
+                // A tier can now open on the calendar alone, so a watch that was
+                // asleep across the unlock instant has to notice on wake. Posts
+                // only on a real locked -> unlocked transition.
+                guard phase == .active else { return }
+                WatchEmbargo.refreshUnlockState()
             }
         }
     }

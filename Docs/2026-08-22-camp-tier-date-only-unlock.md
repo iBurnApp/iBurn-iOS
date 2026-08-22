@@ -199,3 +199,103 @@ and every one of its expectations is unchanged under the relaxed rule.
 - The watch follows the phone automatically (shared rule, no watch-side logic).
 - A rolled-forward device clock now buys camp address text and nothing else — no art, no
   camp pins on the browse map, no boundaries or labels.
+
+---
+
+# Date-rollover refresh (same day, follow-up)
+
+## Problem
+
+Making the camp tier date-only introduced a delivery problem the strict rule had hidden:
+`.BRCEmbargoDidClear` was posted from exactly two places, both of them *events* —
+`BRCAppDelegate -enteredBurningManRegion` and `EmbargoPasscodeViewModel`. Nothing posted it
+when a tier's **date** arrived. While every tier needed a GPS fix that was harmless (the
+fix was always the last thing to happen); now the clock alone unlocks camps at
+`YearSettings.campLocationUnlock` (2026-08-23 00:01 PDT), and iOS keeps apps suspended for
+days. An app that was alive or suspended across midnight would keep saying "Location
+Restricted" until the user killed and relaunched it.
+
+Every live surface refreshes off that notification: `PlayaDBAnnotationDataSource`,
+`UserMapViewAdapter`, `BaseMapViewController`, `NearbyViewModel`, `NearbyCardViewModel`,
+the six SwiftUI list hosting controllers, and the watch bridge in
+`DependencyContainer` (line ~174). One correct post fixes all of them.
+
+## Solution
+
+New `iBurn/EmbargoUnlockScheduler.swift`:
+
+- `EmbargoUnlockState` — `{ canShowCampLocations, canShowArtLocations }`, plus
+  `didUnlock(comparedTo:)`, which is true **only** for the locked → unlocked direction.
+  Nothing in the app re-locks, and a spurious post reloads every map data source and list,
+  so the transition is spelled out rather than a plain `!=`.
+- `EmbargoUnlockScheduling` protocol / `EmbargoUnlockSchedulerImpl` /
+  `EmbargoUnlockSchedulerFactory.makeScheduler()`, per the repo's protocolize-and-inject
+  guidance. `DependencyContainer` takes it as an init parameter (defaulted) and calls
+  `start()` alongside its other app-wide listeners.
+- Triggers, deliberately overlapping (a missed unlock is user-visible, a redundant check is
+  free):
+  1. `start()` at launch — records the baseline, posts nothing (every surface is about to
+     read the live state anyway).
+  2. `UIApplication.didBecomeActiveNotification` and
+     `UIApplication.significantTimeChangeNotification` — the latter is what iOS sends at
+     day rollover and on any clock/timezone edit. This pair covers the
+     suspended-across-midnight case, which is the common one.
+  3. One non-repeating `Timer` armed for the next unlock instant still in the future
+     (`campLocationUnlock` or `eventStart`), fired one second past it so the `now >= unlock`
+     comparison holds. Re-armed after every evaluation, so the second tier gets a timer once
+     the first has passed; invalidated first, so only one is ever live. Skipped when nothing
+     is pending or the interval exceeds `maximumScheduledInterval` (400 days — a device with
+     a wildly wrong clock shouldn't hold an absurd fire date; the foreground triggers pick it
+     up later). Tolerance `min(max(5%, 1s), 60s)`.
+- The clock is `Date.present`, the same source `EmbargoService` uses, so the
+  **iBurn (Mock Date)** scheme moves the scheduler too.
+
+## Watch
+
+`iBurnWatch` caches no embargo verdict — every `WatchEmbargo` accessor is computed live —
+but `NearbyScreen` and `FavoritesScreen` hold their rows in `@State` and only recompute
+when something tells them to. Added `WatchEmbargo.refreshUnlockState()`: one snapshot of
+the two tiers, compared and posting the existing `.embargoDidUnlock` on a locked → unlocked
+transition. `iBurnWatchApp` calls it on every `.active` scene phase — a watch app is woken
+far more often than launched, and watchOS suspends between glances, so a timer would rarely
+be the thing that fires. `NearbyScreen` now also re-runs its query on `.embargoDidUnlock`
+(it fetches per tier, so a re-render alone would not repopulate it); `FavoritesScreen`
+already listened.
+
+## Tests
+
+`iBurnTests/EmbargoUnlockSchedulerTests.swift` (17 cases). Everything is injected — `now`
+is a variable the test moves, the post is a counter, the timer is a `FakeTimer` the test
+fires by hand, and the notification center is private to the test — so nothing sleeps.
+Covers: camp date arriving posts once; repeated refreshes stay silent; starting past an
+unlock posts nothing; each tier posts as it opens; a backwards clock re-locks without
+posting and re-posts on the way forward; passcode state is already-unlocked at start; the
+`didUnlock` direction rule; timer armed for the next instant only, re-armed on fire and on
+foreground, none when everything has passed or the interval is absurd; `stop()` invalidates
+and unregisters; `didBecomeActive` / `significantTimeChange` posting; and that the default
+`stateProvider` (`liveState(at:)`) agrees with `EmbargoService`.
+
+## Files
+
+- `iBurn/EmbargoUnlockScheduler.swift` (new)
+- `iBurn/DependencyContainer.swift` (owns + starts it, injectable)
+- `iBurnWatch/WatchEmbargo.swift`, `iBurnWatch/iBurnWatchApp.swift`,
+  `iBurnWatch/NearbyScreen.swift`
+- `iBurnTests/EmbargoUnlockSchedulerTests.swift` (new)
+- `.claude/skills/drive-app/references/flows.md` §6 and §8a
+- `Docs/2026-08-16-camp-boundary-embargo-tier.md` (known gap marked resolved)
+
+## Verification
+
+- `xcodebuild -scheme iBurn` (iPhone 17 Pro Max, iOS 26.5): success, 0 warnings.
+- `xcodebuild -scheme iBurnWatch` (Apple Watch Series 11 46mm): success, 0 warnings.
+- `xcodebuild test -scheme iBurnTests -only-testing:` EmbargoUnlockSchedulerTests,
+  EmbargoStrictUnlockTests, EmbargoTierTests, NearbyEmbargoGatingTests: **104 passed, 0
+  failures**.
+
+## Expected outcome
+
+At 2026-08-23 00:01 PDT an app that is running, or that iOS resumes any time after, posts
+`.BRCEmbargoDidClear` once and every camp address, camp distance and single camp pin
+appears — no relaunch. Foregrounding repeatedly after that posts nothing further. Art is
+untouched: still passcode, or gates-open plus a Burning Man fix.

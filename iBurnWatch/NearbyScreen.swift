@@ -81,6 +81,12 @@ struct NearbyScreen: View {
         .task(id: location.location) {
             await refresh()
         }
+        // Rows are fetched per tier, so a tier opening while this screen is up
+        // (a date rollover noticed on wake, a phone passcode, a first playa fix)
+        // has to re-run the query, not just re-render.
+        .onReceive(NotificationCenter.default.publisher(for: .embargoDidUnlock)) { _ in
+            Task { await refresh() }
+        }
     }
 
     private func refresh() async {

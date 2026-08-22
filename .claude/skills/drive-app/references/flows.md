@@ -517,11 +517,24 @@ Automation notes:
   bumped update.json triggers a JSON re-import with last year's placements.
   While applied, `MockDataShipGuardTests` fails and `playa-seed` refuses — by
   design; revert before committing or building seeds.
-- Unlocking (More → "Unlock Location Data" passcode, or entering the BRC region)
-  posts `BRCEmbargoDidClear`: the map's PlayaDB observations restart and the six
-  SwiftUI list hosting controllers rebuild their root view, so pins/playa
-  addresses appear immediately — **no relaunch needed**. If you have to restart
-  the app to see locations after unlocking, that's a regression.
+- Unlocking (More → "Unlock Location Data" passcode, entering the BRC region, or
+  **a tier's unlock date arriving** — see below) posts `BRCEmbargoDidClear`: the
+  map's PlayaDB observations restart and the six SwiftUI list hosting controllers
+  rebuild their root view, so pins/playa addresses appear immediately — **no
+  relaunch needed**. If you have to restart the app to see locations after
+  unlocking, that's a regression.
+- **Date-rollover refresh** (`iBurn/EmbargoUnlockScheduler.swift`, added Aug 22, started
+  by `DependencyContainer`). The camp tier is date-only, so the clock alone can unlock it
+  while the app is running or suspended. The scheduler holds the last verdict and re-posts
+  `BRCEmbargoDidClear` on a real locked → unlocked transition only, from three triggers:
+  app launch (baseline, never posts), `UIApplication.didBecomeActive` /
+  `significantTimeChange` (this is what covers "suspended across midnight"), and a single
+  one-shot `Timer` armed for the next unlock instant. It reads `Date.present`, so the
+  **iBurn (Mock Date)** scheme moves it too. To drive it: launch with a mock date before
+  `CampLocationUnlock`, move the mock date past it, then background + foreground the app —
+  camp addresses must appear without a relaunch. Unit tests:
+  `iBurnTests/EmbargoUnlockSchedulerTests.swift`. The watch equivalent is
+  `WatchEmbargo.refreshUnlockState()` on scene phase `.active` (§8a).
 - "List" button (top-left) opens "Visible Pins" — a SwiftUI/PlayaDB list of what
   is currently drawn inside the map's visible bounds, sectioned Art / Camps /
   Events / Map Pins, nearest-first when a location is available. Tapping a data
@@ -1078,7 +1091,7 @@ the tell that the restore was used and no JSON import ran.
    Favorites / Want to Visit / Visited and "Type": All/Camps/Art/Events/Vehicles;
    icon fills when non-default). Rows sort by distance, falling back to name —
    so while everything is embargoed the list is alphabetical.
-8a. **Location embargo (watch) — strict rule: date + GPS, or passcode.**
+8a. **Location embargo (watch) — art: date + GPS, or passcode; camp: date only.**
    The seed database ships full GPS — there is no OTA update path — so the gate
    lives in the UI: `iBurnWatch/WatchEmbargo.swift` over the shared pure seam
    `PlayaDB.LocationEmbargo`. A tier's coordinates are shown only when
@@ -1088,9 +1101,12 @@ the tell that the restore was used and no JSON import ran.
    ```
 
    with camps (and camp-hosted events) at `CampLocationUnlock` and art (and
-   art-located events) at `EventStart`. **The date alone never unlocks** —
-   the watch clock is user-settable, so a calendar-only gate is defeated in
-   Settings ▸ Date & Time. `inRegion` means this watch has taken a GPS fix
+   art-located events) at `EventStart`. Since 2026-08-22 the **camp tier drops
+   the `inRegion` half** (matching the phone — the week-early camp-address
+   release has to work before travel), so its rule is
+   `passcodeUnlocked || now >= CampLocationUnlock`. For **art the date alone
+   never unlocks** — the watch clock is user-settable, so a calendar-only gate
+   is defeated in Settings ▸ Date & Time. `inRegion` means this watch has taken a GPS fix
    inside the Burning Man region (Man centre from `YearSettings.plist`, radius
    `5 * 8046.72` m — the phone's `BRCLocations.burningManRegion`); that fact is
    latched into `UserDefaults` key `embargoRegionSeen` by
@@ -1111,6 +1127,12 @@ the tell that the restore was used and no JSON import ran.
    The watch has no passcode UI; the phone pushes its unlock over
    WatchConnectivity (`PeerSyncManager`, key `embargoUnlockedV1`, latch-only)
    and the watch stores it under `UserDefaults` key `embargoUnlockedFromPhone`.
+   Because the camp tier now turns on the calendar alone, `iBurnWatchApp` calls
+   `WatchEmbargo.refreshUnlockState()` on every `.active` scene phase; it holds
+   the last tier snapshot and posts `embargoDidUnlock` on a locked → unlocked
+   transition, so a watch asleep across the unlock instant notices on wake (no
+   timer — watchOS suspends between glances). `NearbyScreen` re-runs its query
+   on that notification, since it fetches per tier.
    Either latch flipping posts `embargoDidUnlock`; location-driven surfaces
    recompute per fix anyway (the region latch is written *before* the fix is
    published), and Favorites, whose rows are built per refresh, listens for the

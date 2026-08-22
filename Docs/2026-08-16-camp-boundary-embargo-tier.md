@@ -333,7 +333,13 @@ sites read as policy rather than as a tier lookup:
 `xcodebuild test -scheme iBurnTests` (iPhone 17 Pro Max, iOS 26.5): **609 tests, 0
 failures** (601 before, +8 new). No pbxproj / `DEVELOPMENT_TEAM` churn.
 
-## Known gap (pre-existing, not introduced here)
+## Known gap (pre-existing, not introduced here) — **RESOLVED 2026-08-22**
+
+Fixed by `iBurn/EmbargoUnlockScheduler.swift`; see
+`Docs/2026-08-22-camp-tier-date-only-unlock.md` § "Date-rollover refresh". The scheduler
+re-evaluates on launch, on `didBecomeActive`/`significantTimeChange` and on a timer armed
+for the next unlock instant, and posts `.BRCEmbargoDidClear` on a locked → unlocked
+transition. The original description follows.
 
 `.BRCEmbargoDidClear` is posted on region entry and on passcode entry only — nothing
 posts it when a tier's *date* rolls over with the app running. Both tier transitions
