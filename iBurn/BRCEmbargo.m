@@ -38,13 +38,16 @@
 }
 
 // Every verdict below comes from BRCEmbargoService (EmbargoService.swift), which
-// applies the shared strict rule:
+// applies the shared per-tier rule:
 //
-//     passcodeUnlocked || (inRegion && now >= unlockDate(tier))
+//     camp: passcodeUnlocked || now >= campLocationUnlock
+//     art:  passcodeUnlocked || (inRegion && now >= eventStart)
 //
-// A date alone never unlocks anything: the device clock is user-settable, so the
-// old "after festival start" check (which also latched the passcode flag) was
-// defeated by moving Settings ▸ Date & Time forward. This class stays as the
+// For the art tier a date alone never unlocks anything: the device clock is
+// user-settable, so the old "after festival start" check (which also latched the
+// passcode flag) was defeated by moving Settings ▸ Date & Time forward. The camp
+// tier was relaxed to a date-only unlock on 2026-08-22 so the week-early camp
+// address release is usable while planning from home. This class stays as the
 // Objective-C façade the app already calls; only the answers changed.
 + (BOOL)allowEmbargoedData
 {

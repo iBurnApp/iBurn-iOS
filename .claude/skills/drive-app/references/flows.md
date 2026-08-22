@@ -299,21 +299,27 @@ Automation notes:
   gates (`YearSettings.campLocationUnlock`), art (and art-located events) at
   gates-open (`eventStart`). Location-dependent pins won't appear in pre-event
   builds — this is expected, not a bug.
-- **The rule is strict — a date alone never unlocks anything** (iOS adopted the watch's
-  rule on Aug 12; `iBurn/EmbargoService.swift` over `PlayaDB.LocationEmbargo`, with
+- **The rule is per-tier** (iOS adopted the watch's rule on Aug 12; camp tier relaxed
+  Aug 22 — `iBurn/EmbargoService.swift` over `PlayaDB.LocationEmbargo`, with
   `BRCEmbargo` reduced to a façade):
 
-      passcodeUnlocked || (inRegion && now >= <tier unlock date>)
+      camp: passcodeUnlocked || now >= campLocationUnlock
+      art:  passcodeUnlocked || (inRegion && now >= eventStart)
 
-  `inRegion` means this device has taken a fix inside `BRCLocations.burningManRegion`
-  (5 miles round the Man), latched into the app-container plist key
-  `kBRCEntered2026BurningManRegionKey` by `BRCAppDelegate -enteredBurningManRegion`, so it
-  survives relaunches. **Moving the clock forward no longer unlocks the app** (it used to,
-  and used to latch the passcode flag while doing it), so a driving session that needs
-  locations must either write `kBRCEntered2026EmbargoPasscodeKey` (§8 recipe) or combine a
-  BRC fix (`xcrun simctl location <UDID> set 40.7864,-119.2065`) with a date past the tier.
-  A sim off the playa stays locked at every date — that is the correct behaviour, not a
-  broken build.
+  The **camp tier is date-only**: past `CampLocationUnlock` a sim anywhere shows camp
+  address text and the single pin on a camp's detail screen — no GPS needed. The **art
+  tier still needs both halves**, and it is the tier that gates *bulk* placement: the
+  browse map's camp pins, `camp-labels-big`/`camp-boundaries`, bulk event pins, and every
+  art coordinate. `inRegion` means this device has taken a fix inside
+  `BRCLocations.burningManRegion` (5 miles round the Man), latched into the app-container
+  plist key `kBRCEntered2026BurningManRegionKey` by
+  `BRCAppDelegate -enteredBurningManRegion`, so it survives relaunches. **Moving the clock
+  forward does not populate the map** (it used to, and used to latch the passcode flag
+  while doing it), so a driving session that needs map pins must either write
+  `kBRCEntered2026EmbargoPasscodeKey` (§8 recipe) or combine a BRC fix
+  (`xcrun simctl location <UDID> set 40.7864,-119.2065`) with a date past gates. A sim off
+  the playa with a post-camp-date clock showing camp addresses but an empty map is the
+  correct behaviour, not a broken build.
 - **Re-tapping the Map tab resets the map**, stock-iOS style and in two steps: with
   something pushed (a detail screen, the visible-pins list) the first re-tap **pops to the
   map**; the next one, now at the root, **flies the camera back** to
@@ -687,8 +693,9 @@ stays empty). Its footer is **"Hide" (leading) | page dots (centered) | "See all
 occurrence `isInNearbyWindow` (starts within 30 min / hasn't ended), so pre-event there is
 nothing but art + camps. Set `BRCMockDateEnabled`/`BRCMockDateValue` (app-container prefs
 via the §8 `defaults write` recipe, app terminated; default mock is 2026-09-04T11:00-0700)
-to get live events. Since Aug 12 the mock date **no longer lifts the embargo on its own**
-(the rule needs a playa fix or the passcode — see §6), and nothing writes
+to get live events. Since Aug 12 the mock date **no longer lifts the art tier on its own**
+(that half needs a playa fix or the passcode — see §6; the camp tier does unlock on the
+mock date alone since Aug 22), and nothing writes
 `kBRCEntered2026EmbargoPasscodeKey` behind your back any more. What a BRC location *does*
 write is the region latch `kBRCEntered2026BurningManRegionKey = YES`, which combined with a
 festival mock date unlocks the tiers; delete that key (§8 recipe — **not** PlistBuddy) when

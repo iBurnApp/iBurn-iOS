@@ -139,18 +139,30 @@ public struct EmbargoRegion: Sendable, Equatable {
 
 /// Pure answer to "may this object's coordinates be shown?".
 ///
-/// The rule is deliberately stricter than a calendar check. A date alone is not
-/// evidence: the device clock is user-settable, so "unlock when `now >=`
-/// EventStart" is defeated by dragging Settings ▸ Date & Time forward. Being
-/// physically inside the Burning Man region is not spoofable that way, so both
-/// have to hold:
+/// Two rules, one per tier, differing only in whether the GPS half is required:
 ///
 /// ```
-/// passcodeUnlocked || (inRegion && now >= unlockDate(tier))
+/// .camp: passcodeUnlocked || now >= unlockDate(.camp)
+/// .art:  passcodeUnlocked || (inRegion && now >= unlockDate(.art))
 /// ```
 ///
+/// **Art tier — date *and* region.** A date alone is not evidence: the device
+/// clock is user-settable, so "unlock when `now >=` EventStart" is defeated by
+/// dragging Settings ▸ Date & Time forward. Being physically inside the Burning
+/// Man region is not spoofable that way, so full placement — every art
+/// coordinate, and the bulk camp placement layers the map draws — needs both.
 /// The consequence is accepted, not accidental: someone at home stays locked
-/// past the unlock dates unless their phone pushes a passcode unlock.
+/// past gates open unless they enter the BMorg passcode.
+///
+/// **Camp tier — date only** (policy decision, 2026-08-22). Theme camp
+/// addresses release a week before gates, and the point of that early release
+/// is that burners can plan their week *before* they are on the playa —
+/// requiring a playa GPS fix would have made the week-early window unreachable
+/// for exactly the people it is for. So the camp tier drops the region half and
+/// unlocks on the calendar alone. What it releases stays narrow: a camp's
+/// address text, and the single pin for a camp the user navigated to. Bulk camp
+/// placement (the browse map's camp pins, `camp-labels-big`, `camp-boundaries`)
+/// is not on this tier — it rides `.art`, and still needs region + gates.
 ///
 /// Nothing here reads ambient state — `now`, `passcodeUnlocked` and `inRegion`
 /// are all parameters — which is what makes the whole thing testable in one
@@ -174,12 +186,26 @@ public struct LocationEmbargo: Sendable, Equatable {
         }
     }
 
+    /// Does this tier need a Burning Man GPS fix on top of its date?
+    ///
+    /// `.art` does: full placement is the data the strict rule exists to
+    /// protect, and a user-settable clock is not evidence on its own.
+    /// `.camp` does not: the week-early camp-address release is meant to be
+    /// usable while planning from home (see the type doc).
+    /// `.unrestricted` has no date to pair a region with.
+    public func requiresRegion(for tier: EmbargoTier) -> Bool {
+        switch tier {
+        case .art: return true
+        case .camp, .unrestricted: return false
+        }
+    }
+
     /// - Parameters:
-    ///   - now: The device clock. Never sufficient on its own.
+    ///   - now: The device clock. Sufficient on its own only for `.camp`.
     ///   - passcodeUnlocked: The BMorg passcode was entered (on this device or,
-    ///     for the watch, on the paired phone). The one bypass.
+    ///     for the watch, on the paired phone). The one bypass, for every tier.
     ///   - inRegion: This device is, or has been, inside the Burning Man region
-    ///     — i.e. the user is actually at the event.
+    ///     — i.e. the user is actually at the event. Required by `.art` only.
     public func canShowLocations(
         tier: EmbargoTier,
         now: Date,
@@ -188,7 +214,8 @@ public struct LocationEmbargo: Sendable, Equatable {
     ) -> Bool {
         guard let unlock = unlockDate(for: tier) else { return true }
         if passcodeUnlocked { return true }
-        return inRegion && now >= unlock
+        guard now >= unlock else { return false }
+        return inRegion || !requiresRegion(for: tier)
     }
 
     public func canShowCampLocations(now: Date, passcodeUnlocked: Bool, inRegion: Bool) -> Bool {

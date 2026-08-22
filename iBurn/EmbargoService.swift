@@ -17,19 +17,25 @@ import PlayaDB
 /// placement may be drawn, and it is the same pure rule the watch uses:
 ///
 /// ```
-/// passcodeUnlocked || (inRegion && now >= unlockDate(tier))
+/// .camp: passcodeUnlocked || now >= campLocationUnlock
+/// .art:  passcodeUnlocked || (inRegion && now >= eventStart)
 /// ```
 ///
-/// The date on its own is deliberately **not** enough. `Settings ▸ General ▸ Date
-/// & Time` is user-settable, so the old "unlock at gates open" check was defeated
-/// by dragging the clock forward — and, worse, it *latched* that unlock into the
-/// passcode flag, so a single minute of a forward clock unlocked the app for the
-/// season. Standing inside the Burning Man region is not forgeable that way, so
-/// that is the half that gets persisted (`UserDefaults.enteredBurningManRegion`),
-/// and the date is re-evaluated live on every call.
+/// For the **art** tier the date on its own is deliberately **not** enough.
+/// `Settings ▸ General ▸ Date & Time` is user-settable, so the old "unlock at
+/// gates open" check was defeated by dragging the clock forward — and, worse, it
+/// *latched* that unlock into the passcode flag, so a single minute of a forward
+/// clock unlocked the app for the season. Standing inside the Burning Man region
+/// is not forgeable that way, so that is the half that gets persisted
+/// (`UserDefaults.enteredBurningManRegion`), and the date is re-evaluated live on
+/// every call. The accepted cost: someone at home stays locked past gates open
+/// unless they enter the BMorg passcode.
 ///
-/// The accepted cost, decided for the 2026.0 release: someone at home stays
-/// locked past the unlock dates unless they enter the BMorg passcode.
+/// The **camp** tier is date-only (relaxed 2026-08-22). Camp addresses release a
+/// week before gates precisely so people can plan before they travel, which a
+/// playa-GPS requirement would have made impossible. Only the narrow surfaces
+/// ride it — camp address text and the single pin for a camp the user opened; see
+/// `MapEmbargo` for what stays on the art tier.
 @objc(BRCEmbargoService)
 public final class EmbargoService: NSObject {
 
@@ -126,11 +132,12 @@ public final class EmbargoService: NSObject {
 
 /// Which tier a *map* surface answers to.
 ///
-/// The camp tier (`YearSettings.campLocationUnlock`, the Sunday before gates) releases a
-/// camp's **address text** and the pin for a camp the user asked to see — one camp, on
-/// purpose. It does not release the city's placement: a screen that draws hundreds of camp
-/// pins, or the polygons/labels the placement geojson carries, is exact placement data in
-/// bulk and waits for gates (`YearSettings.eventStart`), the same instant art unlocks.
+/// The camp tier (`YearSettings.campLocationUnlock`, the Sunday before gates — and, since
+/// 2026-08-22, on the device date alone) releases a camp's **address text** and the pin for
+/// a camp the user asked to see — one camp, on purpose. It does not release the city's
+/// placement: a screen that draws hundreds of camp pins, or the polygons/labels the
+/// placement geojson carries, is exact placement data in bulk and waits for gates
+/// (`YearSettings.eventStart`) *and* a playa GPS fix, the same rule art unlocks under.
 ///
 /// The passcode bypass is inherent — it satisfies every tier — so nothing here needs to
 /// special-case it.

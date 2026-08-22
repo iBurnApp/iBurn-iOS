@@ -11,17 +11,22 @@ import XCTest
 @testable import iBurn
 import PlayaDB
 
-/// The strict location-embargo rule the phone adopted for 2026.0:
+/// The location-embargo rule the phone adopted for 2026.0, per tier:
 ///
 /// ```
-/// passcodeUnlocked || (inRegion && now >= unlockDate(tier))
+/// .camp: passcodeUnlocked || now >= campLocationUnlock
+/// .art:  passcodeUnlocked || (inRegion && now >= eventStart)
 /// ```
 ///
-/// The regression this case exists for is the first one: the app used to unlock
-/// itself the moment `Date.present` passed the festival start — and latch that
-/// into the passcode flag — so a minute of a forward-set device clock published
-/// every camp and art coordinate for the season. `EmbargoTierTests` covers which
-/// tier each date opens; this covers what a date is *not* sufficient for.
+/// The regression the strict half exists for: the app used to unlock itself the
+/// moment `Date.present` passed the festival start — and latch that into the
+/// passcode flag — so a minute of a forward-set device clock published every
+/// camp and art coordinate for the season. Art placement still needs the region.
+/// The camp tier was relaxed to date-only on 2026-08-22 (the week-early camp
+/// address release has to be usable while planning from home), so what it can
+/// leak is a camp's address text and the one pin the user opened — never bulk
+/// placement, which rides `.art`. `EmbargoTierTests` covers which tier each date
+/// opens; this covers what each input is and is not sufficient for.
 final class EmbargoStrictUnlockTests: XCTestCase {
 
     private var originalUnlocked = false
@@ -58,15 +63,35 @@ final class EmbargoStrictUnlockTests: XCTestCase {
         UserDefaults.standard.set(date, forKey: "BRCMockDateValue")
     }
 
-    // MARK: - A date alone never unlocks
+    // MARK: - What a date alone unlocks
 
-    func testDateAloneNeverUnlocksAnyTier() throws {
-        for instant in [beforeAnyTier, insideCampWindow, afterGatesOpen] {
+    /// Off playa, with no passcode: nothing at all until the camp date, then
+    /// camp addresses only — art placement never rides the clock alone.
+    func testDateAloneUnlocksTheCampTierOnly() throws {
+        try timeTravel(to: beforeAnyTier)
+        XCTAssertFalse(BRCEmbargo.canShowCampLocations(), beforeAnyTier)
+        XCTAssertFalse(BRCEmbargo.canShowArtLocations(), beforeAnyTier)
+        XCTAssertFalse(BRCEmbargo.allowEmbargoedData(), beforeAnyTier)
+
+        for instant in [insideCampWindow, afterGatesOpen] {
             try timeTravel(to: instant)
-            XCTAssertFalse(BRCEmbargo.allowEmbargoedData(), instant)
-            XCTAssertFalse(BRCEmbargo.canShowCampLocations(), instant)
+            XCTAssertTrue(BRCEmbargo.canShowCampLocations(), instant)
             XCTAssertFalse(BRCEmbargo.canShowArtLocations(), instant)
+            XCTAssertFalse(BRCEmbargo.allowEmbargoedData(), instant)
         }
+    }
+
+    /// Bulk camp placement (the browse map's pins, the boundary/label layers)
+    /// is not on the relaxed tier: it waits for region + gates like art does.
+    func testDateAloneDoesNotUnlockBulkCampPlacement() throws {
+        try timeTravel(to: insideCampWindow)
+        XCTAssertTrue(MapEmbargo.allowsSingleCampLocation())
+        XCTAssertFalse(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertFalse(MapEmbargo.allowsArtLocation())
+
+        try timeTravel(to: afterGatesOpen)
+        XCTAssertFalse(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertFalse(MapEmbargo.allowsArtLocation())
     }
 
     /// The old behaviour didn't just answer "yes" past gates open, it wrote the
@@ -89,6 +114,14 @@ final class EmbargoStrictUnlockTests: XCTestCase {
         XCTAssertTrue(EmbargoService.hasSeenBurningManRegion)
         XCTAssertFalse(BRCEmbargo.canShowCampLocations())
         XCTAssertFalse(BRCEmbargo.canShowArtLocations())
+    }
+
+    /// The camp tier ignores the region half entirely: same verdict either way.
+    func testCampTierIgnoresTheRegion() throws {
+        try timeTravel(to: insideCampWindow)
+        XCTAssertTrue(BRCEmbargo.canShowCampLocations())
+        EmbargoService.noteEnteredBurningManRegion()
+        XCTAssertTrue(BRCEmbargo.canShowCampLocations())
     }
 
     func testRegionPlusCampDateUnlocksCampsOnly() throws {
@@ -172,14 +205,26 @@ final class EmbargoStrictUnlockTests: XCTestCase {
 
         for tier in [EmbargoTier.camp, .art] {
             for now in [early, campOpen, gatesOpen] {
-                // No passcode, not in region: never.
-                XCTAssertFalse(EmbargoService.canShowLocations(
-                    tier: tier, now: now, passcodeUnlocked: false, inRegion: false))
                 // Passcode: always, whatever the clock or the region says.
                 XCTAssertTrue(EmbargoService.canShowLocations(
-                    tier: tier, now: now, passcodeUnlocked: true, inRegion: false))
+                    tier: tier, now: now, passcodeUnlocked: true, inRegion: true))
+                XCTAssertEqual(
+                    EmbargoService.canShowLocations(
+                        tier: tier, now: now, passcodeUnlocked: false, inRegion: false),
+                    tier == .camp && now >= campOpen,
+                    "no passcode, off playa: only camps, only from the camp date")
             }
         }
+
+        // Off playa, no passcode: camps from their date, art never.
+        XCTAssertTrue(EmbargoService.canShowLocations(
+            tier: .camp, now: campOpen, passcodeUnlocked: false, inRegion: false))
+        XCTAssertTrue(EmbargoService.canShowLocations(
+            tier: .camp, now: gatesOpen, passcodeUnlocked: false, inRegion: false))
+        XCTAssertFalse(EmbargoService.canShowLocations(
+            tier: .camp, now: early, passcodeUnlocked: false, inRegion: false))
+        XCTAssertFalse(EmbargoService.canShowLocations(
+            tier: .art, now: gatesOpen, passcodeUnlocked: false, inRegion: false))
 
         XCTAssertTrue(EmbargoService.canShowLocations(
             tier: .camp, now: campOpen, passcodeUnlocked: false, inRegion: true))

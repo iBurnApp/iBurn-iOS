@@ -121,12 +121,19 @@ final class NearbyEmbargoGatingTests: XCTestCase {
     private let deviceLocation = CLLocation(latitude: 40.7864, longitude: -119.2065)
 
     private var originalUnlocked = false
+    private var originalRegionSeen = false
     private var originalTimeShift: TimeShiftConfiguration?
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         originalUnlocked = UserDefaults.enteredEmbargoPasscode
+        originalRegionSeen = UserDefaults.enteredBurningManRegion
         UserDefaults.enteredEmbargoPasscode = false
+        // These cases are about *which tier* a date opens, so they run as a device
+        // that has been to Black Rock City — the art tier needs that half, the
+        // relaxed camp tier ignores it. `EmbargoStrictUnlockTests` owns the
+        // question of what each input unlocks on its own.
+        UserDefaults.enteredBurningManRegion = true
         originalTimeShift = UserSettings.nearbyTimeShiftConfig
         UserSettings.nearbyTimeShiftConfig = nil
         UserDefaults.standard.set(true, forKey: "BRCMockDateEnabled")
@@ -136,6 +143,7 @@ final class NearbyEmbargoGatingTests: XCTestCase {
 
     override func tearDownWithError() throws {
         UserDefaults.enteredEmbargoPasscode = originalUnlocked
+        UserDefaults.enteredBurningManRegion = originalRegionSeen
         UserSettings.nearbyTimeShiftConfig = originalTimeShift
         UserDefaults.standard.removeObject(forKey: "BRCMockDateEnabled")
         UserDefaults.standard.removeObject(forKey: "BRCMockDateValue")

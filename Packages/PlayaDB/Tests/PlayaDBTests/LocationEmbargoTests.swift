@@ -8,9 +8,15 @@ import XCTest
 /// whole contract: one second early is a ToS violation, one second late is a
 /// user-visible regression.
 ///
-/// The rule under test is `passcodeUnlocked || (inRegion && now >= unlock)`.
-/// The date half alone must never unlock anything — the device clock is
-/// user-settable, and a calendar-only gate is defeated in Settings.
+/// The rule under test is per-tier:
+///
+/// - camp: `passcodeUnlocked || now >= unlock`
+/// - art:  `passcodeUnlocked || (inRegion && now >= unlock)`
+///
+/// For art the date half alone must never unlock anything — the device clock is
+/// user-settable, and a calendar-only gate is defeated in Settings. Camps were
+/// relaxed to a date-only unlock on 2026-08-22 so the week-early camp address
+/// release is usable while planning from home.
 final class LocationEmbargoTests: XCTestCase {
 
     // 2026: camps at 12:01 am PDT on the Sunday before, art at gate opening.
@@ -89,17 +95,13 @@ final class LocationEmbargoTests: XCTestCase {
         XCTAssertNil(embargo.unlockDate(for: .unrestricted))
     }
 
-    // MARK: - The date alone never unlocks
+    // MARK: - What each half unlocks on its own
 
-    /// The regression test for the whole policy: a clock rolled forward past
-    /// both unlock dates, on a device that has never been to Black Rock City,
-    /// still shows nothing.
-    func testDateAloneNeverUnlocksWithoutTheRegion() throws {
+    /// The regression test the strict rule exists for: a clock rolled forward
+    /// past gates open, on a device that has never been to Black Rock City,
+    /// still shows no *art* placement.
+    func testDateAloneNeverUnlocksArtWithoutTheRegion() throws {
         for now in [campUnlock, artUnlock, try date("2026-09-02T12:00:00Z"), try date("2030-01-01T00:00:00Z")] {
-            XCTAssertFalse(
-                embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: false),
-                "camps must stay locked off-playa at \(now)"
-            )
             XCTAssertFalse(
                 embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: false),
                 "art must stay locked off-playa at \(now)"
@@ -107,12 +109,36 @@ final class LocationEmbargoTests: XCTestCase {
         }
     }
 
-    /// …and the region alone doesn't either: showing up in the desert in July
-    /// unlocks nothing.
+    /// …and the camp tier, relaxed 2026-08-22, unlocks off-playa on the date
+    /// alone — but not one second early.
+    func testDateAloneUnlocksCampsOffPlayaFromTheCampDate() throws {
+        for now in [campUnlock, artUnlock, try date("2026-09-02T12:00:00Z"), try date("2030-01-01T00:00:00Z")] {
+            XCTAssertTrue(
+                embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: false),
+                "camps must be visible off-playa at \(now)"
+            )
+        }
+        XCTAssertFalse(embargo.canShowCampLocations(
+            now: campUnlock.addingTimeInterval(-1), passcodeUnlocked: false, inRegion: false
+        ))
+        XCTAssertFalse(embargo.canShowCampLocations(
+            now: try date("2026-08-10T12:00:00Z"), passcodeUnlocked: false, inRegion: false
+        ))
+    }
+
+    /// The region alone unlocks nothing: showing up in the desert in July
+    /// unlocks neither tier.
     func testRegionAloneNeverUnlocksBeforeTheDates() throws {
         let now = try date("2026-07-04T12:00:00Z")
         XCTAssertFalse(embargo.canShowCampLocations(now: now, passcodeUnlocked: false, inRegion: true))
         XCTAssertFalse(embargo.canShowArtLocations(now: now, passcodeUnlocked: false, inRegion: true))
+    }
+
+    /// The tier-shaped half of the rule, stated directly.
+    func testOnlyTheArtTierRequiresTheRegion() {
+        XCTAssertTrue(embargo.requiresRegion(for: .art))
+        XCTAssertFalse(embargo.requiresRegion(for: .camp))
+        XCTAssertFalse(embargo.requiresRegion(for: .unrestricted))
     }
 
     /// Both halves, per tier: on playa, camps open a week before art does.
@@ -235,8 +261,9 @@ final class LocationEmbargoTests: XCTestCase {
                                               passcodeUnlocked: false,
                                               inRegion: true))
 
-        // Same objects, same instant, off playa: nothing.
-        XCTAssertFalse(embargo.canShowLocation(
+        // Same objects, same instant, off playa: camps yes (date-only tier),
+        // art no.
+        XCTAssertTrue(embargo.canShowLocation(
             for: camp(), now: afterGates, passcodeUnlocked: false, inRegion: false
         ))
         XCTAssertFalse(embargo.canShowLocation(
@@ -309,7 +336,9 @@ final class LocationEmbargoTests: XCTestCase {
         XCTAssertFalse(embargo.canShowArtLocations(now: earlyAugust, passcodeUnlocked: false, inRegion: onPlaya))
 
         let offPlaya = LocationEmbargo.isInRegion(location: reno(), region: manCenter)
-        XCTAssertFalse(embargo.canShowCampLocations(now: duringEvent, passcodeUnlocked: false, inRegion: offPlaya))
+        XCTAssertFalse(embargo.canShowArtLocations(now: duringEvent, passcodeUnlocked: false, inRegion: offPlaya))
+        // Camps ride the date alone, so Reno sees camp addresses mid-event.
+        XCTAssertTrue(embargo.canShowCampLocations(now: duringEvent, passcodeUnlocked: false, inRegion: offPlaya))
     }
 
     /// A year whose settings can't be read yields no `LocationEmbargo` at all,
