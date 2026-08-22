@@ -331,3 +331,69 @@ swift test --package-path Packages/PlayaDB                     → 349 passed, 0
 xcodebuild -workspace iBurn.xcworkspace -scheme iBurn …        → success, 0 errors, 0 warnings
 xcodebuild -workspace iBurn.xcworkspace -scheme iBurnWatch …   → success, 0 errors, 0 warnings
 ```
+
+---
+
+# API data refresh (Aug 22)
+
+Routine BMorg API refresh of the 2026 bundles, plus a placement regression fix.
+
+## Commands
+
+```bash
+cd Submodules/iBurn-Data/scripts/BlackRockCityPlanner
+node src/cli/fetch_and_geocode.js -y 2026 -l ../../data/2026/layouts/layout.json \
+  -o ../../data/2026/APIData/APIData.bundle      # BMORG_API_KEY from the environment
+
+cd ../..                                          # Submodules/iBurn-Data
+node scripts/apply_placement.js --year 2026       # restores footprint-centroid camp pins
+
+cd ../..                                          # repo root
+swift run --package-path Packages/PlayaSeed playa-seed --fetch-media
+```
+
+## Count deltas (Aug 19 `7295d21` → Aug 22 `85101b8`)
+
+| | Aug 19 | Aug 22 |
+|---|---|---|
+| art | 332 | 331 |
+| art at GPS 0,0 (known upstream test rows) | 20 | 20 |
+| camps | 1185 | 1184 |
+| camps with GPS | 1178 | 1177 |
+| events (records) | 2884 | 2876 |
+| event occurrences | 5791 | 5778 |
+| mutant vehicles | 492 | 493 |
+| `camp_outlines`/`camp_labels` features | 1178 | 1175 |
+
+Every feed has unique uids (art 331/331, camps 1184/1184, events 2876/2876, mv 493/493);
+no null-island camps; no `MOCK_LOCATIONS` sentinel.
+
+## Placement regression fixed
+
+The Aug 19 refresh ran `fetch_and_geocode.js` **without** the mandatory follow-up
+`apply_placement.js`, so all camp pins had been sitting on the address geocoder's
+street-intersection points rather than their footprint centroids (verified: 0 of 1176
+camps in the Aug 19 snapshot matched their own `camp_labels.geojson` geometry).
+Re-applying placement here restores that: 1175 camps from polygon centroid, 2 from the
+address geocode, 7 without GPS, 9 with no geometry at all. All 1175 placed camps now
+match their label feature exactly (1e-9). Outlines/labels drop 1178 → 1175 features
+because three camps left the API roster. `camp.json: unchanged` on an idempotent re-run.
+31 API-vs-drop field conflicts, all resolved API-wins; 0 placement fields filled.
+
+## Seed + validation
+
+`playa-seed --fetch-media` downloaded 1 new thumbnail
+(`data/2026/MediaFiles/MediaFiles.bundle/a6BVI000000Gent2AC.jpg`, committed in the
+submodule) and rewrote both zips at 3155 KB (was 3124 KB): 331 art, 1184 camps, 5778
+occurrences, 493 MVs, 1574 thumbnail colours, no warnings.
+
+```
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn …            → success, 0 errors, 0 warnings
+swift test --package-path Packages/PlayaDB --filter ReimportUpgradeTests → 7 passed
+```
+
+## Commits (not pushed)
+
+* `Submodules/iBurn-Data` `85101b8` — "2026 API refresh (Aug 22) + placement re-applied"
+* `Submodules/iBurn-Data` `aeea85a` — "2026 media: fetch 1 thumbnail new in the Aug 22 API data"
+* app repo `3708788` — submodule pointer bump
