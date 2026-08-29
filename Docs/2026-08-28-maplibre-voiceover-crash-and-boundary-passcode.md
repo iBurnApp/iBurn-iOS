@@ -69,3 +69,95 @@ one-PR release notes are the verification.
 ### Not done
 No simulator smoke run (another agent was working in the same checkout). The fix is upstream and
 inside a VoiceOver-only code path, so it is not reachable without an accessibility session anyway.
+
+---
+
+## 2. Camp boundary polygons: remove the passcode bypass (BMorg request)
+
+### High-level plan
+
+**Problem.** BMorg asked (relayed 2026-08-28) that the **staff unlock passcode must no longer
+reveal the camp boundary polygons**. Until now the passcode satisfied every tier, so entering it
+turned on the `camp-boundaries` style layer — the literal `camp_outlines` footprints for the whole
+city — anywhere, at any date.
+
+**Policy as implemented (the stated interpretation, now spelled out in the code comments):**
+
+| surface | rule |
+|---|---|
+| `camp-boundaries` polygons | `inRegion && now >= eventStart` — **no passcode bypass** |
+| `camp-labels-big`, bulk camp pins, bulk event pins, all art placement | `passcodeUnlocked \|\| (inRegion && now >= eventStart)` — unchanged |
+| single camp pin / camp address text | `passcodeUnlocked \|\| now >= campLocationUnlock` — unchanged |
+| mutant vehicles, user pins | unrestricted — unchanged |
+
+Scope is deliberately narrow: the ask was about the polygons, so `camp-labels-big` and the bulk
+pins keep the passcode-inclusive art-tier rule. The polygons are never *more* visible than the
+rest of the placement data, so this is a strict subset of what the map already showed.
+
+**Shape.** A dedicated check rather than a new tier — no other surface's behaviour changes:
+
+- `LocationEmbargo.canShowLocations(...)` grew a `passcodeCanUnlock: Bool = true` parameter
+  (defaulted, so every existing caller is untouched).
+- `LocationEmbargo.canShowCampBoundaryPolygons(now:inRegion:)` — the art tier with
+  `passcodeUnlocked: false, passcodeCanUnlock: false`.
+- `EmbargoService.canShowCampBoundaryPolygons()` (+ a pure `(now:inRegion:)` seam for tests)
+  and `MapEmbargo.allowsCampBoundaryPolygons()`.
+- `CampLayerVisibility.resolve(...)` gained `embargoAllowsBoundaryPolygons:`; `boundariesVisible`
+  now reads it while `labelsVisible` keeps `embargoAllowsPlacement`. `CampLayerVisibility.current`
+  wires `MapEmbargo.allowsCampBoundaryPolygons()` / `MapEmbargo.allowsBulkCampPlacement()`
+  respectively.
+
+**`.BRCEmbargoDidClear` path.** `BaseMapViewController.embargoDidClear` →
+`MapLayerManager.updateAllLayers()` → `updateCampLayerVisibility()`, which *assigns*
+`boundariesLayer.isVisible = visibility.boundariesVisible` from a freshly resolved verdict. A
+passcode-only unlock therefore re-evaluates the polygons to `false` rather than latching them on.
+Covered by `testEmbargoDidClearRefreshLeavesPolygonsHiddenForAPasscodeOnlyUnlock`.
+
+**Other surfaces.** Grepped `camp-boundaries` / `camp_outlines` / `polygon` / `outline` across
+`iBurn/` and `iBurnWatch/`: the `camp-boundaries` style layer is the **only** renderer of camp
+footprints. The watch has no map at all (`iBurnWatch/WatchEmbargo.swift` gates list distances,
+Nearby, Navigate and favourite ordering — no polygons), so no watch change was needed.
+
+**Passcode screen copy** (`iBurn/EmbargoPasscodeView.swift`) now says the camp boundary outlines
+are the one thing the passcode does not unlock, so a staff user isn't left thinking it's a bug.
+
+### Files changed
+- `Packages/PlayaDB/Sources/PlayaDB/LocationEmbargo.swift`
+- `Packages/PlayaDB/Tests/PlayaDBTests/LocationEmbargoTests.swift`
+- `iBurn/EmbargoService.swift`
+- `iBurn/MapLayerManager.swift`
+- `iBurn/EmbargoPasscodeView.swift`
+- `iBurnTests/EmbargoTierTests.swift`
+- `iBurnTests/EmbargoStrictUnlockTests.swift`
+- `.claude/skills/drive-app/references/flows.md` (§6 embargo rule + the camp-layer note)
+
+### Tests added
+PlayaDB `LocationEmbargoTests`: polygons need region+gates; the passcode never opens them (before
+and after the gates date, off playa); the passcode still opens everything else; polygons are always
+a subset of art-tier visibility. `EmbargoTierTests`: passcode unlocks labels but not polygons;
+passcode off-playa never shows polygons at any of three dates while `allowEmbargoedData()` /
+`allowsBulkCampPlacement()` stay true; region+gates shows them with or without a passcode; the
+`.BRCEmbargoDidClear` re-resolve stays false. `EmbargoStrictUnlockTests`: the same at the
+`MapEmbargo` level plus a full truth table of the pure seam.
+
+### Results
+- `swift test --package-path Packages/PlayaDB` — **353 passed**, 0 failures
+- `xcodebuild test -scheme iBurnTests -only-testing:EmbargoTierTests -only-testing:EmbargoStrictUnlockTests -only-testing:NearbyEmbargoGatingTests -only-testing:EmbargoUnlockSchedulerTests` — **110 passed**, 0 failures
+  (first attempt died with `Simulator device failed to launch … Busy ("Application failed preflight checks")`; a plain retry passed)
+- `xcodebuild -scheme iBurn` and `-scheme iBurnWatch` — both success, 0 errors / 0 warnings
+
+### Simulator A/B
+Same simulator, same app state throughout — passcode latched
+(`kBRCEntered2026EmbargoPasscodeKey` true, More shows "Location Data Unlocked"), "Show Camp
+Boundaries (Zoomed)" and "(Always)" both on, real clock (2026-08-28, before gates):
+
+- **Pre-change binary** (this change's `MapLayerManager.swift` stashed, rebuilt, reinstalled):
+  the city is covered in camp footprint polygons.
+- **Post-change binary**: identical map, **no polygons**, while the rest of the map (streets,
+  pins, labels) is unchanged.
+
+That is the regression the BMorg ask is about, before and after. Note the sim's `cfprefsd` caches
+the app-container plist, so editing prefs by hand between launches is unreliable — the map filter
+sheet and the More screen were used to confirm the actual state instead. The Debug/feature-flags
+screen's rows are `NavigationLink`s with no tap target in the runtime snapshot, so a mock-date
+positive control ("polygons return on playa past gates") was left to the unit tests, which cover it.

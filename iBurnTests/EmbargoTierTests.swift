@@ -115,16 +115,21 @@ final class EmbargoTierTests: XCTestCase {
 
     /// Defaults matching a stock install: boundaries and names on, "always" off, camp pins
     /// gated on zoom. Individual tests override only what they are about.
+    ///
+    /// `embargoAllowsBoundaryPolygons` defaults to `embargoAllowsPlacement` — the two only
+    /// diverge for a passcode-only unlock, which is what the polygon cases below set up.
     private func makeCampLayers(showCampBoundaries: Bool = true,
                                 showCampBoundariesAlways: Bool = false,
                                 showBigCampNames: Bool = true,
                                 embargoAllowsPlacement: Bool = true,
+                                embargoAllowsBoundaryPolygons: Bool? = nil,
                                 zoomLevel: Double) -> CampLayerVisibility {
         CampLayerVisibility.resolve(
             showCampBoundaries: showCampBoundaries,
             showCampBoundariesAlways: showCampBoundariesAlways,
             showBigCampNames: showBigCampNames,
             embargoAllowsPlacement: embargoAllowsPlacement,
+            embargoAllowsBoundaryPolygons: embargoAllowsBoundaryPolygons ?? embargoAllowsPlacement,
             zoomLevel: zoomLevel
         )
     }
@@ -183,8 +188,11 @@ final class EmbargoTierTests: XCTestCase {
         XCTAssertTrue(unlocked.campNamesDrawnByStyleLayer)
     }
 
-    /// The passcode satisfies every tier, so it brings both layers back early.
-    func testCampLayersUnlockWithThePasscode() throws {
+    /// The passcode brings the *names* back early — but no longer the footprint polygons.
+    /// BMorg asked on 2026-08-28 that the staff passcode stop revealing camp boundaries, so
+    /// `camp-boundaries` waits for region + gates with no bypass while `camp-labels-big` and
+    /// the bulk pins keep the old passcode-inclusive art-tier rule.
+    func testPasscodeUnlocksCampLabelsButNotBoundaryPolygons() throws {
         let originalBoundaries = UserSettings.showCampBoundaries
         let originalNames = UserSettings.showBigCampNames
         defer {
@@ -197,8 +205,73 @@ final class EmbargoTierTests: XCTestCase {
         try timeTravel(to: "2026-08-10T12:00:00Z")
         UserDefaults.enteredEmbargoPasscode = true
         let visibility = CampLayerVisibility.current(zoomLevel: 16)
-        XCTAssertTrue(visibility.boundariesVisible)
+        XCTAssertFalse(visibility.boundariesVisible)
+        XCTAssertNil(visibility.boundariesMinimumZoom)
         XCTAssertTrue(visibility.labelsVisible)
+        XCTAssertTrue(visibility.campNamesDrawnByStyleLayer)
+        XCTAssertTrue(MapEmbargo.allowsBulkCampPlacement())
+        XCTAssertFalse(MapEmbargo.allowsCampBoundaryPolygons())
+    }
+
+    /// Off playa (no region latch), passcode entered, clock dragged past gates: the polygons
+    /// still stay hidden. Both halves of the polygon rule have to hold.
+    func testPasscodeOffPlayaNeverShowsBoundaryPolygons() throws {
+        let originalBoundaries = UserSettings.showCampBoundaries
+        defer {
+            UserSettings.showCampBoundaries = originalBoundaries
+            UserDefaults.enteredBurningManRegion = true
+        }
+        UserSettings.showCampBoundaries = true
+        UserDefaults.enteredBurningManRegion = false
+        BRCLocations.hasEnteredBurningManRegion = false
+        UserDefaults.enteredEmbargoPasscode = true
+
+        for instant in ["2026-08-10T12:00:00Z", "2026-08-25T12:00:00Z", "2026-08-31T12:00:00Z"] {
+            try timeTravel(to: instant)
+            XCTAssertFalse(MapEmbargo.allowsCampBoundaryPolygons(), instant)
+            XCTAssertFalse(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible, instant)
+            // …while everything the passcode always unlocked keeps working.
+            XCTAssertTrue(BRCEmbargo.allowEmbargoedData(), instant)
+            XCTAssertTrue(BRCEmbargo.canShowCampLocations(), instant)
+            XCTAssertTrue(BRCEmbargo.canShowArtLocations(), instant)
+            XCTAssertTrue(MapEmbargo.allowsBulkCampPlacement(), instant)
+        }
+    }
+
+    /// On playa past gates, the polygons come back — with or without a passcode.
+    func testBoundaryPolygonsUnlockOnRegionPlusGates() throws {
+        let originalBoundaries = UserSettings.showCampBoundaries
+        defer { UserSettings.showCampBoundaries = originalBoundaries }
+        UserSettings.showCampBoundaries = true
+
+        try timeTravel(to: "2026-08-31T12:00:00Z")  // setUp already latched the region
+        for passcode in [false, true] {
+            UserDefaults.enteredEmbargoPasscode = passcode
+            XCTAssertTrue(MapEmbargo.allowsCampBoundaryPolygons(), "passcode \(passcode)")
+            let visibility = CampLayerVisibility.current(zoomLevel: 16)
+            XCTAssertTrue(visibility.boundariesVisible, "passcode \(passcode)")
+            XCTAssertEqual(visibility.boundariesMinimumZoom, 15)
+        }
+    }
+
+    /// The `.BRCEmbargoDidClear` refresh a passcode entry posts re-resolves visibility rather
+    /// than only ever turning layers on, so the polygons must come back *false* on that path.
+    func testEmbargoDidClearRefreshLeavesPolygonsHiddenForAPasscodeOnlyUnlock() throws {
+        let originalBoundaries = UserSettings.showCampBoundaries
+        defer {
+            UserSettings.showCampBoundaries = originalBoundaries
+            UserDefaults.enteredBurningManRegion = true
+        }
+        UserSettings.showCampBoundaries = true
+        UserDefaults.enteredBurningManRegion = false
+        BRCLocations.hasEnteredBurningManRegion = false
+
+        try timeTravel(to: "2026-08-10T12:00:00Z")
+        XCTAssertFalse(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible)
+
+        UserDefaults.enteredEmbargoPasscode = true
+        // What `MapLayerManager.updateCampLayerVisibility()` re-reads on the notification.
+        XCTAssertFalse(CampLayerVisibility.current(zoomLevel: 16).boundariesVisible)
     }
 
     func testCampLayersFollowSettingsOnceUnlocked() {

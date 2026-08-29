@@ -20,6 +20,11 @@ import MapLibre
 ///     polygon centroid, and
 ///  2. the `LabelAnnotationView` under every camp pin, drawing the annotation's title.
 ///
+/// The two layers no longer share an embargo verdict: since 2026-08-28 (BMorg request) the
+/// `camp-boundaries` footprint polygons are the one surface the staff passcode does **not**
+/// unlock, so they resolve off `MapEmbargo.allowsCampBoundaryPolygons()` (region + gates, no
+/// bypass) while `camp-labels-big` keeps `MapEmbargo.allowsBulkCampPlacement()`.
+///
 /// Since `apply_placement.js` started writing each camp's GPS from that same polygon
 /// centroid, a camp pin sits on *exactly* the point its style label is drawn at, so any
 /// overlap is text stacked on identical text. **The style layer wins that contest**: it
@@ -49,19 +54,27 @@ struct CampLayerVisibility: Equatable {
     ///   - showCampBoundariesAlways: `UserSettings.showCampBoundariesAlways`.
     ///   - showBigCampNames: `UserSettings.showBigCampNames`.
     ///   - embargoAllowsPlacement: `MapEmbargo.allowsBulkCampPlacement()` — the gates-open
-    ///     tier. Both layers are built from the BMorg placement drop and both draw the whole
-    ///     city at once: the polygons are the footprints themselves, and a name pinned to its
-    ///     placement centroid is that camp's exact position with a label on it. Neither is
-    ///     the "one camp you looked up" the week-early camp release covers, so both wait for
-    ///     gates. Both geojsons ship in the app bundle, so until then the layers stay hidden
-    ///     regardless of settings.
+    ///     tier, passcode included. Both layers are built from the BMorg placement drop and
+    ///     both draw the whole city at once: the polygons are the footprints themselves, and
+    ///     a name pinned to its placement centroid is that camp's exact position with a label
+    ///     on it. Neither is the "one camp you looked up" the week-early camp release covers,
+    ///     so both wait for gates. Both geojsons ship in the app bundle, so until then the
+    ///     layers stay hidden regardless of settings. This governs `camp-labels-big`.
+    ///   - embargoAllowsBoundaryPolygons: `MapEmbargo.allowsCampBoundaryPolygons()` — the
+    ///     same gates-open instant, but **without** the passcode bypass (BMorg request,
+    ///     2026-08-28: the staff passcode must no longer reveal the camp footprint polygons).
+    ///     Governs `camp-boundaries` only; a passcode-only unlock leaves the polygons hidden
+    ///     while the labels and bulk pins come back as before. Since it is never more
+    ///     permissive than `embargoAllowsPlacement`, the polygons remain a subset of what the
+    ///     rest of the placement layers show.
     ///   - zoomLevel: the map's current zoom, for `campNamesDrawnByStyleLayer`.
     static func resolve(showCampBoundaries: Bool,
                         showCampBoundariesAlways: Bool,
                         showBigCampNames: Bool,
                         embargoAllowsPlacement: Bool,
+                        embargoAllowsBoundaryPolygons: Bool,
                         zoomLevel: Double) -> CampLayerVisibility {
-        let boundariesVisible = showCampBoundaries && embargoAllowsPlacement
+        let boundariesVisible = showCampBoundaries && embargoAllowsBoundaryPolygons
         let labelsVisible = showBigCampNames && embargoAllowsPlacement
         return CampLayerVisibility(
             boundariesVisible: boundariesVisible,
@@ -80,6 +93,7 @@ struct CampLayerVisibility: Equatable {
                 showCampBoundariesAlways: UserSettings.showCampBoundariesAlways,
                 showBigCampNames: UserSettings.showBigCampNames,
                 embargoAllowsPlacement: MapEmbargo.allowsBulkCampPlacement(),
+                embargoAllowsBoundaryPolygons: MapEmbargo.allowsCampBoundaryPolygons(),
                 zoomLevel: zoomLevel)
     }
 }

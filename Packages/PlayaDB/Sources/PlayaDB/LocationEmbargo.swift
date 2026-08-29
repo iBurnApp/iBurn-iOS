@@ -164,6 +164,14 @@ public struct EmbargoRegion: Sendable, Equatable {
 /// placement (the browse map's camp pins, `camp-labels-big`, `camp-boundaries`)
 /// is not on this tier — it rides `.art`, and still needs region + gates.
 ///
+/// **Camp boundary polygons — the one thing the passcode does not open**
+/// (BMorg request, 2026-08-28). The `camp-boundaries` style layer draws the
+/// literal `camp_outlines` footprints for the whole city, and BMorg asked that
+/// the staff passcode stop revealing them. They therefore ride
+/// `canShowCampBoundaryPolygons(now:inRegion:)`: region **and** gates, with no
+/// bypass. Everything else the passcode unlocks is unchanged — art placement,
+/// bulk camp pins, `camp-labels-big`, camp address text.
+///
 /// Nothing here reads ambient state — `now`, `passcodeUnlocked` and `inRegion`
 /// are all parameters — which is what makes the whole thing testable in one
 /// line, and what lets the iOS app adopt the same seam later.
@@ -206,16 +214,44 @@ public struct LocationEmbargo: Sendable, Equatable {
     ///     for the watch, on the paired phone). The one bypass, for every tier.
     ///   - inRegion: This device is, or has been, inside the Burning Man region
     ///     — i.e. the user is actually at the event. Required by `.art` only.
+    ///   - passcodeCanUnlock: Whether the passcode bypass applies to this
+    ///     surface. `true` everywhere except the camp boundary polygons, which
+    ///     BMorg asked to hold back even from passcode holders (2026-08-28) —
+    ///     see `canShowCampBoundaryPolygons(now:inRegion:)`.
     public func canShowLocations(
         tier: EmbargoTier,
         now: Date,
         passcodeUnlocked: Bool,
-        inRegion: Bool
+        inRegion: Bool,
+        passcodeCanUnlock: Bool = true
     ) -> Bool {
         guard let unlock = unlockDate(for: tier) else { return true }
-        if passcodeUnlocked { return true }
+        if passcodeUnlocked && passcodeCanUnlock { return true }
         guard now >= unlock else { return false }
         return inRegion || !requiresRegion(for: tier)
+    }
+
+    /// May the camp **boundary polygons** (`camp_outlines` footprints, drawn by
+    /// the `camp-boundaries` style layer) be drawn?
+    ///
+    /// The strictest rule in the app, and the only one with no passcode bypass:
+    /// `inRegion && now >= artLocationUnlock`. BMorg asked on 2026-08-28 that
+    /// the staff passcode no longer reveal the footprint polygons; it still
+    /// unlocks everything else, so this is deliberately a separate check rather
+    /// than a new tier — no other surface's behaviour changes.
+    ///
+    /// Scope is exactly the polygons. `camp-labels-big` and the bulk camp pins
+    /// keep the passcode-inclusive `.art` rule
+    /// (`canShowLocations(tier: .art, …)`), because the ask was about the
+    /// footprints specifically.
+    public func canShowCampBoundaryPolygons(now: Date, inRegion: Bool) -> Bool {
+        canShowLocations(
+            tier: .art,
+            now: now,
+            passcodeUnlocked: false,
+            inRegion: inRegion,
+            passcodeCanUnlock: false
+        )
     }
 
     public func canShowCampLocations(now: Date, passcodeUnlocked: Bool, inRegion: Bool) -> Bool {

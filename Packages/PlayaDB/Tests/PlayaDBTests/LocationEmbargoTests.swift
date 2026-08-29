@@ -155,6 +155,64 @@ final class LocationEmbargoTests: XCTestCase {
         XCTAssertTrue(embargo.canShowArtLocations(now: longBefore, passcodeUnlocked: true, inRegion: false))
     }
 
+    // MARK: - Camp boundary polygons (no passcode bypass)
+
+    /// BMorg asked on 2026-08-28 that the staff passcode stop revealing the camp
+    /// footprint polygons. The polygons' rule is region + gates, full stop.
+    func testCampBoundaryPolygonsNeedRegionAndGates() throws {
+        let insideCampWindow = try date("2026-08-25T12:00:00Z")
+        XCTAssertFalse(embargo.canShowCampBoundaryPolygons(now: insideCampWindow, inRegion: true))
+        XCTAssertFalse(embargo.canShowCampBoundaryPolygons(now: artUnlock, inRegion: false))
+        XCTAssertTrue(embargo.canShowCampBoundaryPolygons(now: artUnlock, inRegion: true))
+    }
+
+    /// The passcode is not an input at all here — before *and* after the gates
+    /// date, off playa, the polygons stay hidden.
+    func testPasscodeNeverUnlocksTheCampBoundaryPolygons() throws {
+        for instant in [try date("2020-01-01T00:00:00Z"),
+                        try date("2026-08-25T12:00:00Z"),
+                        artUnlock,
+                        try date("2026-09-05T12:00:00Z")] {
+            // `passcodeCanUnlock: false` is what the polygon check passes; assert
+            // the parameter itself, so the bypass can't be re-introduced silently.
+            XCTAssertEqual(
+                embargo.canShowLocations(tier: .art,
+                                         now: instant,
+                                         passcodeUnlocked: true,
+                                         inRegion: false,
+                                         passcodeCanUnlock: false),
+                false,
+                "\(instant)")
+            XCTAssertFalse(embargo.canShowCampBoundaryPolygons(now: instant, inRegion: false),
+                           "\(instant)")
+        }
+    }
+
+    /// …and the passcode still unlocks everything else, including the bulk
+    /// placement layers that keep the art-tier rule.
+    func testPasscodeStillUnlocksEverythingElseWhilePolygonsStayHidden() throws {
+        let early = try date("2026-08-10T12:00:00Z")
+        XCTAssertTrue(embargo.canShowCampLocations(now: early, passcodeUnlocked: true, inRegion: false))
+        XCTAssertTrue(embargo.canShowArtLocations(now: early, passcodeUnlocked: true, inRegion: false))
+        XCTAssertFalse(embargo.canShowCampBoundaryPolygons(now: early, inRegion: false))
+    }
+
+    /// The polygons are never more visible than the rest of the placement data:
+    /// whatever the inputs, `canShowCampBoundaryPolygons` implies the art tier.
+    func testPolygonsAreAlwaysASubsetOfArtTierVisibility() throws {
+        let instants = [try date("2026-08-10T12:00:00Z"), campUnlock, artUnlock]
+        for now in instants {
+            for passcode in [true, false] {
+                for inRegion in [true, false] {
+                    guard embargo.canShowCampBoundaryPolygons(now: now, inRegion: inRegion) else { continue }
+                    XCTAssertTrue(
+                        embargo.canShowArtLocations(now: now, passcodeUnlocked: passcode, inRegion: inRegion),
+                        "polygons visible where art placement is not: \(now) \(passcode) \(inRegion)")
+                }
+            }
+        }
+    }
+
     // MARK: - Missing CampLocationUnlock
 
     /// A year whose settings predate the tier split gets the old, stricter

@@ -151,6 +151,55 @@ final class EmbargoStrictUnlockTests: XCTestCase {
         XCTAssertTrue(BRCEmbargo.canShowArtLocations())
     }
 
+    // MARK: - Camp boundary polygons (the one surface the passcode does not open)
+
+    /// BMorg asked on 2026-08-28 that the staff unlock passcode no longer reveal the
+    /// camp footprint polygons (`camp-boundaries`). Passcode-only, off playa: hidden
+    /// before *and* after the gates date, while everything else the passcode unlocks
+    /// keeps working.
+    func testPasscodeAloneNeverShowsCampBoundaryPolygons() throws {
+        UserDefaults.enteredEmbargoPasscode = true
+        for instant in [beforeAnyTier, insideCampWindow, afterGatesOpen] {
+            try timeTravel(to: instant)
+            XCTAssertFalse(EmbargoService.hasSeenBurningManRegion, instant)
+            XCTAssertFalse(MapEmbargo.allowsCampBoundaryPolygons(), instant)
+            // Unchanged by the policy change:
+            XCTAssertTrue(MapEmbargo.allowsArtLocation(), instant)
+            XCTAssertTrue(MapEmbargo.allowsBulkCampPlacement(), instant)
+            XCTAssertTrue(MapEmbargo.allowsSingleCampLocation(), instant)
+            XCTAssertTrue(BRCEmbargo.allowEmbargoedData(), instant)
+        }
+    }
+
+    /// The polygons' own rule: region **and** gates, passcode irrelevant either way.
+    func testCampBoundaryPolygonsNeedRegionAndGates() throws {
+        try timeTravel(to: insideCampWindow)
+        EmbargoService.noteEnteredBurningManRegion()
+        XCTAssertFalse(MapEmbargo.allowsCampBoundaryPolygons())
+
+        try timeTravel(to: afterGatesOpen)
+        XCTAssertTrue(MapEmbargo.allowsCampBoundaryPolygons())
+        UserDefaults.enteredEmbargoPasscode = true
+        XCTAssertTrue(MapEmbargo.allowsCampBoundaryPolygons())
+    }
+
+    /// The pure seam, with no ambient state: no combination of inputs lets a passcode
+    /// stand in for either half.
+    func testCampBoundaryPolygonTruthTable() throws {
+        let early = try XCTUnwrap(ISO8601DateFormatter().date(from: beforeAnyTier))
+        let campOpen = try XCTUnwrap(ISO8601DateFormatter().date(from: insideCampWindow))
+        let gatesOpen = try XCTUnwrap(ISO8601DateFormatter().date(from: afterGatesOpen))
+
+        for now in [early, campOpen, gatesOpen] {
+            for inRegion in [true, false] {
+                XCTAssertEqual(
+                    EmbargoService.canShowCampBoundaryPolygons(now: now, inRegion: inRegion),
+                    inRegion && now >= gatesOpen,
+                    "\(now) inRegion \(inRegion)")
+            }
+        }
+    }
+
     // MARK: - The region latch
 
     /// The in-memory flag is lost on relaunch, so the verdict has to survive in

@@ -115,6 +115,20 @@ public final class EmbargoService: NSObject {
         )
     }
 
+    /// The camp boundary polygons' rule, with the inputs passed in — the seam
+    /// the tests drive. No `passcodeUnlocked` parameter because there is no
+    /// passcode bypass here; see `canShowCampBoundaryPolygons()`.
+    static func canShowCampBoundaryPolygons(now: Date, inRegion: Bool) -> Bool {
+        embargo.canShowCampBoundaryPolygons(now: now, inRegion: inRegion)
+    }
+
+    /// The camp boundary polygons' rule against live app state:
+    /// `inRegion && now >= eventStart`, passcode deliberately not consulted
+    /// (BMorg request, 2026-08-28).
+    static func canShowCampBoundaryPolygons() -> Bool {
+        canShowCampBoundaryPolygons(now: Date.present, inRegion: hasSeenBurningManRegion)
+    }
+
     /// Backs `BRCEmbargo.allowEmbargoedData` — the art tier, i.e. "everything is
     /// visible", which is what the flag has always meant to its callers.
     @objc public static func allowEmbargoedData() -> Bool {
@@ -140,17 +154,34 @@ public final class EmbargoService: NSObject {
 /// (`YearSettings.eventStart`) *and* a playa GPS fix, the same rule art unlocks under.
 ///
 /// The passcode bypass is inherent — it satisfies every tier — so nothing here needs to
-/// special-case it.
+/// special-case it, with exactly one exception: the camp **boundary polygons**, which BMorg
+/// asked on 2026-08-28 to withhold from passcode holders too. That is
+/// `allowsCampBoundaryPolygons()`, and it is the only surface that changed.
 ///
 /// Both verdicts are re-read on every call (never cached across the tier dates) and the
 /// live surfaces additionally restart on `.BRCEmbargoDidClear`.
 enum MapEmbargo {
 
-    /// Many camps' positions at once: the browse map's camp pins, the `camp-labels-big` and
-    /// `camp-boundaries` style layers, and the bulk event pins that sit on their host camp.
-    /// Gates-open tier.
+    /// Many camps' positions at once: the browse map's camp pins, the `camp-labels-big`
+    /// style layer, and the bulk event pins that sit on their host camp. Gates-open tier,
+    /// passcode included.
+    ///
+    /// The `camp-boundaries` polygons used to ride this too; since 2026-08-28 they have
+    /// their own, stricter check — `allowsCampBoundaryPolygons()`.
     static func allowsBulkCampPlacement() -> Bool {
         EmbargoService.canShowLocations(tier: .art)
+    }
+
+    /// The camp footprint polygons (`camp_outlines`, drawn by the `camp-boundaries` style
+    /// layer) — and nothing else.
+    ///
+    /// BMorg asked on 2026-08-28 that the staff unlock passcode no longer reveal the camp
+    /// boundary polygons, so this is the app's one check with no passcode bypass: the
+    /// polygons draw only when the device is in the Burning Man region *and* the gates have
+    /// opened. Everything else the passcode unlocks — art pins, bulk camp pins,
+    /// `camp-labels-big`, camp addresses — is unchanged.
+    static func allowsCampBoundaryPolygons() -> Bool {
+        EmbargoService.canShowCampBoundaryPolygons()
     }
 
     /// One camp the user navigated to: its detail pin, its pushed map, its address text.

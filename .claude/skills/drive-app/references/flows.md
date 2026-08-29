@@ -314,14 +314,19 @@ Automation notes:
   Aug 22 — `iBurn/EmbargoService.swift` over `PlayaDB.LocationEmbargo`, with
   `BRCEmbargo` reduced to a façade):
 
-      camp: passcodeUnlocked || now >= campLocationUnlock
-      art:  passcodeUnlocked || (inRegion && now >= eventStart)
+      camp:       passcodeUnlocked || now >= campLocationUnlock
+      art:        passcodeUnlocked || (inRegion && now >= eventStart)
+      camp polys: inRegion && now >= eventStart      ← no passcode bypass
 
   The **camp tier is date-only**: past `CampLocationUnlock` a sim anywhere shows camp
   address text and the single pin on a camp's detail screen — no GPS needed. The **art
   tier still needs both halves**, and it is the tier that gates *bulk* placement: the
-  browse map's camp pins, `camp-labels-big`/`camp-boundaries`, bulk event pins, and every
-  art coordinate. `inRegion` means this device has taken a fix inside
+  browse map's camp pins, `camp-labels-big`, bulk event pins, and every art coordinate.
+  **The `camp-boundaries` footprint polygons are stricter still** (BMorg request,
+  2026-08-28): they need region + gates with *no* passcode bypass, so writing
+  `kBRCEntered2026EmbargoPasscodeKey` populates the whole map *except* the camp outlines —
+  that is correct, not a broken build. `MapEmbargo.allowsCampBoundaryPolygons()` is the
+  check; everything else keeps `allowsBulkCampPlacement()`. `inRegion` means this device has taken a fix inside
   `BRCLocations.burningManRegion` (5 miles round the Man), latched into the app-container
   plist key `kBRCEntered2026BurningManRegionKey` by
   `BRCAppDelegate -enteredBurningManRegion`, so it survives relaunches. **Moving the clock
@@ -394,10 +399,14 @@ Automation notes:
   hard-coded "Home"/"Bike" for those two types, whatever is stored. Only stars show the name
   you typed. Longstanding, not a regression — don't chase it as one.
 - The camp boundary/label style layers (`camp-boundaries`, `camp-labels-big`,
-  geojson shipped inside `Map.bundle`) are gated on the camp tier via
+  geojson shipped inside `Map.bundle`) are embargo-gated via
   `MapLayerManager`/`CampLayerVisibility`: hidden while locked even when the
   "Show Camp Boundaries (Always)" map filter is on, and they appear live on
-  unlock with the rest.
+  unlock with the rest. **Since 2026-08-28 the two layers no longer unlock
+  together**: `camp-labels-big` rides the gates tier *including* the passcode,
+  while the `camp-boundaries` polygons need an actual playa fix plus a
+  post-gates clock (BMorg asked that the staff passcode stop revealing camp
+  outlines). Passcode-unlocked sim + "Always" on → camp names yes, polygons no.
 - **A camp's name is drawn once, the style layer draws it, and where it draws there is no
   pin at all.** A camp's GPS is the centroid of its own footprint — the same point
   `camp_labels.geojson` puts its label at — so a pin and a style label would otherwise stack
