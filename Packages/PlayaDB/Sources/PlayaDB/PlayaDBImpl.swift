@@ -1720,9 +1720,44 @@ internal class PlayaDBImpl: PlayaDB {
     func saveUserMapPin(_ pin: UserMapPin) async throws {
         try await dbQueue.write { db in
             var pin = pin
+            if let previous = try UserMapPin.fetchOne(db, key: pin.id) {
+                // Overwriting a row we already have is an *edit*, and an edit has to
+                // advance the last-writer-wins stamp or it loses to a peer that still
+                // holds the pre-edit row. Callers can't be trusted to do it: the iOS map
+                // writes back the `modifiedDate` it read at load time (see
+                // `BRCUserMapPoint.toUserMapPin()`), so a move or rename carried the *old*
+                // stamp and was undone by the watch's snapshot on the next launch — the
+                // pin "reverted to its original position" every relaunch.
+                //
+                // Stamped here rather than trusting the caller because there is no caller
+                // that legitimately sets it: peer snapshots merge through
+                // `applyUserMapPinSync`, which keeps the peer's stamp; everything reaching
+                // `saveUserMapPin` is a local create or edit happening *now*.
+                pin.modifiedDate = Self.nextModifiedDate(
+                    after: max(previous.modifiedDate, pin.modifiedDate)
+                )
+                // Creation is a fact about the pin, not a field an edit gets to rewrite.
+                // (`BRCUserMapPoint` rebuilds `creationDate` from the current clock every
+                // time it is loaded, and live pins are ordered by it.)
+                pin.createdDate = min(previous.createdDate, pin.createdDate)
+            }
             try pin.save(db, onConflict: .replace)
             try Self.retireOtherSingletonPins(db, keeping: pin)
         }
+    }
+
+    /// The stamp an edit must carry: now, but never older than — nor equal to — the row
+    /// it replaces.
+    ///
+    /// A plain `Date()` is not enough. `modified_date` can legitimately sit in the future
+    /// relative to the writing device's clock: the iOS app stamps new pins with
+    /// `Date.present`, which is a *mocked* date whenever date override is on (defaulting to
+    /// event week), and a peer's clock can simply run ahead. Last-writer-wins compares
+    /// stamps strictly, so a write born stale is silently reverted by the peer's next
+    /// snapshot — which `PeerSyncManager` replays at every session activation, i.e. every
+    /// launch. Matches what `tombstone(_:in:)` already does for retired singletons.
+    static func nextModifiedDate(after previous: Date) -> Date {
+        max(Date(), previous.addingTimeInterval(1))
     }
 
     /// Tombstones every *other* live row sharing `pin`'s type, when that type is a
@@ -1741,11 +1776,10 @@ internal class PlayaDBImpl: PlayaDB {
     /// Marks each pin deleted with a stamp strictly newer than the one it replaces, so
     /// last-writer-wins on the peer resolves in the tombstone's favour.
     private static func tombstone(_ pins: some Sequence<UserMapPin>, in db: Database) throws {
-        let now = Date()
         for pin in pins {
             var tombstoned = pin
             tombstoned.isDeleted = true
-            tombstoned.modifiedDate = max(now, pin.modifiedDate.addingTimeInterval(1))
+            tombstoned.modifiedDate = nextModifiedDate(after: pin.modifiedDate)
             try tombstoned.update(db)
         }
     }
@@ -1781,10 +1815,13 @@ internal class PlayaDBImpl: PlayaDB {
     /// tombstones out, so callers see a normal delete.
     func deleteUserMapPin(id: String) async throws {
         _ = try await dbQueue.write { db in
-            try db.execute(
-                sql: "UPDATE user_map_pins SET is_deleted = 1, modified_date = ? WHERE id = ?",
-                arguments: [Date(), id]
-            )
+            guard var pin = try UserMapPin.fetchOne(db, key: id) else { return }
+            pin.isDeleted = true
+            // Strictly newer than the row it retires, so the tombstone can never lose the
+            // last-writer-wins merge to a peer still holding the live pin — which is what
+            // made deleted pins reappear after a relaunch.
+            pin.modifiedDate = Self.nextModifiedDate(after: pin.modifiedDate)
+            try pin.update(db)
         }
     }
 

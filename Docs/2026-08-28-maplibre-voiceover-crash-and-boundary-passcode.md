@@ -439,3 +439,140 @@ correct. No `playa-seed` run required.
 - Confirm the iPad variant size in App Store Connect after upload — 207 − 11.2 ≈ **196 MB**,
   which clears the cap but with little headroom. If 2027 media grows, the next levers are
   on-demand resources or shipping smaller thumbnails and fetching full-size on demand.
+
+---
+
+## Part E — User map pins: edits and deletes did not survive a relaunch
+
+### Problem (as reported)
+
+> Manually placed map pins cannot be edited or deleted in a way that persists across app
+> launches. Moving them appears to save, deleting makes them disappear — but after
+> force-quit + relaunch, they are back at their original positions (and deleted ones
+> reappear).
+
+### What was ruled out first
+
+The obvious hypotheses were all checked and are **not** the cause:
+
+- **Dual store / Yap↔PlayaDB mismatch.** User pins live only in PlayaDB's `user_map_pins`
+  table. `FilteredMapDataSource` (`iBurn/FilteredMapDataSource.swift:31`) reads them through
+  `observeUserMapPins`, and every write goes to the same `PlayaDB` instance
+  (`DependencyContainer.playaDB`, a single stored property). No Yap path writes or imports
+  user pins.
+- **Seed restore clobbering the database.** `PlayaDBSeedRestore.restoreIfNeeded`
+  (`Packages/PlayaDB/Sources/PlayaDB/SeedRestore.swift`) returns `.skippedDatabaseExists`
+  the moment `PlayaDB.sqlite` is present, and `importFromData` never touches
+  `user_map_pins`.
+- **The write path itself.** A probe test (kept, see below) drove the adapter's real save
+  and delete paths against an on-disk `DatabasePool` and confirmed the row is written,
+  updated and tombstoned exactly as expected. Local persistence works.
+
+### Root cause
+
+The reverting writer is **peer sync**, and it fires on *every* launch.
+
+`PeerSyncManager.session(_:activationDidCompleteWith:error:)`
+(`Packages/PlayaDB/Sources/PlayaDB/PeerSyncManager.swift`) replays
+`session.receivedApplicationContext` — the watch's last published pin snapshot — through
+`applyUserMapPinSync` at every WCSession activation, i.e. at every app launch. That context
+is persistent: it survives relaunches, and it survives the watch app being uninstalled or
+the watch being unpaired.
+
+`applyUserMapPinSync` (`PlayaDBImpl.swift:1888`) is last-writer-wins on `modified_date`:
+`guard incoming.modifiedDate > merged.modifiedDate else { continue }`. Two local write
+paths produced stamps that lose that comparison:
+
+1. **Edits never advanced the stamp.** `BRCUserMapPoint.toUserMapPin()`
+   (`iBurn/BRCUserMapPoint+PlayaDB.swift:26`) copies the `modifiedDate` the object was
+   *loaded* with, and `saveUserMapPin` wrote it back verbatim. So moving or renaming a pin
+   changed `latitude`/`longitude`/`title` but left `modified_date` at its pre-edit value.
+   The peer's pre-edit copy therefore keeps a stamp that is equal to — or, if the watch
+   wrote the pin last (`PinStore.rename` stamps `Date()`), strictly newer than — the edited
+   row, and the replayed snapshot overwrites the edit on the next launch. It also means the
+   move was never pushed to the watch in the first place.
+
+2. **Tombstones could be born stale.** `deleteUserMapPin` stamped the tombstone with a plain
+   `Date()`. A pin's `modified_date` can legitimately sit in the *future* relative to the
+   device clock: `BRCUserMapPoint.init` stamps `Date.present`, which returns
+   `NSDate.brc_testDate` whenever date override is on (`iBurn/Date+iBurn.swift:31`,
+   `iBurn/NSDate+iBurn.m:62` — default mock date **2026-09-04**, and the override is a
+   plain `BRCMockDateEnabled` user default, not just the Mock Date scheme). A tombstone
+   stamped with the real clock then loses to the peer's live copy, and the deleted pin is
+   resurrected on the next launch. Note `tombstone(_:in:)`, used for retired singleton
+   pins, already got this right (`max(now, modifiedDate + 1)`); the public delete did not.
+
+Both symptoms repeat forever because the stale application context is replayed at every
+activation.
+
+### Fix
+
+`Packages/PlayaDB/Sources/PlayaDB/PlayaDBImpl.swift`
+
+- New `nextModifiedDate(after:)` — `max(Date(), previous + 1s)` — the stamp a local write
+  must carry so it is strictly newer than the row it replaces, even when that row's stamp
+  is in the future relative to this device's clock.
+- `saveUserMapPin`: when the row already exists (an edit), stamp
+  `nextModifiedDate(after: max(previous.modifiedDate, pin.modifiedDate))` instead of
+  trusting the caller, and keep `min(previous.createdDate, pin.createdDate)` (the iOS pin
+  objects rebuild `creationDate` from the clock on every load, and live pins are ordered by
+  it). Stamping here rather than at the call sites is deliberate: no caller legitimately
+  sets `modifiedDate` — peer snapshots merge through `applyUserMapPinSync`, which keeps the
+  peer's stamp, and everything reaching `saveUserMapPin` is a local create or edit
+  happening now.
+- `deleteUserMapPin`: fetch the row and tombstone it with `nextModifiedDate(after:)` rather
+  than the raw `UPDATE ... modified_date = Date()`, so a delete can never lose to a peer
+  holding the live pin.
+- `tombstone(_:in:)` now calls the shared helper (behaviour unchanged).
+
+`iBurn/UserMapViewAdapter.swift` — the extension holding `saveMapPoint`/`deleteMapPoint`
+went from `private` to internal so tests can drive the map's own write paths. No behaviour
+change.
+
+### Tests
+
+`Packages/PlayaDB/Tests/PlayaDBTests/UserMapPinSyncTests.swift` (new):
+- `testEditWrittenWithAStaleStampStillBeatsThePeersPreEditCopy` — the reported move-reverts
+  bug, reproduced as save-with-stale-stamp then replay the peer's pre-edit row.
+- `testSaveAdvancesTheModifiedStampPastTheRowItReplaces` — including a future-dated
+  (mock-date) row.
+- `testSaveDoesNotRewriteTheCreationDate`.
+- `testTombstoneOutranksAFutureDatedLiveRow` — the reported delete-resurrects bug.
+- `testDeletingAnUnknownPinIsANoOp`.
+
+`Packages/PlayaDB/Tests/PlayaDBTests/UserMapPinTests.swift` —
+`testSaveWithSameIDReplacesExistingPin` now asserts the stamp *advanced* rather than equals
+the value passed in; it encoded the old (buggy) "faithful upsert of the caller's stamp"
+semantics.
+
+`iBurnTests/UserMapPinPersistenceTests.swift` (new) — drives `UserMapViewAdapter`'s real
+save/delete paths against an on-disk `PlayaDBImpl` and asserts what lands in
+`user_map_pins`: placing writes a row, moving updates the coordinates *and* advances the
+stamp, deleting tombstones. Complements `UserMapPinLifecycleTests`, which covers what the
+map *shows*.
+
+### Results
+
+- `swift test --package-path Packages/PlayaDB`: **358 passed**, 0 failures.
+- `xcodebuild test -scheme iBurnTests`: **666 passed**, 0 failures.
+- `xcodebuild -scheme iBurn`: success, 0 errors / 0 warnings.
+- `git status` clean of incidental changes (no `DEVELOPMENT_TEAM` flip in the pbxproj).
+
+### Left unverified / manual steps
+
+The end-to-end symptom needs a phone **with a paired watch that has published a pin
+snapshot at least once** — that stale `receivedApplicationContext` is what does the
+reverting, and it cannot be exercised from a unit test or a bare simulator. Manual pass to
+confirm on device:
+
+1. With the watch app installed and both apps launched once (so a context has been
+   exchanged), place a star pin on the phone.
+2. Move it, force-quit both apps, relaunch the phone app → the pin stays where it was
+   moved to, and the watch shows the new position.
+3. Delete it, force-quit, relaunch → it stays deleted on both.
+4. Repeat 2–3 with the debug date override on (`BRCMockDateEnabled`, or the Mock Date
+   scheme), which is the configuration where the future-dated stamp made deletes resurrect.
+
+Databases written by earlier builds keep whatever stamps they already have; the fix is
+forward-looking, so a pin that is currently mid-conflict may need one more edit (which now
+advances the stamp) to settle.

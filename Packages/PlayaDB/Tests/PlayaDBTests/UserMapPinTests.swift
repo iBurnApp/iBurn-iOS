@@ -113,7 +113,9 @@ final class UserMapPinTests: XCTestCase {
         XCTAssertEqual(fetched.latitude, 41.5, accuracy: 0.000001)
         XCTAssertEqual(fetched.longitude, -118.5, accuracy: 0.000001)
         XCTAssertEqual(fetched.pinType, "userHome")
-        XCTAssertEqual(fetched.modifiedDate, date(60))
+        // An edit stamps its own `modified_date`: the last-writer-wins merge has to be
+        // able to tell the edited row from the one it replaced.
+        XCTAssertGreaterThan(fetched.modifiedDate, date(60))
     }
 
     func testDistinctIDsCoexist() async throws {

@@ -517,7 +517,7 @@ public class UserMapViewAdapter: MapViewAdapter {
 
 // MARK: - Public
 
-private extension UserMapViewAdapter {
+extension UserMapViewAdapter {
 
     /// Takes an unsaved placement back off the map, tracking included, so nothing is left
     /// holding its key.

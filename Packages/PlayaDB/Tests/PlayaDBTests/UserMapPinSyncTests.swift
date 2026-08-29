@@ -204,6 +204,94 @@ final class UserMapPinSyncTests: XCTestCase {
         XCTAssertEqual(visible.map(\.id), ["a", "b"])
     }
 
+    // MARK: - Local writes must advance the stamp
+
+    /// The reported bug: a pin moved on the phone came back at its original position
+    /// after a relaunch. The map hands `saveUserMapPin` the `modifiedDate` it read at
+    /// load time, so the edit used to be written with the *pre-edit* stamp and lost the
+    /// last-writer-wins merge against the peer snapshot `PeerSyncManager` replays on
+    /// every session activation.
+    func testEditWrittenWithAStaleStampStillBeatsThePeersPreEditCopy() async throws {
+        let original = makePin(latitude: 40.0, longitude: -119.0, modified: 1_000)
+        try await playaDB.saveUserMapPin(original)
+
+        // The move: same object the app loaded, new coordinate, stamp untouched.
+        var moved = original
+        moved.latitude = 41.0
+        moved.longitude = -118.0
+        try await playaDB.saveUserMapPin(moved)
+
+        // Next launch: the watch replays the pin as it was before the move.
+        let applied = try await playaDB.applyUserMapPinSync([original])
+
+        XCTAssertTrue(applied.isEmpty, "the peer's pre-edit copy must not win")
+        let visible = try await playaDB.fetchUserMapPins()
+        XCTAssertEqual(visible.first?.latitude, 41.0)
+        XCTAssertEqual(visible.first?.longitude, -118.0)
+    }
+
+    func testSaveAdvancesTheModifiedStampPastTheRowItReplaces() async throws {
+        // A stamp in the future relative to this device's clock: the iOS app writes one
+        // whenever the debug date override is on (`Date.present` defaults to event week).
+        let future = Date().addingTimeInterval(7 * 24 * 60 * 60)
+        var pin = makePin()
+        pin.modifiedDate = future
+        try await playaDB.saveUserMapPin(pin)
+
+        // What the app writes back: the row as it was loaded, with one field changed.
+        var edited = try await self.pin(id: "pin-1")
+        let stampAtLoad = edited.modifiedDate
+        edited.title = "Renamed"
+        try await playaDB.saveUserMapPin(edited)
+
+        let stored = try await self.pin(id: "pin-1")
+        XCTAssertGreaterThan(stored.modifiedDate, stampAtLoad)
+        XCTAssertEqual(stored.title, "Renamed")
+    }
+
+    func testSaveDoesNotRewriteTheCreationDate() async throws {
+        try await playaDB.saveUserMapPin(makePin(created: 1_000))
+
+        // The app rebuilds `createdDate` from the current clock on every load.
+        var edited = makePin(created: 9_000)
+        edited.title = "Renamed"
+        try await playaDB.saveUserMapPin(edited)
+
+        let stored = try await pin(id: "pin-1")
+        XCTAssertEqual(stored.createdDate, date(1_000))
+    }
+
+    /// The other half of the bug: a deleted pin reappeared after a relaunch, because the
+    /// tombstone was stamped with the local clock while the live row it retired carried a
+    /// future (mock-date) stamp — so the peer's live copy won the merge.
+    func testTombstoneOutranksAFutureDatedLiveRow() async throws {
+        let future = Date().addingTimeInterval(7 * 24 * 60 * 60)
+        var pin = makePin()
+        pin.modifiedDate = future
+        try await playaDB.saveUserMapPin(pin)
+        let live = try await self.pin(id: "pin-1")
+
+        try await playaDB.deleteUserMapPin(id: "pin-1")
+
+        let tombstone = try await self.pin(id: "pin-1")
+        XCTAssertTrue(tombstone.isDeleted)
+        XCTAssertGreaterThan(tombstone.modifiedDate, live.modifiedDate)
+
+        // Next launch: the peer replays the pin as still live.
+        let applied = try await playaDB.applyUserMapPinSync([live])
+
+        XCTAssertTrue(applied.isEmpty, "a deleted pin must not be resurrected")
+        let visible = try await playaDB.fetchUserMapPins()
+        XCTAssertTrue(visible.isEmpty)
+    }
+
+    func testDeletingAnUnknownPinIsANoOp() async throws {
+        try await playaDB.deleteUserMapPin(id: "never-seen")
+
+        let snapshot = try await playaDB.userMapPinSyncSnapshot()
+        XCTAssertTrue(snapshot.isEmpty)
+    }
+
     // MARK: - Payload compatibility
 
     func testDecodesPayloadWithoutIsDeleted() throws {
