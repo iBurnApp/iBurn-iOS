@@ -1161,8 +1161,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.0.0;
+				kind = exactVersion;
+				version = "6.18.0-patch0";
 			};
 		};
 		D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
