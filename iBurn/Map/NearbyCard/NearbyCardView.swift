@@ -206,6 +206,17 @@ struct NearbyCardView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
+            // Rebuilt whenever the number of pages changes, rather than mutated in place.
+            // The paged `TabView` is a `UICollectionView` underneath, and shrinking its
+            // data while a selection-driven scroll is still pending crashed it in
+            // `layoutSubviews` — "scroll to out-of-bounds item (3) when there are only 3
+            // items" (Crashlytics fe741015e1cc320abea6275cd5f79a02): the pending scroll
+            // still carried the selected card's *old* index after the nearby feed lost an
+            // item under it. A new identity tears the collection view down instead, so the
+            // fresh one only ever sees the new count and the reconciled selection. Keyed on
+            // the count alone so the far more common case — the same cards re-sorted or
+            // their distances refreshed — still animates normally.
+            .id(viewModel.count)
             .frame(height: pageHeight)
 
             footer

@@ -318,9 +318,13 @@ final class NearbyCardViewModel: ObservableObject {
     /// camps merged by distance. Everything is gated to `nearbyRadius`, de-duped by id,
     /// and capped to `maxItems`.
     private func rebuildItems() {
+        // Where the pager is sitting *before* the new list lands, so a selection that the
+        // rebuild drops can fall back to whatever now occupies that spot rather than
+        // yanking the user back to the first card.
+        let previousIndex = selectedID.flatMap { id in items.firstIndex { $0.id == id } }
         guard isCardVisible, let location = currentLocation else {
             items = []
-            reconcileSelection()
+            reconcileSelection(preferringIndex: previousIndex)
             return
         }
         items = Self.orderedItems(
@@ -333,7 +337,7 @@ final class NearbyCardViewModel: ObservableObject {
             radius: nearbyRadius,
             maxItems: maxItems
         )
-        reconcileSelection()
+        reconcileSelection(preferringIndex: previousIndex)
     }
 
     /// Pure ordering used by `rebuildItems()`, exposed for unit testing.
@@ -391,13 +395,38 @@ final class NearbyCardViewModel: ObservableObject {
         return combined
     }
 
-    /// Keep the paged selection stable across rebuilds; only reset when the
-    /// selected item is no longer present.
-    private func reconcileSelection() {
+    /// Keep the paged selection stable across rebuilds; only move it when the selected
+    /// item is no longer present.
+    ///
+    /// Assigned synchronously in the same turn as `items`, so SwiftUI never observes a
+    /// selection that isn't a member of the list it is paging — an inconsistent pair is
+    /// what makes the paging collection view scroll to an index the data no longer has.
+    private func reconcileSelection(preferringIndex previousIndex: Int?) {
+        selectedID = Self.reconciledSelection(
+            selectedID: selectedID,
+            items: items,
+            previousIndex: previousIndex
+        )
+    }
+
+    /// Pure selection reconciliation used by `rebuildItems()`, exposed for unit testing.
+    ///
+    /// - Returns: `selectedID` when it is still a member of `items`; otherwise the item
+    ///   nearest the page the user was on (clamped to the new last page), or `nil` when
+    ///   there is nothing left to page.
+    static func reconciledSelection(
+        selectedID: String?,
+        items: [NearbyItem],
+        previousIndex: Int?
+    ) -> String? {
         if let selectedID, items.contains(where: { $0.id == selectedID }) {
-            return
+            return selectedID
         }
-        selectedID = items.first?.id
+        guard !items.isEmpty else { return nil }
+        // Staying put beats snapping to the front: when the list shrinks under the last
+        // page, the neighbouring card is the one the user was already looking at.
+        let index = min(max(previousIndex ?? 0, 0), items.count - 1)
+        return items[index].id
     }
 
     // MARK: - Observations

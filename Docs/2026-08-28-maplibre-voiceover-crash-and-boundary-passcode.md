@@ -161,3 +161,61 @@ the app-container plist, so editing prefs by hand between launches is unreliable
 sheet and the More screen were used to confirm the actual state instead. The Debug/feature-flags
 screen's rows are `NavigationLink`s with no tap target in the runtime snapshot, so a mock-date
 positive control ("polygons return on playa past gates") was left to the unit tests, which cover it.
+
+---
+
+## Nearby card pager crash (Crashlytics `fe741015e1cc320abea6275cd5f79a02`)
+
+### Problem
+Production crash on 2026.1 (111), iOS 26.5, 1 event so far:
+
+```
+NSInternalInconsistencyException: Attempted to scroll the collection view to an
+out-of-bounds item (3) when there are only 3 items in section 0.
+-[UICollectionView _validateScrollingTargetIndexPath:...]
+PagingCollectionView.scrollToItem(at:at:animated:)   (SwiftUI internal)
+PagingCollectionView.layoutSubviews()
+… CA::Transaction::commit
+```
+
+The pager is the map's nearby-card carousel: `TabView(selection: $viewModel.selectedID)` with
+`.tabViewStyle(.page(indexDisplayMode: .never))` in `iBurn/Map/NearbyCard/NearbyCardView.swift`.
+
+### Root cause
+The requested index is exactly `count`, i.e. one past the end — a **stale** page index validated
+against a **new, smaller** item count. `NearbyCardViewModel.rebuildItems()` already reconciled the
+selection synchronously with the `items` assignment, so the view model was never handing SwiftUI a
+selection outside the list. What it could not fix is the paged `TabView`'s UIKit backing: it is a
+`UICollectionView`, and when the nearby feed loses an item under a selection that is *still valid
+by id* (e.g. the selected card was page 3 of 4 and is page 2 of 3 after the shrink), the pending
+selection-driven scroll still carries the old index into `layoutSubviews` after the data source has
+already shrunk. So the fix had to be in both places: keep the (items, selection) pair consistent —
+which it already was — **and** stop the collection view from being mutated in place across a page
+count change.
+
+### Changes
+- `iBurn/Map/NearbyCard/NearbyCardView.swift` — `.id(viewModel.count)` on the `TabView`. A page
+  count change now tears the paging collection view down and builds a fresh one that only ever sees
+  the new count and the reconciled selection. Keyed on the count alone, so the common churn (same
+  cards re-sorted, distances/favorites refreshed) still animates normally.
+- `iBurn/Map/NearbyCard/NearbyCardViewModel.swift` — `reconcileSelection()` became
+  `reconcileSelection(preferringIndex:)` over a new pure `static func reconciledSelection(
+  selectedID:items:previousIndex:)`. Behaviour change: when the selected item disappears the pager
+  falls back to whatever now occupies the page the user was on (clamped to the last page) instead
+  of snapping to the first card. Still assigned synchronously in the same turn as `items`; no
+  optimistic mutation — the selection only ever names a member of the delivered list.
+- `iBurnTests/NearbyCardViewModelTests.swift` — 7 tests on `reconciledSelection`: selection kept
+  when present, kept across a re-sort, clamped to the new last page when the list shrinks past it
+  (the crashing shape), neighbour fallback, first-item fallback with no known page, cleared on an
+  empty list, and nil selection adopting the first item.
+
+`selectedID` drives only the card's favorite button and page dots (no map highlighting), so the
+fallback change has no effect outside the card.
+
+Only one dynamic pager exists — `grep -rn "TabView(selection" iBurn/ iBurnWatch/` returns the one
+call site.
+
+### Verification
+- `xcodebuild -scheme iBurn` — success, 0 errors / 0 warnings
+- `xcodebuild test -scheme iBurnTests -only-testing:iBurnTests/NearbyCardViewModelTests` —
+  **28 passed**, 0 failures

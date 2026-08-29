@@ -254,6 +254,87 @@ final class NearbyCardViewModelTests: XCTestCase {
         XCTAssertEqual(NearbyCardTypes(showArt: false, showCamps: false, showEvents: false), [])
     }
 
+    // MARK: - Selection reconciliation
+
+    // The pager is a UICollectionView underneath: a selection that isn't a member of the
+    // items it is paging is what let it scroll to an index the data no longer had
+    // (Crashlytics fe741015e1cc320abea6275cd5f79a02). These pin the invariant that every
+    // reconciled selection is either nil or present in the delivered list.
+
+    private func selectionItems(_ ids: [String]) -> [NearbyItem] {
+        ids.enumerated().map { index, id in
+            .art(ListRow(
+                object: ArtObject(uid: id, name: id, year: 2026,
+                                  gpsLatitude: baseLat + Double(index) * 0.0001,
+                                  gpsLongitude: baseLon),
+                metadata: nil,
+                thumbnailColors: nil
+            ))
+        }
+    }
+
+    func testSelectionIsKeptWhenItsItemSurvivesTheRebuild() throws {
+        let items = selectionItems(["a", "b", "c"])
+        let selection = NearbyCardViewModel.reconciledSelection(
+            selectedID: "art-b", items: items, previousIndex: 1
+        )
+
+        XCTAssertEqual(selection, "art-b")
+    }
+
+    func testSelectionIsKeptEvenWhenItsItemMovesToADifferentPage() throws {
+        let items = selectionItems(["c", "a", "b"])
+        let selection = NearbyCardViewModel.reconciledSelection(
+            selectedID: "art-b", items: items, previousIndex: 1
+        )
+
+        XCTAssertEqual(selection, "art-b", "A re-sort must not move the pager off the card")
+    }
+
+    /// The crashing shape: the last page was selected and the feed lost an item under it.
+    func testSelectionMovesToTheNewLastItemWhenTheListShrinksPastIt() throws {
+        let items = selectionItems(["a", "b", "c"])
+        let selection = NearbyCardViewModel.reconciledSelection(
+            selectedID: "art-d", items: items, previousIndex: 3
+        )
+
+        XCTAssertEqual(selection, "art-c", "Clamped to the last surviving page")
+        XCTAssertTrue(items.contains { $0.id == selection })
+    }
+
+    func testDroppedSelectionFallsBackToTheItemNowOnThatPage() throws {
+        let items = selectionItems(["a", "c", "d"])
+        let selection = NearbyCardViewModel.reconciledSelection(
+            selectedID: "art-b", items: items, previousIndex: 1
+        )
+
+        XCTAssertEqual(selection, "art-c", "The neighbour beats snapping back to the first card")
+    }
+
+    func testDroppedSelectionWithNoKnownPageFallsBackToTheFirstItem() throws {
+        let items = selectionItems(["a", "b"])
+        let selection = NearbyCardViewModel.reconciledSelection(
+            selectedID: "art-gone", items: items, previousIndex: nil
+        )
+
+        XCTAssertEqual(selection, "art-a")
+    }
+
+    func testEmptyItemsClearTheSelection() throws {
+        XCTAssertNil(NearbyCardViewModel.reconciledSelection(
+            selectedID: "art-a", items: [], previousIndex: 0
+        ))
+    }
+
+    func testNoSelectionAdoptsTheFirstItem() throws {
+        let items = selectionItems(["a", "b"])
+        let selection = NearbyCardViewModel.reconciledSelection(
+            selectedID: nil, items: items, previousIndex: nil
+        )
+
+        XCTAssertEqual(selection, "art-a", "The pager must never page a nil tag while it has items")
+    }
+
     // MARK: - Accessory line
 
     // The card row is name → accessory (when/where) → description. The accessory is what
