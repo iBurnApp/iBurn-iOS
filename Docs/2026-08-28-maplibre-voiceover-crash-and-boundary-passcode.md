@@ -298,3 +298,78 @@ Compare the pre-fix harvest run in step 2 above, where the count climbed from 0 
   built from a fresh clone will silently ship with no Yap seed at all** (non-fatal: falls back to
   the slow JSON import).
 - No `DEVELOPMENT_TEAM` flip in `project.pbxproj` this session.
+
+---
+
+## Part D — YapDatabase view insert crash (`efdd7241b125f5b06e18abc22ba48e6c`)
+
+### Problem
+Production crash on iBurn 2026.1, EXC_BAD_ACCESS during the legacy Yap first-launch import:
+
+```
+-[YapDatabaseViewPage insertRowid:atIndex:]            YapDatabaseViewPage.mm:100
+-[YapDatabaseViewTransaction insertRowid:collectionKey:inGroup:atIndex:]
+                                                      YapDatabaseViewTransaction.m:1317
+-[YapDatabaseFilteredViewTransaction insertRowid:…]    YapDatabaseFilteredViewTransaction.m:732
+-[BRCDataImporter …] replaceWithTransaction loop       BRCDataImporter.m:457
+```
+
+`YapDatabaseViewPage insertRowid:atIndex:` was a bare
+`vector->insert(vector->begin() + index, rowid)`. `YapDatabaseFilteredViewTransaction`
+computes that index by scanning the *parent* view and locating neighbouring rowids in its
+*own* map (`index = prevLocator.index + 1`), and never bounds-checks it against the target
+group's count. When the filtered view's map disagrees with its page metadata, `index >
+count`, the iterator lands past `end()`, and the memmove faults.
+
+Secondary issue found while reading: the `do { … } while (YES)` search loop in the same
+method (`YapDatabaseFilteredViewTransaction.m:694`) has no termination condition other than
+finding a locator — it spins forever if the filtered view contains none of the parent view's
+rowids for that group.
+
+### Fix — `Submodules/YapDatabase` @ `fdae9892` (branch `master`)
+Three guards, all `NSAssert` (loud in Debug, stripped in Release) + a logged runtime clamp:
+
+1. **`YapDatabaseViewTransaction.m`** — the general choke point. Sum `pm->count` over
+   `pagesMetadataForGroup`; if `index > groupCount`, `YDBLogError` and clamp to `groupCount`
+   (append at end of group). Chosen as the primary site because *every* write path
+   (auto view, manual view, filtered view, search-results view) funnels through it, so a
+   miscomputed index from any caller is caught. Debug builds still trip the assert, so this
+   does not mask bugs during development.
+2. **`YapDatabaseViewPage.mm`** — clamp at the actual fault site. An index that is in range
+   for the *group* can still be out of range for the individual *page* when
+   `pageMetadata->count` has drifted from the page's real contents. The caller re-syncs
+   `pageMetadata->count = [page count]` on the next line, so clamping self-heals metadata.
+3. **`YapDatabaseFilteredViewTransaction.m`** — loop guard: when
+   `(parentIndex < offset) && ((parentIndex + offset) >= parentCount)` both directions are
+   exhausted; log and fall back to `index = count` (end of group) instead of spinning.
+
+Behaviour on clamp: the row is appended at the end of its group. A misordered row in a
+legacy Yap view beats a crash — and only the legacy Yap surfaces read these views.
+
+### Validation
+- **Fork test suite** — `Testing/Xcode-mobile` needed a one-off `pod install`, and on Xcode 26
+  the test target fails to compile (`'YapDatabase/YapDatabasePrivate.h' file not found`,
+  pre-existing: `use_modular_headers!` hides the pod's private headers). Workaround, not
+  committed — pass the private header dir on the command line:
+  ```bash
+  cd Submodules/YapDatabase/Testing/Xcode-mobile && pod install
+  xcodebuild test -workspace YapDatabaseTesting.xcworkspace -scheme YapDatabaseTesting \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64' \
+    HEADER_SEARCH_PATHS='$(inherited) "$PWD/Pods/Headers/Private"'
+  ```
+  Result: **335/335 tests pass, 0 failures** (Debug config, so the new `NSAssert`s were live
+  and none fired). `Testing/Xcode-mobile/Podfile.lock` was reverted afterwards; `Pods/` is
+  untracked.
+- **App build** — `xcodebuild -scheme iBurn`: success, 0 errors / 0 warnings.
+- **App tests** — `iBurnTests/BRCDataImportTests` + `BRCDataSorterTests`: 7 passed.
+- **Fresh-install smoke** — `simctl uninstall` + `install` + `launch` on iPhone 17 Pro Max
+  (iOS 26.5): boot import completed, all filtered/search views registered
+  (`BRCDataObjectView-FavoritesFilter-WithExpiration`, `…-SearchView`, `RTreeIndex`,
+  `Registered relationships`), process still alive, **no crash and no clamp log emitted** —
+  i.e. the guards are inert on healthy data.
+
+### Push order at release time
+The submodule pointer bump is worthless until the fork commit exists on the remote:
+1. `git -C Submodules/YapDatabase push origin master` (pushes `fdae9892` to iBurnApp/YapDatabase)
+2. then push the app repo (`2026-updates`) carrying the pointer bump.
+Neither was pushed in this session.
