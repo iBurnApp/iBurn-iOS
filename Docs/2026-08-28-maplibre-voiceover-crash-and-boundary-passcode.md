@@ -219,3 +219,82 @@ call site.
 - `xcodebuild -scheme iBurn` — success, 0 errors / 0 warnings
 - `xcodebuild test -scheme iBurnTests -only-testing:iBurnTests/NearbyCardViewModelTests` —
   **28 passed**, 0 failures
+
+---
+
+## Stale legacy Yap seed re-harvested (Aug 28)
+
+### Problem
+`iBurn/iBurn-2026.zip` (the pre-baked YapDatabase seed restored by
+`BRCDataImporter.copyDatabaseFromBundle()`) still carried its **2026-08-17 20:52 PDT** harvest.
+The bundled `Submodules/iBurn-Data/data/2026/APIData/APIData.bundle/update.json` has been at
+**2026-08-27 07:34** since the Aug 27 refresh. `BRCDataImporter` (`BRCDataImporter.m:190-208`)
+compares `updateInfo.lastUpdated` against the stored `BRCUpdateInfo` and only skips when the
+bundled JSON is *not* newer — so with an Aug-17 seed every one of art/camps/events came back
+"new data" and **every fresh install ran the full Yap boot-import** on top of the restored seed.
+That is both a slow first launch (~3 min historically) and the code path of Crashlytics issue
+`efdd7241b125f5b06e18abc22ba48e6c` (`YapDatabaseViewPage insertRowid` EXC_BAD_ACCESS).
+
+Root cause of the staleness: `playa-seed` writes only the two **PlayaDB** zips. The legacy Yap zip
+is a separate hand harvest (Part C of `Docs/2026-07-18-api-data-refresh.md`) and was skipped on
+both the Aug 22 and Aug 27 data refreshes. `Docs/RELEASE_CHECKLIST.md` §3 already listed it as its
+own checkbox — the checklist was correct and simply not followed; §3 has now been amended to spell
+out that `playa-seed` does not cover it and to record this miss.
+
+### Procedure used (Part C, verbatim)
+0. Moved the stale `iBurn/iBurn-2026.zip` out of the tree first (scratchpad copy kept as
+   `iBurn-2026.stale-aug17.zip`) so the harvest starts from an empty database rather than
+   layering new JSON over records deleted upstream.
+1. `xcodebuild -workspace iBurn.xcworkspace -scheme iBurn` into a clean
+   `build/DDHarvest` — confirmed the produced `iBurn.app` contained **no** `iBurn-2026.zip`
+   (only `PlayaDB-2026.zip`) and an Aug-27 `update.json`.
+2. `simctl uninstall` + `install` + `launch` on iPhone 17 Pro Max (26.5,
+   `C1E16C40-1021-407F-923A-697325835A22`), completed onboarding, polled
+   `SELECT count(*) FROM database2` until stable (**8419**, stable >60 s, `-wal` empty).
+3. `simctl terminate`, then from `<container>/Library/Application Support/iBurn`:
+   `zip -r -X iBurn-2026.zip iBurn-2026` and copied to `iBurn/iBurn-2026.zip` (4.9 MB).
+
+### Verification of the new seed
+```
+PRAGMA integrity_check           -> ok
+collection counts                -> BRCEventObject 6900 | BRCCampObject 1184
+                                    BRCArtObject 332    | BRCUpdateInfo 3   (total 8419)
+distinct event uids              -> 3412  (6900 rows = one per occurrence)
+BRCUpdateInfo.lastUpdated (PDT)  -> art    2026-08-27 07:34:36
+                                    camps  2026-08-27 07:35:00
+                                    events 2026-08-27 07:34:45
+```
+Byte-for-byte the same three timestamps as `update.json`, so `intervalSinceLastUpdated <= 0` holds
+for all three and the importer now short-circuits.
+
+Notes:
+- **No `mv` row in `BRCUpdateInfo`** — same as the Aug-17 seed. The Yap importer only handles
+  art/camps/events; mutant vehicles live in PlayaDB only. Not a regression, but it does mean the
+  `mv` entry in `update.json` is evaluated as "new" on every launch (cheap: it resolves to a
+  `BRCUpdateDataTypeUnknown` no-op, not a table rebuild).
+- Part C step 2 (doc line 166) says to include the `-shm` file in the zip. Kept as written for
+  consistency this close to release — but `-shm` is pure shared-memory scratch for a WAL that ships
+  empty; shipping it is at best inert and at worst a stale-index hazard on restore. Worth
+  revisiting after the release, not now.
+
+### Skip confirmed on a fresh install
+Rebuilt with the new zip bundled (5,090,630 B in `iBurn.app`), `simctl uninstall` +
+`install` + `launch`:
+
+```
+t=+0s  rows=none      (container DB not yet unzipped)
+t=+2s  rows=8419      <- full dataset present two seconds after launch
+t=+4s … t=+39s rows=8419  (flat — no import ramp)
+```
+Compare the pre-fix harvest run in step 2 above, where the count climbed from 0 over minutes.
+`BRCUpdateInfo` in the fresh container holds the Aug-27 rows straight from the seed.
+
+### Build / repo state
+- `xcodebuild -scheme iBurn` — success, 0 errors / 0 warnings.
+- `git status` clean apart from these doc edits: **`iBurn/iBurn-2026.zip` is gitignored**
+  (`.gitignore:101` `iBurn/iBurn-*.zip`) and untracked, so the regenerated artifact cannot be
+  committed. It ships by living at `iBurn/iBurn-2026.zip` in the release builder's working copy —
+  the `iBurn/` filesystem-synchronized group copies it into the bundle automatically. **A release
+  built from a fresh clone will silently ship with no Yap seed at all** (non-fatal: falls back to
+  the slow JSON import).
+- No `DEVELOPMENT_TEAM` flip in `project.pbxproj` this session.

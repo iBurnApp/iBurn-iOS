@@ -170,10 +170,19 @@ PlayaDB copies.
 
 - [ ] `iBurn/PlayaDB-<YEAR>.zip` regenerated *after* the final data commit.
 - [ ] `iBurnWatch/PlayaDB-<YEAR>.zip` regenerated (phone and watch restore from their own bundle).
-- [ ] Legacy `iBurn/iBurn-<YEAR>.zip` (Yap seed) regenerated.
+- [ ] Legacy `iBurn/iBurn-<YEAR>.zip` (Yap seed) regenerated — **`playa-seed` does NOT write this
+      one.** It is a separate hand harvest (Part C of `Docs/2026-07-18-api-data-refresh.md`), so
+      **every** data refresh needs BOTH seed families regenerated: the two PlayaDB zips *and* the
+      Yap zip. Missed on the Aug 22 and Aug 27 refreshes (see below).
 - [ ] Seed timestamps are newer than the API bundle they were built from.
       *Why:* the zips are gitignored and easy to leave stale; a stale seed ships last week's data
       and only re-imports if `needsImport` notices the bundled JSON is newer.
+      *Real miss:* after the Aug 22 and Aug 27 data refreshes only the PlayaDB seeds were rebuilt.
+      The Yap seed stayed on Aug 17 timestamps, so `BRCDataImporter` skipped nothing and every
+      fresh install ran the full ~3 min Yap boot-import — the exact code path of Crashlytics
+      `efdd7241b125f5b06e18abc22ba48e6c` (`YapDatabaseViewPage insertRowid` EXC_BAD_ACCESS).
+      Re-harvested Aug 28; details in
+      `Docs/2026-08-28-maplibre-voiceover-crash-and-boundary-passcode.md`.
 - [ ] New thumbnails committed to `MediaFiles.bundle` in the submodule.
 - [ ] Row counts verified on-device after a fresh install (see the `drive-app` skill).
 
