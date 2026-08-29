@@ -313,6 +313,20 @@ verified to apply cleanly over a shipped seed.
 - [ ] `bundle exec fastlane ios beta` succeeds locally or via the deploy workflow.
 - [ ] dSYMs uploaded to Crashlytics (the `beta` lane does this; `refresh_dsyms` covers Apple-signed
       rebuilds afterward).
+- [ ] **App Store Connect variant sizes are under Apple's 200 MB cellular-download cap** — check
+      "App Store File Sizes" on the build in ASC and look at the *largest* variant (iPad ran
+      207 MB on build 112, over the cap; the iPhone variants were fine). The bundled media is
+      the whole story — `iBurnData_iBurn<YEAR>MediaFiles.bundle` was 180 MB of a ~300 MB app.
+      First lever, lossless and safe to re-run every year on the media bundle:
+      ```bash
+      # Submodules/iBurn-Data/data/<YEAR>/MediaFiles/MediaFiles.bundle
+      jpegtran -copy none -progressive -optimize -outfile "$tmp" "$f"   # keep only if smaller
+      ```
+      Second lever: delete JPEGs whose filename stem appears in no `*.json` under
+      `data/<YEAR>/APIData/APIData.bundle/` — nothing can reference them. Together these took
+      2026 from 180 → 169 MB with zero quality loss. Do **not** lossy-recompress the JPEGs or
+      the `.m4a` audio tour (already 48 kbps). See
+      `Docs/2026-08-28-maplibre-voiceover-crash-and-boundary-passcode.md`.
 
 ## 9. App Store
 

@@ -373,3 +373,69 @@ The submodule pointer bump is worthless until the fork commit exists on the remo
 1. `git -C Submodules/YapDatabase push origin master` (pushes `fdae9892` to iBurnApp/YapDatabase)
 2. then push the app repo (`2026-updates`) carrying the pointer bump.
 Neither was pushed in this session.
+
+---
+
+## Build size: getting iPad variants under Apple's 200 MB limit
+
+### Problem
+App Store Connect reported the iPad variants of build 112 at **207 MB**, over Apple's
+200 MB cellular-download cap. The app is dominated by bundled 2026 media:
+`iBurnData_iBurn2026MediaFiles.bundle` was **180 MB** of the ~300 MB Debug `.app`
+(1612 JPEGs / 134 MB of JPEG data, plus 87 `.m4a` audio-tour files).
+
+### Options evaluated
+| Approach | Saving | Verdict |
+|---|---|---|
+| `jpegtran -copy none -optimize` (baseline, lossless) | 2.5 MB | too little on its own |
+| Lossy re-encode (`cjpeg` q75–q85 / mozjpeg) | 12–16 MB | **rejected** — visible quality loss on photos users pinch-zoom |
+| `jpegtran -copy none -progressive -optimize` (lossless) | **7.0 MB** | **chosen** |
+| Drop orphaned images not referenced by any APIData JSON | **4.2 MB** | **chosen** |
+| Re-encode the `.m4a` audio tour | ~0 | **rejected** — already 48 kbps AAC; recompression is pointless and lossy |
+
+Total: **-11.2 MB with zero quality loss**, bundle 180 MB → **169 MB**.
+
+### What was done
+1. **Progressive re-encode.** For every `.jpg` in
+   `Submodules/iBurn-Data/data/2026/MediaFiles/MediaFiles.bundle/`:
+   ```bash
+   jpegtran -copy none -progressive -optimize -outfile "$tmp" "$file"
+   # replace the original only if jpegtran exited 0 AND the output is smaller
+   ```
+   Results: **1559 files shrank (-7.0 MB)**, 10 were already optimal, **43 failed**.
+   All 43 failures are **PNG data carrying a `.jpg` extension** (confirmed with `file`) —
+   they came from the API that way, decode fine via ImageIO, and were left untouched.
+
+   `jpegtran` is a lossless transform of the DCT coefficients, so pixels are bit-identical.
+   Sanity-checked on 10 samples by decoding before and after and hashing the raw pixels:
+   ```bash
+   djpeg "$file" | shasum   # pre and post hashes matched on all 10
+   ```
+   `-copy none` drops EXIF/ICC; these are Salesforce-hosted thumbnails with no color
+   profile the app reads, and `PlayaColors` extracts colors from decoded pixels.
+
+2. **Orphan deletion.** A JPEG whose filename stem appears in **no** `*.json` under
+   `Submodules/iBurn-Data/data/2026/APIData/APIData.bundle/` cannot be reached by the app.
+   That rule matched **39 files (-4.0 MB post-optimization)** — leftovers from earlier API
+   refreshes whose objects have since been removed or re-pointed. Deleted.
+
+### Seed zips need no regeneration
+`iBurn/PlayaDB-2026.zip`, `iBurnWatch/PlayaDB-2026.zip` (`PlayaDB.sqlite` only) and
+`iBurn/iBurn-2026.zip` (`iBurn-2026.sqlite` + wal/shm) contain **databases only, no image
+files** — verified with `unzip -l`. The seeds do carry precomputed thumbnail colors, but
+those are derived from pixels, and the pixels are unchanged, so the baked colors stay
+correct. No `playa-seed` run required.
+
+### Validation
+- `xcodebuild -scheme iBurn`: success, 0 errors / 0 warnings.
+- Built `.app`: 300 MB → 289 MB; `iBurnData_iBurn2026MediaFiles.bundle` **180 → 169 MB**.
+- `swift test --package-path Packages/PlayaColors`: 11 passed (color extraction unaffected,
+  as expected from identical pixels).
+- `swift test --package-path Packages/PlayaSeed`: 20 passed.
+
+### Follow-ups
+- Build number bumped **112 → 113** (`MARKETING_VERSION` stays `2026.2`) so the next upload
+  is a fresh build ASC will re-measure.
+- Confirm the iPad variant size in App Store Connect after upload — 207 − 11.2 ≈ **196 MB**,
+  which clears the cap but with little headroom. If 2027 media grows, the next levers are
+  on-demand resources or shipping smaller thumbnails and fetching full-size on demand.
